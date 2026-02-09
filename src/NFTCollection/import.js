@@ -1,5 +1,5 @@
 import React from 'react';
-import axios from 'axios';
+import api from 'src/utils/api';
 import { useState, useEffect, useRef } from 'react';
 
 // Emotion styled
@@ -76,7 +76,7 @@ const LoadingTextField = ({ type, value, uuid, setValid, startText, ...props }) 
     body.type = type;
     if (uuid) body.uuid = uuid;
 
-    axios
+    api
       .post(`${BASE_URL}/validation`, body, { headers: { 'x-access-token': accountToken } })
       .then((res) => {
         try {
@@ -349,7 +349,7 @@ export default function ImportCollection() {
     setLoadingTaxons(true);
 
     // https://api.xrpl.to/v1/taxon/issuer/rJeBz69krYh8sXb8uKsEE22ADzbi1Z4yF2
-    axios
+    api
       .get(`${BASE_URL}/taxon/issuer/${issuer}`, {
         headers: {
           'x-access-account': accountAdmin,
@@ -421,7 +421,7 @@ export default function ImportCollection() {
       formdata.append('data', JSON.stringify(data));
 
       // https://api.xrpl.to/v1/nfts/import
-      res = await axios.post(`${BASE_URL}/nfts/import`, formdata, {
+      res = await api.post(`${BASE_URL}/nfts/import`, formdata, {
         headers: {
           'Content-Type': 'multipart/form-data',
           'x-access-account': accountAdmin,

@@ -1,4 +1,4 @@
-import axios from 'axios';
+import api from 'src/utils/api';
 import { useState, useEffect, useContext } from 'react';
 import Decimal from 'decimal.js-light';
 import { X, Send } from 'lucide-react';

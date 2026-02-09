@@ -192,11 +192,14 @@ function ThemedToaster() {
 
   return (
     <Toaster
-      position="bottom-right"
+      position="top-right"
       closeButton
       duration={4000}
       theme={isDark ? 'dark' : 'light'}
-      gap={12}
+      gap={8}
+      visibleToasts={5}
+      expand={true}
+      richColors
       toastOptions={{
         className: 'sonner-toast-custom'
       }}

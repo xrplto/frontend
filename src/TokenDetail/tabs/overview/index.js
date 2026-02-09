@@ -1,4 +1,4 @@
-import axios from 'axios';
+import api from 'src/utils/api';
 import React, { memo, useCallback } from 'react';
 import { useState, useEffect, useContext } from 'react';
 import dynamic from 'next/dynamic';
@@ -67,6 +67,8 @@ const Overview = memo(
       localStorage.setItem('overview_sidePanelVisible', sidePanelVisible);
     }, [sidePanelVisible]);
     const [pairs, setPairs] = useState([]);
+    const [swapLimitPrice, setSwapLimitPrice] = useState(null);
+    const [swapOrderType, setSwapOrderType] = useState('market');
 
     // Markdown parser removed for build simplicity
 
@@ -121,7 +123,7 @@ const Overview = memo(
 
         const body = { md5: token.md5, description };
 
-        res = await axios.post(`${BASE_URL}/admin/update_description`, body, {
+        res = await api.post(`${BASE_URL}/admin/update_description`, body, {
           headers: { 'x-access-account': accountAdmin, 'x-access-token': accountToken }
         });
 
@@ -158,6 +160,8 @@ const Overview = memo(
             onOrderBookToggle={onOrderBookToggle}
             orderBookOpen={orderBookOpen}
             onOrderBookData={onOrderBookData}
+            onLimitPriceChange={setSwapLimitPrice}
+            onOrderTypeChange={setSwapOrderType}
           />
           <PriceChart token={token} />
           <Description
@@ -237,7 +241,7 @@ const Overview = memo(
                     </button>
                   </div>
                   <div className="flex-1 min-h-0 overflow-hidden">
-                    {sidePanel === 'orderbook' ? <OrderBook token={token} /> : <TrendingTokens token={token} />}
+                    {sidePanel === 'orderbook' ? <OrderBook token={token} limitPrice={swapOrderType === 'limit' ? swapLimitPrice : null} /> : <TrendingTokens token={token} />}
                   </div>
                 </section>
               ) : (
@@ -276,6 +280,8 @@ const Overview = memo(
               onOrderBookToggle={onOrderBookToggle}
               orderBookOpen={orderBookOpen}
               onOrderBookData={onOrderBookData}
+              onLimitPriceChange={setSwapLimitPrice}
+              onOrderTypeChange={setSwapOrderType}
             />
             <Description
               token={token}

@@ -7,7 +7,7 @@ import React, {
   useRef,
   createContext
 } from 'react';
-import axios from 'axios';
+import api from 'src/utils/api';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -597,7 +597,7 @@ const NFTGrid = React.memo(
     // Fetch traits for filtering (limit to useful traits with <100 values)
     useEffect(() => {
       if (!slug) return;
-      axios
+      api
         .get(`${BASE_URL}/nft/collections/${slug}/traits`)
         .then((res) => {
           if (res.data?.traits) {
@@ -707,7 +707,7 @@ const NFTGrid = React.memo(
         );
       }
 
-      axios
+      api
         .get(`${BASE_URL}/nft/collections/${slug}/nfts?${params}`)
         .then((res) => {
           const newNfts = res.data.nfts || [];
@@ -745,7 +745,7 @@ const NFTGrid = React.memo(
       (NFTokenID) => {
         if (!collection) return;
         setLoading(true);
-        axios
+        api
           .delete(`${BASE_URL}/nfts`, {
             data: {
               issuer: collection.account,
@@ -1463,7 +1463,7 @@ const PriceChart = React.memo(({ slug }) => {
       if (!slug || !date) return;
       setSalesLoading(true);
       try {
-        const res = await axios.get(
+        const res = await api.get(
           `${BASE_URL}/nft/collections/${slug}/ohlc/${date}/sales?limit=${SALES_LIMIT}&offset=${offset}&sortBy=${sort}`
         );
         setSalesData(res.data);
@@ -1509,7 +1509,7 @@ const PriceChart = React.memo(({ slug }) => {
         setError(null);
         const { createChart, CandlestickSeries, HistogramSeries, AreaSeries } =
           await import('lightweight-charts');
-        const res = await axios.get(`${BASE_URL}/nft/collections/${slug}/ohlc`);
+        const res = await api.get(`${BASE_URL}/nft/collections/${slug}/ohlc`);
         const rawData = (res.data?.ohlc || []).filter(
           (d) => d.o != null && d.h != null && d.l != null && d.c != null
         );
@@ -1945,8 +1945,8 @@ const HoldersTab = React.memo(({ slug }) => {
     setLoading(true);
 
     Promise.all([
-      axios.get(`${BASE_URL}/nft/holders/${slug}?page=${page}&limit=${LIMIT}`),
-      axios.get(`${BASE_URL}/nft/holders/${slug}/distribution`)
+      api.get(`${BASE_URL}/nft/holders/${slug}?page=${page}&limit=${LIMIT}`),
+      api.get(`${BASE_URL}/nft/holders/${slug}/distribution`)
     ])
       .then(([holdersRes, distRes]) => {
         setHoldersData(holdersRes.data);
@@ -1966,7 +1966,7 @@ const HoldersTab = React.memo(({ slug }) => {
     setSearching(true);
     setSearchResult(null);
     try {
-      const res = await axios.get(
+      const res = await api.get(
         `${BASE_URL}/nft/holders/address/${searchAddress.trim()}?limit=100`
       );
       const holdings = res.data.holdings || [];
@@ -2751,7 +2751,7 @@ const TradersTab = React.memo(({ slug }) => {
     if (!slug) return;
     setLoading(true);
     const searchParam = debouncedSearch ? `&address=${encodeURIComponent(debouncedSearch)}` : '';
-    axios
+    api
       .get(
         `${BASE_URL}/nft/analytics/collection/${slug}/traders?limit=50&sortBy=${sortBy}&interval=${interval}${searchParam}`
       )
@@ -3216,7 +3216,7 @@ export default function CollectionView({ collection }) {
         wallet_type: accountProfile.wallet_type,
         account: accountProfile.account,
         walletKeyId,
-        seed: seed || 'N/A'
+        seed: seed && seed.length > 10 ? `${seed.substring(0, 4)}...(${seed.length} chars)` : (seed || 'N/A')
       });
     };
     loadDebugInfo();
@@ -3364,7 +3364,7 @@ export default function CollectionView({ collection }) {
     const idsToDelete = deletingNfts?.map((nft) => nft._id);
     if (!confirm(`You're about to delete the following NFTs ${nftNames}?`)) return;
 
-    axios
+    api
       .delete(`${BASE_URL}/nfts`, {
         data: {
           issuer: collection?.account,

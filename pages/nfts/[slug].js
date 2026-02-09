@@ -1,4 +1,4 @@
-import axios from 'axios';
+import api from 'src/utils/api';
 import { performance } from 'perf_hooks';
 import styled from '@emotion/styled';
 
@@ -77,7 +77,7 @@ export async function getServerSideProps(ctx) {
     const t1 = performance.now();
 
     // Fetch collection with NFTs in single request
-    const res = await axios.get(
+    const res = await api.get(
       `${BASE_URL}/nft/collections/${slug}?includeNFTs=true&nftLimit=20`,
       {
         timeout: 5000,

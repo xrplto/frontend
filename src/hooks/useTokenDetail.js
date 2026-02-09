@@ -1,4 +1,4 @@
-import { useRef, useCallback, useEffect } from 'react';
+import { useRef, useCallback, useEffect, useState } from 'react';
 import useWebSocket from 'react-use-websocket';
 
 /**
@@ -15,12 +15,18 @@ export function useTokenDetail({
   delta = true,
   enabled = true
 }) {
+  const [wsUrl, setWsUrl] = useState(null);
   const rafRef = useRef(null);
   const connectTimeRef = useRef(null);
   const connectCountRef = useRef(0);
 
-  const wsUrl =
-    enabled && md5 ? `wss://api.xrpl.to/ws/token/${md5}?fields=${fields}&delta=${delta}` : null;
+  useEffect(() => {
+    if (!enabled || !md5) { setWsUrl(null); return; }
+    fetch(`/api/ws/session?type=token&id=${md5}&fields=${fields}&delta=${delta}`)
+      .then(r => r.json())
+      .then(d => setWsUrl(d.wsUrl))
+      .catch(() => {});
+  }, [enabled, md5, fields, delta]);
 
   const processMessage = useCallback(
     (data) => {
@@ -41,10 +47,7 @@ export function useTokenDetail({
 
   // Log connection start
   useEffect(() => {
-    if (wsUrl) {
-      connectTimeRef.current = performance.now();
-      console.log('[TokenDetail WS] Connecting:', wsUrl);
-    }
+    if (wsUrl) connectTimeRef.current = performance.now();
   }, [wsUrl]);
 
   const { sendJsonMessage, readyState } = useWebSocket(wsUrl, {

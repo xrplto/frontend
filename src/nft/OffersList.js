@@ -1,4 +1,4 @@
-import axios from 'axios';
+import api from 'src/utils/api';
 import { useState, useEffect, useContext } from 'react';
 import { AppContext } from 'src/context/AppContext';
 import { cn } from 'src/utils/cn';

@@ -1,4 +1,4 @@
-import axios from 'axios';
+import api from 'src/utils/api';
 import { useState, useEffect, useContext } from 'react';
 import { AppContext } from 'src/context/AppContext';
 import { cn } from 'src/utils/cn';
@@ -73,16 +73,16 @@ export default function BurnNFT({ nft, onHandleBurn }) {
 
       <button
         className={cn(
-          'flex w-full items-center justify-center gap-2 rounded-xl border-[1.5px] px-4 py-[10px] text-[13px] font-normal transition-colors',
+          'flex-1 flex items-center justify-center gap-2 rounded-xl border py-3 text-[15px] font-normal transition-colors',
           'disabled:cursor-not-allowed disabled:opacity-50',
           isDark
-            ? 'border-orange-500/50 text-orange-500 hover:bg-orange-500/5'
-            : 'border-orange-600 text-orange-600 hover:bg-orange-50'
+            ? 'border-gray-700/50 text-gray-300 hover:border-gray-600 hover:text-white'
+            : 'border-gray-300 text-gray-700 hover:border-gray-400'
         )}
         onClick={handleBurnNFT}
         disabled={!accountLogin || !isBurnable || !nft}
       >
-        <Trash2 size={14} />
+        <Trash2 size={16} />
         Burn
       </button>
     </>

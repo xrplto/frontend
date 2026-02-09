@@ -1,5 +1,5 @@
 import React, { lazy, Suspense, useContext, useEffect } from 'react';
-import axios from 'axios';
+import api from 'src/utils/api';
 import { cn } from 'src/utils/cn';
 
 // Utils
@@ -11,7 +11,7 @@ import Footer from 'src/components/Footer';
 import ScrollToTop from 'src/components/ScrollToTop';
 import TokenTabs from 'src/TokenDetail/components/TokenTabs';
 import { addTokenToTabs } from 'src/hooks/useTokenTabs';
-const NFTDetail = lazy(() => import('src/Nft'));
+const NFTDetail = lazy(() => import('src/nft'));
 
 import { AppContext } from 'src/context/AppContext';
 
@@ -46,7 +46,7 @@ export default function Overview({ nft }) {
   // Also add collection to tabs - fetch logoImage from collection API
   useEffect(() => {
     if (collectionSlug && collectionName) {
-      axios
+      api
         .get(`https://api.xrpl.to/v1/nft/collections/${collectionSlug}`)
         .then((res) => {
           addTokenToTabs({
@@ -113,7 +113,7 @@ export async function getServerSideProps(ctx) {
     const params = ctx.params.nftokenid;
     const NFTokenID = params[0];
 
-    const res = await axios.get(`${BASE_URL}/nft/${NFTokenID}`);
+    const res = await api.get(`${BASE_URL}/nft/${NFTokenID}`);
 
     data = { nft: res.data };
   } catch (e) {

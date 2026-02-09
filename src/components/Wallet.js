@@ -1,11 +1,11 @@
-import { useRef, useState, useEffect, useCallback, useMemo } from 'react';
+import { apiFetch, submitTransaction } from 'src/utils/api';
+import { useRef, useState, useEffect, useCallback, useMemo, useContext } from 'react';
 import { useRouter } from 'next/router';
 import Image from 'next/image';
 import Link from 'next/link';
 import {
   Wallet as XRPLWallet,
   encodeSeed,
-  Client,
   xrpToDrops,
   dropsToXrp,
   isValidAddress
@@ -43,19 +43,22 @@ import {
   ExternalLink,
   RefreshCw,
   ChevronRight,
-  Settings
+  Settings,
+  Camera,
+  SwitchCamera
 } from 'lucide-react';
 
 // Context
-import { useContext } from 'react';
 import { AppContext } from 'src/context/AppContext';
 
 // Translation removed - not using i18n
 
 // Utils
+
 import { getHashIcon } from 'src/utils/formatters';
-import { EncryptedWalletStorage, securityUtils } from 'src/utils/encryptedWalletStorage';
+import { EncryptedWalletStorage, securityUtils, deviceFingerprint } from 'src/utils/encryptedWalletStorage';
 import { cn } from 'src/utils/cn';
+import QRCode from 'react-qr-code';
 
 // Generate random wallet with true random entropy
 const generateRandomWallet = () => {
@@ -111,6 +114,8 @@ const alpha = (color, opacity) => {
 
 // Dialog component - Enhanced with smooth animations and mobile support
 const Dialog = ({ open, onClose, children, maxWidth, fullWidth, sx, ...props }) => {
+  const { themeName } = useContext(AppContext);
+  const isDark = themeName === 'XrplToDarkTheme';
   const [isVisible, setIsVisible] = useState(false);
   const [shouldRender, setShouldRender] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -562,6 +567,28 @@ function truncateAccount(str, length = 9) {
   return str.slice(0, length) + '...' + str.slice(length * -1);
 }
 
+// Format XRP balance for display
+function formatXrpBalance(value, opts = {}) {
+  const num = parseFloat(value);
+  if (isNaN(num)) return '0';
+
+  const { compact = false } = opts;
+
+  // Large amounts: no decimals, with separators
+  if (num >= 10000) {
+    return num.toLocaleString('en-US', { maximumFractionDigits: 0 });
+  }
+  // Medium amounts: 2 decimals
+  if (num >= 1) {
+    return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+  // Small amounts: up to 6 decimals, trim trailing zeros
+  if (num > 0) {
+    return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 6 });
+  }
+  return '0';
+}
+
 // Shared component for consistent wallet content across both modes
 const WalletContent = ({
   theme,
@@ -628,7 +655,10 @@ const WalletContent = ({
   swapDirection,
   setSwapDirection,
   destAddress,
-  setDestAddress
+  setDestAddress,
+  // QR Sync props
+  onQrSyncExport,
+  onQrSyncImport
 }) => {
   const needsBackup =
     typeof window !== 'undefined' && localStorage.getItem(`wallet_needs_backup_${accountLogin}`);
@@ -649,9 +679,6 @@ const WalletContent = ({
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [storedPassword, setStoredPassword] = useState(null);
 
-  // History state
-  const [transactions, setTransactions] = useState([]);
-  const [loadingHistory, setLoadingHistory] = useState(false);
 
   const handleCopyAddress = () => {
     if (accountLogin) {
@@ -683,23 +710,6 @@ const WalletContent = ({
     checkUnlock();
   }, [accountProfile, accountLogin, walletStorage]);
 
-  const loadTransactionHistory = async () => {
-    if (!accountLogin) return;
-    setLoadingHistory(true);
-    try {
-      const response = await fetch(
-        `https://api.xrpl.to/v1/account/${accountLogin}/transactions?limit=20`
-      );
-      if (response.ok) {
-        const data = await response.json();
-        setTransactions(data.transactions || []);
-      }
-    } catch (err) {
-      /* ignore */
-    } finally {
-      setLoadingHistory(false);
-    }
-  };
 
   const availableBalance = parseFloat(accountBalance?.curr1?.value || '0');
   const maxSendable = Math.max(0, availableBalance - 10.000012);
@@ -737,35 +747,27 @@ const WalletContent = ({
 
       if (!wallet?.seed) throw new Error('Incorrect password');
 
-      const client = new Client('wss://xrplcluster.com');
-      await client.connect();
+      const payment = {
+        TransactionType: 'Payment',
+        Account: accountLogin,
+        Destination: recipient,
+        Amount: xrpToDrops(amount),
+        SourceTag: 161803
+      };
+      if (destinationTag) payment.DestinationTag = parseInt(destinationTag);
 
-      try {
-        const payment = {
-          TransactionType: 'Payment',
-          Account: accountLogin,
-          Destination: recipient,
-          Amount: xrpToDrops(amount)
-        };
-        if (destinationTag) payment.DestinationTag = parseInt(destinationTag);
+      const xrplWallet = XRPLWallet.fromSeed(wallet.seed);
+      const result = await submitTransaction(xrplWallet, payment);
 
-        const xrplWallet = XRPLWallet.fromSeed(wallet.seed);
-        const prepared = await client.autofill(payment);
-        const signed = xrplWallet.sign(prepared);
-        const result = await client.submitAndWait(signed.tx_blob);
-
-        if (result.result.meta.TransactionResult === 'tesSUCCESS') {
-          setTxResult({ success: true, hash: result.result.hash, amount, recipient });
-          openSnackbar('Transaction successful', 'success');
-          setRecipient('');
-          setAmount('');
-          setDestinationTag('');
-          if (!isUnlocked) setSendPassword('');
-        } else {
-          throw new Error(result.result.meta.TransactionResult);
-        }
-      } finally {
-        await client.disconnect();
+      if (result.success) {
+        setTxResult({ success: true, hash: result.hash, amount, recipient });
+        openSnackbar('Transaction successful', 'success');
+        setRecipient('');
+        setAmount('');
+        setDestinationTag('');
+        if (!isUnlocked) setSendPassword('');
+      } else {
+        throw new Error(result.engine_result);
       }
     } catch (err) {
       setSendError(err.message || 'Transaction failed');
@@ -924,6 +926,49 @@ const WalletContent = ({
               Download
             </button>
           </div>
+
+          {/* QR Sync - Transfer to another device */}
+          <div className={cn('mt-4 pt-4 border-t', isDark ? 'border-white/10' : 'border-gray-200')}>
+            <p className={cn('text-[11px] mb-3 text-center', isDark ? 'text-white/40' : 'text-gray-400')}>
+              Or transfer to another device
+            </p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  setShowBackupPassword(false);
+                  setBackupPassword('');
+                  setBackupAgreed(false);
+                  onQrSyncExport?.();
+                }}
+                className={cn(
+                  'flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-[12px] font-medium transition-all border-[1.5px]',
+                  isDark
+                    ? 'border-[#3f96fe]/30 text-[#3f96fe] hover:bg-[#3f96fe]/10'
+                    : 'border-blue-300 text-blue-600 hover:bg-blue-50'
+                )}
+              >
+                <QrCode size={14} />
+                Export QR
+              </button>
+              <button
+                onClick={() => {
+                  setShowBackupPassword(false);
+                  setBackupPassword('');
+                  setBackupAgreed(false);
+                  onQrSyncImport?.();
+                }}
+                className={cn(
+                  'flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-[12px] font-medium transition-all border-[1.5px]',
+                  isDark
+                    ? 'border-[#3f96fe]/30 text-[#3f96fe] hover:bg-[#3f96fe]/10'
+                    : 'border-blue-300 text-blue-600 hover:bg-blue-50'
+                )}
+              >
+                <Download size={14} />
+                Import QR
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -937,10 +982,10 @@ const WalletContent = ({
   if (showBridgeInDropdown) {
     return (
       <div className={isDark ? 'text-white' : 'text-gray-900'}>
-        {/* Header */}
+        {/* Header - symmetric 3-column layout */}
         <div
           className={cn(
-            'px-4 py-2.5 flex items-center justify-between',
+            'px-4 py-3 grid grid-cols-[auto_1fr_auto] items-center gap-4',
             isDark ? 'border-b border-white/[0.06]' : 'border-b border-gray-100'
           )}
         >
@@ -950,39 +995,39 @@ const WalletContent = ({
               setBridgeData(null);
             }}
             className={cn(
-              'flex items-center gap-1.5 text-[12px] font-medium',
-              isDark ? 'text-white/60 hover:text-white' : 'text-gray-500 hover:text-gray-700'
+              'flex items-center gap-1.5 text-[12px] font-medium px-2 py-1.5 -ml-2 rounded-lg transition-colors',
+              isDark ? 'text-white/60 hover:text-white hover:bg-white/5' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
             )}
           >
-            <ChevronDown size={14} className="rotate-90" />
+            <ChevronDown size={16} className="rotate-90" />
             Back
           </button>
-          <span className={cn('text-[12px] font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+          <span className={cn('text-[13px] font-medium text-center', isDark ? 'text-white' : 'text-gray-900')}>
             Bridge
           </span>
           <button
             onClick={onClose}
             className={cn(
-              'p-1.5 rounded-lg transition-colors',
+              'p-2 rounded-xl transition-colors',
               isDark
                 ? 'hover:bg-white/5 text-white/40 hover:text-white/60'
                 : 'hover:bg-gray-100 text-gray-400 hover:text-gray-600'
             )}
           >
-            <XIcon size={14} />
+            <XIcon size={16} />
           </button>
         </div>
 
-        <div className="p-4 space-y-3">
+        <div className="p-4 space-y-4">
           {bridgeData ? (
             // Bridge created - show deposit address
-            <div className="space-y-3">
-              <div className="flex items-center justify-center gap-2">
-                <div className="w-6 h-6 rounded-full bg-emerald-500/15 flex items-center justify-center">
-                  <Check size={14} className="text-emerald-500" />
+            <div className="space-y-4">
+              <div className="flex items-center justify-center gap-2.5 py-2">
+                <div className="w-8 h-8 rounded-full bg-emerald-500/15 flex items-center justify-center">
+                  <Check size={16} className="text-emerald-500" />
                 </div>
                 <span
-                  className={cn('text-[12px] font-medium', isDark ? 'text-white' : 'text-gray-900')}
+                  className={cn('text-[13px] font-medium', isDark ? 'text-white' : 'text-gray-900')}
                 >
                   Exchange Created
                 </span>
@@ -990,26 +1035,26 @@ const WalletContent = ({
 
               <div
                 className={cn(
-                  'rounded-xl border p-3',
-                  isDark ? 'border-white/[0.08] bg-white/[0.02]' : 'border-gray-200 bg-gray-50'
+                  'rounded-xl border p-4',
+                  isDark ? 'border-white/[0.06] bg-white/[0.02]' : 'border-gray-100 bg-gray-50'
                 )}
               >
-                <div className="flex items-center gap-2 mb-2">
+                <div className="flex items-center justify-center gap-2.5 mb-3 pb-3 border-b" style={{ borderColor: isDark ? 'rgba(255,255,255,0.06)' : '#e5e7eb' }}>
                   {bridgeData.swapDirection === 'fromXrp' ? (
                     <>
                       <span
-                        className={cn('text-[11px]', isDark ? 'text-white/60' : 'text-gray-600')}
+                        className={cn('text-[12px] font-medium', isDark ? 'text-white/70' : 'text-gray-700')}
                       >
-                        Send {bridgeAmount} XRP
+                        {bridgeAmount} XRP
                       </span>
                       <ArrowLeftRight
-                        size={12}
+                        size={14}
                         className={isDark ? 'text-white/30' : 'text-gray-400'}
                       />
                       {selectedCurrency?.image && (
-                        <img src={selectedCurrency.image} alt="" className="w-4 h-4 rounded-full" />
+                        <img src={selectedCurrency.image} alt="" className="w-5 h-5 rounded-full" />
                       )}
-                      <span className="text-[11px] text-emerald-500 font-medium">
+                      <span className="text-[12px] text-emerald-500 font-medium">
                         ~{bridgeData.expectedAmountTo || estimatedXrp || '?'}{' '}
                         {selectedCurrency?.ticker?.toUpperCase()}
                       </span>
@@ -1017,18 +1062,18 @@ const WalletContent = ({
                   ) : (
                     <>
                       {selectedCurrency?.image && (
-                        <img src={selectedCurrency.image} alt="" className="w-4 h-4 rounded-full" />
+                        <img src={selectedCurrency.image} alt="" className="w-5 h-5 rounded-full" />
                       )}
                       <span
-                        className={cn('text-[11px]', isDark ? 'text-white/60' : 'text-gray-600')}
+                        className={cn('text-[12px] font-medium', isDark ? 'text-white/70' : 'text-gray-700')}
                       >
-                        Send {bridgeAmount} {selectedCurrency?.ticker?.toUpperCase()}
+                        {bridgeAmount} {selectedCurrency?.ticker?.toUpperCase()}
                       </span>
                       <ArrowLeftRight
-                        size={12}
+                        size={14}
                         className={isDark ? 'text-white/30' : 'text-gray-400'}
                       />
-                      <span className="text-[11px] text-emerald-500 font-medium">
+                      <span className="text-[12px] text-emerald-500 font-medium">
                         ~{bridgeData.expectedAmountTo || estimatedXrp || '?'} XRP
                       </span>
                     </>
@@ -1037,22 +1082,22 @@ const WalletContent = ({
 
                 <p
                   className={cn(
-                    'text-[9px] uppercase tracking-wide mb-1',
-                    isDark ? 'text-white/30' : 'text-gray-400'
+                    'text-[10px] uppercase tracking-wide mb-2',
+                    isDark ? 'text-white/40' : 'text-gray-500'
                   )}
                 >
                   Deposit Address
                 </p>
                 <div
                   className={cn(
-                    'rounded-lg border p-2',
-                    isDark ? 'border-white/10 bg-black/30' : 'border-gray-200 bg-white'
+                    'rounded-xl border p-3',
+                    isDark ? 'border-white/[0.08] bg-black/30' : 'border-gray-200 bg-white'
                   )}
                 >
-                  <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center justify-between gap-3">
                     <code
                       className={cn(
-                        'text-[10px] font-mono break-all flex-1',
+                        'text-[11px] font-mono break-all flex-1 leading-relaxed',
                         isDark ? 'text-white/90' : 'text-gray-900'
                       )}
                     >
@@ -1065,7 +1110,7 @@ const WalletContent = ({
                         setTimeout(() => setBridgeAddressCopied(false), 2000);
                       }}
                       className={cn(
-                        'flex-shrink-0 p-1.5 rounded-lg transition-colors',
+                        'flex-shrink-0 p-2 rounded-xl transition-colors',
                         bridgeAddressCopied
                           ? 'bg-emerald-500/15 text-emerald-500'
                           : isDark
@@ -1073,39 +1118,43 @@ const WalletContent = ({
                             : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                       )}
                     >
-                      {bridgeAddressCopied ? <Check size={12} /> : <Copy size={12} />}
+                      {bridgeAddressCopied ? <Check size={14} /> : <Copy size={14} />}
                     </button>
                   </div>
                 </div>
               </div>
 
-              <button
-                onClick={() => window.open(`/bridge/${bridgeData.id}`, '_blank')}
-                className="w-full py-2.5 rounded-lg text-[12px] font-medium bg-primary text-white hover:bg-primary/90 flex items-center justify-center gap-2"
-              >
-                <ExternalLink size={14} />
-                Track Exchange
-              </button>
-              <button
-                onClick={() => {
-                  setShowBridgeInDropdown(false);
-                  setBridgeData(null);
-                }}
-                className={cn(
-                  'w-full py-2 rounded-lg text-[11px] transition-all',
-                  isDark ? 'text-white/50 hover:text-white/70' : 'text-gray-500 hover:text-gray-700'
-                )}
-              >
-                Done
-              </button>
+              <div className="space-y-2">
+                <button
+                  onClick={() => window.open(`/bridge/${bridgeData.id}`, '_blank')}
+                  className="w-full py-3 rounded-xl text-[13px] font-medium bg-primary text-white hover:bg-primary/90 flex items-center justify-center gap-2 transition-all"
+                >
+                  <ExternalLink size={16} />
+                  Track Exchange
+                </button>
+                <button
+                  onClick={() => {
+                    setShowBridgeInDropdown(false);
+                    setBridgeData(null);
+                  }}
+                  className={cn(
+                    'w-full py-2.5 rounded-xl text-[12px] font-medium transition-all',
+                    isDark ? 'text-white/50 hover:text-white/70 hover:bg-white/5' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+                  )}
+                >
+                  Done
+                </button>
+              </div>
             </div>
           ) : (
             // Bridge form
             <>
-              {/* Direction Toggle */}
+              {/* Direction Toggle - symmetric tabs */}
               <div
-                className="flex gap-1 p-1 rounded-lg"
-                style={{ background: isDark ? 'rgba(255,255,255,0.03)' : '#f3f4f6' }}
+                className={cn(
+                  'flex gap-1 p-1.5 rounded-xl',
+                  isDark ? 'bg-white/[0.03]' : 'bg-gray-100'
+                )}
               >
                 <button
                   onClick={() => {
@@ -1114,9 +1163,9 @@ const WalletContent = ({
                     setDestAddress('');
                   }}
                   className={cn(
-                    'flex-1 py-1.5 rounded-md text-[11px] font-medium transition-all',
+                    'flex-1 py-2 rounded-lg text-[12px] font-medium transition-all',
                     swapDirection === 'toXrp'
-                      ? 'bg-primary text-white'
+                      ? 'bg-primary text-white shadow-sm'
                       : isDark
                         ? 'text-white/50 hover:text-white/70'
                         : 'text-gray-500 hover:text-gray-700'
@@ -1131,9 +1180,9 @@ const WalletContent = ({
                     setDestAddress('');
                   }}
                   className={cn(
-                    'flex-1 py-1.5 rounded-md text-[11px] font-medium transition-all',
+                    'flex-1 py-2 rounded-lg text-[12px] font-medium transition-all',
                     swapDirection === 'fromXrp'
-                      ? 'bg-primary text-white'
+                      ? 'bg-primary text-white shadow-sm'
                       : isDark
                         ? 'text-white/50 hover:text-white/70'
                         : 'text-gray-500 hover:text-gray-700'
@@ -1143,25 +1192,25 @@ const WalletContent = ({
                 </button>
               </div>
 
-              {/* Currency Selector */}
+              {/* Currency Selector - symmetric card */}
               <div className="relative">
                 <button
                   onClick={() => setShowCurrencyDropdown(!showCurrencyDropdown)}
                   className={cn(
-                    'w-full flex items-center justify-between p-3 rounded-lg border transition-colors',
+                    'w-full flex items-center justify-between p-3.5 rounded-xl border transition-all',
                     isDark
-                      ? 'border-white/[0.08] bg-white/[0.02] hover:border-white/15'
-                      : 'border-gray-200 bg-gray-50 hover:border-gray-300'
+                      ? 'border-white/[0.06] bg-white/[0.02] hover:border-white/[0.12]'
+                      : 'border-gray-100 bg-gray-50 hover:border-gray-200'
                   )}
                 >
                   {selectedCurrency ? (
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2.5">
                       {selectedCurrency.image && (
-                        <img src={selectedCurrency.image} alt="" className="w-5 h-5 rounded-full" />
+                        <img src={selectedCurrency.image} alt="" className="w-6 h-6 rounded-full" />
                       )}
                       <span
                         className={cn(
-                          'text-[13px] font-medium',
+                          'text-[14px] font-medium',
                           isDark ? 'text-white' : 'text-gray-900'
                         )}
                       >
@@ -1169,13 +1218,14 @@ const WalletContent = ({
                       </span>
                     </div>
                   ) : (
-                    <span className={cn('text-[13px]', isDark ? 'text-white/40' : 'text-gray-400')}>
+                    <span className={cn('text-[14px]', isDark ? 'text-white/40' : 'text-gray-400')}>
                       {currencies.length ? 'Select currency' : 'Loading...'}
                     </span>
                   )}
                   <ChevronDown
-                    size={16}
+                    size={18}
                     className={cn(
+                      'transition-transform duration-200',
                       isDark ? 'text-white/40' : 'text-gray-400',
                       showCurrencyDropdown && 'rotate-180'
                     )}
@@ -1267,18 +1317,18 @@ const WalletContent = ({
                 )}
               </div>
 
-              {/* Destination Address (for selling XRP) */}
+              {/* Destination Address (for selling XRP) - symmetric card */}
               {swapDirection === 'fromXrp' && (
                 <div
                   className={cn(
-                    'rounded-lg border p-3',
+                    'rounded-xl border p-4',
                     isDark ? 'border-white/[0.06] bg-white/[0.02]' : 'border-gray-100 bg-gray-50'
                   )}
                 >
                   <label
                     className={cn(
-                      'text-[10px] uppercase tracking-wide',
-                      isDark ? 'text-white/30' : 'text-gray-400'
+                      'text-[10px] uppercase tracking-wide font-medium',
+                      isDark ? 'text-white/40' : 'text-gray-500'
                     )}
                   >
                     {selectedCurrency?.ticker?.toUpperCase() || 'Destination'} Address
@@ -1289,7 +1339,7 @@ const WalletContent = ({
                     onChange={(e) => setDestAddress(e.target.value)}
                     placeholder={`Your ${selectedCurrency?.ticker?.toUpperCase() || ''} address`}
                     className={cn(
-                      'w-full mt-1 bg-transparent text-[13px] outline-none',
+                      'w-full mt-2 bg-transparent text-[14px] outline-none',
                       isDark
                         ? 'text-white placeholder:text-white/20'
                         : 'text-gray-900 placeholder:text-gray-300'
@@ -1298,22 +1348,22 @@ const WalletContent = ({
                 </div>
               )}
 
-              {/* Amount */}
+              {/* Amount - symmetric card */}
               <div
                 className={cn(
-                  'rounded-lg border p-3',
+                  'rounded-xl border p-4',
                   isDark ? 'border-white/[0.06] bg-white/[0.02]' : 'border-gray-100 bg-gray-50'
                 )}
               >
                 <label
                   className={cn(
-                    'text-[10px] uppercase tracking-wide',
-                    isDark ? 'text-white/30' : 'text-gray-400'
+                    'text-[10px] uppercase tracking-wide font-medium',
+                    isDark ? 'text-white/40' : 'text-gray-500'
                   )}
                 >
                   Amount
                 </label>
-                <div className="flex items-center gap-2 mt-1">
+                <div className="flex items-center gap-3 mt-2">
                   <input
                     type="number"
                     value={bridgeAmount}
@@ -1322,7 +1372,7 @@ const WalletContent = ({
                     step="0.0001"
                     min="0"
                     className={cn(
-                      'flex-1 bg-transparent text-[18px] font-medium outline-none',
+                      'flex-1 bg-transparent text-[20px] font-semibold outline-none',
                       isDark
                         ? 'text-white placeholder:text-white/20'
                         : 'text-gray-900 placeholder:text-gray-300'
@@ -1330,8 +1380,8 @@ const WalletContent = ({
                   />
                   <span
                     className={cn(
-                      'text-[13px] font-medium',
-                      isDark ? 'text-white/50' : 'text-gray-500'
+                      'text-[14px] font-medium px-3 py-1.5 rounded-lg',
+                      isDark ? 'text-white/60 bg-white/[0.05]' : 'text-gray-600 bg-gray-100'
                     )}
                   >
                     {swapDirection === 'toXrp'
@@ -1341,13 +1391,13 @@ const WalletContent = ({
                 </div>
                 {estimatedXrp && (
                   <div
-                    className="flex items-center justify-between mt-2 pt-2 border-t"
+                    className="flex items-center justify-between mt-3 pt-3 border-t"
                     style={{ borderColor: isDark ? 'rgba(255,255,255,0.06)' : '#e5e7eb' }}
                   >
-                    <span className={cn('text-[10px]', isDark ? 'text-white/40' : 'text-gray-400')}>
+                    <span className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-gray-500')}>
                       You'll receive
                     </span>
-                    <span className="text-[13px] font-medium text-emerald-500">
+                    <span className="text-[14px] font-semibold text-emerald-500">
                       ~{estimatedXrp}{' '}
                       {swapDirection === 'toXrp' ? 'XRP' : selectedCurrency?.ticker?.toUpperCase()}
                     </span>
@@ -1356,7 +1406,7 @@ const WalletContent = ({
               </div>
 
               {bridgeError && (
-                <div className="p-2 rounded-lg text-[11px] bg-red-500/10 text-red-400 border border-red-500/20">
+                <div className="p-3 rounded-xl text-[12px] bg-red-500/10 text-red-400 border border-red-500/20">
                   {bridgeError}
                 </div>
               )}
@@ -1371,22 +1421,23 @@ const WalletContent = ({
                   (swapDirection === 'fromXrp' && !destAddress)
                 }
                 className={cn(
-                  'w-full py-2.5 rounded-lg text-[12px] font-medium transition-all flex items-center justify-center gap-2',
+                  'w-full py-3 rounded-xl text-[13px] font-medium transition-all flex items-center justify-center gap-2',
                   bridgeAmount &&
                     selectedCurrency &&
                     estimatedXrp &&
                     (swapDirection === 'toXrp' || destAddress)
                     ? 'bg-primary text-white hover:bg-primary/90'
                     : isDark
-                      ? 'bg-white/5 text-white/30 cursor-not-allowed'
+                      ? 'bg-white/[0.05] text-white/30 cursor-not-allowed'
                       : 'bg-gray-100 text-gray-400 cursor-not-allowed'
                 )}
               >
                 {bridgeLoading ? (
-                  <Loader2 size={14} className="animate-spin" />
+                  <Loader2 size={16} className="animate-spin" />
                 ) : (
                   <>
-                    <ArrowLeftRight size={14} /> Create Exchange
+                    <ArrowLeftRight size={16} />
+                    Create Exchange
                   </>
                 )}
               </button>
@@ -1399,106 +1450,110 @@ const WalletContent = ({
 
   return (
     <div className={isDark ? 'text-white' : 'text-gray-900'}>
-      {/* Header */}
+      {/* Header - symmetric layout */}
       <div
         className={cn(
-          'px-4 py-2.5 flex items-center justify-between',
+          'px-4 py-3 flex items-center justify-between',
           isDark ? 'border-b border-white/[0.06]' : 'border-b border-gray-100'
         )}
       >
         <button
           onClick={handleCopyAddress}
           className={cn(
-            'flex items-center gap-2 px-2 py-1 -ml-2 rounded-lg transition-all',
+            'flex items-center gap-2.5 px-2.5 py-1.5 -ml-2.5 rounded-xl transition-all',
             addressCopied ? 'bg-emerald-500/10' : isDark ? 'hover:bg-white/5' : 'hover:bg-gray-100'
           )}
         >
-          <div className="relative">
+          <div className="relative flex-shrink-0">
             <div
               className={cn(
-                'w-2 h-2 rounded-full',
+                'w-2.5 h-2.5 rounded-full',
                 accountsActivation[accountLogin] === false && !parseFloat(accountBalance?.curr1?.value) ? 'bg-amber-400/60' : 'bg-emerald-400'
               )}
             />
             {!addressCopied && !(accountsActivation[accountLogin] === false && !parseFloat(accountBalance?.curr1?.value)) && (
-              <div className="absolute inset-0 w-2 h-2 rounded-full bg-emerald-400 animate-ping opacity-75" />
+              <div className="absolute inset-0 w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping opacity-75" />
             )}
           </div>
           <span
             className={cn(
-              'font-mono text-xs',
-              addressCopied ? 'text-emerald-500' : isDark ? 'text-white/60' : 'text-gray-500'
+              'font-mono text-[13px] tracking-tight',
+              addressCopied ? 'text-emerald-500' : isDark ? 'text-white/70' : 'text-gray-600'
             )}
           >
             {truncateAccount(accountLogin, 6)}
           </span>
           {addressCopied ? (
-            <Check size={12} className="text-emerald-500" />
+            <Check size={14} className="text-emerald-500" />
           ) : (
-            <Copy size={12} className={isDark ? 'text-white/40' : 'text-gray-400'} />
+            <Copy size={14} className={isDark ? 'text-white/40' : 'text-gray-400'} />
           )}
         </button>
         <button
           onClick={onClose}
           className={cn(
-            'p-1.5 rounded-lg transition-colors',
+            'p-2 rounded-xl transition-colors',
             isDark
               ? 'hover:bg-white/5 text-white/40 hover:text-white/60'
               : 'hover:bg-gray-100 text-gray-400 hover:text-gray-600'
           )}
         >
-          <XIcon size={14} />
+          <XIcon size={16} />
         </button>
       </div>
 
-      {/* Balance - clickable to view full wallet */}
+      {/* Balance - symmetric card layout */}
       <Link
         href="/wallet"
         className={cn(
-          'block px-4 pt-4 pb-3 -mx-0 rounded-lg transition-colors',
-          isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-gray-50'
+          'block mx-4 mt-4 mb-3 p-4 rounded-xl transition-all',
+          isDark
+            ? 'bg-white/[0.02] hover:bg-white/[0.04] border border-white/[0.06]'
+            : 'bg-gray-50 hover:bg-gray-100 border border-gray-100'
         )}
       >
-        <div className="flex items-baseline gap-1.5 mb-0.5">
-          <span className="font-mono text-2xl font-semibold tracking-tight">
-            {accountBalance ? (accountBalance.curr1?.value || '0') : '...'}
-          </span>
-          <span className={cn('text-sm', isDark ? 'text-white/40' : 'text-gray-400')}>XRP</span>
+        <div className="flex items-center justify-between mb-1">
+          <div className="flex items-baseline gap-2">
+            <span className="font-mono text-[28px] font-semibold tracking-tight leading-none">
+              {accountBalance ? formatXrpBalance(accountBalance.curr1?.value) : '...'}
+            </span>
+            <span className={cn('text-sm font-medium', isDark ? 'text-white/40' : 'text-gray-400')}>XRP</span>
+          </div>
           <ChevronRight
-            size={14}
-            className={cn('ml-auto', isDark ? 'text-white/20' : 'text-gray-300')}
+            size={16}
+            className={cn(isDark ? 'text-white/20' : 'text-gray-300')}
           />
         </div>
-        <div className={cn('text-[11px]', isDark ? 'text-white/35' : 'text-gray-400')}>
+        <div className={cn('text-[12px]', isDark ? 'text-white/40' : 'text-gray-500')}>
           {accountBalance
-            ? `${accountTotalXrp || Number(accountBalance.curr1?.value || 0) + Number(accountBalance.curr2?.value || 0) || '0'} total · ${accountBalance.curr2?.value || '0'} reserved`
+            ? `${formatXrpBalance(accountTotalXrp || Number(accountBalance.curr1?.value || 0) + Number(accountBalance.curr2?.value || 0))} total · ${formatXrpBalance(accountBalance.curr2?.value)} reserved`
             : 'Loading...'}
         </div>
       </Link>
 
-      {/* Actions */}
-      <div className="px-4 pb-3">
-        <div className="grid grid-cols-3 gap-2">
+      {/* Actions - symmetric 3-column grid */}
+      <div className="px-4 pb-4">
+        <div className="grid grid-cols-3 gap-2.5">
           <a
             href="/wallet?tab=send"
             className={cn(
-              'flex flex-col items-center gap-1.5 py-2.5 rounded-xl text-[11px] font-medium transition-all',
-              'bg-blue-500 hover:bg-blue-600 text-white'
+              'flex flex-col items-center justify-center gap-2 py-3 rounded-xl text-[12px] font-medium transition-all',
+              'bg-primary hover:bg-primary/90 text-white'
             )}
           >
-            <ArrowUpRight size={16} />
+            <ArrowUpRight size={18} />
             Send
           </a>
           <a
             href="/wallet?tab=receive"
             className={cn(
-              'flex flex-col items-center gap-1.5 py-2.5 rounded-xl text-[11px] font-medium transition-all',
+              'flex flex-col items-center justify-center gap-2 py-3 rounded-xl text-[12px] font-medium transition-all',
               isDark
-                ? 'bg-white/[0.04] hover:bg-white/[0.07] text-white/70'
-                : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                ? 'bg-white/[0.04] hover:bg-white/[0.07] text-white/80 border border-white/[0.06]'
+                : 'bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-100'
             )}
           >
-            <ArrowDownLeft size={16} className={isDark ? 'text-emerald-400' : 'text-emerald-500'} />
+            <ArrowDownLeft size={18} className={isDark ? 'text-emerald-400' : 'text-emerald-500'} />
             Receive
           </a>
           <button
@@ -1507,19 +1562,19 @@ const WalletContent = ({
               setShowBridgeInDropdown(true);
             }}
             className={cn(
-              'flex flex-col items-center gap-1.5 py-2.5 rounded-xl text-[11px] font-medium transition-all',
+              'flex flex-col items-center justify-center gap-2 py-3 rounded-xl text-[12px] font-medium transition-all',
               isDark
-                ? 'bg-white/[0.04] hover:bg-white/[0.07] text-white/70'
-                : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                ? 'bg-white/[0.04] hover:bg-white/[0.07] text-white/80 border border-white/[0.06]'
+                : 'bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-100'
             )}
           >
-            <ArrowLeftRight size={16} className="text-emerald-400" />
+            <ArrowLeftRight size={18} className={isDark ? 'text-purple-400' : 'text-purple-500'} />
             Bridge
           </button>
         </div>
       </div>
 
-      {/* Accounts */}
+      {/* Accounts - symmetric expandable section */}
       <div
         className={cn(
           'mx-4 mb-3 rounded-xl overflow-hidden',
@@ -1531,29 +1586,29 @@ const WalletContent = ({
         <button
           onClick={() => setShowAllAccounts(!showAllAccounts)}
           className={cn(
-            'w-full px-3 py-2 flex items-center justify-between',
+            'w-full px-4 py-3 flex items-center justify-between',
             isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-gray-100/50'
           )}
         >
-          <span
-            className={cn('text-[11px] font-medium', isDark ? 'text-white/60' : 'text-gray-600')}
-          >
-            Accounts{' '}
+          <div className="flex items-center gap-2">
+            <span className={cn('text-[12px] font-medium', isDark ? 'text-white/70' : 'text-gray-700')}>
+              Accounts
+            </span>
             <span
               className={cn(
-                'ml-1 px-1.5 py-0.5 rounded text-[9px]',
-                isDark ? 'bg-white/[0.06] text-white/40' : 'bg-gray-200 text-gray-500'
+                'px-2 py-0.5 rounded-full text-[10px] font-medium',
+                isDark ? 'bg-white/[0.08] text-white/50' : 'bg-gray-200 text-gray-600'
               )}
             >
               {profiles.length}
             </span>
-          </span>
+          </div>
           <ChevronDown
-            size={14}
+            size={16}
             className={cn(
-              'transition-transform',
+              'transition-transform duration-200',
               showAllAccounts && 'rotate-180',
-              isDark ? 'text-white/30' : 'text-gray-400'
+              isDark ? 'text-white/40' : 'text-gray-400'
             )}
           />
         </button>
@@ -1561,8 +1616,8 @@ const WalletContent = ({
         {showAllAccounts && (
           <div
             className={cn(
-              'border-t max-h-[180px] overflow-y-auto',
-              isDark ? 'border-white/[0.08]' : 'border-gray-100'
+              'border-t max-h-[200px] overflow-y-auto',
+              isDark ? 'border-white/[0.06]' : 'border-gray-100'
             )}
           >
             {(() => {
@@ -1578,42 +1633,42 @@ const WalletContent = ({
                     key={profile.account}
                     onClick={() => !isCurrent && onAccountSwitch(profile.account)}
                     className={cn(
-                      'w-full px-3 py-2 flex items-center gap-2 text-left transition-all',
+                      'w-full px-4 py-2.5 flex items-center gap-3 text-left transition-all',
                       isCurrent
                         ? isDark
                           ? 'bg-primary/10'
                           : 'bg-primary/5'
                         : isDark
-                          ? 'hover:bg-white/[0.02]'
+                          ? 'hover:bg-white/[0.03]'
                           : 'hover:bg-gray-100/50'
                     )}
                   >
                     <div
                       className={cn(
-                        'w-1.5 h-1.5 rounded-full',
+                        'w-2 h-2 rounded-full flex-shrink-0',
                         isInactive ? 'bg-amber-400/60' : 'bg-emerald-400'
                       )}
                     />
                     <span
                       className={cn(
-                        'font-mono text-[11px] flex-1',
+                        'font-mono text-[12px] flex-1',
                         isCurrent
                           ? isDark
                             ? 'text-white'
                             : 'text-gray-900'
                           : isDark
-                            ? 'text-white/50'
-                            : 'text-gray-500'
+                            ? 'text-white/60'
+                            : 'text-gray-600'
                       )}
                     >
                       {truncateAccount(profile.account, 8)}
                     </span>
                     {isCurrent && !isInactive && (
-                      <span className="text-[9px] font-medium text-emerald-500">Active</span>
+                      <span className="text-[10px] font-medium text-emerald-500 px-2 py-0.5 rounded-full bg-emerald-500/10">Active</span>
                     )}
                     {isInactive && (
                       <span
-                        className="text-[9px] font-medium text-amber-400"
+                        className="text-[10px] font-medium text-amber-500 px-2 py-0.5 rounded-full bg-amber-500/10"
                         title="Fund with 1 XRP to activate"
                       >
                         Inactive
@@ -1627,7 +1682,7 @@ const WalletContent = ({
         )}
       </div>
 
-      {/* Settings Panel */}
+      {/* Settings Panel - symmetric layout */}
       {showSettings && (
         <div
           className={cn(
@@ -1639,26 +1694,26 @@ const WalletContent = ({
         >
           <div
             className={cn(
-              'px-3 py-2 flex items-center justify-between border-b',
-              isDark ? 'border-white/[0.08]' : 'border-gray-100'
+              'px-4 py-3 flex items-center justify-between border-b',
+              isDark ? 'border-white/[0.06]' : 'border-gray-100'
             )}
           >
             <span
-              className={cn('text-[11px] font-medium', isDark ? 'text-white/60' : 'text-gray-600')}
+              className={cn('text-[12px] font-medium', isDark ? 'text-white/70' : 'text-gray-700')}
             >
               Manage Accounts
             </span>
             <button
               onClick={() => setShowSettings(false)}
               className={cn(
-                'p-0.5 rounded',
-                isDark ? 'text-white/30 hover:text-white/50' : 'text-gray-400 hover:text-gray-600'
+                'p-1.5 rounded-lg transition-colors',
+                isDark ? 'text-white/40 hover:text-white/60 hover:bg-white/5' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
               )}
             >
-              <XIcon size={12} />
+              <XIcon size={14} />
             </button>
           </div>
-          <div className="max-h-[160px] overflow-y-auto">
+          <div className="max-h-[180px] overflow-y-auto">
             {profiles.map((profile) => {
               const isCurrent = profile.account === accountLogin;
               const isInactiveAccount = accountsActivation[profile.account] === false && !(isCurrent && parseFloat(accountBalance?.curr1?.value));
@@ -1666,86 +1721,88 @@ const WalletContent = ({
                 <div
                   key={profile.account}
                   className={cn(
-                    'px-3 py-2 flex items-center gap-2',
+                    'px-4 py-3 flex items-center gap-3',
                     isDark
-                      ? 'border-b border-white/[0.08] last:border-0'
+                      ? 'border-b border-white/[0.06] last:border-0'
                       : 'border-b border-gray-100 last:border-0'
                   )}
                 >
                   <span
                     className={cn(
-                      'font-mono text-[10px] flex-1',
-                      isDark ? 'text-white/50' : 'text-gray-500'
+                      'font-mono text-[11px] flex-1',
+                      isDark ? 'text-white/60' : 'text-gray-600'
                     )}
                   >
                     {truncateAccount(profile.account, 6)}
                   </span>
                   {isInactiveAccount && (
                     <span
-                      className="text-[8px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400"
+                      className="text-[9px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-500 font-medium"
                       title="Fund with 1 XRP to activate"
                     >
                       Inactive
                     </span>
                   )}
                   {isCurrent && !isInactiveAccount && (
-                    <span className="text-[8px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-500">
+                    <span className="text-[9px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 font-medium">
                       Active
                     </span>
                   )}
-                  <button
-                    onClick={() => {
-                      onBackupSeed(profile, true);
-                      setShowSettings(false);
-                    }}
-                    className={cn(
-                      'p-1.5 rounded transition-colors',
-                      isDark
-                        ? 'text-amber-500/60 hover:text-amber-400 hover:bg-amber-500/10'
-                        : 'text-amber-500 hover:text-amber-600 hover:bg-amber-50'
-                    )}
-                    title="Backup seed"
-                  >
-                    <Shield size={12} />
-                  </button>
-                  {deleteConfirm === profile.account ? (
-                    <div className="flex items-center gap-1">
-                      <button
-                        onClick={() => {
-                          onRemoveProfile(profile.account);
-                          setDeleteConfirm(null);
-                        }}
-                        className="px-1.5 py-0.5 rounded text-[9px] font-medium bg-red-500 text-white"
-                      >
-                        Yes
-                      </button>
-                      <button
-                        onClick={() => setDeleteConfirm(null)}
-                        className={cn(
-                          'px-1.5 py-0.5 rounded text-[9px] font-medium',
-                          isDark ? 'bg-white/10 text-white/60' : 'bg-gray-200 text-gray-600'
-                        )}
-                      >
-                        No
-                      </button>
-                    </div>
-                  ) : (
+                  <div className="flex items-center gap-1">
                     <button
-                      onClick={() => !isCurrent && setDeleteConfirm(profile.account)}
-                      disabled={isCurrent}
+                      onClick={() => {
+                        onBackupSeed(profile, true);
+                        setShowSettings(false);
+                      }}
                       className={cn(
-                        'p-1.5 rounded transition-colors',
-                        isCurrent
-                          ? 'opacity-30 cursor-not-allowed'
-                          : isDark
-                            ? 'text-white/30 hover:text-red-400 hover:bg-red-500/10'
-                            : 'text-gray-400 hover:text-red-500 hover:bg-red-50'
+                        'p-2 rounded-lg transition-colors',
+                        isDark
+                          ? 'text-amber-500/70 hover:text-amber-400 hover:bg-amber-500/10'
+                          : 'text-amber-500 hover:text-amber-600 hover:bg-amber-50'
                       )}
-                      title="Delete account"
+                      title="Backup seed"
                     >
-                      <Trash2 size={12} />
+                      <Shield size={14} />
                     </button>
-                  )}
+                    {deleteConfirm === profile.account ? (
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => {
+                            onRemoveProfile(profile.account);
+                            setDeleteConfirm(null);
+                          }}
+                          className="px-2.5 py-1 rounded-lg text-[10px] font-medium bg-red-500 text-white"
+                        >
+                          Yes
+                        </button>
+                        <button
+                          onClick={() => setDeleteConfirm(null)}
+                          className={cn(
+                            'px-2.5 py-1 rounded-lg text-[10px] font-medium',
+                            isDark ? 'bg-white/10 text-white/60' : 'bg-gray-200 text-gray-600'
+                          )}
+                        >
+                          No
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => !isCurrent && setDeleteConfirm(profile.account)}
+                        disabled={isCurrent}
+                        className={cn(
+                          'p-2 rounded-lg transition-colors',
+                          isCurrent
+                            ? 'opacity-30 cursor-not-allowed'
+                            : isDark
+                              ? 'text-white/40 hover:text-red-400 hover:bg-red-500/10'
+                              : 'text-gray-400 hover:text-red-500 hover:bg-red-50'
+                        )}
+                        title="Delete account"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    )}
+                  </div>
                 </div>
               );
             })}
@@ -1756,21 +1813,61 @@ const WalletContent = ({
               setShowSettings(false);
             }}
             className={cn(
-              'w-full px-3 py-2.5 flex items-center justify-center gap-2 text-[11px] font-medium border-t transition-colors',
+              'w-full px-4 py-3 flex items-center justify-center gap-2 text-[12px] font-medium border-t transition-all',
               isDark
-                ? 'border-white/[0.08] text-amber-500 hover:bg-amber-500/10'
+                ? 'border-white/[0.06] text-amber-500 hover:bg-amber-500/10'
                 : 'border-gray-100 text-amber-600 hover:bg-amber-50'
             )}
           >
-            <Download size={14} /> Download Encrypted Backup
+            <Download size={16} />
+            Download Encrypted Backup
           </button>
+
+          {/* QR Sync - Transfer wallet between devices */}
+          <div className={cn('px-4 py-3 border-t', isDark ? 'border-white/[0.06]' : 'border-gray-100')}>
+            <p className={cn('text-[11px] mb-2 text-center', isDark ? 'text-white/40' : 'text-gray-400')}>
+              Transfer to another device
+            </p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  setShowSettings(false);
+                  onQrSyncExport?.();
+                }}
+                className={cn(
+                  'flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-[11px] font-medium transition-all',
+                  isDark
+                    ? 'bg-white/[0.05] text-white/70 hover:bg-white/[0.08] hover:text-white'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-900'
+                )}
+              >
+                <QrCode size={14} />
+                Export QR
+              </button>
+              <button
+                onClick={() => {
+                  setShowSettings(false);
+                  onQrSyncImport?.();
+                }}
+                className={cn(
+                  'flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-[11px] font-medium transition-all',
+                  isDark
+                    ? 'bg-white/[0.05] text-white/70 hover:bg-white/[0.08] hover:text-white'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-900'
+                )}
+              >
+                <Download size={14} />
+                Import QR
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
-      {/* Footer */}
+      {/* Footer - symmetric 3-column actions */}
       <div
         className={cn(
-          'px-4 py-2.5 grid grid-cols-3 gap-2 border-t',
+          'px-4 py-3 grid grid-cols-3 gap-2 border-t',
           isDark ? 'border-white/[0.06]' : 'border-gray-100'
         )}
       >
@@ -1778,38 +1875,41 @@ const WalletContent = ({
           onClick={onCreateNewAccount}
           disabled={!onCreateNewAccount || profiles.length >= 25}
           className={cn(
-            'flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[11px] font-medium transition-colors',
+            'flex items-center justify-center gap-2 py-2.5 rounded-xl text-[12px] font-medium transition-all',
             !onCreateNewAccount || profiles.length >= 25 ? 'opacity-30 cursor-not-allowed' : '',
             isDark
-              ? 'text-white/50 hover:text-white hover:bg-white/5'
-              : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+              ? 'text-white/60 hover:text-white hover:bg-white/[0.05]'
+              : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
           )}
         >
-          <Plus size={14} /> Add
+          <Plus size={16} />
+          <span>Add</span>
         </button>
         <button
           onClick={() => setShowSettings(!showSettings)}
           className={cn(
-            'flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[11px] font-medium transition-colors',
+            'flex items-center justify-center gap-2 py-2.5 rounded-xl text-[12px] font-medium transition-all',
             showSettings
               ? 'text-primary bg-primary/10'
               : isDark
-                ? 'text-white/50 hover:text-white hover:bg-white/5'
-                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+                ? 'text-white/60 hover:text-white hover:bg-white/[0.05]'
+                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
           )}
         >
-          <Settings size={14} /> Settings
+          <Settings size={16} />
+          <span>Manage</span>
         </button>
         <button
           onClick={onLogout}
           className={cn(
-            'flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[11px] font-medium transition-colors',
+            'flex items-center justify-center gap-2 py-2.5 rounded-xl text-[12px] font-medium transition-all',
             isDark
-              ? 'text-white/50 hover:text-red-400 hover:bg-red-500/10'
-              : 'text-gray-500 hover:text-red-500 hover:bg-red-50'
+              ? 'text-white/60 hover:text-red-400 hover:bg-red-500/10'
+              : 'text-gray-600 hover:text-red-500 hover:bg-red-50'
           )}
         >
-          <XIcon size={14} /> Logout
+          <XIcon size={16} />
+          <span>Logout</span>
         </button>
       </div>
     </div>
@@ -1884,8 +1984,9 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       });
 
       // Store in localStorage (profiles array for UI state management)
+      // Strip seeds — seeds only live in IndexedDB (encrypted) and React state (memory)
       if (typeof window !== 'undefined') {
-        localStorage.setItem('profiles', JSON.stringify(uniqueProfiles));
+        localStorage.setItem('profiles', JSON.stringify(uniqueProfiles.map(({ seed, ...safe }) => safe)));
       }
       // Note: Individual wallets are already encrypted in IndexedDB via storeWallet()
     } catch (error) {
@@ -1919,6 +2020,21 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   const [backupPassword, setBackupPassword] = useState('');
   const [showBackupPasswordVisible, setShowBackupPasswordVisible] = useState(false);
   const [backupAgreed, setBackupAgreed] = useState(false);
+
+  // QR Sync state (transfer wallet between devices)
+  const [qrSyncMode, setQrSyncMode] = useState(null); // 'export' | 'import'
+  const [qrSyncData, setQrSyncData] = useState('');
+  const [qrSyncPassword, setQrSyncPassword] = useState('');
+  const [showQrSyncPassword, setShowQrSyncPassword] = useState(false);
+  const [qrSyncError, setQrSyncError] = useState('');
+  const [qrSyncLoading, setQrSyncLoading] = useState(false);
+  const [qrSyncExpiry, setQrSyncExpiry] = useState(null);
+  const [qrImportData, setQrImportData] = useState('');
+  const [qrCountdown, setQrCountdown] = useState(0);
+  const [qrScannerActive, setQrScannerActive] = useState(false);
+  const [qrScannerSupported, setQrScannerSupported] = useState(false);
+  const qrVideoRef = useRef(null);
+  const qrStreamRef = useRef(null);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [clearWarningAgreed, setClearWarningAgreed] = useState(false);
   const [clearSliderValue, setClearSliderValue] = useState(0);
@@ -1941,7 +2057,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   const [showCreatePassword, setShowCreatePassword] = useState(false);
   const [createError, setCreateError] = useState('');
   const [isCreating, setIsCreating] = useState(false);
-  const [createMode, setCreateMode] = useState('new'); // 'new' or 'import'
+  const [createMode, setCreateMode] = useState('new'); // 'new' | 'import' | 'qr'
   const [createSeed, setCreateSeed] = useState('');
 
   // Post-creation backup screen state
@@ -1968,6 +2084,34 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   const [showBridgeInDropdown, setShowBridgeInDropdown] = useState(false);
   const [swapDirection, setSwapDirection] = useState('toXrp'); // 'toXrp' or 'fromXrp'
   const [destAddress, setDestAddress] = useState(''); // destination address for fromXrp swaps
+
+  // QR Sync countdown timer
+  useEffect(() => {
+    if (!qrSyncExpiry) {
+      setQrCountdown(0);
+      return;
+    }
+
+    // Initial countdown
+    const remaining = Math.max(0, Math.ceil((qrSyncExpiry - Date.now()) / 1000));
+    setQrCountdown(remaining);
+
+    // Update every second
+    const interval = setInterval(() => {
+      const secs = Math.max(0, Math.ceil((qrSyncExpiry - Date.now()) / 1000));
+      setQrCountdown(secs);
+
+      if (secs <= 0) {
+        clearInterval(interval);
+        setQrSyncData('');
+        setQrSyncExpiry(null);
+        setSeedAuthStatus('select-mode');
+        openSnackbar('QR code expired', 'warning');
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [qrSyncExpiry]);
 
   // Restore wallet modal state from sessionStorage on mount
   // Note: setOpenWalletModal comes from AppContext, so the auto-open effect handles opening the modal
@@ -2009,7 +2153,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
           newWalletData: {
             address: newWalletData.address,
             publicKey: newWalletData.publicKey,
-            seed: newWalletData.seed, // Needed for backup display
+            // seed intentionally omitted — stays in React state only
             createdAt: newWalletData.createdAt
           },
           backupConfirmed,
@@ -2118,11 +2262,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       } else {
         // Other wallets use address lookup
         wallet = await walletStorage.getWallet(profile.address, seedPassword);
-      }
-
-      // Also check if seed exists in profile (for legacy wallets)
-      if (!wallet && profile.seed) {
-        wallet = { seed: profile.seed };
       }
 
       if (wallet && wallet.seed) {
@@ -2626,7 +2765,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       // Auto-register for referral program if referred
       const storedRef = localStorage.getItem('referral_code');
       if (storedRef || true) { // Always register, with or without referral
-        fetch('https://api.xrpl.to/api/referral/register', {
+        apiFetch('https://api.xrpl.to/api/referral/register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ address: wallet.address, ...(storedRef && { referredBy: storedRef }) })
@@ -2662,6 +2801,61 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     }
   };
 
+  // Handle QR import from connect wallet screen
+  const handleQrImportCreate = async () => {
+    if (!qrImportData || !createPassword) return;
+
+    setIsCreating(true);
+    setCreateError('');
+
+    try {
+      // Import wallet from QR data using the password
+      const imported = await walletStorage.importFromQRSync(qrImportData, createPassword);
+
+      // Store the password for future use
+      const deviceKeyId = await deviceFingerprint.getDeviceId();
+      await walletStorage.storeWalletCredential(deviceKeyId, createPassword);
+
+      // Create profile for localStorage
+      const newProfile = {
+        account: imported.address,
+        address: imported.address,
+        publicKey: imported.publicKey,
+        wallet_type: 'imported',
+        importedAt: Date.now(),
+        importedVia: 'qr_sync'
+      };
+
+      // Save to localStorage
+      const existingProfiles = localStorage.getItem('profiles');
+      const currentProfiles = existingProfiles ? JSON.parse(existingProfiles) : [];
+
+      // Check if already exists
+      if (currentProfiles.find((p) => p.account === imported.address)) {
+        throw new Error('Wallet already exists');
+      }
+
+      currentProfiles.push(newProfile);
+      localStorage.setItem('profiles', JSON.stringify(currentProfiles));
+
+      // Set as active
+      setActiveProfile(imported.address);
+      setProfiles(currentProfiles);
+
+      // Reset state
+      setQrImportData('');
+      setCreatePassword('');
+      setCreateMode('new');
+      setOpenWalletModal(false);
+
+      openSnackbar('Wallet imported successfully!', 'success');
+    } catch (error) {
+      setCreateError(error.message || 'Failed to import wallet');
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
   // Complete wallet setup after backup confirmation
   const handleCompleteSetup = () => {
     setShowNewWalletScreen(false);
@@ -2677,7 +2871,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   const fetchCurrencies = useCallback(async () => {
     if (currencies.length > 0) return;
     try {
-      const res = await fetch('https://api.xrpl.to/v1/bridge/currencies');
+      const res = await apiFetch('https://api.xrpl.to/v1/bridge/currencies');
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
 
@@ -2796,7 +2990,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
     const isToXrp = swapDirection === 'toXrp';
     try {
-      const res = await fetch('https://api.xrpl.to/v1/bridge/create', {
+      const res = await apiFetch('https://api.xrpl.to/v1/bridge/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -2843,7 +3037,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
   const checkAccountActivity = useCallback(async (address) => {
     try {
-      const response = await fetch(`https://api.xrpl.to/v1/account/balance/${address}`);
+      const response = await apiFetch(`https://api.xrpl.to/v1/account/balance/${address}`);
       if (!response.ok) return false;
 
       const data = await response.json();
@@ -2859,19 +3053,31 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
   // Removed visibleWalletCount - now showing all accounts by default with search/pagination
 
-  // Check activation status for visible accounts
+  // Check activation status for visible accounts (parallel)
   useEffect(() => {
     if (!profiles?.length) return;
 
     const checkActivations = async () => {
       const start = walletPage * walletsPerPage;
       const visible = profiles.slice(start, start + walletsPerPage);
+      const unchecked = visible.filter(p => accountsActivation[p.account] === undefined);
 
-      for (const profile of visible) {
-        if (accountsActivation[profile.account] !== undefined) continue;
-        const isActive = await checkAccountActivity(profile.account);
-        setAccountsActivation((prev) => ({ ...prev, [profile.account]: isActive }));
-      }
+      if (!unchecked.length) return;
+
+      const results = await Promise.all(
+        unchecked.map(async (profile) => ({
+          account: profile.account,
+          isActive: await checkAccountActivity(profile.account)
+        }))
+      );
+
+      setAccountsActivation((prev) => {
+        const updated = { ...prev };
+        results.forEach(({ account, isActive }) => {
+          updated[account] = isActive;
+        });
+        return updated;
+      });
     };
 
     checkActivations();
@@ -2986,6 +3192,454 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         'error'
       );
       setBackupPassword('');
+    }
+  };
+
+  // QR Sync - Export wallet as QR code
+  const handleQrExport = async () => {
+    const profile = backupTargetProfile || accountProfile;
+    if (!profile || !qrSyncPassword) return;
+
+    setQrSyncLoading(true);
+    setQrSyncError('');
+
+    try {
+      const qrData = await walletStorage.exportForQRSync(
+        profile.account || profile.address,
+        qrSyncPassword
+      );
+
+      setQrSyncData(qrData);
+      setQrSyncExpiry(Date.now() + 300000); // 5 minutes
+      setSeedAuthStatus('qr-sync-display');
+
+    } catch (error) {
+      setQrSyncError(error.message === 'Invalid PIN' ? 'Incorrect password' : error.message);
+    } finally {
+      setQrSyncLoading(false);
+    }
+  };
+
+  // Load jsQR library dynamically
+  const loadJsQR = async () => {
+    // Check if already loaded
+    if (window.jsQR) {
+      return window.jsQR;
+    }
+
+    const url = 'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js';
+
+    try {
+      // Method 1: Try fetch + eval (works on some iOS versions)
+      try {
+        const response = await fetch(url);
+        if (response.ok) {
+          const code = await response.text();
+          // eslint-disable-next-line no-eval
+          eval(code);
+          if (window.jsQR) {
+            console.log('jsQR loaded via fetch+eval');
+            return window.jsQR;
+          }
+        }
+      } catch (fetchErr) {
+        console.log('Fetch method failed, trying script tag');
+      }
+
+      // Method 2: Traditional script tag
+      const existingScript = document.querySelector(`script[src="${url}"]`);
+      if (!existingScript) {
+        await new Promise((resolve, reject) => {
+          const script = document.createElement('script');
+          script.src = url;
+          script.async = true;
+          script.onload = resolve;
+          script.onerror = reject;
+          document.head.appendChild(script);
+        });
+      }
+
+      // Wait for initialization
+      for (let i = 0; i < 20; i++) {
+        if (window.jsQR) {
+          console.log('jsQR loaded via script tag');
+          return window.jsQR;
+        }
+        await new Promise(r => setTimeout(r, 100));
+      }
+
+      console.error('jsQR failed to initialize');
+      return null;
+    } catch (e) {
+      console.error('Failed to load jsQR:', e);
+      return null;
+    }
+  };
+
+
+  // QR Scanner - Direct camera access (simplified for iOS Safari)
+  const startQrScanner = async () => {
+    const setError = (msg) => {
+      setQrSyncError(msg);
+      if (createMode === 'qr') setCreateError(msg);
+    };
+
+    try {
+      setQrScannerSupported(true);
+      setQrSyncError('');
+      setCreateError('');
+      setQrScannerActive(true);
+
+      await new Promise((resolve) => setTimeout(resolve, 150));
+
+      // Find the container
+      const container = document.getElementById('qr-video-container') ||
+                       document.getElementById('qr-video-container-create');
+
+      if (!container) {
+        throw new Error('Video container not found');
+      }
+
+      // Clear container and create video with inline HTML (iOS Safari works better this way)
+      container.innerHTML = `
+        <video
+          id="qr-camera-video"
+          autoplay
+          playsinline
+          muted
+          webkit-playsinline
+          style="width:100%;height:180px;object-fit:cover;background:#000;display:block;"
+        ></video>
+      `;
+
+      const video = document.getElementById('qr-camera-video');
+      if (!video) {
+        throw new Error('Video element not created');
+      }
+
+      qrVideoRef.current = video;
+
+      // Request camera
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: 'environment',
+          width: { ideal: 640 },
+          height: { ideal: 480 }
+        },
+        audio: false
+      });
+
+      qrStreamRef.current = stream;
+
+      // Attach stream to video
+      video.srcObject = stream;
+      video.setAttribute('playsinline', 'true');
+      video.muted = true;
+
+      // Wait for video to be ready and force play
+      await new Promise((resolve) => {
+        video.onloadedmetadata = async () => {
+          try {
+            await video.play();
+          } catch (e) {
+            console.log('Play failed, retrying...', e);
+          }
+          resolve();
+        };
+        // Timeout fallback
+        setTimeout(async () => {
+          try { await video.play(); } catch(e) {}
+          resolve();
+        }, 2000);
+      });
+
+      // Force video to be visible (iOS Safari workaround)
+      video.style.opacity = '1';
+      video.style.visibility = 'visible';
+      video.style.display = 'block';
+
+      // Try to load QR scanning library
+      const jsQR = await loadJsQR();
+
+      if (!jsQR) {
+        // Library failed to load - show message
+        setError('QR scanner library failed to load. Please paste the code manually.');
+        return;
+      }
+
+      // Get dimensions from track (iOS Safari fix for 0 dimensions)
+      const track = stream.getVideoTracks()[0];
+      const trackSettings = track?.getSettings() || {};
+      const trackWidth = trackSettings.width || 640;
+      const trackHeight = trackSettings.height || 480;
+
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d', { willReadFrequently: true });
+
+      let scanCount = 0;
+      let lastLogTime = 0;
+
+      const scanFrame = () => {
+        if (!qrStreamRef.current) return;
+
+        try {
+          // Use track dimensions if video dimensions are 0 (iOS Safari portrait bug)
+          const width = video.videoWidth > 0 ? video.videoWidth : trackWidth;
+          const height = video.videoHeight > 0 ? video.videoHeight : trackHeight;
+
+          // Log dimensions every 3 seconds for debugging
+          const now = Date.now();
+          if (now - lastLogTime > 3000) {
+            console.log('QR Scan - video:', video.videoWidth, 'x', video.videoHeight, '| track:', trackWidth, 'x', trackHeight, '| using:', width, 'x', height);
+            lastLogTime = now;
+          }
+
+          if (width > 0 && height > 0) {
+            canvas.width = width;
+            canvas.height = height;
+            ctx.drawImage(video, 0, 0, width, height);
+
+            // Check if canvas has actual image data (not just black)
+            const imageData = ctx.getImageData(0, 0, width, height);
+
+            // Quick check if image has content (not all zeros)
+            let hasContent = false;
+            for (let i = 0; i < Math.min(1000, imageData.data.length); i += 4) {
+              if (imageData.data[i] > 10 || imageData.data[i+1] > 10 || imageData.data[i+2] > 10) {
+                hasContent = true;
+                break;
+              }
+            }
+
+            if (hasContent) {
+              const code = jsQR(imageData.data, width, height);
+
+              if (code?.data) {
+                console.log('QR Found:', code.data.substring(0, 50) + '...');
+                // Check if it's our wallet QR format
+                if (code.data.startsWith('XRPLTO:') || code.data.startsWith('XRPL:')) {
+                  setQrImportData(code.data);
+                  stopQrScanner();
+                  openSnackbar('QR code scanned successfully', 'success');
+                  return;
+                } else {
+                  // Found a QR but wrong format - show once
+                  if (scanCount === 0) {
+                    openSnackbar('QR detected but wrong format: ' + code.data.substring(0, 20), 'warning');
+                  }
+                }
+              }
+            } else if (scanCount % 100 === 0) {
+              console.log('Canvas appears empty - video may not be drawing');
+            }
+          }
+          scanCount++;
+        } catch (e) {
+          console.log('Scan error:', e.message);
+        }
+
+        requestAnimationFrame(scanFrame);
+      };
+
+      // Start scanning
+      setTimeout(scanFrame, 500);
+      console.log('QR Scanner started');
+
+      // Show help message after 8 seconds if nothing detected
+      setTimeout(() => {
+        if (qrStreamRef.current) {
+          openSnackbar('Tap "Take Photo" button if auto-scan doesn\'t work', 'info');
+        }
+      }, 8000);
+
+    } catch (error) {
+      console.error('QR Scanner error:', error);
+      setQrScannerActive(false);
+
+      if (error.name === 'NotAllowedError') {
+        setError('Camera access denied. Please allow camera access and try again.');
+      } else {
+        setError('Could not start camera: ' + (error.message || 'Unknown error'));
+      }
+    }
+  };
+
+  // Stop QR scanner and release camera
+  const stopQrScanner = () => {
+    setQrScannerActive(false);
+
+    // Stop camera stream
+    if (qrStreamRef.current) {
+      qrStreamRef.current.getTracks().forEach((track) => track.stop());
+      qrStreamRef.current = null;
+    }
+    if (qrVideoRef.current) {
+      qrVideoRef.current.srcObject = null;
+      qrVideoRef.current = null;
+    }
+
+    // Clean up containers
+    const container = document.getElementById('qr-video-container');
+    const containerCreate = document.getElementById('qr-video-container-create');
+    if (container) container.innerHTML = '';
+    if (containerCreate) containerCreate.innerHTML = '';
+  };
+
+  // Capture photo and scan QR (fallback for iOS Safari)
+  const captureAndScanPhoto = async () => {
+    const video = qrVideoRef.current;
+    if (!video) {
+      openSnackbar('Camera not ready', 'error');
+      return;
+    }
+
+    try {
+      const jsQR = await loadJsQR();
+      if (!jsQR) {
+        openSnackbar('Scanner library failed. Paste code manually.', 'error');
+        stopQrScanner();
+        return;
+      }
+
+      // Create canvas and capture frame
+      const canvas = document.createElement('canvas');
+      const width = video.videoWidth || 640;
+      const height = video.videoHeight || 480;
+      canvas.width = width;
+      canvas.height = height;
+
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0, width, height);
+
+      // Try to scan
+      const imageData = ctx.getImageData(0, 0, width, height);
+      const code = jsQR(imageData.data, width, height);
+
+      if (code?.data) {
+        if (code.data.startsWith('XRPLTO:') || code.data.startsWith('XRPL:')) {
+          setQrImportData(code.data);
+          stopQrScanner();
+          openSnackbar('QR code captured successfully!', 'success');
+        } else {
+          openSnackbar('QR found but wrong format: ' + code.data.substring(0, 30), 'warning');
+        }
+      } else {
+        openSnackbar('No QR code found in photo. Try again.', 'error');
+      }
+    } catch (e) {
+      console.error('Capture error:', e);
+      openSnackbar('Failed to capture: ' + e.message, 'error');
+    }
+  };
+
+  // Scan QR from uploaded image file
+  const scanQrFromFile = async (file) => {
+    if (!file) return;
+
+    try {
+      const jsQR = await loadJsQR();
+      if (!jsQR) {
+        openSnackbar('Scanner library failed. Paste code manually.', 'error');
+        stopQrScanner();
+        return;
+      }
+
+      // Load image
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+
+      await new Promise((resolve, reject) => {
+        img.onload = resolve;
+        img.onerror = reject;
+        img.src = url;
+      });
+
+      // Draw to canvas and scan
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+
+      URL.revokeObjectURL(url);
+
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const code = jsQR(imageData.data, canvas.width, canvas.height);
+
+      if (code?.data) {
+        if (code.data.startsWith('XRPLTO:') || code.data.startsWith('XRPL:')) {
+          setQrImportData(code.data);
+          openSnackbar('QR code scanned from image!', 'success');
+        } else {
+          openSnackbar('QR found but wrong format', 'warning');
+        }
+      } else {
+        openSnackbar('No QR code found in image', 'error');
+      }
+    } catch (e) {
+      openSnackbar('Failed to scan image', 'error');
+    }
+  };
+
+  // Cleanup scanner when unmounting
+  useEffect(() => {
+    return () => {
+      if (qrStreamRef.current) {
+        qrStreamRef.current.getTracks().forEach((track) => track.stop());
+      }
+    };
+  }, []);
+
+  // Stop scanner when leaving import mode
+  useEffect(() => {
+    if (seedAuthStatus !== 'qr-sync-import') {
+      stopQrScanner();
+    }
+  }, [seedAuthStatus]);
+
+  // QR Sync - Import wallet from QR data
+  const handleQrImport = async () => {
+    if (!qrImportData || !qrSyncPassword) return;
+
+    setQrSyncLoading(true);
+    setQrSyncError('');
+
+    try {
+      const imported = await walletStorage.importFromQRSync(qrImportData, qrSyncPassword);
+
+      // Add to profiles in localStorage
+      const storedProfiles = localStorage.getItem('profiles');
+      const currentProfiles = storedProfiles ? JSON.parse(storedProfiles) : [];
+
+      // Check if wallet already exists
+      if (currentProfiles.find((p) => p.account === imported.address)) {
+        openSnackbar('Wallet already exists', 'warning');
+      } else {
+        currentProfiles.push({
+          account: imported.address,
+          address: imported.address,
+          publicKey: imported.publicKey,
+          wallet_type: 'imported',
+          importedAt: Date.now(),
+          importedVia: 'qr_sync'
+        });
+        localStorage.setItem('profiles', JSON.stringify(currentProfiles));
+        openSnackbar('Wallet imported successfully', 'success');
+      }
+
+      // Reset state
+      setSeedAuthStatus('select-mode');
+      setQrSyncMode(null);
+      setQrSyncPassword('');
+      setQrImportData('');
+      setShowSeedDialog(false);
+
+      // Refresh profiles
+      window.location.reload();
+    } catch (error) {
+      setQrSyncError(error.message);
+    } finally {
+      setQrSyncLoading(false);
     }
   };
 
@@ -4153,6 +4807,22 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                     setSwapDirection={setSwapDirection}
                     destAddress={destAddress}
                     setDestAddress={setDestAddress}
+                    onQrSyncExport={() => {
+                      setShowSeedDialog(true);
+                      setQrSyncMode('export');
+                      setSeedAuthStatus('qr-sync-password');
+                      setQrSyncPassword('');
+                      setQrSyncError('');
+                      setQrSyncData('');
+                    }}
+                    onQrSyncImport={() => {
+                      setShowSeedDialog(true);
+                      setQrSyncMode('import');
+                      setSeedAuthStatus('qr-sync-import');
+                      setQrSyncPassword('');
+                      setQrSyncError('');
+                      setQrImportData('');
+                    }}
                   />
                 ) : showNewAccountFlow ? (
                   <div className={cn('p-5', isDark ? 'text-white' : 'text-gray-900')}>
@@ -4424,6 +5094,60 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             Full encrypted backup file
                           </p>
                         </button>
+
+                        {/* QR Sync - Transfer wallet between devices */}
+                        <div className="pt-2 mt-2 border-t border-white/10">
+                          <p
+                            className={cn(
+                              'text-[11px] mb-2',
+                              isDark ? 'text-white/40' : 'text-gray-400'
+                            )}
+                          >
+                            Transfer to another device
+                          </p>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => {
+                                setQrSyncMode('export');
+                                setSeedAuthStatus('qr-sync-password');
+                                setQrSyncPassword('');
+                                setQrSyncError('');
+                                setQrSyncData('');
+                              }}
+                              className={cn(
+                                'flex-1 flex items-center justify-center gap-1.5 p-2.5 rounded-lg border-[1.5px] transition-colors',
+                                isDark
+                                  ? 'border-[#3f96fe]/20 hover:border-[#3f96fe]/40 hover:bg-[#3f96fe]/5'
+                                  : 'border-blue-200 hover:border-blue-400 hover:bg-blue-50'
+                              )}
+                            >
+                              <QrCode size={14} className={isDark ? 'text-white/70' : 'text-gray-600'} />
+                              <span className={cn('text-[12px]', isDark ? 'text-white' : 'text-gray-900')}>
+                                Export QR
+                              </span>
+                            </button>
+                            <button
+                              onClick={() => {
+                                setQrSyncMode('import');
+                                setSeedAuthStatus('qr-sync-import');
+                                setQrSyncPassword('');
+                                setQrSyncError('');
+                                setQrImportData('');
+                              }}
+                              className={cn(
+                                'flex-1 flex items-center justify-center gap-1.5 p-2.5 rounded-lg border-[1.5px] transition-colors',
+                                isDark
+                                  ? 'border-[#3f96fe]/20 hover:border-[#3f96fe]/40 hover:bg-[#3f96fe]/5'
+                                  : 'border-blue-200 hover:border-blue-400 hover:bg-blue-50'
+                              )}
+                            >
+                              <Download size={14} className={isDark ? 'text-white/70' : 'text-gray-600'} />
+                              <span className={cn('text-[12px]', isDark ? 'text-white' : 'text-gray-900')}>
+                                Import QR
+                              </span>
+                            </button>
+                          </div>
+                        </div>
                       </div>
                     )}
 
@@ -4629,6 +5353,397 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                         Authentication failed. Please try again.
                       </div>
                     )}
+
+                    {/* QR Sync - Export: Password Entry */}
+                    {seedAuthStatus === 'qr-sync-password' && qrSyncMode === 'export' && (
+                      <div className="space-y-3">
+                        <div
+                          className={cn(
+                            'p-3 rounded-lg',
+                            isDark
+                              ? 'bg-blue-500/10 border border-blue-500/20'
+                              : 'bg-blue-50 border border-blue-200'
+                          )}
+                        >
+                          <p className={cn('text-[12px]', isDark ? 'text-blue-400' : 'text-blue-600')}>
+                            Generate a QR code to transfer this wallet to another device.
+                          </p>
+                          <p className={cn('text-[11px] mt-1', isDark ? 'text-white/50' : 'text-gray-500')}>
+                            QR expires in 5 minutes. Same password required on both devices.
+                          </p>
+                        </div>
+
+                        <div>
+                          <p className={cn('text-[11px] mb-1.5', isDark ? 'text-white/50' : 'text-gray-500')}>
+                            Enter your wallet password
+                          </p>
+                          <div className="relative">
+                            <input
+                              type={showQrSyncPassword ? 'text' : 'password'}
+                              placeholder="Password"
+                              value={qrSyncPassword}
+                              onChange={(e) => {
+                                setQrSyncPassword(e.target.value);
+                                setQrSyncError('');
+                              }}
+                              onKeyDown={(e) => e.key === 'Enter' && qrSyncPassword && handleQrExport()}
+                              autoFocus
+                              autoComplete="off"
+                              className={cn(
+                                'w-full px-3 py-2 pr-10 rounded-lg border-[1.5px] text-[13px] outline-none transition-colors',
+                                isDark
+                                  ? 'bg-white/[0.04] border-[#3f96fe]/20 text-white placeholder:text-white/30 focus:border-[#3f96fe]'
+                                  : 'bg-white border-blue-200 text-gray-900 placeholder:text-gray-400 focus:border-[#3f96fe]'
+                              )}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setShowQrSyncPassword(!showQrSyncPassword)}
+                              className={cn(
+                                'absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded',
+                                isDark ? 'text-white/50 hover:text-white' : 'text-gray-400 hover:text-gray-600'
+                              )}
+                            >
+                              {showQrSyncPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                            </button>
+                          </div>
+                        </div>
+
+                        {qrSyncError && (
+                          <p className="text-[11px] text-red-500">{qrSyncError}</p>
+                        )}
+
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => {
+                              setSeedAuthStatus('select-mode');
+                              setQrSyncMode(null);
+                              setQrSyncPassword('');
+                            }}
+                            className={cn(
+                              'px-3 py-1.5 rounded-lg border-[1.5px] text-[13px] transition-colors',
+                              isDark
+                                ? 'border-[#3f96fe]/20 text-white hover:bg-[#3f96fe]/5'
+                                : 'border-blue-200 text-gray-700 hover:bg-blue-50'
+                            )}
+                          >
+                            Back
+                          </button>
+                          <button
+                            onClick={handleQrExport}
+                            disabled={!qrSyncPassword || qrSyncLoading}
+                            className={cn(
+                              'flex-1 px-3 py-1.5 rounded-lg text-[13px] font-normal text-white transition-colors flex items-center justify-center gap-2',
+                              qrSyncPassword && !qrSyncLoading
+                                ? 'bg-primary hover:bg-primary/90'
+                                : 'bg-primary/50 cursor-not-allowed'
+                            )}
+                          >
+                            {qrSyncLoading ? (
+                              <Loader2 size={14} className="animate-spin" />
+                            ) : (
+                              <>
+                                <QrCode size={14} />
+                                Generate QR
+                              </>
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* QR Sync - Export: Display QR Code */}
+                    {seedAuthStatus === 'qr-sync-display' && qrSyncData && (
+                      <div className="space-y-3">
+                        <div
+                          className={cn(
+                            'p-3 rounded-lg',
+                            isDark
+                              ? 'bg-amber-500/10 border border-amber-500/20'
+                              : 'bg-amber-50 border border-amber-200'
+                          )}
+                        >
+                          <p className={cn('text-[12px] font-medium', isDark ? 'text-amber-400' : 'text-amber-600')}>
+                            Scan on your other device
+                          </p>
+                          <p className={cn('text-[11px] mt-1', isDark ? 'text-white/50' : 'text-gray-500')}>
+                            {qrCountdown > 0 ? `Expires in ${qrCountdown}s` : 'Generating...'}
+                          </p>
+                        </div>
+
+                        <div className={cn(
+                          'p-4 rounded-lg flex justify-center',
+                          isDark ? 'bg-white' : 'bg-gray-50'
+                        )}>
+                          <QRCode
+                            value={qrSyncData}
+                            size={200}
+                            level="M"
+                            bgColor="transparent"
+                            fgColor={isDark ? '#000000' : '#1f2937'}
+                          />
+                        </div>
+
+                        <p className={cn('text-[10px] text-center', isDark ? 'text-white/40' : 'text-gray-400')}>
+                          Or copy and paste the code manually
+                        </p>
+
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => {
+                              navigator.clipboard.writeText(qrSyncData);
+                              openSnackbar('QR data copied', 'success');
+                            }}
+                            className={cn(
+                              'flex-1 px-3 py-1.5 rounded-lg border-[1.5px] text-[13px] transition-colors flex items-center justify-center gap-1.5',
+                              isDark
+                                ? 'border-[#3f96fe]/20 text-white hover:bg-[#3f96fe]/5'
+                                : 'border-blue-200 text-gray-700 hover:bg-blue-50'
+                            )}
+                          >
+                            <Copy size={14} />
+                            Copy
+                          </button>
+                          <button
+                            onClick={() => {
+                              setSeedAuthStatus('select-mode');
+                              setQrSyncMode(null);
+                              setQrSyncData('');
+                              setQrSyncExpiry(null);
+                            }}
+                            className="flex-1 px-3 py-1.5 rounded-lg bg-primary hover:bg-primary/90 text-white text-[13px] transition-colors"
+                          >
+                            Done
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* QR Sync - Import: Scan or Paste Data & Password */}
+                    {seedAuthStatus === 'qr-sync-import' && qrSyncMode === 'import' && (
+                      <div className="space-y-3">
+                        <div
+                          className={cn(
+                            'p-3 rounded-lg',
+                            isDark
+                              ? 'bg-blue-500/10 border border-blue-500/20'
+                              : 'bg-blue-50 border border-blue-200'
+                          )}
+                        >
+                          <p className={cn('text-[12px]', isDark ? 'text-blue-400' : 'text-blue-600')}>
+                            Import wallet from another device
+                          </p>
+                          <p className={cn('text-[11px] mt-1', isDark ? 'text-white/50' : 'text-gray-500')}>
+                            Scan the QR code or paste the data manually.
+                          </p>
+                        </div>
+
+                        {/* QR Scanner Camera View */}
+                        {qrScannerActive ? (
+                          <div className="space-y-2">
+                            <div className={cn(
+                              'relative rounded-lg overflow-hidden',
+                              isDark ? 'bg-black' : 'bg-gray-900'
+                            )}>
+                              {/* Camera video container */}
+                              <div
+                                id="qr-video-container"
+                                className="w-full bg-black"
+                                style={{ height: '180px', minHeight: '180px' }}
+                              />
+                              {/* Scanning overlay */}
+                              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                <div className="w-40 h-40 border-2 border-white/50 rounded-lg">
+                                  <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-primary rounded-tl-lg" />
+                                  <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-primary rounded-tr-lg" />
+                                  <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-primary rounded-bl-lg" />
+                                  <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-primary rounded-br-lg" />
+                                </div>
+                              </div>
+                              <p className="absolute bottom-2 left-0 right-0 text-center text-[11px] text-white/70 animate-pulse">
+                                Scanning... Point at QR code
+                              </p>
+                            </div>
+                            <div className="flex gap-2">
+                              <button
+                                onClick={captureAndScanPhoto}
+                                className={cn(
+                                  'flex-1 py-2 rounded-lg text-[12px] font-medium transition-colors',
+                                  isDark
+                                    ? 'bg-primary text-white hover:bg-primary/90'
+                                    : 'bg-primary text-white hover:bg-primary/90'
+                                )}
+                              >
+                                📸 Capture
+                              </button>
+                              <label
+                                className={cn(
+                                  'flex-1 py-2 rounded-lg text-[12px] font-medium transition-colors text-center cursor-pointer',
+                                  isDark
+                                    ? 'bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30'
+                                    : 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'
+                                )}
+                              >
+                                📁 Upload
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  capture="environment"
+                                  className="hidden"
+                                  onChange={(e) => {
+                                    const file = e.target.files?.[0];
+                                    if (file) {
+                                      stopQrScanner();
+                                      scanQrFromFile(file);
+                                    }
+                                    e.target.value = '';
+                                  }}
+                                />
+                              </label>
+                              <button
+                                onClick={stopQrScanner}
+                                className={cn(
+                                  'px-4 py-2 rounded-lg text-[12px] font-medium transition-colors',
+                                  isDark
+                                    ? 'bg-white/10 text-white hover:bg-white/15'
+                                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                                )}
+                              >
+                                ✕
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="space-y-3">
+                            {/* Scan Button */}
+                            <button
+                              onClick={startQrScanner}
+                              className={cn(
+                                'w-full flex items-center justify-center gap-2 py-3 rounded-lg text-[13px] font-medium transition-colors',
+                                isDark
+                                  ? 'bg-primary/20 text-primary hover:bg-primary/30 border border-primary/30'
+                                  : 'bg-primary/10 text-primary hover:bg-primary/20 border border-primary/20'
+                              )}
+                            >
+                              <Camera size={18} />
+                              Scan QR Code
+                            </button>
+
+                            {/* Divider */}
+                            <div className="flex items-center gap-3">
+                              <div className={cn('flex-1 h-px', isDark ? 'bg-white/10' : 'bg-gray-200')} />
+                              <span className={cn('text-[11px]', isDark ? 'text-white/30' : 'text-gray-400')}>or paste manually</span>
+                              <div className={cn('flex-1 h-px', isDark ? 'bg-white/10' : 'bg-gray-200')} />
+                            </div>
+
+                            {/* Manual Paste */}
+                            <textarea
+                              placeholder="XRPL:..."
+                              value={qrImportData}
+                              onChange={(e) => {
+                                setQrImportData(e.target.value);
+                                setQrSyncError('');
+                              }}
+                              rows={2}
+                              className={cn(
+                                'w-full px-3 py-2 rounded-lg border-[1.5px] text-[12px] font-mono outline-none transition-colors resize-none',
+                                isDark
+                                  ? 'bg-white/[0.04] border-[#3f96fe]/20 text-white placeholder:text-white/30 focus:border-[#3f96fe]'
+                                  : 'bg-white border-blue-200 text-gray-900 placeholder:text-gray-400 focus:border-[#3f96fe]'
+                              )}
+                            />
+                          </div>
+                        )}
+
+                        {/* Show scanned data indicator */}
+                        {qrImportData && !qrScannerActive && (
+                          <div className={cn(
+                            'flex items-center gap-2 p-2 rounded-lg text-[11px]',
+                            isDark ? 'bg-green-500/10 text-green-400' : 'bg-green-50 text-green-600'
+                          )}>
+                            <CheckCircle size={14} />
+                            QR data loaded ({qrImportData.length} chars)
+                          </div>
+                        )}
+
+                        <div>
+                          <p className={cn('text-[11px] mb-1.5', isDark ? 'text-white/50' : 'text-gray-500')}>
+                            Enter the same password used during export
+                          </p>
+                          <div className="relative">
+                            <input
+                              type={showQrSyncPassword ? 'text' : 'password'}
+                              placeholder="Password"
+                              value={qrSyncPassword}
+                              onChange={(e) => {
+                                setQrSyncPassword(e.target.value);
+                                setQrSyncError('');
+                              }}
+                              onKeyDown={(e) => e.key === 'Enter' && qrImportData && qrSyncPassword && handleQrImport()}
+                              autoComplete="off"
+                              className={cn(
+                                'w-full px-3 py-2 pr-10 rounded-lg border-[1.5px] text-[13px] outline-none transition-colors',
+                                isDark
+                                  ? 'bg-white/[0.04] border-[#3f96fe]/20 text-white placeholder:text-white/30 focus:border-[#3f96fe]'
+                                  : 'bg-white border-blue-200 text-gray-900 placeholder:text-gray-400 focus:border-[#3f96fe]'
+                              )}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setShowQrSyncPassword(!showQrSyncPassword)}
+                              className={cn(
+                                'absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded',
+                                isDark ? 'text-white/50 hover:text-white' : 'text-gray-400 hover:text-gray-600'
+                              )}
+                            >
+                              {showQrSyncPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                            </button>
+                          </div>
+                        </div>
+
+                        {qrSyncError && (
+                          <p className="text-[11px] text-red-500">{qrSyncError}</p>
+                        )}
+
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => {
+                              setSeedAuthStatus('select-mode');
+                              setQrSyncMode(null);
+                              setQrSyncPassword('');
+                              setQrImportData('');
+                            }}
+                            className={cn(
+                              'px-3 py-1.5 rounded-lg border-[1.5px] text-[13px] transition-colors',
+                              isDark
+                                ? 'border-[#3f96fe]/20 text-white hover:bg-[#3f96fe]/5'
+                                : 'border-blue-200 text-gray-700 hover:bg-blue-50'
+                            )}
+                          >
+                            Back
+                          </button>
+                          <button
+                            onClick={handleQrImport}
+                            disabled={!qrImportData || !qrSyncPassword || qrSyncLoading}
+                            className={cn(
+                              'flex-1 px-3 py-1.5 rounded-lg text-[13px] font-normal text-white transition-colors flex items-center justify-center gap-2',
+                              qrImportData && qrSyncPassword && !qrSyncLoading
+                                ? 'bg-primary hover:bg-primary/90'
+                                : 'bg-primary/50 cursor-not-allowed'
+                            )}
+                          >
+                            {qrSyncLoading ? (
+                              <Loader2 size={14} className="animate-spin" />
+                            ) : (
+                              <>
+                                <Download size={14} />
+                                Import Wallet
+                              </>
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </>
@@ -4758,7 +5873,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                   {/* Create Wallet - Only show if no existing wallet */}
                   {!hasExistingWallet && (
                     <div className="space-y-3">
-                      {/* Mode toggle: Create New / Import Existing */}
+                      {/* Mode toggle: Create New / Import / QR Sync */}
                       <div
                         className={cn(
                           'flex rounded-lg p-0.5',
@@ -4769,9 +5884,10 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                           onClick={() => {
                             setCreateMode('new');
                             setCreateError('');
+                            stopQrScanner();
                           }}
                           className={cn(
-                            'flex-1 py-1.5 text-[12px] font-medium rounded-md transition-all',
+                            'flex-1 py-1.5 text-[11px] font-medium rounded-md transition-all',
                             createMode === 'new'
                               ? isDark
                                 ? 'bg-white/10 text-white'
@@ -4781,15 +5897,16 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                                 : 'text-gray-500 hover:text-gray-700'
                           )}
                         >
-                          Create New
+                          Create
                         </button>
                         <button
                           onClick={() => {
                             setCreateMode('import');
                             setCreateError('');
+                            stopQrScanner();
                           }}
                           className={cn(
-                            'flex-1 py-1.5 text-[12px] font-medium rounded-md transition-all',
+                            'flex-1 py-1.5 text-[11px] font-medium rounded-md transition-all',
                             createMode === 'import'
                               ? isDark
                                 ? 'bg-white/10 text-white'
@@ -4799,7 +5916,28 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                                 : 'text-gray-500 hover:text-gray-700'
                           )}
                         >
-                          Import Existing
+                          Import
+                        </button>
+                        <button
+                          onClick={() => {
+                            setCreateMode('qr');
+                            setCreateError('');
+                            setQrImportData('');
+                            setQrSyncPassword('');
+                          }}
+                          className={cn(
+                            'flex-1 py-1.5 text-[11px] font-medium rounded-md transition-all flex items-center justify-center gap-1',
+                            createMode === 'qr'
+                              ? isDark
+                                ? 'bg-white/10 text-white'
+                                : 'bg-white text-gray-900 shadow-sm'
+                              : isDark
+                                ? 'text-white/50 hover:text-white/70'
+                                : 'text-gray-500 hover:text-gray-700'
+                          )}
+                        >
+                          <QrCode size={12} />
+                          QR Sync
                         </button>
                       </div>
 
@@ -4843,11 +5981,149 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                         </div>
                       )}
 
-                      <p className={cn('text-[12px]', isDark ? 'text-white/50' : 'text-gray-500')}>
-                        {createMode === 'import'
-                          ? 'Set a password to encrypt your imported wallet'
-                          : 'Create a password to secure your wallet'}
-                      </p>
+                      {/* QR Sync mode - scan or paste */}
+                      {createMode === 'qr' && (
+                        <div className="space-y-3">
+                          {/* QR Scanner Camera View */}
+                          {qrScannerActive ? (
+                            <div className="space-y-2">
+                              <div className={cn(
+                                'relative rounded-lg overflow-hidden',
+                                isDark ? 'bg-black' : 'bg-gray-900'
+                              )}>
+                                {/* Camera video container */}
+                                <div
+                                  id="qr-video-container-create"
+                                  className="w-full bg-black"
+                                  style={{ height: '180px', minHeight: '180px' }}
+                                />
+                                {/* Scanning overlay */}
+                                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                  <div className="w-32 h-32 border-2 border-white/50 rounded-lg relative">
+                                    <div className="absolute -top-0.5 -left-0.5 w-4 h-4 border-t-2 border-l-2 border-primary rounded-tl-lg" />
+                                    <div className="absolute -top-0.5 -right-0.5 w-4 h-4 border-t-2 border-r-2 border-primary rounded-tr-lg" />
+                                    <div className="absolute -bottom-0.5 -left-0.5 w-4 h-4 border-b-2 border-l-2 border-primary rounded-bl-lg" />
+                                    <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 border-b-2 border-r-2 border-primary rounded-br-lg" />
+                                  </div>
+                                </div>
+                                <p className="absolute bottom-2 left-0 right-0 text-center text-[10px] text-white/70 animate-pulse">
+                                  Scanning... Point at QR code
+                                </p>
+                              </div>
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={captureAndScanPhoto}
+                                  className={cn(
+                                    'flex-1 py-2 rounded-lg text-[12px] font-medium transition-colors',
+                                    isDark
+                                      ? 'bg-primary text-white hover:bg-primary/90'
+                                      : 'bg-primary text-white hover:bg-primary/90'
+                                  )}
+                                >
+                                  📸 Capture
+                                </button>
+                                <label
+                                  className={cn(
+                                    'flex-1 py-2 rounded-lg text-[12px] font-medium transition-colors text-center cursor-pointer',
+                                    isDark
+                                      ? 'bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30'
+                                      : 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'
+                                  )}
+                                >
+                                  📁 Upload
+                                  <input
+                                    type="file"
+                                    accept="image/*"
+                                    capture="environment"
+                                    className="hidden"
+                                    onChange={(e) => {
+                                      const file = e.target.files?.[0];
+                                      if (file) {
+                                        stopQrScanner();
+                                        scanQrFromFile(file);
+                                      }
+                                      e.target.value = '';
+                                    }}
+                                  />
+                                </label>
+                                <button
+                                  onClick={stopQrScanner}
+                                  className={cn(
+                                    'px-4 py-2 rounded-lg text-[12px] font-medium transition-colors',
+                                    isDark
+                                      ? 'bg-white/10 text-white hover:bg-white/15'
+                                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                                  )}
+                                >
+                                  ✕
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <>
+                              {/* Scan Button */}
+                              <button
+                                onClick={startQrScanner}
+                                className={cn(
+                                  'w-full flex items-center justify-center gap-2 py-3 rounded-lg text-[13px] font-medium transition-colors',
+                                  isDark
+                                    ? 'bg-primary/20 text-primary hover:bg-primary/30 border border-primary/30'
+                                    : 'bg-primary/10 text-primary hover:bg-primary/20 border border-primary/20'
+                                )}
+                              >
+                                <Camera size={18} />
+                                Scan QR Code
+                              </button>
+
+                              {/* Divider */}
+                              <div className="flex items-center gap-3">
+                                <div className={cn('flex-1 h-px', isDark ? 'bg-white/10' : 'bg-gray-200')} />
+                                <span className={cn('text-[10px]', isDark ? 'text-white/30' : 'text-gray-400')}>or paste</span>
+                                <div className={cn('flex-1 h-px', isDark ? 'bg-white/10' : 'bg-gray-200')} />
+                              </div>
+
+                              {/* Manual Paste */}
+                              <textarea
+                                placeholder="Paste QR data (XRPL:...)"
+                                value={qrImportData}
+                                onChange={(e) => {
+                                  setQrImportData(e.target.value);
+                                  setCreateError('');
+                                }}
+                                rows={2}
+                                className={cn(
+                                  'w-full px-3 py-2 rounded-lg text-[11px] font-mono outline-none transition-colors resize-none',
+                                  isDark
+                                    ? 'bg-white/[0.04] border border-white/[0.08] text-white placeholder:text-white/25 focus:border-white/20'
+                                    : 'bg-gray-50 border border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-gray-300'
+                                )}
+                              />
+                            </>
+                          )}
+
+                          {/* Show scanned data indicator */}
+                          {qrImportData && !qrScannerActive && (
+                            <div className={cn(
+                              'flex items-center gap-2 p-2 rounded-lg text-[11px]',
+                              isDark ? 'bg-green-500/10 text-green-400' : 'bg-green-50 text-green-600'
+                            )}>
+                              <CheckCircle size={14} />
+                              QR data ready ({qrImportData.length} chars)
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Password section - only show for new/import modes, or after QR data is scanned */}
+                      {(createMode !== 'qr' || qrImportData) && !qrScannerActive && (
+                        <>
+                          <p className={cn('text-[12px]', isDark ? 'text-white/50' : 'text-gray-500')}>
+                            {createMode === 'qr'
+                              ? 'Enter the password used when exporting'
+                              : createMode === 'import'
+                                ? 'Set a password to encrypt your imported wallet'
+                                : 'Create a password to secure your wallet'}
+                          </p>
 
                       <div className="relative">
                         <input
@@ -4886,36 +6162,40 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                         </button>
                       </div>
 
-                      <input
-                        type={showCreatePassword ? 'text' : 'password'}
-                        value={createPasswordConfirm}
-                        onChange={(e) => {
-                          setCreatePasswordConfirm(e.target.value);
-                          setCreateError('');
-                        }}
-                        onKeyDown={(e) =>
-                          e.key === 'Enter' &&
-                          (createMode === 'new' || validateSeed(createSeed).valid) &&
-                          handlePasswordCreate()
-                        }
-                        placeholder="Confirm Password"
-                        className={cn(
-                          'w-full px-3 py-2.5 rounded-lg text-[13px] outline-none transition-colors',
-                          isDark
-                            ? 'bg-white/[0.04] border border-white/[0.08] text-white placeholder:text-white/25 focus:border-white/20'
-                            : 'bg-gray-50 border border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-gray-300'
-                        )}
-                      />
+                      {/* Confirm password - only for new/import modes, not QR */}
+                      {createMode !== 'qr' && (
+                        <input
+                          type={showCreatePassword ? 'text' : 'password'}
+                          value={createPasswordConfirm}
+                          onChange={(e) => {
+                            setCreatePasswordConfirm(e.target.value);
+                            setCreateError('');
+                          }}
+                          onKeyDown={(e) =>
+                            e.key === 'Enter' &&
+                            (createMode === 'new' || validateSeed(createSeed).valid) &&
+                            handlePasswordCreate()
+                          }
+                          placeholder="Confirm Password"
+                          className={cn(
+                            'w-full px-3 py-2.5 rounded-lg text-[13px] outline-none transition-colors',
+                            isDark
+                              ? 'bg-white/[0.04] border border-white/[0.08] text-white placeholder:text-white/25 focus:border-white/20'
+                              : 'bg-gray-50 border border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-gray-300'
+                          )}
+                        />
+                      )}
 
                       {createError && <p className="text-[11px] text-red-400">{createError}</p>}
 
                       <button
-                        onClick={handlePasswordCreate}
+                        onClick={createMode === 'qr' ? handleQrImportCreate : handlePasswordCreate}
                         disabled={
                           isCreating ||
                           !createPassword ||
-                          !createPasswordConfirm ||
-                          (createMode === 'import' && !validateSeed(createSeed).valid)
+                          (createMode !== 'qr' && !createPasswordConfirm) ||
+                          (createMode === 'import' && !validateSeed(createSeed).valid) ||
+                          (createMode === 'qr' && !qrImportData)
                         }
                         className={cn(
                           'w-full flex items-center justify-center gap-2 py-2.5 rounded-lg text-[13px] font-medium transition-all',
@@ -4924,12 +6204,16 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                       >
                         {isCreating ? (
                           <Loader2 size={14} className="animate-spin" />
+                        ) : createMode === 'qr' ? (
+                          'Import from QR'
                         ) : createMode === 'import' ? (
                           'Import Wallet'
                         ) : (
                           'Create Wallet'
                         )}
                       </button>
+                        </>
+                      )}
                     </div>
                   )}
 
@@ -4951,24 +6235,12 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                     {showClearConfirm && (
                       <div
                         className={cn(
-                          'mt-2 p-3 rounded-xl border-[1.5px] relative overflow-hidden',
+                          'mt-2 p-3 rounded-xl border-[1.5px]',
                           isDark ? 'bg-black/40 border-red-500/20' : 'bg-white border-red-200'
                         )}
                       >
-                        {/* Dot pattern background */}
-                        <div
-                          className="absolute inset-0 opacity-20"
-                          style={{
-                            backgroundImage: isDark
-                              ? 'radial-gradient(circle, rgba(239,68,68,0.3) 1px, transparent 1px)'
-                              : 'radial-gradient(circle, rgba(239,68,68,0.2) 1px, transparent 1px)',
-                            backgroundSize: '10px 10px'
-                          }}
-                        />
-
-                        <div className="relative z-10">
-                          {/* Header */}
-                          <div className="flex items-center gap-2 mb-2">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
                             <Trash2 size={14} className="text-red-500" />
                             <span
                               className={cn(
@@ -4980,180 +6252,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                               {(profiles.length || storedWalletCount) !== 1 ? 's' : ''}
                             </span>
                           </div>
-
-                          {/* Wallet addresses */}
-                          {storedWalletAddresses.length > 0 && (
-                            <div
-                              className={cn(
-                                'mb-2 px-2 py-1.5 rounded-lg',
-                                isDark ? 'bg-white/[0.02]' : 'bg-gray-50'
-                              )}
-                            >
-                              {storedWalletAddresses.slice(0, 3).map((addr, idx) => (
-                                <div key={idx} className="flex items-center gap-1.5 py-0.5">
-                                  <div className="w-1 h-1 rounded-full bg-red-400/60" />
-                                  <span
-                                    className={cn(
-                                      'text-[10px] font-mono',
-                                      isDark ? 'text-white/50' : 'text-gray-500'
-                                    )}
-                                  >
-                                    {addr}
-                                  </span>
-                                </div>
-                              ))}
-                              {storedWalletAddresses.length > 3 && (
-                                <span
-                                  className={cn(
-                                    'text-[9px] ml-2.5',
-                                    isDark ? 'text-white/30' : 'text-gray-400'
-                                  )}
-                                >
-                                  +{storedWalletAddresses.length - 3} more
-                                </span>
-                              )}
-                            </div>
-                          )}
-
-                          {/* Confirmation toggle */}
-                          <button
-                            onClick={() => setClearWarningAgreed(!clearWarningAgreed)}
-                            className={cn(
-                              'w-full flex items-center gap-2 p-2 rounded-lg text-left mb-2 transition-all border',
-                              clearWarningAgreed
-                                ? 'border-red-500/50 bg-red-500/10'
-                                : isDark
-                                  ? 'border-white/10'
-                                  : 'border-gray-200'
-                            )}
-                          >
-                            <div
-                              className={cn(
-                                'w-4 h-4 rounded flex items-center justify-center flex-shrink-0',
-                                clearWarningAgreed
-                                  ? 'bg-red-500'
-                                  : isDark
-                                    ? 'border border-white/20'
-                                    : 'border border-gray-300'
-                              )}
-                            >
-                              {clearWarningAgreed && <Check size={10} className="text-white" />}
-                            </div>
-                            <span
-                              className={cn(
-                                'text-[10px]',
-                                isDark ? 'text-white/60' : 'text-gray-500'
-                              )}
-                            >
-                              I understand this is permanent
-                            </span>
-                          </button>
-
-                          {/* Slide to delete */}
-                          <div
-                            className={cn(
-                              'relative h-10 rounded-lg overflow-hidden select-none transition-all',
-                              clearWarningAgreed
-                                ? 'cursor-pointer'
-                                : 'cursor-not-allowed opacity-40',
-                              clearSliderValue >= 95
-                                ? 'bg-red-500'
-                                : isDark
-                                  ? 'bg-white/[0.03]'
-                                  : 'bg-gray-100'
-                            )}
-                            onMouseDown={(e) => {
-                              if (!clearWarningAgreed) return;
-                              const rect = e.currentTarget.getBoundingClientRect();
-                              const handleMove = (moveEvent) => {
-                                const x = Math.max(
-                                  0,
-                                  Math.min(moveEvent.clientX - rect.left, rect.width)
-                                );
-                                setClearSliderValue(Math.round((x / rect.width) * 100));
-                                if (x / rect.width >= 0.95) handleClearAllWallets();
-                              };
-                              const handleUp = () => {
-                                document.removeEventListener('mousemove', handleMove);
-                                document.removeEventListener('mouseup', handleUp);
-                                if (clearSliderValue < 95) setClearSliderValue(0);
-                              };
-                              handleMove(e);
-                              document.addEventListener('mousemove', handleMove);
-                              document.addEventListener('mouseup', handleUp);
-                            }}
-                            onTouchStart={(e) => {
-                              if (!clearWarningAgreed) return;
-                              const rect = e.currentTarget.getBoundingClientRect();
-                              const handleMove = (moveEvent) => {
-                                const touch = moveEvent.touches[0];
-                                const x = Math.max(
-                                  0,
-                                  Math.min(touch.clientX - rect.left, rect.width)
-                                );
-                                setClearSliderValue(Math.round((x / rect.width) * 100));
-                                if (x / rect.width >= 0.95) handleClearAllWallets();
-                              };
-                              const handleEnd = () => {
-                                document.removeEventListener('touchmove', handleMove);
-                                document.removeEventListener('touchend', handleEnd);
-                                if (clearSliderValue < 95) setClearSliderValue(0);
-                              };
-                              handleMove(e);
-                              document.addEventListener('touchmove', handleMove);
-                              document.addEventListener('touchend', handleEnd);
-                            }}
-                          >
-                            <div
-                              className={cn(
-                                'absolute inset-y-0 left-0',
-                                clearSliderValue >= 95 ? 'bg-red-600' : 'bg-red-500'
-                              )}
-                              style={{ width: `${clearSliderValue}%` }}
-                            />
-                            <div
-                              className={cn(
-                                'absolute top-1 bottom-1 w-8 rounded-md flex items-center justify-center',
-                                clearSliderValue >= 95
-                                  ? 'bg-white'
-                                  : clearSliderValue > 0
-                                    ? 'bg-red-500'
-                                    : isDark
-                                      ? 'bg-white/10'
-                                      : 'bg-white'
-                              )}
-                              style={{
-                                left: `calc(${clearSliderValue}% - ${clearSliderValue * 0.32}px + 4px)`,
-                                transition: clearSliderValue === 0 ? 'left 0.2s ease-out' : 'none'
-                              }}
-                            >
-                              {clearSliderValue >= 95 ? (
-                                <Loader2 size={14} className="text-red-500 animate-spin" />
-                              ) : (
-                                <ChevronRight
-                                  size={14}
-                                  className={
-                                    clearSliderValue > 0
-                                      ? 'text-white'
-                                      : isDark
-                                        ? 'text-white/40'
-                                        : 'text-gray-400'
-                                  }
-                                />
-                              )}
-                            </div>
-                            <span
-                              className={cn(
-                                'absolute inset-0 flex items-center justify-center text-[10px] font-medium pointer-events-none tracking-wide',
-                                clearSliderValue > 15 ? 'opacity-0' : 'opacity-100',
-                                isDark ? 'text-white/30' : 'text-gray-400'
-                              )}
-                              style={{ paddingLeft: 32 }}
-                            >
-                              SLIDE TO DELETE
-                            </span>
-                          </div>
-
                           <button
                             onClick={() => {
                               setShowClearConfirm(false);
@@ -5161,14 +6259,184 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                               setClearWarningAgreed(false);
                             }}
                             className={cn(
-                              'w-full mt-2 py-1 text-[10px]',
+                              'text-[11px] px-2 py-0.5 rounded-md transition-colors',
                               isDark
-                                ? 'text-white/30 hover:text-white/50'
-                                : 'text-gray-400 hover:text-gray-600'
+                                ? 'text-white/40 hover:text-white/70 hover:bg-white/5'
+                                : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
                             )}
                           >
                             Cancel
                           </button>
+                        </div>
+
+                        {storedWalletAddresses.length > 0 && (
+                          <div
+                            className={cn(
+                              'mb-2 px-2 py-1 rounded-lg flex flex-wrap gap-x-3 gap-y-0.5',
+                              isDark ? 'bg-white/[0.02]' : 'bg-gray-50'
+                            )}
+                          >
+                            {storedWalletAddresses.slice(0, 3).map((addr, idx) => (
+                              <span
+                                key={idx}
+                                className={cn(
+                                  'text-[10px] font-mono',
+                                  isDark ? 'text-white/40' : 'text-gray-400'
+                                )}
+                              >
+                                {addr}
+                              </span>
+                            ))}
+                            {storedWalletAddresses.length > 3 && (
+                              <span
+                                className={cn(
+                                  'text-[9px]',
+                                  isDark ? 'text-white/30' : 'text-gray-400'
+                                )}
+                              >
+                                +{storedWalletAddresses.length - 3} more
+                              </span>
+                            )}
+                          </div>
+                        )}
+
+                        <button
+                          onClick={() => setClearWarningAgreed(!clearWarningAgreed)}
+                          className={cn(
+                            'w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-left mb-2 transition-all border',
+                            clearWarningAgreed
+                              ? 'border-red-500/40 bg-red-500/10'
+                              : isDark
+                                ? 'border-white/10'
+                                : 'border-gray-200'
+                          )}
+                        >
+                          <div
+                            className={cn(
+                              'w-3.5 h-3.5 rounded flex items-center justify-center flex-shrink-0',
+                              clearWarningAgreed
+                                ? 'bg-red-500'
+                                : isDark
+                                  ? 'border border-white/20'
+                                  : 'border border-gray-300'
+                            )}
+                          >
+                            {clearWarningAgreed && <Check size={9} className="text-white" />}
+                          </div>
+                          <span
+                            className={cn(
+                              'text-[10px]',
+                              clearWarningAgreed
+                                ? 'text-red-500'
+                                : isDark ? 'text-white/50' : 'text-gray-500'
+                            )}
+                          >
+                            This cannot be undone
+                          </span>
+                        </button>
+
+                        <div
+                          className={cn(
+                            'relative h-9 rounded-lg overflow-hidden select-none transition-all',
+                            clearWarningAgreed
+                              ? 'cursor-pointer'
+                              : 'cursor-not-allowed opacity-30',
+                            clearSliderValue >= 95
+                              ? 'bg-red-500'
+                              : isDark
+                                ? 'bg-white/[0.03]'
+                                : 'bg-gray-100'
+                          )}
+                          onMouseDown={(e) => {
+                            if (!clearWarningAgreed) return;
+                            const rect = e.currentTarget.getBoundingClientRect();
+                            const handleMove = (moveEvent) => {
+                              const x = Math.max(
+                                0,
+                                Math.min(moveEvent.clientX - rect.left, rect.width)
+                              );
+                              setClearSliderValue(Math.round((x / rect.width) * 100));
+                              if (x / rect.width >= 0.95) handleClearAllWallets();
+                            };
+                            const handleUp = () => {
+                              document.removeEventListener('mousemove', handleMove);
+                              document.removeEventListener('mouseup', handleUp);
+                              if (clearSliderValue < 95) setClearSliderValue(0);
+                            };
+                            handleMove(e);
+                            document.addEventListener('mousemove', handleMove);
+                            document.addEventListener('mouseup', handleUp);
+                          }}
+                          onTouchStart={(e) => {
+                            if (!clearWarningAgreed) return;
+                            const rect = e.currentTarget.getBoundingClientRect();
+                            const handleMove = (moveEvent) => {
+                              const touch = moveEvent.touches[0];
+                              const x = Math.max(
+                                0,
+                                Math.min(touch.clientX - rect.left, rect.width)
+                              );
+                              setClearSliderValue(Math.round((x / rect.width) * 100));
+                              if (x / rect.width >= 0.95) handleClearAllWallets();
+                            };
+                            const handleEnd = () => {
+                              document.removeEventListener('touchmove', handleMove);
+                              document.removeEventListener('touchend', handleEnd);
+                              if (clearSliderValue < 95) setClearSliderValue(0);
+                            };
+                            handleMove(e);
+                            document.addEventListener('touchmove', handleMove);
+                            document.addEventListener('touchend', handleEnd);
+                          }}
+                        >
+                          <div
+                            className={cn(
+                              'absolute inset-y-0 left-0',
+                              clearSliderValue >= 95 ? 'bg-red-600' : 'bg-red-500'
+                            )}
+                            style={{ width: `${clearSliderValue}%` }}
+                          />
+                          <div
+                            className={cn(
+                              'absolute top-1 bottom-1 w-7 rounded-md flex items-center justify-center',
+                              clearSliderValue >= 95
+                                ? 'bg-white'
+                                : clearSliderValue > 0
+                                  ? 'bg-red-500'
+                                  : isDark
+                                    ? 'bg-white/10'
+                                    : 'bg-white'
+                            )}
+                            style={{
+                              left: `calc(${clearSliderValue}% - ${clearSliderValue * 0.28}px + 4px)`,
+                              transition: clearSliderValue === 0 ? 'left 0.2s ease-out' : 'none'
+                            }}
+                          >
+                            {clearSliderValue >= 95 ? (
+                              <Loader2 size={13} className="text-red-500 animate-spin" />
+                            ) : (
+                              <ChevronRight
+                                size={13}
+                                className={
+                                  clearSliderValue > 0
+                                    ? 'text-white'
+                                    : isDark
+                                      ? 'text-white/40'
+                                      : 'text-gray-400'
+                                }
+                              />
+                            )}
+                          </div>
+                          <span
+                            className={cn(
+                              'absolute inset-0 flex items-center justify-center text-[10px] font-medium pointer-events-none tracking-wider uppercase',
+                              clearSliderValue > 15 ? 'opacity-0' : 'opacity-100',
+                              isDark ? 'text-white/30' : 'text-gray-400'
+                            )}
+                            style={{ paddingLeft: 28 }}
+                          >
+                            Slide to delete
+                          </span>
                         </div>
                       </div>
                     )}

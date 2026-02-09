@@ -17,15 +17,14 @@ import {
   HistogramSeries,
   AreaSeries
 } from 'lightweight-charts';
-import axios from 'axios';
+import api from 'src/utils/api';
 import { useSelector } from 'react-redux';
 import { selectMetrics } from 'src/redux/statusSlice';
 import { AppContext } from 'src/context/AppContext';
 
 const SYMBOLS = { USD: '$', EUR: '€', JPY: '¥', CNH: '¥', XRP: '✕' };
 const BASE_URL = 'https://api.xrpl.to/v1';
-const WS_URL = 'wss://api.xrpl.to/ws/ohlc';
-const CREATOR_WS_URL = 'wss://api.xrpl.to/ws/creator';
+// WebSocket URLs fetched via session endpoint for auth
 
 const processOhlc = (ohlc) => {
   const MAX = 90071992547409;
@@ -248,7 +247,7 @@ const PriceChartAdvanced = memo(({ token }) => {
     return { percentDown: pct, athMcap: token.athMarketcap };
   }, [token?.athMarketcap, token?.marketcap]);
 
-  // Creator events via WebSocket
+  // Creator events via WebSocket (with session-based auth)
   const [creatorEvents, setCreatorEvents] = useState([]);
   const creatorWsRef = useRef(null);
   useEffect(() => {
@@ -265,20 +264,34 @@ const PriceChartAdvanced = memo(({ token }) => {
     });
 
     let mounted = true;
-    const connect = () => {
+    const connect = async () => {
       if (!mounted) return;
-      const ws = new WebSocket(`${CREATOR_WS_URL}/${token.md5}`);
-      creatorWsRef.current = ws;
-      ws.onmessage = (e) => {
-        if (!mounted) return;
-        const msg = JSON.parse(e.data);
-        if (msg.type === 'initial' && msg.events?.length) {
-          setCreatorEvents(msg.events.map(mapEvent));
-        } else if (msg.type === 'activity') {
-          setCreatorEvents((prev) => [mapEvent(msg), ...prev].slice(0, 10));
-        }
-      };
-      ws.onclose = (ev) => mounted && ev.code !== 1000 && setTimeout(connect, 5000);
+      try {
+        // Get authenticated WS URL from session endpoint
+        const res = await fetch(`/api/ws/session?type=creator&id=${token.md5}`);
+        const { wsUrl } = await res.json();
+        if (!wsUrl || !mounted) return;
+
+        const ws = new WebSocket(wsUrl);
+        creatorWsRef.current = ws;
+        ws.onopen = () => {};
+        ws.onmessage = (e) => {
+          if (!mounted) return;
+          const msg = JSON.parse(e.data);
+          if (msg.type === 'initial' && msg.events?.length) {
+            setCreatorEvents(msg.events.map(mapEvent));
+          } else if (msg.type === 'activity') {
+            setCreatorEvents((prev) => [mapEvent(msg), ...prev].slice(0, 10));
+          }
+        };
+        ws.onerror = () => {};
+        ws.onclose = (ev) => {
+          // Reconnect on unexpected close (not 1000=normal, not 4011=limit)
+          mounted && ev.code !== 1000 && ev.code !== 4011 && setTimeout(connect, 5000);
+        };
+      } catch {
+        mounted && setTimeout(connect, 5000);
+      }
     };
     connect();
     return () => { mounted = false; creatorWsRef.current?.close(); };
@@ -321,8 +334,7 @@ const PriceChartAdvanced = memo(({ token }) => {
     };
     try {
       const loadMoreUrl = `${BASE_URL}/ohlc/${token.md5}?resolution=${resMap[timeRange] || '15'}&cb=200&abn=${dataRef.current[0].time * 1000}&vs_currency=${activeFiatCurrency}`;
-      console.log('[OHLC] Loading more:', loadMoreUrl);
-      const res = await axios.get(loadMoreUrl);
+      const res = await api.get(loadMoreUrl);
       if (res.data?.ohlc?.length) {
         const older = processOhlc(res.data.ohlc);
         setData((prev) => {
@@ -338,8 +350,7 @@ const PriceChartAdvanced = memo(({ token }) => {
         setHasMore(false);
       }
     } catch (e) {
-      console.error('[OHLC] Load more error:', e.message);
-      if (!axios.isCancel(e)) setHasMore(false);
+      if (!api.isCancel(e)) setHasMore(false);
     } finally {
       refs.current.isLoadingMore = false;
       setIsLoadingMore(false);
@@ -378,10 +389,7 @@ const PriceChartAdvanced = memo(({ token }) => {
       setLoading(true);
       try {
         const ohlcUrl = `${BASE_URL}/ohlc/${token.md5}?resolution=${p.res}&cb=${p.cb}&vs_currency=${activeFiatCurrency}`;
-        const t0 = performance.now();
-        console.log('[OHLC] Fetching:', ohlcUrl);
-        const res = await axios.get(ohlcUrl);
-        console.log(`[OHLC] Done in ${(performance.now() - t0).toFixed(0)}ms, ${res.data?.ohlc?.length || 0} candles`);
+        const res = await api.get(ohlcUrl);
         if (mounted && res.data?.ohlc) {
           const processed = processOhlc(res.data.ohlc);
           dataRef.current = processed;
@@ -389,78 +397,78 @@ const PriceChartAdvanced = memo(({ token }) => {
           setLastUpdate(new Date());
           setHasMore(timeRange !== 'all');
         }
-      } catch (e) {
-        console.error('[OHLC] Fetch error:', e.message);
+      } catch {
+        // Fetch error
       }
       if (mounted) setLoading(false);
     };
 
-    const connectWs = () => {
+    const connectWs = async () => {
       if (!mounted) return;
-      const wsUrl = `${WS_URL}/${token.md5}?interval=${getWsInterval(timeRange)}&vs_currency=${activeFiatCurrency}`;
-      console.log('[OHLC WS] Connecting:', wsUrl);
-      const ws = new WebSocket(wsUrl);
-      wsRef.current = ws;
-
-      ws.onopen = () => {
-        console.log('[OHLC WS] Connected');
-        pingInterval = setInterval(() => ws.readyState === 1 && ws.send('{"type":"ping"}'), 30000);
-      };
-
-      ws.onmessage = (e) => {
+      try {
+        const params = `interval=${getWsInterval(timeRange)}&vs_currency=${activeFiatCurrency}`;
+        const res = await fetch(`/api/ws/session?type=ohlc&id=${token.md5}&${params}`);
+        const { wsUrl } = await res.json();
         if (!mounted) return;
-        const msg = JSON.parse(e.data);
-        // IGNORE any WS message with ohlc array - use HTTP data only
-        if (msg.ohlc) return;
+        const ws = new WebSocket(wsUrl);
+        wsRef.current = ws;
 
-        if (msg.e === 'kline' && msg.k && !refs.current.isZoomed) {
-          const k = msg.k;
-          // Skip zero-value candles (incomplete/no trades yet)
-          if (+k.o === 0 || +k.c === 0) return;
+        ws.onopen = () => {
+          pingInterval = setInterval(() => ws.readyState === 1 && ws.send('{"type":"ping"}'), 30000);
+        };
 
-          const candleTime = Math.floor(k.t / 1000);
-          const candle = {
-            time: candleTime,
-            open: +k.o,
-            high: +k.h,
-            low: +k.l,
-            close: +k.c,
-            volume: +k.v || 0
-          };
+        ws.onmessage = (e) => {
+          if (!mounted) return;
+          const msg = JSON.parse(e.data);
+          if (msg.ohlc) return;
 
-          // Update series directly to avoid layout shift from full setData
-          const series = seriesRefs.current;
-          if (series.candle && refs.current.chartType === 'candles') {
-            series.candle.update(candle);
-          } else if (series.line && refs.current.chartType === 'line') {
-            series.line.update({ time: candle.time, value: candle.close });
-          }
-          if (series.volume) {
-            series.volume.update({
-              time: candle.time,
-              value: candle.volume,
-              color: candle.close >= candle.open ? 'rgba(34,197,94,0.25)' : 'rgba(239,68,68,0.25)'
-            });
-          }
+          if (msg.e === 'kline' && msg.k && !refs.current.isZoomed) {
+            const k = msg.k;
+            if (+k.o === 0 || +k.c === 0) return;
 
-          // Update ref without triggering state re-render
-          if (dataRef.current?.length) {
-            const last = dataRef.current[dataRef.current.length - 1];
-            if (last.time === candle.time) {
-              dataRef.current[dataRef.current.length - 1] = candle;
-            } else if (candle.time > last.time) {
-              dataRef.current.push(candle);
+            const candleTime = Math.floor(k.t / 1000);
+            const candle = {
+              time: candleTime,
+              open: +k.o,
+              high: +k.h,
+              low: +k.l,
+              close: +k.c,
+              volume: +k.v || 0
+            };
+
+            const series = seriesRefs.current;
+            if (series.candle && refs.current.chartType === 'candles') {
+              series.candle.update(candle);
+            } else if (series.line && refs.current.chartType === 'line') {
+              series.line.update({ time: candle.time, value: candle.close });
             }
-          }
-          setLastUpdate(new Date());
-        }
-      };
+            if (series.volume) {
+              series.volume.update({
+                time: candle.time,
+                value: candle.volume,
+                color: candle.close >= candle.open ? 'rgba(34,197,94,0.25)' : 'rgba(239,68,68,0.25)'
+              });
+            }
 
-      ws.onclose = (ev) => {
-        console.log(`[OHLC WS] Closed code=${ev.code} reason="${ev.reason}"`);
-        clearInterval(pingInterval);
-        if (mounted && ev.code !== 1000 && ev.code !== 4011) setTimeout(connectWs, 3000);
-      };
+            if (dataRef.current?.length) {
+              const last = dataRef.current[dataRef.current.length - 1];
+              if (last.time === candle.time) {
+                dataRef.current[dataRef.current.length - 1] = candle;
+              } else if (candle.time > last.time) {
+                dataRef.current.push(candle);
+              }
+            }
+            setLastUpdate(new Date());
+          }
+        };
+
+        ws.onclose = (ev) => {
+          clearInterval(pingInterval);
+          if (mounted && ev.code !== 1000 && ev.code !== 4011) setTimeout(connectWs, 3000);
+        };
+      } catch {
+        if (mounted) setTimeout(connectWs, 3000);
+      }
     };
 
     fetchData().then(() => mounted && connectWs());
@@ -481,12 +489,9 @@ const PriceChartAdvanced = memo(({ token }) => {
 
     setLoading(true);
     const holdersUrl = `${BASE_URL}/holders/graph/${token.md5}?range=ALL`;
-    const t0 = performance.now();
-    console.log('[OHLC] Fetching holders:', holdersUrl);
-    axios
+    api
       .get(holdersUrl, { signal: ctrl.signal })
       .then((res) => {
-        console.log(`[OHLC] Holders done in ${(performance.now() - t0).toFixed(0)}ms`);
         if (!mounted || !res.data?.history?.length) return;
         const processed = res.data.history
           .map((h) => ({
@@ -502,7 +507,7 @@ const PriceChartAdvanced = memo(({ token }) => {
         holderDataRef.current = processed;
         setHolderData(processed);
       })
-      .catch((e) => console.error('[OHLC] Holders error:', e.message))
+      .catch(() => {})
       .finally(() => mounted && setLoading(false));
 
     return () => {
@@ -528,12 +533,9 @@ const PriceChartAdvanced = memo(({ token }) => {
 
     setLoading(true);
     const liquidityUrl = `${BASE_URL}/amm/liquidity-chart?md5=${token.md5}&period=${periodMap[timeRange] || '3m'}`;
-    const t0 = performance.now();
-    console.log('[OHLC] Fetching liquidity:', liquidityUrl);
-    axios
+    api
       .get(liquidityUrl, { signal: ctrl.signal })
       .then((res) => {
-        console.log(`[OHLC] Liquidity done in ${(performance.now() - t0).toFixed(0)}ms`);
         if (!mounted || !res.data?.data?.length) return;
         const mapped = res.data.data.map((d) => ({
           time: Math.floor(new Date(d.date).getTime() / 1000),
@@ -555,7 +557,7 @@ const PriceChartAdvanced = memo(({ token }) => {
         liquidityDataRef.current = processed;
         setLiquidityData(processed);
       })
-      .catch((e) => console.error('[OHLC] Liquidity error:', e.message))
+      .catch(() => {})
       .finally(() => mounted && setLoading(false));
 
     return () => {
@@ -633,55 +635,40 @@ const PriceChartAdvanced = memo(({ token }) => {
       },
       rightPriceScale: {
         borderColor: isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.15)',
-        scaleMargins: {
-          top: 0.05,
-          bottom: 0.25
-        },
-        mode: 1, // Logarithmic scale - better for tokens with large price swings
+        scaleMargins: { top: 0.05, bottom: 0.25 },
+        mode: 1,
         autoScale: true,
-        borderVisible: true,
+        borderVisible: !isMobile,
         visible: true,
-        entireTextOnly: false,
-        drawTicks: true,
-        ticksVisible: true,
+        entireTextOnly: isMobile,
+        drawTicks: !isMobile,
+        ticksVisible: !isMobile,
         alignLabels: true,
-        textColor: isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.8)'
+        textColor: isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.8)',
+        minimumWidth: isMobile ? 40 : 60
       },
       localization: {
         priceFormatter: (price) => {
           if (chartType === 'holders' || chartType === 'liquidity') {
-            if (price < 1000) {
-              return chartType === 'liquidity' ? price.toFixed(2) : Math.round(price).toString();
-            } else if (price < 1000000) {
-              return (price / 1000).toFixed(1) + 'K';
-            } else {
-              return (price / 1000000).toFixed(1) + 'M';
-            }
+            if (price < 1000) return chartType === 'liquidity' ? price.toFixed(isMobile ? 1 : 2) : Math.round(price).toString();
+            if (price < 1e6) return (price / 1e3).toFixed(1) + 'K';
+            return (price / 1e6).toFixed(1) + 'M';
           }
-
-          const s = SYMBOLS[refs.current.currency] || '';
+          const s = isMobile ? '' : (SYMBOLS[refs.current.currency] || '');
           if (price < 0.01) {
             const str = price.toFixed(15);
             const zeros = str.match(/0\.0*/)?.[0]?.length - 2 || 0;
             if (zeros >= 4) {
               const sig = str.replace(/^0\.0+/, '').replace(/0+$/, '');
               const sub = '₀₁₂₃₄₅₆₇₈₉';
-              return (
-                s +
-                '0.0' +
-                String(zeros)
-                  .split('')
-                  .map((d) => sub[+d])
-                  .join('') +
-                sig.slice(0, 4)
-              );
+              return s + '0.0' + String(zeros).split('').map((d) => sub[+d]).join('') + sig.slice(0, isMobile ? 2 : 4);
             }
-            return s + price.toFixed(6).replace(/0+$/, '').replace(/\.$/, '');
+            return s + price.toFixed(isMobile ? 4 : 6).replace(/0+$/, '').replace(/\.$/, '');
           }
-          if (price < 1) return s + price.toFixed(4).replace(/0+$/, '').replace(/\.$/, '');
-          if (price < 100) return s + price.toFixed(2);
-          if (price < 1000) return s + price.toFixed(1);
-          return s + Math.round(price).toLocaleString();
+          if (price < 1) return s + price.toFixed(isMobile ? 3 : 4).replace(/0+$/, '').replace(/\.$/, '');
+          if (price < 100) return s + price.toFixed(isMobile ? 1 : 2);
+          if (price < 1000) return s + price.toFixed(isMobile ? 0 : 1);
+          return s + (isMobile ? formatMcap(price) : Math.round(price).toLocaleString());
         }
       },
       timeScale: {
@@ -1175,116 +1162,43 @@ const PriceChartAdvanced = memo(({ token }) => {
       <Card isDark={isDark} isMobile={isMobile} isFullscreen={isFullscreen} style={{ flex: 1 }}>
         <ChartHeader>
           <HeaderSection>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span
-                style={{
-                  fontSize: '13px',
-                  fontWeight: 600,
-                  color: isDark ? '#fff' : '#1a1a1a'
-                }}
-              >
-                {token.name}{' '}
-                <span style={{ opacity: 0.5, fontWeight: 400 }}>
-                  {chartType === 'holders'
-                    ? 'Holders'
-                    : chartType === 'liquidity'
-                      ? 'TVL'
-                      : activeFiatCurrency}
-                </span>
-              </span>
+            <span style={{ fontSize: '13px', fontWeight: 600, color: isDark ? '#fff' : '#1a1a1a' }}>
+              {token.name} <span style={{ opacity: 0.5, fontWeight: 400 }}>{chartType === 'holders' ? 'Holders' : chartType === 'liquidity' ? 'TVL' : activeFiatCurrency}</span>
+            </span>
 
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'nowrap' }}>
               {lastUpdate && (
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    padding: '2px 8px',
-                    borderRadius: '12px',
-                    background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)',
-                    border: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`,
-                    height: isMobile ? '24px' : '26px'
-                  }}
-                >
-                  <div
-                    style={{
-                      width: '5px',
-                      height: '5px',
-                      borderRadius: '50%',
-                      background: isUserZoomed ? '#f59e0b' : '#22c55e',
-                      boxShadow: isUserZoomed ? 'none' : '0 0 6px rgba(34,197,94,0.4)'
-                    }}
-                  />
-                  <span
-                    style={{
-                      fontSize: '10px',
-                      fontFamily: 'var(--font-mono)',
-                      color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)',
-                      fontWeight: 500
-                    }}
-                  >
-                    {lastUpdate.toLocaleTimeString('en-US', {
-                      hour: '2-digit',
-                      minute: '2-digit',
-                      second: '2-digit',
-                      hour12: false
-                    })}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '2px 6px', borderRadius: '10px', background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)', border: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`, height: '22px' }}>
+                  <div style={{ width: '5px', height: '5px', borderRadius: '50%', background: isUserZoomed ? '#f59e0b' : '#22c55e', boxShadow: isUserZoomed ? 'none' : '0 0 6px rgba(34,197,94,0.4)' }} />
+                  <span style={{ fontSize: '9px', fontFamily: 'var(--font-mono)', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', fontWeight: 500 }}>
+                    {lastUpdate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })}
                   </span>
-                  {isUserZoomed && (
-                    <span style={{ fontSize: '9px', color: '#f59e0b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                      PAUSED
-                    </span>
-                  )}
+                  {isUserZoomed && <span style={{ fontSize: '8px', color: '#f59e0b', fontWeight: 600 }}>PAUSED</span>}
                 </div>
               )}
-            </div>
 
-            {chartType === 'liquidity' && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '10px', background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)', padding: '3px 8px', borderRadius: '6px' }}>
-                <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)' }}>
-                  <span style={{ width: '8px', height: '3px', borderRadius: '1.5px', background: '#06b6d4' }} />
-                  XRP
-                </span>
-                <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)' }}>
-                  <span style={{ width: '8px', height: '3px', borderRadius: '1.5px', background: '#f59e0b' }} />
-                  Token
-                </span>
-              </div>
-            )}
-
-            {athData.athMcap > 0 &&
-              chartType !== 'holders' &&
-              chartType !== 'liquidity' &&
-              (() => {
+              {athData.athMcap > 0 && chartType !== 'holders' && chartType !== 'liquidity' && (() => {
                 const pct = Math.max(0, Math.min(100, 100 + parseFloat(athData.percentDown)));
                 const col = pct > 80 ? '#22c55e' : pct < 20 ? '#ef4444' : '#f59e0b';
                 return (
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '10px',
-                      padding: '2px 10px',
-                      borderRadius: '12px',
-                      background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)',
-                      border: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`,
-                      height: isMobile ? '24px' : '26px'
-                    }}
-                  >
-                    <span style={{ fontSize: '9px', fontWeight: 700, color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>ATH</span>
-                    <div style={{ position: 'relative', width: isMobile ? '30px' : '40px', height: '3px', borderRadius: '1.5px', background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.1)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '4px' : '8px', padding: '2px 6px', borderRadius: '10px', background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)', border: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`, height: '22px' }}>
+                    <span style={{ fontSize: '8px', fontWeight: 700, color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)' }}>ATH</span>
+                    <div style={{ position: 'relative', width: isMobile ? '20px' : '30px', height: '3px', borderRadius: '1.5px', background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.1)' }}>
                       <div style={{ position: 'absolute', left: 0, top: 0, height: '100%', width: `${pct}%`, borderRadius: '1.5px', background: col }} />
                     </div>
-                    <span style={{ fontSize: '10px', fontWeight: 700, color: col, fontFamily: 'var(--font-mono)' }}>
-                      {athData.percentDown}%
-                    </span>
-                    <div style={{ width: '1px', height: '10px', background: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' }} />
-                    <span style={{ fontSize: '10px', fontWeight: 600, color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.6)', fontFamily: 'var(--font-mono)' }}>
-                      {SYMBOLS[activeFiatCurrency] || ''}{formatMcap(athData.athMcap)}
-                    </span>
+                    <span style={{ fontSize: '9px', fontWeight: 700, color: col, fontFamily: 'var(--font-mono)' }}>{athData.percentDown}%</span>
+                    {!isMobile && <><div style={{ width: '1px', height: '10px', background: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' }} /><span style={{ fontSize: '9px', fontWeight: 600, color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.6)', fontFamily: 'var(--font-mono)' }}>{SYMBOLS[activeFiatCurrency] || ''}{formatMcap(athData.athMcap)}</span></>}
                   </div>
                 );
               })()}
+
+              {chartType === 'liquidity' && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '9px', background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)', padding: '2px 6px', borderRadius: '6px' }}>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '3px', color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)' }}><span style={{ width: '6px', height: '2px', borderRadius: '1px', background: '#06b6d4' }} />XRP</span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '3px', color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)' }}><span style={{ width: '6px', height: '2px', borderRadius: '1px', background: '#f59e0b' }} />Token</span>
+                </div>
+              )}
+            </div>
           </HeaderSection>
 
           <HeaderSection>
@@ -1479,7 +1393,7 @@ const PriceChartAdvanced = memo(({ token }) => {
               const ago = d < 60 ? d + 's' : d < 3600 ? Math.floor(d / 60) + 'm' : d < 86400 ? Math.floor(d / 3600) + 'h' : Math.floor(d / 86400) + 'd';
               const isXrp = ['SELL', 'BUY', 'WITHDRAW', 'DEPOSIT', 'SEND', 'RECEIVE'].includes(e.type);
               const amt = isXrp && e.xrpAmount > 0.001 ? f(e.xrpAmount) + ' XRP' : e.tokenAmount > 0 ? f(e.tokenAmount) + (e.currency ? ' ' + e.currency : '') : '';
-              const short = { SELL: 'S', BUY: 'B', SEND: 'OUT', RECEIVE: 'IN', 'TRANSFER OUT': 'OUT', WITHDRAW: 'W', DEPOSIT: 'D' }[e.type] || e.type.slice(0, 3);
+              const short = { SELL: 'Sell', BUY: 'Buy', SEND: 'Send', RECEIVE: 'Receive', 'TRANSFER OUT': 'Send', WITHDRAW: 'Withdraw', DEPOSIT: 'Deposit', 'CHECK CREATE': 'Check', 'CHECK CASH': 'Check', 'CHECK RECEIVE': 'Check' }[e.type] || e.type;
               return (
                 <a
                   key={e.hash || i}

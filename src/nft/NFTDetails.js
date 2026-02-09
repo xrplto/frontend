@@ -18,7 +18,7 @@ import {
   X,
   Share,
   Loader2,
-  Star,
+  Bookmark,
   Trophy,
   Link2,
   TrendingUp,
@@ -420,17 +420,15 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
   // Check if NFT is in watchlist
   React.useEffect(() => {
     if (!accountLogin || !nft?.NFTokenID) return;
-    import('axios').then(({ default: axios }) => {
-      axios
-        .get(`https://api.xrpl.to/v1/watchlist/nft?account=${accountLogin}`)
-        .then((res) => {
-          if (res.data?.success && res.data.watchlist) {
-            const allItems = Object.values(res.data.watchlist).flatMap((col) => col.items || []);
-            setIsSaved(allItems.some((item) => item.nftokenId === nft.NFTokenID));
-          }
-        })
-        .catch(() => {});
-    });
+    fetch(`https://api.xrpl.to/v1/watchlist/nft?account=${accountLogin}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.success && data.watchlist) {
+          const allItems = Object.values(data.watchlist).flatMap((col) => col.items || []);
+          setIsSaved(allItems.some((item) => item.nftokenId === nft.NFTokenID));
+        }
+      })
+      .catch(() => {});
   }, [accountLogin, nft?.NFTokenID]);
 
   const handleSave = async () => {
@@ -440,18 +438,22 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
     }
     setSaveLoading(true);
     try {
-      const { default: axios } = await import('axios');
       const action = isSaved ? 'remove' : 'add';
-      const res = await axios.post('https://api.xrpl.to/v1/watchlist/nft', {
-        account: accountLogin,
-        nftokenId: nft?.NFTokenID,
-        action
+      const res = await fetch('https://api.xrpl.to/v1/watchlist/nft', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          account: accountLogin,
+          nftokenId: nft?.NFTokenID,
+          action
+        })
       });
-      if (res.data?.success) {
+      const data = await res.json();
+      if (data?.success) {
         setIsSaved(!isSaved);
         openSnackbar(isSaved ? 'Removed from watchlist' : 'Added to watchlist', 'success');
       } else {
-        openSnackbar(res.data?.message || 'Failed to update', 'error');
+        openSnackbar(data?.message || 'Failed to update', 'error');
       }
     } catch (e) {
       openSnackbar('Failed to update watchlist', 'error');
@@ -617,7 +619,7 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
               {saveLoading ? (
                 <Loader2 size={18} className="animate-spin" />
               ) : (
-                <Star size={18} fill={isSaved ? 'currentColor' : 'none'} />
+                <Bookmark size={18} fill={isSaved ? 'currentColor' : 'none'} />
               )}
             </button>
           </div>

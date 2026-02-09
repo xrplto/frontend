@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext, useRef } from 'react';
 import { AppContext } from 'src/context/AppContext';
 import { cn } from 'src/utils/cn';
 import { Loader2, ChevronLeft, ChevronRight, Search, X, Wifi, WifiOff, MessageCircle, Tag, Trash2 } from 'lucide-react';
-import axios from 'axios';
+import api from 'src/utils/api';
 import Link from 'next/link';
 import { MD5 } from 'crypto-js';
 
@@ -88,9 +88,9 @@ const RichList = ({ token, walletLabels: walletLabelsProp = {}, onLabelsChange }
     setLabelSaving(true);
     try {
       if (walletLabels[wallet]) {
-        await axios.delete(`https://api.xrpl.to/api/user/${accountLogin}/labels/${wallet}`);
+        await api.delete(`https://api.xrpl.to/api/user/${accountLogin}/labels/${wallet}`);
       }
-      const res = await axios.post(`https://api.xrpl.to/api/user/${accountLogin}/labels`, {
+      const res = await api.post(`https://api.xrpl.to/api/user/${accountLogin}/labels`, {
         wallet,
         label: labelInput.trim()
       });
@@ -107,7 +107,7 @@ const RichList = ({ token, walletLabels: walletLabelsProp = {}, onLabelsChange }
     if (!accountLogin) return;
     setLabelSaving(true);
     try {
-      await axios.delete(`https://api.xrpl.to/api/user/${accountLogin}/labels/${wallet}`);
+      await api.delete(`https://api.xrpl.to/api/user/${accountLogin}/labels/${wallet}`);
       const newLabels = { ...walletLabels };
       delete newLabels[wallet];
       setWalletLabels(newLabels);
@@ -149,36 +149,43 @@ const RichList = ({ token, walletLabels: walletLabelsProp = {}, onLabelsChange }
       return;
     }
 
-    const wsUrl = `wss://api.xrpl.to/ws/holders/list/${token.md5}?limit=${rowsPerPage}`;
-    const ws = new WebSocket(wsUrl);
-    wsRef.current = ws;
-
-    ws.onopen = () => setWsConnected(true);
-    ws.onclose = () => setWsConnected(false);
-    ws.onerror = () => setWsConnected(false);
-
-    ws.onmessage = (event) => {
+    let ws = null;
+    (async () => {
       try {
-        const msg = JSON.parse(event.data);
-        if (msg.type === 'initial' || msg.e === 'update') {
-          // Only use WS data if it includes acquisition fields
-          if (msg.holders?.length && msg.holders[0].acquisition !== undefined) {
-            setRichList(msg.holders);
+        const res = await fetch(`/api/ws/session?type=holders&id=${token.md5}&limit=${rowsPerPage}`);
+        const { wsUrl } = await res.json();
+        ws = new WebSocket(wsUrl);
+        wsRef.current = ws;
+
+        ws.onopen = () => setWsConnected(true);
+        ws.onclose = () => setWsConnected(false);
+        ws.onerror = () => setWsConnected(false);
+
+        ws.onmessage = (event) => {
+          try {
+            const msg = JSON.parse(event.data);
+            if (msg.type === 'initial' || msg.e === 'update') {
+              if (msg.holders?.length) {
+                setRichList(msg.holders);
+              }
+              if (msg.summary) setSummary(msg.summary);
+              if (msg.total) {
+                setTotalHolders(msg.total);
+                setTotalPages(Math.ceil(msg.total / rowsPerPage));
+              }
+              setLoading(false);
+            }
+          } catch (e) {
+            console.error('WS parse error:', e);
           }
-          if (msg.summary) setSummary(msg.summary);
-          if (msg.total) {
-            setTotalHolders(msg.total);
-            setTotalPages(Math.ceil(msg.total / rowsPerPage));
-          }
-          setLoading(false);
-        }
+        };
       } catch (e) {
-        console.error('WS parse error:', e);
+        console.error('[Holders WS] Session error:', e);
       }
-    };
+    })();
 
     return () => {
-      ws.close();
+      if (ws) ws.close();
       wsRef.current = null;
       setWsConnected(false);
     };
@@ -562,7 +569,7 @@ const RichList = ({ token, walletLabels: walletLabelsProp = {}, onLabelsChange }
                           )}
                         </>
                       )}
-                      {(isAMM || isCreator || isFrozen || holder.source) && (
+                      {(isAMM || isCreator || isFrozen || holder.tradedPct > 0 || holder.tradeCount > 0) && (
                         <div className="flex items-center gap-1 flex-wrap">
                           {isAMM && (
                             <span className="rounded bg-primary/20 px-1.5 py-0.5 text-[9px] font-medium text-primary">
@@ -579,22 +586,16 @@ const RichList = ({ token, walletLabels: walletLabelsProp = {}, onLabelsChange }
                               Frozen
                             </span>
                           )}
-                          {holder.source && (
+                          {holder.source && holder.source !== 'transfer' && (
                             <span
                               className={cn(
                                 'rounded px-1.5 py-0.5 text-[9px] font-medium',
                                 holder.source === 'traded'
                                   ? 'bg-emerald-500/15 text-emerald-400'
-                                  : holder.source === 'mixed'
-                                    ? 'bg-amber-500/15 text-amber-400'
-                                    : 'bg-white/10 text-white/50'
+                                  : 'bg-amber-500/15 text-amber-400'
                               )}
                             >
-                              {holder.source === 'traded'
-                                ? 'Trader'
-                                : holder.source === 'mixed'
-                                  ? 'Mixed'
-                                  : 'Transfer'}
+                              {holder.source === 'traded' ? 'Trader' : 'Mixed'}
                             </span>
                           )}
                           {holder.tradeCount > 0 && (
@@ -658,14 +659,20 @@ const RichList = ({ token, walletLabels: walletLabelsProp = {}, onLabelsChange }
                               />
                             )}
                           </div>
-                          <span
-                            className={cn(
-                              'text-[9px] tabular-nums min-w-[28px]',
-                              isDark ? 'text-white/40' : 'text-gray-400'
+                          <div className="flex items-center gap-1 text-[9px] tabular-nums">
+                            {holder.acquisition.dexPct > 0 && (
+                              <span className="text-emerald-500">{holder.acquisition.dexPct}% DEX</span>
                             )}
-                          >
-                            {holder.tradedPct > 0 ? `${holder.tradedPct}%` : 'T'}
-                          </span>
+                            {holder.acquisition.ammPct > 0 && (
+                              <span className="text-primary">{holder.acquisition.ammPct}% AMM</span>
+                            )}
+                            {holder.acquisition.lpPct > 0 && (
+                              <span className="text-purple-400">{holder.acquisition.lpPct}% LP</span>
+                            )}
+                            {holder.tradedPct === 0 && (
+                              <span className={isDark ? 'text-white/25' : 'text-gray-400'}>Transfer</span>
+                            )}
+                          </div>
                         </div>
                       ) : (
                         <div className="flex justify-center">

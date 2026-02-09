@@ -1,5 +1,6 @@
+import { apiFetch } from 'src/utils/api';
 import React, { useState, useEffect, useRef, useCallback, useContext, useMemo } from 'react';
-import { X, Inbox, Ban, VolumeX, Shield, HelpCircle, Send, ChevronLeft, ChevronDown, Plus, Clock, CheckCircle, AlertCircle, Loader2, Check, CheckCheck } from 'lucide-react';
+import { X, Inbox, Ban, VolumeX, Shield, HelpCircle, Send, ChevronLeft, ChevronDown, Plus, Clock, CheckCircle, AlertCircle, Loader2, Check, CheckCheck, MessageCircle } from 'lucide-react';
 import { AppContext } from 'src/context/AppContext';
 
 // Local emotes from /emotes/
@@ -34,7 +35,7 @@ const fetchUserAvatar = async (wallet) => {
   if (!wallet || userAvatarCache[wallet] !== undefined) return userAvatarCache[wallet];
   userAvatarCache[wallet] = null; // Mark as fetching
   try {
-    const res = await fetch(`https://api.xrpl.to/api/user/${wallet}`);
+    const res = await apiFetch(`https://api.xrpl.to/api/user/${wallet}`);
     const data = await res.json();
     userAvatarCache[wallet] = data?.user?.avatar || null;
   } catch { userAvatarCache[wallet] = null; }
@@ -88,13 +89,13 @@ const EmotePicker = ({ onSelect, inputRef, input, setInput }) => {
   if (!show || !filtered.length) return null;
 
   return (
-    <div ref={pickerRef} className="absolute bottom-full left-0 mb-2 w-72 max-h-52 overflow-y-auto rounded-xl bg-[#1a1a1a] border border-white/10 shadow-2xl z-50 p-1">
+    <div ref={pickerRef} className="absolute bottom-full left-0 max-sm:left-0 max-sm:right-0 mb-2 w-72 max-sm:w-full max-h-52 overflow-y-auto overscroll-contain rounded-xl bg-[#1a1a1a] border border-white/10 shadow-2xl z-50 p-1">
       <div className="px-2 py-1.5 text-[10px] uppercase tracking-wide opacity-40 font-medium">Emotes</div>
       {filtered.map((e, i) => (
         <button
           key={e.name}
           onClick={() => insertEmote(e)}
-          className={`w-full flex items-center gap-3 px-2 py-2 text-left text-sm rounded-lg transition-colors ${i === selectedIdx ? 'bg-[#137DFE]/20 text-white' : 'hover:bg-white/5 text-white/80'}`}
+          className={`w-full flex items-center gap-3 px-3 py-2.5 text-left text-sm rounded-lg transition-colors ${i === selectedIdx ? 'bg-[#137DFE]/20 text-white' : 'hover:bg-white/5 active:bg-white/10 text-white/80'}`}
         >
           <img src={e.url} alt={e.name} className="w-7 h-7 object-contain" loading="lazy" />
           <span className="font-medium">{e.name}</span>
@@ -127,7 +128,7 @@ const ChatAvatar = ({ wallet }) => {
     if (!wallet || userAvatarCache[wallet]) return;
     (async () => {
       try {
-        const res = await fetch(`https://api.xrpl.to/api/user/${wallet}`);
+        const res = await apiFetch(`https://api.xrpl.to/api/user/${wallet}`);
         const data = await res.json();
         const url = data?.user?.avatar;
         const id = data?.user?.avatarNftId;
@@ -142,7 +143,7 @@ const ChatAvatar = ({ wallet }) => {
     setShowTip(true);
     if (!nftId || nftData) return;
     try {
-      const res = await fetch(`https://api.xrpl.to/v1/nft/${nftId}`);
+      const res = await apiFetch(`https://api.xrpl.to/v1/nft/${nftId}`);
       setNftData(await res.json());
     } catch { }
   };
@@ -173,7 +174,7 @@ const DmAvatar = ({ wallet, size = 'sm' }) => {
     if (userAvatarCache[wallet]) { setAvatar(userAvatarCache[wallet].avatar); return; }
     (async () => {
       try {
-        const res = await fetch(`https://api.xrpl.to/api/user/${wallet}`);
+        const res = await apiFetch(`https://api.xrpl.to/api/user/${wallet}`);
         const data = await res.json();
         const url = data?.user?.avatar || null;
         userAvatarCache[wallet] = { avatar: url, nftId: data?.user?.avatarNftId || null };
@@ -201,7 +202,7 @@ const TokenPreview = ({ match }) => {
 
   useEffect(() => {
     setLoading(true);
-    fetch(`https://api.xrpl.to/v1/token/${match}`)
+    apiFetch(`https://api.xrpl.to/v1/token/${match}`)
       .then(r => r.json())
       .then(d => { if (d.token) setToken(d.token); })
       .catch(() => { })
@@ -266,7 +267,7 @@ const AttachedTokenPreview = ({ md5 }) => {
   const [showTooltip, setShowTooltip] = useState(false);
 
   useEffect(() => {
-    fetch(`https://api.xrpl.to/v1/token/${md5}`)
+    apiFetch(`https://api.xrpl.to/v1/token/${md5}`)
       .then(r => r.json())
       .then(d => { if (d.token) setToken(d.token); })
       .catch(() => { });
@@ -329,7 +330,7 @@ const NFTPreview = ({ nftId }) => {
 
   useEffect(() => {
     setLoading(true);
-    fetch(`https://api.xrpl.to/v1/nft/${nftId}`)
+    apiFetch(`https://api.xrpl.to/v1/nft/${nftId}`)
       .then(r => r.json())
       .then(d => { setNft(d.nft || d); })
       .catch(() => { })
@@ -434,6 +435,14 @@ const renderMessage = (text) => {
 const SUPPORT_TIERS = ['vip', 'nova', 'diamond', 'verified', 'god', 'developer', 'partner', 'business', 'professional'];
 const BASE_URL = 'https://api.xrpl.to';
 
+const getApiKey = () => {
+  if (typeof window === 'undefined') return null;
+  try {
+    const profile = JSON.parse(localStorage.getItem('account_profile_2') || 'null');
+    return profile?.apiKey || null;
+  } catch { return null; }
+};
+
 const SupportTickets = ({ wallet, isStaff, tier, isDark, onBack }) => {
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -460,7 +469,7 @@ const SupportTickets = ({ wallet, isStaff, tier, isDark, onBack }) => {
 
   if (!canAccess) {
     return (
-      <div className="h-[400px] flex flex-col items-center justify-center text-center px-6">
+      <div className="h-[400px] max-sm:h-full max-sm:flex-1 flex flex-col items-center justify-center text-center px-6">
         <HelpCircle size={32} className="opacity-20 mb-3" />
         <p className="text-sm opacity-60">Support tickets require VIP, Nova, Diamond, or Verified tier</p>
         <button onClick={onBack} className="mt-4 px-4 py-1.5 text-xs rounded-lg bg-white/10 hover:bg-white/20">Back to Chat</button>
@@ -477,19 +486,19 @@ const SupportTickets = ({ wallet, isStaff, tier, isDark, onBack }) => {
   }
 
   return (
-    <div className="h-[400px] flex flex-col">
-      <div className="flex items-center justify-between px-3 py-2 border-b border-inherit">
+    <div className="h-[400px] max-sm:h-full max-sm:flex-1 flex flex-col">
+      <div className="flex items-center justify-between px-3 py-2 border-b border-inherit shrink-0">
         <div className="flex items-center gap-2">
-          <button onClick={onBack} className="p-1 hover:bg-white/10 rounded"><ChevronLeft size={16} /></button>
+          <button onClick={onBack} className="p-1.5 hover:bg-white/10 rounded-lg active:bg-white/20"><ChevronLeft size={18} /></button>
           <span className="text-sm font-medium">Support Tickets</span>
         </div>
-        <button onClick={() => setShowCreate(true)} className="flex items-center gap-1 px-2 py-1 text-xs rounded-lg bg-[#137DFE] text-white hover:bg-[#137DFE]/80">
-          <Plus size={12} /> New
+        <button onClick={() => setShowCreate(true)} className="flex items-center gap-1 px-3 py-1.5 text-xs rounded-lg bg-[#137DFE] text-white hover:bg-[#137DFE]/80 active:bg-[#137DFE]/60">
+          <Plus size={14} /> New
         </button>
       </div>
-      <div className="flex gap-1 px-2 py-1.5 border-b border-inherit">
+      <div className="flex gap-1.5 px-2 py-2 border-b border-inherit overflow-x-auto scrollbar-hide">
         {['open', 'in_progress', 'resolved', 'all'].map(s => (
-          <button key={s} onClick={() => setFilter(s)} className={`px-2 py-0.5 text-[10px] rounded capitalize ${filter === s ? 'bg-[#650CD4] text-white' : 'opacity-60 hover:opacity-100'}`}>
+          <button key={s} onClick={() => setFilter(s)} className={`px-2.5 py-1 text-[11px] rounded-lg capitalize shrink-0 transition-all active:scale-95 ${filter === s ? 'bg-[#650CD4] text-white' : 'opacity-60 hover:opacity-100 active:opacity-100'}`}>
             {s.replace('_', ' ')}
           </button>
         ))}
@@ -504,12 +513,12 @@ const SupportTickets = ({ wallet, isStaff, tier, isDark, onBack }) => {
           </div>
         ) : (
           tickets.map(t => (
-            <button key={t._id} onClick={() => setSelectedTicket(t._id)} className="w-full text-left px-3 py-2.5 hover:bg-white/5 border-b border-inherit last:border-b-0">
+            <button key={t._id} onClick={() => setSelectedTicket(t._id)} className="w-full text-left px-3 py-3 hover:bg-white/5 active:bg-white/10 border-b border-inherit last:border-b-0 transition-colors">
               <div className="flex items-center justify-between gap-2">
                 <span className="font-medium text-sm truncate flex-1">{t.subject}</span>
                 <TicketStatus status={t.status} />
               </div>
-              <div className="flex items-center gap-2 mt-1 text-[10px] opacity-50">
+              <div className="flex items-center gap-2 mt-1.5 text-[11px] opacity-50">
                 <span>{t.username || t.wallet?.slice(0, 8)}</span>
                 <span>{timeAgo(t.createdAt)}</span>
               </div>
@@ -565,42 +574,42 @@ const CreateTicket = ({ wallet, isDark, onBack, onCreated }) => {
   };
 
   return (
-    <div className="h-[400px] flex flex-col">
-      <div className="flex items-center gap-2 px-3 py-2 border-b border-inherit">
-        <button onClick={onBack} className="p-1 hover:bg-white/10 rounded"><ChevronLeft size={16} /></button>
+    <div className="h-[400px] max-sm:h-full max-sm:flex-1 flex flex-col">
+      <div className="flex items-center gap-2 px-3 py-2 border-b border-inherit shrink-0">
+        <button onClick={onBack} className="p-1.5 hover:bg-white/10 rounded-lg active:bg-white/20"><ChevronLeft size={18} /></button>
         <span className="text-sm font-medium">New Ticket</span>
       </div>
-      <div className="flex-1 p-3 space-y-3 overflow-y-auto">
-        {error && <div className="px-3 py-2 rounded-lg bg-red-500/10 text-red-400 text-xs">{error}</div>}
+      <div className="flex-1 p-3 max-sm:p-4 space-y-4 overflow-y-auto overscroll-contain">
+        {error && <div className="px-3 py-2.5 rounded-lg bg-red-500/10 text-red-400 text-sm">{error}</div>}
         <div>
-          <label className="text-[10px] uppercase opacity-50 mb-1 block">Subject</label>
+          <label className="text-[11px] uppercase opacity-50 mb-1.5 block">Subject</label>
           <input
             value={subject}
             onChange={e => setSubject(e.target.value.slice(0, 100))}
             placeholder="Brief description..."
-            className={`w-full px-3 py-2 rounded-lg border text-sm ${isDark ? 'bg-white/5 border-white/10' : 'bg-black/5 border-black/10'}`}
+            className={`w-full px-3 py-2.5 max-sm:py-3 rounded-lg border text-sm max-sm:text-base ${isDark ? 'bg-white/5 border-white/10' : 'bg-black/5 border-black/10'}`}
           />
-          <span className="text-[10px] opacity-40 mt-0.5 block text-right">{subject.length}/100</span>
+          <span className="text-[11px] opacity-40 mt-1 block text-right">{subject.length}/100</span>
         </div>
         <div>
-          <label className="text-[10px] uppercase opacity-50 mb-1 block">Message</label>
+          <label className="text-[11px] uppercase opacity-50 mb-1.5 block">Message</label>
           <textarea
             value={message}
             onChange={e => setMessage(e.target.value.slice(0, 2000))}
             placeholder="Describe your issue in detail..."
             rows={6}
-            className={`w-full px-3 py-2 rounded-lg border text-sm resize-none ${isDark ? 'bg-white/5 border-white/10' : 'bg-black/5 border-black/10'}`}
+            className={`w-full px-3 py-2.5 max-sm:py-3 rounded-lg border text-sm max-sm:text-base resize-none ${isDark ? 'bg-white/5 border-white/10' : 'bg-black/5 border-black/10'}`}
           />
-          <span className="text-[10px] opacity-40 mt-0.5 block text-right">{message.length}/2000</span>
+          <span className="text-[11px] opacity-40 mt-1 block text-right">{message.length}/2000</span>
         </div>
       </div>
-      <div className="p-3 border-t border-inherit">
+      <div className="p-3 max-sm:p-4 max-sm:pb-[calc(16px+env(safe-area-inset-bottom))] border-t border-inherit">
         <button
           onClick={submit}
           disabled={submitting || subject.length < 3 || message.length < 10}
-          className="w-full py-2 rounded-lg bg-[#137DFE] text-white text-sm font-medium disabled:opacity-40 flex items-center justify-center gap-2"
+          className="w-full py-2.5 max-sm:py-3 rounded-lg bg-[#137DFE] text-white text-sm max-sm:text-base font-medium disabled:opacity-40 active:bg-[#137DFE]/60 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
         >
-          {submitting ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
+          {submitting ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
           Submit Ticket
         </button>
       </div>
@@ -660,18 +669,18 @@ const TicketDetail = ({ ticketId, wallet, isStaff, isDark, onBack }) => {
     } catch { }
   };
 
-  if (loading) return <div className="h-[400px] flex items-center justify-center"><Loader2 size={20} className="animate-spin opacity-40" /></div>;
-  if (!ticket) return <div className="h-[400px] flex items-center justify-center opacity-40">Ticket not found</div>;
+  if (loading) return <div className="h-[400px] max-sm:h-full max-sm:flex-1 flex items-center justify-center"><Loader2 size={20} className="animate-spin opacity-40" /></div>;
+  if (!ticket) return <div className="h-[400px] max-sm:h-full max-sm:flex-1 flex items-center justify-center opacity-40">Ticket not found</div>;
 
   const canReply = ticket.status !== 'closed';
 
   return (
-    <div className="h-[400px] flex flex-col">
+    <div className="h-[400px] max-sm:h-full max-sm:flex-1 flex flex-col">
       <div className="px-3 py-2 border-b border-inherit">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <button onClick={onBack} className="p-1 hover:bg-white/10 rounded"><ChevronLeft size={16} /></button>
-            <span className="text-sm font-medium truncate max-w-[200px]">{ticket.subject}</span>
+          <div className="flex items-center gap-2 min-w-0">
+            <button onClick={onBack} className="p-1.5 hover:bg-white/10 rounded-lg active:bg-white/20 shrink-0"><ChevronLeft size={18} /></button>
+            <span className="text-sm font-medium truncate max-sm:max-w-[180px] max-w-[200px]">{ticket.subject}</span>
           </div>
           <TicketStatus status={ticket.status} />
         </div>
@@ -707,16 +716,16 @@ const TicketDetail = ({ ticketId, wallet, isStaff, isDark, onBack }) => {
         <div ref={messagesEnd} />
       </div>
       {canReply && (
-        <div className="p-2 border-t border-inherit flex gap-2">
+        <div className="p-2 max-sm:p-3 max-sm:pb-[calc(12px+env(safe-area-inset-bottom))] border-t border-inherit flex gap-2">
           <input
             value={reply}
             onChange={e => setReply(e.target.value.slice(0, 2000))}
             placeholder="Type your reply..."
             onKeyDown={e => e.key === 'Enter' && sendReply()}
-            className={`flex-1 px-3 py-2 rounded-lg border text-sm ${isDark ? 'bg-white/5 border-white/10' : 'bg-black/5 border-black/10'}`}
+            className={`flex-1 px-3 py-2.5 max-sm:py-3 rounded-lg border text-sm max-sm:text-base ${isDark ? 'bg-white/5 border-white/10' : 'bg-black/5 border-black/10'}`}
           />
-          <button onClick={sendReply} disabled={!reply.trim() || submitting} className="px-3 py-2 rounded-lg bg-[#137DFE] text-white disabled:opacity-40">
-            {submitting ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
+          <button onClick={sendReply} disabled={!reply.trim() || submitting} className="px-3 py-2.5 max-sm:px-4 max-sm:py-3 rounded-lg bg-[#137DFE] text-white disabled:opacity-40 active:bg-[#137DFE]/60 active:scale-95 transition-all">
+            {submitting ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
           </button>
         </div>
       )}
@@ -827,7 +836,7 @@ const Chat = () => {
     if (t === 'professional') return 'text-[#137DFE]';
     if (t === 'vip') return 'text-[#08AA09]';
     if (t === 'diamond') return 'text-[#a855f7]';
-    if (t === 'member') return 'text-white/50';
+    if (t === 'member' || !t) return isDark ? 'text-white/50' : 'text-black/50';
     return 'text-[#650CD4]';
   };
 
@@ -852,18 +861,11 @@ const Chat = () => {
     setShowScrollBtn(false);
   };
 
-  const getApiKey = () => {
-    try {
-      const profile = JSON.parse(localStorage.getItem('account_profile_2') || 'null');
-      return profile?.apiKey || null;
-    } catch { return null; }
-  };
-
   const modAction = async (action, wallet, duration = null) => {
     const apiKey = getApiKey();
     if (!apiKey) { setModError('No API key'); return null; }
     try {
-      const res = await fetch(`https://api.xrpl.to/v1/chat/${action}`, {
+      const res = await apiFetch(`https://api.xrpl.to/v1/chat/${action}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-Api-Key': apiKey },
         body: JSON.stringify({ wallet, duration })
@@ -1057,11 +1059,33 @@ const Chat = () => {
     return ws;
   }, []);
 
+  // Fetch messages via REST for non-logged-in users (read-only mode)
+  useEffect(() => {
+    if (!isOpen || authUser?.wallet) return;
+
+    let cancelled = false;
+    const fetchMessages = async () => {
+      try {
+        const res = await apiFetch('https://api.xrpl.to/api/chat/messages?limit=50');
+        const data = await res.json();
+        if (!cancelled && data.messages) {
+          setMessages(data.messages);
+          setOnlineCount(data.online || 0);
+        }
+      } catch { }
+    };
+
+    fetchMessages();
+    const interval = setInterval(fetchMessages, 10000); // Refresh every 10s
+
+    return () => { cancelled = true; clearInterval(interval); };
+  }, [isOpen, authUser?.wallet]);
+
   useEffect(() => {
     if (!isOpen || !getLoggedInWallet()) return;
 
     // Mark chat as read
-    fetch('https://api.xrpl.to/v1/chat/read', {
+    apiFetch('https://api.xrpl.to/v1/chat/read', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ wallet: getLoggedInWallet() })
@@ -1105,6 +1129,7 @@ const Chat = () => {
 
   useEffect(() => {
     try { localStorage.setItem('chat_open', isOpen); } catch { }
+    if (isOpen) setTimeout(() => messagesEndRef.current?.scrollIntoView(), 100);
   }, [isOpen]);
 
   useEffect(() => {
@@ -1219,40 +1244,38 @@ const Chat = () => {
   const baseClasses = isDark ? 'bg-[#0a0a0a] text-white border-white/10' : 'bg-[#fafafa] text-black border-black/10';
 
   return (
-    <div className="fixed bottom-4 right-4 z-50">
+    <div className={`fixed z-50 ${isOpen ? 'bottom-4 right-4 max-sm:inset-0' : 'bottom-4 right-4 max-sm:bottom-0 max-sm:right-0 max-sm:left-0'}`}>
       {!isOpen ? (
         <button
           onClick={() => setIsOpen(true)}
-          className="relative flex items-center gap-3 px-4 py-2.5 rounded-xl bg-[#0a0a0a] border-[1.5px] border-white/10 hover:border-white/20 transition-colors shadow-xl"
+          className={`group relative flex items-center gap-3 px-4 py-2.5 rounded-xl border-[1.5px] transition-all duration-200 active:scale-[0.97] max-sm:w-full max-sm:justify-center max-sm:rounded-none max-sm:border-x-0 max-sm:border-b-0 max-sm:py-3 ${isDark ? 'bg-[#0a0a0a] border-white/10 hover:border-white/20' : 'bg-white border-black/10 hover:border-black/20'}`}
         >
-          <span className="text-white font-semibold">Shoutbox</span>
-          <span className="flex items-center gap-1.5 text-[#08AA09] text-sm">
-            <span className="w-2 h-2 rounded-full bg-[#08AA09] animate-pulse" />
-            {onlineCount >= 1000 ? `${(onlineCount / 1000).toFixed(1)}K` : onlineCount}
+          <MessageCircle size={18} className="text-[#137DFE] shrink-0" />
+          <span className={`font-semibold text-sm ${isDark ? 'text-white' : 'text-black'}`}>Shoutbox</span>
+          <span className={`h-5 w-px shrink-0 ${isDark ? 'bg-white/10' : 'bg-black/10'}`} />
+          <span className="flex items-center gap-1.5 text-[11px] font-medium">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#08AA09] animate-pulse" />
+            <span className={`tabular-nums ${isDark ? 'text-white/50' : 'text-black/50'}`}>{onlineCount >= 1000 ? `${(onlineCount / 1000).toFixed(1)}K` : onlineCount}</span>
           </span>
           {unreadCount > 0 && (
-            <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#650CD4]/20 text-[#650CD4] text-xs font-medium">
-              <Inbox size={12} />
-              {unreadCount}
+            <span className="absolute -top-2 -right-2 min-w-[20px] h-5 flex items-center justify-center px-1.5 rounded-md bg-[#650CD4] text-white text-[11px] font-bold leading-none max-sm:hidden">
+              {unreadCount > 99 ? '99+' : unreadCount}
             </span>
           )}
-          <span className="px-3 py-1.5 rounded-lg bg-[#137DFE] text-white text-sm font-medium">
-            <Send size={14} />
-          </span>
         </button>
       ) : (
         <div
           ref={containerRef}
           onClick={() => { if (!isFocused) inputRef.current?.focus(); }}
-          className={`w-[560px] rounded-xl border-[1.5px] ${baseClasses} overflow-hidden shadow-2xl`}
+          className={`w-[560px] max-sm:w-full max-sm:h-full max-sm:rounded-none rounded-xl border-[1.5px] max-sm:border-0 ${baseClasses} overflow-hidden shadow-2xl flex flex-col`}
         >
-          <div className="flex items-center justify-between px-3 py-2.5 border-b border-inherit">
-            <div className="flex items-center gap-3">
-              <span className="font-bold text-sm">Shoutbox</span>
+          <div className="flex items-center justify-between px-3 py-2.5 max-sm:py-3 max-sm:pt-[calc(12px+env(safe-area-inset-top))] border-b border-inherit shrink-0">
+            <div className="flex items-center gap-2 max-sm:gap-2.5">
+              <span className="font-bold text-sm max-sm:text-base">Shoutbox</span>
               {onlineCount > 0 && (
-                <span className="flex items-center gap-1.5 text-xs px-2 py-0.5 rounded-full bg-[#08AA09]/10">
+                <span className="flex items-center gap-1.5 text-[11px] px-2 py-0.5 rounded-full bg-[#08AA09]/10">
                   <span className="w-1.5 h-1.5 rounded-full bg-[#08AA09] animate-pulse" />
-                  <span className="text-[#08AA09] font-medium">{onlineCount}</span>
+                  <span className="text-[#08AA09] font-semibold tabular-nums">{onlineCount >= 1000 ? `${(onlineCount / 1000).toFixed(1)}K` : onlineCount}</span>
                 </span>
               )}
               {modLevel && (
@@ -1262,22 +1285,22 @@ const Chat = () => {
                 </span>
               )}
             </div>
-            <div className="flex items-center gap-1">
-              <button onClick={() => { setShowSupport(true); setSupportNotif(0); }} className={`relative p-2 rounded-lg transition-colors ${showSupport ? 'bg-[#137DFE] text-white' : 'hover:bg-white/10'}`} title="Support Tickets">
-                <HelpCircle size={16} />
+            <div className="flex items-center gap-0.5 max-sm:gap-1">
+              <button onClick={() => { setShowSupport(true); setSupportNotif(0); }} className={`relative p-2 max-sm:p-2.5 rounded-lg transition-colors active:scale-95 ${showSupport ? 'bg-[#137DFE] text-white' : 'hover:bg-white/10 active:bg-white/20'}`} title="Support Tickets">
+                <HelpCircle size={16} className="max-sm:w-5 max-sm:h-5" />
                 {supportNotif > 0 && (
                   <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-white text-[10px] flex items-center justify-center">{supportNotif}</span>
                 )}
               </button>
               <div className="relative inbox-dropdown">
-                <button onClick={() => setShowInbox(!showInbox)} className={`relative p-2 rounded-lg transition-colors ${showInbox ? 'bg-[#650CD4] text-white' : 'hover:bg-white/10'}`}>
-                  <Inbox size={16} />
+                <button onClick={() => setShowInbox(!showInbox)} className={`relative p-2 max-sm:p-2.5 rounded-lg transition-colors active:scale-95 ${showInbox ? 'bg-[#650CD4] text-white' : 'hover:bg-white/10 active:bg-white/20'}`}>
+                  <Inbox size={16} className="max-sm:w-5 max-sm:h-5" />
                   {conversations.length > 0 && (
                     <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-[#650CD4] text-white text-[9px] font-medium flex items-center justify-center">{conversations.length}</span>
                   )}
                 </button>
                 {showInbox && (
-                  <div className={`absolute right-0 top-10 w-80 rounded-xl border-[1.5px] ${baseClasses} shadow-2xl z-50 overflow-hidden`}>
+                  <div className={`absolute right-0 max-sm:-right-2 top-10 w-80 max-sm:w-[calc(100vw-32px)] max-sm:max-w-[320px] rounded-xl border-[1.5px] ${baseClasses} shadow-2xl z-50 overflow-hidden`}>
                     <div className="px-3 py-2.5 border-b border-inherit flex items-center gap-2">
                       <Inbox size={14} className="text-[#650CD4]" />
                       <span className="text-xs font-semibold">Direct Messages</span>
@@ -1289,12 +1312,12 @@ const Chat = () => {
                         <p className="text-sm opacity-40">No messages yet</p>
                       </div>
                     ) : (
-                      <div className="max-h-72 overflow-y-auto">
+                      <div className="max-h-72 max-sm:max-h-[50vh] overflow-y-auto overscroll-contain">
                         {conversations.map(([user, msg]) => (
                           <button
                             key={user}
                             onClick={() => { openDmTab(user); setShowInbox(false); }}
-                            className="w-full text-left px-3 py-3 hover:bg-white/5 border-b border-inherit last:border-b-0 transition-colors group"
+                            className="w-full text-left px-3 py-3 hover:bg-white/5 active:bg-white/10 border-b border-inherit last:border-b-0 transition-colors group"
                           >
                             <div className="flex items-center gap-2">
                               <DmAvatar wallet={user} size="lg" />
@@ -1313,8 +1336,8 @@ const Chat = () => {
                   </div>
                 )}
               </div>
-              <button onClick={() => setIsOpen(false)} className="p-2 rounded-lg hover:bg-white/10 transition-colors">
-                <X size={16} />
+              <button onClick={() => setIsOpen(false)} className="p-2 max-sm:p-2.5 rounded-lg hover:bg-white/10 active:bg-white/20 active:scale-95 transition-all">
+                <X size={16} className="max-sm:w-5 max-sm:h-5" />
               </button>
             </div>
           </div>
@@ -1325,11 +1348,11 @@ const Chat = () => {
               <button onClick={() => setModError(null)} className="hover:text-red-300"><X size={14} /></button>
             </div>
           )}
-          {!registered ? (
-            <div className="h-[400px] flex items-center justify-center">
-              <div className="text-center opacity-50">
-                <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin mx-auto mb-2" />
-                <p className="text-sm">Connecting...</p>
+          {!registered && authUser?.wallet ? (
+            <div className="h-[400px] max-sm:h-full max-sm:flex-1 flex items-center justify-center">
+              <div className="text-center opacity-40">
+                <Loader2 size={20} className="animate-spin mx-auto mb-2.5" />
+                <p className="text-sm font-medium">Connecting...</p>
               </div>
             </div>
           ) : showSupport ? (
@@ -1350,14 +1373,14 @@ const Chat = () => {
 
                 return (
                   <>
-                    <div className="flex gap-1 px-2 py-1.5 border-b border-inherit overflow-x-auto scrollbar-hide">
+                    <div className="flex gap-1.5 px-2 py-2 border-b border-inherit overflow-x-auto scrollbar-hide overscroll-x-contain touch-pan-x shrink-0">
                       <button
                         onClick={() => { setActiveTab('general'); setPrivateTo(''); }}
-                        className={`px-3 py-1 text-[11px] rounded-lg shrink-0 font-medium transition-all ${activeTab === 'general' ? 'bg-[#137DFE] text-white' : 'bg-white/5 hover:bg-white/10'}`}
+                        className={`px-3 py-1.5 text-xs rounded-lg shrink-0 font-medium transition-all active:scale-95 ${activeTab === 'general' ? 'bg-[#137DFE] text-white' : 'bg-white/5 hover:bg-white/10 active:bg-white/15'}`}
                       >
                         General
                       </button>
-                      {[...dmTabs].sort((a, b) => {
+                      {authUser?.wallet && [...dmTabs].sort((a, b) => {
                         const aMsg = conversations.find(([u]) => u === a)?.[1]?.timestamp || 0;
                         const bMsg = conversations.find(([u]) => u === b)?.[1]?.timestamp || 0;
                         return bMsg - aMsg;
@@ -1367,23 +1390,24 @@ const Chat = () => {
                         <button
                           key={user}
                           onClick={() => openDmTab(user)}
-                          className={`group/tab px-2 py-1 text-[11px] rounded-lg shrink-0 flex items-center gap-1.5 font-medium transition-all ${activeTab === user ? 'bg-[#650CD4] text-white' : hasUnread ? 'bg-[#F6AF01]/10 hover:bg-[#F6AF01]/20' : 'bg-white/5 hover:bg-white/10'}`}
+                          className={`group/tab px-2.5 py-1.5 text-xs rounded-lg shrink-0 flex items-center gap-1.5 font-medium transition-all active:scale-95 ${activeTab === user ? 'bg-[#650CD4] text-white' : hasUnread ? 'bg-[#F6AF01]/10 hover:bg-[#F6AF01]/20 active:bg-[#F6AF01]/30' : 'bg-white/5 hover:bg-white/10 active:bg-white/15'}`}
                         >
                           <span className="relative">
                             <DmAvatar wallet={user} size="sm" />
                             {hasUnread && <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-[#F6AF01] animate-pulse" />}
                           </span>
                           <span className={`${getTierTextColor(getUserTier(user))}`}>{user.slice(0, 4)}...{user.slice(-4)}</span>
-                          <span onClick={(e) => closeDmTab(user, e)} className="opacity-50 hover:opacity-100 hover:text-red-400 ml-0.5">×</span>
+                          <span onClick={(e) => closeDmTab(user, e)} className="p-0.5 -mr-0.5 rounded opacity-0 group-hover/tab:opacity-50 hover:!opacity-100 active:!opacity-100 hover:text-red-400 active:text-red-400 transition-opacity"><X size={10} /></span>
                         </button>
                         );
                       })}
                     </div>
-                    <div className="relative h-[400px]">
-                    <div className="h-full overflow-y-auto px-3 py-2 space-y-0.5 scroll-smooth" onScroll={handleMessagesScroll}>
+                    <div className="relative h-[400px] max-sm:h-auto max-sm:flex-1 max-sm:min-h-0">
+                    <div className="h-full overflow-y-auto px-2 py-1 max-sm:px-1.5 scroll-smooth overscroll-contain" onScroll={handleMessagesScroll}>
                       {filtered.length === 0 && (
-                        <div className="h-full flex items-center justify-center opacity-30 text-sm">
-                          {activeTab === 'general' ? 'No messages yet' : 'Start a conversation'}
+                        <div className="h-full flex flex-col items-center justify-center opacity-25 text-sm gap-1">
+                          <Send size={16} />
+                          <span>{activeTab === 'general' ? 'No messages yet' : 'Start a conversation'}</span>
                         </div>
                       )}
                       {filtered.map((msg, i) => {
@@ -1395,29 +1419,29 @@ const Chat = () => {
                           : displayName;
 
                         return (
-                          <div key={msg._id || i} className="flex items-baseline gap-1.5 py-0.5 text-[13px] leading-relaxed">
-                            <span className="text-[10px] opacity-30 shrink-0">
+                          <div key={msg._id || i} className="flex items-baseline gap-1 py-0.5 px-1 -mx-1 rounded text-[12px] max-sm:text-[11px] leading-relaxed hover:bg-white/[0.03] transition-colors">
+                            <span className="text-[10px] opacity-25 shrink-0 tabular-nums">
                               {timeAgo(msg.timestamp)}
                             </span>
                             <ChatAvatar wallet={msgWallet} />
                             <span className="relative group shrink-0">
                               <button
                                 onClick={() => { if (!isOwn) openDmTab(msgWallet); }}
-                                className={`font-medium hover:underline ${isOwn ? 'text-[#137DFE]' : msg.tier?.toLowerCase() === 'god' ? 'inline-block bg-gradient-to-r from-[#F6AF01] to-[#ff6b6b] bg-clip-text text-transparent' : msg.tier?.toLowerCase() === 'verified' ? 'inline-block bg-gradient-to-r from-[#FFD700] via-[#FF6B9D] to-[#00FFFF] bg-clip-text text-transparent' : msg.tier?.toLowerCase() === 'developer' ? 'text-[#650CD4]' : msg.tier?.toLowerCase() === 'partner' ? 'text-[#650CD4]' : msg.tier?.toLowerCase() === 'business' ? 'text-[#F6AF01]' : msg.tier?.toLowerCase() === 'professional' ? 'text-[#137DFE]' : msg.tier?.toLowerCase() === 'vip' ? 'text-[#08AA09]' : msg.tier?.toLowerCase() === 'nova' ? 'text-[#F6AF01]' : msg.tier?.toLowerCase() === 'diamond' ? 'text-[#a855f7]' : msg.tier?.toLowerCase() === 'member' ? 'text-white/50' : activeTab !== 'general' ? 'text-[#650CD4]' : 'text-[#08AA09]'}`}
+                                className={`font-semibold hover:underline ${isOwn ? 'text-[#137DFE]' : msg.tier && msg.tier.toLowerCase() !== 'member' ? getTierTextColor(msg.tier) : activeTab !== 'general' ? 'text-[#650CD4]' : 'text-[#08AA09]'}`}
                               >
                                 {isOwn ? 'You' : shortName}:
                               </button>
                               {!isOwn && (
                                 <div className="absolute bottom-full left-0 mb-1.5 hidden group-hover:block z-50">
-                                  <div className="px-2 py-1.5 rounded-lg bg-[#1a1a1a] border border-white/10 shadow-xl text-[10px] whitespace-nowrap">
-                                    <div className="text-white/90 font-mono mb-1">{msgWallet}</div>
-                                    <div className="flex gap-3 text-white/50">
-                                      {msg.tier && <span>Tier: <span className="text-white/80">{msg.tier}</span></span>}
-                                      {msg.platform && <span>Platform: <span className="text-white/80">{msg.platform}</span></span>}
+                                  <div className={`px-2 py-1.5 rounded-lg border shadow-xl text-[10px] whitespace-nowrap ${isDark ? 'bg-[#1a1a1a] border-white/10' : 'bg-white border-black/10'}`}>
+                                    <div className={`font-mono mb-1 ${isDark ? 'text-white/90' : 'text-black/90'}`}>{msgWallet}</div>
+                                    <div className={`flex gap-3 ${isDark ? 'text-white/50' : 'text-black/50'}`}>
+                                      {msg.tier && <span>Tier: <span className={isDark ? 'text-white/80' : 'text-black/80'}>{msg.tier}</span></span>}
+                                      {msg.platform && <span>Platform: <span className={isDark ? 'text-white/80' : 'text-black/80'}>{msg.platform}</span></span>}
                                     </div>
                                     <div className="text-[#650CD4] mt-1">Click to DM</div>
                                     {(canMute(msg.tier) || canBan()) && (
-                                      <div className="flex gap-2 mt-2 pt-2 border-t border-white/10">
+                                      <div className={`flex gap-2 mt-2 pt-2 border-t ${isDark ? 'border-white/10' : 'border-black/10'}`}>
                                         {canMute(msg.tier) && (
                                           <button
                                             onClick={(e) => { e.stopPropagation(); muteUser(msgWallet, 30); }}
@@ -1457,8 +1481,8 @@ const Chat = () => {
                       <div ref={messagesEndRef} />
                     </div>
                     {showScrollBtn && (
-                      <button onClick={scrollToBottom} className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#137DFE] text-white text-xs font-medium shadow-lg hover:bg-[#137DFE]/90 transition-colors z-10">
-                        <ChevronDown size={14} />
+                      <button onClick={scrollToBottom} className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1 px-3 py-1.5 rounded-full bg-[#137DFE] text-white text-[11px] font-semibold shadow-lg hover:bg-[#137DFE]/90 active:scale-95 transition-all z-10 backdrop-blur-sm">
+                        <ChevronDown size={12} />
                         {newMsgCount > 0 ? `${newMsgCount} new` : 'Latest'}
                       </button>
                     )}
@@ -1466,89 +1490,98 @@ const Chat = () => {
                   </>
                 );
               })()}
-              <div className="px-2 py-2 border-t border-inherit">
-                {(attachedNft || attachedToken) && (
-                  <div className="flex items-center gap-2 mb-2 flex-wrap">
-                    {attachedToken && (
-                      <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-[#137DFE]/10 border border-[#137DFE]/20">
-                        <AttachedTokenPreview md5={attachedToken} />
-                        <button onClick={() => setAttachedToken(null)} className="p-0.5 hover:bg-white/10 rounded text-white/40 hover:text-white">
-                          <X size={12} />
-                        </button>
-                      </div>
-                    )}
-                    {attachedNft && (
-                      <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-[#650CD4]/10 border border-[#650CD4]/20">
-                        <NFTPreview nftId={attachedNft} />
-                        <button onClick={() => setAttachedNft(null)} className="p-0.5 hover:bg-white/10 rounded text-white/40 hover:text-white">
-                          <X size={12} />
-                        </button>
-                      </div>
-                    )}
+              <div className="px-2 py-2 max-sm:px-3 max-sm:py-3 max-sm:pb-[calc(12px+env(safe-area-inset-bottom))] border-t border-inherit shrink-0">
+                {!authUser?.wallet ? (
+                  <div className={`flex items-center justify-center gap-2 py-3 text-sm rounded-xl ${isDark ? 'text-white/40 bg-white/[0.02]' : 'text-black/40 bg-black/[0.02]'}`}>
+                    <Send size={14} />
+                    <span>Connect wallet to chat</span>
                   </div>
-                )}
-                <div className="relative flex items-center gap-2">
-                  <EmotePicker inputRef={inputRef} input={input} setInput={setInput} />
-                  <input
-                    ref={inputRef}
-                    value={input}
-                    onChange={(e) => setInput(e.target.value.slice(0, 256))}
-                    placeholder={activeTab === 'general' ? 'Message... (type : for emotes)' : `DM ${activeTab.slice(0, 6)}...`}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && !input.match(/:(\w{2,})$/)) {
-                        const whisperMatch = input.match(/^\/whisper\s+(r[a-zA-Z0-9]{24,34})\s*(.*)$/i);
-                        if (whisperMatch) {
-                          const [, target, msg] = whisperMatch;
-                          setPrivateTo(target);
-                          openDmTab(target);
-                          if (msg.trim()) {
-                            wsRef.current?.send(JSON.stringify({ type: 'private', to: target, message: msg.trim() }));
+                ) : (
+                  <>
+                    {(attachedNft || attachedToken) && (
+                      <div className="flex items-center gap-2 mb-2 flex-wrap">
+                        {attachedToken && (
+                          <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg bg-[#137DFE]/10 border border-[#137DFE]/20">
+                            <AttachedTokenPreview md5={attachedToken} />
+                            <button onClick={() => setAttachedToken(null)} className="p-1 hover:bg-white/10 active:bg-white/20 rounded text-white/40 hover:text-white">
+                              <X size={14} />
+                            </button>
+                          </div>
+                        )}
+                        {attachedNft && (
+                          <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg bg-[#650CD4]/10 border border-[#650CD4]/20">
+                            <NFTPreview nftId={attachedNft} />
+                            <button onClick={() => setAttachedNft(null)} className="p-1 hover:bg-white/10 active:bg-white/20 rounded text-white/40 hover:text-white">
+                              <X size={14} />
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    <div className="relative flex items-center gap-2">
+                      <EmotePicker inputRef={inputRef} input={input} setInput={setInput} />
+                      <input
+                        ref={inputRef}
+                        value={input}
+                        onChange={(e) => setInput(e.target.value.slice(0, 256))}
+                        placeholder={activeTab === 'general' ? 'Message...' : `DM ${activeTab.slice(0, 6)}...`}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && !input.match(/:(\w{2,})$/)) {
+                            const whisperMatch = input.match(/^\/whisper\s+(r[a-zA-Z0-9]{24,34})\s*(.*)$/i);
+                            if (whisperMatch) {
+                              const [, target, msg] = whisperMatch;
+                              setPrivateTo(target);
+                              openDmTab(target);
+                              if (msg.trim()) {
+                                wsRef.current?.send(JSON.stringify({ type: 'private', to: target, message: msg.trim() }));
+                              }
+                              setInput('');
+                              return;
+                            }
+                            const muteMatch = input.match(/^\/mute\s+(r[a-zA-Z0-9]{24,34})(?:\s+(\d+))?$/i);
+                            if (muteMatch && canMute()) {
+                              muteUser(muteMatch[1], parseInt(muteMatch[2]) || 30);
+                              setInput('');
+                              return;
+                            }
+                            const unmuteMatch = input.match(/^\/unmute\s+(r[a-zA-Z0-9]{24,34})$/i);
+                            if (unmuteMatch && canMute()) {
+                              unmuteUser(unmuteMatch[1]);
+                              setInput('');
+                              return;
+                            }
+                            const banMatch = input.match(/^\/ban\s+(r[a-zA-Z0-9]{24,34})(?:\s+(\d+))?$/i);
+                            if (banMatch && canBan()) {
+                              banUser(banMatch[1], parseInt(banMatch[2]) || 60);
+                              setInput('');
+                              return;
+                            }
+                            const unbanMatch = input.match(/^\/unban\s+(r[a-zA-Z0-9]{24,34})$/i);
+                            if (unbanMatch && canBan()) {
+                              unbanUser(unbanMatch[1]);
+                              setInput('');
+                              return;
+                            }
+                            sendMessage();
                           }
-                          setInput('');
-                          return;
-                        }
-                        const muteMatch = input.match(/^\/mute\s+(r[a-zA-Z0-9]{24,34})(?:\s+(\d+))?$/i);
-                        if (muteMatch && canMute()) {
-                          muteUser(muteMatch[1], parseInt(muteMatch[2]) || 30);
-                          setInput('');
-                          return;
-                        }
-                        const unmuteMatch = input.match(/^\/unmute\s+(r[a-zA-Z0-9]{24,34})$/i);
-                        if (unmuteMatch && canMute()) {
-                          unmuteUser(unmuteMatch[1]);
-                          setInput('');
-                          return;
-                        }
-                        const banMatch = input.match(/^\/ban\s+(r[a-zA-Z0-9]{24,34})(?:\s+(\d+))?$/i);
-                        if (banMatch && canBan()) {
-                          banUser(banMatch[1], parseInt(banMatch[2]) || 60);
-                          setInput('');
-                          return;
-                        }
-                        const unbanMatch = input.match(/^\/unban\s+(r[a-zA-Z0-9]{24,34})$/i);
-                        if (unbanMatch && canBan()) {
-                          unbanUser(unbanMatch[1]);
-                          setInput('');
-                          return;
-                        }
-                        sendMessage();
-                      }
-                    }}
-                    className={`flex-1 px-3 py-2.5 rounded-xl outline-none text-sm transition-colors ${isDark ? 'bg-white/5 text-white placeholder-white/30 focus:bg-white/[0.07]' : 'bg-black/5 text-black placeholder-black/30 focus:bg-black/[0.07]'}`}
-                  />
-                  <button
-                    onClick={sendMessage}
-                    disabled={!input && !attachedNft && !attachedToken}
-                    className="p-2.5 rounded-xl bg-[#137DFE] text-white disabled:opacity-30 hover:bg-[#137DFE]/80 transition-colors shrink-0"
-                  >
-                    <Send size={16} />
-                  </button>
-                  {input.length > 200 && (
-                    <span className={`absolute right-14 top-1/2 -translate-y-1/2 text-[10px] ${input.length >= 256 ? 'text-red-500' : 'opacity-40'}`}>
-                      {256 - input.length}
-                    </span>
-                  )}
-                </div>
+                        }}
+                        className={`flex-1 px-3 py-2.5 max-sm:py-3 rounded-xl outline-none text-sm max-sm:text-base transition-all ${isDark ? 'bg-white/5 text-white placeholder-white/25 focus:bg-white/[0.07] focus:ring-1 focus:ring-white/10' : 'bg-black/5 text-black placeholder-black/25 focus:bg-black/[0.07] focus:ring-1 focus:ring-black/10'}`}
+                      />
+                      <button
+                        onClick={sendMessage}
+                        disabled={!input && !attachedNft && !attachedToken}
+                        className="p-2.5 max-sm:p-3 rounded-xl bg-[#137DFE] text-white disabled:opacity-30 hover:bg-[#137DFE]/80 active:bg-[#137DFE]/60 active:scale-95 transition-all shrink-0"
+                      >
+                        <Send size={16} className="max-sm:w-5 max-sm:h-5" />
+                      </button>
+                      {input.length > 200 && (
+                        <span className={`absolute right-14 top-1/2 -translate-y-1/2 text-[10px] ${input.length >= 256 ? 'text-red-500' : 'opacity-40'}`}>
+                          {256 - input.length}
+                        </span>
+                      )}
+                    </div>
+                  </>
+                )}
               </div>
             </>
           )}

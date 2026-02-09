@@ -1,5 +1,5 @@
 import { format, formatDistanceToNow, formatDistanceToNowStrict } from 'date-fns';
-import axios from 'axios';
+import api from 'src/utils/api';
 import hashicon from 'hashicon';
 import { useContext } from 'react';
 import { AppContext } from 'src/context/AppContext';
@@ -323,7 +323,7 @@ export async function getTokens(
   try {
     const params = { start: 0, limit, sortBy, sortType, filter: '', tags, showNew, showSlug };
     if (tokenType) params.tokenType = tokenType;
-    const res = await axios.get('https://api.xrpl.to/v1/tokens', { params });
+    const res = await api.get('https://api.xrpl.to/v1/tokens', { params });
 
     return {
       ...res.data,

@@ -1,15 +1,26 @@
-import { useRef, useCallback, useEffect } from 'react';
+import { useRef, useCallback, useEffect, useState } from 'react';
 import useWebSocket from 'react-use-websocket';
-
-const WSS_URL = 'wss://api.xrpl.to/ws/sync/';
 
 /**
  * WebSocket hook for token list sync (/ws/sync/)
  * Supports subscription filtering and batched updates
  */
 export function useTokenSync({ onTokensUpdate, onMetricsUpdate, onTagsUpdate, enabled = true }) {
+  const [wsUrl, setWsUrl] = useState(null);
   const queueRef = useRef([]);
   const timerRef = useRef(null);
+
+  // Fetch authenticated WebSocket URL
+  useEffect(() => {
+    if (!enabled) { setWsUrl(null); return; }
+    fetch('/api/ws/session?type=sync')
+      .then(r => r.json())
+      .then(d => setWsUrl(d.wsUrl))
+      .catch((err) => {
+        console.error('[useTokenSync] Failed to get WS session:', err);
+        setWsUrl(null);
+      });
+  }, [enabled]);
 
   const processQueue = useCallback(() => {
     if (queueRef.current.length === 0) return;
@@ -42,7 +53,7 @@ export function useTokenSync({ onTokensUpdate, onMetricsUpdate, onTagsUpdate, en
     }
   }, [onTokensUpdate, onMetricsUpdate, onTagsUpdate]);
 
-  const { sendJsonMessage, readyState } = useWebSocket(enabled ? WSS_URL : null, {
+  const { sendJsonMessage, readyState } = useWebSocket(wsUrl, {
     onMessage: (e) => {
       try {
         const data = JSON.parse(e.data);

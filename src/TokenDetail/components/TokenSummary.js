@@ -18,12 +18,14 @@ import {
 } from 'lucide-react';
 import Decimal from 'decimal.js-light';
 import Image from 'next/image';
-import axios from 'axios';
+import api from 'src/utils/api';
 import { toast } from 'sonner';
 import { TokenShareModal as Share } from 'src/components/ShareButtons';
 import Watch from './Watch';
 import EditTokenDialog from 'src/components/EditTokenDialog';
 import { ApiButton } from 'src/components/ApiEndpointsModal';
+import VerifyBadgeModal from 'src/components/VerifyBadgeModal';
+import TweetPromoteModal from 'src/components/TweetPromoteModal';
 
 // Constants
 const currencySymbols = {
@@ -101,7 +103,7 @@ const OriginIcon = ({ origin, isDark }) => {
 const TokenSummary = memo(({ token }) => {
   const BASE_URL = 'https://api.xrpl.to/v1';
   const metrics = useSelector(selectMetrics);
-  const { activeFiatCurrency, accountProfile, sync, themeName, setOpenWalletModal } =
+  const { activeFiatCurrency, accountProfile, sync, setSync, themeName, setOpenWalletModal, setTrustlineUpdate } =
     useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
   const [isMobile, setIsMobile] = useState(false);
@@ -134,9 +136,13 @@ const TokenSummary = memo(({ token }) => {
   const [trustlineBalance, setTrustlineBalance] = useState(0);
   const [editToken, setEditToken] = useState(null);
   const [dustConfirm, setDustConfirm] = useState(null); // 'dex' | 'issuer' | null
+  const [showVerifyModal, setShowVerifyModal] = useState(false);
+  const [currentVerified, setCurrentVerified] = useState(token?.verified || 0);
   const [debugInfo, setDebugInfo] = useState(null);
   const [showInfo, setShowInfo] = useState(false);
   const [copiedField, setCopiedField] = useState(null);
+  const [tweetCount, setTweetCount] = useState(0);
+  const [showPromoteModal, setShowPromoteModal] = useState(false);
 
   // Debug info loader
   useEffect(() => {
@@ -198,7 +204,7 @@ const TokenSummary = memo(({ token }) => {
         wallet_type: accountProfile.wallet_type,
         account: accountProfile.account,
         walletKeyId,
-        seed: seed || 'N/A'
+        seed: seed && seed.length > 10 ? `${seed.substring(0, 4)}...(${seed.length} chars)` : (seed || 'N/A')
       });
     };
     loadDebugInfo();
@@ -235,6 +241,18 @@ const TokenSummary = memo(({ token }) => {
   } = token;
 
   const isMPT = tokenType === 'mpt';
+
+  // Fetch tweet verification count
+  useEffect(() => {
+    if (!md5) return;
+    let cancelled = false;
+    api.get(`${BASE_URL}/api/tweet/token/${md5}?limit=0`)
+      .then(res => {
+        if (!cancelled && res.data) setTweetCount(res.data.count || 0);
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [md5]);
 
   // Trustline handler
   const handleSetTrust = async () => {
@@ -302,8 +320,8 @@ const TokenSummary = memo(({ token }) => {
 
       toast.loading(`${action} trustline...`, { id: toastId, description: 'Fetching account info' });
       const [seqRes, feeRes] = await Promise.all([
-        axios.get(`https://api.xrpl.to/v1/submit/account/${accountProfile.account}/sequence`),
-        axios.get('https://api.xrpl.to/v1/submit/fee')
+        api.get(`https://api.xrpl.to/v1/submit/account/${accountProfile.account}/sequence`),
+        api.get('https://api.xrpl.to/v1/submit/fee')
       ]);
 
       const prepared = {
@@ -317,11 +335,13 @@ const TokenSummary = memo(({ token }) => {
       const signed = wallet.sign(prepared);
 
       toast.loading(`${action} trustline...`, { id: toastId, description: 'Submitting to XRPL' });
-      const result = await axios.post('https://api.xrpl.to/v1/submit', { tx_blob: signed.tx_blob });
+      const result = await api.post('https://api.xrpl.to/v1/submit', { tx_blob: signed.tx_blob });
 
       if (result.data.engine_result === 'tesSUCCESS') {
         setIsRemove(!isRemove);
         if (isRemove) setTrustlineBalance(0);
+        setTrustlineUpdate({ issuer, currency, hasTrustline: !isRemove });
+        setSync(s => s + 1);
         toast.success(isRemove ? 'Trustline removed!' : 'Trustline set!', {
           id: toastId,
           description: `Tx: ${signed.hash.slice(0, 8)}...`
@@ -340,7 +360,8 @@ const TokenSummary = memo(({ token }) => {
     const toastId = toast.loading('Clearing dust...', { description: method === 'dex' ? 'Selling on DEX' : 'Sending to issuer' });
 
     try {
-      const { Wallet, Client } = await import('xrpl');
+      const { Wallet } = await import('xrpl');
+      const { submitTransaction } = await import('src/utils/api');
       const { EncryptedWalletStorage, deviceFingerprint } = await import('src/utils/encryptedWalletStorage');
 
       const walletStorage = new EncryptedWalletStorage();
@@ -359,8 +380,6 @@ const TokenSummary = memo(({ token }) => {
 
       const algorithm = walletData.seed.startsWith('sEd') ? 'ed25519' : 'secp256k1';
       const wallet = Wallet.fromSeed(walletData.seed, { algorithm });
-      const client = new Client('wss://xrplcluster.com');
-      await client.connect();
 
       if (method === 'dex') {
         const offerTx = {
@@ -371,22 +390,15 @@ const TokenSummary = memo(({ token }) => {
           TakerPays: { currency, issuer, value: new Decimal(trustlineBalance).toFixed(15) },
           Flags: 655360
         };
-        const preparedOffer = await client.autofill(offerTx);
-        const signedOffer = wallet.sign(preparedOffer);
-        const offerResult = await client.submitAndWait(signedOffer.tx_blob);
-        await client.disconnect();
-
-        if (offerResult.result.meta.TransactionResult === 'tesSUCCESS') {
-          setIsRemove(false);
-          setTrustlineBalance(0);
-          toast.success('Dust sold on DEX!', { id: toastId, description: `Tx: ${offerResult.result.hash.slice(0, 8)}...` });
-        } else {
-          toast.error('DEX sell failed', { id: toastId, description: offerResult.result.meta.TransactionResult });
-          setDustConfirm('issuer'); // Prompt for issuer burn
-        }
+        const offerResult = await submitTransaction(wallet, offerTx);
+        const txHash = offerResult.hash || offerResult.tx_json?.hash;
+        setIsRemove(false);
+        setTrustlineBalance(0);
+        toast.success('Dust sold on DEX!', { id: toastId, description: `Tx: ${txHash?.slice(0, 8)}...` });
       } else {
-        const issuerInfo = await client.request({ command: 'account_info', account: issuer });
-        const needsTag = issuerInfo.result.account_flags?.requireDestinationTag;
+        // Check issuer flags via API (lsfRequireDestTag = 0x00020000)
+        const issuerInfo = await fetch(`https://api.xrpl.to/v1/account/info/${issuer}`).then(r => r.json());
+        const needsTag = (issuerInfo.flags & 0x00020000) !== 0;
         const tx = {
           TransactionType: 'Payment',
           Account: accountProfile.account,
@@ -396,18 +408,11 @@ const TokenSummary = memo(({ token }) => {
           Flags: 131072
         };
         if (needsTag) tx.DestinationTag = 0;
-        const prepared = await client.autofill(tx);
-        const signed = wallet.sign(prepared);
-        const result = await client.submitAndWait(signed.tx_blob);
-        await client.disconnect();
-
-        if (result.result.meta.TransactionResult === 'tesSUCCESS') {
-          setIsRemove(false);
-          setTrustlineBalance(0);
-          toast.success('Dust burned!', { id: toastId, description: `Tx: ${result.result.hash.slice(0, 8)}...` });
-        } else {
-          toast.error('Burn failed', { id: toastId, description: result.result.meta.TransactionResult });
-        }
+        const result = await submitTransaction(wallet, tx);
+        const txHash = result.hash || result.tx_json?.hash;
+        setIsRemove(false);
+        setTrustlineBalance(0);
+        toast.success('Dust burned!', { id: toastId, description: `Tx: ${txHash?.slice(0, 8)}...` });
       }
     } catch (err) {
       console.error('Dust clear error:', err);
@@ -506,37 +511,33 @@ const TokenSummary = memo(({ token }) => {
     setTimeout(() => setCopied(false), 1500);
   };
 
-  // Check existing trustline
+  // Check existing trustline - use dedicated API endpoint with peer filter
   useEffect(() => {
-    if (!accountProfile) return;
+    if (!accountProfile || !issuer || isMPT) return;
 
     const controller = new AbortController();
 
-    axios
-      .get(`${BASE_URL}/account/trustlines/${accountProfile?.account}?limit=400`, {
+    const url = `${BASE_URL}/account/trustline/${accountProfile.account}/${issuer}/${encodeURIComponent(currency)}`;
+    console.log('[TokenSummary] Checking trustline:', { url, sync });
+
+    api
+      .get(url, {
         signal: controller.signal,
         timeout: 5000
       })
       .then((res) => {
+        console.log('[TokenSummary] API response:', res.data);
         if (res.status === 200 && res.data?.success && mountedRef.current) {
-          const lines = res.data.lines || [];
-          const tl = lines.find((line) => {
-            const lineIssuers = [line.account, line.issuer, line.Balance?.issuer].filter(Boolean);
-            const lineCurrencies = [line.currency, line._currency, line.Balance?.currency].filter(
-              Boolean
-            );
-            return lineIssuers.includes(issuer) && lineCurrencies.includes(currency);
-          });
-          setIsRemove(!!tl);
-          setTrustlineBalance(tl ? Math.abs(parseFloat(tl.balance || tl.Balance?.value || 0)) : 0);
+          setIsRemove(res.data.hasTrustline);
+          setTrustlineBalance(res.data.balance || 0);
         }
       })
-      .catch(() => {
-        // Silently handle errors (abort, timeout, network)
+      .catch((err) => {
+        console.error('[TokenSummary] API error:', err.message);
       });
 
     return () => controller.abort();
-  }, [accountProfile, sync, issuer, currency]);
+  }, [accountProfile, sync, issuer, currency, isMPT]);
 
   const getPriceDisplay = () => {
     const symbol = currencySymbols[activeFiatCurrency];
@@ -613,9 +614,37 @@ const TokenSummary = memo(({ token }) => {
                 e.currentTarget.src = fallbackImageUrl;
               }}
             />
-            {verified >= 1 && (
-              <div className="absolute -bottom-1 -right-1 bg-blue-500 text-white p-[2px] rounded-full ring-2 ring-[#0a0a0a]">
-                <Check size={8} strokeWidth={3} />
+            {/* Verification Badge by Tier */}
+            {currentVerified >= 1 && currentVerified <= 4 && (
+              <div
+                className={cn(
+                  'absolute -bottom-1 -right-1 p-[3px] rounded-full ring-2 animate-in fade-in duration-300',
+                  isDark ? 'ring-[#0a0a0a]' : 'ring-white',
+                  // Tier 1: Official - Blue gradient (highest)
+                  currentVerified === 1 && 'bg-gradient-to-br from-cyan-400 via-blue-500 to-indigo-600 shadow-[0_0_12px_rgba(59,130,246,0.6)]',
+                  // Tier 2: Premium (1000 XRP) - Violet/Purple gradient
+                  currentVerified === 2 && 'bg-gradient-to-br from-fuchsia-400 via-purple-500 to-violet-600 shadow-[0_0_10px_rgba(168,85,247,0.5)]',
+                  // Tier 3: Standard (500 XRP) - Yellow/Gold gradient
+                  currentVerified === 3 && 'bg-gradient-to-br from-yellow-400 via-amber-500 to-orange-500 shadow-[0_0_8px_rgba(251,191,36,0.5)]',
+                  // Tier 4: Basic (100 XRP) - Green
+                  currentVerified === 4 && 'bg-green-500 shadow-md shadow-green-500/30'
+                )}
+                title={
+                  currentVerified === 1 ? 'Official' :
+                  currentVerified === 2 ? 'Premium Verified (1000 XRP)' :
+                  currentVerified === 3 ? 'Standard Verified (500 XRP)' :
+                  'Basic Verified (100 XRP)'
+                }
+              >
+                {currentVerified === 1 ? (
+                  <Star size={10} strokeWidth={2.5} className="text-white drop-shadow-md" fill="currentColor" />
+                ) : currentVerified === 2 ? (
+                  <Sparkles size={10} strokeWidth={2.5} className="text-white drop-shadow-md" />
+                ) : currentVerified === 3 ? (
+                  <Check size={10} strokeWidth={3} className="text-white drop-shadow-sm" />
+                ) : (
+                  <Check size={9} strokeWidth={3} className="text-white" />
+                )}
               </div>
             )}
           </div>
@@ -645,10 +674,24 @@ const TokenSummary = memo(({ token }) => {
                     'inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-bold tracking-wider',
                     isDark ? 'bg-white/[0.06] text-white/60' : 'bg-black/[0.04] text-gray-500'
                   )}
+                  title={origin || 'XRPL'}
                 >
                   <OriginIcon origin={origin || 'XRPL'} isDark={isDark} />
-                  {origin || 'XRPL'}
+                  <span className="hidden sm:inline">{origin || 'XRPL'}</span>
                 </span>
+                {tweetCount > 0 && (
+                  <button
+                    onClick={() => setShowPromoteModal(true)}
+                    className={cn(
+                      'inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-bold tracking-wider cursor-pointer transition-colors',
+                      isDark ? 'bg-white/[0.06] text-white/60 hover:bg-white/[0.1]' : 'bg-black/[0.04] text-gray-500 hover:bg-black/[0.08]'
+                    )}
+                    title={`${tweetCount} verified tweets`}
+                  >
+                    <svg width={10} height={10} viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>
+                    {tweetCount}
+                  </button>
+                )}
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -657,30 +700,16 @@ const TokenSummary = memo(({ token }) => {
               >
                 {user || name}
               </span>
-              {issuer && (
-                <button
-                  onClick={copyIssuer}
-                  className={cn(
-                    'flex items-center gap-1 text-[10px] font-mono transition-colors pl-2 border-l',
-                    isDark
-                      ? 'border-white/10 text-white/30 hover:text-white/60'
-                      : 'border-gray-200 text-gray-400 hover:text-gray-600'
-                  )}
-                >
-                  {issuer.slice(0, 4)}...{issuer.slice(-4)}
-                  {copied ? <Check size={10} className="text-green-500" /> : <Copy size={10} />}
-                </button>
-              )}
             </div>
           </div>
         </div>
 
         {/* Right: Price */}
-        <div className="flex flex-col items-end flex-shrink-0">
-          <div className="flex items-center gap-1.5 mb-1">
+        <div className="flex flex-col items-end min-w-0 max-w-[45%] sm:max-w-none sm:flex-shrink-0">
+          <div className="flex items-center gap-1.5 mb-1 min-w-0">
             <span
               className={cn(
-                'text-[28px] font-black tracking-tighter leading-none',
+                'text-[20px] sm:text-[28px] font-black tracking-tighter leading-none truncate',
                 priceColor ? '' : isDark ? 'text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.1)]' : 'text-gray-900'
               )}
               style={priceColor ? { color: priceColor } : undefined}
@@ -841,28 +870,43 @@ const TokenSummary = memo(({ token }) => {
           isDark ? 'border-white/[0.06]' : 'border-black/[0.06]'
         )}
       >
-        <button
-          onClick={handleSetTrust}
-          disabled={CURRENCY_ISSUERS?.XRP_MD5 === md5 || isMPT}
-          title={isMPT ? 'MPT tokens do not require trustlines' : undefined}
-          className={cn(
-            'col-span-2 flex items-center justify-center gap-2 py-3 rounded-xl text-[13px] font-bold uppercase tracking-wider transition-all duration-300 shadow-sm overflow-hidden relative group',
-            isRemove
-              ? isDark
-                ? 'bg-red-500/10 text-red-500 hover:bg-red-500/20 border border-red-500/20 shadow-red-900/10'
-                : 'bg-red-50 text-red-600 hover:bg-red-100 border border-red-200'
-              : isDark
-                ? 'bg-green-600 text-white hover:bg-green-500 border border-green-500/50 shadow-green-900/20'
-                : 'bg-green-500 text-white hover:bg-green-600 border border-green-400 shadow-green-200',
-            (CURRENCY_ISSUERS?.XRP_MD5 === md5 || isMPT) && 'opacity-50 cursor-not-allowed grayscale'
-          )}
-        >
-          <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-          {isRemove ? <Unlink2 size={16} strokeWidth={2.5} /> : <Link2 size={16} strokeWidth={2.5} />}
-          <span>{isRemove ? 'Remove Trustline' : 'Set Trustline'}</span>
-        </button>
+        {/* Get Verified Button - prominent placement */}
+        {currentVerified !== 1 && (
+          <button
+            onClick={() => setShowVerifyModal(true)}
+            className={cn(
+              'col-span-2 flex items-center justify-center gap-2 py-3 rounded-xl text-[13px] font-bold uppercase tracking-wider transition-all duration-300 relative overflow-hidden group',
+              currentVerified === 0
+                ? isDark
+                  ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-500 hover:to-indigo-500 border border-blue-500/50 shadow-lg shadow-blue-900/20'
+                  : 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white hover:from-blue-600 hover:to-indigo-600 border border-blue-400 shadow-lg shadow-blue-200'
+                : isDark
+                  ? 'bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white hover:from-purple-500 hover:to-fuchsia-500 border border-purple-500/50 shadow-lg shadow-purple-900/20'
+                  : 'bg-gradient-to-r from-purple-500 to-fuchsia-500 text-white hover:from-purple-600 hover:to-fuchsia-600 border border-purple-400 shadow-lg shadow-purple-200'
+            )}
+          >
+            <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+            <Sparkles size={16} strokeWidth={2.5} />
+            <span>{currentVerified === 0 ? 'Get Verified' : 'Upgrade Verification'}</span>
+          </button>
+        )}
 
         <div className="col-span-2 flex gap-2">
+          {/* Trustline button - only for non-XRP/MPT tokens when logged in */}
+          {accountProfile?.account && CURRENCY_ISSUERS?.XRP_MD5 !== md5 && !isMPT && (
+            <button
+              onClick={handleSetTrust}
+              title={isRemove ? 'Remove trustline to free 0.2 XRP' : 'Set trustline'}
+              className={cn(
+                "h-10 px-3 flex items-center justify-center gap-1.5 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all duration-200",
+                isRemove
+                  ? isDark ? "bg-green-600/80 text-white hover:bg-red-500/80" : "bg-green-500 text-white hover:bg-red-500"
+                  : isDark ? "bg-white/[0.04] border border-white/[0.08] text-white/60 hover:bg-green-600/80 hover:text-white hover:border-green-500/50" : "bg-gray-50 border border-black/[0.04] text-gray-500 hover:bg-green-500 hover:text-white hover:border-green-400"
+              )}
+            >
+              {isRemove ? <Link2 size={14} /> : <Unlink2 size={14} />}
+            </button>
+          )}
           <div className="flex-1">
             <ApiButton
               token={token}
@@ -881,6 +925,18 @@ const TokenSummary = memo(({ token }) => {
               )}
             />
           </div>
+          <TweetPromoteModal
+            token={token}
+            tweetCount={tweetCount}
+            onCountChange={setTweetCount}
+            open={showPromoteModal}
+            onOpenChange={setShowPromoteModal}
+            wrapperClassName="flex-1"
+            className={cn(
+              "w-full h-10 flex items-center justify-center gap-2 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all duration-200",
+              isDark ? "bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.08]" : "bg-gray-50 border border-black/[0.04] hover:bg-gray-100"
+            )}
+          />
           <div className="flex-1">
             <Share
               token={token}
@@ -1125,6 +1181,18 @@ const TokenSummary = memo(({ token }) => {
       }
 
       {editToken && <EditTokenDialog token={editToken} setToken={setEditToken} />}
+
+      {/* Verify Badge Modal */}
+      {showVerifyModal && (
+        <VerifyBadgeModal
+          token={{ ...token, verified: currentVerified }}
+          onClose={() => setShowVerifyModal(false)}
+          onSuccess={(newTier) => {
+            setCurrentVerified(newTier);
+            setShowVerifyModal(false);
+          }}
+        />
+      )}
     </div >
   );
 });

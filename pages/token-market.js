@@ -1,5 +1,5 @@
 import { useState, useContext, useMemo, useRef, useCallback, useEffect } from 'react';
-import axios from 'axios';
+import api from 'src/utils/api';
 import styled from '@emotion/styled';
 import { AppContext } from 'src/context/AppContext';
 import Header from 'src/components/Header';
@@ -2331,7 +2331,7 @@ export async function getServerSideProps() {
   try {
     // Fetch all available data
     const startDate = new Date(Date.now() - 730 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-    const response = await axios.get(`${BASE_URL}/token/analytics/market?startDate=${startDate}`);
+    const response = await api.get(`${BASE_URL}/token/analytics/market?startDate=${startDate}`);
     const data = response.data;
 
     // Extract from new API structure

@@ -19,10 +19,11 @@ const Container = styled.div`
   background: transparent;
   padding: 10px 14px;
   position: relative;
+  box-sizing: border-box;
 
   @media (max-width: 600px) {
-    padding: 8px 10px;
-    gap: 8px;
+    padding: 6px 8px;
+    gap: 6px;
   }
 `;
 
@@ -39,7 +40,7 @@ const Row = styled.div`
   position: relative;
 
   @media (max-width: 600px) {
-    gap: 8px;
+    gap: 5px;
     overflow-x: auto;
     flex-wrap: nowrap;
     -webkit-overflow-scrolling: touch;
@@ -102,6 +103,7 @@ const RowContent = styled.div`
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
+    margin-right: 8px;
 
     &::-webkit-scrollbar {
       display: none;
@@ -151,12 +153,12 @@ const RowsSelector = styled.select`
   }
 
   @media (max-width: 600px) {
-    font-size: 0.7rem;
-    height: 30px;
-    min-width: 55px;
-    padding: 0 24px 0 10px;
-    background-size: 10px;
-    background-position: right 8px center;
+    font-size: 0.62rem;
+    height: 26px;
+    min-width: 48px;
+    padding: 0 20px 0 6px;
+    background-size: 9px;
+    background-position: right 6px center;
   }
 `;
 
@@ -170,7 +172,7 @@ const Stack = styled.div`
   z-index: 1;
 
   @media (max-width: 600px) {
-    gap: 4px;
+    gap: 3px;
     touch-action: manipulation;
   }
 `;
@@ -196,8 +198,8 @@ const StyledIconButton = styled.button`
   }
 
   @media (max-width: 600px) {
-    width: 28px;
-    height: 28px;
+    width: 26px;
+    height: 26px;
   }
 `;
 
@@ -249,14 +251,14 @@ const ButtonGroup = styled.div`
 
   @media (max-width: 600px) {
     display: ${(props) => (props.hideOnMobile ? 'none' : 'flex')};
-    padding: 3px;
+    padding: 2px;
 
     & > button {
-      min-width: 32px;
-      height: 24px;
-      padding: 0 8px;
-      font-size: 0.68rem;
-      gap: 3px;
+      min-width: 28px;
+      height: 22px;
+      padding: 0 7px;
+      font-size: 0.65rem;
+      gap: 2px;
     }
   }
 `;
@@ -312,8 +314,8 @@ const LaunchpadChip = styled.button`
 const TagChip = styled.button`
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 0 10px;
+  gap: 3px;
+  padding: 0 8px;
   border: 1px solid
     ${(props) =>
       props.selected
@@ -334,11 +336,11 @@ const TagChip = styled.button`
       : props.darkMode
         ? 'rgba(255, 255, 255, 0.7)'
         : 'rgba(33, 43, 54, 0.7)'};
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   font-weight: ${(props) => (props.selected ? 500 : 400)};
   cursor: pointer;
   white-space: nowrap;
-  height: 26px;
+  height: 24px;
   flex-shrink: 0;
   transition: all 0.15s ease;
 
@@ -359,8 +361,8 @@ const TagChip = styled.button`
 
   @media (max-width: 600px) {
     font-size: 0.68rem;
-    height: 26px;
-    padding: 0 10px;
+    height: 24px;
+    padding: 0 8px;
     gap: 3px;
   }
 `;
@@ -390,8 +392,8 @@ const AllTagsButton = styled.button`
 
   @media (max-width: 600px) {
     font-size: 0.68rem;
-    height: 26px;
-    padding: 0 10px;
+    height: 24px;
+    padding: 0 8px;
     gap: 3px;
   }
 `;
@@ -847,7 +849,7 @@ const SearchToolbar = memo(function SearchToolbar({
               selected={currentView === 'tokens'}
               darkMode={darkMode}
             >
-              All Tokens
+              Tokens
             </TagChip>
 
             {/* Discovery items */}

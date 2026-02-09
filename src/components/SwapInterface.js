@@ -1,4 +1,4 @@
-import axios from 'axios';
+import api from 'src/utils/api';
 import { useState, useEffect, useCallback, useMemo, useRef, memo } from 'react';
 import Decimal from 'decimal.js-light';
 import Image from 'next/image';
@@ -684,7 +684,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
         account: accountProfile.account,
         walletKeyId,
         accountIndex: accountProfile.accountIndex,
-        seed: seed || 'N/A'
+        seed: seed && seed.length > 10 ? `${seed.substring(0, 4)}...(${seed.length} chars)` : (seed || 'N/A')
       });
     };
     loadDebugInfo();
@@ -720,7 +720,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
         if (token2.currency !== 'XRP' && token2.issuer)
           params.append('quote_issuer', token2.issuer);
 
-        const res = await axios.get(`${BASE_URL}/orderbook?${params}`, {
+        const res = await api.get(`${BASE_URL}/orderbook?${params}`, {
           signal: controller.signal
         });
         if (res.data?.success) {
@@ -948,7 +948,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
       const account = accountProfile.account;
 
       // Get account balance info
-      axios
+      api
         .get(
           `${BASE_URL}/account/info/${account}?curr1=${curr1.currency}&issuer1=${curr1.issuer}&curr2=${curr2.currency}&issuer2=${curr2.issuer}`
         )
@@ -961,8 +961,8 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
         .catch((err) => { });
 
       // Check trustlines
-      axios
-        .get(`${BASE_URL}/account/lines/${account}`)
+      api
+        .get(`${BASE_URL}/account/trustlines/${account}`)
         .then((res) => res.status === 200 ? res.data.lines || [] : [])
         .catch(() => [])
         .then((allTrustlines) => {
@@ -1102,7 +1102,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
       const md52 = token2.md5;
 
       // Get dynamic exchange rates from API
-      axios
+      api
         .get(`${BASE_URL}/stats/rates?md51=${md51}&md52=${md52}`)
         .then((res) => {
           let ret = res.status === 200 ? res.data : undefined;
@@ -1184,7 +1184,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
         // Use logged-in account or default quote account
         const quoteAccount = accountProfile?.account || 'rPT1Sjq2YGrBMTttX4GZHjKu9dyfzbpAYe';
 
-        const res = await axios.post(
+        const res = await api.post(
           `${BASE_URL}/dex/quote`,
           {
             source_account: quoteAccount,
@@ -1835,7 +1835,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
 
       // 1. Try main tokens endpoint with currency filter
       try {
-        const tokensResponse = await axios.get(`${BASE_URL}/tokens`, {
+        const tokensResponse = await api.get(`${BASE_URL}/tokens`, {
           params: {
             filter: currency,
             limit: 100,
@@ -1858,7 +1858,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
 
       // 2. Try xrpnft tokens endpoint (used by CurrencySearchModal)
       try {
-        const nftResponse = await axios.get(`${BASE_URL}/integrations/xrpnft/tokens`, {
+        const nftResponse = await api.get(`${BASE_URL}/integrations/xrpnft/tokens`, {
           params: {
             filter: currency
           }
@@ -1877,7 +1877,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
 
       // 3. Try direct token lookup by issuer_currency format
       try {
-        const directResponse = await axios.get(`${BASE_URL}/token/${issuer}_${currency}`);
+        const directResponse = await api.get(`${BASE_URL}/token/${issuer}_${currency}`);
 
         if (directResponse.data && directResponse.data.token) {
           return directResponse.data.token;
@@ -2051,8 +2051,8 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
     try {
       // Fetch more tokens and XRP data in parallel
       const [tokensRes, xrpRes] = await Promise.all([
-        axios.get(`${BASE_URL}/tokens?start=0&limit=50&sortBy=vol24hxrp&sortType=desc&filter=`),
-        axios.get(`${BASE_URL}/token/84e5efeb89c4eae8f68188982dc290d8`)
+        api.get(`${BASE_URL}/tokens?start=0&limit=50&sortBy=vol24hxrp&sortType=desc&filter=`),
+        api.get(`${BASE_URL}/token/84e5efeb89c4eae8f68188982dc290d8`)
       ]);
 
       const tokenList = tokensRes.data?.tokens || [];
@@ -2115,7 +2115,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
       // Also search via API for more results
       if (searchQuery.length > 2) {
         try {
-          const res = await axios.get(
+          const res = await api.get(
             `${BASE_URL}/tokens?filter=${encodeURIComponent(searchQuery)}&limit=50`
           );
           if (res.status === 200 && res.data?.tokens) {
@@ -2154,7 +2154,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
           return;
         }
 
-        const res = await axios.get(apiUrl);
+        const res = await api.get(apiUrl);
         if (res.status === 200 && res.data?.tokens) {
           // Filter out XRP for category views
           const nonXrpTokens = (res.data.tokens || []).filter((t) => t.currency !== 'XRP');

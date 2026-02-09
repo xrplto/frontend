@@ -1,5 +1,5 @@
 import { useState, useEffect, memo, useRef } from 'react';
-import axios from 'axios';
+import api from 'src/utils/api';
 
 const BASE_URL = 'https://api.xrpl.to';
 
@@ -30,7 +30,7 @@ const NFTSparklineChart = memo(
       if (!visible || !slug) return;
       let cancelled = false;
       const url = `${BASE_URL}/api/nft/collections/${encodeURIComponent(slug)}/sparkline?period=${period}&lightweight=true&maxPoints=20`;
-      axios
+      api
         .get(url)
         .then((res) => {
           if (cancelled) return;

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import api from 'src/utils/api';
 import Decimal from 'decimal.js-light';
 import PropTypes from 'prop-types';
 import dynamic from 'next/dynamic';
@@ -163,7 +163,7 @@ export default function SpinNFT({ collection, setView }) {
       }
 
       // https://api.xrpl.to/v1/spin/count?account=rhhh
-      axios
+      api
         .get(`${BASE_URL}/spin/count?account=${account}&cid=${uuid}`, {
           headers: { 'x-access-token': accountToken }
         })
@@ -214,7 +214,7 @@ export default function SpinNFT({ collection, setView }) {
 
     const body = { account, cid: uuid };
 
-    axios
+    api
       .post(`${BASE_URL}/spin/chooseone`, body, {
         headers: { 'x-access-token': accountToken }
       })

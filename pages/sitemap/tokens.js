@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import axios from 'axios';
+import api from 'src/utils/api';
 import { performance } from 'perf_hooks';
 import { cn } from 'src/utils/cn';
 import { AppContext } from 'src/context/AppContext';
@@ -134,7 +134,7 @@ export const getServerSideProps = async (ctx) => {
   try {
     var t1 = performance.now();
 
-    const res = await axios.get(`${BASE_URL}/slugs`);
+    const res = await api.get(`${BASE_URL}/tokens/slugs`);
 
     count = res.data?.count;
     slugs = res.data?.slugs;

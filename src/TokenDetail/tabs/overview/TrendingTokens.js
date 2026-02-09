@@ -3,8 +3,8 @@ import { useContext, useState, useEffect } from 'react';
 import { AppContext } from 'src/context/AppContext';
 import { useSelector } from 'react-redux';
 import { selectMetrics } from 'src/redux/statusSlice';
-import axios from 'axios';
-import { Star } from 'lucide-react';
+import api from 'src/utils/api';
+import { Bookmark } from 'lucide-react';
 
 const SYMBOLS = { USD: '$', EUR: '€', JPY: '¥', CNH: '¥', XRP: '✕' };
 
@@ -80,6 +80,14 @@ const TrendingTokens = ({ token = null }) => {
   const metrics = useSelector(selectMetrics);
   const rate = metrics[activeFiatCurrency] || (activeFiatCurrency === 'CNH' ? metrics.CNY : 1) || 1;
 
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 600);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
+
   const [tokens, setTokens] = useState([]);
   const [newTokens, setNewTokens] = useState([]);
   const [error, setError] = useState(null);
@@ -99,7 +107,7 @@ const TrendingTokens = ({ token = null }) => {
   // Fetch watchlist
   useEffect(() => {
     if (!accountProfile?.account) { setWatchList([]); return; }
-    axios.get(`${BASE_URL}/watchlist?account=${accountProfile.account}`)
+    api.get(`${BASE_URL}/watchlist?account=${accountProfile.account}`)
       .then((res) => res.data.success && setWatchList(res.data.watchlist || []))
       .catch(() => { });
   }, [accountProfile]);
@@ -110,7 +118,7 @@ const TrendingTokens = ({ token = null }) => {
     if (!accountProfile?.account) { setOpenWalletModal(true); return; }
     const action = watchList.includes(md5) ? 'remove' : 'add';
     try {
-      const res = await axios.post(`${BASE_URL}/watchlist`, { md5, account: accountProfile.account, action });
+      const res = await api.post(`${BASE_URL}/watchlist`, { md5, account: accountProfile.account, action });
       if (res.data.success) setWatchList(res.data.watchlist || []);
     } catch { }
   };
@@ -118,13 +126,13 @@ const TrendingTokens = ({ token = null }) => {
   // Fetch trending on mount
   useEffect(() => {
     const ctrl = new AbortController();
-    axios.get(`${BASE_URL}/tokens?start=0&limit=50&sortBy=trendingScore&sortType=desc&skipMetrics=true`, { signal: ctrl.signal })
+    api.get(`${BASE_URL}/tokens?start=0&limit=50&sortBy=trendingScore&sortType=desc&skipMetrics=true`, { signal: ctrl.signal })
       .then((res) => {
         const list = res.data?.tokens || [];
         setTokens(token?.md5 ? list.filter((t) => t.md5 !== token.md5) : list);
         setLoading(false);
       })
-      .catch((err) => { !axios.isCancel(err) && setError('Failed to load'); setLoading(false); });
+      .catch((err) => { !api.isCancel(err) && setError('Failed to load'); setLoading(false); });
     return () => ctrl.abort();
   }, [token?.md5]);
 
@@ -132,7 +140,7 @@ const TrendingTokens = ({ token = null }) => {
   useEffect(() => {
     if (activeTab !== 'new' || newTokens.length > 0) return;
     const ctrl = new AbortController();
-    axios.get(`${BASE_URL}/tokens?start=0&limit=50&sortBy=dateon&sortType=desc&skipMetrics=true`, { signal: ctrl.signal })
+    api.get(`${BASE_URL}/tokens?start=0&limit=50&sortBy=dateon&sortType=desc&skipMetrics=true`, { signal: ctrl.signal })
       .then((res) => {
         const list = res.data?.tokens || [];
         setNewTokens(token?.md5 ? list.filter((t) => t.md5 !== token.md5) : list);
@@ -224,7 +232,8 @@ const TrendingTokens = ({ token = null }) => {
           const baseList = activeTab === 'trending' ? tokens : newTokens;
           const otherList = activeTab === 'trending' ? newTokens : tokens;
           const watchedFromOther = otherList.filter(t => watchList.includes(t.md5) && !baseList.some(b => b.md5 === t.md5));
-          return [...watchedFromOther, ...baseList].sort((a, b) => (watchList.includes(b.md5) ? 1 : 0) - (watchList.includes(a.md5) ? 1 : 0));
+          const sorted = [...watchedFromOther, ...baseList].sort((a, b) => (watchList.includes(b.md5) ? 1 : 0) - (watchList.includes(a.md5) ? 1 : 0));
+          return isMobile ? sorted.slice(0, 10) : sorted;
         })().map((t, i) => {
           const change = t.pro24h || 0;
           const isUp = change >= 0;
@@ -241,14 +250,14 @@ const TrendingTokens = ({ token = null }) => {
               isWatched={isWatched}
             >
               <div style={{ display: 'flex', alignItems: 'center' }}>
-                <Star
+                <Bookmark
                   size={14}
                   onClick={(e) => toggleWatch(e, t.md5)}
-                  fill={isWatched ? '#F6B87E' : 'none'}
+                  fill={isWatched ? '#F59E0B' : 'none'}
                   strokeWidth={2}
                   style={{
                     cursor: 'pointer',
-                    color: isWatched ? '#F6B87E' : darkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)',
+                    color: isWatched ? '#F59E0B' : darkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)',
                     transition: 'transform 0.2s ease',
                   }}
                   onMouseEnter={(e) => e.target.style.transform = 'scale(1.2)'}

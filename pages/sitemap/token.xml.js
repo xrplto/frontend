@@ -1,4 +1,4 @@
-import axios from 'axios';
+import api from 'src/utils/api';
 
 const BASE_URL = process.env.API_URL || 'https://api.xrpl.to/v1';
 
@@ -32,7 +32,7 @@ export const getServerSideProps = async ({ res, query }) => {
     res.setHeader('Cache-Control', 's-maxage=3600, stale-while-revalidate=86400');
     res.setHeader('Content-Type', 'text/xml; charset=utf-8');
 
-    const response = await axios.get(`${BASE_URL}/slugs`, {
+    const response = await api.get(`${BASE_URL}/tokens/slugs`, {
       timeout: 10000,
       validateStatus: (status) => status < 500
     });

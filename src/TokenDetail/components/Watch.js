@@ -1,4 +1,4 @@
-import axios from 'axios';
+import api from 'src/utils/api';
 import { useState, useEffect, useContext } from 'react';
 import { AppContext } from 'src/context/AppContext';
 import { Bookmark } from 'lucide-react';
@@ -20,7 +20,7 @@ export default function Watch({ token, className }) {
       setWatchList([]);
       return;
     }
-    axios
+    api
       .get(`${BASE_URL}/watchlist?account=${account}`)
       .then((res) => {
         if (res.status === 200 && res.data.success) {
@@ -41,7 +41,7 @@ export default function Watch({ token, className }) {
     setLoading(true);
     try {
       const action = isActive ? 'remove' : 'add';
-      const res = await axios.post(`${BASE_URL}/watchlist`, { md5, account, action });
+      const res = await api.post(`${BASE_URL}/watchlist`, { md5, account, action });
 
       if (res.status === 200 && res.data.success) {
         setWatchList(res.data.watchlist || []);
@@ -57,7 +57,7 @@ export default function Watch({ token, className }) {
     <button
       onClick={onChangeWatchList}
       className={cn(
-        'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-[11px] font-medium transition-all duration-200',
+        'flex items-center justify-center gap-1.5 rounded-lg border text-[11px] font-bold uppercase tracking-wider transition-all duration-200',
         isActive
           ? 'border-amber-500/30 bg-amber-500/10 text-amber-500 hover:bg-amber-500/20'
           : isDark

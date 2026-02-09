@@ -3,7 +3,8 @@ import { useState, useEffect, useContext, memo, useMemo, useCallback, useRef } f
 import React from 'react';
 import styled from '@emotion/styled';
 import Image from 'next/image';
-import axios from 'axios';
+import { Bookmark } from 'lucide-react';
+import api from 'src/utils/api';
 
 import { AppContext } from 'src/context/AppContext';
 import { addTokenToTabs } from 'src/hooks/useTokenTabs';
@@ -28,6 +29,7 @@ const SparklineChart = memo(
 
     useEffect(() => {
       if (!containerRef.current) return;
+      const el = containerRef.current;
       const obs = new IntersectionObserver(
         ([e]) => {
           if (e.isIntersecting) {
@@ -35,16 +37,16 @@ const SparklineChart = memo(
             obs.disconnect();
           }
         },
-        { rootMargin: '50px' }
+        { rootMargin: '100px' }
       );
-      obs.observe(containerRef.current);
+      obs.observe(el);
       return () => obs.disconnect();
     }, []);
 
     useEffect(() => {
       if (!visible || !url) return;
       let cancelled = false;
-      axios
+      api
         .get(url)
         .then((res) => {
           if (cancelled) return;
@@ -1236,18 +1238,18 @@ const DesktopTokenRow = ({
             onClick={handleWatchlistClick}
             style={{
               cursor: 'pointer',
-              fontSize: '16px',
               color: watchList.includes(md5)
-                ? '#e85454'
+                ? '#F59E0B'
                 : darkMode
                   ? 'rgba(255,255,255,0.25)'
                   : 'rgba(0,0,0,0.2)',
-              display: 'inline-block',
+              display: 'inline-flex',
+              justifyContent: 'center',
               width: '100%',
               transition: 'color 0.15s ease'
             }}
           >
-            {watchList.includes(md5) ? '★' : '☆'}
+            <Bookmark size={16} fill={watchList.includes(md5) ? 'currentColor' : 'none'} />
           </span>
         </StyledCell>
       )}

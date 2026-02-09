@@ -3,7 +3,7 @@ import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import ScrollToTop from 'src/components/ScrollToTop';
 import { useRouter } from 'next/router';
-import axios from 'axios';
+import api from 'src/utils/api';
 import styled from '@emotion/styled';
 import { AppContext } from 'src/context/AppContext';
 import { useSelector } from 'react-redux';
@@ -351,7 +351,7 @@ function AMMPoolsPage({ data, initialQuery }) {
         return acc;
       }, {});
 
-      const response = await axios.get(`${BASE_URL}/api/amm`, { params: cleanParams });
+      const response = await api.get(`${BASE_URL}/api/amm`, { params: cleanParams });
 
       if (response.data?.pools) {
         setPools(response.data.pools);
@@ -746,7 +746,7 @@ export async function getServerSideProps({ query }) {
   const limit = Math.min(100, Math.max(1, parseInt(query.limit) || 50));
 
   try {
-    const res = await axios.get(`${BASE_URL}/api/amm`, {
+    const res = await api.get(`${BASE_URL}/api/amm`, {
       params: { sortBy, status, page, limit, includeAPY: true }
     });
 

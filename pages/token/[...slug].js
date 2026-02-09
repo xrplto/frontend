@@ -1,4 +1,4 @@
-import axios from 'axios';
+import api from 'src/utils/api';
 import { useState, useEffect, useCallback } from 'react';
 
 // Redux
@@ -114,7 +114,7 @@ export async function getStaticPaths() {
   const BASE_URL = process.env.API_URL || 'https://api.xrpl.to/v1';
 
   try {
-    const res = await axios.get(`${BASE_URL}/tokens?limit=100&sortBy=vol24hxrp&sortType=desc`);
+    const res = await api.get(`${BASE_URL}/tokens?limit=100&sortBy=vol24hxrp&sortType=desc`);
     const topTokens = res.data.tokens || [];
 
     const paths = topTokens.map((token) => ({
@@ -150,7 +150,7 @@ export async function getStaticProps({ params }) {
     // https://api.xrpl.to/v1/token/bitstamp-usd
     const apiUrl = `${BASE_URL}/token/${slug}?desc=yes`;
     console.log('[getStaticProps] Fetching:', apiUrl);
-    const res = await axios.get(apiUrl, {
+    const res = await api.get(apiUrl, {
       timeout: 10000,
       validateStatus: (status) => status === 200
     });

@@ -470,7 +470,9 @@ export function TokenShareModal({ token, className }) {
         onClick={() => setOpen(true)}
         className={cn(
           'flex items-center justify-center gap-1.5 rounded-lg border text-[11px] font-bold uppercase tracking-wider transition-all duration-200',
-          isDark ? 'border-white/10 hover:border-primary/50 bg-white/[0.03] hover:bg-primary/5 text-white/60 hover:text-primary' : 'border-gray-200 hover:border-primary/50 bg-gray-50 hover:bg-primary/5 text-gray-500 hover:text-primary',
+          isDark
+            ? 'border-white/10 bg-white/[0.03] hover:bg-white/[0.06] text-white/60 hover:text-white/80'
+            : 'border-gray-200 bg-gray-50 hover:bg-gray-100 text-gray-500 hover:text-gray-700',
           className
         )}
       >

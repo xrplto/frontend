@@ -1,19 +1,12 @@
-import axios from 'axios';
-import { performance } from 'perf_hooks';
-import { useState, useEffect, useRef, useCallback } from 'react';
-
-// Context
-import { useContext } from 'react';
+import api from 'src/utils/api';
+import { useState, useEffect, useRef, useCallback, useContext } from 'react';
 import { AppContext } from 'src/context/AppContext';
-
-// Components
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import ScrollToTop from 'src/components/ScrollToTop';
-
 import TokenList from 'src/TokenList';
 import NFTWatchList from 'src/components/NFTWatchList';
-import { Coins, Image, Star, Compass, Plus, Search, X, TrendingUp } from 'lucide-react';
+import { Coins, Image, Bookmark, Plus, Search, X, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from 'src/utils/cn';
 
@@ -41,11 +34,25 @@ function Overview({ data }) {
 
   // Load popular/trending tokens
   useEffect(() => {
-    axios
+    api
       .post(`${BASE_URL}/search`, { search: '' })
       .then((res) => setPopularTokens(res.data?.tokens?.slice(0, 6) || []))
       .catch(() => { });
   }, []);
+
+  // Auto-populate watchlist with user's held tokens when account loads and watchlist is empty
+  useEffect(() => {
+    if (!account || !setWatchList || (watchList && watchList.length > 0)) return;
+    api
+      .get(`${BASE_URL}/account/${account}/assets`)
+      .then((res) => {
+        const heldTokens = res.data?.tokens || [];
+        if (heldTokens.length > 0) {
+          setWatchList(heldTokens.map((t) => ({ md5: t.md5, slug: t.slug })));
+        }
+      })
+      .catch(() => { });
+  }, [account, watchList, setWatchList]);
 
   // Search effect
   useEffect(() => {
@@ -57,7 +64,7 @@ function Overview({ data }) {
     const timer = setTimeout(async () => {
       setSearchLoading(true);
       try {
-        const res = await axios.post(
+        const res = await api.post(
           `${BASE_URL}/search`,
           { search: searchQuery },
           { signal: controller.signal }
@@ -72,13 +79,21 @@ function Overview({ data }) {
     };
   }, [searchQuery, searchOpen]);
 
-  // Click outside to close
+  // Click outside + ESC to close
   useEffect(() => {
+    if (!searchOpen) return;
     const handleClickOutside = (e) => {
       if (searchRef.current && !searchRef.current.contains(e.target)) setSearchOpen(false);
     };
-    if (searchOpen) document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') setSearchOpen(false);
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
   }, [searchOpen]);
 
   const openSearch = useCallback(() => {
@@ -142,12 +157,12 @@ function Overview({ data }) {
         }
       `}</style>
 
-      <div className="mx-auto w-full max-w-[1920px] px-6 py-6">
+      <div className="mx-auto w-full max-w-[1920px] px-6 py-6 flex-1">
         {/* Header with tabs */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <Star size={18} className="text-primary fill-primary/20" />
+              <Bookmark size={18} className="text-primary fill-primary/20" />
               <span className={cn('text-[12px] font-semibold uppercase tracking-[0.15em]', isDark ? 'text-primary' : 'text-primary')}>
                 Personalized
               </span>
@@ -158,42 +173,55 @@ function Overview({ data }) {
           </div>
 
           {account && (
-            <div className={cn(
-              'inline-flex p-1 rounded-xl border backdrop-blur-md',
-              isDark ? 'bg-white/5 border-white/10' : 'bg-black/5 border-black/5'
-            )}>
-              <button
-                onClick={() => setActiveTab('tokens')}
-                className={cn(
-                  'flex items-center gap-2 px-6 py-2 text-[13px] font-semibold rounded-lg transition-all duration-300',
-                  activeTab === 'tokens'
-                    ? isDark
-                      ? 'bg-white/10 text-white shadow-[0_4px_12px_rgba(255,255,255,0.05)]'
-                      : 'bg-white text-gray-900 shadow-[0_4px_12px_rgba(0,0,0,0.05)]'
-                    : isDark
-                      ? 'text-white/40 hover:text-white/60'
-                      : 'text-gray-500 hover:text-gray-700'
-                )}
-              >
-                <Coins size={16} strokeWidth={2} />
-                Tokens
-              </button>
-              <button
-                onClick={() => setActiveTab('nfts')}
-                className={cn(
-                  'flex items-center gap-2 px-6 py-2 text-[13px] font-semibold rounded-lg transition-all duration-300',
-                  activeTab === 'nfts'
-                    ? isDark
-                      ? 'bg-white/10 text-white shadow-[0_4px_12px_rgba(255,255,255,0.05)]'
-                      : 'bg-white text-gray-900 shadow-[0_4px_12px_rgba(0,0,0,0.05)]'
-                    : isDark
-                      ? 'text-white/40 hover:text-white/60'
-                      : 'text-gray-500 hover:text-gray-700'
-                )}
-              >
-                <Image size={16} strokeWidth={2} />
-                NFTs
-              </button>
+            <div className="flex items-center gap-3">
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setActiveTab('tokens')}
+                  className={cn(
+                    'inline-flex items-center gap-2 px-4 py-2.5 rounded-md border text-[12px] font-medium tracking-[0.05em] uppercase transition-all',
+                    activeTab === 'tokens'
+                      ? isDark
+                        ? 'border-white/20 text-white'
+                        : 'border-black/20 text-gray-900'
+                      : isDark
+                        ? 'border-white/10 text-white/40 hover:border-white/15 hover:text-white/70'
+                        : 'border-black/10 text-black/40 hover:border-black/15 hover:text-black/60'
+                  )}
+                >
+                  <Coins size={16} />
+                  Tokens
+                </button>
+                <button
+                  onClick={() => setActiveTab('nfts')}
+                  className={cn(
+                    'inline-flex items-center gap-2 px-4 py-2.5 rounded-md border text-[12px] font-medium tracking-[0.05em] uppercase transition-all',
+                    activeTab === 'nfts'
+                      ? isDark
+                        ? 'border-white/20 text-white'
+                        : 'border-black/20 text-gray-900'
+                      : isDark
+                        ? 'border-white/10 text-white/40 hover:border-white/15 hover:text-white/70'
+                        : 'border-black/10 text-black/40 hover:border-black/15 hover:text-black/60'
+                  )}
+                >
+                  <Image size={16} />
+                  NFTs
+                </button>
+              </div>
+              {activeTab === 'tokens' && watchList?.length > 0 && (
+                <button
+                  onClick={openSearch}
+                  className={cn(
+                    'inline-flex items-center gap-2 px-4 py-2.5 rounded-md border text-[12px] font-medium tracking-[0.05em] uppercase transition-all',
+                    isDark
+                      ? 'border-white/10 text-white/40 hover:border-white/15 hover:text-white/70'
+                      : 'border-black/10 text-black/40 hover:border-black/15 hover:text-black/60'
+                  )}
+                >
+                  <Plus size={16} />
+                  Add
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -209,7 +237,7 @@ function Overview({ data }) {
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[400px] h-[400px] bg-primary/10 blur-[120px] -z-10" />
 
             <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-primary/10 mb-8 border border-primary/20 shadow-[0_0_40px_rgba(var(--primary-rgb),0.1)]">
-              <Star
+              <Bookmark
                 size={40}
                 className="text-primary"
                 fill="currentColor"
@@ -247,7 +275,7 @@ function Overview({ data }) {
                     <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[300px] h-[300px] bg-primary/20 blur-[100px] -z-10 group-hover:bg-primary/30 transition-all duration-700" />
 
                     <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 mb-6 group-hover:scale-110 transition-transform duration-500">
-                      <Star size={32} className="text-primary" fill="currentColor" fillOpacity={0.2} />
+                      <Bookmark size={32} className="text-primary" fill="currentColor" fillOpacity={0.2} />
                     </div>
                     <h2
                       className={cn(
@@ -435,7 +463,7 @@ function Overview({ data }) {
                           />
                           {isInWatchlist(token.md5) && (
                             <div className="absolute -top-1 -right-1 bg-primary rounded-full p-0.5 border-2 border-[#0A0A0A]">
-                              <Star size={8} className="text-white fill-white" />
+                              <Bookmark size={8} className="text-white fill-white" />
                             </div>
                           )}
                         </div>
@@ -491,7 +519,7 @@ function Overview({ data }) {
                           />
                           {isInWatchlist(token.md5) && (
                             <div className="absolute -top-1 -right-1 bg-primary rounded-full p-0.5 border-2 border-[#0A0A0A]">
-                              <Star size={8} className="text-white fill-white" />
+                              <Bookmark size={8} className="text-white fill-white" />
                             </div>
                           )}
                         </div>
@@ -551,19 +579,11 @@ export default Overview;
 // It may be called again, on a serverless function, if
 // revalidation is enabled and a new request comes in
 export async function getStaticProps() {
-  // https://api.xrpl.to/v1/tags
-
   let data = null;
   try {
-    var t1 = performance.now();
-
-    const res = await axios.get(`${BASE_URL}/tags`);
-
+    const res = await api.get(`${BASE_URL}/tags`);
     data = res.data;
-
-    var t2 = performance.now();
-    var dt = (t2 - t1).toFixed(2);
-  } catch (e) { }
+  } catch { }
   let ret = {};
   if (data) {
     let ogp = {};

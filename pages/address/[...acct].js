@@ -1,6 +1,7 @@
+import { apiFetch } from 'src/utils/api';
 import { useState, useEffect, useContext } from 'react';
 import { createPortal } from 'react-dom';
-import axios from 'axios';
+import api from 'src/utils/api';
 import styled from '@emotion/styled';
 import { AppContext } from 'src/context/AppContext';
 import { cn } from 'src/utils/cn';
@@ -166,7 +167,7 @@ const AvatarWithTooltip = ({ avatarUrl, nftId, className }) => {
     if (!nftId || nftData) return;
     setLoading(true);
     try {
-      const res = await axios.get(`https://api.xrpl.to/v1/nft/${nftId}`);
+      const res = await api.get(`https://api.xrpl.to/v1/nft/${nftId}`);
       setNftData(res.data);
     } catch (e) { }
     setLoading(false);
@@ -246,7 +247,7 @@ const OverView = ({ account }) => {
   const [tradingPerfOffset, setTradingPerfOffset] = useState(0);
   const [tradingPerfSort, setTradingPerfSort] = useState('volume');
   const [tradingPerfLoading, setTradingPerfLoading] = useState(false);
-  const TRADING_PERF_LIMIT = 20;
+  const TRADING_PERF_LIMIT = 10;
   const [hideZeroHoldings, setHideZeroHoldings] = useState(true);
   const [activeTab, setActiveTab] = useState('tokens');
   const [xrpPrice, setXrpPrice] = useState(null);
@@ -318,28 +319,39 @@ const OverView = ({ account }) => {
           return result;
         };
         const [profileRes, holdingsRes, nftRes, balanceRes, liveRes] = await Promise.all([
-          timedFetch('traders', () => axios.get(`https://api.xrpl.to/v1/traders/${account}?limit=${TRADING_PERF_LIMIT}&offset=0&sortTokensBy=volume`).catch(() => ({ data: null }))),
-          timedFetch('trustlines', () => axios
+          timedFetch('traders', () => api.get(`https://api.xrpl.to/v1/traders/${account}?limit=${TRADING_PERF_LIMIT}&offset=0&sortTokensBy=volume`).catch(() => ({ data: null }))),
+          timedFetch('trustlines', () => api
             .get(`https://api.xrpl.to/api/trustlines/${account}?format=full&sortByValue=true&includeZero=true&limit=10&offset=0`)
-            .catch(() => axios.get(`https://api.xrpl.to/api/trustlines/${account}?sortByValue=true&includeZero=true&limit=10&offset=0`))
+            .catch(() => api.get(`https://api.xrpl.to/api/trustlines/${account}?sortByValue=true&includeZero=true&limit=10&offset=0`))
             .catch(() => ({ data: null }))),
-          timedFetch('nft-analytics', () => axios
+          timedFetch('nft-analytics', () => api
             .get(`https://api.xrpl.to/v1/nft/analytics/trader/${account}`)
             .catch(() => ({ data: null }))),
-          timedFetch('balance', () => axios
-            .get(`https://api.xrpl.to/v1/account/balance/${account}?rank=true`)
+          timedFetch('balance', () => api
+            .get(`https://api.xrpl.to/v1/account/balance/${account}`)
             .catch(() => ({ data: null }))),
-          timedFetch('account-info', () => axios
+          timedFetch('account-info', () => api
             .get(`https://api.xrpl.to/v1/account/info/${account}`)
             .catch(() => ({ data: null })))
         ]);
 
         const profile = profileRes.data || {};
-        if (!profile.rank && balanceRes.data?.rank) profile.rank = balanceRes.data.rank;
-        setData(profile.error ? { ...profile, rank: balanceRes.data?.rank } : profile);
+        setData(profile.error ? { ...profile } : profile);
         setHoldings(holdingsRes.data);
         setNftStats(nftRes.data);
         setAccountInfo(balanceRes.data);
+
+        // Fetch rank separately (non-blocking) — only if traders endpoint didn't provide it
+        if (!profile.rank) {
+          api.get(`https://api.xrpl.to/v1/account/balance/${account}?rank=true`)
+            .then(res => {
+              if (res.data?.rank) {
+                setData(prev => prev ? { ...prev, rank: res.data.rank } : prev);
+                setAccountInfo(prev => prev ? { ...prev, rank: res.data.rank } : prev);
+              }
+            })
+            .catch(() => {});
+        }
 
         // Check if account is blackholed
         const liveData = liveRes?.data?.account_data;
@@ -375,7 +387,7 @@ const OverView = ({ account }) => {
     if (!account || !accountProfile?.account || isOwnAccount) return;
     const fetchLabel = async () => {
       try {
-        const res = await axios.get(`https://api.xrpl.to/api/user/${accountProfile.account}/labels`);
+        const res = await api.get(`https://api.xrpl.to/api/user/${accountProfile.account}/labels`);
         if (res.data?.labels) {
           const found = res.data.labels.find(l => l.wallet === account);
           if (found) setWalletLabel(found.label);
@@ -390,19 +402,19 @@ const OverView = ({ account }) => {
     if (!account) return;
     const fetchPerks = async () => {
       try {
-        const res = await axios.get(`https://api.xrpl.to/api/user/${account}/perks`);
+        const res = await api.get(`https://api.xrpl.to/api/user/${account}/perks`);
         if (res.data) setUserPerks(res.data);
       } catch (e) { }
     };
     const fetchProfile = async () => {
       try {
-        const res = await axios.get(`https://api.xrpl.to/api/user/${account}`);
+        const res = await api.get(`https://api.xrpl.to/api/user/${account}`);
         if (res.data?.success && res.data.user) setUserProfile(res.data.user);
       } catch (e) { }
     };
     const fetchBadges = async () => {
       try {
-        const res = await fetch(`https://api.xrpl.to/v1/user/${account}/badges`);
+        const res = await apiFetch(`https://api.xrpl.to/v1/user/${account}/badges`);
         if (res.ok) {
           const data = await res.json();
           if (data.success) setDisplayBadges({ current: data.current || null, available: Array.isArray(data.available) ? data.available : [] });
@@ -420,9 +432,9 @@ const OverView = ({ account }) => {
     try {
       if (walletLabel) {
         // Delete old then add new
-        await axios.delete(`https://api.xrpl.to/api/user/${accountProfile.account}/labels/${account}`);
+        await api.delete(`https://api.xrpl.to/api/user/${accountProfile.account}/labels/${account}`);
       }
-      const res = await axios.post(`https://api.xrpl.to/api/user/${accountProfile.account}/labels`, {
+      const res = await api.post(`https://api.xrpl.to/api/user/${accountProfile.account}/labels`, {
         wallet: account,
         label: labelInput.trim()
       });
@@ -436,7 +448,7 @@ const OverView = ({ account }) => {
     if (!accountProfile?.account || !walletLabel) return;
     setLabelSaving(true);
     try {
-      await axios.delete(`https://api.xrpl.to/api/user/${accountProfile.account}/labels/${account}`);
+      await api.delete(`https://api.xrpl.to/api/user/${accountProfile.account}/labels/${account}`);
       setWalletLabel(null);
       setEditingLabel(false);
       setLabelInput('');
@@ -449,7 +461,7 @@ const OverView = ({ account }) => {
     const isInitialLoad = holdingsPage === 0 && !holdings;
     if (isInitialLoad) return;
 
-    axios
+    api
       .get(`https://api.xrpl.to/api/trustlines/${account}?format=full&sortByValue=true&includeZero=true&limit=10&offset=${holdingsPage * 10}`)
       .then((res) => setHoldings(res.data))
       .catch((err) => console.error('Failed to fetch holdings page:', err));
@@ -462,7 +474,7 @@ const OverView = ({ account }) => {
     if (isInitialLoad) return;
 
     setTradingPerfLoading(true);
-    axios
+    api
       .get(`https://api.xrpl.to/v1/traders/${account}?limit=${TRADING_PERF_LIMIT}&offset=${tradingPerfOffset}&sortTokensBy=${tradingPerfSort}`)
       .then((res) => {
         if (res.data && !res.data.error) {
@@ -481,7 +493,7 @@ const OverView = ({ account }) => {
   useEffect(() => {
     if (activeTab !== 'nfts' || !account || nftCollections.length > 0) return;
     setNftCollectionsLoading(true);
-    axios
+    api
       .get(`https://api.xrpl.to/v1/nft/account/${account}/nfts`)
       .then((res) => {
         const cols = res.data?.collections || [];
@@ -504,7 +516,7 @@ const OverView = ({ account }) => {
   useEffect(() => {
     if (activeTab !== 'nfts' || !account || nftCollectionStats.length > 0) return;
     setNftCollectionStatsLoading(true);
-    axios
+    api
       .get(`https://api.xrpl.to/v1/nft/analytics/trader/${account}/collections?limit=100`)
       .then((res) => {
         const collections = res.data?.collections || [];
@@ -518,7 +530,7 @@ const OverView = ({ account }) => {
   // Fetch NFT trading history when NFTs tab is viewed
   useEffect(() => {
     if (activeTab !== 'nfts' || !account || nftHistory.length > 0) return;
-    axios
+    api
       .get(`https://api.xrpl.to/v1/nft/analytics/trader/${account}/history?limit=365`)
       .then((res) => setNftHistory(res.data?.history || []))
       .catch(() => setNftHistory([]));
@@ -528,7 +540,7 @@ const OverView = ({ account }) => {
   useEffect(() => {
     if (!selectedNftCollection || !account) return;
     setCollectionNftsLoading(true);
-    axios
+    api
       .get(
         `https://api.xrpl.to/v1/nft/collections/${selectedNftCollection.slug}/nfts?limit=50&skip=0&owner=${account}`
       )
@@ -552,7 +564,7 @@ const OverView = ({ account }) => {
   useEffect(() => {
     if (activeTab !== 'ancestry' || !account || ancestry) return;
     setAncestryLoading(true);
-    axios
+    api
       .get(`https://api.xrpl.to/api/account/ancestry/${account}?include_tokens=true&token_limit=50`)
       .then((res) => setAncestry(res.data))
       .catch((err) => {
@@ -566,7 +578,7 @@ const OverView = ({ account }) => {
     if (accountAILoading || accountAI) return;
     setAccountAILoading(true);
     try {
-      const res = await axios.get(`https://api.xrpl.to/v1/account-tx-explain/${account}?limit=200`);
+      const res = await api.get(`https://api.xrpl.to/v1/account-tx-explain/${account}?limit=200`);
       setAccountAI(res.data);
     } catch (err) {
       setAccountAI({ error: 'Failed to analyze account activity' });
@@ -683,9 +695,9 @@ const OverView = ({ account }) => {
         <div className="flex flex-col">
           <div className="w-full">
             {/* Account Header */}
-            <div className="mb-6">
-              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                <div className="flex items-center gap-4 flex-wrap">
+            <div className={cn('mb-6 p-5 rounded-2xl border-[1.5px]', isDark ? 'border-white/[0.06] bg-white/[0.02]' : 'border-gray-200 bg-gray-50/50')}>
+              <div className="flex flex-col gap-4">
+                <div className="flex items-start gap-4">
                   <div className="relative shrink-0">
                     {userProfile?.avatar ? (
                       <AvatarWithTooltip
@@ -694,18 +706,25 @@ const OverView = ({ account }) => {
                         className="w-24 h-24 rounded-2xl object-cover border border-white/10 cursor-pointer hover:scale-105 transition-transform"
                       />
                     ) : (
-                      <div className={cn(
-                        'p-3 rounded-2xl border',
-                        isDark ? 'bg-white/[0.03] border-white/10 text-white/70' : 'bg-gray-50 border-gray-200 text-gray-400'
-                      )}>
-                        <User size={24} />
+                      <div
+                        className={cn(
+                          'w-24 h-24 rounded-2xl border flex items-center justify-center',
+                          isDark ? 'border-white/10' : 'border-gray-200'
+                        )}
+                        style={{
+                          background: isDark
+                            ? `linear-gradient(135deg, ${`#${account.slice(2, 8)}`}22, ${`#${account.slice(8, 14)}`}18)`
+                            : `linear-gradient(135deg, ${`#${account.slice(2, 8)}`}15, ${`#${account.slice(8, 14)}`}10)`
+                        }}
+                      >
+                        <User size={36} className={isDark ? 'text-white/30' : 'text-gray-300'} strokeWidth={1.5} />
                       </div>
                     )}
                     {userProfile?.tier && (
                       <div className={cn('absolute -bottom-1 -right-1 w-6 h-6 rounded-full border-4', isDark ? 'border-[#0a0a0a]' : 'border-white', userProfile.tier === 'verified' ? 'bg-gradient-to-r from-[#FFD700] via-[#FF6B9D] to-[#00FFFF]' : userProfile.tier === 'diamond' ? 'bg-violet-500' : userProfile.tier === 'nova' ? 'bg-amber-500' : userProfile.tier === 'vip' ? 'bg-emerald-500' : 'bg-gray-400')} />
                     )}
                   </div>
-                  <div className="flex flex-col">
+                  <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-3 flex-wrap">
                       <h2
                         className={cn(
@@ -789,7 +808,7 @@ const OverView = ({ account }) => {
                     <AccountInfoDetails accountInfo={accountInfo} isDark={isDark} />
                   </div>
                 </div>
-                <div className="flex flex-col gap-2.5">
+                <div className="flex flex-col gap-2">
                   {/* Tiers & Account Tags */}
                   <div className="flex items-center gap-2 flex-wrap">
                     {typeof data?.washTradingScore === 'number' && (
@@ -935,22 +954,22 @@ const OverView = ({ account }) => {
                     </div>
                   )}
                 </div>
+                {data?.firstTradeDate && (
+                  <div
+                    className={cn(
+                      'text-[11px] font-medium pt-3 border-t flex items-center gap-2',
+                      isDark ? 'border-white/[0.06] text-white/30' : 'border-gray-100 text-gray-400'
+                    )}
+                  >
+                    <Clock size={12} />
+                    <span>
+                      Trading since <span className={isDark ? 'text-white/60' : 'text-gray-600'}>{fDateTime(data.firstTradeDate)}</span>
+                      <span className="mx-2 opacity-30">|</span>
+                      Last trade <span className={isDark ? 'text-white/60' : 'text-gray-600'}>{fDateTime(data.lastTradeDate)}</span>
+                    </span>
+                  </div>
+                )}
               </div>
-              {data?.firstTradeDate && (
-                <div
-                  className={cn(
-                    'text-[11px] font-medium mt-3 flex items-center gap-2',
-                    isDark ? 'text-white/30' : 'text-gray-400'
-                  )}
-                >
-                  <Clock size={12} />
-                  <span>
-                    Trading since <span className={isDark ? 'text-white/60' : 'text-gray-600'}>{fDateTime(data.firstTradeDate)}</span>
-                    <span className="mx-2 opacity-30">|</span>
-                    Last trade <span className={isDark ? 'text-white/60' : 'text-gray-600'}>{fDateTime(data.lastTradeDate)}</span>
-                  </span>
-                </div>
-              )}
             </div>
 
             {/* AI Analysis Panel */}

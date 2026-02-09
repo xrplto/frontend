@@ -1,12 +1,20 @@
-const CHAT_API_KEY = 'xrpl_p3PKb-sf3JfGCtcUIdRS_UV8acyvQ1ta';
 const BASE_URL = 'https://api.xrpl.to';
+const CHAT_API_KEY = process.env.CHAT_API_KEY;
 
 export default async function handler(req, res) {
   const { action, ticketId, wallet, ...params } = req.query;
 
-  // Build URL based on action
+  if (!CHAT_API_KEY) {
+    return res.status(500).json({ error: 'Chat service unavailable' });
+  }
+
+  // Validate ticketId format (MongoDB ObjectId = 24 hex chars)
+  if (ticketId && !/^[a-f0-9]{24}$/i.test(ticketId)) {
+    return res.status(400).json({ error: 'Invalid ticket ID format' });
+  }
+
   let url;
-  const baseParams = wallet ? `wallet=${wallet}` : '';
+  const baseParams = wallet ? `wallet=${encodeURIComponent(wallet)}` : '';
 
   switch (action) {
     case 'list':

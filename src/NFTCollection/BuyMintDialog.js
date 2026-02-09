@@ -1,4 +1,4 @@
-import axios from 'axios';
+import api from 'src/utils/api';
 import { useState, useEffect, useContext } from 'react';
 import { AppContext } from 'src/context/AppContext';
 import { cn } from 'src/utils/cn';
@@ -46,7 +46,7 @@ export default function BuyMintDialog({
       if (isRunning) return;
       isRunning = true;
       try {
-        const ret = await axios.get(
+        const ret = await api.get(
           `${BASE_URL}/spin/buymint/${uuid}?account=${account}&cid=${cid}`,
           { headers: { 'x-access-token': accountToken } }
         );

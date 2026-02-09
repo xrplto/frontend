@@ -1,6 +1,6 @@
 import { memo, useContext, useState, useRef, useEffect, useCallback } from 'react';
 import { X, Plus, Search, Trash2, ChevronLeft, Check } from 'lucide-react';
-import axios from 'axios';
+import api from 'src/utils/api';
 import { AppContext } from 'src/context/AppContext';
 import { useTokenTabs, addTokenToTabs } from 'src/hooks/useTokenTabs';
 import { cn } from 'src/utils/cn';
@@ -36,7 +36,7 @@ const TokenTabs = memo(({ currentMd5 }) => {
   // Load suggested when modal opens
   useEffect(() => {
     if (!searchOpen) return;
-    axios
+    api
       .post(`${BASE_URL}/search`, { search: '' })
       .then((res) =>
         setSuggested({
@@ -57,7 +57,7 @@ const TokenTabs = memo(({ currentMd5 }) => {
     setLoading(true);
     (async () => {
       try {
-        const res = await axios.post(
+        const res = await api.post(
           `${BASE_URL}/search`,
           { search: query },
           { signal: controller.signal }

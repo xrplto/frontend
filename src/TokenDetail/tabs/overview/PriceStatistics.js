@@ -1,6 +1,8 @@
+import { apiFetch } from 'src/utils/api';
 import Decimal from 'decimal.js-light';
 import PropTypes from 'prop-types';
 import { useState, useEffect, useContext, useRef, useMemo, useCallback, memo } from 'react';
+import { createPortal } from 'react-dom';
 import styled from '@emotion/styled';
 import {
   AlertTriangle,
@@ -31,7 +33,7 @@ import {
   Tag,
   Trash2
 } from 'lucide-react';
-import axios from 'axios';
+import api from 'src/utils/api';
 import { useSelector } from 'react-redux';
 import { selectMetrics } from 'src/redux/statusSlice';
 import { fNumber, fDate } from 'src/utils/formatters';
@@ -218,11 +220,19 @@ const SectionLabel = styled.span`
 
 const ScrollableBox = styled.div`
   flex: 1;
-  overflow: auto;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(128,128,128,0.3) transparent;
   &::-webkit-scrollbar {
-    display: none;
+    width: 4px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: rgba(128,128,128,0.3);
+    border-radius: 4px;
   }
 `;
 
@@ -390,7 +400,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
       setCreatorLabel(null);
       return;
     }
-    axios
+    api
       .get(`https://api.xrpl.to/api/user/${accountLogin}/labels`)
       .then((res) => {
         const labels = res.data?.labels || [];
@@ -405,9 +415,9 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
     setLabelSaving(true);
     try {
       if (creatorLabel) {
-        await axios.delete(`https://api.xrpl.to/api/user/${accountLogin}/labels/${creator}`);
+        await api.delete(`https://api.xrpl.to/api/user/${accountLogin}/labels/${creator}`);
       }
-      const res = await axios.post(`https://api.xrpl.to/api/user/${accountLogin}/labels`, {
+      const res = await api.post(`https://api.xrpl.to/api/user/${accountLogin}/labels`, {
         wallet: creator,
         label: labelInput.trim()
       });
@@ -424,7 +434,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
     if (!accountLogin || !creatorLabel) return;
     setLabelSaving(true);
     try {
-      await axios.delete(`https://api.xrpl.to/api/user/${accountLogin}/labels/${creator}`);
+      await api.delete(`https://api.xrpl.to/api/user/${accountLogin}/labels/${creator}`);
       setCreatorLabel(null);
       setEditingLabel(false);
       setLabelInput('');
@@ -442,10 +452,10 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
     aiAbortRef.current = new AbortController();
 
     setAiLoading(true);
-    const aiUrl = `https://api.xrpl.to/v1/token-review/${token.md5}`;
+    const aiUrl = `https://api.xrpl.to/v1/token/review/${token.md5}`;
     const t0 = performance.now();
     console.log('[PriceStats] Fetching AI review:', aiUrl);
-    fetch(aiUrl, { signal: aiAbortRef.current.signal })
+    apiFetch(aiUrl, { signal: aiAbortRef.current.signal })
       .then((res) => res.json())
       .then((data) => {
         console.log(`[PriceStats] AI review done in ${(performance.now() - t0).toFixed(0)}ms`);
@@ -471,10 +481,10 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
     if (flowAbortRef.current) flowAbortRef.current.abort();
     flowAbortRef.current = new AbortController();
 
-    const flowUrl = `https://api.xrpl.to/v1/token_flow/${token.md5}`;
+    const flowUrl = `https://api.xrpl.to/v1/token/flow/${token.md5}`;
     const t1 = performance.now();
     console.log('[PriceStats] Fetching token flow:', flowUrl);
-    fetch(flowUrl, { signal: flowAbortRef.current.signal })
+    apiFetch(flowUrl, { signal: flowAbortRef.current.signal })
       .then((res) => res.json())
       .then((data) => {
         console.log(`[PriceStats] Token flow done in ${(performance.now() - t1).toFixed(0)}ms`);
@@ -521,7 +531,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
     setNoTokenActivity(false);
 
     try {
-      let url = `https://api.xrpl.to/v1/creators/${creator}?limit=12`;
+      let url = `https://api.xrpl.to/v1/creator-activity/${creator}?limit=12`;
       if (filter === 'swaps') url += '&side=sell,buy';
       else if (filter === 'transfers') url += '&side=transfer_out,receive';
       else if (filter === 'checks')
@@ -534,7 +544,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
       const fetches = [fetch(url, { signal }).then((r) => r.json())];
       if (filter === 'all') {
         fetches.push(
-          fetch(`https://api.xrpl.to/v1/tx/${creator}?limit=12`, { signal }).then((r) => r.json())
+          apiFetch(`https://api.xrpl.to/v1/tx/${creator}?limit=12`, { signal }).then((r) => r.json())
         );
       }
 
@@ -1465,20 +1475,36 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                           cursor: 'pointer'
                         }}
                       >
-                        <Typography
-                          variant="caption"
-                          style={{
-                            fontWeight: 400,
-                            fontSize: '11px',
-                            fontFamily: 'var(--font-mono)',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap',
-                            color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.65)'
-                          }}
-                        >
-                          {creator}
-                        </Typography>
+                        {creatorLabel ? (
+                          <Typography
+                            variant="caption"
+                            style={{
+                              fontWeight: 500,
+                              fontSize: '11px',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                              color: '#6366f1'
+                            }}
+                          >
+                            {creatorLabel}
+                          </Typography>
+                        ) : (
+                          <Typography
+                            variant="caption"
+                            style={{
+                              fontWeight: 400,
+                              fontSize: '11px',
+                              fontFamily: 'var(--font-mono)',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                              color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.65)'
+                            }}
+                          >
+                            {creator}
+                          </Typography>
+                        )}
                       </Chip>
                     </Tooltip>
                     <Tooltip title="Copy address">
@@ -1677,11 +1703,11 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                       style={{
                         fontWeight: 400,
                         color: isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.5)',
-                        fontSize: '13px'
+                        fontSize: isMobile ? '11px' : '13px'
                       }}
                       noWrap
                     >
-                      Creator Last Action
+                      {isMobile ? 'Last Action' : 'Creator Last Action'}
                     </Typography>
                   </ModernTableCell>
                   <ModernTableCell>
@@ -1697,7 +1723,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                         <Stack
                           direction="row"
                           alignItems="center"
-                          style={{ justifyContent: 'flex-end', gap: '8px' }}
+                          style={{ justifyContent: 'flex-end', gap: isMobile ? '4px' : '8px' }}
                         >
                           <Typography
                             variant="body2"
@@ -1708,40 +1734,46 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                                   ? '#10b981'
                                   : creatorLastAction.side === 'sell'
                                     ? '#f43f5e'
-                                    : '#8b5cf6',
-                              fontSize: '12px',
+                                    : creatorLastAction.side === 'transfer_out'
+                                      ? '#f59e0b'
+                                      : '#8b5cf6',
+                              fontSize: isMobile ? '10px' : '12px',
                               textTransform: 'uppercase'
                             }}
                           >
-                            {(creatorLastAction.side || creatorLastAction.type || '').replace(/^other_/, '')}
+                            {(() => {
+                              const side = creatorLastAction.side || creatorLastAction.type || '';
+                              const labels = {
+                                transfer_out: 'Sent',
+                                receive: 'Received',
+                                deposit: 'LP Add',
+                                withdraw: 'LP Remove',
+                                amm_create: 'LP Create',
+                                check_create: 'Check',
+                                check_receive: 'Check In',
+                                check_send: 'Check Out'
+                              };
+                              return labels[side] || side.replace(/^other_/, '').replace(/_/g, ' ');
+                            })()}
                           </Typography>
-                          {creatorLastAction.xrp != null && creatorLastAction.xrp > 0 && (
-                            <Typography
-                              variant="caption"
-                              style={{
-                                color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.55)',
-                                fontSize: '11px'
-                              }}
-                            >
-                              {fNumber(creatorLastAction.xrp)} XRP
-                            </Typography>
-                          )}
-                          {creatorLastAction.amountType === 'token' && creatorLastAction.token > 0 && (
-                            <Typography
-                              variant="caption"
-                              style={{
-                                color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.55)',
-                                fontSize: '11px'
-                              }}
-                            >
-                              {fNumber(creatorLastAction.token)} {name}
-                            </Typography>
-                          )}
+                          <Typography
+                            variant="caption"
+                            style={{
+                              color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.55)',
+                              fontSize: isMobile ? '9px' : '11px'
+                            }}
+                          >
+                            {creatorLastAction.amountType === 'token' && creatorLastAction.token > 0
+                              ? `${fNumber(creatorLastAction.token)} ${name}`
+                              : creatorLastAction.xrp > 0
+                                ? `${fNumber(creatorLastAction.xrp)} XRP`
+                                : null}
+                          </Typography>
                           <Typography
                             variant="caption"
                             style={{
                               color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)',
-                              fontSize: '10px'
+                              fontSize: isMobile ? '9px' : '10px'
                             }}
                           >
                             {formatLastActionTime(creatorLastAction.time)}
@@ -1754,21 +1786,21 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                 {/* Creator Sell Warning */}
                 {creatorLastAction.side === 'sell' && (
                   <TableRowStyled isDark={isDark}>
-                    <ModernTableCell colSpan={2} style={{ padding: '4px 12px 8px' }}>
+                    <ModernTableCell colSpan={2} style={{ padding: isMobile ? '2px 8px 6px' : '4px 12px 8px' }}>
                       <Stack
                         direction="row"
                         alignItems="center"
                         style={{
-                          gap: '8px',
-                          padding: '8px 12px',
+                          gap: isMobile ? '5px' : '8px',
+                          padding: isMobile ? '5px 8px' : '8px 12px',
                           background: 'rgba(239,68,68,0.08)',
                           borderRadius: '8px',
                           border: '1px solid rgba(239,68,68,0.15)'
                         }}
                       >
-                        <AlertTriangle size={14} color="#ef4444" strokeWidth={1.5} />
-                        <Typography style={{ color: '#ef4444', fontSize: '11px', fontWeight: 500 }}>
-                          Creator sold{' '}
+                        <AlertTriangle size={isMobile ? 12 : 14} color="#ef4444" strokeWidth={1.5} />
+                        <Typography style={{ color: '#ef4444', fontSize: isMobile ? '9px' : '11px', fontWeight: 500 }}>
+                          {isMobile ? 'Sold' : 'Creator sold'}{' '}
                           {creatorLastAction.xrp != null && creatorLastAction.xrp > 0
                             ? `${fNumber(creatorLastAction.xrp)} XRP`
                             : creatorLastAction.amountType === 'token' && creatorLastAction.token > 0
@@ -1866,10 +1898,10 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                         }}
                       >
                         {creatorTokens >= 10
-                          ? 'HIGH'
+                          ? 'HIGH RISK'
                           : creatorTokens >= 5
                             ? 'CAUTION'
-                            : 'MOD'}
+                            : `${creatorTokens} MORE`}
                       </Chip>
                     )}
                     {creatorExchange && (
@@ -2259,162 +2291,243 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
             {creator && tokenFlow && (tokenFlow.totalTransferred || tokenFlow.totalSoldXrp > 0) && (
               <TableRowStyled isDark={isDark} onClick={() => setFlowModalOpen(true)} style={{ cursor: 'pointer' }}>
                 <ModernTableCell>
-                  <Stack direction="row" alignItems="center" style={{ gap: '6px' }}>
-                    <ArrowLeftRight size={12} color="#8b5cf6" strokeWidth={1.5} />
-                    <Typography
-                      style={{
-                        fontWeight: 400,
-                        color: isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.5)',
-                        fontSize: '13px'
-                      }}
-                      noWrap
-                    >
-                      Creator Token Flow
-                    </Typography>
-                  </Stack>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <ArrowLeftRight size={13} color="#8b5cf6" strokeWidth={1.5} style={{ flexShrink: 0 }} />
+                    <span style={{
+                      fontWeight: 400,
+                      color: isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.5)',
+                      fontSize: '13px'
+                    }}>
+                      Token Flow
+                    </span>
+                  </div>
                 </ModernTableCell>
                 <ModernTableCell>
-                  <Stack direction="row" alignItems="center" style={{ justifyContent: 'flex-end', gap: '5px' }}>
-                    {tokenFlow.recipientCount > 0 && (
-                      <span style={{
-                        fontSize: '10px',
-                        padding: '3px 7px',
-                        borderRadius: '5px',
-                        background: isDark ? 'rgba(139,92,246,0.15)' : 'rgba(139,92,246,0.1)',
-                        color: '#8b5cf6',
-                        fontWeight: 600,
-                        lineHeight: 1
-                      }}>
-                        {tokenFlow.recipientCount}
-                      </span>
-                    )}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '6px', flexWrap: 'wrap' }}>
+                    <span style={{
+                      fontSize: '10px',
+                      padding: '2px 7px',
+                      borderRadius: '5px',
+                      background: 'rgba(139,92,246,0.08)',
+                      border: '1px solid rgba(139,92,246,0.12)',
+                      color: '#8b5cf6',
+                      fontWeight: 500,
+                      fontFamily: 'var(--font-mono)'
+                    }}>
+                      {tokenFlow.recipientCount || 0} wallets
+                    </span>
                     {tokenFlow.netFlowXrp != null && tokenFlow.netFlowXrp !== 0 && (
                       <span style={{
                         fontSize: '10px',
-                        padding: '3px 7px',
+                        padding: '2px 7px',
                         borderRadius: '5px',
-                        background: tokenFlow.netFlowXrp > 0 ? 'rgba(239,68,68,0.15)' : 'rgba(34,197,94,0.15)',
-                        color: tokenFlow.netFlowXrp > 0 ? '#ef4444' : '#22c55e',
-                        fontWeight: 600,
-                        lineHeight: 1
-                      }}>
-                        {tokenFlow.netFlowXrp > 0 ? '-' : '+'}{fNumber(Math.abs(tokenFlow.netFlowXrp))}
-                      </span>
-                    )}
-                    {tokenFlow.totalToExchanges > 0 && (
-                      <span style={{
-                        fontSize: '10px',
-                        padding: '3px 7px',
-                        borderRadius: '5px',
-                        background: 'rgba(245,158,11,0.1)',
-                        color: '#f59e0b',
+                        background: tokenFlow.netFlowXrp > 0 ? 'rgba(34,197,94,0.08)' : 'rgba(239,68,68,0.08)',
+                        border: `1px solid ${tokenFlow.netFlowXrp > 0 ? 'rgba(34,197,94,0.12)' : 'rgba(239,68,68,0.12)'}`,
+                        color: tokenFlow.netFlowXrp > 0 ? '#22c55e' : '#ef4444',
                         fontWeight: 500,
-                        lineHeight: 1
+                        fontFamily: 'var(--font-mono)'
                       }}>
-                        {fNumber(tokenFlow.totalToExchanges)} <span style={{ fontSize: '9px', opacity: 0.8 }}>CEX</span>
+                        {tokenFlow.netFlowXrp > 0 ? '+' : '-'}{fNumber(Math.abs(tokenFlow.netFlowXrp))} XRP
                       </span>
                     )}
-                    {tokenFlow.linkedGroupCount > 0 && (
+                    {!isMobile && tokenFlow.linkedGroupCount > 0 && (
                       <span style={{
                         fontSize: '10px',
-                        padding: '3px 7px',
+                        padding: '2px 7px',
                         borderRadius: '5px',
-                        background: 'rgba(239,68,68,0.1)',
+                        background: 'rgba(239,68,68,0.08)',
+                        border: '1px solid rgba(239,68,68,0.12)',
                         color: '#ef4444',
-                        fontWeight: 500,
-                        lineHeight: 1
+                        fontWeight: 500
                       }}>
-                        {tokenFlow.linkedGroupCount} <span style={{ fontSize: '9px', opacity: 0.8 }}>linked</span>
+                        {tokenFlow.linkedGroupCount} linked
                       </span>
                     )}
-                    <ChevronDown size={14} color={isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.3)'} style={{ transform: 'rotate(-90deg)', marginLeft: '2px' }} />
-                  </Stack>
+                    <ChevronDown size={13} color={isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.2)'} style={{ transform: 'rotate(-90deg)', flexShrink: 0 }} />
+                  </div>
                 </ModernTableCell>
               </TableRowStyled>
             )}
 
             {/* Token Flow Modal */}
-            {flowModalOpen && tokenFlow && (
+            {flowModalOpen && tokenFlow && createPortal(
               <Dialog open onClick={() => setFlowModalOpen(false)}>
-                <DialogPaper isDark={isDark} onClick={(e) => e.stopPropagation()} style={{ maxWidth: '700px', width: '95%', maxHeight: '80vh', display: 'flex', flexDirection: 'column' }}>
+                <DialogPaper isDark={isDark} onClick={(e) => e.stopPropagation()} style={{ maxWidth: '720px', width: '95%', maxHeight: '85vh', display: 'flex', flexDirection: 'column', borderRadius: '16px', overflow: 'hidden' }}>
                   {/* Modal Header */}
-                  <Box style={{ padding: '14px 16px', borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <Stack direction="row" alignItems="center" style={{ gap: '8px' }}>
-                      <ArrowLeftRight size={14} color="#8b5cf6" strokeWidth={1.5} />
-                      <Typography style={{ fontSize: '13px', fontWeight: 600, color: isDark ? '#fff' : '#1a1a1a' }}>
-                        Creator Token Flow
+                  <div style={{
+                    padding: '14px 20px',
+                    borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    flexShrink: 0
+                  }}>
+                    <Stack direction="row" alignItems="center" style={{ gap: '10px' }}>
+                      <ArrowLeftRight size={18} color="#8b5cf6" strokeWidth={2} />
+                      <Typography style={{ fontSize: '15px', fontWeight: 600, color: isDark ? '#fff' : '#1a1a1a', letterSpacing: '-0.01em' }}>
+                        Token Flow
                       </Typography>
                     </Stack>
-                    <IconButton onClick={() => setFlowModalOpen(false)} size="small" style={{ padding: '4px' }}>
+                    <IconButton onClick={() => setFlowModalOpen(false)} size="small" style={{ padding: '6px', borderRadius: '8px', border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'}` }}>
                       <X size={16} color={isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.4)'} />
                     </IconButton>
-                  </Box>
+                  </div>
 
-                  {/* Summary Badges */}
-                  <Box style={{ padding: '10px 16px', borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)'}` }}>
-                    <Stack direction="row" style={{ gap: '6px', flexWrap: 'wrap' }}>
-                      {tokenFlow.recipientCount > 0 && (
-                        <span style={{ fontSize: '10px', padding: '3px 8px', borderRadius: '4px', background: isDark ? 'rgba(139,92,246,0.15)' : 'rgba(139,92,246,0.1)', color: '#8b5cf6', fontWeight: 500 }}>
-                          {tokenFlow.recipientCount} recipients
-                        </span>
-                      )}
-                      {tokenFlow.holdingCount > 0 && (
-                        <span style={{ fontSize: '10px', padding: '3px 8px', borderRadius: '4px', background: isDark ? 'rgba(34,197,94,0.15)' : 'rgba(34,197,94,0.1)', color: '#22c55e', fontWeight: 500 }}>
-                          {tokenFlow.holdingCount} hodl
-                        </span>
-                      )}
-                      {tokenFlow.totalBoughtXrp > 0 && (
-                        <span style={{ fontSize: '10px', padding: '3px 8px', borderRadius: '4px', background: isDark ? 'rgba(34,197,94,0.15)' : 'rgba(34,197,94,0.1)', color: '#22c55e', fontWeight: 500 }}>
-                          +{fNumber(tokenFlow.totalBoughtXrp)} bought
-                        </span>
-                      )}
-                      {tokenFlow.totalSoldXrp > 0 && (
-                        <span style={{ fontSize: '10px', padding: '3px 8px', borderRadius: '4px', background: isDark ? 'rgba(239,68,68,0.15)' : 'rgba(239,68,68,0.1)', color: '#ef4444', fontWeight: 500 }}>
-                          -{fNumber(tokenFlow.totalSoldXrp)} sold
-                        </span>
-                      )}
-                      {tokenFlow.netFlowXrp != null && tokenFlow.netFlowXrp !== 0 && (
-                        <span style={{ fontSize: '10px', padding: '3px 8px', borderRadius: '4px', background: tokenFlow.netFlowXrp > 0 ? 'rgba(239,68,68,0.2)' : 'rgba(34,197,94,0.2)', color: tokenFlow.netFlowXrp > 0 ? '#ef4444' : '#22c55e', fontWeight: 600 }}>
-                          net {tokenFlow.netFlowXrp > 0 ? '-' : '+'}{fNumber(Math.abs(tokenFlow.netFlowXrp))}
-                        </span>
-                      )}
-                      {tokenFlow.totalToExchanges > 0 && (
-                        <span style={{ fontSize: '10px', padding: '3px 8px', borderRadius: '4px', background: isDark ? 'rgba(245,158,11,0.15)' : 'rgba(245,158,11,0.1)', color: '#f59e0b', fontWeight: 500 }}>
-                          {fNumber(tokenFlow.totalToExchanges)} CEX
-                        </span>
-                      )}
-                      {tokenFlow.linkedGroupCount > 0 && (
-                        <span style={{ fontSize: '10px', padding: '3px 8px', borderRadius: '4px', background: tokenFlow.creatorLinked ? 'rgba(239,68,68,0.2)' : 'rgba(239,68,68,0.1)', color: '#ef4444', fontWeight: 500 }}>
-                          {tokenFlow.linkedGroupCount} linked
-                        </span>
-                      )}
-                    </Stack>
-                    {/* Exchange Breakdown */}
-                    {tokenFlow.exchangeBreakdown?.length > 0 && (
-                      <Stack direction="row" style={{ gap: '6px', flexWrap: 'wrap', marginTop: '8px' }}>
-                        {tokenFlow.exchangeBreakdown.map((ex, i) => (
-                          <Tooltip key={i} title={(ex.addresses || []).map(a => a.slice(0, 8)).join('\n')}>
-                            <span style={{ fontSize: '10px', padding: '3px 8px', borderRadius: '4px', background: 'rgba(245,158,11,0.1)', color: '#f59e0b' }}>
-                              {ex.exchangeName || '?'} <span style={{ color: '#ef4444', fontWeight: 600 }}>{fNumber(ex.xrp)}</span>
-                            </span>
-                          </Tooltip>
-                        ))}
-                      </Stack>
-                    )}
-                  </Box>
+                  {/* Scrollable Content */}
+                  <ScrollableBox style={{ flex: 1, minHeight: 0 }}>
 
-                  {/* Table */}
-                  <ScrollableBox>
+                  {/* Summary Row */}
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', padding: '10px 16px' }}>
+                    {[
+                      { label: 'Recipients', value: tokenFlow.recipientCount || 0, color: '#8b5cf6' },
+                      tokenFlow.holdingCount > 0 && { label: 'Holding', value: tokenFlow.holdingCount, color: '#22c55e' },
+                      tokenFlow.netFlowXrp != null && tokenFlow.netFlowXrp !== 0 && {
+                        label: 'Profit',
+                        value: `${tokenFlow.netFlowXrp > 0 ? '+' : '-'}${fNumber(Math.abs(tokenFlow.netFlowXrp))} XRP`,
+                        color: tokenFlow.netFlowXrp > 0 ? '#22c55e' : '#ef4444'
+                      },
+                      tokenFlow.totalBoughtXrp > 0 && { label: 'Bought', value: `${fNumber(tokenFlow.totalBoughtXrp)} XRP`, color: '#22c55e' },
+                      tokenFlow.totalSoldXrp > 0 && { label: 'Sold', value: `${fNumber(tokenFlow.totalSoldXrp)} XRP`, color: '#ef4444' },
+                      tokenFlow.totalToExchanges > 0 && { label: 'CEX', value: `${fNumber(tokenFlow.totalToExchanges)} XRP`, color: '#f59e0b' },
+                      tokenFlow.linkedGroupCount > 0 && { label: 'Linked', value: `${tokenFlow.linkedGroupCount} groups`, color: '#ef4444' }
+                    ].filter(Boolean).map((s, i) => (
+                      <span key={i} style={{
+                        fontSize: '10px',
+                        padding: '3px 8px',
+                        borderRadius: '6px',
+                        background: `${s.color}10`,
+                        border: `1px solid ${s.color}20`,
+                        color: s.color,
+                        fontWeight: 500,
+                        fontFamily: 'var(--font-mono)',
+                        whiteSpace: 'nowrap'
+                      }}>
+                        <span style={{ opacity: 0.6, fontFamily: 'inherit', marginRight: '4px', fontSize: '9px', textTransform: 'uppercase' }}>{s.label}</span>
+                        {s.value}
+                      </span>
+                    ))}
+                  </div>
+
+                  {/* Exchange Deposits */}
+                  {tokenFlow.exchangeBreakdown?.length > 0 && (() => {
+                    const grouped = new Map();
+                    tokenFlow.exchangeBreakdown.forEach(ex => {
+                      const addr = ex.exchange || 'unknown';
+                      const prev = grouped.get(addr) || { address: addr, name: ex.exchangeName, xrp: 0, depositors: new Set() };
+                      prev.xrp += ex.xrp || 0;
+                      (ex.addresses || []).forEach(a => prev.depositors.add(a));
+                      if (!prev.name && ex.exchangeName) prev.name = ex.exchangeName;
+                      grouped.set(addr, prev);
+                    });
+                    const exchanges = [...grouped.values()].sort((a, b) => b.xrp - a.xrp);
+                    return (
+                      <div style={{ margin: '0 16px 6px', borderRadius: '8px', overflow: 'hidden', border: `1px solid ${isDark ? 'rgba(245,158,11,0.1)' : 'rgba(245,158,11,0.08)'}` }}>
+                        {exchanges.map((ex, i) => {
+                          const pct = tokenFlow.totalToExchanges > 0 ? (ex.xrp / tokenFlow.totalToExchanges) * 100 : 0;
+                          return (
+                            <div key={ex.address} style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '8px',
+                              padding: '4px 10px',
+                              borderTop: i > 0 ? `1px solid ${isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)'}` : 'none'
+                            }}>
+                              <ArrowUpRight size={10} color="#f59e0b" strokeWidth={2} style={{ flexShrink: 0 }} />
+                              <Link href={`/address/${ex.address}`} target="_blank" style={{
+                                fontFamily: 'var(--font-mono)', fontSize: '10px', color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.5)',
+                                textDecoration: 'none', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'
+                              }}>
+                                {ex.name || ex.address.slice(0, 12)}
+                              </Link>
+                              <div style={{ flex: 1, height: '3px', borderRadius: '2px', background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)', overflow: 'hidden', minWidth: '20px' }}>
+                                <div style={{ width: `${Math.max(pct, 2)}%`, height: '100%', background: '#f59e0b', borderRadius: '2px' }} />
+                              </div>
+                              <span style={{ fontSize: '10px', fontWeight: 600, color: '#f59e0b', fontFamily: 'var(--font-mono)', flexShrink: 0 }}>
+                                {fNumber(ex.xrp)} XRP
+                              </span>
+                              <span style={{ fontSize: '9px', color: isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.2)', flexShrink: 0 }}>
+                                {ex.depositors.size}w
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    );
+                  })()}
+
+                  {/* Linked Wallets */}
+                  {tokenFlow.linkedAddresses?.length > 0 && (() => {
+                    const linkedColors = ['#f97316', '#ec4899', '#8b5cf6', '#14b8a6', '#eab308', '#06b6d4'];
+                    return (
+                      <div style={{ margin: '0 16px 6px', borderRadius: '8px', overflow: 'hidden', border: `1px solid ${isDark ? 'rgba(239,68,68,0.1)' : 'rgba(239,68,68,0.08)'}` }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '4px 10px', background: isDark ? 'rgba(239,68,68,0.04)' : 'rgba(239,68,68,0.03)' }}>
+                          <Link2 size={10} color="#ef4444" strokeWidth={2} />
+                          <span style={{ fontSize: '9px', fontWeight: 600, color: '#ef4444', textTransform: 'uppercase', letterSpacing: '0.3px' }}>Linked</span>
+                          <span style={{ fontSize: '9px', color: isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.2)' }}>same exchange tag</span>
+                        </div>
+                        {tokenFlow.linkedAddresses.map((group, i) => {
+                          const color = linkedColors[i % linkedColors.length];
+                          const keyParts = (group.exchangeKey || '').split(':');
+                          const exAddr = keyParts[0] || '';
+                          const exTag = keyParts[1] || '';
+                          return (
+                            <div key={i} style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '6px',
+                              padding: '3px 10px',
+                              borderTop: i > 0 ? `1px solid ${isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)'}` : 'none'
+                            }}>
+                              <span style={{ width: '3px', height: '12px', borderRadius: '1px', background: color, flexShrink: 0 }} />
+                              <div style={{ flex: 1, display: 'flex', flexWrap: 'wrap', gap: '3px', alignItems: 'center' }}>
+                                {(group.addresses || []).map(addr => (
+                                  <Link key={addr} href={`/address/${addr}`} target="_blank" style={{
+                                    fontFamily: 'var(--font-mono)', fontSize: '9px', color, textDecoration: 'none',
+                                    padding: '1px 5px', borderRadius: '3px', background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)'
+                                  }}>
+                                    {addr.slice(0, 8)}
+                                  </Link>
+                                ))}
+                              </div>
+                              {exAddr && (
+                                <span style={{ fontSize: '8px', fontFamily: 'var(--font-mono)', color: isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.2)', flexShrink: 0, whiteSpace: 'nowrap' }}>
+                                  {exAddr.slice(0, 8)}:{exTag}
+                                </span>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    );
+                  })()}
+
+                  {/* Recipient Table */}
                     {tokenFlow.recipients?.length > 0 && (
                       <>
                         {/* Table Header */}
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 60px 80px 80px 80px 80px', padding: '8px 16px', background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)', borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`, position: 'sticky', top: 0 }}>
-                          <span style={{ fontSize: '9px', fontWeight: 600, color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.45)', textTransform: 'uppercase' }}>Address</span>
-                          <span style={{ fontSize: '9px', fontWeight: 600, color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.45)', textTransform: 'uppercase', textAlign: 'center' }}>Source</span>
-                          <span style={{ fontSize: '9px', fontWeight: 600, color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.45)', textTransform: 'uppercase', textAlign: 'right' }}>Received</span>
-                          <span style={{ fontSize: '9px', fontWeight: 600, color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.45)', textTransform: 'uppercase', textAlign: 'right' }}>Buy</span>
-                          <span style={{ fontSize: '9px', fontWeight: 600, color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.45)', textTransform: 'uppercase', textAlign: 'right' }}>Sell</span>
-                          <span style={{ fontSize: '9px', fontWeight: 600, color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.45)', textTransform: 'uppercase', textAlign: 'right' }}>Net</span>
+                        <div style={{
+                          display: 'grid',
+                          gridTemplateColumns: isMobile ? 'minmax(0,1fr) 70px 80px' : 'minmax(0,1fr) 65px 90px 95px 95px 95px',
+                          padding: '8px 16px',
+                          background: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)',
+                          borderTop: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)'}`,
+                          borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)'}`,
+                          position: 'sticky',
+                          top: 0,
+                          zIndex: 1
+                        }}>
+                          <span style={{ fontSize: '10px', fontWeight: 600, color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.35)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Wallet</span>
+                          <span style={{ fontSize: '10px', fontWeight: 600, color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.35)', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'center' }}>Source</span>
+                          {!isMobile && (
+                            <span style={{ fontSize: '10px', fontWeight: 600, color: '#8b5cf6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'right' }}>Received</span>
+                          )}
+                          {!isMobile && (
+                            <span style={{ fontSize: '10px', fontWeight: 600, color: '#22c55e', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'right' }}>Bought</span>
+                          )}
+                          {!isMobile && (
+                            <span style={{ fontSize: '10px', fontWeight: 600, color: '#ef4444', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'right' }}>Sold</span>
+                          )}
+                          <span style={{ fontSize: '10px', fontWeight: 600, color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.35)', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'right' }}>Profit</span>
                         </div>
                         {/* Table Rows */}
                         {(() => {
@@ -2427,6 +2540,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                           return tokenFlow.recipients.map((r, idx, arr) => {
                             const netPnl = (r.soldXrp || 0) - (r.boughtXrp || 0);
                             const isIndirect = r.relation === 'indirect' || r.type === 'level2';
+                            const actionLabels = { sold: 'Sold', holding: 'Holding', transferred: 'Moved' };
                             const actionColors = { sold: '#ef4444', holding: '#22c55e', transferred: '#f59e0b' };
                             const actionColor = actionColors[r.action] || '#8b5cf6';
                             const fromAddr = r.from || '';
@@ -2437,43 +2551,166 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                                 key={r.address}
                                 style={{
                                   display: 'grid',
-                                  gridTemplateColumns: '1fr 60px 80px 80px 80px 80px',
-                                  padding: '10px 16px',
+                                  gridTemplateColumns: isMobile ? 'minmax(0,1fr) 70px 80px' : 'minmax(0,1fr) 65px 90px 95px 95px 95px',
+                                  padding: isMobile ? '6px 16px' : '5px 16px',
                                   alignItems: 'center',
-                                  background: isIndirect ? (isDark ? 'rgba(245,158,11,0.04)' : 'rgba(245,158,11,0.02)') : 'transparent',
-                                  borderBottom: idx < arr.length - 1 ? `1px solid ${isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'}` : 'none'
+                                  borderBottom: idx < arr.length - 1 ? `1px solid ${isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)'}` : 'none',
+                                  background: isIndirect
+                                    ? (isDark ? 'rgba(245,158,11,0.03)' : 'rgba(245,158,11,0.02)')
+                                    : 'transparent',
+                                  transition: 'background 0.1s ease'
                                 }}
+                                onMouseEnter={(e) => { if (!isIndirect) e.currentTarget.style.background = isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.01)'; }}
+                                onMouseLeave={(e) => { if (!isIndirect) e.currentTarget.style.background = 'transparent'; }}
                               >
-                                <Stack direction="row" alignItems="center" style={{ gap: '6px', minWidth: 0 }}>
-                                  {linkedColor && <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: linkedColor, flexShrink: 0 }} />}
-                                  <Link
-                                    href={`/address/${r.address}`}
-                                    target="_blank"
-                                    style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: linkedColor || (isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.7)'), textDecoration: 'none', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
-                                  >
-                                    {r.address.slice(0, 8)}
-                                  </Link>
-                                  {r.action && (
-                                    <span style={{ fontSize: '8px', padding: '2px 4px', borderRadius: '3px', background: `${actionColor}15`, color: actionColor, fontWeight: 600, textTransform: 'uppercase', flexShrink: 0 }}>
-                                      {r.action.slice(0, 4)}
-                                    </span>
+                                {/* Wallet cell */}
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: 0 }}>
+                                  {linkedColor && (
+                                    <span style={{
+                                      width: '3px',
+                                      height: '20px',
+                                      borderRadius: '2px',
+                                      background: linkedColor,
+                                      flexShrink: 0
+                                    }} />
                                   )}
-                                  {r.exchangeDeposits > 0 && (
-                                    <span style={{ fontSize: '8px', padding: '2px 4px', borderRadius: '3px', background: 'rgba(245,158,11,0.15)', color: '#f59e0b', fontWeight: 600 }}>CEX</span>
-                                  )}
-                                </Stack>
-                                <span style={{ fontSize: '9px', textAlign: 'center', fontWeight: 500, color: isDirect ? '#8b5cf6' : '#f59e0b' }}>
-                                  {isDirect ? 'Creator' : fromAddr ? fromAddr.slice(0, 6) : '—'}
+                                  <div style={{ minWidth: 0, flex: 1 }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                      <Link
+                                        href={`/address/${r.address}`}
+                                        target="_blank"
+                                        style={{
+                                          fontFamily: 'var(--font-mono)',
+                                          fontSize: '11px',
+                                          color: linkedColor || (isDark ? 'rgba(255,255,255,0.75)' : 'rgba(0,0,0,0.65)'),
+                                          textDecoration: 'none',
+                                          overflow: 'hidden',
+                                          textOverflow: 'ellipsis',
+                                          whiteSpace: 'nowrap'
+                                        }}
+                                      >
+                                        {isMobile ? r.address.slice(0, 8) : r.address.slice(0, 12)}
+                                      </Link>
+                                      {r.address === creator && (
+                                        <span style={{
+                                          fontSize: '8px',
+                                          padding: '1px 5px',
+                                          borderRadius: '4px',
+                                          background: 'rgba(139,92,246,0.12)',
+                                          color: '#8b5cf6',
+                                          fontWeight: 600,
+                                          textTransform: 'uppercase',
+                                          flexShrink: 0,
+                                          lineHeight: '14px'
+                                        }}>
+                                          Creator
+                                        </span>
+                                      )}
+                                      {r.action && (
+                                        <span style={{
+                                          fontSize: '8px',
+                                          padding: '1px 5px',
+                                          borderRadius: '4px',
+                                          background: `${actionColor}12`,
+                                          color: actionColor,
+                                          fontWeight: 600,
+                                          textTransform: 'uppercase',
+                                          flexShrink: 0,
+                                          lineHeight: '14px'
+                                        }}>
+                                          {actionLabels[r.action] || r.action}
+                                        </span>
+                                      )}
+                                      {r.exchangeDeposits > 0 && (
+                                        <span style={{
+                                          fontSize: '8px',
+                                          padding: '1px 5px',
+                                          borderRadius: '4px',
+                                          background: 'rgba(245,158,11,0.1)',
+                                          color: '#f59e0b',
+                                          fontWeight: 600,
+                                          flexShrink: 0,
+                                          lineHeight: '14px'
+                                        }}>
+                                          CEX
+                                        </span>
+                                      )}
+                                    </div>
+                                    {/* Mobile: show received + buy/sell inline */}
+                                    {isMobile && (r.received > 0 || r.boughtXrp > 0 || r.soldXrp > 0) && (
+                                      <div style={{ display: 'flex', gap: '8px', marginTop: '2px' }}>
+                                        {r.received > 0 && (
+                                          <span style={{ fontSize: '9px', color: '#8b5cf6', fontFamily: 'var(--font-mono)' }}>
+                                            {fNumber(r.received)} {name}
+                                          </span>
+                                        )}
+                                        {r.boughtXrp > 0 && (
+                                          <span style={{ fontSize: '9px', color: '#22c55e', fontFamily: 'var(--font-mono)' }}>
+                                            +{fNumber(r.boughtXrp)} XRP
+                                          </span>
+                                        )}
+                                        {r.soldXrp > 0 && (
+                                          <span style={{ fontSize: '9px', color: '#ef4444', fontFamily: 'var(--font-mono)' }}>
+                                            -{fNumber(r.soldXrp)} XRP
+                                          </span>
+                                        )}
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                                {/* Source */}
+                                <span style={{
+                                  fontSize: '10px',
+                                  textAlign: 'center',
+                                  fontWeight: 500,
+                                  color: isDirect ? '#8b5cf6' : '#f59e0b',
+                                  fontFamily: isDirect ? 'inherit' : 'var(--font-mono)'
+                                }}>
+                                  {isDirect ? 'Creator' : fromAddr === creator ? 'Creator' : fromAddr ? fromAddr.slice(0, 6) + '..' : '—'}
                                 </span>
-                                <span style={{ fontSize: '10px', color: '#8b5cf6', fontWeight: 500, textAlign: 'right', fontFamily: 'var(--font-mono)' }}>{fNumber(r.received)} <span style={{ color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', fontSize: '8px' }}>{name}</span></span>
-                                <span style={{ fontSize: '10px', textAlign: 'right', fontFamily: 'var(--font-mono)', color: '#22c55e' }}>
-                                  {r.boughtXrp > 0 ? `${fNumber(r.boughtXrp)}` : <span style={{ color: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)' }}>—</span>}
-                                </span>
-                                <span style={{ fontSize: '10px', textAlign: 'right', fontFamily: 'var(--font-mono)', color: '#ef4444' }}>
-                                  {r.soldXrp > 0 ? `${fNumber(r.soldXrp)}` : <span style={{ color: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)' }}>—</span>}
-                                </span>
-                                <span style={{ fontSize: '10px', color: netPnl > 0 ? '#22c55e' : netPnl < 0 ? '#ef4444' : (isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'), fontWeight: netPnl !== 0 ? 500 : 400, textAlign: 'right', fontFamily: 'var(--font-mono)' }}>
-                                  {netPnl !== 0 ? `${netPnl > 0 ? '+' : ''}${Math.round(netPnl).toLocaleString()} XRP` : '—'}
+                                {/* Received (desktop) */}
+                                {!isMobile && (
+                                  <span style={{
+                                    fontSize: '11px',
+                                    color: '#8b5cf6',
+                                    fontWeight: 500,
+                                    textAlign: 'right',
+                                    fontFamily: 'var(--font-mono)'
+                                  }}>
+                                    {r.received > 0 ? `${fNumber(r.received)} ${name}` : '—'}
+                                  </span>
+                                )}
+                                {/* Bought (desktop) */}
+                                {!isMobile && (
+                                  <span style={{
+                                    fontSize: '11px',
+                                    textAlign: 'right',
+                                    fontFamily: 'var(--font-mono)',
+                                    color: r.boughtXrp > 0 ? '#22c55e' : (isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.12)')
+                                  }}>
+                                    {r.boughtXrp > 0 ? `${fNumber(r.boughtXrp)} XRP` : '—'}
+                                  </span>
+                                )}
+                                {/* Sold (desktop) */}
+                                {!isMobile && (
+                                  <span style={{
+                                    fontSize: '11px',
+                                    textAlign: 'right',
+                                    fontFamily: 'var(--font-mono)',
+                                    color: r.soldXrp > 0 ? '#ef4444' : (isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.12)')
+                                  }}>
+                                    {r.soldXrp > 0 ? `${fNumber(r.soldXrp)} XRP` : '—'}
+                                  </span>
+                                )}
+                                {/* Net */}
+                                <span style={{
+                                  fontSize: '11px',
+                                  color: netPnl > 0 ? '#22c55e' : netPnl < 0 ? '#ef4444' : (isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.12)'),
+                                  fontWeight: netPnl !== 0 ? 600 : 400,
+                                  textAlign: 'right',
+                                  fontFamily: 'var(--font-mono)'
+                                }}>
+                                  {netPnl !== 0 ? `${netPnl > 0 ? '+' : '-'}${fNumber(Math.abs(netPnl))} XRP` : '—'}
                                 </span>
                               </div>
                             );
@@ -2481,9 +2718,21 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                         })()}
                       </>
                     )}
+                    {/* Empty state */}
+                    {(!tokenFlow.recipients || tokenFlow.recipients.length === 0) && (
+                      <div style={{
+                        padding: '32px 20px',
+                        textAlign: 'center',
+                        color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.25)',
+                        fontSize: '12px'
+                      }}>
+                        No recipient data available
+                      </div>
+                    )}
                   </ScrollableBox>
                 </DialogPaper>
-              </Dialog>
+              </Dialog>,
+              document.body
             )}
           </TableBody>
         </StyledTable>
@@ -2814,7 +3063,7 @@ export const CompactTags = memo(
     if (!enhancedTags || enhancedTags.length === 0) return null;
 
     return (
-      <Stack direction="row" alignItems="center" style={{ flexWrap: 'wrap', gap: '6px' }}>
+      <Stack direction="row" alignItems="center" style={{ flexWrap: 'wrap', gap: '4px' }}>
         {enhancedTags.slice(0, maxTags).map((tag) => (
           <Link
             key={tag}
@@ -2822,22 +3071,22 @@ export const CompactTags = memo(
             style={{
               display: 'inline-flex',
               alignItems: 'center',
-              gap: '5px',
-              padding: '4px 10px',
-              borderRadius: '6px',
+              gap: '4px',
+              padding: '3px 6px',
+              borderRadius: '4px',
               background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.025)',
               border: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)'}`,
               textDecoration: 'none',
-              fontSize: '11px',
-              fontWeight: 400,
+              fontSize: '10px',
+              fontWeight: 500,
               color: isDark ? 'rgba(255,255,255,0.55)' : 'rgba(0,0,0,0.5)',
               textTransform: 'uppercase',
-              letterSpacing: '0.3px'
+              letterSpacing: '0.2px'
             }}
             rel="noreferrer noopener nofollow"
           >
             {tag === 'aigent.run' && (
-              <img src="/static/aigentrun.gif" alt="" style={{ width: '12px', height: '12px' }} />
+              <img src="/static/aigentrun.gif" alt="" style={{ width: '10px', height: '10px' }} />
             )}
             {tag}
           </Link>
@@ -2845,12 +3094,12 @@ export const CompactTags = memo(
         {enhancedTags.length > maxTags && (
           <Typography
             style={{
-              padding: '4px 10px',
-              borderRadius: '6px',
+              padding: '3px 6px',
+              borderRadius: '4px',
               background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.025)',
               border: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)'}`,
-              fontSize: '11px',
-              fontWeight: 400,
+              fontSize: '10px',
+              fontWeight: 500,
               color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.35)',
               cursor: toggleTagsDrawer ? 'pointer' : 'default'
             }}

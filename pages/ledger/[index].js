@@ -1,5 +1,5 @@
 import { useRouter } from 'next/router';
-import axios from 'axios';
+import api from 'src/utils/api';
 import { useState, useContext } from 'react';
 import { AppContext } from 'src/context/AppContext';
 import { cn } from 'src/utils/cn';
@@ -309,7 +309,7 @@ export async function getServerSideProps(context) {
   }
 
   try {
-    const res = await axios.get(`https://api.xrpl.to/v1/ledger/${index}?expand=true`);
+    const res = await api.get(`https://api.xrpl.to/v1/ledger/${index}?expand=true`);
     const ledgerData = res.data;
     const transactions = ledgerData?.transactions || [];
     return {

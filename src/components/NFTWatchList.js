@@ -1,20 +1,60 @@
 import { useState, useEffect, useContext } from 'react';
-import axios from 'axios';
+import api from 'src/utils/api';
 import Link from 'next/link';
 import { ChevronDown, Trash2, ExternalLink, Loader2, X, Compass } from 'lucide-react';
 import { cn } from 'src/utils/cn';
 import { AppContext } from 'src/context/AppContext';
 
 const BASE_URL = 'https://api.xrpl.to';
+const CDN_URL = 'https://s1.xrpl.to/nft/';
+
+// Get NFT image URL - same logic as NFTDetails.js
+const getNftImageUrl = (nft) => {
+  // 1. Check files array for thumbnails (preferred - fast CDN)
+  const file = nft.files?.[0];
+  if (file) {
+    if (file.thumbnail?.large) return CDN_URL + file.thumbnail.large;
+    if (file.thumbnail?.medium) return CDN_URL + file.thumbnail.medium;
+    if (file.thumbnail?.small) return CDN_URL + file.thumbnail.small;
+    if (file.cachedUrl) return file.cachedUrl;
+    if (file.dfile) return file.dfile;
+    if (file.convertedFile) return file.convertedFile;
+    // IPFS path in file
+    if (file.IPFSPath) return `https://ipfs.io/ipfs/${file.IPFSPath.split('/').map(encodeURIComponent).join('/')}`;
+  }
+
+  // 2. Check meta.image
+  const metaImage = nft.meta?.image;
+  if (metaImage) {
+    if (metaImage.startsWith('ipfs://')) return `https://ipfs.io/ipfs/${metaImage.slice(7)}`;
+    if (metaImage.startsWith('http')) return metaImage;
+  }
+
+  // 3. Fallback to nft.image
+  if (nft.image) {
+    if (nft.image.startsWith('ipfs://')) return `https://ipfs.io/ipfs/${nft.image.slice(7)}`;
+    return nft.image;
+  }
+
+  return null;
+};
 
 function NFTCard({ nft, onRemove, isDark }) {
   const [loadingImg, setLoadingImg] = useState(true);
   const [imageError, setImageError] = useState(false);
   const [removing, setRemoving] = useState(false);
 
-  const imgUrl = nft.image?.startsWith('ipfs://')
-    ? `https://ipfs.io/ipfs/${nft.image.replace('ipfs://', '')}`
-    : nft.image;
+  const imgUrl = getNftImageUrl(nft);
+
+  // Debug: log NFT data structure
+  console.log('[NFTWatchList] NFT data:', {
+    nftokenId: nft.nftokenId,
+    name: nft.name,
+    image: nft.image,
+    files: nft.files,
+    meta: nft.meta,
+    resolvedUrl: imgUrl
+  });
 
   const handleRemove = async (e) => {
     e.preventDefault();
@@ -188,7 +228,7 @@ function CollectionGroup({ slug, data, onRemove, isDark, defaultOpen = false }) 
       {isOpen && (
         <div className="px-6 pb-6 pt-2">
           <div className="h-[1px] w-full mb-6 opacity-10 bg-gradient-to-r from-transparent via-current to-transparent" />
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-3">
             {items.map((nft) => (
               <NFTCard key={nft.nftokenId} nft={nft} onRemove={onRemove} isDark={isDark} />
             ))}
@@ -211,7 +251,7 @@ export default function NFTWatchList({ account }) {
     if (!account) return;
     setLoading(true);
     try {
-      const res = await axios.get(`${BASE_URL}/api/watchlist/nft?account=${account}`);
+      const res = await api.get(`${BASE_URL}/api/watchlist/nft?account=${account}`);
       if (res.data?.success) {
         setWatchlist(res.data.watchlist || {});
         const count = Object.values(res.data.watchlist || {}).reduce(
@@ -242,7 +282,7 @@ export default function NFTWatchList({ account }) {
 
   const handleRemove = async (nftokenId) => {
     try {
-      await axios.post(`${BASE_URL}/api/watchlist/nft`, {
+      await api.post(`${BASE_URL}/api/watchlist/nft`, {
         account,
         nftokenId,
         action: 'remove'

@@ -1,3 +1,4 @@
+import { apiFetch } from 'src/utils/api';
 import React, {
   useState,
   useEffect,
@@ -11,7 +12,7 @@ import React, {
 import { createPortal } from 'react-dom';
 import { MD5 } from 'crypto-js';
 import styled from '@emotion/styled';
-import axios from 'axios';
+import api from 'src/utils/api';
 import { useSelector } from 'react-redux';
 import TopTraders from 'src/TokenDetail/tabs/holders/TopTraders';
 import RichList from 'src/TokenDetail/tabs/holders/RichList';
@@ -705,7 +706,7 @@ const Card = styled.div`
   }
   ${(props) => props.isNew && highlightAnimation(props.isDark)}
   @media (max-width: 640px) {
-    padding: 0 4px;
+    padding: 0 12px;
   }
 `;
 
@@ -1008,12 +1009,12 @@ const Tab = styled.button`
   }
   @media (max-width: 640px) {
     flex: 1;
-    padding: 10px 6px;
+    padding: 8px 4px;
     font-size: 10px;
-    gap: 4px;
+    gap: 3px;
     & svg {
-      width: 18px;
-      height: 18px;
+      width: 14px;
+      height: 14px;
     }
     & > span {
       display: ${(props) => (props.selected ? 'inline' : 'none')};
@@ -1278,7 +1279,7 @@ const MyActivityTab = ({ token, isDark, isMobile, onTransactionClick }) => {
       });
       const offersUrl = `https://api.xrpl.to/api/account/offers/${account}?${params}`;
       console.log('[TradingHistory] Fetching offers:', offersUrl);
-      const res = await axios.get(offersUrl);
+      const res = await api.get(offersUrl);
       if (res.data?.success) {
         setOpenOffers(res.data.offers || []);
         setOffersTotal(res.data.total || 0);
@@ -1305,7 +1306,7 @@ const MyActivityTab = ({ token, isDark, isMobile, onTransactionClick }) => {
     try {
       const statsUrl = `https://api.xrpl.to/api/account/token-stats/${account}/${token.md5}`;
       console.log('[TradingHistory] Fetching token stats:', statsUrl);
-      const res = await axios.get(statsUrl);
+      const res = await api.get(statsUrl);
       const stats = res.data;
       if (stats) {
         const balance = Math.abs(stats.balance) || 0;
@@ -1328,9 +1329,14 @@ const MyActivityTab = ({ token, isDark, isMobile, onTransactionClick }) => {
           pnlPercent,
           realizedPnl,
           unrealizedPnl,
+          totalPnl: stats.totalPnl || 0,
+          totalRoi: stats.totalRoi || 0,
           totalBought: stats.totalBought || 0,
           totalSold: stats.totalSold || 0,
-          tradeCount: stats.tradeCount || 0
+          totalSpentXRP: stats.totalSpentXRP || 0,
+          totalReceivedXRP: stats.totalReceivedXRP || 0,
+          tradeCount: stats.tradeCount || 0,
+          firstTradeTime: stats.firstTradeTime || null
         });
       } else {
         setTokenAssets({ balance: 0, trustlineSet: false, totalValue: 0 });
@@ -1354,7 +1360,7 @@ const MyActivityTab = ({ token, isDark, isMobile, onTransactionClick }) => {
       let url = `https://api.xrpl.to/api/history?account=${account}&md5=${token.md5}&limit=20`;
       if (loadMore && tradesCursor) url += `&cursor=${tradesCursor}`;
       console.log('[TradingHistory] Fetching my trades:', url);
-      const res = await axios.get(url);
+      const res = await api.get(url);
       const trades = res.data?.hists || res.data?.trades || [];
       const nextCursor = res.data?.nextCursor || null;
 
@@ -1460,26 +1466,26 @@ const MyActivityTab = ({ token, isDark, isMobile, onTransactionClick }) => {
     <div
       style={{
         display: 'flex',
-        flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '40px 24px',
-        backgroundColor: 'transparent',
-        borderRadius: '12px',
-        border: `1.5px dashed ${isDark ? 'rgba(59,130,246,0.18)' : 'rgba(0,0,0,0.15)'}`
+        gap: '10px',
+        padding: '24px',
+        borderRadius: '10px',
+        border: `1.5px dashed ${isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)'}`
       }}
     >
       <Wallet
-        size={40}
+        size={18}
         strokeWidth={1.5}
-        style={{
-          marginBottom: '12px',
-          color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'
-        }}
+        style={{ color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}
       />
-      <span style={{ color: 'inherit' }}>Connect Wallet to View Activity</span>
-      <span style={{ color: 'inherit' }}>
-        Your trading history and open offers will appear here
+      <span
+        style={{
+          fontSize: '13px',
+          color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)'
+        }}
+      >
+        Connect wallet to view activity
       </span>
     </div>
   );
@@ -1560,7 +1566,7 @@ const MyActivityTab = ({ token, isDark, isMobile, onTransactionClick }) => {
                 </div>
               </OfferCard>
 
-              {/* P&L Card */}
+              {/* P&L Cards */}
               <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '12px' }}>
                 <OfferCard isDark={isDark}>
                   <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', display: 'block', marginBottom: '6px' }}>Unrealized P&L</span>
@@ -1579,6 +1585,22 @@ const MyActivityTab = ({ token, isDark, isMobile, onTransactionClick }) => {
                 </OfferCard>
 
                 <OfferCard isDark={isDark}>
+                  <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', display: 'block', marginBottom: '6px' }}>Realized P&L</span>
+                  {tokenAssets.tradeCount > 0 ? (
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+                      <span style={{ fontSize: '18px', fontWeight: 600, color: tokenAssets.realizedPnl >= 0 ? '#22c55e' : '#ef4444' }}>
+                        {tokenAssets.realizedPnl >= 0 ? '+' : ''}{tokenAssets.realizedPnl.toFixed(2)} XRP
+                      </span>
+                    </div>
+                  ) : (
+                    <span style={{ fontSize: '12px', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>—</span>
+                  )}
+                </OfferCard>
+              </div>
+
+              {/* Avg Buy Price + Total ROI */}
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '12px' }}>
+                <OfferCard isDark={isDark}>
                   <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', display: 'block', marginBottom: '6px' }}>Avg Buy Price</span>
                   {tokenAssets.avgBuyPrice != null ? (
                     <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
@@ -1591,7 +1613,63 @@ const MyActivityTab = ({ token, isDark, isMobile, onTransactionClick }) => {
                     <span style={{ fontSize: '12px', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>—</span>
                   )}
                 </OfferCard>
+
+                <OfferCard isDark={isDark}>
+                  <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', display: 'block', marginBottom: '6px' }}>Total ROI</span>
+                  {tokenAssets.tradeCount > 0 ? (
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+                      <span style={{ fontSize: '18px', fontWeight: 600, color: tokenAssets.totalRoi >= 0 ? '#22c55e' : '#ef4444' }}>
+                        {tokenAssets.totalRoi >= 0 ? '+' : ''}{tokenAssets.totalRoi.toFixed(2)}%
+                      </span>
+                    </div>
+                  ) : (
+                    <span style={{ fontSize: '12px', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>—</span>
+                  )}
+                </OfferCard>
               </div>
+
+              {/* Trade Summary */}
+              {tokenAssets.tradeCount > 0 && (
+                <OfferCard isDark={isDark}>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', alignItems: 'center' }}>
+                    <div>
+                      <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', display: 'block', marginBottom: '2px' }}>Trades</span>
+                      <span style={{ fontSize: '14px', fontWeight: 600, color: isDark ? '#fff' : '#1a1a1a' }}>{tokenAssets.tradeCount}</span>
+                    </div>
+                    <div style={{ width: '1px', height: '24px', background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)' }} />
+                    <div>
+                      <span style={{ fontSize: '11px', color: '#22c55e', display: 'block', marginBottom: '2px' }}>Bought</span>
+                      <span style={{ fontSize: '13px', fontWeight: 500, color: isDark ? '#fff' : '#1a1a1a' }}>
+                        {formatTradeDisplay(tokenAssets.totalBought)} <span style={{ opacity: 0.5, fontSize: '11px' }}>{tokenCurrency}</span>
+                      </span>
+                      <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', display: 'block' }}>
+                        {formatTradeDisplay(tokenAssets.totalSpentXRP)} XRP
+                      </span>
+                    </div>
+                    <div style={{ width: '1px', height: '24px', background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)' }} />
+                    <div>
+                      <span style={{ fontSize: '11px', color: '#ef4444', display: 'block', marginBottom: '2px' }}>Sold</span>
+                      <span style={{ fontSize: '13px', fontWeight: 500, color: isDark ? '#fff' : '#1a1a1a' }}>
+                        {formatTradeDisplay(tokenAssets.totalSold)} <span style={{ opacity: 0.5, fontSize: '11px' }}>{tokenCurrency}</span>
+                      </span>
+                      <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', display: 'block' }}>
+                        {formatTradeDisplay(tokenAssets.totalReceivedXRP)} XRP
+                      </span>
+                    </div>
+                    {tokenAssets.firstTradeTime && (
+                      <>
+                        <div style={{ width: '1px', height: '24px', background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)' }} />
+                        <div>
+                          <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', display: 'block', marginBottom: '2px' }}>Trading since</span>
+                          <span style={{ fontSize: '13px', fontWeight: 500, color: isDark ? '#fff' : '#1a1a1a' }}>
+                            {formatRelativeTime(tokenAssets.firstTradeTime)}
+                          </span>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </OfferCard>
+              )}
 
               {/* Trustline Info */}
               <OfferCard isDark={isDark}>
@@ -1911,7 +1989,7 @@ const TradeDetails = ({ trade, account, isDark, onClose, walletLabel }) => {
     try {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 15000);
-      const response = await fetch(`https://api.xrpl.to/v1/tx-explain/${trade.hash}`, {
+      const response = await apiFetch(`https://api.xrpl.to/v1/tx-explain/${trade.hash}`, {
         signal: controller.signal
       });
       clearTimeout(timeout);
@@ -1936,11 +2014,11 @@ const TradeDetails = ({ trade, account, isDark, onClose, walletLabel }) => {
     if (!trade?.hash) return;
     setLoading(true);
     Promise.all([
-      fetch(`https://api.xrpl.to/v1/tx/${trade.hash}`)
+      apiFetch(`https://api.xrpl.to/v1/tx/${trade.hash}`)
         .then((r) => r.json())
         .catch(() => null),
       account
-        ? fetch(`https://api.xrpl.to/v1/account/info/${account}`)
+        ? apiFetch(`https://api.xrpl.to/v1/account/info/${account}`)
           .then((r) => r.json())
           .catch(() => null)
         : Promise.resolve(null)
@@ -2336,7 +2414,7 @@ const TradingHistory = ({
   useEffect(() => {
     const userAddr = accountProfile?.account || accountProfile?.address;
     if (!userAddr) return;
-    axios.get(`https://api.xrpl.to/api/user/${userAddr}/labels`)
+    api.get(`https://api.xrpl.to/api/user/${userAddr}/labels`)
       .then(res => {
         if (res.data?.labels) {
           const map = {};
@@ -2361,7 +2439,7 @@ const TradingHistory = ({
         const ammUrl = `https://api.xrpl.to/v1/amm?issuer=${token.issuer}&currency=${token.currency}&sortBy=fees`;
         const t0 = performance.now();
         console.log('[TradingHistory] Fetching AMM pools:', ammUrl);
-        const res = await fetch(ammUrl);
+        const res = await apiFetch(ammUrl);
         const data = await res.json();
         console.log(`[TradingHistory] AMM pools done in ${(performance.now() - t0).toFixed(0)}ms, ${data.pools?.length || 0} pools`);
         // Sort to ensure main XRP pool appears first
@@ -2395,7 +2473,7 @@ const TradingHistory = ({
               // Try 1m first, fall back to 1w if no data
               const chartUrl = `https://api.xrpl.to/v1/amm/liquidity-chart?ammAccount=${poolAccount}&period=1m`;
               console.log('[TradingHistory] Fetching pool chart:', chartUrl);
-              let chartRes = await fetch(chartUrl);
+              let chartRes = await apiFetch(chartUrl);
               let chartData = await chartRes.json();
 
               // If no data for 1m, try 1w
@@ -2403,7 +2481,7 @@ const TradingHistory = ({
                 chartData.success &&
                 (!chartData.data || chartData.data.length < 2)
               ) {
-                chartRes = await fetch(
+                chartRes = await apiFetch(
                   `https://api.xrpl.to/v1/amm/liquidity-chart?ammAccount=${poolAccount}&period=1w`
                 );
                 chartData = await chartRes.json();
@@ -2414,7 +2492,7 @@ const TradingHistory = ({
                 chartData.success &&
                 (!chartData.data || chartData.data.length < 2)
               ) {
-                chartRes = await fetch(
+                chartRes = await apiFetch(
                   `https://api.xrpl.to/v1/amm/liquidity-chart?ammAccount=${poolAccount}&period=all`
                 );
                 chartData = await chartRes.json();
@@ -2573,18 +2651,22 @@ const TradingHistory = ({
       wsPingRef.current = null;
     }
 
-    // Connect immediately
+    // Connect via session endpoint
     const wsParams = new URLSearchParams({ limit: String(limit) });
     if (pairType) wsParams.set('pairType', pairType);
     if (historyType !== 'all') wsParams.set('type', historyType);
     if (liquidityType) wsParams.set('liquidityType', liquidityType);
 
-    const historyWsUrl = `wss://api.xrpl.to/ws/history/${tokenId}?${wsParams}`;
-    console.log('[History WS] Connecting:', historyWsUrl);
-    const ws = new WebSocket(historyWsUrl);
-    wsRef.current = ws;
+    (async () => {
+      try {
+        const res = await fetch(`/api/ws/session?type=history&id=${tokenId}&${wsParams}`);
+        const { wsUrl } = await res.json();
+        if (!isMounted) return;
+        console.log('[History WS] Connecting:', wsUrl);
+        const ws = new WebSocket(wsUrl);
+        wsRef.current = ws;
 
-    ws.onopen = () => {
+        ws.onopen = () => {
       console.log('[History WS] Connected');
       wsPingRef.current = setInterval(() => {
         if (ws.readyState === WebSocket.OPEN) {
@@ -2661,12 +2743,16 @@ const TradingHistory = ({
     };
 
     ws.onclose = (ev) => {
-      console.log(`[History WS] Closed code=${ev.code} reason="${ev.reason}"`);
-      if (wsPingRef.current) {
-        clearInterval(wsPingRef.current);
-        wsPingRef.current = null;
+          console.log(`[History WS] Closed code=${ev.code} reason="${ev.reason}"`);
+          if (wsPingRef.current) {
+            clearInterval(wsPingRef.current);
+            wsPingRef.current = null;
+          }
+        };
+      } catch (e) {
+        console.error('[History WS] Session error:', e);
       }
-    };
+    })();
 
     return () => {
       isMounted = false;
@@ -3048,133 +3134,112 @@ const TradingHistory = ({
         return 'Add';
       };
 
-      // Mobile card layout - compact single row
+      // Mobile card layout - grid similar to desktop
       if (isMobile) {
+        const barWidth = Math.min(100, Math.max(15, Math.log10(xrpAmount + 1) * 25));
         return (
           <Card
             key={trade._id || trade.id || index}
             isNew={newTradeIds.has(trade._id || trade.id)}
             isDark={isDark}
-            style={{ overflow: 'hidden' }}
           >
-            <VolumeIndicator volume={volumePercentage} isDark={isDark} />
-            <CardContent>
+            <CardContent style={{ padding: '4px 0' }}>
               <div
                 style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  gap: '10px'
+                  display: 'grid',
+                  gridTemplateColumns: '52px 36px 1fr 1fr 24px',
+                  gap: '6px',
+                  alignItems: 'center'
                 }}
               >
-                {/* Left: Type + Time */}
-                <div
-                  style={{ display: 'flex', flexDirection: 'column', gap: '2px', minWidth: '60px' }}
+                {/* Time */}
+                <span
+                  style={{
+                    fontSize: '10px',
+                    fontWeight: 500,
+                    color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.5)',
+                    fontVariantNumeric: 'tabular-nums'
+                  }}
                 >
-                  {isLiquidity ? (
-                    <span
-                      style={{
-                        fontSize: '10px',
-                        fontWeight: 700,
-                        textTransform: 'uppercase',
-                        color:
-                          trade.type === 'withdraw'
-                            ? '#f59e0b'
-                            : trade.type === 'create'
-                              ? '#14b8a6'
-                              : '#8b5cf6'
-                      }}
-                    >
-                      {getLiquidityLabel()}
-                    </span>
-                  ) : (
-                    <span
-                      style={{
-                        fontSize: '11px',
-                        fontWeight: 800,
-                        textTransform: 'uppercase',
-                        color: isBuy ? '#22c55e' : '#ef4444'
-                      }}
-                    >
-                      {isBuy ? 'Buy' : 'Sell'}
-                    </span>
-                  )}
+                  {formatRelativeTime(trade.time)}
+                </span>
+
+                {/* Type */}
+                {isLiquidity ? (
+                  <span
+                    style={{
+                      fontSize: '9px',
+                      fontWeight: 700,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.02em',
+                      color:
+                        trade.type === 'withdraw'
+                          ? '#f59e0b'
+                          : trade.type === 'create'
+                            ? '#14b8a6'
+                            : '#8b5cf6'
+                    }}
+                  >
+                    {getLiquidityLabel()}
+                  </span>
+                ) : (
                   <span
                     style={{
                       fontSize: '10px',
-                      fontWeight: 500,
-                      color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.45)',
-                      fontVariantNumeric: 'tabular-nums'
+                      fontWeight: 800,
+                      textTransform: 'uppercase',
+                      color: isBuy ? '#22c55e' : '#ef4444'
                     }}
                   >
-                    {formatRelativeTime(trade.time)}
+                    {isBuy ? 'Buy' : 'Sell'}
                   </span>
-                </div>
+                )}
 
-                {/* Center: Amount and Fiat */}
-                <div
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'flex-end',
-                    flex: 1,
-                    gap: '1px'
-                  }}
+                {/* Token Amount with bar */}
+                <BarCell
+                  barWidth={barWidth}
+                  isBuy={isBuy}
+                  isLP={isLiquidity}
+                  isCreate={trade.type === 'create'}
+                  isDark={isDark}
+                  style={{ height: '24px', padding: '0 6px' }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <span
-                      style={{
-                        fontSize: '13px',
-                        fontWeight: 600,
-                        fontFamily: 'var(--font-mono)',
-                        color: isDark ? '#fff' : '#1a1a1a'
-                      }}
-                    >
-                      {formatTradeDisplay(amountData.value)}
-                    </span>
-                    <span style={{ opacity: 0.4, fontSize: '10px', fontWeight: 600 }}>
+                  <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: isDark ? '#fff' : '#1a1a1a' }}>
+                    {formatTradeDisplay(amountData.value)}{' '}
+                    <span style={{ opacity: 0.4, fontSize: '9px', fontWeight: 400 }}>
                       {decodeCurrency(amountData.currency)}
                     </span>
-                  </div>
-                  {activeFiatCurrency !== 'XRP' && (
-                    <span
-                      style={{
-                        fontSize: '10px',
-                        fontWeight: 500,
-                        color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.45)',
-                        fontFamily: 'var(--font-mono)'
-                      }}
-                    >
-                      {SYMBOLS[activeFiatCurrency]}
-                      {formatTradeDisplay(
-                        (xrpAmount > 0
-                          ? xrpAmount
-                          : parseFloat(amountData.value) * (token?.exch || 0)) / exchRate
-                      )}
-                    </span>
-                  )}
-                </div>
+                  </span>
+                </BarCell>
 
-                {/* Right: Price or Link */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  {!isLiquidity && (
-                    <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column' }}>
-                      <span style={{ fontSize: '10px', opacity: 0.3, fontWeight: 700, textTransform: 'uppercase' }}>Price</span>
-                      <span style={{ fontSize: '12px', fontWeight: 600, fontFamily: 'var(--font-mono)' }}>{formatPrice(price)}</span>
-                    </div>
-                  )}
-                  <IconButton
-                    onClick={() => handleTxClick(trade.hash, addressToShow)}
-                    isDark={isDark}
-                    style={{
-                      padding: '8px',
-                      background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
-                      borderRadius: '10px'
-                    }}
-                  >
-                    <ExternalLink size={14} />
-                  </IconButton>
-                </div>
+                {/* XRP Amount with bar */}
+                <BarCell
+                  barWidth={barWidth}
+                  isBuy={isBuy}
+                  isLP={isLiquidity}
+                  isCreate={trade.type === 'create'}
+                  isDark={isDark}
+                  style={{ height: '24px', padding: '0 6px' }}
+                >
+                  <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: isDark ? '#fff' : '#1a1a1a' }}>
+                    {formatTradeDisplay(totalData.value)}{' '}
+                    <span style={{ opacity: 0.4, fontSize: '9px', fontWeight: 400 }}>
+                      {decodeCurrency(totalData.currency)}
+                    </span>
+                  </span>
+                </BarCell>
+
+                {/* Link */}
+                <IconButton
+                  onClick={() => handleTxClick(trade.hash, addressToShow)}
+                  isDark={isDark}
+                  style={{
+                    padding: '4px',
+                    background: 'transparent'
+                  }}
+                >
+                  <ExternalLink size={12} />
+                </IconButton>
               </div>
             </CardContent>
           </Card>
@@ -3798,40 +3863,20 @@ const TradingHistory = ({
           {isMobile && (
             <div
               style={{
-                display: 'flex',
+                display: 'grid',
+                gridTemplateColumns: '52px 36px 1fr 1fr 24px',
+                gap: '6px',
                 alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '4px 0',
+                padding: '4px 12px',
                 marginBottom: '4px',
                 borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: '65px' }}>
-                <span
-                  style={{
-                    fontSize: '9px',
-                    fontWeight: 500,
-                    textTransform: 'uppercase',
-                    color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'
-                  }}
-                >
-                  Type
-                </span>
-                <LiveIndicator isDark={isDark}>
-                  <LiveCircle />
-                </LiveIndicator>
-              </div>
-              <span
-                style={{
-                  fontSize: '9px',
-                  fontWeight: 500,
-                  textTransform: 'uppercase',
-                  color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'
-                }}
-              >
-                Amount
-              </span>
-              <span style={{ width: '28px' }}></span>
+              <span style={{ fontSize: '9px', fontWeight: 500, textTransform: 'uppercase', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>Time</span>
+              <span style={{ fontSize: '9px', fontWeight: 500, textTransform: 'uppercase', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>Type</span>
+              <span style={{ fontSize: '9px', fontWeight: 500, textTransform: 'uppercase', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>Amount</span>
+              <span style={{ fontSize: '9px', fontWeight: 500, textTransform: 'uppercase', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>Total</span>
+              <span></span>
             </div>
           )}
 
@@ -4026,7 +4071,7 @@ const TradingHistory = ({
                   gridTemplateColumns: '1fr 60px 70px 32px',
                   gap: '6px',
                   alignItems: 'center',
-                  padding: '6px 0',
+                  padding: '6px 0 6px 6px',
                   marginBottom: '4px',
                   borderBottom: isDark
                     ? '1px solid rgba(255,255,255,0.08)'
@@ -4096,7 +4141,7 @@ const TradingHistory = ({
                         gridTemplateColumns: '1fr 60px 70px 32px',
                         gap: '6px',
                         alignItems: 'center',
-                        padding: isMainPool ? '10px 8px' : '8px 0',
+                        padding: '8px 0 8px 6px',
                         borderBottom: isExpanded
                           ? 'none'
                           : isDark
@@ -4107,7 +4152,7 @@ const TradingHistory = ({
                             ? 'rgba(255,255,255,0.06)'
                             : 'rgba(0,0,0,0.04)'
                           : 'transparent',
-                        borderLeft: isMainPool ? '3px solid #3b82f6' : 'none',
+                        boxShadow: isMainPool ? 'inset 3px 0 0 #3b82f6' : 'none',
                         borderRadius: isMainPool ? '6px' : '0',
                         marginBottom: isMainPool && !isExpanded ? '4px' : '0',
                         cursor: 'pointer'
@@ -4211,27 +4256,30 @@ const TradingHistory = ({
                         </span>
                       </div>
                       {/* Expand/Add */}
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleAddLiquidity(pool);
-                        }}
-                        style={{
-                          padding: '4px 8px',
-                          fontSize: '10px',
-                          fontWeight: 500,
-                          borderRadius: '5px',
-                          border: 'none',
-                          background: '#3b82f6',
-                          color: '#fff',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center'
-                        }}
-                      >
-                        <Plus size={12} />
-                      </button>
+                      <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleAddLiquidity(pool);
+                          }}
+                          style={{
+                            width: '28px',
+                            height: '28px',
+                            fontSize: '10px',
+                            fontWeight: 500,
+                            borderRadius: '6px',
+                            border: 'none',
+                            background: '#3b82f6',
+                            color: '#fff',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                          }}
+                        >
+                          <Plus size={14} />
+                        </button>
+                      </div>
                     </div>
                     {/* Expanded content */}
                     {isExpanded && (
@@ -4395,7 +4443,7 @@ const TradingHistory = ({
                   display: 'grid',
                   gridTemplateColumns: 'minmax(140px, 1.5fr) 70px repeat(5, 1fr) 70px 28px',
                   gap: '12px',
-                  padding: '8px 0',
+                  padding: '8px 0 8px 6px',
                   borderBottom: isDark
                     ? '1px solid rgba(255,255,255,0.06)'
                     : '1px solid rgba(0,0,0,0.06)'
@@ -4521,7 +4569,7 @@ const TradingHistory = ({
                         display: 'grid',
                         gridTemplateColumns: 'minmax(140px, 1.5fr) 70px repeat(5, 1fr) 70px 28px',
                         gap: '12px',
-                        padding: isMainPool ? '12px 10px 12px 12px' : '10px 0',
+                        padding: '10px 0 10px 6px',
                         borderBottom: isExpanded
                           ? 'none'
                           : isDark
@@ -4538,9 +4586,7 @@ const TradingHistory = ({
                               : 'rgba(0,0,0,0.02)'
                             : 'transparent',
                         borderRadius: isMainPool || isExpanded ? '8px 8px 0 0' : '0',
-                        borderLeft: isMainPool ? '3px solid #3b82f6' : 'none',
-                        marginLeft: isMainPool ? '-4px' : '0',
-                        marginRight: isMainPool ? '-4px' : '0',
+                        boxShadow: isMainPool ? 'inset 3px 0 0 #3b82f6' : 'none',
                         cursor: 'pointer',
                         transition: 'background 0.15s ease'
                       }}

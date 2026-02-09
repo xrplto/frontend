@@ -1,4 +1,4 @@
-import axios from 'axios';
+import api from 'src/utils/api';
 import { useState, useEffect } from 'react';
 import styled from '@emotion/styled';
 
@@ -35,7 +35,7 @@ export default function Overview({ data }) {
       }
 
       // https://api.xrpnft.com/api/nfts/test1
-      axios
+      api
         .get(`${BASE_URL}/nfts/${slug}?account=${accountLogin}`, {
           headers: { 'x-access-token': accountToken }
         })
@@ -83,7 +83,7 @@ export async function getServerSideProps(ctx) {
     const slug = ctx.params.slug;
 
     // https://api.xrpnft.com/api/nfts/test1
-    const res = await axios.get(`${BASE_URL}/nfts/${slug}`);
+    const res = await api.get(`${BASE_URL}/nfts/${slug}`);
 
     data = res.data;
   } catch (e) {

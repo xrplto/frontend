@@ -1,3 +1,4 @@
+import { apiFetch } from 'src/utils/api';
 import { useState, useEffect, useContext, useRef, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import { AppContext } from 'src/context/AppContext';
@@ -287,7 +288,7 @@ const TransactionBar = ({
 
     const controller = new AbortController();
 
-    fetch(`https://api.xrpl.to/v1/ledger/${ledgerIndex}?expand=true`, {
+    apiFetch(`https://api.xrpl.to/v1/ledger/${ledgerIndex}?expand=true`, {
       signal: controller.signal
     })
       .then((res) => res.json())
@@ -791,7 +792,7 @@ export default function LedgerStreamPage() {
 
     const controller = new AbortController();
 
-    fetch(`https://api.xrpl.to/v1/ledger/${latestLedger.ledger_index}?expand=true`, {
+    apiFetch(`https://api.xrpl.to/v1/ledger/${latestLedger.ledger_index}?expand=true`, {
       signal: controller.signal
     })
       .then((res) => res.json())
@@ -956,7 +957,7 @@ export default function LedgerStreamPage() {
 
     // Fetch success rate and fee stats (accumulate over window)
     if (latest.txn_count > 0) {
-      fetch(`https://api.xrpl.to/v1/ledger/${latest.ledger_index}?expand=true`)
+      apiFetch(`https://api.xrpl.to/v1/ledger/${latest.ledger_index}?expand=true`)
         .then((res) => res.json())
         .then((data) => {
           const txs = data?.transactions || [];
@@ -990,53 +991,61 @@ export default function LedgerStreamPage() {
     }
   }, [ledgers[0]?.ledger_index]);
 
-  const connectWebSocket = useCallback(() => {
+  const connectWebSocket = useCallback(async () => {
     if (wsRef.current?.readyState === WebSocket.OPEN) return;
 
     setConnectionStatus('connecting');
-    const ws = new WebSocket('wss://api.xrpl.to/ws/ledger');
+    try {
+      const res = await fetch('/api/ws/session?type=ledger');
+      const { wsUrl } = await res.json();
+      const ws = new WebSocket(wsUrl);
 
-    ws.onopen = () => setConnectionStatus('connected');
+      ws.onopen = () => setConnectionStatus('connected');
 
-    ws.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        if (data.type === 'pong') return;
+      ws.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          if (data.type === 'pong') return;
 
-        const ledger = {
-          ledger_index: data.ledger_index,
-          ledger_hash: data.ledger_hash,
-          close_time: data.close_time,
-          txn_count: data.txn_count,
-          reserve_base: data.reserve_base,
-          reserve_inc: data.reserve_inc,
-          fee_base: data.fee_base,
-          validated: data.validated
-        };
+          const ledger = {
+            ledger_index: data.ledger_index,
+            ledger_hash: data.ledger_hash,
+            close_time: data.close_time,
+            txn_count: data.txn_count,
+            reserve_base: data.reserve_base,
+            reserve_inc: data.reserve_inc,
+            fee_base: data.fee_base,
+            validated: data.validated
+          };
 
-        setLedgers((prev) => {
-          if (prev.some((l) => l.ledger_index === ledger.ledger_index)) return prev;
-          return [ledger, ...prev].slice(0, 20);
-        });
-      } catch (err) {
-        console.error('WebSocket parse error:', err);
-      }
-    };
+          setLedgers((prev) => {
+            if (prev.some((l) => l.ledger_index === ledger.ledger_index)) return prev;
+            return [ledger, ...prev].slice(0, 20);
+          });
+        } catch (err) {
+          console.error('WebSocket parse error:', err);
+        }
+      };
 
-    ws.onclose = () => {
+      ws.onclose = () => {
+        setConnectionStatus('disconnected');
+        reconnectTimeoutRef.current = setTimeout(connectWebSocket, 3000);
+      };
+
+      ws.onerror = () => ws.close();
+
+      wsRef.current = ws;
+
+      const pingInterval = setInterval(() => {
+        if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'ping' }));
+      }, 30000);
+
+      return () => clearInterval(pingInterval);
+    } catch (e) {
+      console.error('[Ledger WS] Session error:', e);
       setConnectionStatus('disconnected');
       reconnectTimeoutRef.current = setTimeout(connectWebSocket, 3000);
-    };
-
-    ws.onerror = () => ws.close();
-
-    wsRef.current = ws;
-
-    const pingInterval = setInterval(() => {
-      if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'ping' }));
-    }, 30000);
-
-    return () => clearInterval(pingInterval);
+    }
   }, []);
 
   useEffect(() => {

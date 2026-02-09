@@ -1,4 +1,4 @@
-import axios from 'axios';
+import api from 'src/utils/api';
 import {
   useState,
   useEffect,
@@ -214,6 +214,14 @@ function TokenListComponent({
     if (typeof window !== 'undefined' && localStorage.getItem('tokenListSortBy') && localStorage.getItem('tokenListSortBy') !== (initialOrderBy || 'vol24hxrp')) return 1;
     return 0;
   });
+
+  // Clear SSR tokens immediately if user's saved sort differs from SSR sort
+  useEffect(() => {
+    const saved = localStorage.getItem('tokenListSortBy');
+    if (saved && saved !== (initialOrderBy || 'vol24hxrp') && tokens?.length) {
+      setTokens([]);
+    }
+  }, []);
   const [editToken, setEditToken] = useState(null);
   const [trustToken, setTrustToken] = useState(null);
   const [rows, setRows] = useState(() => {
@@ -498,7 +506,7 @@ function TokenListComponent({
         const watchAccount = showWatchList ? accountProfile?.account || '' : '';
         const limit = rows;
 
-        axios
+        api
           .get(
             `${BASE_URL}/tokens?tag=${ntag}&watchlist=${watchAccount}&start=${start}&limit=${limit}&sortBy=${orderBy}&sortType=${order}&filter=${filterName}&showNew=${showNew}&showSlug=${showSlug}&showDate=${showDate}&skipMetrics=true${tokenType ? `&tokenType=${tokenType}` : ''}`
           )

@@ -1,6 +1,7 @@
-import axios from 'axios';
+import api from 'src/utils/api';
 import { useRef, useState, useEffect, useContext } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 import { FacebookShareButton, TwitterShareButton, FacebookIcon } from '../components/ShareButtons';
 
 // Lucide Icons
@@ -33,13 +34,16 @@ import { fNumber, fIntNumber, getHashIcon } from 'src/utils/formatters';
 import { PuffLoader, PulseLoader } from '../components/Spinners';
 import OffersList from './OffersList';
 import SelectPriceDialog from './SelectPriceDialog';
-import BurnNFT from './BurnNFT';
-import TransferDialog from './TransferDialog';
 import HistoryList from './HistoryList';
 import { ConnectWallet } from 'src/components/Wallet';
+import TxPreviewModal from 'src/components/TxPreviewModal';
 
 // XRPL
-import { xrpToDrops, dropsToXrp } from 'xrpl';
+import { xrpToDrops, dropsToXrp, Wallet as XRPLWallet } from 'xrpl';
+import { toast } from 'sonner';
+import { submitTransaction, simulateTransaction } from 'src/utils/api';
+
+const getAlgorithmFromSeed = (seed) => seed.startsWith('sEd') ? 'ed25519' : 'secp256k1';
 
 // Constants
 const NFToken = {
@@ -122,6 +126,7 @@ function PriceWarningIcon({ discrepancy, floorPrice }) {
 }
 
 export default function NFTActions({ nft }) {
+  const router = useRouter();
   const anchorRef = useRef(null);
   const shareDropdownRef = useRef(null);
   const BASE_URL = 'https://api.xrpl.to/v1';
@@ -171,9 +176,10 @@ export default function NFTActions({ nft }) {
   const isBurnable = (flag & 0x00000001) > 0;
 
   const [openShare, setOpenShare] = useState(false);
-  const [openCreateOffer, setOpenCreateOffer] = useState(false);
-  const [openTransfer, setOpenTransfer] = useState(false);
-  const [isSellOffer, setIsSellOffer] = useState(false);
+  const [activeAction, setActiveAction] = useState(null); // 'sell' | 'transfer' | 'burn' | null
+  const [transferAddress, setTransferAddress] = useState('');
+  const [transferring, setTransferring] = useState(false);
+  const [burning, setBurning] = useState(false);
   const [burnt, setBurnt] = useState(status === NFToken.BURNT || nft.is_burned === true);
   const [sellOffers, setSellOffers] = useState([]);
   const [buyOffers, setBuyOffers] = useState([]);
@@ -187,6 +193,12 @@ export default function NFTActions({ nft }) {
   const [lowestSellOffer, setLowestSellOffer] = useState(null);
   const [offerAmount, setOfferAmount] = useState('');
   const [debugInfo, setDebugInfo] = useState(null);
+  const [cancellingOffer, setCancellingOffer] = useState(null);
+  const [creatingOffer, setCreatingOffer] = useState(false);
+
+  // Simulation preview state
+  const [simulating, setSimulating] = useState(false);
+  const [txPreview, setTxPreview] = useState(null); // { type, willSucceed, error, tx, onConfirm }
 
   // Debug info for wallet
   useEffect(() => {
@@ -248,7 +260,7 @@ export default function NFTActions({ nft }) {
         wallet_type: accountProfile.wallet_type,
         account: accountProfile.account,
         walletKeyId,
-        seed: seed || 'N/A'
+        seed: seed && seed.length > 10 ? `${seed.substring(0, 4)}...(${seed.length} chars)` : (seed || 'N/A')
       });
     };
     loadDebugInfo();
@@ -269,10 +281,92 @@ export default function NFTActions({ nft }) {
     setSync((prev) => prev + 1);
   };
 
+  // Helper to get wallet seed
+  const getWalletSeed = async () => {
+    if (!accountProfile) return null;
+    let seed = null;
+    if (accountProfile.wallet_type === 'oauth' || accountProfile.wallet_type === 'social') {
+      const { EncryptedWalletStorage } = await import('src/utils/encryptedWalletStorage');
+      const walletStorage = new EncryptedWalletStorage();
+      const walletId = `${accountProfile.provider}_${accountProfile.provider_id}`;
+      const storedPassword = await walletStorage.getSecureItem(`wallet_pwd_${walletId}`);
+      if (storedPassword) {
+        const walletData = await walletStorage.getWallet(accountProfile.account, storedPassword);
+        seed = walletData?.seed;
+      }
+    } else if (accountProfile.wallet_type === 'device') {
+      const { EncryptedWalletStorage, deviceFingerprint } = await import('src/utils/encryptedWalletStorage');
+      const walletStorage = new EncryptedWalletStorage();
+      const deviceKeyId = await deviceFingerprint.getDeviceId();
+      if (deviceKeyId) {
+        const storedPassword = await walletStorage.getWalletCredential(deviceKeyId);
+        if (storedPassword) {
+          const walletData = await walletStorage.getWallet(accountProfile.account, storedPassword);
+          seed = walletData?.seed;
+        }
+      }
+    }
+    return seed;
+  };
+
+  // Simulate transaction and show preview
+  const simulateAndPreview = async (type, tx, onConfirm, description) => {
+    setSimulating(true);
+    console.log('[NFTActions] simulateAndPreview:', type, JSON.stringify(tx, null, 2));
+    try {
+      // For buy offers, validate available balance first
+      const isBuyOffer = tx.TransactionType === 'NFTokenCreateOffer' && tx.Flags === 0;
+      if (isBuyOffer && tx.Amount) {
+        try {
+          const res = await fetch(`${BASE_URL}/submit/account/${tx.Account}/sequence`).then(r => r.json());
+          if (res.success && res.balance !== undefined) {
+            const reserve = 1 + ((res.ownerCount || 0) * 0.2);
+            const available = res.balance - reserve;
+            const amountXrp = parseInt(tx.Amount) / 1000000;
+            if (amountXrp > available) {
+              setTxPreview({
+                type, description, willSucceed: false,
+                error: `Insufficient balance. Need ${amountXrp.toFixed(2)} XRP but only ${available.toFixed(2)} XRP available (${reserve.toFixed(1)} XRP in reserve)`,
+                engineResult: 'tecUNFUNDED_OFFER', tx, onConfirm
+              });
+              return;
+            }
+          }
+        } catch (e) { console.warn('Balance check failed:', e); }
+      }
+
+      const result = await simulateTransaction(tx);
+      console.log('[NFTActions] Simulation result:', JSON.stringify(result, null, 2));
+      const willSucceed = result.engine_result === 'tesSUCCESS';
+      setTxPreview({
+        type,
+        description,
+        willSucceed,
+        error: !willSucceed ? (result.engine_result_message || result.engine_result) : null,
+        engineResult: result.engine_result,
+        tx,
+        onConfirm
+      });
+    } catch (err) {
+      console.error('[NFTActions] Simulation error:', err);
+      setTxPreview({
+        type,
+        description,
+        willSucceed: false,
+        error: err.message,
+        engineResult: 'ERROR',
+        tx,
+        onConfirm
+      });
+    } finally {
+      setSimulating(false);
+    }
+  };
+
   useEffect(() => {
     function getOffers() {
       setLoading(true);
-      axios
+      api
         .get(`${BASE_URL}/nft/${NFTokenID}/offers`)
         .then((res) => {
           const ret = res.status === 200 ? res.data : undefined;
@@ -307,16 +401,18 @@ export default function NFTActions({ nft }) {
     // Fetch offers to get broker info
     async function getOfferDetails() {
       try {
-        const response = await axios.get(`https://api.xrpl.to/v1/nft/${NFTokenID}/offers`);
+        const response = await api.get(`https://api.xrpl.to/v1/nft/${NFTokenID}/offers`);
         const sellOffers = response.data?.sellOffers || [];
 
-        // Find the owner's valid offer
+        // Find the owner's valid offer that the current user can accept
+        // Offers with a destination can only be accepted by that specific address
         const ownerOffer = sellOffers.find(
           (offer) =>
             offer.amount &&
             Number(offer.amount) > 0 &&
             offer.owner === nft.account &&
-            offer.orphaned !== 'yes'
+            offer.orphaned !== 'yes' &&
+            (!offer.destination || offer.destination === accountLogin)
         );
 
         if (ownerOffer) {
@@ -343,20 +439,54 @@ export default function NFTActions({ nft }) {
             offer: ownerOffer
           });
         } else {
-          // Fallback to nft.cost if no valid offer found in offers endpoint
-          const baseAmount = parseFloat(cost.amount);
-          setLowestSellOffer({
-            baseAmount,
-            totalAmount: baseAmount,
-            brokerFee: 0,
-            brokerFeePercentage: 0,
-            hasBroker: false,
-            brokerName: null,
-            offerIndex: null,
-            seller: nft.account,
-            destination: null,
-            offer: null
-          });
+          // Check if there's a brokered offer (has destination) that user can't accept directly
+          const brokeredOffer = sellOffers.find(
+            (offer) =>
+              offer.amount &&
+              Number(offer.amount) > 0 &&
+              offer.owner === nft.account &&
+              offer.orphaned !== 'yes' &&
+              offer.destination &&
+              offer.destination !== accountLogin
+          );
+
+          if (brokeredOffer) {
+            // Brokered listing - calculate total with broker fee
+            const baseAmount = parseFloat(dropsToXrp(brokeredOffer.amount));
+            const brokerInfo = BROKER_ADDRESSES[brokeredOffer.destination];
+            const brokerFeePercentage = brokerInfo?.fee || 0.01589; // Default to XRP Cafe fee
+            const brokerFee = parseFloat((baseAmount * brokerFeePercentage).toFixed(6));
+            const totalAmount = parseFloat((baseAmount + brokerFee).toFixed(6));
+            setLowestSellOffer({
+              baseAmount,
+              totalAmount,
+              brokerFee,
+              brokerFeePercentage,
+              hasBroker: true,
+              brokerName: brokerInfo?.name || brokeredOffer.origin || 'Marketplace',
+              brokerOnly: true, // Flag indicating must create buy offer for broker
+              brokerOrigin: brokeredOffer.origin,
+              offerIndex: brokeredOffer.index || brokeredOffer.nft_offer_index,
+              seller: nft.account,
+              destination: brokeredOffer.destination,
+              offer: brokeredOffer // Keep offer for brokered buy flow
+            });
+          } else {
+            // Fallback to nft.cost if no valid offer found in offers endpoint
+            const baseAmount = parseFloat(cost.amount);
+            setLowestSellOffer({
+              baseAmount,
+              totalAmount: baseAmount,
+              brokerFee: 0,
+              brokerFeePercentage: 0,
+              hasBroker: false,
+              brokerName: null,
+              offerIndex: null,
+              seller: nft.account,
+              destination: null,
+              offer: null
+            });
+          }
         }
       } catch (error) {
         // Fallback to nft.cost on error
@@ -377,7 +507,7 @@ export default function NFTActions({ nft }) {
     }
 
     getOfferDetails();
-  }, [nft, NFTokenID]);
+  }, [nft, NFTokenID, accountLogin]);
 
   const doProcessOffer = async (offer, isAcceptOrCancel) => {
     if (!accountLogin || !accountToken) {
@@ -415,7 +545,7 @@ export default function NFTActions({ nft }) {
         user_token
       };
 
-      const res = await axios.post(`${BASE_URL}/offers/acceptcancel`, body, {
+      const res = await api.post(`${BASE_URL}/offers/acceptcancel`, body, {
         headers: { 'x-access-token': accountToken }
       });
 
@@ -449,23 +579,256 @@ export default function NFTActions({ nft }) {
   };
 
   const handleCreateSellOffer = () => {
-    setIsSellOffer(true);
     setOfferAmount('');
-    setOpenCreateOffer(true);
+    setActiveAction('sell');
   };
   const handleTransfer = () => {
-    setOpenTransfer(true);
+    setTransferAddress('');
+    setActiveAction('transfer');
+  };
+  const handleBurnAction = () => {
+    setActiveAction('burn');
   };
   const handleCreateBuyOffer = () => {
-    setIsSellOffer(false);
     setOfferAmount('');
-    setOpenCreateOffer(true);
+    setActiveAction('buy');
   };
   const onHandleBurn = () => {
     setBurnt(true);
   };
+  const handleSubmitTransfer = async () => {
+    if (!transferAddress) {
+      openSnackbar('Enter destination address', 'error');
+      return;
+    }
+    if (!accountProfile) {
+      openSnackbar('Please connect your wallet', 'error');
+      return;
+    }
+    setSimulating(true);
+
+    const tx = {
+      TransactionType: 'NFTokenCreateOffer',
+      Account: accountLogin,
+      NFTokenID,
+      Amount: '0',
+      Destination: transferAddress,
+      Flags: 1,
+      SourceTag: 161803
+    };
+
+    await simulateAndPreview('transfer', tx, executeTransfer, `Transfer to ${truncate(transferAddress, 12)}`);
+  };
+
+  const executeTransfer = async (tx) => {
+    setTransferring(true);
+    setTxPreview(null);
+    const toastId = toast.loading('Transferring NFT...', { description: 'Signing...' });
+
+    try {
+      const seed = await getWalletSeed();
+      if (!seed) {
+        toast.error('Authentication failed', { id: toastId });
+        setTransferring(false);
+        return;
+      }
+
+      const wallet = XRPLWallet.fromSeed(seed, { algorithm: getAlgorithmFromSeed(seed) });
+      const result = await submitTransaction(wallet, tx);
+      if (result.success) {
+        toast.success('Transfer offer created', { id: toastId, description: 'Recipient must accept', duration: 5000 });
+        setActiveAction(null);
+        setTransferAddress('');
+      }
+    } catch (err) {
+      console.error('Transfer NFT error:', err);
+      toast.error('Transfer failed', { id: toastId, description: err.message });
+    } finally {
+      setTransferring(false);
+    }
+  };
+  const handleSubmitBurn = async () => {
+    if (!accountProfile) {
+      openSnackbar('Please connect your wallet', 'error');
+      return;
+    }
+    setSimulating(true);
+
+    const tx = {
+      TransactionType: 'NFTokenBurn',
+      Account: accountLogin,
+      NFTokenID,
+      SourceTag: 161803
+    };
+
+    await simulateAndPreview('burn', tx, executeBurn, `Burn ${truncate(nftName, 20)}`);
+  };
+
+  const executeBurn = async (tx) => {
+    setBurning(true);
+    setTxPreview(null);
+    const toastId = toast.loading('Burning NFT...', { description: 'Signing...' });
+
+    try {
+      const seed = await getWalletSeed();
+      if (!seed) {
+        toast.error('Authentication failed', { id: toastId });
+        setBurning(false);
+        return;
+      }
+
+      const wallet = XRPLWallet.fromSeed(seed, { algorithm: getAlgorithmFromSeed(seed) });
+      const result = await submitTransaction(wallet, tx);
+      if (result.success) {
+        toast.success('NFT burned', { id: toastId, duration: 5000 });
+        setActiveAction(null);
+        setBurnt(true);
+      }
+    } catch (err) {
+      console.error('Burn NFT error:', err);
+      toast.error('Burn failed', { id: toastId, description: err.message });
+    } finally {
+      setBurning(false);
+    }
+  };
   const handleCancelOffer = async (offer) => {
-    doProcessOffer(offer, false);
+    const offerId = offer.nft_offer_index || offer.index || offer.id || offer._id;
+    if (!offerId) {
+      console.error('Cancel offer - no valid ID found:', offer);
+      openSnackbar('Invalid offer', 'error');
+      return;
+    }
+    if (!accountProfile) {
+      openSnackbar('Please connect your wallet', 'error');
+      return;
+    }
+    setCancellingOffer(offerId);
+    const toastId = toast.loading('Cancelling offer...', { description: 'Connecting...' });
+
+    try {
+      let seed = null;
+      if (accountProfile.wallet_type === 'oauth' || accountProfile.wallet_type === 'social') {
+        const { EncryptedWalletStorage } = await import('src/utils/encryptedWalletStorage');
+        const walletStorage = new EncryptedWalletStorage();
+        const walletId = `${accountProfile.provider}_${accountProfile.provider_id}`;
+        const storedPassword = await walletStorage.getSecureItem(`wallet_pwd_${walletId}`);
+        if (storedPassword) {
+          const walletData = await walletStorage.getWallet(accountProfile.account, storedPassword);
+          seed = walletData?.seed;
+        }
+      } else if (accountProfile.wallet_type === 'device') {
+        const { EncryptedWalletStorage, deviceFingerprint } = await import('src/utils/encryptedWalletStorage');
+        const walletStorage = new EncryptedWalletStorage();
+        const deviceKeyId = await deviceFingerprint.getDeviceId();
+        if (deviceKeyId) {
+          const storedPassword = await walletStorage.getWalletCredential(deviceKeyId);
+          if (storedPassword) {
+            const walletData = await walletStorage.getWallet(accountProfile.account, storedPassword);
+            seed = walletData?.seed;
+          }
+        }
+      }
+
+      if (!seed) {
+        toast.error('Authentication failed', { id: toastId, description: 'Could not retrieve wallet credentials' });
+        setCancellingOffer(null);
+        return;
+      }
+
+      toast.loading('Cancelling offer...', { id: toastId, description: 'Signing transaction...' });
+      const wallet = XRPLWallet.fromSeed(seed, { algorithm: getAlgorithmFromSeed(seed) });
+      const tx = {
+        TransactionType: 'NFTokenCancelOffer',
+        Account: accountLogin,
+        NFTokenOffers: [offerId],
+        SourceTag: 161803
+      };
+
+      const result = await submitTransaction(wallet, tx);
+      if (result.success) {
+        toast.success('Offer cancelled', { id: toastId, duration: 5000 });
+        // Remove from both lists (we don't know which type it was)
+        setSellOffers(prev => prev.filter(o => (o.nft_offer_index || o.index || o.id || o._id) !== offerId));
+        setBuyOffers(prev => prev.filter(o => (o.nft_offer_index || o.index || o.id || o._id) !== offerId));
+      }
+    } catch (err) {
+      console.error('Cancel NFT offer error:', err);
+      toast.error('Failed to cancel', { id: toastId, description: err.message });
+    } finally {
+      setCancellingOffer(null);
+    }
+  };
+
+  const handleSubmitOffer = async () => {
+    if (!offerAmount || parseFloat(offerAmount) <= 0) {
+      openSnackbar('Enter a valid amount', 'error');
+      return;
+    }
+    if (!accountProfile) {
+      openSnackbar('Please connect your wallet', 'error');
+      return;
+    }
+    setSimulating(true);
+
+    const priceInDrops = xrpToDrops(offerAmount);
+    const isSell = activeAction === 'sell';
+    const tx = {
+      TransactionType: 'NFTokenCreateOffer',
+      Account: accountLogin,
+      NFTokenID,
+      Amount: priceInDrops,
+      Flags: isSell ? 1 : 0,
+      SourceTag: 161803
+    };
+
+    // Buy offers require Owner field (who owns the NFT we want to buy)
+    if (!isSell) {
+      tx.Owner = account; // NFT owner from nft prop
+    }
+
+    console.log('[NFTActions] handleSubmitOffer tx:', JSON.stringify(tx, null, 2));
+    const desc = isSell ? `List for ${offerAmount} XRP` : `Offer ${offerAmount} XRP`;
+    await simulateAndPreview('offer', tx, executeOffer, desc);
+  };
+
+  const executeOffer = async (tx) => {
+    setCreatingOffer(true);
+    setTxPreview(null);
+    const isSell = tx.Flags === 1;
+    const toastId = toast.loading('Creating offer...', { description: 'Signing...' });
+
+    try {
+      const seed = await getWalletSeed();
+      if (!seed) {
+        toast.error('Authentication failed', { id: toastId });
+        setCreatingOffer(false);
+        return;
+      }
+
+      const wallet = XRPLWallet.fromSeed(seed, { algorithm: getAlgorithmFromSeed(seed) });
+      const result = await submitTransaction(wallet, tx);
+      if (result.success) {
+        toast.success('Offer created', { id: toastId, duration: 5000 });
+        const newOffer = {
+          nft_offer_index: result.hash,
+          amount: parseInt(tx.Amount),
+          owner: accountLogin,
+          flags: isSell ? 1 : 0
+        };
+        if (isSell) {
+          setSellOffers(prev => [...prev, newOffer]);
+        } else {
+          setBuyOffers(prev => [...prev, newOffer]);
+        }
+        setActiveAction(null);
+        setOfferAmount('');
+      }
+    } catch (err) {
+      console.error('Create NFT offer error:', err);
+      toast.error('Failed to create offer', { id: toastId, description: err.message });
+    } finally {
+      setCreatingOffer(false);
+    }
   };
 
   const handleBuyNow = () => {
@@ -476,16 +839,98 @@ export default function NFTActions({ nft }) {
     setAcceptOffer(lowestSellOffer.offer);
   };
 
-  const handleCloseCreateOffer = () => {
-    setOpenCreateOffer(false);
-    setIsSellOffer(false);
+  // Handle brokered buy - create buy offer with broker destination
+  const handleBrokerBuy = async () => {
+    if (!lowestSellOffer?.brokerOnly || !lowestSellOffer?.destination) {
+      openSnackbar('Invalid broker offer', 'error');
+      return;
+    }
+    if (!accountProfile) {
+      openSnackbar('Please connect your wallet', 'error');
+      return;
+    }
+    setSimulating(true);
+
+    const totalAmountDrops = xrpToDrops(lowestSellOffer.totalAmount.toString());
+    const tx = {
+      TransactionType: 'NFTokenCreateOffer',
+      Account: accountLogin,
+      NFTokenID,
+      Owner: account, // NFT owner
+      Amount: totalAmountDrops,
+      Destination: lowestSellOffer.destination, // Broker address
+      Flags: 0, // Buy offer
+      SourceTag: 161803
+    };
+
+    const desc = `Buy via ${lowestSellOffer.brokerName} for ${lowestSellOffer.totalAmount} XRP`;
+    await simulateAndPreview('brokerBuy', tx, executeBrokerBuy, desc);
   };
-  const handleCloseTransfer = () => {
-    setOpenTransfer(false);
+
+  const executeBrokerBuy = async (tx) => {
+    setCreatingOffer(true);
+    setTxPreview(null);
+    const toastId = toast.loading('Creating buy offer...', { description: 'Signing...' });
+
+    try {
+      const seed = await getWalletSeed();
+      if (!seed) {
+        toast.error('Authentication failed', { id: toastId });
+        setCreatingOffer(false);
+        return;
+      }
+
+      const wallet = XRPLWallet.fromSeed(seed, { algorithm: getAlgorithmFromSeed(seed) });
+      const result = await submitTransaction(wallet, tx);
+      if (result.success) {
+        toast.success('Buy offer created', {
+          id: toastId,
+          description: 'Waiting for trade to complete...',
+          duration: 30000
+        });
+        setAcceptOffer(null);
+        // Poll for ownership change
+        const pollOwner = async (attempts = 0) => {
+          if (attempts > 30) { router.reload(); return; } // Fallback after 60s
+          try {
+            const res = await fetch(`${BASE_URL}/nft/${NFTokenID}`).then(r => r.json());
+            if (res.account === accountLogin) {
+              toast.success('Purchase complete!', { id: toastId, duration: 3000 });
+              router.reload();
+            } else {
+              setTimeout(() => pollOwner(attempts + 1), 2000);
+            }
+          } catch { setTimeout(() => pollOwner(attempts + 1), 2000); }
+        };
+        pollOwner();
+      }
+    } catch (err) {
+      console.error('Broker buy error:', err);
+      toast.error('Failed to create offer', { id: toastId, description: err.message });
+    } finally {
+      setCreatingOffer(false);
+    }
   };
 
   return (
     <>
+      <TxPreviewModal
+        isDark={isDark}
+        simulating={simulating}
+        preview={txPreview ? {
+          status: txPreview.willSucceed ? 'success' : 'error',
+          title: txPreview.willSucceed ? 'Ready to Execute' : 'Transaction Will Fail',
+          description: txPreview.description,
+          error: txPreview.error,
+          engineResult: txPreview.engineResult,
+          warning: txPreview.type === 'burn' && txPreview.willSucceed ? 'This action is irreversible. The NFT will be permanently destroyed.' : null
+        } : null}
+        onClose={() => { setTxPreview(null); setSimulating(false); }}
+        onConfirm={txPreview?.willSucceed ? () => txPreview.onConfirm(txPreview.tx) : null}
+        confirmLabel={txPreview?.type === 'burn' ? 'Burn NFT' : 'Confirm'}
+        confirmColor={txPreview?.type === 'burn' ? '#ef4444' : '#3b82f6'}
+      />
+
       {/* Main Glass Panel */}
       <div
         className={cn(
@@ -690,33 +1135,141 @@ export default function NFTActions({ nft }) {
             {burnt ? (
               <p className="text-lg text-red-400 font-normal">This NFT is burnt.</p>
             ) : isOwner ? (
-              <div className="flex gap-3">
-                <button
-                  onClick={handleCreateSellOffer}
-                  disabled={!accountLogin || burnt}
-                  className={cn(
-                    'flex-1 py-3 rounded-xl text-[15px] font-medium bg-primary text-white transition-all',
-                    'hover:bg-primary/90 hover:shadow-[0_0_24px_rgba(66,133,244,0.4)]',
-                    'active:scale-[0.98]',
-                    (!accountLogin || burnt) && 'opacity-50 cursor-not-allowed hover:shadow-none'
-                  )}
-                >
-                  Sell
-                </button>
-                <button
-                  onClick={handleTransfer}
-                  disabled={!accountLogin || burnt}
-                  className={cn(
-                    'flex-1 py-3 rounded-xl text-[15px] font-normal border transition-colors',
-                    isDark
-                      ? 'border-gray-700/50 text-gray-300 hover:border-gray-600 hover:text-white'
-                      : 'border-gray-300 text-gray-700 hover:border-gray-400',
-                    (!accountLogin || burnt) && 'opacity-50 cursor-not-allowed'
-                  )}
-                >
-                  Transfer
-                </button>
-                <BurnNFT nft={nft} onHandleBurn={onHandleBurn} />
+              <div className="space-y-3">
+                {activeAction === 'sell' ? (
+                  <div className={cn('p-4 rounded-xl border', isDark ? 'border-gray-700/50 bg-white/5' : 'border-gray-200 bg-gray-50')}>
+                    <p className={cn('text-[13px] font-medium mb-3', isDark ? 'text-white' : 'text-gray-900')}>Set your price</p>
+                    <div className="flex items-center gap-2 mb-3">
+                      <input
+                        type="text"
+                        placeholder="0.00"
+                        value={offerAmount}
+                        onChange={(e) => setOfferAmount(e.target.value.replace(/[^0-9.]/g, ''))}
+                        autoFocus
+                        className={cn(
+                          'flex-1 px-3 py-2 rounded-lg border text-[15px] outline-none transition-colors',
+                          isDark
+                            ? 'border-gray-700/50 bg-black/40 text-white placeholder:text-gray-600 focus:border-primary'
+                            : 'border-gray-300 bg-white text-gray-900 placeholder:text-gray-400 focus:border-primary'
+                        )}
+                      />
+                      <span className={cn('text-[13px]', isDark ? 'text-gray-400' : 'text-gray-500')}>XRP</span>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => { setActiveAction(null); setOfferAmount(''); }}
+                        className={cn('flex-1 py-2 rounded-lg text-[13px] border transition-colors', isDark ? 'border-gray-700/50 text-gray-400 hover:text-gray-300' : 'border-gray-300 text-gray-600 hover:text-gray-700')}
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={handleSubmitOffer}
+                        disabled={!offerAmount || creatingOffer}
+                        className={cn('flex-1 py-2 rounded-lg text-[13px] font-medium transition-colors', !offerAmount || creatingOffer ? 'bg-gray-700 text-gray-500 cursor-not-allowed' : 'bg-primary text-white hover:bg-primary/90')}
+                      >
+                        {creatingOffer ? 'Creating...' : 'List for Sale'}
+                      </button>
+                    </div>
+                  </div>
+                ) : activeAction === 'transfer' ? (
+                  <div className={cn('p-4 rounded-xl border', isDark ? 'border-gray-700/50 bg-white/5' : 'border-gray-200 bg-gray-50')}>
+                    <p className={cn('text-[13px] font-medium mb-3', isDark ? 'text-white' : 'text-gray-900')}>Transfer to</p>
+                    <input
+                      type="text"
+                      placeholder="rAddress..."
+                      value={transferAddress}
+                      onChange={(e) => setTransferAddress(e.target.value)}
+                      autoFocus
+                      className={cn(
+                        'w-full px-3 py-2 rounded-lg border text-[13px] font-mono outline-none transition-colors mb-3',
+                        isDark
+                          ? 'border-gray-700/50 bg-black/40 text-white placeholder:text-gray-600 focus:border-primary'
+                          : 'border-gray-300 bg-white text-gray-900 placeholder:text-gray-400 focus:border-primary'
+                      )}
+                    />
+                    <p className={cn('text-[11px] mb-3', isDark ? 'text-yellow-500/80' : 'text-yellow-600')}>
+                      This will transfer ownership. This action cannot be undone once user accepts.
+                    </p>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => { setActiveAction(null); setTransferAddress(''); }}
+                        className={cn('flex-1 py-2 rounded-lg text-[13px] border transition-colors', isDark ? 'border-gray-700/50 text-gray-400 hover:text-gray-300' : 'border-gray-300 text-gray-600 hover:text-gray-700')}
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={handleSubmitTransfer}
+                        disabled={!transferAddress || transferring}
+                        className={cn('flex-1 py-2 rounded-lg text-[13px] font-medium transition-colors', !transferAddress || transferring ? 'bg-gray-700 text-gray-500 cursor-not-allowed' : 'bg-primary text-white hover:bg-primary/90')}
+                      >
+                        {transferring ? 'Transferring...' : 'Transfer'}
+                      </button>
+                    </div>
+                  </div>
+                ) : activeAction === 'burn' ? (
+                  <div className={cn('p-4 rounded-xl border', isDark ? 'border-red-500/20 bg-red-500/5' : 'border-red-200 bg-red-50')}>
+                    <p className={cn('text-[13px] font-medium mb-2', isDark ? 'text-red-400' : 'text-red-600')}>Burn this NFT?</p>
+                    <p className={cn('text-[11px] mb-3', isDark ? 'text-red-400/70' : 'text-red-500')}>
+                      This action is permanent and cannot be undone. The NFT will be destroyed forever.
+                    </p>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setActiveAction(null)}
+                        className={cn('flex-1 py-2 rounded-lg text-[13px] border transition-colors', isDark ? 'border-gray-700/50 text-gray-400 hover:text-gray-300' : 'border-gray-300 text-gray-600 hover:text-gray-700')}
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={handleSubmitBurn}
+                        disabled={burning}
+                        className={cn('flex-1 py-2 rounded-lg text-[13px] font-medium transition-colors', burning ? 'bg-gray-700 text-gray-500 cursor-not-allowed' : 'bg-red-500 text-white hover:bg-red-600')}
+                      >
+                        {burning ? 'Burning...' : 'Confirm Burn'}
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex gap-3">
+                    <button
+                      onClick={handleCreateSellOffer}
+                      disabled={!accountLogin}
+                      className={cn(
+                        'flex-1 py-3 rounded-xl text-[15px] font-medium bg-primary text-white transition-all',
+                        'hover:bg-primary/90 hover:shadow-[0_0_24px_rgba(66,133,244,0.4)]',
+                        'active:scale-[0.98]',
+                        !accountLogin && 'opacity-50 cursor-not-allowed hover:shadow-none'
+                      )}
+                    >
+                      Sell
+                    </button>
+                    <button
+                      onClick={handleTransfer}
+                      disabled={!accountLogin}
+                      className={cn(
+                        'flex-1 py-3 rounded-xl text-[15px] font-normal border transition-colors',
+                        isDark
+                          ? 'border-gray-700/50 text-gray-300 hover:border-gray-600 hover:text-white'
+                          : 'border-gray-300 text-gray-700 hover:border-gray-400',
+                        !accountLogin && 'opacity-50 cursor-not-allowed'
+                      )}
+                    >
+                      Transfer
+                    </button>
+                    <button
+                      onClick={handleBurnAction}
+                      disabled={!accountLogin}
+                      className={cn(
+                        'flex-1 py-3 rounded-xl text-[15px] font-normal border transition-colors',
+                        isDark
+                          ? 'border-gray-700/50 text-gray-300 hover:border-gray-600 hover:text-white'
+                          : 'border-gray-300 text-gray-700 hover:border-gray-400',
+                        !accountLogin && 'opacity-50 cursor-not-allowed'
+                      )}
+                    >
+                      Burn
+                    </button>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="space-y-3">
@@ -800,6 +1353,18 @@ export default function NFTActions({ nft }) {
                         </div>
                       </div>
                     )}
+                    {lowestSellOffer.brokerOnly && (
+                      <div
+                        className={cn(
+                          'mt-3 pt-3 border-t',
+                          isDark ? 'border-white/[0.08]' : 'border-gray-200'
+                        )}
+                      >
+                        <p className={cn('text-[11px]', isDark ? 'text-amber-400/80' : 'text-amber-600')}>
+                          Listed exclusively on {lowestSellOffer.brokerName || lowestSellOffer.brokerOrigin || 'external marketplace'}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 ) : (
                   /* Not listed state - improved */
@@ -825,8 +1390,78 @@ export default function NFTActions({ nft }) {
 
                 {accountLogin ? (
                   <>
+                    {/* Fraud Warning Banner */}
+                    {lowestSellOffer?.offer?.fraud && (
+                      <div
+                        className={cn(
+                          'p-3 rounded-xl border flex items-center gap-3',
+                          'border-red-500/50 bg-red-500/10'
+                        )}
+                      >
+                        <AlertTriangle className="text-red-500 shrink-0" size={20} />
+                        <div>
+                          <p className="text-red-400 text-sm font-medium">Scam Warning</p>
+                          <p className="text-red-400/70 text-xs">
+                            This is a destination-targeted scam. Accepting will TAKE your XRP, not give you rewards.
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                    {/* Broker-only listing - create buy offer via broker */}
+                    {lowestSellOffer?.brokerOnly && !burnt && lowestSellOffer?.offer && (
+                      acceptOffer?.nft_offer_index === lowestSellOffer.offer?.nft_offer_index ||
+                      acceptOffer?.index === lowestSellOffer.offer?.index ? (
+                        <div
+                          className={cn(
+                            'p-3 rounded-xl border',
+                            isDark ? 'border-gray-700/50 bg-white/5' : 'border-gray-200 bg-gray-50'
+                          )}
+                        >
+                          <p className={cn('text-[12px] mb-2', isDark ? 'text-gray-400' : 'text-gray-600')}>
+                            Buy via {lowestSellOffer.brokerName} for{' '}
+                            <span className={isDark ? 'text-white' : 'text-gray-900'}>
+                              {formatXRPAmount(lowestSellOffer.totalAmount)}
+                            </span>?
+                          </p>
+                          <p className={cn('text-[10px] mb-2', isDark ? 'text-gray-500' : 'text-gray-400')}>
+                            Includes {lowestSellOffer.brokerFee.toFixed(2)} XRP broker fee
+                          </p>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => setAcceptOffer(null)}
+                              className={cn(
+                                'flex-1 py-2 rounded-lg text-[13px] border transition-colors',
+                                isDark ? 'border-gray-700/50 text-gray-400' : 'border-gray-300 text-gray-600'
+                              )}
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              onClick={handleBrokerBuy}
+                              disabled={creatingOffer}
+                              className="flex-1 py-2 rounded-lg text-[13px] font-normal bg-primary/90 text-white hover:bg-primary transition-colors"
+                            >
+                              {creatingOffer ? 'Creating...' : 'Confirm'}
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => setAcceptOffer(lowestSellOffer.offer)}
+                          className={cn(
+                            'w-full py-3.5 rounded-xl text-[15px] font-medium transition-all',
+                            'bg-primary text-white hover:bg-primary/90 hover:shadow-[0_0_24px_rgba(66,133,244,0.4)] active:scale-[0.98]'
+                          )}
+                        >
+                          Buy Now
+                        </button>
+                      )
+                    )}
+                    {/* Regular buy flow */}
                     {lowestSellOffer &&
                       !burnt &&
+                      !lowestSellOffer?.offer?.fraud &&
+                      !lowestSellOffer?.brokerOnly &&
                       (acceptOffer &&
                       acceptOffer?.nft_offer_index === lowestSellOffer.offer?.nft_offer_index ? (
                         <div
@@ -873,17 +1508,19 @@ export default function NFTActions({ nft }) {
                       ) : (
                         <button
                           onClick={handleBuyNow}
+                          disabled={lowestSellOffer?.offer?.fraud}
                           className={cn(
-                            'w-full py-3.5 rounded-xl text-[15px] font-medium bg-primary text-white transition-all',
-                            'hover:bg-primary/90 hover:shadow-[0_0_24px_rgba(66,133,244,0.4)]',
-                            'active:scale-[0.98]'
+                            'w-full py-3.5 rounded-xl text-[15px] font-medium transition-all',
+                            lowestSellOffer?.offer?.fraud
+                              ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
+                              : 'bg-primary text-white hover:bg-primary/90 hover:shadow-[0_0_24px_rgba(66,133,244,0.4)] active:scale-[0.98]'
                           )}
                         >
-                          Buy Now
+                          {lowestSellOffer?.offer?.fraud ? 'Blocked - Scam Detected' : 'Buy Now'}
                         </button>
                       ))}
                     {!burnt &&
-                      (openCreateOffer ? (
+                      (activeAction === 'buy' ? (
                         <div
                           className={cn(
                             'p-3 rounded-xl border',
@@ -911,7 +1548,7 @@ export default function NFTActions({ nft }) {
                           <div className="flex gap-2">
                             <button
                               onClick={() => {
-                                setOpenCreateOffer(false);
+                                setActiveAction(null);
                                 setOfferAmount('');
                               }}
                               className={cn(
@@ -924,20 +1561,16 @@ export default function NFTActions({ nft }) {
                               Cancel
                             </button>
                             <button
-                              onClick={() => {
-                                openSnackbar('NFT offers coming soon', 'info');
-                                setOpenCreateOffer(false);
-                                setOfferAmount('');
-                              }}
-                              disabled={!offerAmount}
+                              onClick={handleSubmitOffer}
+                              disabled={!offerAmount || creatingOffer}
                               className={cn(
                                 'flex-1 py-2 rounded-lg text-[13px] font-normal transition-colors',
-                                !offerAmount
+                                !offerAmount || creatingOffer
                                   ? 'bg-gray-800 text-gray-600 cursor-not-allowed'
                                   : 'bg-primary/90 text-white hover:bg-primary'
                               )}
                             >
-                              Submit
+                              {creatingOffer ? 'Creating...' : 'Submit'}
                             </button>
                           </div>
                         </div>
@@ -1059,14 +1692,21 @@ export default function NFTActions({ nft }) {
                                 </span>
                               )}
                             </div>
-                            {!burnt && (
-                              <button
-                                onClick={() => handleCancelOffer(offer)}
-                                className="px-3 py-1.5 rounded-lg text-[11px] font-normal border border-red-500/40 text-red-400 hover:bg-red-500/10 transition-colors"
-                              >
-                                Cancel
-                              </button>
-                            )}
+                            {!burnt && (() => {
+                              const oid = offer.nft_offer_index || offer.index || offer.id || offer._id;
+                              return (
+                                <button
+                                  onClick={() => handleCancelOffer(offer)}
+                                  disabled={cancellingOffer === oid}
+                                  className={cn(
+                                    "px-3 py-1.5 rounded-lg text-[11px] font-normal border border-red-500/40 text-red-400 transition-colors",
+                                    cancellingOffer === oid ? "opacity-50 cursor-not-allowed" : "hover:bg-red-500/10"
+                                  )}
+                                >
+                                  {cancellingOffer === oid ? 'Cancelling...' : 'Cancel'}
+                                </button>
+                              );
+                            })()}
                           </div>
                         </div>
                       );
@@ -1075,27 +1715,13 @@ export default function NFTActions({ nft }) {
                 ) : (
                   <div
                     className={cn(
-                      'py-8 text-center rounded-xl border border-dashed',
+                      'py-6 text-center rounded-xl border border-dashed',
                       isDark ? 'border-gray-700/50 bg-white/[0.02]' : 'border-gray-300 bg-gray-50'
                     )}
                   >
                     <p className="text-sm text-gray-500">
-                      {burnt ? 'NFT has been burned' : 'No sell offers available'}
+                      {burnt ? 'NFT has been burned' : 'No active listings'}
                     </p>
-                    {!burnt && (
-                      <button
-                        onClick={handleCreateSellOffer}
-                        className={cn(
-                          'mt-4 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-normal border transition-colors',
-                          isDark
-                            ? 'border-gray-700/50 text-gray-400 hover:border-gray-600 hover:text-gray-300'
-                            : 'border-gray-300 text-gray-600 hover:border-gray-400'
-                        )}
-                      >
-                        <Tag size={14} />
-                        Create Sell Offer
-                      </button>
-                    )}
                   </div>
                 )}
               </div>
@@ -1315,14 +1941,21 @@ export default function NFTActions({ nft }) {
                                     {isScamLevel ? 'Review' : 'Accept'}
                                   </button>
                                 )
-                              ) : accountLogin === offer.owner ? (
-                                <button
-                                  onClick={() => handleCancelOffer(offer)}
-                                  className="px-2.5 py-1 rounded text-[11px] border border-red-500/40 text-red-400 hover:bg-red-500/10"
-                                >
-                                  Cancel
-                                </button>
-                              ) : null)}
+                              ) : accountLogin === offer.owner ? (() => {
+                                const oid = offer.nft_offer_index || offer.index || offer.id || offer._id;
+                                return (
+                                  <button
+                                    onClick={() => handleCancelOffer(offer)}
+                                    disabled={cancellingOffer === oid}
+                                    className={cn(
+                                      "px-2.5 py-1 rounded text-[11px] border border-red-500/40 text-red-400 transition-colors",
+                                      cancellingOffer === oid ? "opacity-50 cursor-not-allowed" : "hover:bg-red-500/10"
+                                    )}
+                                  >
+                                    {cancellingOffer === oid ? 'Cancelling...' : 'Cancel'}
+                                  </button>
+                                );
+                              })() : null)}
                           </div>
                         </div>
                       </div>
@@ -1373,7 +2006,6 @@ export default function NFTActions({ nft }) {
           </div>
         </div>
 
-        <TransferDialog open={openTransfer} setOpen={setOpenTransfer} nft={nft} />
       </div>
     </>
   );

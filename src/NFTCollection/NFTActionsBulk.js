@@ -1,4 +1,4 @@
-import axios from 'axios';
+import api from 'src/utils/api';
 import React, { useEffect, useState, useContext } from 'react';
 import { AppContext } from 'src/context/AppContext';
 import { cn } from 'src/utils/cn';
@@ -63,7 +63,7 @@ export default function NFTActionsBulk({ nft }) {
         return;
       }
 
-      axios
+      api
         .get(`${BASE_URL}/spin/count?account=${accountLogin}&cid=${cid}`, {
           headers: { 'x-access-token': accountToken }
         })
@@ -93,7 +93,7 @@ export default function NFTActionsBulk({ nft }) {
 
     const body = { account: accountLogin, cid, NFTokenID };
 
-    axios
+    api
       .post(`${BASE_URL}/spin/buybulknft`, body, { headers: { 'x-access-token': accountToken } })
       .then((res) => {
         let ret = res.status === 200 ? res.data : undefined;

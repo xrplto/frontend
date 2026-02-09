@@ -1,6 +1,6 @@
 import React, { useState, useContext } from 'react';
 import Head from 'next/head';
-import axios from 'axios';
+import api from 'src/utils/api';
 import {
   Copy,
   Menu,
@@ -32,7 +32,9 @@ import {
   TrendingUp,
   ArrowLeftRight,
   BadgeCheck,
-  Play
+  Play,
+  Droplets,
+  Radio
 } from 'lucide-react';
 import { AppContext } from 'src/context/AppContext';
 import { cn } from 'src/utils/cn';
@@ -172,7 +174,10 @@ const ApiDocsPage = ({ apiDocs, ogp }) => {
         { id: 'bridge', title: 'Bridge', icon: ArrowLeftRight },
         { id: 'verify', title: 'Verification', icon: BadgeCheck },
         { id: 'boost', title: 'Boost', icon: TrendingUp },
-        { id: 'tools', title: 'Tools', icon: Wrench }
+        { id: 'tweet-verify', title: 'Tweet Verify', icon: BadgeCheck },
+        { id: 'tools', title: 'Tools', icon: Wrench },
+        { id: 'faucet', title: 'Faucet', icon: Droplets },
+        { id: 'websocket', title: 'WebSocket', icon: Radio }
       ]
     }
   ];
@@ -246,7 +251,12 @@ const ApiDocsPage = ({ apiDocs, ogp }) => {
       { id: 'caching', label: 'Caching' }
     ],
     tools: [{ id: 'tools-endpoints', label: 'All Endpoints' }],
-    errors: [{ id: 'error-codes', label: 'HTTP Status Codes' }]
+    errors: [{ id: 'error-codes', label: 'HTTP Status Codes' }],
+    websocket: [
+      { id: 'ws-overview', label: 'Overview' },
+      { id: 'ws-endpoints', label: 'All Endpoints' },
+      { id: 'ws-example', label: 'Example' }
+    ]
   };
 
   const copyToClipboard = (text, blockId) => {
@@ -338,9 +348,9 @@ const ApiDocsPage = ({ apiDocs, ogp }) => {
             amount: '10000000'
           }
         };
-        res = await axios.post(url, bodies[ep.path] || {}, { timeout: 10000 });
+        res = await api.post(url, bodies[ep.path] || {}, { timeout: 10000 });
       } else {
-        res = await axios.get(url, { timeout: 10000 });
+        res = await api.get(url, { timeout: 10000 });
       }
       setEndpointResponse({ path: key, data: res.data, url });
     } catch (e) {
@@ -354,23 +364,22 @@ const ApiDocsPage = ({ apiDocs, ogp }) => {
 Base URL: https://api.xrpl.to/v1
 
 GET /tokens - List all tokens with filtering and sorting
-Params: start (int, default:0), limit (int, max:100), sortBy (vol24hxrp|marketcap|p24h|trustlines|trendingScore), sort (alias), sortType (asc|desc), order (alias), filter (OMCF|AMM|search), filterNe (negative filter), tag, tags (comma-separated OR filter), watchlist (comma-separated md5), showNew, showSlug, showDate, skipMetrics
-Example: GET /v1/tokens?limit=20&sortBy=vol24hxrp&sortType=desc
-Response: { result, took, count, tokens[], exch, H24, global }
+Params: offset (int, default:0), limit (int, max:100), sort (volume|marketcap|change24h|change5m|trending|assessment), order (asc|desc), filter (text search), tag, watchlist (comma-separated ids), show_new (alias: showNew), show_slug (alias: showSlug), token_type (trustline|lp|mpt, alias: tokenType), skip_metrics (alias: skipMetrics)
+Example: GET /v1/tokens?limit=20&sort=volume&order=desc
+Response: { success, took, total, exch, H24, global, tokens[] }
 
-GET /token/{id} - Get single token by md5 (recommended), slug (issuer-currency), or issuer_currency
+GET /token/{id} - Get single token by md5 (recommended), slug, issuer_currency, name, or mptIssuanceID
 Params: id (required), desc ("yes" for description)
-Formats: md5 (0413ca7cfc258dfaf698c02fe304e607), slug (rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz-SOLO), issuer_currency (issuer_hexCurrency)
 Example: GET /v1/token/0413ca7cfc258dfaf698c02fe304e607
 
-POST /search - Search tokens by name/symbol/issuer
-Body: { search: string, page: int, limit: int (max:100) }
-Response: { result, tokens[], pagination: { page, limit, total, hasMore } }
+POST /search - Search tokens, NFTs, collections, and accounts
+Body: { search: string, offset: int, limit: int }
+Response: { success, took, tokens[], collections[], nfts[], account?, pagination }
 
-GET /slugs - Get all token slugs
+GET /tokens/slugs - Get all token slugs
 GET /tags - Get all token tags with counts
-GET /issuer/{issuer} - Get other tokens from same issuer (md5, page, limit)
-GET /traders/token-traders/{tokenId} - Get top traders with P&L stats (sortBy: volume|pnl|trades, minVolume)`,
+GET /creator-activity/{id} - Creator activity by md5 or address
+GET /traders/token-traders/{id} - Get top traders with P&L stats (sort: volume|pnl|trades, minVolume)`,
 
     market: `## Market Data API
 Base URL: https://api.xrpl.to/v1
@@ -382,28 +391,29 @@ Cache: 1D→5s, 7D→1min, 1M→2min, 3M→5min, 1Y+→10min
 Example: GET /v1/ohlc/0413ca7cfc258dfaf698c02fe304e607?range=1M&vs_currency=USD
 Response: { result, source, took, length, range, interval, interval_seconds, vs_currency, ohlc: [[time, o, h, l, c, vol]] }
 
-GET /sparkline/{md5} - Sparkline price data for mini charts
-Params: period (24h|7d, default:7d), lightweight (bool, default:false), maxPoints (int, default:20)
+GET /sparkline/{id} - Sparkline price data for mini charts
+Params: period (24h|7d, default:7d), lightweight (bool), max_points (int, default:20, alias: maxPoints)
 
-GET /holders/list/{md5} - Top token holders (start, limit)
-GET /holders/info/{md5} - Holder distribution statistics
-GET /holders/graph/{md5} - Holder distribution graph data
+GET /holders/list/{id} - Top token holders (offset, limit)
+GET /holders/info/{id} - Holder distribution statistics
+GET /holders/graph/{id} - Holder distribution graph data
 
 GET /rsi - RSI technical indicators with filtering
 Params: start, limit (max:100), sortBy (rsi15m|rsi1h|rsi4h|rsi24h|rsi7d), sortType, timeframe, filter, tag, origin, minMarketCap, maxMarketCap, minVolume24h, maxVolume24h, minPriceChange24h, maxPriceChange24h, minRsi15m, maxRsi15m, minRsi1h, maxRsi1h, minRsi4h, maxRsi4h, minRsi24h, maxRsi24h, minRsi7d, maxRsi7d
 Example: GET /v1/rsi?minRsi24h=70&sortBy=rsi24h&limit=20
 
-POST /metrics - Get historical token metrics (body: { md5, range })
-GET /news - XRPL news with sentiment (Live, page, limit, source filter)
-GET /news/search?q={query} - Search news articles by title/summary/body
-GET /stats - Global platform metrics (30s)`,
+POST /stats/metrics - Historical metrics by timestamps (body: { timestamps[] })
+GET /news - XRPL news with sentiment (offset, limit, source filter)
+GET /news/search?q={query} - Search news articles
+GET /stats - Global platform metrics
+GET /stats/rates - Exchange rates between tokens (token1, token2)`,
 
     trading: `## Trading API
 Base URL: https://api.xrpl.to/v1
 Token identifiers: All endpoints accept md5 (recommended), slug, or issuer_currency format
 
 GET /history - Trade history for a token
-Params: md5 (required unless account), account, page, limit (max:5000), startTime, endTime (Unix ms), xrpOnly, xrpAmount
+Params: md5 (required unless account), account, offset, limit (max:5000), start_time/startTime, end_time/endTime (Unix ms), pair_type/pairType, xrp_only/xrpOnly, xrp_amount/xrpAmount
 Example: GET /v1/history?md5=0413ca7cfc258dfaf698c02fe304e607&limit=50
 
 GET /amm - AMM liquidity pools with metrics
@@ -436,12 +446,9 @@ GET /account/info/{account} - Pair balance info (curr1, issuer1, curr2, issuer2)
 GET /account/tx/{account} - Trade history by pair (curr1, issuer1, curr2, issuer2)
 GET /account/offers/{account} - Open DEX offers (pair, page, limit max:50)
 
-GET /traders/{address} - Trader profile with stats
+GET /traders/{account} - Trader profile with stats
 GET /watchlist?account={account} - User watchlist
-POST /watchlist - Add/remove token (body: { account, md5, action: "add"|"remove" })
-
-POST /oauth/twitter/oauth1/request - Twitter OAuth request token (body: { callbackUrl })
-POST /oauth/twitter/oauth1/access - Twitter OAuth access token (body: { oauth_token, oauth_verifier, oauth_token_secret })`,
+POST /watchlist - Add/remove token (body: { account, md5, action: "add"|"remove" })`,
 
     nft: `## NFT API
 Base URL: https://api.xrpl.to/v1
@@ -462,9 +469,8 @@ GET /nft/collections/{slug}/ownership - Ownership distribution (limit)
 
 GET /nft/activity - Recent NFT activity (limit, cid filter)
 GET /nft/history - NFT transaction history (NFTokenID, account, limit)
-GET /nft/traders/active - Active traders (sortBy: balance|buyVolume|sellVolume|totalVolume, includeGlobalMetrics)
 GET /nft/traders/{account}/volume - Trader volume stats
-GET /nft/accounts/{address}/nfts - NFTs owned by account (limit, skip)
+GET /nft/account/{account}/nfts - NFTs owned by account (limit, offset)
 GET /nft/stats/global - Global NFT stats
 GET /nft/brokers/stats - Broker fees and volumes
 
@@ -489,24 +495,24 @@ GET /trustlines/{account} - Account trustlines with token info (rippled: account
 Params: page, limit (default:10, max:50), format (raw|default|full), sortByValue (bool)
 
 GET /tx/{hash} - Transaction by hash (rippled: tx)
-POST /pathfinding/pathfind - Find payment paths (rippled: path_find)
-POST /pathfinding/ripplepathfind - Ripple path find (rippled: ripple_path_find)`,
+POST /account/path-find - Find payment paths (rippled: path_find)`,
 
     analytics: `## Analytics API
 Base URL: https://api.xrpl.to/v1
 
-GET /analytics/token/{md5} - Token analytics (OMCF)
-GET /analytics/trader/{address}/{md5} - Trader metrics for specific token
-GET /traders/token-traders/{md5} - Top traders (page, limit, sortBy: pnl|trades|volume)
-GET /analytics/trader-stats/{address} - Cumulative trader stats
+GET /token/analytics/token/{id} - Token analytics (id: md5/slug/issuer_currency)
+GET /token/analytics/token/{id}/traders - Top traders for token (offset, limit, sort, address)
+GET /token/analytics/trader/{account} - Trader cumulative stats
+GET /token/analytics/trader/{account}/tokens - Trader per-token metrics (token param to filter)
+GET /traders/token-traders/{id} - Top traders (interval, sort, limit, offset, minVolume, search)
 
-GET /analytics/cumulative-stats - All traders stats (Live)
-Params: page (default:1), limit (default:10), sortBy (default:volume24h), sortOrder (asc|desc), minVolume, address, includeAMM (default:true), minTrades, minProfit, minROI, minTokens, startDate, endDate, activePeriod
+GET /token/analytics/traders - All traders with cumulative stats
+Params: offset, limit (default:50), sort (volume24h|pnl|trades|roi), order (asc|desc), minVolume, address, includeAMM (default:true), minTrades, minProfit, minROI, minTokens, startDate, endDate, period (24h|7d|30d|all), compact (bool)
 
-GET /analytics/market-metrics - Daily market metrics (startDate required, endDate default:now)
-GET /analytics/trader/{address}/volume-history - Volume chart data (startDate, endDate, page, limit)
-GET /analytics/trader/{address}/trade-history - Trade count history
-GET /analytics/trader/{address}/roi-history - ROI history`,
+GET /token/analytics/market - Daily market metrics (startDate required, endDate default:now)
+GET /token/analytics/trader/{account}/history - Trader volume history (startDate, endDate, offset, limit)
+GET /token/analytics/trader/{account}/trades - Trader trade history (startDate, endDate, offset, limit)
+GET /token/analytics/traders/summary - Trader balance snapshots summary`,
 
     launch: `## Token Launch API
 Base URL: https://api.xrpl.to/v1
@@ -534,10 +540,9 @@ Final State: issuer ~1 XRP locked (blackholed), holder ~1.4 XRP locked (base + L
     tools: `## Tools API
 Base URL: https://api.xrpl.to/v1
 
-GET /health - API health check (returns "success")
-GET /testnet/{address} - Get XRP balance on testnet
-GET /integrations/xrpnft/tokens - Get tokens in XRPNFT format (filter param)
-GET /integrations/xrpnft/filter-by-account/{account} - Get NFTs owned by account (XRPNFT format)`,
+GET /health - API health check
+GET /docs - API documentation JSON
+GET /testnet/{address} - Get XRP balance on testnet`,
 
     reference: `## Reference
 Token Identifiers:
@@ -561,7 +566,7 @@ Patterns:
 - txHash: ^[A-Fa-f0-9]{64}$
 
 Caching: Default Live (5s), platformStatus 30s, News Live (5min), Cumulative Stats Live (10min), OHLC varies by range
-Rate Limits: No Key (10/min, 500/day), Free (10/min, 2K/day), Basic (100/min, 30K/day), Pro (400/min, 120K/day), Enterprise (1K/min, 300K/day)`
+Rate Limits: Anonymous (1 req/sec, 100K credits/mo), Free (10 req/sec, 1M credits/mo), Developer (50 req/sec, 10M credits/mo), Business (200 req/sec, 100M credits/mo), Professional (500 req/sec, 200M credits/mo)`
   };
 
   const CopyButton = ({ text, id, label = 'Copy for LLM' }) => (
@@ -594,7 +599,7 @@ Rate Limits: No Key (10/min, 500/day), Free (10/min, 2K/day), Basic (100/min, 30
     setApiResponse(null);
 
     try {
-      const response = await axios.get(`https://api.xrpl.to${apiPath}`);
+      const response = await api.get(`https://api.xrpl.to${apiPath}`);
       setApiResponse(response.data);
     } catch (error) {
       setApiResponse({
@@ -825,7 +830,7 @@ Rate Limits: No Key (10/min, 500/day), Free (10/min, 2K/day), Basic (100/min, 30
                   {
                     icon: Clock,
                     title: 'Rate Limits',
-                    desc: 'Free: 10/min. Pro: 400/min. See API Keys for all tiers.',
+                    desc: 'Free: 10 req/sec. Professional: 500 req/sec. See API Keys for tiers.',
                     action: 'api-keys'
                   },
                   {
@@ -876,10 +881,10 @@ Rate Limits: No Key (10/min, 500/day), Free (10/min, 2K/day), Basic (100/min, 30
                 )}
               >
                 <span className="text-primary">curl</span> -X GET
-                "https://api.xrpl.to/v1/tokens?limit=10&sortBy=vol24hxrp"
+                "https://api.xrpl.to/v1/tokens?limit=10&sort=volume"
               </div>
               <button
-                onClick={() => handleTryApi('/v1/tokens?limit=5&sortBy=vol24hxrp')}
+                onClick={() => handleTryApi('/v1/tokens?limit=5&sort=volume')}
                 className={cn(
                   'mt-3 flex items-center gap-2 rounded-lg border-[1.5px] px-3 py-1.5 text-[12px] font-medium text-primary',
                   isDark
@@ -1154,19 +1159,17 @@ Rate Limits: No Key (10/min, 500/day), Free (10/min, 2K/day), Basic (100/min, 30
                   </thead>
                   <tbody>
                     {[
-                      ['start', 'int (default: 0) - Pagination offset'],
-                      ['limit', 'int (default: 20, max: 100) - Results per page'],
-                      ['sortBy', 'vol24hxrp | marketcap | p24h | trustlines | trendingScore'],
-                      ['sortType', 'asc | desc (default: desc)'],
-                      ['filter', 'OMCF | AMM | search term'],
-                      ['filterNe', 'Negative filter (exclude matches)'],
-                      ['tag', 'Filter by single category tag'],
-                      ['tags', 'Comma-separated tags for multi-filter'],
-                      ['watchlist', 'Comma-separated md5 IDs for watchlist'],
-                      ['showNew', 'bool - Include new tokens'],
-                      ['showSlug', 'bool - Include slug in response'],
-                      ['showDate', 'bool - Include date fields'],
-                      ['skipMetrics', 'bool - Skip global metrics for faster response']
+                      ['offset', 'int (default: 0) - Pagination offset'],
+                      ['limit', 'int (default: 100, max: 100) - Results per page'],
+                      ['sort', 'volume | marketcap | change24h | change5m | trending | assessment'],
+                      ['order', 'asc | desc (default: desc)'],
+                      ['filter', 'text search'],
+                      ['tag', 'Filter by category tag'],
+                      ['watchlist', 'Comma-separated token ids'],
+                      ['show_new', 'bool - Include new tokens (alias: showNew)'],
+                      ['show_slug', 'bool - Include slug in response (alias: showSlug)'],
+                      ['token_type', 'trustline | lp | mpt (alias: tokenType)'],
+                      ['skip_metrics', 'bool - Skip global metrics (alias: skipMetrics)']
                     ].map(([param, desc]) => (
                       <tr
                         key={param}
@@ -1197,11 +1200,11 @@ Rate Limits: No Key (10/min, 500/day), Free (10/min, 2K/day), Basic (100/min, 30
               >
                 <pre className="p-3 font-mono text-[12px] overflow-x-auto m-0">
                   <span className="text-emerald-500">GET</span>{' '}
-                  /v1/tokens?limit=20&sortBy=vol24hxrp&sortType=desc
+                  /v1/tokens?limit=20&sort=volume&order=desc
                 </pre>
               </div>
               <button
-                onClick={() => handleTryApi('/v1/tokens?limit=10&sortBy=vol24hxrp')}
+                onClick={() => handleTryApi('/v1/tokens?limit=10&sort=volume')}
                 className={cn(
                   'mt-3 flex items-center gap-2 rounded-lg border-[1.5px] px-3 py-1.5 text-[12px] font-medium text-primary',
                   isDark
@@ -1371,9 +1374,9 @@ Rate Limits: No Key (10/min, 500/day), Free (10/min, 2K/day), Basic (100/min, 30
               </div>
               <div className="space-y-2 text-[13px]">
                 {[
-                  ['GET', '/v1/slugs', 'Get all token slugs'],
+                  ['GET', '/v1/tokens/slugs', 'Get all token slugs'],
                   ['GET', '/v1/tags', 'Get all token tags with counts'],
-                  ['GET', '/v1/issuer/{address}', 'Get tokens from same issuer'],
+                  ['GET', '/v1/creator-activity/{id}', 'Creator activity by md5 or address'],
                   [
                     'GET',
                     '/v1/traders/token-traders/{md5}',
@@ -1528,21 +1531,22 @@ Rate Limits: No Key (10/min, 500/day), Free (10/min, 2K/day), Basic (100/min, 30
                 {[
                   [
                     'GET',
-                    '/v1/sparkline/{md5}',
-                    'Sparkline data (period: 24h|7d, lightweight, maxPoints)'
+                    '/v1/sparkline/{id}',
+                    'Sparkline data (period: 24h|7d, lightweight, max_points)'
                   ],
-                  ['GET', '/v1/holders/list/{md5}', 'Top token holders (start, limit)'],
-                  ['GET', '/v1/holders/info/{md5}', 'Holder distribution statistics'],
-                  ['GET', '/v1/holders/graph/{md5}', 'Holder distribution graph'],
+                  ['GET', '/v1/holders/list/{id}', 'Token holder richlist (offset, limit)'],
+                  ['GET', '/v1/holders/info/{id}', 'Holder concentration stats'],
+                  ['GET', '/v1/holders/graph/{id}', 'Holder count history'],
                   [
                     'GET',
                     '/v1/rsi',
                     'RSI indicators with filtering (all timeframes, market/volume/price filters)'
                   ],
-                  ['POST', '/v1/metrics', 'Historical token metrics (body: { md5, range })'],
-                  ['GET', '/v1/stats', 'Global platform metrics (30s)'],
-                  ['GET', '/v1/news', 'XRPL news with sentiment (Live)'],
-                  ['GET', '/v1/news/search?q={query}', 'Search news by title/summary/body']
+                  ['POST', '/v1/stats/metrics', 'Historical metrics by timestamps'],
+                  ['GET', '/v1/stats', 'Global platform metrics'],
+                  ['GET', '/v1/stats/rates', 'Exchange rates (token1, token2)'],
+                  ['GET', '/v1/news', 'XRPL news with sentiment'],
+                  ['GET', '/v1/news/search?q={query}', 'Search news articles']
                 ].map(([method, path, desc]) => (
                   <div key={path} className="flex items-center gap-3">
                     <span
@@ -1635,12 +1639,13 @@ Rate Limits: No Key (10/min, 500/day), Free (10/min, 2K/day), Basic (100/min, 30
                     {[
                       ['md5', 'Token md5 (required unless account provided)'],
                       ['account', 'Filter by account address'],
-                      ['page', 'int (default: 0)'],
+                      ['offset', 'int (default: 0)'],
                       ['limit', 'int (default: 20, max: 5000)'],
-                      ['startTime', 'Unix timestamp ms'],
-                      ['endTime', 'Unix timestamp ms'],
-                      ['xrpOnly', 'bool - Only XRP trades'],
-                      ['xrpAmount', 'Minimum XRP amount filter']
+                      ['start_time', 'Unix timestamp ms (alias: startTime)'],
+                      ['end_time', 'Unix timestamp ms (alias: endTime)'],
+                      ['pair_type', 'xrp|token - filter by pair type (alias: pairType)'],
+                      ['xrp_only', 'bool - Only XRP trades (alias: xrpOnly)'],
+                      ['xrp_amount', 'Minimum XRP amount filter (alias: xrpAmount)']
                     ].map(([param, desc]) => (
                       <tr
                         key={param}
@@ -1897,15 +1902,9 @@ Rate Limits: No Key (10/min, 500/day), Free (10/min, 2K/day), Basic (100/min, 30
                     '/v1/account/offers/{account}',
                     'Open DEX offers (pair, page, limit max:50)'
                   ],
-                  ['GET', '/v1/traders/{address}', 'Trader profile with stats'],
+                  ['GET', '/v1/traders/{account}', 'Trader profile with stats'],
                   ['GET', '/v1/watchlist?account={account}', 'User watchlist'],
-                  ['POST', '/v1/watchlist', 'Add/remove token (body: { account, md5, action })'],
-                  [
-                    'POST',
-                    '/v1/oauth/twitter/oauth1/request',
-                    'Twitter OAuth request token (body: { callbackUrl })'
-                  ],
-                  ['POST', '/v1/oauth/twitter/oauth1/access', 'Twitter OAuth access token']
+                  ['POST', '/v1/watchlist', 'Add/remove token (body: { account, md5, action })']
                 ].map(([method, path, desc]) => (
                   <div key={path} className="flex items-center gap-3">
                     <span
@@ -2114,13 +2113,8 @@ Rate Limits: No Key (10/min, 500/day), Free (10/min, 2K/day), Basic (100/min, 30
                 {[
                   ['GET', '/v1/nft/activity', 'Recent NFT activity'],
                   ['GET', '/v1/nft/history', 'NFT transaction history'],
-                  [
-                    'GET',
-                    '/v1/nft/traders/active',
-                    'Active traders (sortBy: balance|buyVolume|sellVolume|totalVolume)'
-                  ],
                   ['GET', '/v1/nft/traders/{account}/volume', 'Trader volume stats'],
-                  ['GET', '/v1/nft/accounts/{address}/nfts', 'NFTs owned by account (limit, skip)'],
+                  ['GET', '/v1/nft/account/{account}/nfts', 'NFTs owned by account (limit, offset)'],
                   ['GET', '/v1/nft/stats/global', 'Global NFT stats'],
                   ['GET', '/v1/nft/brokers/stats', 'Broker fees and volumes'],
                   ['POST', '/v1/nft/mint', 'Create NFT mint transaction payload'],
@@ -2293,8 +2287,7 @@ Rate Limits: No Key (10/min, 500/day), Free (10/min, 2K/day), Basic (100/min, 30
               <div className="space-y-2 text-[13px]">
                 {[
                   ['GET', '/v1/tx/{hash}', 'Transaction by hash (rippled: tx)'],
-                  ['POST', '/v1/pathfinding/pathfind', 'Find payment paths'],
-                  ['POST', '/v1/pathfinding/ripplepathfind', 'Ripple path find']
+                  ['POST', '/v1/account/path-find', 'Find payment paths']
                 ].map(([method, path, desc]) => (
                   <div key={path} className="flex items-center gap-3">
                     <span
@@ -2348,27 +2341,15 @@ Rate Limits: No Key (10/min, 500/day), Free (10/min, 2K/day), Basic (100/min, 30
             >
               <div className="space-y-2 text-[13px]">
                 {[
-                  ['GET', '/v1/analytics/token/{md5}', 'Token analytics (OMCF)'],
-                  [
-                    'GET',
-                    '/v1/analytics/trader/{address}/{md5}',
-                    'Trader metrics for specific token'
-                  ],
-                  [
-                    'GET',
-                    '/v1/traders/token-traders/{md5}',
-                    'Top traders (sortBy: pnl|trades|volume)'
-                  ],
-                  ['GET', '/v1/analytics/trader-stats/{address}', 'Cumulative trader stats'],
-                  ['GET', '/v1/analytics/cumulative-stats', 'All traders (Live)'],
-                  [
-                    'GET',
-                    '/v1/analytics/market-metrics',
-                    'Daily market metrics (startDate required)'
-                  ],
-                  ['GET', '/v1/analytics/trader/{address}/volume-history', 'Volume chart data'],
-                  ['GET', '/v1/analytics/trader/{address}/trade-history', 'Trade count history'],
-                  ['GET', '/v1/analytics/trader/{address}/roi-history', 'ROI history']
+                  ['GET', '/v1/token/analytics/token/{id}', 'Token analytics'],
+                  ['GET', '/v1/token/analytics/token/{id}/traders', 'Top traders for token'],
+                  ['GET', '/v1/token/analytics/trader/{account}', 'Trader cumulative stats'],
+                  ['GET', '/v1/token/analytics/trader/{account}/tokens', 'Trader per-token metrics'],
+                  ['GET', '/v1/token/analytics/traders', 'All traders with stats'],
+                  ['GET', '/v1/token/analytics/market', 'Daily market metrics'],
+                  ['GET', '/v1/token/analytics/trader/{account}/history', 'Trader volume history'],
+                  ['GET', '/v1/token/analytics/trader/{account}/trades', 'Trader trade history'],
+                  ['GET', '/v1/token/analytics/traders/summary', 'Trader balance summary']
                 ].map(([method, path, desc]) => (
                   <div key={path} className="flex items-center gap-3">
                     <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-emerald-500/10 text-emerald-500">
@@ -2627,18 +2608,9 @@ Rate Limits: No Key (10/min, 500/day), Free (10/min, 2K/day), Basic (100/min, 30
             >
               <div className="space-y-2 text-[13px]">
                 {[
-                  ['GET', '/v1/health', 'API health check (returns "success")'],
-                  ['GET', '/v1/testnet/{address}', 'Get XRP balance on testnet'],
-                  [
-                    'GET',
-                    '/v1/integrations/xrpnft/tokens',
-                    'Get tokens in XRPNFT format (filter param)'
-                  ],
-                  [
-                    'GET',
-                    '/v1/integrations/xrpnft/filter-by-account/{account}',
-                    'Get NFTs owned by account (XRPNFT format)'
-                  ]
+                  ['GET', '/v1/health', 'API health check'],
+                  ['GET', '/v1/docs', 'API documentation JSON'],
+                  ['GET', '/v1/testnet/{address}', 'Get XRP balance on testnet']
                 ].map(([method, path, desc]) => (
                   <div key={path} className="flex items-center gap-3">
                     <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-emerald-500/10 text-emerald-500">
@@ -2650,6 +2622,123 @@ Rate Limits: No Key (10/min, 500/day), Free (10/min, 2K/day), Basic (100/min, 30
                 ))}
               </div>
             </div>
+          </div>
+        );
+
+      case 'faucet':
+        return (
+          <div className="space-y-6">
+            <h2 className="text-2xl font-normal text-primary">Testnet Faucet</h2>
+            <p className={cn('text-[14px]', isDark ? 'text-white/60' : 'text-gray-600')}>
+              Get free XRP for development and testing on XRPL Testnet.
+            </p>
+
+            {/* Endpoints */}
+            <div
+              className={cn(
+                'rounded-xl border-[1.5px] p-5',
+                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+              )}
+            >
+              <h3 className={cn('text-[14px] font-medium mb-3', isDark ? 'text-white' : 'text-gray-900')}>Endpoints</h3>
+              <div className="space-y-2 text-[13px]">
+                <div className="flex items-center gap-3">
+                  <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-emerald-500/10 text-emerald-500">GET</span>
+                  <code className="font-mono text-[12px]">/v1/faucet</code>
+                  <span className={isDark ? 'text-white/40' : 'text-gray-500'}>- Get faucet status & balance</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-amber-500/10 text-amber-500">POST</span>
+                  <code className="font-mono text-[12px]">/v1/faucet</code>
+                  <span className={isDark ? 'text-white/40' : 'text-gray-500'}>- Request testnet XRP</span>
+                </div>
+              </div>
+            </div>
+
+            {/* GET Response */}
+            <div
+              className={cn(
+                'rounded-xl border-[1.5px] p-5',
+                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+              )}
+            >
+              <h3 className={cn('text-[14px] font-medium mb-3', isDark ? 'text-white' : 'text-gray-900')}>GET /v1/faucet</h3>
+              <p className={cn('text-[13px] mb-3', isDark ? 'text-white/60' : 'text-gray-600')}>Returns faucet wallet status.</p>
+              <pre className={cn('text-[12px] p-3 rounded-lg overflow-x-auto', isDark ? 'bg-black/30' : 'bg-gray-100')}>
+{`// Response
+{
+  "address": "rLvm2sMyvqHbnBG21m5YXx3VSmZqfE2Do5",
+  "balance": 9850.5,
+  "defaultAmount": 200,
+  "maxAmount": 200
+}`}
+              </pre>
+            </div>
+
+            {/* POST Request */}
+            <div
+              className={cn(
+                'rounded-xl border-[1.5px] p-5',
+                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+              )}
+            >
+              <h3 className={cn('text-[14px] font-medium mb-3', isDark ? 'text-white' : 'text-gray-900')}>POST /v1/faucet</h3>
+              <p className={cn('text-[13px] mb-3', isDark ? 'text-white/60' : 'text-gray-600')}>Request testnet XRP to your wallet.</p>
+              <pre className={cn('text-[12px] p-3 rounded-lg overflow-x-auto mb-4', isDark ? 'bg-black/30' : 'bg-gray-100')}>
+{`// Request
+curl -X POST https://api.xrpl.to/v1/faucet \\
+  -H "Content-Type: application/json" \\
+  -d '{"destination": "rYourTestnetAddress..."}'
+
+// Success Response (200)
+{
+  "success": true,
+  "hash": "88E788684079F52181D18848C3E2EE70C07FD31ED8045A7C03E070F3B69C46C9",
+  "destination": "rYourTestnetAddress...",
+  "amount": 200,
+  "cooldownHours": 24
+}`}
+              </pre>
+            </div>
+
+            {/* Error Codes */}
+            <div
+              className={cn(
+                'rounded-xl border-[1.5px] p-5',
+                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+              )}
+            >
+              <h3 className={cn('text-[14px] font-medium mb-3', isDark ? 'text-white' : 'text-gray-900')}>Error Responses</h3>
+              <div className="space-y-3 text-[13px]">
+                <div>
+                  <code className={cn('text-[12px] px-1.5 py-0.5 rounded', isDark ? 'bg-red-500/10 text-red-400' : 'bg-red-100 text-red-600')}>400</code>
+                  <span className={cn('ml-2', isDark ? 'text-white/60' : 'text-gray-600')}>"destination address required" or "invalid XRP address"</span>
+                </div>
+                <div>
+                  <code className={cn('text-[12px] px-1.5 py-0.5 rounded', isDark ? 'bg-amber-500/10 text-amber-400' : 'bg-amber-100 text-amber-600')}>429</code>
+                  <span className={cn('ml-2', isDark ? 'text-white/60' : 'text-gray-600')}>"cooldown active" - includes <code>retryAfterSeconds</code></span>
+                </div>
+                <div>
+                  <code className={cn('text-[12px] px-1.5 py-0.5 rounded', isDark ? 'bg-red-500/10 text-red-400' : 'bg-red-100 text-red-600')}>503</code>
+                  <span className={cn('ml-2', isDark ? 'text-white/60' : 'text-gray-600')}>"faucet depleted" - insufficient balance</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Info */}
+            <div className={cn('text-[13px] space-y-2 p-4 rounded-lg', isDark ? 'bg-primary/5' : 'bg-primary/5')}>
+              <p><strong>Network:</strong> <code className="text-[12px]">wss://s.altnet.rippletest.net:51233</code></p>
+              <p><strong>Amount:</strong> 200 XRP per request</p>
+              <p><strong>Rate Limit:</strong> 1 request per address every 24 hours</p>
+            </div>
+
+            <a
+              href="/faucet"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-white text-[13px] font-medium hover:bg-primary/90 transition-colors"
+            >
+              <Droplets size={16} />
+              Open Faucet UI
+            </a>
           </div>
         );
 
@@ -2747,6 +2836,49 @@ Rate Limits: No Key (10/min, 500/day), Free (10/min, 2K/day), Basic (100/min, 30
                     <span className={isDark ? 'text-white/40' : 'text-gray-500'}>- {ep.desc}</span>
                   </div>
                 ))}
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'tweet-verify':
+        return (
+          <div className="space-y-6">
+            <h2 className="text-2xl font-normal text-primary">Tweet Verify</h2>
+            <p className={cn('text-[14px]', isDark ? 'text-white/60' : 'text-gray-600')}>
+              Social verification for tokens. Submit tweet URLs to verify promotions and earn rewards.
+            </p>
+            <div
+              className={cn(
+                'rounded-xl border-[1.5px] p-5',
+                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+              )}
+            >
+              <div className="space-y-3 text-[13px]">
+                <div className="flex items-start gap-3">
+                  <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-amber-500/10 text-amber-500 shrink-0 mt-0.5">POST</span>
+                  <div>
+                    <code className="font-mono text-[12px]">/v1/tweet/verify</code>
+                    <span className={cn('ml-2', isDark ? 'text-white/40' : 'text-gray-500')}>- Submit tweet for token verification</span>
+                    <div className={cn('mt-1 text-[11px]', isDark ? 'text-white/30' : 'text-gray-400')}>
+                      Body: {'{ account, md5, tweetUrl }'} &middot; Rate limit: 5/hour per account, 3 tokens/day per Twitter account
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-emerald-500/10 text-emerald-500 shrink-0 mt-0.5">GET</span>
+                  <div>
+                    <code className="font-mono text-[12px]">/v1/tweet/token/{'{id}'}</code>
+                    <span className={cn('ml-2', isDark ? 'text-white/40' : 'text-gray-500')}>- Get tweet verifications for a token</span>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-emerald-500/10 text-emerald-500 shrink-0 mt-0.5">GET</span>
+                  <div>
+                    <code className="font-mono text-[12px]">/v1/tweet/account/{'{account}'}</code>
+                    <span className={cn('ml-2', isDark ? 'text-white/40' : 'text-gray-500')}>- Get tweet verifications by account</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -2945,7 +3077,7 @@ Rate Limits: No Key (10/min, 500/day), Free (10/min, 2K/day), Basic (100/min, 30
                 Create API Key
               </h3>
               <p className={cn('text-[13px]', isDark ? 'text-white/60' : 'text-gray-600')}>
-                Create a free API key to get started. Requires JWT authentication.
+                Create a free API key to get started. Requires XRPL wallet signature.
               </p>
               <div
                 className={cn(
@@ -2974,10 +3106,17 @@ Rate Limits: No Key (10/min, 500/day), Free (10/min, 2K/day), Basic (100/min, 30
                   <button
                     onClick={() =>
                       copyToClipboard(
-                        `const response = await fetch('https://api.xrpl.to/v1/keys', {
+                        `const timestamp = Date.now().toString();
+const message = \`\${wallet.address}:\${timestamp}\`;
+const signature = wallet.sign(message); // hex signature
+
+const response = await fetch('https://api.xrpl.to/v1/keys', {
   method: 'POST',
   headers: {
-    'Authorization': \`Bearer \${jwt}\`,
+    'X-Wallet': wallet.address,
+    'X-Signature': signature,
+    'X-Timestamp': timestamp,
+    'X-Public-Key': wallet.publicKey,
     'Content-Type': 'application/json'
   },
   body: JSON.stringify({ name: 'My App' })
@@ -3002,10 +3141,17 @@ const { apiKey, keyPrefix } = await response.json();
                     isDark ? 'text-white/80' : 'text-gray-800'
                   )}
                 >
-                  {`const response = await fetch('https://api.xrpl.to/v1/keys', {
+                  {`const timestamp = Date.now().toString();
+const message = \`\${wallet.address}:\${timestamp}\`;
+const signature = wallet.sign(message); // hex signature
+
+const response = await fetch('https://api.xrpl.to/v1/keys', {
   method: 'POST',
   headers: {
-    'Authorization': \`Bearer \${jwt}\`,
+    'X-Wallet': wallet.address,
+    'X-Signature': signature,
+    'X-Timestamp': timestamp,
+    'X-Public-Key': wallet.publicKey,
     'Content-Type': 'application/json'
   },
   body: JSON.stringify({ name: 'My App' })
@@ -3043,7 +3189,7 @@ const { apiKey, keyPrefix } = await response.json();
                       isDark ? 'text-white/80' : 'text-gray-800'
                     )}
                   >
-                    X-API-Key: xrpl_abc123...
+                    X-Api-Key: xrpl_abc123...
                   </code>
                 </div>
                 <div
@@ -3558,6 +3704,108 @@ GET /v1/keys/:wallet/subscription
           </div>
         );
 
+      case 'websocket':
+        return (
+          <div className="space-y-6">
+            <h2 className="text-2xl font-normal text-primary">WebSocket</h2>
+            <p className={cn('text-[14px]', isDark ? 'text-white/60' : 'text-gray-600')}>
+              Real-time streaming endpoints for live market data, account updates, and more.
+            </p>
+
+            {/* Overview */}
+            <div
+              id="ws-overview"
+              className={cn(
+                'rounded-xl border-[1.5px] p-5',
+                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+              )}
+            >
+              <h3 className={cn('text-[14px] font-medium mb-3', isDark ? 'text-white' : 'text-gray-900')}>Connection</h3>
+              <div className={cn('text-[13px] space-y-2', isDark ? 'text-white/60' : 'text-gray-600')}>
+                <p><strong>Base URL:</strong> <code className="text-primary">wss://api.xrpl.to/ws/</code></p>
+                <p><strong>Authentication:</strong> Pass API key via query param <code>?apiKey=xrpl_...</code></p>
+                <p><strong>Compression:</strong> permessage-deflate enabled (threshold 512 bytes)</p>
+              </div>
+            </div>
+
+            {/* Endpoints */}
+            <div
+              id="ws-endpoints"
+              className={cn(
+                'rounded-xl border-[1.5px] p-5',
+                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+              )}
+            >
+              <h3 className={cn('text-[14px] font-medium mb-4', isDark ? 'text-white' : 'text-gray-900')}>All Endpoints</h3>
+              <div className="space-y-3 text-[13px]">
+                {[
+                  ['sync', '/ws/sync', 'Multi-token market sync stream'],
+                  ['token', '/ws/token/:md5', 'Single token real-time updates'],
+                  ['ohlc', '/ws/ohlc/:md5', 'OHLC candlestick stream'],
+                  ['history', '/ws/history/:md5', 'Trade history stream'],
+                  ['richlist', '/ws/holders/:id', 'Token holder updates'],
+                  ['orderbook', '/ws/orderbook?base&quote', 'Live orderbook depth'],
+                  ['ledger', '/ws/ledger', 'Ledger close stream'],
+                  ['trustlines', '/ws/trustlines/:account', 'Account trustline updates'],
+                  ['news', '/ws/news', 'Real-time news feed'],
+                  ['balance', '/ws/account/balance/:account', 'Account XRP balance stream'],
+                  ['pair', '/ws/account/balance/pair/:account?curr1&issuer1&curr2&issuer2', 'Token pair balance stream'],
+                  ['offers', '/ws/account/offers/:account?pair&md5&page&limit', 'Account open DEX offers stream'],
+                  ['amm', '/ws/amm/info?asset&asset2', 'Live AMM pool info'],
+                  ['creator', '/ws/creator/:identifier', 'Creator activity stream (md5 or address)'],
+                  ['chat', '/ws/chat', 'Real-time chat messages']
+                ].map(([name, path, desc]) => (
+                  <div key={name} className="flex items-start gap-3">
+                    <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-purple-500/10 text-purple-500 shrink-0">WS</span>
+                    <div>
+                      <code className="font-mono text-[12px] text-primary">{path}</code>
+                      <span className={cn('ml-2', isDark ? 'text-white/40' : 'text-gray-500')}>- {desc}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Example */}
+            <div
+              id="ws-example"
+              className={cn(
+                'rounded-xl border-[1.5px] p-5',
+                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+              )}
+            >
+              <h3 className={cn('text-[14px] font-medium mb-3', isDark ? 'text-white' : 'text-gray-900')}>Example: Token Stream</h3>
+              <pre className={cn('text-[12px] p-3 rounded-lg overflow-x-auto', isDark ? 'bg-black/30' : 'bg-gray-100')}>
+{`// Connect to single token stream
+const ws = new WebSocket('wss://api.xrpl.to/ws/token/0413ca7cfc258dfaf698c02fe304e607');
+
+ws.onmessage = (event) => {
+  const data = JSON.parse(event.data);
+  // data contains: price, vol24h, priceChange24h, etc.
+  console.log('Token update:', data);
+};
+
+// Sync stream for multiple tokens
+const syncWs = new WebSocket('wss://api.xrpl.to/ws/sync');
+syncWs.onopen = () => {
+  // Subscribe to specific tokens
+  syncWs.send(JSON.stringify({
+    type: 'subscribe',
+    tokens: ['md5_1', 'md5_2']
+  }));
+};`}
+              </pre>
+            </div>
+
+            {/* Info */}
+            <div className={cn('text-[13px] space-y-2 p-4 rounded-lg', isDark ? 'bg-primary/5' : 'bg-primary/5')}>
+              <p><strong>Rate Limits:</strong> WebSocket connections follow the same tier limits as REST API</p>
+              <p><strong>Heartbeat:</strong> Send ping frames every 30s to keep connection alive</p>
+              <p><strong>Info endpoint:</strong> <code>GET /ws/info</code> returns all available WS endpoints and stats</p>
+            </div>
+          </div>
+        );
+
       case 'errors':
         return (
           <div className="space-y-6">
@@ -3593,9 +3841,10 @@ GET /v1/keys/:wallet/subscription
                 <tbody>
                   {[
                     { code: '200', desc: 'Success', color: 'text-emerald-500' },
-                    { code: '400', desc: 'Bad Request', color: 'text-amber-500' },
-                    { code: '404', desc: 'Not Found', color: 'text-amber-500' },
-                    { code: '429', desc: 'Too Many Requests', color: 'text-amber-500' },
+                    { code: '400', desc: 'Bad Request - Invalid parameters', color: 'text-amber-500' },
+                    { code: '401', desc: 'Unauthorized - Missing or invalid API key', color: 'text-amber-500' },
+                    { code: '404', desc: 'Not Found - Resource does not exist', color: 'text-amber-500' },
+                    { code: '429', desc: 'Too Many Requests - Rate limit exceeded', color: 'text-amber-500' },
                     { code: '500', desc: 'Internal Server Error', color: 'text-red-500' }
                   ].map((err) => (
                     <tr
@@ -3645,25 +3894,33 @@ GET /v1/keys/:wallet/subscription
 
       <Header />
 
-      <div className={cn('min-h-screen', isDark ? 'bg-black' : 'bg-white')}>
+      <div className={cn('min-h-screen scroll-smooth', isDark ? 'bg-black' : 'bg-white')}>
         <div className="flex">
           {/* Mobile menu button */}
           <button
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
             className={cn(
-              'md:hidden fixed top-20 right-4 z-50 p-2 rounded-lg',
+              'md:hidden fixed top-20 right-4 z-50 p-2.5 rounded-xl backdrop-blur-sm transition-all duration-200',
               isDark
-                ? 'bg-[rgba(59,130,246,0.02)] border border-[rgba(59,130,246,0.1)]'
-                : 'bg-[rgba(59,130,246,0.02)] border border-[rgba(59,130,246,0.15)]'
+                ? 'bg-white/5 border border-white/10 hover:bg-white/10 active:scale-95'
+                : 'bg-black/5 border border-black/10 hover:bg-black/10 active:scale-95'
             )}
           >
-            {isSidebarOpen ? <X size={18} /> : <Menu size={18} />}
+            {isSidebarOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
+
+          {/* Mobile sidebar overlay */}
+          {isSidebarOpen && (
+            <div
+              className="md:hidden fixed inset-0 z-30 bg-black/50 backdrop-blur-sm"
+              onClick={() => setIsSidebarOpen(false)}
+            />
+          )}
 
           {/* Sidebar */}
           <div
             className={cn(
-              'w-[240px] border-r overflow-y-auto transition-all duration-300 pt-16',
+              'w-[240px] border-r overflow-y-auto transition-all duration-300 pt-4',
               'fixed md:sticky top-0 h-screen z-40',
               isDark
                 ? 'bg-[rgba(59,130,246,0.01)] border-[rgba(59,130,246,0.08)]'
@@ -3671,22 +3928,29 @@ GET /v1/keys/:wallet/subscription
               isSidebarOpen ? 'block' : 'hidden md:block'
             )}
           >
-            <div className="p-4">
+            <div className="px-4 pb-4">
               {/* Search */}
-              <div className="relative mb-5">
+              <div className="relative mb-6">
                 <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 opacity-40" />
                 <input
                   type="text"
-                  placeholder="Search... ⌘K"
+                  placeholder="Search docs..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className={cn(
-                    'w-full pl-9 pr-3 py-2 rounded-lg border-[1.5px] text-[13px]',
+                    'w-full pl-9 pr-12 py-2.5 rounded-xl border-[1.5px] text-[13px] transition-all duration-200',
+                    'focus:outline-none focus:ring-2 focus:ring-primary/20',
                     isDark
-                      ? 'bg-[rgba(59,130,246,0.02)] border-[rgba(59,130,246,0.1)] placeholder:text-white/30'
-                      : 'bg-[rgba(59,130,246,0.02)] border-[rgba(59,130,246,0.15)]'
+                      ? 'bg-white/[0.02] border-white/10 placeholder:text-white/30 focus:border-primary/40'
+                      : 'bg-black/[0.02] border-black/10 placeholder:text-black/30 focus:border-primary/40'
                   )}
                 />
+                <kbd className={cn(
+                  'absolute right-2.5 top-1/2 -translate-y-1/2 px-1.5 py-0.5 rounded text-[10px] font-medium',
+                  isDark ? 'bg-white/10 text-white/40' : 'bg-black/5 text-black/40'
+                )}>
+                  ⌘K
+                </kbd>
               </div>
 
               {/* Top-level links */}
@@ -3698,15 +3962,18 @@ GET /v1/keys/:wallet/subscription
                     setCurrentSection('overview');
                   }}
                   className={cn(
-                    'flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px]',
+                    'flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] transition-all duration-200 relative',
                     currentSection === 'overview'
-                      ? 'text-primary bg-primary/10'
+                      ? 'text-primary bg-primary/10 font-medium'
                       : isDark
                         ? 'text-white/70 hover:text-white hover:bg-white/5'
                         : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                   )}
                 >
-                  <FileText size={14} className="opacity-60" />
+                  {currentSection === 'overview' && (
+                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-4 bg-primary rounded-r-full" />
+                  )}
+                  <FileText size={14} className={currentSection === 'overview' ? 'text-primary' : 'opacity-60'} />
                   Documentation
                 </a>
                 <a
@@ -3716,15 +3983,18 @@ GET /v1/keys/:wallet/subscription
                     setCurrentSection('endpoint-reference');
                   }}
                   className={cn(
-                    'flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px]',
+                    'flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] transition-all duration-200 relative',
                     currentSection === 'endpoint-reference'
-                      ? 'text-primary bg-primary/10'
+                      ? 'text-primary bg-primary/10 font-medium'
                       : isDark
                         ? 'text-white/70 hover:text-white hover:bg-white/5'
                         : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                   )}
                 >
-                  <Code size={14} className="opacity-60" />
+                  {currentSection === 'endpoint-reference' && (
+                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-4 bg-primary rounded-r-full" />
+                  )}
+                  <Code size={14} className={currentSection === 'endpoint-reference' ? 'text-primary' : 'opacity-60'} />
                   API Reference
                 </a>
               </div>
@@ -3742,7 +4012,7 @@ GET /v1/keys/:wallet/subscription
                       <button
                         onClick={() => toggleGroup(group.name)}
                         className={cn(
-                          'w-full flex items-center justify-between text-[11px] font-medium uppercase tracking-wide mb-2 px-1',
+                          'w-full flex items-center justify-between text-[10px] font-semibold uppercase tracking-wider mb-2 px-1 py-1 rounded transition-colors',
                           isDark
                             ? 'text-white/40 hover:text-white/60'
                             : 'text-gray-500 hover:text-gray-700'
@@ -3752,7 +4022,7 @@ GET /v1/keys/:wallet/subscription
                         <ChevronDown
                           size={12}
                           className={cn(
-                            'transition-transform',
+                            'transition-transform duration-200',
                             !expandedGroups[group.name] && '-rotate-90'
                           )}
                         />
@@ -3770,17 +4040,20 @@ GET /v1/keys/:wallet/subscription
                                   setIsSidebarOpen(false);
                                 }}
                                 className={cn(
-                                  'w-full text-left px-3 py-2 rounded-lg text-[13px] flex items-center gap-2.5 transition-colors',
+                                  'w-full text-left px-3 py-2 rounded-xl text-[13px] flex items-center gap-2.5 transition-all duration-200 relative',
                                   isActive
-                                    ? 'text-primary bg-primary/10'
+                                    ? 'text-primary bg-primary/10 font-medium'
                                     : isDark
                                       ? 'text-white/60 hover:text-white hover:bg-white/5'
                                       : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                                 )}
                               >
+                                {isActive && (
+                                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-4 bg-primary rounded-r-full" />
+                                )}
                                 <Icon
                                   size={14}
-                                  className={isActive ? 'text-primary' : 'opacity-40'}
+                                  className={cn('transition-colors', isActive ? 'text-primary' : 'opacity-40')}
                                 />
                                 {section.title}
                               </button>
@@ -3796,46 +4069,46 @@ GET /v1/keys/:wallet/subscription
               {/* Support Section */}
               <div
                 className={cn(
-                  'mt-6 pt-6 border-t',
-                  isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+                  'mt-8 pt-6 border-t',
+                  isDark ? 'border-white/5' : 'border-black/5'
                 )}
               >
                 <div
                   className={cn(
-                    'text-[11px] font-medium uppercase tracking-wide mb-3 px-1',
+                    'text-[10px] font-semibold uppercase tracking-wider mb-3 px-1',
                     isDark ? 'text-white/40' : 'text-gray-500'
                   )}
                 >
                   Support
                 </div>
-                <div className="space-y-1">
+                <div className="space-y-0.5">
                   <a
                     href="https://x.com/xrplto"
                     target="_blank"
                     rel="noopener noreferrer"
                     className={cn(
-                      'flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px]',
+                      'flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] transition-all duration-200',
                       isDark
                         ? 'text-white/60 hover:text-white hover:bg-white/5'
                         : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                     )}
                   >
-                    <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 opacity-60" fill="currentColor">
+                    <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 opacity-50" fill="currentColor">
                       <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
                     </svg>
                     @xrplto
-                    <ExternalLink size={10} className="ml-auto opacity-40" />
+                    <ExternalLink size={10} className="ml-auto opacity-30" />
                   </a>
                   <a
                     href="mailto:hello@xrpl.to"
                     className={cn(
-                      'flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px]',
+                      'flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] transition-all duration-200',
                       isDark
                         ? 'text-white/60 hover:text-white hover:bg-white/5'
                         : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                     )}
                   >
-                    <Mail size={14} className="opacity-60" />
+                    <Mail size={14} className="opacity-50" />
                     hello@xrpl.to
                   </a>
                   <a
@@ -3843,15 +4116,15 @@ GET /v1/keys/:wallet/subscription
                     target="_blank"
                     rel="noopener noreferrer"
                     className={cn(
-                      'flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px]',
+                      'flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] transition-all duration-200',
                       isDark
                         ? 'text-white/60 hover:text-white hover:bg-white/5'
                         : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                     )}
                   >
-                    <MessageCircle size={14} className="opacity-60" />
+                    <MessageCircle size={14} className="opacity-50" />
                     Discord
-                    <ExternalLink size={10} className="ml-auto opacity-40" />
+                    <ExternalLink size={10} className="ml-auto opacity-30" />
                   </a>
                 </div>
               </div>
@@ -3860,29 +4133,7 @@ GET /v1/keys/:wallet/subscription
 
           {/* Main content */}
           <div className="flex-1 min-h-screen">
-            <div className="max-w-3xl mx-auto px-4 sm:px-6 pt-20 pb-8">
-              {/* Copy page button */}
-              <div className="flex justify-end mb-4">
-                <button
-                  onClick={() => copyToClipboard(window.location.href, 'page-url')}
-                  className={cn(
-                    'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[12px]',
-                    isDark
-                      ? 'text-white/50 hover:text-white/70 hover:bg-white/5'
-                      : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
-                  )}
-                >
-                  {copiedBlock === 'page-url' ? (
-                    <>
-                      <CheckCircle size={12} /> Copied
-                    </>
-                  ) : (
-                    <>
-                      <Copy size={12} /> Copy page
-                    </>
-                  )}
-                </button>
-              </div>
+            <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-12">
               {renderContent()}
             </div>
           </div>
@@ -3897,22 +4148,23 @@ GET /v1/keys/:wallet/subscription
             <div className="sticky top-20">
               <div
                 className={cn(
-                  'text-[11px] font-medium uppercase tracking-wide mb-3',
-                  isDark ? 'text-white/40' : 'text-gray-500'
+                  'text-[11px] font-semibold uppercase tracking-wider mb-4 flex items-center gap-2',
+                  isDark ? 'text-white/50' : 'text-gray-500'
                 )}
               >
+                <div className={cn('w-1 h-3 rounded-full', isDark ? 'bg-primary/60' : 'bg-primary/40')} />
                 On this page
               </div>
-              <nav className="space-y-1">
+              <nav className="space-y-0.5 border-l border-white/10 pl-3">
                 {(pageAnchors[currentSection] || []).map((anchor) => (
                   <a
                     key={anchor.id}
                     href={`#${anchor.id}`}
                     className={cn(
-                      'block text-left text-[12px] py-1 transition-colors',
+                      'block text-left text-[12px] py-1.5 transition-all duration-200 hover:translate-x-0.5',
                       isDark
-                        ? 'text-white/40 hover:text-white/70'
-                        : 'text-gray-400 hover:text-gray-600'
+                        ? 'text-white/40 hover:text-primary'
+                        : 'text-gray-400 hover:text-primary'
                     )}
                   >
                     {anchor.label}
@@ -4042,7 +4294,7 @@ export async function getStaticProps() {
   let apiDocs = null;
 
   try {
-    const res = await axios.get(`${BASE_URL}/docs`);
+    const res = await api.get(`${BASE_URL}/docs`);
     apiDocs = res.data;
   } catch (e) {
     console.error('Failed to fetch API docs:', e.message);

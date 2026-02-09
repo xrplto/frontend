@@ -1,13 +1,12 @@
 import React, { useContext, useEffect, useMemo, useState, useRef } from 'react';
 import styled from '@emotion/styled';
 import { keyframes, css } from '@emotion/react';
-import { ArrowUpDown, RefreshCw, EyeOff, X, ChevronDown, ChevronUp, Settings } from 'lucide-react';
+import { ArrowUpDown, RefreshCw, EyeOff, X, ChevronDown, ChevronUp, Settings, CheckCircle, AlertTriangle } from 'lucide-react';
 import { AppContext } from 'src/context/AppContext';
 import { cn } from 'src/utils/cn';
 import { useDispatch, useSelector } from 'react-redux';
-import axios from 'axios';
+import api, { submitTransaction, simulateTransaction } from 'src/utils/api';
 import { toast } from 'sonner';
-import { Client } from 'xrpl';
 import { ConnectWallet } from 'src/components/Wallet';
 import { selectMetrics } from 'src/redux/statusSlice';
 import { selectProcess, updateProcess, updateTxHash } from 'src/redux/transactionSlice';
@@ -403,12 +402,15 @@ const Alert = styled.div`
 
 const Tabs = styled.div`
   display: flex;
-  gap: 8px;
+  gap: 4px;
+  @media (min-width: 600px) {
+    gap: 8px;
+  }
 `;
 
 const Tab = styled.button`
-  padding: 10px 16px;
-  font-size: 12px;
+  padding: 6px 12px;
+  font-size: 11px;
   font-weight: 500;
   letter-spacing: 0.05em;
   text-transform: uppercase;
@@ -436,6 +438,10 @@ const Tab = styled.button`
   &:hover {
     border-color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)')};
     color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)')};
+  }
+  @media (min-width: 600px) {
+    padding: 10px 16px;
+    font-size: 12px;
   }
 `;
 
@@ -575,20 +581,27 @@ const ToggleContent = styled.div`
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
-  background: ${(props) => (props.isDark ? 'rgba(255,255,255,0.08)' : '#fff')};
-  border-radius: 50%;
-  padding: 8px;
+  background: ${(props) => (props.isDark ? 'rgba(20,20,25,0.95)' : '#fff')};
+  border-radius: 10px;
+  padding: 0;
   z-index: 2;
-  border: 1px solid ${(props) => (props.isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)')};
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1.5px solid ${(props) => (props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)')};
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+
   &:hover {
-    border-color: #3b82f6;
-    background: ${(props) => (props.isDark ? 'rgba(59,130,246,0.15)' : 'rgba(59,130,246,0.05)')};
-    transform: translate(-50%, -50%) rotate(180deg) scale(1.1);
+    border-color: ${(props) => (props.isDark ? 'rgba(59,130,246,0.5)' : 'rgba(59,130,246,0.4)')};
+    background: ${(props) => (props.isDark ? 'rgba(59,130,246,0.12)' : 'rgba(59,130,246,0.06)')};
+    transform: translate(-50%, -50%) scale(1.05);
+
     svg {
       color: #3b82f6 !important;
+      transform: rotate(180deg);
     }
+  }
+
+  &:active {
+    transform: translate(-50%, -50%) scale(0.95);
   }
 `;
 
@@ -660,7 +673,7 @@ const RLUSD_TOKEN = {
   md5: '0dd550278b74cb6690fdae351e8e0df3'
 };
 
-const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
+const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData, onLimitPriceChange, onOrderTypeChange }) => {
   const [sellAmount, setSellAmount] = useState('');
   const [buyAmount, setBuyAmount] = useState('');
 
@@ -687,7 +700,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
   const metrics = useSelector(selectMetrics);
   const isProcessing = useSelector(selectProcess);
 
-  const { accountProfile, themeName, setLoading, sync, setSync, activeFiatCurrency } =
+  const { accountProfile, themeName, setLoading, sync, setSync, activeFiatCurrency, trustlineUpdate, setTrustlineUpdate } =
     useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
 
@@ -710,8 +723,59 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
   const [focusTop, setFocusTop] = useState(false);
   const [focusBottom, setFocusBottom] = useState(false);
 
-  const [hasTrustline1, setHasTrustline1] = useState(true);
-  const [hasTrustline2, setHasTrustline2] = useState(true);
+  const [hasTrustline1, setHasTrustline1] = useState(token1?.currency === 'XRP');
+  const [hasTrustline2, setHasTrustline2] = useState(token2?.currency === 'XRP');
+
+  // Track recent trustline update to skip stale API responses
+  const trustlineUpdateRef = useRef(null);
+  useEffect(() => {
+    if (!trustlineUpdate) return;
+    const { issuer, currency, hasTrustline } = trustlineUpdate;
+    trustlineUpdateRef.current = { issuer, currency, hasTrustline, ts: Date.now() };
+    if (curr1?.issuer === issuer && curr1?.currency === currency) setHasTrustline1(hasTrustline);
+    if (curr2?.issuer === issuer && curr2?.currency === currency) setHasTrustline2(hasTrustline);
+    setTrustlineUpdate(null);
+  }, [trustlineUpdate, curr1, curr2, setTrustlineUpdate]);
+
+  // Check trustlines via API (more reliable than WebSocket for accounts with many trustlines)
+  useEffect(() => {
+    if (!accountProfile?.account) return;
+    const BASE_URL = 'https://api.xrpl.to/v1';
+
+    // Skip API response if we have a recent direct update (within 5s)
+    const recentUpdate = trustlineUpdateRef.current;
+    const isRecent = recentUpdate && (Date.now() - recentUpdate.ts < 5000);
+
+    // Check curr1 trustline
+    if (curr1 && curr1.currency !== 'XRP' && curr1.issuer) {
+      api.get(`${BASE_URL}/account/trustline/${accountProfile.account}/${curr1.issuer}/${encodeURIComponent(curr1.currency)}`)
+        .then(res => {
+          if (res.data?.success) {
+            // Skip if recent direct update for this token
+            if (isRecent && recentUpdate.issuer === curr1.issuer && recentUpdate.currency === curr1.currency) return;
+            setHasTrustline1(res.data.hasTrustline === true);
+          }
+        })
+        .catch(err => console.warn('[Swap] Trustline check curr1 failed:', err.message));
+    } else if (curr1?.currency === 'XRP') {
+      setHasTrustline1(true);
+    }
+
+    // Check curr2 trustline
+    if (curr2 && curr2.currency !== 'XRP' && curr2.issuer) {
+      api.get(`${BASE_URL}/account/trustline/${accountProfile.account}/${curr2.issuer}/${encodeURIComponent(curr2.currency)}`)
+        .then(res => {
+          if (res.data?.success) {
+            // Skip if recent direct update for this token
+            if (isRecent && recentUpdate.issuer === curr2.issuer && recentUpdate.currency === curr2.currency) return;
+            setHasTrustline2(res.data.hasTrustline === true);
+          }
+        })
+        .catch(err => console.warn('[Swap] Trustline check curr2 failed:', err.message));
+    } else if (curr2?.currency === 'XRP') {
+      setHasTrustline2(true);
+    }
+  }, [accountProfile?.account, curr1?.currency, curr1?.issuer, curr2?.currency, curr2?.issuer, sync]);
 
   const [slippage, setSlippage] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -745,6 +809,10 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
   const [quoteLoading, setQuoteLoading] = useState(false);
   const quoteAbortRef = useRef(null);
 
+  // Transaction preview state (simulation results)
+  const [txPreview, setTxPreview] = useState(null); // { sending, receiving, priceImpact, actualSlippage, status }
+  const [pendingTx, setPendingTx] = useState(null); // Store tx for confirmation
+
   // Persist slippage & txFee
   useEffect(() => {
     if (typeof window !== 'undefined') localStorage.setItem('swap_slippage', slippage.toString());
@@ -752,6 +820,14 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
   useEffect(() => {
     if (typeof window !== 'undefined') localStorage.setItem('swap_txfee', txFee);
   }, [txFee]);
+
+  // Notify parent of limit price / order type changes
+  useEffect(() => {
+    onLimitPriceChange?.(limitPrice ? parseFloat(limitPrice) : null);
+  }, [limitPrice, onLimitPriceChange]);
+  useEffect(() => {
+    onOrderTypeChange?.(orderType);
+  }, [orderType, onOrderTypeChange]);
 
   // Floating orderbook drag handlers
   const handleDragStart = (e) => {
@@ -843,7 +919,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
         wallet_type: accountProfile.wallet_type,
         account: accountProfile.account,
         walletKeyId,
-        seed: seed || 'N/A'
+        seed: seed && seed.length > 10 ? `${seed.substring(0, 4)}...(${seed.length} chars)` : (seed || 'N/A')
       });
     };
     loadDebugInfo();
@@ -987,9 +1063,10 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
   }, [showOrderbook, asks, limitPrice]);
 
   // Fetch swap quote from API (works with or without login)
+  // Uses curr1/curr2 which respect the revert state (actual swap direction)
   useEffect(() => {
     if (orderType !== 'market') return;
-    if (!amount2 || parseFloat(amount2) <= 0 || !token2?.currency) {
+    if (!amount2 || parseFloat(amount2) <= 0 || !curr2?.currency) {
       setSwapQuoteApi(null);
       setQuoteRequiresTrustline(null);
       return;
@@ -1001,22 +1078,24 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
     setQuoteLoading(true);
     (async () => {
       try {
+        // Use curr2 (destination) which respects revert state
         const destAmount =
-          token2.currency === 'XRP'
+          curr2.currency === 'XRP'
             ? { currency: 'XRP', value: amount2 }
-            : { currency: token2.currency, issuer: token2.issuer, value: amount2 };
+            : { currency: curr2.currency, issuer: curr2.issuer, value: amount2 };
 
         const quoteAccount = accountProfile?.account || 'rPT1Sjq2YGrBMTttX4GZHjKu9dyfzbpAYe';
 
-        const res = await axios.post(
+        // Use curr1 (source) which respects revert state
+        const res = await api.post(
           `${BASE_URL}/dex/quote`,
           {
             source_account: quoteAccount,
             destination_amount: destAmount,
             source_currencies:
-              token1?.currency === 'XRP'
+              curr1?.currency === 'XRP'
                 ? [{ currency: 'XRP' }]
-                : [{ currency: token1.currency, issuer: token1.issuer }],
+                : [{ currency: curr1.currency, issuer: curr1.issuer }],
             slippage: slippage / 100
           },
           { signal: quoteAbortRef.current.signal }
@@ -1040,7 +1119,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
     })();
 
     return () => quoteAbortRef.current?.abort();
-  }, [amount2, token1, token2, accountProfile?.account, slippage, orderType]);
+  }, [amount2, curr1, curr2, accountProfile?.account, slippage, orderType]);
 
   // Client-side fallback quote calculation from orderbook
   const swapQuoteFallback = useMemo(() => {
@@ -1095,7 +1174,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
 
     async function fetchRLUSD() {
       try {
-        const res = await axios.get(
+        const res = await api.get(
           `${BASE_URL}/token/rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De-524C555344000000000000000000000000000000`
         );
         const token = res.data?.token;
@@ -1147,7 +1226,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
       if (token1.currency !== 'XRP') params.append('quote_issuer', token1.issuer);
 
       try {
-        const res = await axios.get(`${BASE_URL}/orderbook?${params}`);
+        const res = await api.get(`${BASE_URL}/orderbook?${params}`);
         const data = res.data;
         if (mounted && data?.success) processOrderbookData(data);
       } catch (err) {
@@ -1235,11 +1314,14 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
     const THRESHOLD = 5;
     const lp = Number(limitPrice);
     if (!lp || !isFinite(lp)) return null;
-    if (revert && bestAsk != null) {
+    // revert=true means SELL (token->XRP), revert=false means BUY (XRP->token)
+    // Warn if BUY price is way above best ask
+    if (!revert && bestAsk != null) {
       const pct = ((lp - Number(bestAsk)) / Number(bestAsk)) * 100;
       if (pct > THRESHOLD) return { kind: 'buy', pct, ref: Number(bestAsk) };
     }
-    if (!revert && bestBid != null) {
+    // Warn if SELL price is way below best bid
+    if (revert && bestBid != null) {
       const pct = ((Number(bestBid) - lp) / Number(bestBid)) * 100;
       if (pct > THRESHOLD) return { kind: 'sell', pct, ref: Number(bestBid) };
     }
@@ -1302,31 +1384,38 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
       curr2: curr2.currency,
       issuer2: curr2.currency === 'XRP' ? 'XRPL' : curr2.issuer
     });
-    const wsUrl = `wss://api.xrpl.to/ws/account/balance/pair/${account}?${params}`;
 
     let ws = null;
     let reconnectTimeout = null;
 
-    const connect = () => {
-      ws = new WebSocket(wsUrl);
+    const connect = async () => {
+      try {
+        const res = await fetch(`/api/ws/session?type=balancePair&id=${account}&${params}`);
+        const { wsUrl } = await res.json();
+        ws = new WebSocket(wsUrl);
 
-      ws.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          if (data.type === 'initial' || data.e === 'pair') {
-            const pair = data.pair;
-            setAccountPairBalance(pair);
-            setHasTrustline1(curr1.currency === 'XRP' || pair?.curr1?.hasTrustline !== false);
-            setHasTrustline2(curr2.currency === 'XRP' || pair?.curr2?.hasTrustline !== false);
+        ws.onmessage = (event) => {
+          try {
+            const data = JSON.parse(event.data);
+            if (data.type === 'initial' || data.e === 'pair') {
+              const pair = data.pair;
+              console.log('[Swap WS] Balance update:', JSON.stringify(pair, null, 2));
+              console.log('[Swap WS] curr1 value:', pair?.curr1?.value, 'type:', typeof pair?.curr1?.value);
+              setAccountPairBalance(pair);
+              // Trustline status is checked via API useEffect (more reliable for accounts with many trustlines)
+            }
+          } catch (err) {
+            console.error('[Pair WS] Parse error:', err);
           }
-        } catch (err) {
-          console.error('[Pair WS] Parse error:', err);
-        }
-      };
+        };
 
-      ws.onclose = () => {
+        ws.onclose = () => {
+          reconnectTimeout = setTimeout(connect, 3000);
+        };
+      } catch (e) {
+        console.error('[Pair WS] Session error:', e);
         reconnectTimeout = setTimeout(connect, 3000);
-      };
+      }
     };
 
     connect();
@@ -1360,7 +1449,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
     async function getTokenPrice() {
       setLoadingPrice(true);
       try {
-        const res = await axios.get(`${BASE_URL}/stats/rates?md51=${token1Md5}&md52=${token2Md5}`);
+        const res = await api.get(`${BASE_URL}/stats/rates?md51=${token1Md5}&md52=${token2Md5}`);
         const data = res.data;
         if (mounted && data) {
           const r1 = data.rate1 || 0;
@@ -1389,10 +1478,8 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
   const calcQuantity = (amount, active) => {
     try {
       const amt = new Decimal(amount || 0).toNumber();
+      console.log('[Swap calcQuantity] input amount:', amount, 'active:', active, 'parsed amt:', amt);
       if (amt === 0) return '';
-
-      if (amt > 0) {
-      }
 
       const token1IsXRP = token1?.currency === 'XRP';
       const token2IsXRP = token2?.currency === 'XRP';
@@ -1443,7 +1530,9 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
           result = amt;
         }
 
-        return new Decimal(result).toFixed(6, Decimal.ROUND_DOWN);
+        const finalResult = new Decimal(result).toFixed(6, Decimal.ROUND_DOWN);
+        console.log('[Swap calcQuantity] XRP pair result:', result, 'final (6dp):', finalResult);
+        return finalResult;
       } else {
         if (rate1.eq(0) || rate2.eq(0)) {
           return '';
@@ -1456,9 +1545,12 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
           result = new Decimal(amt).mul(rate2).div(rate1).toNumber();
         }
 
-        return new Decimal(result).toFixed(6, Decimal.ROUND_DOWN);
+        const finalResult = new Decimal(result).toFixed(6, Decimal.ROUND_DOWN);
+        console.log('[Swap calcQuantity] token pair result:', result, 'final (6dp):', finalResult);
+        return finalResult;
       }
     } catch (e) {
+      console.error('[Swap calcQuantity] error:', e);
       return '';
     }
   };
@@ -1468,13 +1560,27 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
   };
 
   const handlePlaceOrder = async (e) => {
+    // Capture current state immediately to avoid closure issues
+    const currentOrderType = orderType;
+    const currentLimitPrice = limitPrice;
+    const currentRevert = revert;
+
+    console.log('[Swap handlePlaceOrder] START');
+    console.log('[Swap handlePlaceOrder] orderType:', currentOrderType, 'limitPrice:', currentLimitPrice, 'revert:', currentRevert);
+    console.log('[Swap handlePlaceOrder] amount1 (input state):', amount1, 'type:', typeof amount1);
+    console.log('[Swap handlePlaceOrder] amount2 (output state):', amount2, 'type:', typeof amount2);
+    console.log('[Swap handlePlaceOrder] curr1:', curr1?.currency, 'curr2:', curr2?.currency);
+    console.log('[Swap handlePlaceOrder] accountPairBalance:', JSON.stringify(accountPairBalance, null, 2));
+
     const fAmount = Number(amount1);
     const fValue = Number(amount2);
+    console.log('[Swap handlePlaceOrder] fAmount (parsed):', fAmount, 'fValue (parsed):', fValue);
+
     if (!(fAmount > 0 && fValue > 0)) {
       toast.error('Invalid values');
       return;
     }
-    if (orderType === 'limit' && !limitPrice) {
+    if (currentOrderType === 'limit' && !currentLimitPrice) {
       toast.error('Please enter a limit price');
       return;
     }
@@ -1491,8 +1597,12 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
       const { EncryptedWalletStorage, deviceFingerprint } = await import('src/utils/encryptedWalletStorage');
 
       const walletStorage = new EncryptedWalletStorage();
+      console.log('[Swap] wallet_type:', accountProfile.wallet_type, 'account:', accountProfile.account);
+      console.log('[Swap] Getting deviceKeyId...');
       const deviceKeyId = await deviceFingerprint.getDeviceId();
+      console.log('[Swap] deviceKeyId:', deviceKeyId ? `${deviceKeyId.substring(0, 8)}...` : null);
       const storedPassword = await walletStorage.getWalletCredential(deviceKeyId);
+      console.log('[Swap] storedPassword found:', !!storedPassword);
 
       if (!storedPassword) {
         toast.error('Wallet locked', { id: toastId, description: 'Please unlock your wallet first' });
@@ -1500,20 +1610,34 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
       }
 
       const walletData = await walletStorage.getWallet(accountProfile.account, storedPassword);
+      console.log('[Swap] walletData found:', !!walletData, 'has seed:', !!walletData?.seed);
       if (!walletData?.seed) {
         toast.error('Wallet error', { id: toastId, description: 'Could not retrieve credentials' });
         return;
       }
 
-      const algorithm = walletData.seed.startsWith('sEd') ? 'ed25519' : 'secp256k1';
-      const deviceWallet = Wallet.fromSeed(walletData.seed, { algorithm });
+      const seed = walletData.seed.trim();
+      console.log(`[Swap] Seed: length=${seed.length}, algo=${seed.startsWith('sEd') ? 'ed25519' : 'secp256k1'}`);
+      if (seed !== walletData.seed) console.warn('[Swap] Seed had whitespace! original:', walletData.seed.length, 'trimmed:', seed.length);
+      const algorithm = seed.startsWith('sEd') ? 'ed25519' : 'secp256k1';
+      console.log('[Swap] Using algorithm:', algorithm);
+      const deviceWallet = Wallet.fromSeed(seed, { algorithm });
 
       // Track if we need to create trustlines (before we create them)
+      console.log('[Swap] Trustline state check:', {
+        hasTrustline1,
+        hasTrustline2,
+        curr1Currency: curr1.currency,
+        curr2Currency: curr2.currency
+      });
+
       const needsTrustline1 = !hasTrustline1 && curr1.currency !== 'XRP';
       const needsTrustline2 = !hasTrustline2 && curr2.currency !== 'XRP';
+      console.log('[Swap] needsTrustline1:', needsTrustline1, 'needsTrustline2:', needsTrustline2);
 
       // Auto-create trustlines if needed
       if (needsTrustline1) {
+        console.log('[Swap] Creating trustline for curr1:', curr1);
         toast.loading('Processing swap...', { id: toastId, description: `Setting trustline for ${curr1.name}` });
         const success = await onCreateTrustline(curr1, true);
         if (!success) {
@@ -1521,8 +1645,10 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
           return;
         }
         setHasTrustline1(true);
+        setSync((s) => s + 1); // Trigger TokenSummary to refresh trustline state
       }
       if (needsTrustline2) {
+        console.log('[Swap] Creating trustline for curr2:', curr2);
         toast.loading('Processing swap...', { id: toastId, description: `Setting trustline for ${curr2.name}` });
         const success = await onCreateTrustline(curr2, true);
         if (!success) {
@@ -1530,6 +1656,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
           return;
         }
         setHasTrustline2(true);
+        setSync((s) => s + 1); // Trigger TokenSummary to refresh trustline state
       }
 
       // Check if we created any trustline (which reserves XRP)
@@ -1543,7 +1670,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
       if (curr1.currency === 'XRP' && createdTrustline) {
         try {
           // Use xrpl.to API to get fresh balance
-          const balRes = await axios.get(`${BASE_URL}/account/balance/${accountProfile.account}`);
+          const balRes = await api.get(`${BASE_URL}/account/balance/${accountProfile.account}`);
           let newXrpAvailable = parseFloat(balRes.data?.spendableDrops || 0) / 1000000;
 
           // API may be stale - subtract 0.2 XRP per trustline we just created
@@ -1575,16 +1702,21 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
       const fAmount1Final = adjustedAmount1;
       const fValue1Final = adjustedAmount2;
 
+      console.log('[Swap handlePlaceOrder] fAmount1Final:', fAmount1Final, 'fValue1Final:', fValue1Final);
+      console.log('[Swap handlePlaceOrder] Original balance:', accountPairBalance?.curr1?.value);
+
       toast.loading('Processing swap...', { id: toastId, description: 'Submitting to XRPL' });
 
       // Helper to format token value with safe precision (max 15 significant digits)
       const formatTokenValue = (val) => {
         const n = parseFloat(val);
-        if (n >= 1) return n.toPrecision(15).replace(/\.?0+$/, '');
-        return n.toFixed(Math.min(15, Math.max(6, -Math.floor(Math.log10(n)) + 6)));
+        const result = n >= 1 ? n.toPrecision(15).replace(/\.?0+$/, '') : n.toFixed(Math.min(15, Math.max(6, -Math.floor(Math.log10(n)) + 6)));
+        console.log('[Swap formatTokenValue] input:', val, 'output:', result);
+        return result;
       };
 
-      if (orderType === 'market') {
+      console.log('[Swap] BRANCH CHECK - orderType:', currentOrderType, 'type:', typeof currentOrderType, 'isMarket:', currentOrderType === 'market', 'isLimit:', currentOrderType === 'limit');
+      if (currentOrderType === 'market') {
         // Use Payment with xrpl client for AMM swap (handles path finding)
         const slippageFactor = slippage / 100;
         let tx;
@@ -1604,8 +1736,24 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
           };
         } else if (curr2.currency === 'XRP') {
           // Paying tokens to receive XRP
+          console.log('[Swap] TOKEN -> XRP swap detected');
+          console.log('[Swap] Token amount to send (fAmount1Final):', fAmount1Final);
+          console.log('[Swap] XRP amount to receive (fValue1Final):', fValue1Final);
+          console.log('[Swap] slippageFactor:', slippageFactor);
+
+          // Check if user is selling ALL their tokens (within tiny tolerance for float precision)
+          const userBalance = parseFloat(accountPairBalance?.curr1?.value || 0);
+          const isSellingAll = Math.abs(userBalance - fAmount1Final) < 0.000001;
+          console.log('[Swap] isSellingAll:', isSellingAll, 'userBalance:', userBalance);
+
           const targetXrpDrops = Math.floor(fValue1Final * 1000000);
           const minXrpDrops = Math.max(Math.floor(fValue1Final * (1 - slippageFactor) * 1000000), 1);
+
+          // If selling all, use exact balance as SendMax (no buffer) to avoid dust
+          // Otherwise use 0.5% buffer for partial sells
+          const sendMaxValue = isSellingAll ? userBalance : fAmount1Final * 1.005;
+          console.log('[Swap] SendMax calculation:', isSellingAll ? 'exact balance (sell all)' : 'fAmount1Final * 1.005', '=', sendMaxValue);
+
           tx = {
             TransactionType: 'Payment',
             Account: accountProfile.account,
@@ -1613,7 +1761,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
             Destination: accountProfile.account,
             Amount: String(targetXrpDrops),
             DeliverMin: String(minXrpDrops),
-            SendMax: { currency: curr1.currency, issuer: curr1.issuer, value: formatTokenValue(fAmount1Final * 1.005) },
+            SendMax: { currency: curr1.currency, issuer: curr1.issuer, value: formatTokenValue(sendMaxValue) },
             Flags: 131072 // tfPartialPayment
           };
         } else {
@@ -1632,104 +1780,267 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
 
         console.log('[Swap] Market order tx:', tx);
 
-        // Use xrpl client
-        const client = new Client('wss://xrplcluster.com');
-        await client.connect();
+        // Check trustline limit for receiving token via API
+        if (curr2.currency !== 'XRP') {
+          console.log('[Swap] Checking trustline limit via API for curr2:', curr2.currency);
+          const trustlineRes = await api.get(`https://api.xrpl.to/v1/account/trustline/${accountProfile.account}/${curr2.issuer}/${curr2.currency}`).then(r => r.data);
+          console.log('[Swap] Trustline API response:', trustlineRes);
 
-        try {
-          // Check trustline limit for receiving token
-          if (curr2.currency !== 'XRP') {
-            const linesRes = await client.request({
-              command: 'account_lines',
-              account: accountProfile.account,
-              peer: curr2.issuer
-            });
-            const line = linesRes.result.lines?.find(l => l.currency === curr2.currency);
-            console.log('[Swap] Trustline check:', line);
+          const currentBalance = parseFloat(trustlineRes.balance) || 0;
+          const currentLimit = parseFloat(trustlineRes.limit) || 0;
+          const needed = currentBalance + fValue;
+          console.log('[Swap] Trustline limit check:', { currentLimit, currentBalance, receiving: fValue, needed, hasTrustline: trustlineRes.hasTrustline });
 
-            const currentBalance = parseFloat(line?.balance) || 0;
-            const currentLimit = parseFloat(line?.limit) || 0;
-            const needed = currentBalance + fValue;
+          if (!trustlineRes.hasTrustline || currentLimit < needed) {
+            console.log('[Swap] Trustline insufficient - WILL CREATE:', { currentLimit, currentBalance, receiving: fValue, needed });
+            toast.loading('Processing swap...', { id: toastId, description: 'Setting trustline...' });
 
-            if (!line || currentLimit < needed) {
-              console.log('[Swap] Trustline insufficient:', { currentLimit, currentBalance, receiving: fValue, needed });
-              toast.loading('Processing swap...', { id: toastId, description: 'Setting trustline...' });
-              await client.disconnect();
-
-              const success = await onCreateTrustline(curr2, true);
-              if (!success) {
-                toast.error('Trustline failed', { id: toastId, description: 'Could not set trustline' });
-                return;
-              }
-
-              // Reconnect and continue
-              await client.connect();
+            const success = await onCreateTrustline(curr2, true);
+            if (!success) {
+              toast.error('Trustline failed', { id: toastId, description: 'Could not set trustline' });
+              return;
             }
-          }
-
-          const prepared = await client.autofill(tx);
-          console.log('[Swap] Transaction after autofill:', prepared);
-
-          const signed = deviceWallet.sign(prepared);
-          const result = await client.submitAndWait(signed.tx_blob);
-          await client.disconnect();
-
-          const txResult = result.result.meta.TransactionResult;
-          const txHash = result.result.hash;
-
-          console.log('[Swap] Submit result:', { txResult, txHash });
-
-          if (txResult === 'tesSUCCESS') {
-            // Check if user sold all tokens (token → XRP swap)
-            const soldAllTokens = curr1.currency !== 'XRP' &&
-              accountPairBalance?.curr1?.value &&
-              Math.abs(parseFloat(accountPairBalance.curr1.value) - fAmount1Final) < 0.000001;
-
-            if (soldAllTokens) {
-              // Capture token data for closure
-              const tokenData = { issuer: curr1.issuer, currency: curr1.currency, name: curr1.name };
-              console.log('[Swap] Sold all tokens, will prompt to remove trustline:', tokenData);
-              toast.success('Swap complete!', {
-                id: toastId,
-                description: 'Remove trustline to free 0.2 XRP?',
-                action: {
-                  label: 'Remove',
-                  onClick: () => {
-                    console.log('[Swap] Remove button clicked, tokenData:', tokenData);
-                    onRemoveTrustline(tokenData);
-                  }
-                },
-                duration: 10000
-              });
-            } else {
-              toast.success('Swap complete!', { id: toastId, description: `TX: ${txHash.slice(0, 8)}...` });
-            }
-            setAmount1('');
-            setAmount2('');
-            setSync((s) => s + 1);
-            setIsSwapped((v) => !v);
-          } else if (txResult === 'tecKILLED') {
-            toast.error('No liquidity', { id: toastId, description: 'Order couldn\'t be filled at this price' });
-          } else if (txResult === 'tecPATH_PARTIAL' || txResult === 'tecPATH_DRY') {
-            toast.error('No liquidity path', { id: toastId, description: 'Try a smaller amount or increase slippage' });
-          } else if (txResult === 'tecUNFUNDED_PAYMENT') {
-            toast.error('Insufficient funds', { id: toastId, description: 'Not enough balance for this swap' });
           } else {
-            toast.error('Swap failed', { id: toastId, description: txResult });
+            console.log('[Swap] Trustline OK - no need to create');
           }
-        } catch (clientErr) {
-          await client.disconnect().catch(() => { });
-          throw clientErr;
+        }
+
+        // Simulate transaction first to check liquidity and show preview (XLS-69)
+        toast.loading('Simulating swap...', { id: toastId });
+        try {
+          console.log('[Swap] Simulating tx:', JSON.stringify(tx, null, 2));
+          const simResult = await simulateTransaction(tx);
+          console.log('[Swap] Simulation result:', JSON.stringify(simResult, null, 2));
+
+          const engineResult = simResult.engine_result;
+          const expectedOutput = fValue1Final;
+          const actualOutput = simResult.delivered_amount || 0;
+          // Only calculate price impact if we have both expected and actual values
+          const priceImpact = expectedOutput > 0 && actualOutput > 0
+            ? ((expectedOutput - actualOutput) / expectedOutput) * 100
+            : null; // null means N/A (tx would fail or no data)
+
+          // Build preview data
+          const preview = {
+            sending: { amount: fAmount1Final, currency: curr1.currency, name: curr1.name || curr1.currency },
+            receiving: { expected: expectedOutput, actual: actualOutput, currency: curr2.currency, name: curr2.name || curr2.currency },
+            priceImpact: priceImpact,
+            engineResult: engineResult,
+            status: engineResult === 'tesSUCCESS' ? 'success' : engineResult?.startsWith('tec') ? 'warning' : 'error'
+          };
+
+          // Check for fatal errors - try to find what WOULD work
+          if (engineResult === 'tecPATH_PARTIAL' || engineResult === 'tecPATH_DRY') {
+            toast.loading('Finding available liquidity...', { id: toastId });
+
+            // Try simulation without DeliverMin to see what's actually available
+            let maxAvailable = null;
+            let workingAmount = null;
+            let workingOutput = null;
+            try {
+              const noMinTx = { ...tx };
+              delete noMinTx.DeliverMin;
+              const availableResult = await simulateTransaction(noMinTx);
+
+              if (availableResult.engine_result === 'tesSUCCESS' && availableResult.delivered_amount > 0) {
+                maxAvailable = availableResult.delivered_amount;
+
+                // Binary search to find max amount that works at user's slippage
+                toast.loading('Calculating optimal amount...', { id: toastId });
+                let low = 0;
+                let high = fAmount1Final;
+                let bestAmount = null;
+                let bestOutput = null;
+
+                for (let i = 0; i < 6; i++) { // 6 iterations for reasonable precision
+                  const mid = (low + high) / 2;
+
+                  // Build test tx with this amount
+                  const testTx = { ...tx };
+                  const testOutput = mid * (expectedOutput / fAmount1Final); // Proportional expected output
+                  const testMin = testOutput * (1 - slippage / 100);
+
+                  if (curr2.currency === 'XRP') {
+                    testTx.Amount = String(Math.floor(testOutput * 1000000));
+                    testTx.DeliverMin = String(Math.floor(testMin * 1000000));
+                  } else {
+                    testTx.Amount = { ...testTx.Amount, value: String(testOutput) };
+                    testTx.DeliverMin = { ...testTx.DeliverMin, value: String(testMin) };
+                  }
+
+                  if (curr1.currency === 'XRP') {
+                    testTx.SendMax = String(Math.floor(mid * 1.005 * 1000000));
+                  } else {
+                    testTx.SendMax = { ...testTx.SendMax, value: String(mid * 1.005) };
+                  }
+
+                  try {
+                    const testResult = await simulateTransaction(testTx);
+                    if (testResult.engine_result === 'tesSUCCESS') {
+                      bestAmount = mid;
+                      bestOutput = testResult.delivered_amount;
+                      low = mid; // Can try higher
+                    } else {
+                      high = mid; // Need to go lower
+                    }
+                  } catch (e) {
+                    high = mid; // Error, go lower
+                  }
+                }
+
+                workingAmount = bestAmount;
+                workingOutput = bestOutput;
+              }
+            } catch (e) {
+              console.warn('[Swap] Could not determine available liquidity:', e.message);
+            }
+
+            // Calculate actual slippage if we have data
+            const actualSlippagePct = maxAvailable && expectedOutput > 0
+              ? ((expectedOutput - maxAvailable) / expectedOutput * 100).toFixed(1)
+              : null;
+
+            toast.dismiss(toastId);
+            setTxPreview({
+              ...preview,
+              status: 'error',
+              errorMessage: `Insufficient liquidity at ${slippage}% slippage`,
+              maxAvailable,
+              workingAmount,
+              workingOutput,
+              actualSlippage: actualSlippagePct,
+              suggestedAction: maxAvailable
+                ? `Without slippage protection: ~${fNumber(maxAvailable)} ${curr2.name || curr2.currency} (${actualSlippagePct}% slippage)`
+                : 'Try a smaller amount or increase slippage tolerance'
+            });
+            return;
+          }
+
+          if (engineResult !== 'tesSUCCESS') {
+            toast.dismiss(toastId);
+            setTxPreview({
+              ...preview,
+              status: 'error',
+              errorMessage: simResult.engine_result_message || engineResult
+            });
+            return;
+          }
+
+          // Check slippage (only if we have valid price impact data)
+          if (priceImpact !== null && priceImpact > slippage) {
+            toast.dismiss(toastId);
+            setTxPreview({
+              ...preview,
+              status: 'warning',
+              warningMessage: `Price impact (${priceImpact.toFixed(2)}%) exceeds your ${slippage}% slippage tolerance`
+            });
+            // Store pending tx for user to confirm anyway
+            setPendingTx({ tx, deviceWallet, toastId: null });
+            return;
+          }
+
+          // Show preview for successful simulation
+          toast.dismiss(toastId);
+          setTxPreview(preview);
+          setPendingTx({ tx, deviceWallet, toastId: null });
+          return; // Wait for user confirmation
+
+        } catch (simErr) {
+          // Simulation not available - continue with submit directly
+          console.warn('[Swap] Simulation failed, proceeding without preview:', simErr.message);
+        }
+
+        // Submit via API (fallback if simulation unavailable)
+        toast.loading('Submitting...', { id: toastId });
+        const submitResult = await submitTransaction(deviceWallet, tx);
+        const txHash = submitResult.hash || submitResult.tx_json?.hash;
+        const engineResult = submitResult.engine_result;
+
+        console.log('[Swap] Submit result:', { engineResult, txHash });
+
+        if (engineResult !== 'tesSUCCESS') {
+          toast.error('Rejected', { id: toastId, description: engineResult });
+          return;
+        }
+
+        // Poll for on-chain confirmation
+        toast.loading('Submitted', { id: toastId, description: 'Waiting for confirmation...' });
+        let validated = false;
+        let txResult = null;
+        for (let i = 0; i < 15; i++) {
+          await new Promise(r => setTimeout(r, 500));
+          try {
+            const txRes = await api.get(`https://api.xrpl.to/v1/tx/${txHash}`);
+            if (txRes.data?.validated) {
+              validated = true;
+              txResult = txRes.data?.meta?.TransactionResult || txRes.data?.engine_result;
+              break;
+            }
+          } catch (e) { /* continue */ }
+        }
+
+        if (!validated) {
+          toast.success('Swap submitted', { id: toastId, description: 'Validation pending...' });
+          setAmount1(''); setAmount2(''); setLimitPrice('');
+          setSync((s) => s + 1); setIsSwapped((v) => !v);
+          return;
+        }
+
+        if (txResult === 'tesSUCCESS') {
+          const balanceValue = parseFloat(accountPairBalance?.curr1?.value || 0);
+          const soldAllTokens = curr1.currency !== 'XRP' &&
+            accountPairBalance?.curr1?.value &&
+            Math.abs(balanceValue - fAmount1Final) < 0.000001;
+
+          if (soldAllTokens) {
+            const tokenData = { issuer: curr1.issuer, currency: curr1.currency, name: curr1.name };
+            toast.success('Swap complete!', {
+              id: toastId,
+              description: 'Remove trustline to free 0.2 XRP?',
+              action: { label: 'Remove', onClick: () => onRemoveTrustline(tokenData) },
+              duration: 10000
+            });
+          } else {
+            toast.success('Swap complete!', { id: toastId, description: `TX: ${txHash.slice(0, 8)}...` });
+          }
+          setAmount1(''); setAmount2(''); setLimitPrice('');
+          setSync((s) => s + 1); setIsSwapped((v) => !v);
+        } else if (txResult === 'tecKILLED') {
+          toast.error('No liquidity', { id: toastId, description: 'Order couldn\'t be filled at this price' });
+        } else if (txResult === 'tecPATH_PARTIAL' || txResult === 'tecPATH_DRY') {
+          toast.error('No liquidity path', { id: toastId, description: 'Try a smaller amount or increase slippage' });
+        } else if (txResult === 'tecUNFUNDED_PAYMENT') {
+          toast.error('Insufficient funds', { id: toastId, description: 'Not enough balance for this swap' });
+        } else {
+          toast.error('Swap failed', { id: toastId, description: txResult });
         }
       } else {
         // Use OfferCreate for limit orders (manual submission)
-        const takerGets = curr1.currency === 'XRP'
-          ? String(Math.floor(fAmount1Final * 1000000))
-          : { currency: curr1.currency, issuer: curr1.issuer, value: String(fAmount1Final) };
+        // CRITICAL: Use limit price to calculate amounts, not market rate!
+        const lp = Number(currentLimitPrice);
+        console.log('[Swap] Limit order calculation - limitPrice:', lp, 'revert:', currentRevert);
 
-        const takerPays = curr2.currency === 'XRP'
-          ? String(Math.floor(fValue1Final * 1000000))
-          : { currency: curr2.currency, issuer: curr2.issuer, value: String(fValue1Final) };
+        let takerGets, takerPays;
+
+        if (currentRevert) {
+          // SELL order: user sells token (curr1) for XRP (curr2)
+          // TakerGets = token amount, TakerPays = token amount × limitPrice (XRP)
+          const tokenAmount = fAmount1Final;
+          const xrpAmount = tokenAmount * lp;
+          console.log('[Swap] SELL: tokenAmount:', tokenAmount, 'xrpAmount:', xrpAmount, '(token × limitPrice)');
+
+          takerGets = { currency: curr1.currency, issuer: curr1.issuer, value: String(tokenAmount) };
+          takerPays = String(Math.floor(xrpAmount * 1000000));
+        } else {
+          // BUY order: user pays XRP (curr1) for token (curr2)
+          // TakerGets = token amount × limitPrice (XRP), TakerPays = token amount
+          const tokenAmount = fValue1Final; // amount2 is the token amount user wants
+          const xrpAmount = tokenAmount * lp;
+          console.log('[Swap] BUY: tokenAmount:', tokenAmount, 'xrpAmount:', xrpAmount, '(token × limitPrice)');
+
+          takerGets = String(Math.floor(xrpAmount * 1000000));
+          takerPays = { currency: curr2.currency, issuer: curr2.issuer, value: String(tokenAmount) };
+        }
 
         const tx = {
           Account: accountProfile.account,
@@ -1741,8 +2052,8 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
         };
 
         const [seqRes, feeRes] = await Promise.all([
-          axios.get(`https://api.xrpl.to/v1/submit/account/${accountProfile.account}/sequence`),
-          axios.get('https://api.xrpl.to/v1/submit/fee')
+          api.get(`https://api.xrpl.to/v1/submit/account/${accountProfile.account}/sequence`),
+          api.get('https://api.xrpl.to/v1/submit/fee')
         ]);
 
         const prepared = {
@@ -1755,7 +2066,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
         console.log('[Swap] Limit order tx:', prepared);
 
         const signed = deviceWallet.sign(prepared);
-        const result = await axios.post('https://api.xrpl.to/v1/submit', { tx_blob: signed.tx_blob });
+        const result = await api.post('https://api.xrpl.to/v1/submit', { tx_blob: signed.tx_blob });
 
         console.log('[Swap] Submit result:', result.data);
 
@@ -1772,7 +2083,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
             await new Promise(r => setTimeout(r, 500));
 
             try {
-              const txRes = await axios.get(`https://api.xrpl.to/v1/tx/${txHash}`);
+              const txRes = await api.get(`https://api.xrpl.to/v1/tx/${txHash}`);
               if (txRes.data?.validated === true || txRes.data?.meta?.TransactionResult === 'tesSUCCESS') {
                 validated = true;
                 break;
@@ -1790,6 +2101,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
 
           setAmount1('');
           setAmount2('');
+          setLimitPrice('');
           setSync((s) => s + 1);
           setIsSwapped((v) => !v);
         } else {
@@ -1800,6 +2112,61 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
       console.error('Swap error:', err);
       toast.error('Swap failed', { id: toastId, description: err.message?.slice(0, 50) });
     }
+  };
+
+  // Execute confirmed transaction after preview
+  const handleConfirmSwap = async () => {
+    if (!pendingTx) return;
+    const { tx, deviceWallet } = pendingTx;
+    const toastId = toast.loading('Executing swap...');
+
+    setTxPreview(null);
+    setPendingTx(null);
+
+    try {
+      const submitResult = await submitTransaction(deviceWallet, tx);
+      const txHash = submitResult.hash || submitResult.tx_json?.hash;
+      const engineResult = submitResult.engine_result;
+
+      if (engineResult !== 'tesSUCCESS') {
+        toast.error('Rejected', { id: toastId, description: engineResult });
+        return;
+      }
+
+      // Poll for confirmation
+      toast.loading('Confirming...', { id: toastId });
+      let validated = false;
+      let txResult = null;
+      for (let i = 0; i < 15; i++) {
+        await new Promise(r => setTimeout(r, 500));
+        try {
+          const txRes = await api.get(`https://api.xrpl.to/v1/tx/${txHash}`);
+          if (txRes.data?.validated) {
+            validated = true;
+            txResult = txRes.data?.meta?.TransactionResult || txRes.data?.engine_result;
+            break;
+          }
+        } catch (e) { /* continue */ }
+      }
+
+      if (validated && txResult === 'tesSUCCESS') {
+        toast.success('Swap complete!', { id: toastId, description: `TX: ${txHash.slice(0, 8)}...` });
+      } else if (validated) {
+        toast.error('Swap failed', { id: toastId, description: txResult });
+      } else {
+        toast.success('Swap submitted', { id: toastId, description: 'Confirming...' });
+      }
+
+      setAmount1(''); setAmount2(''); setLimitPrice('');
+      setSync((s) => s + 1); setIsSwapped((v) => !v);
+    } catch (err) {
+      toast.error('Swap failed', { id: toastId, description: err.message?.slice(0, 50) });
+    }
+  };
+
+  const handleCancelPreview = () => {
+    setTxPreview(null);
+    setPendingTx(null);
   };
 
   const handleChangeAmount1 = (e) => {
@@ -1873,8 +2240,11 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
   };
 
   const onFillMax = () => {
+    console.log('[Swap onFillMax] accountPairBalance:', JSON.stringify(accountPairBalance, null, 2));
+    console.log('[Swap onFillMax] curr1:', curr1?.currency, 'curr2:', curr2?.currency);
     if (accountPairBalance?.curr1.value > 0) {
       const val = accountPairBalance.curr1.value;
+      console.log('[Swap onFillMax] Setting amount1 to:', val, 'type:', typeof val);
       setAmount1(val);
       const hasValidRates =
         curr1?.currency === 'XRP' || curr2?.currency === 'XRP'
@@ -1882,6 +2252,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
           : tokenExch1 > 0 && tokenExch2 > 0;
       if (hasValidRates) {
         const calculatedValue = calcQuantity(val, 'AMOUNT');
+        console.log('[Swap onFillMax] Calculated amount2:', calculatedValue);
         if (calculatedValue && calculatedValue !== '0') setAmount2(calculatedValue);
       }
     }
@@ -1904,6 +2275,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
   };
 
   const onCreateTrustline = async (currency, silent = false) => {
+    console.log('[Swap onCreateTrustline] CALLED with currency:', currency, 'silent:', silent);
     if (!accountProfile?.account) return false;
 
     if (!silent) dispatch(updateProcess(1));
@@ -1944,8 +2316,8 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
       };
 
       const [seqRes, feeRes] = await Promise.all([
-        axios.get(`https://api.xrpl.to/v1/submit/account/${accountProfile.account}/sequence`),
-        axios.get('https://api.xrpl.to/v1/submit/fee')
+        api.get(`https://api.xrpl.to/v1/submit/account/${accountProfile.account}/sequence`),
+        api.get('https://api.xrpl.to/v1/submit/fee')
       ]);
 
       const prepared = {
@@ -1956,7 +2328,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
       };
 
       const signed = deviceWallet.sign(prepared);
-      const result = await axios.post('https://api.xrpl.to/v1/submit', { tx_blob: signed.tx_blob });
+      const result = await api.post('https://api.xrpl.to/v1/submit', { tx_blob: signed.tx_blob });
 
       if (result.data.engine_result === 'tesSUCCESS') {
         // Poll for transaction validation
@@ -1968,7 +2340,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
           attempts++;
           await new Promise(r => setTimeout(r, 400));
           try {
-            const txRes = await axios.get(`https://api.xrpl.to/v1/tx/${txHash}`);
+            const txRes = await api.get(`https://api.xrpl.to/v1/tx/${txHash}`);
             if (txRes.data?.validated === true || txRes.data?.meta?.TransactionResult === 'tesSUCCESS') {
               break;
             }
@@ -2040,8 +2412,8 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
       console.log('[Swap] Remove trustline tx:', tx);
 
       const [seqRes, feeRes] = await Promise.all([
-        axios.get(`${BASE_URL}/submit/account/${accountProfile.account}/sequence`),
-        axios.get(`${BASE_URL}/submit/fee`)
+        api.get(`${BASE_URL}/submit/account/${accountProfile.account}/sequence`),
+        api.get(`${BASE_URL}/submit/fee`)
       ]);
 
       const prepared = {
@@ -2052,7 +2424,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
       };
 
       const signed = deviceWallet.sign(prepared);
-      const result = await axios.post(`${BASE_URL}/submit`, { tx_blob: signed.tx_blob });
+      const result = await api.post(`${BASE_URL}/submit`, { tx_blob: signed.tx_blob });
 
       if (result.data.engine_result === 'tesSUCCESS') {
         toast.success('Trustline removed!', { id: toastId, description: '0.2 XRP freed' });
@@ -2068,6 +2440,314 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
 
   return (
     <Stack alignItems="stretch" width="100%" sx={{ px: { xs: 0, sm: 0 } }}>
+      {/* Transaction Preview Modal */}
+      {txPreview && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 9999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'rgba(0,0,0,0.85)',
+            backdropFilter: 'blur(8px)'
+          }}
+          onClick={handleCancelPreview}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: isDark ? '#0d0d0f' : '#ffffff',
+              borderRadius: '20px',
+              padding: '20px',
+              maxWidth: '360px',
+              width: '92%',
+              border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`,
+              boxShadow: '0 24px 80px rgba(0,0,0,0.6)'
+            }}
+          >
+            {/* Header */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                {txPreview.status === 'error' && (
+                  <div style={{
+                    width: '36px', height: '36px', borderRadius: '10px',
+                    background: 'rgba(239,68,68,0.15)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center'
+                  }}>
+                    <X size={20} style={{ color: '#ef4444' }} />
+                  </div>
+                )}
+                {txPreview.status === 'warning' && (
+                  <div style={{
+                    width: '36px', height: '36px', borderRadius: '10px',
+                    background: 'rgba(245,158,11,0.15)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center'
+                  }}>
+                    <AlertTriangle size={20} style={{ color: '#f59e0b' }} />
+                  </div>
+                )}
+                {txPreview.status === 'success' && (
+                  <div style={{
+                    width: '36px', height: '36px', borderRadius: '10px',
+                    background: 'rgba(34,197,94,0.15)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center'
+                  }}>
+                    <CheckCircle size={20} style={{ color: '#22c55e' }} />
+                  </div>
+                )}
+                <span style={{ fontSize: '16px', fontWeight: 600, color: isDark ? '#fff' : '#000' }}>
+                  {txPreview.status === 'error' ? 'Swap Will Fail' : txPreview.status === 'warning' ? 'Review Swap' : 'Confirm Swap'}
+                </span>
+              </div>
+              <button
+                onClick={handleCancelPreview}
+                style={{
+                  background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  padding: '6px',
+                  color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center'
+                }}
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* Error/Warning Message */}
+            {(txPreview.errorMessage || txPreview.warningMessage) && (
+              <div style={{
+                padding: '10px 12px',
+                borderRadius: '10px',
+                marginBottom: '12px',
+                background: txPreview.errorMessage ? 'rgba(239,68,68,0.08)' : 'rgba(245,158,11,0.08)'
+              }}>
+                <span style={{ fontSize: '12px', color: txPreview.errorMessage ? '#ef4444' : '#f59e0b' }}>
+                  {txPreview.errorMessage || txPreview.warningMessage}
+                </span>
+              </div>
+            )}
+
+            {/* Available Liquidity - Compact */}
+            {(txPreview.maxAvailable || txPreview.workingAmount) && (
+              <div style={{
+                padding: '12px',
+                borderRadius: '10px',
+                marginBottom: '12px',
+                background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
+                border: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`
+              }}>
+                {/* Option 1: Increase slippage to get max */}
+                {txPreview.maxAvailable && txPreview.actualSlippage && (
+                  <div style={{ marginBottom: txPreview.workingAmount ? '12px' : '0', paddingBottom: txPreview.workingAmount ? '12px' : '0', borderBottom: txPreview.workingAmount ? `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}` : 'none' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                      <span style={{ fontSize: '10px', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                        Option 1: Higher slippage
+                      </span>
+                      <span style={{ fontSize: '10px', padding: '2px 5px', borderRadius: '4px', background: 'rgba(245,158,11,0.12)', color: '#f59e0b' }}>
+                        {txPreview.actualSlippage}% impact
+                      </span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <span style={{ fontSize: '14px', fontWeight: 600, color: isDark ? '#fff' : '#000' }}>
+                        ~{fNumber(txPreview.maxAvailable)} {txPreview.receiving?.name}
+                      </span>
+                      {parseFloat(txPreview.actualSlippage) <= 50 && (
+                        <button
+                          onClick={() => {
+                            const newSlippage = Math.ceil(parseFloat(txPreview.actualSlippage) + 1);
+                            setSlippage(newSlippage);
+                            setTxPreview(null);
+                            setPendingTx(null);
+                            toast.success(`Slippage set to ${newSlippage}%`, { duration: 5000 });
+                          }}
+                          style={{
+                            padding: '6px 10px',
+                            borderRadius: '6px',
+                            border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
+                            background: 'transparent',
+                            color: isDark ? '#fff' : '#000',
+                            fontWeight: 500,
+                            cursor: 'pointer',
+                            fontSize: '10px'
+                          }}
+                        >
+                          Set {Math.ceil(parseFloat(txPreview.actualSlippage) + 1)}%
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Option 2: Reduce amount to fit slippage */}
+                {txPreview.workingAmount && (
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                      <span style={{ fontSize: '10px', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                        Option 2: Keep {slippage}% slippage
+                      </span>
+                      <span style={{ fontSize: '10px', padding: '2px 5px', borderRadius: '4px', background: 'rgba(34,197,94,0.12)', color: '#22c55e' }}>
+                        Guaranteed
+                      </span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <div>
+                        <div style={{ fontSize: '14px', fontWeight: 600, color: '#22c55e' }}>
+                          ~{fNumber(txPreview.workingOutput || 0)} {txPreview.receiving?.name}
+                        </div>
+                        <div style={{ fontSize: '10px', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>
+                          for {fNumber(txPreview.workingAmount)} {txPreview.sending?.name}
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => {
+                          const newAmount = txPreview.workingAmount.toFixed(6);
+                          setAmount1(newAmount);
+                          if (txPreview.workingOutput) {
+                            setAmount2(txPreview.workingOutput.toFixed(6));
+                          } else {
+                            const calculated = calcQuantity(newAmount, 'AMOUNT');
+                            if (calculated) setAmount2(calculated);
+                          }
+                          setTxPreview(null);
+                          setPendingTx(null);
+                          toast.success('Amount adjusted', {
+                            description: `${fNumber(txPreview.workingAmount)} ${txPreview.sending?.name} → ~${fNumber(txPreview.workingOutput || 0)} ${txPreview.receiving?.name}`,
+                            duration: 6000
+                          });
+                        }}
+                        style={{
+                          padding: '6px 12px',
+                          borderRadius: '6px',
+                          border: 'none',
+                          background: '#22c55e',
+                          color: '#fff',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          fontSize: '10px'
+                        }}
+                      >
+                        Use this
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Transaction Details */}
+            <div style={{
+              background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
+              borderRadius: '10px',
+              padding: '12px',
+              marginBottom: '12px'
+            }}>
+              {/* Sending */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                <span style={{ color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Send</span>
+                <span style={{ color: isDark ? '#fff' : '#000', fontWeight: 500, fontSize: '13px' }}>
+                  {fNumber(txPreview.sending?.amount)} {txPreview.sending?.name}
+                </span>
+              </div>
+
+              {/* Receiving */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Receive</span>
+                <div style={{ textAlign: 'right' }}>
+                  {txPreview.receiving?.actual > 0 ? (
+                    <span style={{ color: '#22c55e', fontWeight: 600, fontSize: '13px' }}>
+                      {fNumber(txPreview.receiving.actual)} {txPreview.receiving?.name}
+                    </span>
+                  ) : (
+                    <div>
+                      <span style={{ color: '#ef4444', fontWeight: 500, fontSize: '12px', fontStyle: 'italic' }}>
+                        Failed
+                      </span>
+                      <div style={{ color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)', fontSize: '9px', marginTop: '2px' }}>
+                        Would lose tx fee
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Divider + Details */}
+              {(txPreview.priceImpact !== null && txPreview.priceImpact > 0.01) || txPreview.receiving?.actual > 0 ? (
+                <div style={{ borderTop: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`, marginTop: '10px', paddingTop: '10px' }}>
+                  {/* Price Impact */}
+                  {txPreview.priceImpact !== null && txPreview.priceImpact > 0.01 && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                      <span style={{ color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', fontSize: '11px' }}>Impact</span>
+                      <span style={{
+                        color: txPreview.priceImpact > 5 ? '#ef4444' : txPreview.priceImpact > 2 ? '#f59e0b' : '#22c55e',
+                        fontWeight: 500, fontSize: '11px'
+                      }}>
+                        -{txPreview.priceImpact.toFixed(2)}%
+                      </span>
+                    </div>
+                  )}
+                  {/* Rate */}
+                  {txPreview.receiving?.actual > 0 && txPreview.sending?.amount > 0 && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span style={{ color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', fontSize: '11px' }}>Rate</span>
+                      <span style={{ color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)', fontSize: '11px' }}>
+                        1 {txPreview.receiving?.name} = {fNumber(txPreview.sending.amount / txPreview.receiving.actual)} {txPreview.sending?.name}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              ) : null}
+            </div>
+
+            {/* Preview Badge */}
+            <div style={{
+              textAlign: 'center',
+              marginBottom: '12px',
+              padding: '6px',
+              background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
+              borderRadius: '6px'
+            }}>
+              <span style={{ fontSize: '10px', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>
+                Preview · No funds sent yet
+              </span>
+            </div>
+
+            {/* Buttons */}
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button
+                onClick={handleCancelPreview}
+                style={{
+                  flex: 1, padding: '12px', borderRadius: '10px',
+                  border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
+                  background: 'transparent',
+                  color: isDark ? '#fff' : '#000',
+                  fontWeight: 500, cursor: 'pointer', fontSize: '13px'
+                }}
+              >
+                Cancel
+              </button>
+              {txPreview.status !== 'error' && pendingTx && (
+                <button
+                  onClick={handleConfirmSwap}
+                  style={{
+                    flex: 1, padding: '12px', borderRadius: '10px',
+                    border: 'none',
+                    background: txPreview.status === 'warning' ? '#f59e0b' : '#22c55e',
+                    color: '#fff',
+                    fontWeight: 600, cursor: 'pointer', fontSize: '13px'
+                  }}
+                >
+                  {txPreview.status === 'warning' ? 'Swap Anyway' : 'Confirm'}
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       <OverviewWrapper isDark={isDark}>
         {/* XRP page notice - show that we're displaying RLUSD/XRP orderbook */}
         {isXRPTokenPage && (
@@ -2102,19 +2782,8 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
             </Typography>
           </Box>
         )}
-        <Box sx={{ mb: 1 }}>
-          <Tabs
-            sx={{
-              minHeight: '32px',
-              '& .MuiTab-root': {
-                minHeight: '32px',
-                fontSize: '14px',
-                py: 0.5,
-                textTransform: 'none'
-              }
-            }}
-            isDark={isDark}
-          >
+        <Box sx={{ mb: 0.5 }}>
+          <Tabs isDark={isDark}>
             <Tab
               isActive={orderType === 'market'}
               onClick={() => {
@@ -2122,14 +2791,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                 setShowOrderbook(false);
               }}
               isDark={isDark}
-              sx={{
-                '& .MuiTab-root': {
-                  minHeight: '32px',
-                  fontSize: '14px',
-                  py: 0.5,
-                  textTransform: 'none'
-                }
-              }}
             >
               Market
             </Tab>
@@ -2137,14 +2798,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
               isActive={orderType === 'limit'}
               onClick={() => setOrderType('limit')}
               isDark={isDark}
-              sx={{
-                '& .MuiTab-root': {
-                  minHeight: '32px',
-                  fontSize: '14px',
-                  py: 0.5,
-                  textTransform: 'none'
-                }
-              }}
             >
               Limit
             </Tab>
@@ -2153,254 +2806,192 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
 
         <ConverterFrame>
           <AmountRows>
+            {/* You Pay Section */}
             <CurrencyContent isDark={isDark}>
-              <Box display="flex" flexDirection="column" flex="1" gap="3px">
-                <Typography
-                  variant="caption"
-                  color="textSecondary"
-                  isDark={isDark}
-                  sx={{
-                    fontSize: '11px',
+              <Box display="flex" flexDirection="column" flex="1" gap="4px">
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span style={{
+                    fontSize: '10px',
+                    fontWeight: 600,
                     textTransform: 'uppercase',
                     letterSpacing: '0.5px',
-                    opacity: 0.7
-                  }}
-                >
-                  You pay
-                </Typography>
-                <Stack direction="row" alignItems="center" spacing={0.5}>
-                  <TokenImage
-                    src={`https://s1.xrpl.to/token/${curr1.md5}`}
-                    width={32}
-                    height={32}
-                    alt={`${curr1.name} token icon`}
-                    unoptimized={true}
-                    onError={(event) => (event.target.src = '/static/alt.webp')}
-                  />
-                  <Typography
-                    variant="subtitle1"
-                    isDark={isDark}
-                    sx={{ fontSize: { xs: '0.9rem', sm: '1rem' } }}
-                  >
-                    {curr1.name}
-                  </Typography>
-                </Stack>
-                <Typography
-                  variant="caption"
-                  color="textSecondary"
-                  isDark={isDark}
-                  sx={{ fontSize: { xs: '0.65rem', sm: '0.7rem' }, opacity: 0.6 }}
-                >
-                  {curr1.user}
-                </Typography>
-              </Box>
-              <InputContent isDark={isDark}>
-                {isLoggedIn && (
-                  <Stack
-                    direction="row"
-                    alignItems="center"
-                    justifyContent="flex-end"
-                    spacing={0.5}
-                    sx={{ mb: 0.5 }}
-                  >
-                    <Typography
-                      variant="caption"
-                      isDark={isDark}
-                      sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
-                    >
-                      Balance{' '}
-                      <Typography
-                        variant="caption"
-                        color="primary"
-                        isDark={isDark}
-                        sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
-                      >
+                    color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'
+                  }}>
+                    You pay
+                  </span>
+                  {isLoggedIn && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span style={{ fontSize: '10px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
                         {accountPairBalance?.curr1.value
-                          ? new Decimal(accountPairBalance.curr1.value)
-                            .toFixed(6)
-                            .replace(/\.?0+$/, '')
-                          : '0'}
-                      </Typography>
-                    </Typography>
-                    <div className="flex gap-1">
-                      {[0.25, 0.5, 0.75, 1].map((p) => (
-                        <button
-                          key={p}
-                          disabled={!accountPairBalance?.curr1?.value}
-                          onClick={() => (p === 1 ? onFillMax() : onFillPercent(p))}
-                          className={cn(
-                            'px-1.5 py-0.5 text-[10px] font-medium rounded transition-colors',
-                            !accountPairBalance?.curr1?.value
-                              ? 'opacity-30 cursor-not-allowed'
-                              : isDark
-                                ? 'text-white/40 hover:text-primary hover:bg-primary/10'
-                                : 'text-gray-400 hover:text-primary hover:bg-primary/10'
-                          )}
-                        >
-                          {p === 1 ? 'MAX' : `${Math.round(p * 100)}%`}
-                        </button>
-                      ))}
+                          ? new Decimal(accountPairBalance.curr1.value).toFixed(4).replace(/\.?0+$/, '')
+                          : '0'} {curr1.name}
+                      </span>
+                      <div style={{ display: 'flex', gap: '2px' }}>
+                        {[0.5, 1].map((p) => (
+                          <button
+                            key={p}
+                            disabled={!accountPairBalance?.curr1?.value}
+                            onClick={() => (p === 1 ? onFillMax() : onFillPercent(p))}
+                            style={{
+                              padding: '2px 6px',
+                              fontSize: '9px',
+                              fontWeight: 600,
+                              borderRadius: '4px',
+                              border: 'none',
+                              cursor: accountPairBalance?.curr1?.value ? 'pointer' : 'not-allowed',
+                              opacity: accountPairBalance?.curr1?.value ? 1 : 0.3,
+                              background: isDark ? 'rgba(59,130,246,0.15)' : 'rgba(59,130,246,0.1)',
+                              color: '#3b82f6',
+                              transition: 'all 0.15s'
+                            }}
+                          >
+                            {p === 1 ? 'MAX' : '50%'}
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                  </Stack>
-                )}
-                <Input
-                  placeholder="0"
-                  autoComplete="new-password"
-                  isDark={isDark}
-                  value={amount1}
-                  onChange={handleChangeAmount1}
-                  sx={{
-                    width: '100%',
-                    input: {
-                      autoComplete: 'off',
-                      padding: '0px',
-                      border: 'none',
-                      fontSize: { xs: '14px', sm: '16px' },
-                      textAlign: 'end',
-                      appearance: 'none',
-                      fontWeight: 400
-                    }
-                  }}
-                />
-                <Typography
-                  variant="caption"
-                  color="textSecondary"
-                  isDark={isDark}
-                  sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
-                >
-                  {curr1IsXRP
-                    ? `~${fNumber(tokenPrice1)} XRP`
-                    : `~${currencySymbols[activeFiatCurrency]} ${fNumber(tokenPrice1)}`}
-                </Typography>
-              </InputContent>
+                  )}
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '4px' }}>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '6px 10px',
+                    borderRadius: '8px',
+                    background: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)',
+                    cursor: 'pointer'
+                  }}>
+                    <TokenImage
+                      src={`https://s1.xrpl.to/token/${curr1.md5}`}
+                      width={24}
+                      height={24}
+                      alt={curr1.name}
+                      unoptimized={true}
+                      onError={(event) => (event.target.src = '/static/alt.webp')}
+                    />
+                    <span style={{ fontSize: '14px', fontWeight: 600, color: isDark ? '#fff' : '#000' }}>
+                      {curr1.name}
+                    </span>
+                  </div>
+                  <div style={{ flex: 1, textAlign: 'right' }}>
+                    <Input
+                      placeholder="0.00"
+                      autoComplete="new-password"
+                      isDark={isDark}
+                      value={amount1}
+                      onChange={handleChangeAmount1}
+                      sx={{
+                        width: '100%',
+                        input: {
+                          autoComplete: 'off',
+                          padding: '0px',
+                          border: 'none',
+                          fontSize: '20px',
+                          textAlign: 'end',
+                          appearance: 'none',
+                          fontWeight: 500
+                        }
+                      }}
+                    />
+                    <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>
+                      {curr1IsXRP ? `≈ ${fNumber(tokenPrice1)} XRP` : `≈ ${currencySymbols[activeFiatCurrency]}${fNumber(tokenPrice1)}`}
+                    </span>
+                  </div>
+                </div>
+              </Box>
             </CurrencyContent>
 
+            {/* You Receive Section */}
             <CurrencyContent isDark={isDark}>
-              <Box display="flex" flexDirection="column" flex="1" gap="3px">
-                <Typography
-                  variant="caption"
-                  color="textSecondary"
-                  isDark={isDark}
-                  sx={{
-                    fontSize: '11px',
+              <Box display="flex" flexDirection="column" flex="1" gap="4px">
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span style={{
+                    fontSize: '10px',
+                    fontWeight: 600,
                     textTransform: 'uppercase',
                     letterSpacing: '0.5px',
-                    opacity: 0.7
-                  }}
-                >
-                  You receive
-                </Typography>
-                <Stack direction="row" alignItems="center" spacing={0.5}>
-                  <TokenImage
-                    src={`https://s1.xrpl.to/token/${curr2.md5}`}
-                    width={32}
-                    height={32}
-                    alt={`${curr2.name} token icon`}
-                    unoptimized={true}
-                    onError={(event) => (event.target.src = '/static/alt.webp')}
-                  />
-                  <Typography
-                    variant="subtitle1"
-                    isDark={isDark}
-                    sx={{ fontSize: { xs: '0.9rem', sm: '1rem' } }}
-                  >
-                    {curr2.name}
-                  </Typography>
-                </Stack>
-                <Typography
-                  variant="caption"
-                  color="textSecondary"
-                  isDark={isDark}
-                  sx={{ fontSize: { xs: '0.65rem', sm: '0.7rem' }, opacity: 0.6 }}
-                >
-                  {curr2.user}
-                </Typography>
-              </Box>
-              <InputContent isDark={isDark}>
-                {isLoggedIn && (
-                  <Stack
-                    direction="row"
-                    alignItems="center"
-                    justifyContent="flex-end"
-                    spacing={0.5}
-                    sx={{ mb: 0.5 }}
-                  >
-                    <Typography
-                      variant="caption"
+                    color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'
+                  }}>
+                    You receive
+                  </span>
+                  {isLoggedIn && (
+                    <span style={{ fontSize: '10px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
+                      {accountPairBalance?.curr2.value
+                        ? new Decimal(accountPairBalance.curr2.value).toFixed(4).replace(/\.?0+$/, '')
+                        : '0'} {curr2.name}
+                    </span>
+                  )}
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '4px' }}>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '6px 10px',
+                    borderRadius: '8px',
+                    background: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)',
+                    cursor: 'pointer'
+                  }}>
+                    <TokenImage
+                      src={`https://s1.xrpl.to/token/${curr2.md5}`}
+                      width={24}
+                      height={24}
+                      alt={curr2.name}
+                      unoptimized={true}
+                      onError={(event) => (event.target.src = '/static/alt.webp')}
+                    />
+                    <span style={{ fontSize: '14px', fontWeight: 600, color: isDark ? '#fff' : '#000' }}>
+                      {curr2.name}
+                    </span>
+                  </div>
+                  <div style={{ flex: 1, textAlign: 'right' }}>
+                    <Input
+                      placeholder="0.00"
+                      autoComplete="new-password"
                       isDark={isDark}
-                      sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
-                    >
-                      Balance{' '}
-                      <Typography
-                        variant="caption"
-                        color="primary"
-                        isDark={isDark}
-                        sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
-                      >
-                        {accountPairBalance?.curr2.value
-                          ? new Decimal(accountPairBalance.curr2.value)
-                            .toFixed(6)
-                            .replace(/\.?0+$/, '')
-                          : '0'}
-                      </Typography>
-                    </Typography>
-                  </Stack>
-                )}
-                <Input
-                  placeholder="0"
-                  autoComplete="new-password"
-                  isDark={isDark}
-                  value={amount2}
-                  onChange={handleChangeAmount2}
-                  sx={{
-                    width: '100%',
-                    input: {
-                      autoComplete: 'off',
-                      padding: '0px',
-                      border: 'none',
-                      fontSize: { xs: '14px', sm: '16px' },
-                      textAlign: 'end',
-                      appearance: 'none',
-                      fontWeight: 400
-                    }
-                  }}
-                />
-                <Typography
-                  variant="caption"
-                  color="textSecondary"
-                  isDark={isDark}
-                  sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
-                >
-                  {curr2IsXRP
-                    ? `~${fNumber(tokenPrice2)} XRP`
-                    : `~${currencySymbols[activeFiatCurrency]} ${fNumber(tokenPrice2)}`}
-                </Typography>
-              </InputContent>
+                      value={amount2}
+                      onChange={handleChangeAmount2}
+                      sx={{
+                        width: '100%',
+                        input: {
+                          autoComplete: 'off',
+                          padding: '0px',
+                          border: 'none',
+                          fontSize: '20px',
+                          textAlign: 'end',
+                          appearance: 'none',
+                          fontWeight: 500
+                        }
+                      }}
+                    />
+                    <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>
+                      {curr2IsXRP ? `≈ ${fNumber(tokenPrice2)} XRP` : `≈ ${currencySymbols[activeFiatCurrency]}${fNumber(tokenPrice2)}`}
+                    </span>
+                  </div>
+                </div>
+              </Box>
             </CurrencyContent>
 
-            <ToggleContent isDark={isDark}>
-              <IconButton
-                size="small"
-                onClick={onRevertExchange}
-                isDark={isDark}
-                sx={{
-                  backgroundColor: 'transparent',
-                  padding: { xs: '4px', sm: '3px' },
-                  width: { xs: '32px', sm: '28px' },
-                  height: { xs: '32px', sm: '28px' },
-                  '&:hover': {
-                    backgroundColor: 'transparent'
-                  }
+            <ToggleContent isDark={isDark} onClick={onRevertExchange}>
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: '36px',
+                  height: '36px'
                 }}
               >
                 <ArrowUpDown
-                  size={18}
+                  size={16}
+                  strokeWidth={2.5}
                   style={{
-                    color: isDark ? '#FFFFFF' : '#212B36',
-                    transition: 'all 0.2s ease-in-out'
+                    color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.5)',
+                    transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)'
                   }}
                 />
-              </IconButton>
+              </div>
             </ToggleContent>
           </AmountRows>
 
@@ -2947,13 +3538,14 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                     if (!lp || !isFinite(lp)) return null;
 
                     // Check if order would instantly fill
-                    const willFillBuy = revert && bestAsk != null && lp >= Number(bestAsk);
-                    const willFillSell = !revert && bestBid != null && lp <= Number(bestBid);
+                    // revert=true means SELL (token->XRP), revert=false means BUY (XRP->token)
+                    const willFillBuy = !revert && bestAsk != null && lp >= Number(bestAsk);
+                    const willFillSell = revert && bestBid != null && lp <= Number(bestBid);
 
                     if (willFillBuy || willFillSell) {
                       const pct = willFillBuy
-                        ? ((lp - Number(bestAsk)) / Number(bestAsk)) * 100
-                        : ((Number(bestBid) - lp) / Number(bestBid)) * 100;
+                        ? ((lp - Number(bestAsk)) / Number(bestAsk)) * 100  // BUY above ask
+                        : ((Number(bestBid) - lp) / Number(bestBid)) * 100; // SELL below bid
                       return (
                         <Alert severity="error" sx={{ mt: 0.25, py: 0.25 }}>
                           <Typography
@@ -2971,11 +3563,11 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                     }
 
                     // Show warning if price deviates from market
-                    const refPrice = revert ? Number(bestAsk) : Number(bestBid);
+                    // BUY (revert=false) → compare to bestAsk (what sellers want)
+                    // SELL (revert=true) → compare to bestBid (what buyers offer)
+                    const refPrice = revert ? Number(bestBid) : Number(bestAsk);
                     if (refPrice && refPrice > 0) {
-                      const pctDiff = revert
-                        ? ((lp - refPrice) / refPrice) * 100
-                        : ((refPrice - lp) / refPrice) * 100;
+                      const pctDiff = ((lp - refPrice) / refPrice) * 100;
                       if (Math.abs(pctDiff) > 1) {
                         const direction = pctDiff > 0 ? 'above' : 'below';
                         const color =
@@ -3092,9 +3684,12 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
           {orderType === 'limit' && amount1 && amount2 && limitPrice && (
             <SummaryBox isDark={isDark}>
               <Typography variant="caption" isDark={isDark} sx={{ fontSize: '10px' }}>
-                <span style={{ fontWeight: 500 }}>{revert ? 'Buy' : 'Sell'}</span> {amount1}{' '}
+                <span style={{ fontWeight: 500 }}>Sell</span> {amount1}{' '}
                 {curr1.name} @ {limitPrice} ={' '}
-                {new Decimal(amount1 || 0).mul(limitPrice || 0).toFixed(6)} {curr2.name}
+                {revert
+                  ? new Decimal(amount1 || 0).mul(limitPrice || 0).toFixed(6)
+                  : new Decimal(amount1 || 0).div(limitPrice || 1).toFixed(6)
+                } {curr2.name}
                 {orderExpiry !== 'never' && <span style={{ opacity: 0.6 }}> · {expiryHours}h</span>}
               </Typography>
             </SummaryBox>
@@ -3148,6 +3743,11 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
               <div>
                 seed:{' '}
                 <span style={{ color: '#22c55e', wordBreak: 'break-all' }}>{debugInfo.seed}</span>
+              </div>
+              <div style={{ marginTop: 6, borderTop: '1px solid rgba(234,179,8,0.3)', paddingTop: 6 }}>
+                <div style={{ fontWeight: 500, color: '#ca8a04' }}>Token Data:</div>
+                <div>curr1: {curr1?.name || curr1?.currency}{curr1?.currency !== 'XRP' && <> | trustline: <span style={{ color: hasTrustline1 ? '#22c55e' : '#ef4444' }}>{hasTrustline1 ? 'YES' : 'NO'}</span></>}</div>
+                <div>curr2: {curr2?.name || curr2?.currency}{curr2?.currency !== 'XRP' && <> | trustline: <span style={{ color: hasTrustline2 ? '#22c55e' : '#ef4444' }}>{hasTrustline2 ? 'YES' : 'NO'}</span></>}</div>
               </div>
             </div>
           )}

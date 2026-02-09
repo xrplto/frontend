@@ -1,5 +1,5 @@
 import { useState, createContext, useEffect, useMemo } from 'react';
-import axios from 'axios';
+import api from 'src/utils/api';
 import { Client } from 'xrpl';
 
 // Redux
@@ -23,6 +23,14 @@ const getWalletStorage = () => {
   return _walletStorageSingleton;
 };
 
+// Strip sensitive fields before writing to localStorage (seeds stay in memory only)
+const stripSeed = (profile) => {
+  if (!profile) return profile;
+  const { seed, ...safe } = profile;
+  return safe;
+};
+const stripSeedArray = (profiles) => profiles.map(stripSeed);
+
 function ContextProviderInner({ children, data, openSnackbar }) {
   const dispatch = useDispatch();
   const BASE_URL = 'https://api.xrpl.to/v1';
@@ -33,6 +41,7 @@ function ContextProviderInner({ children, data, openSnackbar }) {
   const KEY_ACCOUNT_PROFILES = 'account_profiles_2';
 
   const [sync, setSync] = useState(0);
+  const [trustlineUpdate, setTrustlineUpdate] = useState(null); // { issuer, currency, hasTrustline }
   const [loading, setLoading] = useState(false);
   const [connecting, setConnecting] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
@@ -129,8 +138,9 @@ function ContextProviderInner({ children, data, openSnackbar }) {
               allProfiles.push(deviceProfile);
             }
           });
-          setProfiles(allProfiles);
-          window.localStorage.setItem('account_profiles_2', JSON.stringify(allProfiles));
+          const safeAllProfiles = stripSeedArray(allProfiles);
+          setProfiles(safeAllProfiles);
+          window.localStorage.setItem('account_profiles_2', JSON.stringify(safeAllProfiles));
         }
       }
     };
@@ -179,7 +189,7 @@ function ContextProviderInner({ children, data, openSnackbar }) {
           try {
             const profile = await walletStorage.getSecureItem(KEY_ACCOUNT_PROFILE);
             if (profile) {
-              localStorage.setItem(KEY_ACCOUNT_PROFILE, JSON.stringify(profile));
+              localStorage.setItem(KEY_ACCOUNT_PROFILE, JSON.stringify(stripSeed(profile)));
               localStorage.removeItem(KEY_ACCOUNT_PROFILE + '_enc');
               setAccountProfile(profile);
             }
@@ -188,31 +198,42 @@ function ContextProviderInner({ children, data, openSnackbar }) {
           }
         }
 
-        // For OAuth wallets, decrypt seed immediately if not already present
-        if (
-          accountProfile &&
-          (accountProfile.wallet_type === 'oauth' || accountProfile.wallet_type === 'social') &&
-          !accountProfile.seed
-        ) {
+        // Auto-decrypt seed on load — seed stays in React state only (never localStorage)
+        if (accountProfile && !accountProfile.seed) {
           try {
-            const walletId = `${accountProfile.provider}_${accountProfile.provider_id}`;
-            const storedPassword = await walletStorage.getSecureItem(`wallet_pwd_${walletId}`);
-
-            if (storedPassword) {
-              // Pass known address for fast lookup (only decrypts 1 wallet instead of 25!)
-              const wallet = await walletStorage.findWalletBySocialId(
-                walletId,
-                storedPassword,
-                accountProfile.account || accountProfile.address
-              );
-              if (wallet?.seed) {
-                const updatedProfile = { ...accountProfile, seed: wallet.seed };
-                setAccountProfile(updatedProfile);
-                localStorage.setItem(KEY_ACCOUNT_PROFILE, JSON.stringify(updatedProfile));
+            if (accountProfile.wallet_type === 'oauth' || accountProfile.wallet_type === 'social') {
+              // OAuth/social: use provider password from IndexedDB
+              const walletId = `${accountProfile.provider}_${accountProfile.provider_id}`;
+              const storedPassword = await walletStorage.getSecureItem(`wallet_pwd_${walletId}`);
+              if (storedPassword) {
+                const wallet = await walletStorage.findWalletBySocialId(
+                  walletId,
+                  storedPassword,
+                  accountProfile.account || accountProfile.address
+                );
+                if (wallet?.seed) {
+                  setAccountProfile(prev => prev ? { ...prev, seed: wallet.seed } : prev);
+                }
+              }
+            } else if (accountProfile.wallet_type === 'device') {
+              // Device: use device fingerprint + encrypted credential
+              const { deviceFingerprint } = await import('src/utils/encryptedWalletStorage');
+              const deviceKeyId = await deviceFingerprint.getDeviceId();
+              if (deviceKeyId) {
+                const storedPassword = await walletStorage.getWalletCredential(deviceKeyId);
+                if (storedPassword) {
+                  const wallet = await walletStorage.getWalletByAddress(
+                    accountProfile.account || accountProfile.address,
+                    storedPassword
+                  );
+                  if (wallet?.seed) {
+                    setAccountProfile(prev => prev ? { ...prev, seed: wallet.seed } : prev);
+                  }
+                }
               }
             }
           } catch (err) {
-            // Could not decrypt seed on load
+            // Could not decrypt seed on load — user will be prompted when needed
           }
         }
 
@@ -222,9 +243,10 @@ function ContextProviderInner({ children, data, openSnackbar }) {
           try {
             const migratedProfiles = await walletStorage.getSecureItem(KEY_ACCOUNT_PROFILES);
             if (migratedProfiles) {
-              localStorage.setItem('profiles', JSON.stringify(migratedProfiles));
+              const safeMigrated = Array.isArray(migratedProfiles) ? stripSeedArray(migratedProfiles) : migratedProfiles;
+              localStorage.setItem('profiles', JSON.stringify(safeMigrated));
               localStorage.removeItem('account_profiles_2_enc');
-              setProfiles(migratedProfiles);
+              setProfiles(safeMigrated);
             }
           } catch (err) {
             // Crypto operation failed
@@ -241,7 +263,7 @@ function ContextProviderInner({ children, data, openSnackbar }) {
     const profile = profiles.find((x) => x.account === account);
     if (!profile) return;
     setAccountProfile(profile);
-    localStorage.setItem(KEY_ACCOUNT_PROFILE, JSON.stringify(profile));
+    localStorage.setItem(KEY_ACCOUNT_PROFILE, JSON.stringify(stripSeed(profile)));
   };
 
   const doLogIn = async (profile, profilesOverride = null) => {
@@ -279,8 +301,8 @@ function ContextProviderInner({ children, data, openSnackbar }) {
       }
     }
 
-    setAccountProfile(profileWithTimestamp);
-    localStorage.setItem(KEY_ACCOUNT_PROFILE, JSON.stringify(profileWithTimestamp));
+    setAccountProfile(profileWithTimestamp); // seed stays in memory
+    localStorage.setItem(KEY_ACCOUNT_PROFILE, JSON.stringify(stripSeed(profileWithTimestamp)));
 
     let exist = false;
     const newProfiles = [];
@@ -296,14 +318,18 @@ function ContextProviderInner({ children, data, openSnackbar }) {
       newProfiles.push(profileWithTimestamp);
     }
 
-    localStorage.setItem('profiles', JSON.stringify(newProfiles));
-    setProfiles(newProfiles);
+    const safeProfiles = stripSeedArray(newProfiles);
+    localStorage.setItem('profiles', JSON.stringify(safeProfiles));
+    setProfiles(safeProfiles);
   };
 
   const doLogOut = () => {
     // CRITICAL: Preserve encryption entropy before clearing localStorage
     // Without this, encrypted data in IndexedDB becomes unrecoverable
     const entropy = localStorage.getItem('__wk_entropy__');
+
+    // Clear credential cache (seeds in memory)
+    try { walletStorage.lockWallet(); } catch (e) { /* ignore */ }
 
     // Clear everything - wallets + passwords in IndexedDB are safe
     localStorage.clear();
@@ -322,7 +348,7 @@ function ContextProviderInner({ children, data, openSnackbar }) {
 
   const removeProfile = async (account) => {
     const newProfiles = profiles.filter((obj) => obj.account !== account);
-    localStorage.setItem('profiles', JSON.stringify(newProfiles));
+    localStorage.setItem('profiles', JSON.stringify(stripSeedArray(newProfiles)));
     setProfiles(newProfiles);
     // Clean up encrypted wallet data and backup flag
     try {
@@ -359,13 +385,15 @@ function ContextProviderInner({ children, data, openSnackbar }) {
     }
 
     const account = accountProfile.account;
-    const wsUrl = `wss://api.xrpl.to/ws/account/balance/${account}`;
     let ws = null;
     let reconnectTimeout = null;
 
-    const connect = () => {
-      console.log('[Balance WS] Connecting:', wsUrl);
-      ws = new WebSocket(wsUrl);
+    const connect = async () => {
+      try {
+        const res = await fetch(`/api/ws/session?type=balance&id=${account}`);
+        const { wsUrl } = await res.json();
+        console.log('[Balance WS] Connecting:', wsUrl);
+        ws = new WebSocket(wsUrl);
 
       ws.onopen = () => {
         console.log('[Balance WS] Connected');
@@ -394,13 +422,17 @@ function ContextProviderInner({ children, data, openSnackbar }) {
       };
 
       ws.onclose = (ev) => {
-        console.log(`[Balance WS] Closed code=${ev.code} reason="${ev.reason}"`);
-        if (ev.code !== 4011) {
-          reconnectTimeout = setTimeout(connect, 3000);
-        } else {
-          console.warn('[Balance WS] Connection limit reached - will not reconnect');
-        }
-      };
+          console.log(`[Balance WS] Closed code=${ev.code} reason="${ev.reason}"`);
+          if (ev.code !== 4011) {
+            reconnectTimeout = setTimeout(connect, 3000);
+          } else {
+            console.warn('[Balance WS] Connection limit reached - will not reconnect');
+          }
+        };
+      } catch (e) {
+        console.error('[Balance WS] Session error:', e);
+        reconnectTimeout = setTimeout(connect, 3000);
+      }
     };
 
     connect();
@@ -423,7 +455,7 @@ function ContextProviderInner({ children, data, openSnackbar }) {
         return;
       }
 
-      axios
+      api
         .get(`${BASE_URL}/watchlist?account=${account}`)
         .then((res) => {
           if (res.status === 200 && res.data.success) {
@@ -453,7 +485,7 @@ function ContextProviderInner({ children, data, openSnackbar }) {
       const action = watchList.includes(md5) ? 'remove' : 'add';
       const body = { md5, account, action };
 
-      const res = await axios.post(`${BASE_URL}/watchlist`, body);
+      const res = await api.post(`${BASE_URL}/watchlist`, body);
 
       if (res.status === 200 && res.data.success) {
         setWatchList(res.data.watchlist || []);
@@ -509,7 +541,9 @@ function ContextProviderInner({ children, data, openSnackbar }) {
       deletingNfts,
       setDeletingNfts,
       watchList,
-      updateWatchList
+      updateWatchList,
+      trustlineUpdate,
+      setTrustlineUpdate
     }),
     [
       darkMode,
@@ -523,8 +557,8 @@ function ContextProviderInner({ children, data, openSnackbar }) {
       accountBalance,
       connecting,
       deletingNfts,
-      watchList
-      // Add any other dependencies that should trigger a re-creation of the context value
+      watchList,
+      trustlineUpdate
     ]
   );
 

@@ -1,4 +1,4 @@
-import axios from 'axios';
+import api, { apiFetch } from 'src/utils/api';
 import { useRef, useState, useContext } from 'react';
 import { Check, X, PlusCircle, Edit, Info, Download } from 'lucide-react';
 import { cn } from 'src/utils/cn';
@@ -222,7 +222,7 @@ export default function EditTokenDialog({ token, setToken }) {
         return;
       }
 
-      res = await fetch(`${BASE_URL}/admin/update_token`, {
+      res = await apiFetch(`${BASE_URL}/admin/update-token`, {
         method: 'POST',
         headers: {
           'x-access-account': accountAdmin,
@@ -343,7 +343,7 @@ export default function EditTokenDialog({ token, setToken }) {
 
   const handleGetDate = () => {
     setLoading(true);
-    axios
+    api
       .get(`https://api.xrplorer.com/custom/getTokenBirth?issuer=${issuer}&currency=${currency}`)
       .then((res) => {
         let ret = res.status === 200 ? res.data : undefined;

@@ -1,8 +1,9 @@
+import { apiFetch } from 'src/utils/api';
 import Image from 'next/image';
 import { useState, useContext, useEffect, memo, useCallback, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useRouter } from 'next/router';
-import axios from 'axios';
+import api from 'src/utils/api';
 import { throttle, fVolume, fNumber } from 'src/utils/formatters';
 import { AppContext } from 'src/context/AppContext';
 import Logo from 'src/components/Logo';
@@ -14,7 +15,7 @@ import { cn } from 'src/utils/cn';
 import {
   Search,
   Menu,
-  Star,
+  Bookmark,
   ChevronDown,
   ExternalLink,
   Sparkles,
@@ -298,7 +299,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
     try {
       const callbackUrl = window.location.origin + '/callback';
       sessionStorage.setItem('auth_return_url', window.location.href);
-      const response = await fetch('https://api.xrpl.to/v1/oauth/twitter/oauth1/request', {
+      const response = await apiFetch('https://api.xrpl.to/v1/oauth/twitter/oauth1/request', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ callbackUrl })
@@ -324,7 +325,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
     if (!mobileEmail || !mobileEmail.includes('@')) return;
     setMobileEmailLoading(true);
     try {
-      const res = await fetch('https://api.xrpl.to/v1/auth/email/send-code', {
+      const res = await apiFetch('https://api.xrpl.to/v1/auth/email/send-code', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: mobileEmail })
@@ -446,7 +447,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
   // Load trending when search opens
   useEffect(() => {
     if (!searchOpen && !fullSearch) return;
-    axios
+    api
       .post(`${BASE_URL}/search`, { search: '' })
       .then((res) => {
         setSuggestedTokens(res.data?.tokens?.slice(0, 4) || []);
@@ -499,7 +500,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
     const runSearch = () => {
       console.log('[Search] Running after', Date.now() - searchStart, 'ms');
       if (detectedHexId) {
-        axios
+        api
           .post(`${BASE_URL}/search`, { search: detectedHexId }, { signal: controller.signal })
           .then((res) => {
             const nftData = res.data?.nfts?.[0];
@@ -529,7 +530,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
       (async () => {
         try {
           console.log('[Search] API call start');
-          const res = await axios.post(
+          const res = await api.post(
             `${BASE_URL}/search`,
             { search: searchQuery },
             { signal: controller.signal }
@@ -688,7 +689,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
     { path: '/gainers', name: 'Top Gainers', desc: 'Biggest price increases', icon: <TrendingUp size={16} /> },
     { path: '/most-viewed', name: 'Most Viewed', desc: 'Popular tokens', icon: <Eye size={16} /> },
     { path: '/mpt', name: 'MPT Tokens', desc: 'Multi-Purpose Tokens', icon: <Layers size={16} /> },
-    { path: '/watchlist', name: 'Watchlist', desc: 'Your saved tokens', icon: <Star size={16} /> },
+    { path: '/watchlist', name: 'Watchlist', desc: 'Your saved tokens', icon: <Bookmark size={16} /> },
     { path: '/token-traders', name: 'Top Traders', desc: 'Token leaderboard', icon: <Sparkles size={16} /> },
     { path: '/token-market', name: 'Token Market', desc: 'DEX analytics', icon: <BarChart3 size={16} /> },
     { path: '/rsi-analysis', name: 'RSI Analysis', desc: 'Technical indicators', icon: <Activity size={16} /> },
@@ -800,14 +801,15 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
   }, [settingsMenuOpen]);
 
   return (
-    <header
-      className={cn(
-        'fixed left-0 right-0 top-0 z-[1100] flex h-[52px] items-center',
-        isDark
-          ? 'bg-transparent backdrop-blur-md border-b border-white/10'
-          : 'bg-white/95 backdrop-blur-md border-b border-gray-200'
-      )}
-    >
+    <>
+      <header
+        className={cn(
+          'fixed left-0 right-0 top-0 z-[1100] flex h-[52px] items-center',
+          isDark
+            ? 'bg-transparent backdrop-blur-md border-b border-white/10'
+            : 'bg-white/95 backdrop-blur-md border-b border-gray-200'
+        )}
+      >
       <div className="relative mx-auto flex w-full max-w-full items-center justify-between px-4 sm:px-6">
         {/* Left: Logo + Nav */}
         <div className="flex shrink-0 items-center gap-6">
@@ -1004,10 +1006,10 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   'mr-1 inline-flex items-center rounded-lg px-3 py-1.5 text-[13px] font-medium transition-all duration-200',
                   isActive('/swap')
                     ? isDark
-                      ? 'text-[#3f96fe] bg-[rgba(63,150,254,10'
+                      ? 'text-[#3f96fe] bg-[rgba(63,150,254,0.1)]'
                       : 'text-blue-600 bg-blue-50'
                     : isDark
-                      ? 'text-white/70 hover:text-[#3f96fe] hover:bg-[rgba(63,150,254,5'
+                      ? 'text-white/70 hover:text-[#3f96fe] hover:bg-[rgba(63,150,254,0.05)]'
                       : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50/50'
                 )}
               >
@@ -1019,10 +1021,10 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   'mr-1 inline-flex items-center rounded-lg px-3 py-1.5 text-[13px] font-medium transition-all duration-200',
                   isActive('/news')
                     ? isDark
-                      ? 'text-[#3f96fe] bg-[rgba(63,150,254,10'
+                      ? 'text-[#3f96fe] bg-[rgba(63,150,254,0.1)]'
                       : 'text-blue-600 bg-blue-50'
                     : isDark
-                      ? 'text-white/70 hover:text-[#3f96fe] hover:bg-[rgba(63,150,254,5'
+                      ? 'text-white/70 hover:text-[#3f96fe] hover:bg-[rgba(63,150,254,0.05)]'
                       : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50/50'
                 )}
               >
@@ -2181,7 +2183,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
               className={cn(
                 'flex h-9 w-9 items-center justify-center rounded-full transition-all duration-200',
                 isDark
-                  ? 'text-white/60 hover:text-[#3f96fe] hover:bg-[rgba(63,150,254,10'
+                  ? 'text-white/60 hover:text-[#3f96fe] hover:bg-[rgba(63,150,254,0.1)]'
                   : 'text-gray-500 hover:text-[#3f96fe] hover:bg-blue-50'
               )}
             >
@@ -2202,7 +2204,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                     : 'border-gray-200 text-gray-400 hover:text-[#3f96fe] hover:border-[#3f96fe]/50 hover:bg-blue-50'
                 )}
               >
-                <Star size={16} />
+                <Bookmark size={16} />
               </a>
 
               {/* Settings Dropdown */}
@@ -2255,7 +2257,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                               'flex items-center justify-center h-8 rounded-lg text-[11px] font-medium transition-all duration-150',
                               currency === activeFiatCurrency
                                 ? isDark
-                                  ? 'bg-[rgba(63,150,254,0.15)] text-[#3f96fe] ring-1 ring-[rgba(63,150,254,40'
+                                  ? 'bg-[rgba(63,150,254,0.15)] text-[#3f96fe] ring-1 ring-[rgba(63,150,254,0.4)]'
                                   : 'bg-blue-500 text-white'
                                 : isDark
                                   ? 'text-white/60 hover:bg-white/5 hover:text-white'
@@ -2295,7 +2297,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                             'flex items-center justify-center gap-1.5 h-8 rounded-lg text-[12px] font-medium transition-all duration-150',
                             themeName === 'XrplToLightTheme'
                               ? isDark
-                                ? 'bg-[rgba(63,150,254,0.15)] text-[#3f96fe] ring-1 ring-[rgba(63,150,254,40'
+                                ? 'bg-[rgba(63,150,254,0.15)] text-[#3f96fe] ring-1 ring-[rgba(63,150,254,0.4)]'
                                 : 'bg-blue-500 text-white'
                               : isDark
                                 ? 'text-white/60 hover:bg-white/5 hover:text-white'
@@ -2314,7 +2316,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                             'flex items-center justify-center gap-1.5 h-8 rounded-lg text-[12px] font-medium transition-all duration-150',
                             themeName === 'XrplToDarkTheme'
                               ? isDark
-                                ? 'bg-[rgba(63,150,254,0.15)] text-[#3f96fe] ring-1 ring-[rgba(63,150,254,40'
+                                ? 'bg-[rgba(63,150,254,0.15)] text-[#3f96fe] ring-1 ring-[rgba(63,150,254,0.4)]'
                                 : 'bg-blue-500 text-white'
                               : isDark
                                 ? 'text-white/60 hover:bg-white/5 hover:text-white'
@@ -2556,7 +2558,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                 className={cn(
                   'flex h-9 w-9 items-center justify-center rounded-full transition-all duration-200',
                   isDark
-                    ? 'text-white/60 hover:text-[#3f96fe] hover:bg-[rgba(63,150,254,10'
+                    ? 'text-white/60 hover:text-[#3f96fe] hover:bg-[rgba(63,150,254,0.1)]'
                     : 'text-gray-500 hover:text-[#3f96fe] hover:bg-blue-50'
                 )}
               >
@@ -2566,6 +2568,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
           )}
         </div>
       </div>
+      </header>
 
       {/* Mobile Drawer */}
       {openDrawer && (
@@ -2803,14 +2806,14 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                         : 'text-yellow-600 hover:bg-yellow-500/10'
                   )}
                 >
-                  <Star size={14} />
+                  <Bookmark size={14} />
                   Watchlist
                 </a>
 
                 <div
                   className={cn(
                     'my-2 border-t',
-                    isDark ? 'border-[rgba(63,150,254,10' : 'border-blue-200/30'
+                    isDark ? 'border-[rgba(63,150,254,0.1)]' : 'border-blue-200/30'
                   )}
                 />
 
@@ -2841,7 +2844,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
               <div
                 className={cn(
                   'my-3 border-t',
-                  isDark ? 'border-[rgba(63,150,254,10' : 'border-blue-200/30'
+                  isDark ? 'border-[rgba(63,150,254,0.1)]' : 'border-blue-200/30'
                 )}
               />
 
@@ -2967,7 +2970,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                         className={cn(
                           'mt-2 rounded-lg border p-3',
                           isDark
-                            ? 'border-[rgba(63,150,254,20 bg-white/[0.02]'
+                            ? 'border-[rgba(63,150,254,0.2)] bg-white/[0.02]'
                             : 'border-gray-200 bg-gray-50'
                         )}
                       >
@@ -3095,7 +3098,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
               <div
                 className={cn(
                   'my-3 border-t',
-                  isDark ? 'border-[rgba(63,150,254,10' : 'border-blue-200/30'
+                  isDark ? 'border-[rgba(63,150,254,0.1)]' : 'border-blue-200/30'
                 )}
               />
 
@@ -3123,7 +3126,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                         'flex items-center justify-center h-10 rounded-lg text-[12px] font-medium transition-all duration-150',
                         currency === activeFiatCurrency
                           ? isDark
-                            ? 'bg-[rgba(63,150,254,0.15)] text-[#3f96fe] ring-1 ring-[rgba(63,150,254,40'
+                            ? 'bg-[rgba(63,150,254,0.15)] text-[#3f96fe] ring-1 ring-[rgba(63,150,254,0.4)]'
                             : 'bg-blue-500 text-white'
                           : isDark
                             ? 'text-white/60 hover:bg-white/5 hover:text-white'
@@ -3155,7 +3158,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       'flex items-center justify-center gap-2 h-10 rounded-lg text-[13px] font-medium transition-all duration-150',
                       themeName === 'XrplToLightTheme'
                         ? isDark
-                          ? 'bg-[rgba(63,150,254,0.15)] text-[#3f96fe] ring-1 ring-[rgba(63,150,254,40'
+                          ? 'bg-[rgba(63,150,254,0.15)] text-[#3f96fe] ring-1 ring-[rgba(63,150,254,0.4)]'
                           : 'bg-blue-500 text-white'
                         : isDark
                           ? 'text-white/60 hover:bg-white/5 hover:text-white'
@@ -3171,7 +3174,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       'flex items-center justify-center gap-2 h-10 rounded-lg text-[13px] font-medium transition-all duration-150',
                       themeName === 'XrplToDarkTheme'
                         ? isDark
-                          ? 'bg-[rgba(63,150,254,0.15)] text-[#3f96fe] ring-1 ring-[rgba(63,150,254,40'
+                          ? 'bg-[rgba(63,150,254,0.15)] text-[#3f96fe] ring-1 ring-[rgba(63,150,254,0.4)]'
                           : 'bg-blue-500 text-white'
                         : isDark
                           ? 'text-white/60 hover:bg-white/5 hover:text-white'
@@ -3327,7 +3330,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
           </div>
         </>
       )}
-    </header>
+    </>
   );
 }
 

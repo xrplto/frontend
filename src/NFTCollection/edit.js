@@ -1,5 +1,5 @@
 import React from 'react';
-import axios from 'axios';
+import api from 'src/utils/api';
 import { useState, useEffect, useRef } from 'react';
 
 // Context
@@ -42,7 +42,7 @@ const LoadingTextField = ({ type, value, uuid, setValid, startText, ...props }) 
     body.type = type;
     if (uuid) body.uuid = uuid;
 
-    axios
+    api
       .post(`${BASE_URL}/validation`, body, { headers: { 'x-access-token': accountToken } })
       .then((res) => {
         try {
@@ -363,7 +363,7 @@ export default function EditCollection({ collection }) {
       formdata.append('account', account);
       formdata.append('data', JSON.stringify(data));
 
-      res = await axios.post(`${BASE_URL}/nfts/edit`, formdata, {
+      res = await api.post(`${BASE_URL}/nfts/edit`, formdata, {
         headers: { 'Content-Type': 'multipart/form-data', 'x-access-token': accountToken }
       });
 

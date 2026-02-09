@@ -1,13 +1,14 @@
 import React, { useState, useContext, useEffect, useCallback } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
-import axios from 'axios';
+import api from 'src/utils/api';
 import { sign } from 'ripple-keypairs';
 import {
   Key,
   Plus,
   Copy,
   Trash2,
+  Check,
   CheckCircle,
   AlertCircle,
   Loader2,
@@ -34,11 +35,12 @@ import { AppContext } from 'src/context/AppContext';
 import { cn } from 'src/utils/cn';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
+import PaymentModal from 'src/components/PaymentModal';
 
 const BASE_URL = 'https://api.xrpl.to/v1';
 
 const DashboardPage = () => {
-  const { themeName, accountProfile } = useContext(AppContext);
+  const { themeName, accountProfile, setOpenWalletModal } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
 
   const [apiKeys, setApiKeys] = useState([]);
@@ -56,6 +58,7 @@ const DashboardPage = () => {
   const [purchasing, setPurchasing] = useState(null);
   const [stripeSuccess, setStripeSuccess] = useState(null);
   const [xrpPayment, setXrpPayment] = useState(null);
+  const [paymentModal, setPaymentModal] = useState({ isOpen: false, type: null, item: null });
   const [verifyingTx, setVerifyingTx] = useState(false);
   const [txHash, setTxHash] = useState('');
   const [paymentStatus, setPaymentStatus] = useState(null); // 'signing' | 'submitting' | 'verifying'
@@ -84,41 +87,72 @@ const DashboardPage = () => {
     {
       id: 'free',
       name: 'Free',
+      description: 'Ideal for testing',
       monthly: 0,
       yearly: 0,
       credits: '1M',
       rps: 10,
-      color: 'text-gray-500'
+      tps: 1,
+      features: ['1M credits', '10 Requests / sec', '1 TurboSubmit / sec', 'WebSocket access', 'Community support'],
+      color: 'text-gray-500',
+      gradient: 'from-gray-400 to-gray-500'
     },
     {
       id: 'developer',
       name: 'Developer',
+      description: 'For small projects',
       monthly: 49,
       yearly: 490,
       savings: 98,
       credits: '10M',
       rps: 50,
-      color: 'text-blue-500'
+      tps: 5,
+      features: ['10M credits', '50 Requests / sec', '5 TurboSubmit / sec', 'WebSocket access', 'Chat support'],
+      color: 'text-blue-500',
+      gradient: 'from-blue-400 to-indigo-500',
+      recommended: true
     },
     {
       id: 'business',
       name: 'Business',
+      description: 'For growing teams',
       monthly: 499,
       yearly: 4990,
       savings: 998,
       credits: '100M',
       rps: 200,
-      color: 'text-purple-500'
+      tps: 50,
+      features: ['100M credits', '200 Requests / sec', '50 TurboSubmit / sec', 'Priority WebSocket', 'Priority chat support'],
+      color: 'text-purple-500',
+      gradient: 'from-purple-400 to-violet-500'
     },
     {
       id: 'professional',
       name: 'Professional',
+      description: 'For teams at scale',
       monthly: 999,
       yearly: 9990,
       savings: 1998,
       credits: '200M',
       rps: 500,
-      color: 'text-amber-500'
+      tps: 100,
+      features: ['200M credits', '500 Requests / sec', '100 TurboSubmit / sec', 'Dedicated WebSocket', 'Telegram + Slack support'],
+      color: 'text-amber-500',
+      gradient: 'from-amber-400 to-orange-500'
+    },
+    {
+      id: 'enterprise',
+      name: 'Enterprise',
+      description: 'For enterprise scale',
+      monthly: null,
+      yearly: null,
+      credits: '1B+',
+      rps: 'Custom',
+      tps: 'Custom',
+      features: ['Volume discounts', 'Custom rate limits', 'Dedicated XRPL node', 'Private WebSocket', 'Uptime SLAs', 'Direct engineering support'],
+      color: 'text-rose-500',
+      gradient: 'from-rose-400 to-pink-500',
+      enterprise: true
     }
   ];
 
@@ -228,8 +262,8 @@ const DashboardPage = () => {
 
     try {
       const [keysRes, usageRes] = await Promise.all([
-        axios.get(`${BASE_URL}/keys/${walletAddress}`),
-        axios.get(`${BASE_URL}/keys/${walletAddress}/usage`)
+        api.get(`${BASE_URL}/keys/${walletAddress}`),
+        api.get(`${BASE_URL}/keys/${walletAddress}/usage`)
       ]);
 
       setApiKeys(keysRes.data.keys || []);
@@ -251,8 +285,8 @@ const DashboardPage = () => {
     if (!walletAddress) return;
     try {
       const [creditsRes, subRes] = await Promise.all([
-        axios.get(`${BASE_URL}/keys/${walletAddress}/credits`),
-        axios.get(`${BASE_URL}/keys/${walletAddress}/subscription`).catch(() => null)
+        api.get(`${BASE_URL}/keys/${walletAddress}/credits`),
+        api.get(`${BASE_URL}/keys/${walletAddress}/subscription`).catch(() => null)
       ]);
       setCredits(creditsRes.data);
       if (subRes?.data) setSubscription(subRes.data);
@@ -276,19 +310,19 @@ const DashboardPage = () => {
     try {
       switch (tab) {
         case 'usage':
-          const usageRes = await axios.get(`${BASE_URL}/keys/admin/usage`, { headers });
+          const usageRes = await api.get(`${BASE_URL}/keys/admin/usage`, { headers });
           setAdminUsage(usageRes.data);
           break;
         case 'credits':
-          const creditsRes = await axios.get(`${BASE_URL}/keys/admin/credits`, { headers });
+          const creditsRes = await api.get(`${BASE_URL}/keys/admin/credits`, { headers });
           setAdminCredits(creditsRes.data);
           break;
         case 'revenue':
-          const revenueRes = await axios.get(`${BASE_URL}/keys/admin/revenue`, { headers });
+          const revenueRes = await api.get(`${BASE_URL}/keys/admin/revenue`, { headers });
           setAdminRevenue(revenueRes.data);
           break;
         case 'chat':
-          const chatRes = await axios.get(`${BASE_URL}/keys/admin/chat-keys`, { headers });
+          const chatRes = await api.get(`${BASE_URL}/keys/admin/chat-keys`, { headers });
           setAdminChatKeys(chatRes.data);
           break;
       }
@@ -317,7 +351,7 @@ const DashboardPage = () => {
     try {
       const payload = { wallet, name, tier: tier || 'free' };
       if (creditAmount) payload.credits = parseInt(creditAmount, 10);
-      const res = await axios.post(`${BASE_URL}/keys/admin/create-key`, payload, { headers });
+      const res = await api.post(`${BASE_URL}/keys/admin/create-key`, payload, { headers });
 
       setNewKey(res.data.apiKey);
       setShowAdminCreateKey(false);
@@ -347,7 +381,7 @@ const DashboardPage = () => {
     try {
       const payload = { wallet, credits: parseInt(creditAmount, 10) };
       if (reason) payload.reason = reason;
-      await axios.post(`${BASE_URL}/keys/admin/add-credits`, payload, { headers });
+      await api.post(`${BASE_URL}/keys/admin/add-credits`, payload, { headers });
 
       setShowAdminAddCredits(false);
       setAdminFormData({});
@@ -375,7 +409,7 @@ const DashboardPage = () => {
 
     setAdminLoading(true);
     try {
-      await axios.post(`${BASE_URL}/keys/admin/chat-access`, {
+      await api.post(`${BASE_URL}/keys/admin/chat-access`, {
         wallet,
         chatAccess: chatAccess !== false,
         platform: platform || ''
@@ -410,7 +444,7 @@ const DashboardPage = () => {
       const payload = { wallet, platform, tier: tier || 'developer' };
       if (name) payload.name = name;
       if (creditAmount) payload.credits = parseInt(creditAmount, 10);
-      const res = await axios.post(`${BASE_URL}/keys/admin/platform-key`, payload, { headers });
+      const res = await api.post(`${BASE_URL}/keys/admin/platform-key`, payload, { headers });
 
       setNewKey(res.data.apiKey);
       setShowAdminPlatformKey(false);
@@ -452,7 +486,7 @@ const DashboardPage = () => {
     }
 
     if (sessionId) {
-      axios
+      api
         .get(`${BASE_URL}/keys/stripe/status/${sessionId}`)
         .then((res) => {
           if (res.data.status === 'complete' || res.data.status === 'paid') {
@@ -473,7 +507,7 @@ const DashboardPage = () => {
 
   const buyWithStripe = async (type, id) => {
     if (!walletAddress) {
-      setError('Please connect your wallet first');
+      setOpenWalletModal(true);
       return;
     }
 
@@ -489,15 +523,15 @@ const DashboardPage = () => {
         payload.billing = billingPeriod;
       }
 
-      const res = await axios.post(`${BASE_URL}/keys/stripe/checkout`, payload);
+      const res = await api.post(`${BASE_URL}/keys/stripe/checkout`, payload);
 
       if (res.data.checkoutUrl) {
         window.location.href = res.data.checkoutUrl;
       } else {
-        setError('Failed to create checkout session');
+        setError(res.data.error || 'Failed to create checkout session');
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to initiate payment');
+      setError(err.response?.data?.error || err.response?.data?.message || 'Failed to initiate payment');
     } finally {
       setPurchasing(null);
     }
@@ -505,7 +539,7 @@ const DashboardPage = () => {
 
   const buyWithXRP = async (type, id) => {
     if (!walletAddress) {
-      setError('Please connect your wallet first');
+      setOpenWalletModal(true);
       return;
     }
 
@@ -521,7 +555,7 @@ const DashboardPage = () => {
         payload.billing = billingPeriod;
       }
 
-      const res = await axios.post(`${BASE_URL}/keys/purchase`, payload);
+      const res = await api.post(`${BASE_URL}/keys/purchase`, payload);
 
       if (res.data.payment) {
         setXrpPayment({
@@ -560,53 +594,51 @@ const DashboardPage = () => {
         return;
       }
 
-      // Connect to XRPL
+      // Submit via API
       setPaymentStatus('submitting');
-      const xrpl = await import('xrpl');
-      const client = new xrpl.Client('wss://xrplcluster.com');
-      await client.connect();
+      const { xrpToDrops } = await import('xrpl');
+      const { submitTransaction } = await import('src/utils/api');
 
-      try {
-        // Prepare payment
-        const payment = {
-          TransactionType: 'Payment',
-          Account: walletAddress,
-          Destination: xrpPayment.destination,
-          DestinationTag: xrpPayment.destinationTag,
-          Amount: xrpl.xrpToDrops(xrpPayment.amount),
-          SourceTag: 161803
-        };
+      const payment = {
+        TransactionType: 'Payment',
+        Account: walletAddress,
+        Destination: xrpPayment.destination,
+        DestinationTag: xrpPayment.destinationTag,
+        Amount: xrpToDrops(xrpPayment.amount),
+        SourceTag: 161803
+      };
 
-        const prepared = await client.autofill(payment);
-        const signed = wallet.sign(prepared);
+      const result = await submitTransaction(wallet, payment);
+      const txHash = result.hash || result.tx_json?.hash;
 
-        // Submit and wait
-        const result = await client.submitAndWait(signed.tx_blob);
-
-        if (result.result.meta.TransactionResult !== 'tesSUCCESS') {
-          throw new Error(`Transaction failed: ${result.result.meta.TransactionResult}`);
-        }
-
-        // Verify payment (backend auto-polls)
-        setPaymentStatus('verifying');
-        const verifyRes = await axios.post(`${BASE_URL}/keys/verify-payment`, {
-          txHash: signed.hash
-        });
-
-        if (verifyRes.data.success) {
-          setStripeSuccess({
-            credits: verifyRes.data.creditsAdded,
-            message: verifyRes.data.message,
-            newBalance: verifyRes.data.newBalance
-          });
-          setXrpPayment(null);
-          fetchCredits();
-          fetchApiKeys();
+      if (result.engine_result !== 'tesSUCCESS') {
+        const txResult = result.engine_result;
+        if (txResult === 'tecUNFUNDED_PAYMENT') {
+          setError('Insufficient XRP balance. Please fund your wallet or pay with card.');
         } else {
-          setError(verifyRes.data.message || 'Payment verification failed');
+          setError(`Transaction failed: ${txResult}`);
         }
-      } finally {
-        await client.disconnect();
+        setPaymentStatus(null);
+        return;
+      }
+
+      // Verify payment (backend auto-polls)
+      setPaymentStatus('verifying');
+      const verifyRes = await api.post(`${BASE_URL}/keys/verify-payment`, {
+        txHash
+      });
+
+      if (verifyRes.data.success) {
+        setStripeSuccess({
+          credits: verifyRes.data.creditsAdded,
+          message: verifyRes.data.message,
+          newBalance: verifyRes.data.newBalance
+        });
+        setXrpPayment(null);
+        fetchCredits();
+        fetchApiKeys();
+      } else {
+        setError(verifyRes.data.message || 'Payment verification failed');
       }
     } catch (err) {
       console.error('XRP payment error:', err);
@@ -626,7 +658,7 @@ const DashboardPage = () => {
     setError(null);
 
     try {
-      const res = await axios.post(`${BASE_URL}/keys/verify-payment`, {
+      const res = await api.post(`${BASE_URL}/keys/verify-payment`, {
         txHash: txHash.trim()
       });
 
@@ -678,7 +710,7 @@ const DashboardPage = () => {
         return;
       }
 
-      const res = await axios.post(`${BASE_URL}/keys`, { name: newKeyName.trim() }, { headers });
+      const res = await api.post(`${BASE_URL}/keys`, { name: newKeyName.trim() }, { headers });
 
       setNewKey(res.data.apiKey);
       setNewKeyName('');
@@ -711,7 +743,7 @@ const DashboardPage = () => {
         return;
       }
 
-      await axios.delete(`${BASE_URL}/keys/${walletAddress}/${keyId}`, { headers });
+      await api.delete(`${BASE_URL}/keys/${walletAddress}/${keyId}`, { headers });
       fetchApiKeys();
     } catch (err) {
       setError('Failed to delete API key');
@@ -1177,6 +1209,50 @@ const DashboardPage = () => {
                   );
                 })()}
 
+                {/* Endpoint Usage Breakdown */}
+                {usage?.endpointUsage && Object.keys(usage.endpointUsage).length > 0 && (() => {
+                  const entries = Object.entries(usage.endpointUsage).sort(([,a], [,b]) => b - a);
+                  const maxCredits = entries[0]?.[1] || 1;
+                  const totalCredits = entries.reduce((sum, [,c]) => sum + c, 0);
+                  const getEndpointColor = (ep) => {
+                    if (ep.includes('ohlc') || ep.includes('sparkline')) return 'bg-purple-500';
+                    if (ep.includes('token')) return 'bg-blue-500';
+                    if (ep.includes('history') || ep.includes('orderbook')) return 'bg-amber-500';
+                    if (ep.includes('account') || ep.includes('trustline')) return 'bg-cyan-500';
+                    if (ep.includes('nft')) return 'bg-pink-500';
+                    return 'bg-primary';
+                  };
+                  const formatEndpoint = (ep) => ep.replace(/^\/api\/|^\/v1\//, '').replace(/\/[a-f0-9]{32}/gi, '/:id');
+                  return (
+                    <div className={cn('p-5 rounded-xl border-[1.5px]', isDark ? 'border-white/10 bg-white/[0.02]' : 'border-gray-200 bg-white')}>
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className={cn('text-[14px] font-medium', isDark ? 'text-white' : 'text-gray-900')}>Endpoint Usage</h3>
+                        <span className={cn('text-[12px] font-mono px-2 py-0.5 rounded', isDark ? 'bg-white/5 text-white/60' : 'bg-gray-100 text-gray-600')}>
+                          {totalCredits.toLocaleString()} credits
+                        </span>
+                      </div>
+                      <div className="space-y-3 max-h-64 overflow-y-auto pr-1">
+                        {entries.slice(0, 12).map(([endpoint, credits]) => (
+                          <div key={endpoint}>
+                            <div className="flex items-center justify-between mb-1">
+                              <span className={cn('text-[11px] font-mono truncate flex-1 mr-2', isDark ? 'text-white/70' : 'text-gray-700')}>{formatEndpoint(endpoint)}</span>
+                              <span className={cn('text-[11px] font-medium tabular-nums', isDark ? 'text-white/90' : 'text-gray-900')}>{credits.toLocaleString()}</span>
+                            </div>
+                            <div className={cn('h-1.5 rounded-full overflow-hidden', isDark ? 'bg-white/5' : 'bg-gray-100')}>
+                              <div className={cn('h-full rounded-full transition-all', getEndpointColor(endpoint))} style={{ width: `${(credits / maxCredits) * 100}%`, opacity: 0.8 }} />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      {entries.length > 12 && (
+                        <div className={cn('text-[11px] mt-3 pt-2 border-t text-center', isDark ? 'text-white/40 border-white/10' : 'text-gray-400 border-gray-200')}>
+                          +{entries.length - 12} more endpoints
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
+
                 {credits?.billingCycle && (
                   <div className={cn('p-5 rounded-xl border-[1.5px]', isDark ? 'border-white/10 bg-white/[0.02]' : 'border-gray-200 bg-white')}>
                     <h3 className={cn('text-[14px] font-medium mb-4', isDark ? 'text-white' : 'text-gray-900')}>Billing Cycle</h3>
@@ -1205,69 +1281,228 @@ const DashboardPage = () => {
 
                 {/* Credit Packages */}
                 <div>
-                  <h2 className={cn('text-lg font-medium mb-4 flex items-center gap-2', isDark ? 'text-white' : 'text-gray-900')}>
-                    <Zap size={18} className="text-primary" />Buy Credits
-                  </h2>
+                  <div className="mb-6">
+                    <h2 className={cn('text-lg font-medium flex items-center gap-2', isDark ? 'text-white' : 'text-gray-900')}>
+                      <Zap size={18} className="text-primary" />Buy Credits
+                    </h2>
+                    <p className={cn('text-[13px] mt-1', isDark ? 'text-white/50' : 'text-gray-500')}>One-time credit purchases for extra usage</p>
+                  </div>
                   <div className="grid grid-cols-4 gap-4">
-                    {packages.map((pkg) => (
-                      <div key={pkg.id} className={cn('p-5 rounded-xl border-[1.5px]', isDark ? 'border-white/10 bg-white/[0.02] hover:border-white/20' : 'border-gray-200 bg-white hover:border-gray-300')}>
-                        <div className={cn('text-[13px] font-medium mb-1', pkg.color)}>{pkg.name}</div>
-                        <div className={cn('text-2xl font-normal', isDark ? 'text-white' : 'text-gray-900')}>${pkg.price}</div>
-                        <div className={cn('text-[12px] mt-1 mb-4', isDark ? 'text-white/60' : 'text-gray-600')}>{pkg.credits} credits</div>
-                        <div className="flex gap-2">
-                          <button onClick={() => buyWithXRP('credits', pkg.id)} disabled={purchasing === `xrp_${pkg.id}`} className={cn('flex-1 py-2 rounded-lg text-[12px] font-medium border-[1.5px]', isDark ? 'border-white/10 hover:bg-white/5' : 'border-gray-200 hover:bg-gray-50')}>
-                            {purchasing === `xrp_${pkg.id}` ? <Loader2 size={14} className="mx-auto animate-spin" /> : 'XRP'}
-                          </button>
-                          <button onClick={() => buyWithStripe('credits', pkg.id)} disabled={purchasing === pkg.id} className="flex-1 py-2 rounded-lg text-[12px] font-medium bg-primary text-white hover:bg-primary/90 disabled:opacity-50 flex items-center justify-center gap-1">
-                            {purchasing === pkg.id ? <Loader2 size={14} className="animate-spin" /> : <><CreditCard size={12} />Card</>}
-                          </button>
+                    {packages.map((pkg, idx) => {
+                      const gradients = [
+                        'from-emerald-400 to-green-500',
+                        'from-blue-400 to-indigo-500',
+                        'from-purple-400 to-violet-500',
+                        'from-amber-400 to-orange-500'
+                      ];
+                      const isPopular = pkg.id === 'standard';
+                      return (
+                        <div key={pkg.id} className={cn(
+                          'p-5 rounded-2xl border-[1.5px] relative overflow-hidden transition-all flex flex-col',
+                          isPopular ? 'border-primary/50 ring-2 ring-primary/20' : isDark ? 'border-white/10 bg-white/[0.02] hover:border-white/20' : 'border-gray-200 bg-white hover:border-gray-300'
+                        )}>
+                          {isPopular && (
+                            <span className="absolute top-3 right-3 px-2 py-1 rounded-md text-[10px] font-semibold bg-primary/20 text-primary">Popular</span>
+                          )}
+                          <div className={cn('text-[15px] font-semibold mb-1', isDark ? 'text-white' : 'text-gray-900')}>{pkg.name}</div>
+                          <div className={cn('text-[12px] mb-4', isDark ? 'text-white/50' : 'text-gray-500')}>{pkg.credits} credits</div>
+                          <div className="flex items-baseline gap-1 mb-6">
+                            <span className={cn('text-3xl font-bold', isDark ? 'text-white' : 'text-gray-900')}>${pkg.price}</span>
+                            <span className={cn('text-[12px]', isDark ? 'text-white/40' : 'text-gray-400')}>one-time</span>
+                          </div>
+                          <div className="mt-auto">
+                            <button
+                              onClick={() => {
+                                if (!walletAddress) {
+                                  setOpenWalletModal(true);
+                                  return;
+                                }
+                                setPaymentModal({
+                                  isOpen: true,
+                                  type: 'credits',
+                                  item: { id: pkg.id, name: pkg.name, price: pkg.price, credits: pkg.credits }
+                                });
+                              }}
+                              className={cn(
+                                'w-full py-3 rounded-xl text-[13px] font-semibold text-white flex items-center justify-center gap-2 transition-all hover:opacity-90',
+                                isPopular ? 'bg-primary shadow-lg shadow-primary/25' : `bg-gradient-to-r ${gradients[idx]} shadow-md`
+                              )}
+                            >
+                              Buy Now
+                            </button>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
 
                 {/* Subscription Plans */}
                 <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <h2 className={cn('text-lg font-medium', isDark ? 'text-white' : 'text-gray-900')}>Subscription Plans</h2>
-                    <div className={cn('flex items-center gap-1 p-1 rounded-lg', isDark ? 'bg-white/5' : 'bg-gray-100')}>
-                      <button onClick={() => setBillingPeriod('monthly')} className={cn('px-3 py-1.5 rounded-md text-[12px] font-medium', billingPeriod === 'monthly' ? 'bg-primary text-white' : isDark ? 'text-white/60 hover:text-white' : 'text-gray-600 hover:text-gray-900')}>Monthly</button>
-                      <button onClick={() => setBillingPeriod('yearly')} className={cn('px-3 py-1.5 rounded-md text-[12px] font-medium flex items-center gap-1.5', billingPeriod === 'yearly' ? 'bg-primary text-white' : isDark ? 'text-white/60 hover:text-white' : 'text-gray-600 hover:text-gray-900')}>
-                        Yearly<span className={cn('px-1.5 py-0.5 rounded text-[10px]', billingPeriod === 'yearly' ? 'bg-white/20' : 'bg-emerald-500/20 text-emerald-500')}>2mo free</span>
+                  <div className="flex items-center justify-between mb-6">
+                    <div>
+                      <h2 className={cn('text-lg font-medium', isDark ? 'text-white' : 'text-gray-900')}>Simple pricing for teams of any scale</h2>
+                      <p className={cn('text-[13px] mt-1', isDark ? 'text-white/50' : 'text-gray-500')}>Choose the plan that fits your needs</p>
+                    </div>
+                    <div className={cn('flex items-center gap-1 p-1 rounded-xl border-[1.5px]', isDark ? 'bg-white/[0.02] border-white/10' : 'bg-gray-50 border-gray-200')}>
+                      <button onClick={() => setBillingPeriod('monthly')} className={cn('px-4 py-1.5 rounded-lg text-[12px] font-medium transition-all', billingPeriod === 'monthly' ? 'bg-primary text-white shadow-sm' : isDark ? 'text-white/50 hover:text-white' : 'text-gray-500 hover:text-gray-900')}>Monthly</button>
+                      <button onClick={() => setBillingPeriod('yearly')} className={cn('px-4 py-1.5 rounded-lg text-[12px] font-medium flex items-center gap-1.5 transition-all', billingPeriod === 'yearly' ? 'bg-primary text-white shadow-sm' : isDark ? 'text-white/50 hover:text-white' : 'text-gray-500 hover:text-gray-900')}>
+                        Yearly<span className={cn('px-1.5 py-0.5 rounded text-[10px] font-semibold', billingPeriod === 'yearly' ? 'bg-white/20' : 'bg-emerald-500/20 text-emerald-500')}>2 months free</span>
                       </button>
                     </div>
                   </div>
-                  <div className="grid grid-cols-4 gap-4">
+                  <div className="grid grid-cols-5 gap-3">
                     {tiers.map((tier) => {
                       const price = billingPeriod === 'yearly' ? tier.yearly : tier.monthly;
+                      const monthlyEquiv = billingPeriod === 'yearly' && tier.yearly ? Math.round(tier.yearly / 12) : null;
                       const isCurrentPlan = getUsageStats(usage)?.tier === tier.id;
                       return (
-                        <div key={tier.id} className={cn('p-5 rounded-xl border-[1.5px]', isCurrentPlan ? 'border-primary bg-primary/5' : isDark ? 'border-white/10 bg-white/[0.02] hover:border-white/20' : 'border-gray-200 bg-white hover:border-gray-300')}>
-                          <div className={cn('text-[13px] font-medium mb-1', tier.color)}>{tier.name}</div>
-                          <div className={cn('text-2xl font-normal', isDark ? 'text-white' : 'text-gray-900')}>
-                            {price === 0 ? 'Free' : `$${price.toLocaleString()}`}
-                            {price > 0 && <span className={cn('text-[12px] ml-1', isDark ? 'text-white/40' : 'text-gray-500')}>/{billingPeriod === 'yearly' ? 'yr' : 'mo'}</span>}
+                        <div key={tier.id} className={cn(
+                          'p-4 rounded-2xl border-[1.5px] relative overflow-hidden transition-all flex flex-col',
+                          tier.recommended && !isCurrentPlan ? 'border-primary/50 ring-2 ring-primary/20' : '',
+                          isCurrentPlan ? 'border-emerald-500/50 ring-2 ring-emerald-500/20' : '',
+                          tier.enterprise ? (isDark ? 'border-rose-500/30 bg-gradient-to-b from-rose-500/5 to-transparent' : 'border-rose-200 bg-gradient-to-b from-rose-50 to-white') : '',
+                          !tier.recommended && !isCurrentPlan && !tier.enterprise ? (isDark ? 'border-white/10 bg-white/[0.02] hover:border-white/20' : 'border-gray-200 bg-white hover:border-gray-300') : ''
+                        )}>
+                          {/* Top badges */}
+                          <div className="flex items-center justify-between mb-2 min-h-[24px]">
+                            {tier.recommended && !isCurrentPlan && (
+                              <span className="px-2 py-0.5 rounded text-[9px] font-semibold bg-primary/20 text-primary">Recommended</span>
+                            )}
+                            {isCurrentPlan && (
+                              <span className="px-2 py-0.5 rounded text-[9px] font-semibold bg-emerald-500/20 text-emerald-500">Current</span>
+                            )}
                           </div>
-                          <div className={cn('text-[12px] space-y-1 mt-2 mb-4', isDark ? 'text-white/60' : 'text-gray-600')}>
-                            <div>{tier.credits} credits/mo</div>
-                            <div>{tier.rps} req/sec</div>
+
+                          {/* Plan name & description */}
+                          <div className={cn('text-[14px] font-semibold', isDark ? 'text-white' : 'text-gray-900')}>{tier.name}</div>
+                          <div className={cn('text-[11px] mb-3', isDark ? 'text-white/50' : 'text-gray-500')}>{tier.description}</div>
+
+                          {/* Price */}
+                          <div className="mb-3">
+                            {tier.enterprise ? (
+                              <div className={cn('text-xl font-bold', isDark ? 'text-white' : 'text-gray-900')}>Custom</div>
+                            ) : (
+                              <>
+                                <div className="flex items-baseline gap-1">
+                                  <span className={cn('text-2xl font-bold', isDark ? 'text-white' : 'text-gray-900')}>${billingPeriod === 'yearly' && price > 0 ? monthlyEquiv : price}</span>
+                                  {(price > 0 || billingPeriod === 'yearly') && <span className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-gray-400')}>/ mo</span>}
+                                </div>
+                                {billingPeriod === 'yearly' && price > 0 && (
+                                  <div className={cn('text-[10px]', isDark ? 'text-white/40' : 'text-gray-400')}>
+                                    ${price.toLocaleString()}/yr
+                                  </div>
+                                )}
+                              </>
+                            )}
                           </div>
+
+                          {/* Features */}
+                          <div className={cn('text-[11px] space-y-1.5 mb-4 flex-1', isDark ? 'text-white/70' : 'text-gray-600')}>
+                            {tier.features.map((feature, i) => (
+                              <div key={i} className="flex items-start gap-1.5">
+                                <Check size={12} className="text-emerald-500 flex-shrink-0 mt-0.5" />
+                                <span>{feature}</span>
+                              </div>
+                            ))}
+                          </div>
+
+                          {/* CTA */}
                           {isCurrentPlan ? (
-                            <div className="py-2 text-center text-[12px] text-primary font-medium">Current Plan</div>
-                          ) : tier.id !== 'free' && (
-                            <div className="flex gap-2">
-                              <button onClick={() => buyWithXRP('tier', tier.id)} disabled={purchasing === `xrp_${tier.id}`} className={cn('flex-1 py-2 rounded-lg text-[12px] font-medium border-[1.5px]', isDark ? 'border-white/10 hover:bg-white/5' : 'border-gray-200 hover:bg-gray-50')}>
-                                {purchasing === `xrp_${tier.id}` ? <Loader2 size={14} className="mx-auto animate-spin" /> : 'XRP'}
-                              </button>
-                              <button onClick={() => buyWithStripe('tier', tier.id)} disabled={purchasing === tier.id} className="flex-1 py-2 rounded-lg text-[12px] font-medium bg-primary text-white hover:bg-primary/90 disabled:opacity-50 flex items-center justify-center gap-1">
-                                {purchasing === tier.id ? <Loader2 size={14} className="animate-spin" /> : <><CreditCard size={12} />Card</>}
-                              </button>
+                            <div className={cn('py-2.5 text-center text-[12px] font-medium rounded-xl', isDark ? 'bg-emerald-500/10 text-emerald-400' : 'bg-emerald-50 text-emerald-600')}>
+                              Active Plan
                             </div>
+                          ) : tier.id === 'free' ? (
+                            <div className={cn('py-2.5 text-center text-[12px] font-medium rounded-xl', isDark ? 'bg-white/5 text-white/40' : 'bg-gray-50 text-gray-400')}>
+                              Start building
+                            </div>
+                          ) : tier.enterprise ? (
+                            <a
+                              href="mailto:enterprise@xrpl.to?subject=Enterprise%20Plan%20Inquiry"
+                              className={cn(
+                                'w-full py-2.5 rounded-xl text-[12px] font-semibold flex items-center justify-center gap-2 transition-all',
+                                isDark ? 'bg-rose-500/20 text-rose-400 hover:bg-rose-500/30' : 'bg-rose-100 text-rose-600 hover:bg-rose-200'
+                              )}
+                            >
+                              <Mail size={14} />
+                              Talk to us
+                            </a>
+                          ) : (
+                            <button
+                              onClick={() => {
+                                if (!walletAddress) {
+                                  setOpenWalletModal(true);
+                                  return;
+                                }
+                                setPaymentModal({
+                                  isOpen: true,
+                                  type: 'tier',
+                                  item: {
+                                    id: tier.id,
+                                    name: tier.name,
+                                    price: billingPeriod === 'yearly' ? tier.yearly : tier.monthly,
+                                    credits: tier.credits,
+                                    features: tier.features
+                                  }
+                                });
+                              }}
+                              className={cn(
+                                'w-full py-2.5 rounded-xl text-[12px] font-semibold text-white flex items-center justify-center gap-2 transition-all hover:opacity-90',
+                                tier.recommended ? 'bg-primary shadow-lg shadow-primary/25' : `bg-gradient-to-r ${tier.gradient} shadow-md`
+                              )}
+                            >
+                              Start building
+                            </button>
                           )}
                         </div>
                       );
                     })}
+                  </div>
+                </div>
+
+                {/* Premium Infrastructure */}
+                <div className={cn('p-6 rounded-2xl border-[1.5px]', isDark ? 'border-white/10 bg-gradient-to-br from-white/[0.03] to-transparent' : 'border-gray-200 bg-gradient-to-br from-gray-50 to-white')}>
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className={cn('w-10 h-10 rounded-xl flex items-center justify-center', isDark ? 'bg-amber-500/20' : 'bg-amber-100')}>
+                      <Zap size={20} className="text-amber-500" />
+                    </div>
+                    <div>
+                      <h3 className={cn('text-[15px] font-semibold', isDark ? 'text-white' : 'text-gray-900')}>Premium Infrastructure</h3>
+                      <p className={cn('text-[12px]', isDark ? 'text-white/50' : 'text-gray-500')}>Dedicated XRPL nodes for maximum performance</p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-3 gap-4 mt-5">
+                    <div className={cn('p-4 rounded-xl border-[1.5px]', isDark ? 'border-white/10 bg-white/[0.02]' : 'border-gray-200 bg-white')}>
+                      <div className={cn('text-[13px] font-semibold mb-1', isDark ? 'text-white' : 'text-gray-900')}>TurboSubmit</div>
+                      <div className={cn('text-[11px] mb-3', isDark ? 'text-white/50' : 'text-gray-500')}>Fast transaction submission API</div>
+                      <div className={cn('text-[11px] space-y-1', isDark ? 'text-white/60' : 'text-gray-600')}>
+                        <div className="flex items-center gap-1.5"><Check size={11} className="text-emerald-500" />Direct ledger submission</div>
+                        <div className="flex items-center gap-1.5"><Check size={11} className="text-emerald-500" />Auto fee estimation</div>
+                        <div className="flex items-center gap-1.5"><Check size={11} className="text-emerald-500" />Included with all plans</div>
+                      </div>
+                    </div>
+                    <div className={cn('p-4 rounded-xl border-[1.5px]', isDark ? 'border-white/10 bg-white/[0.02]' : 'border-gray-200 bg-white')}>
+                      <div className={cn('text-[13px] font-semibold mb-1', isDark ? 'text-white' : 'text-gray-900')}>Dedicated Node</div>
+                      <div className={cn('text-[11px] mb-3', isDark ? 'text-white/50' : 'text-gray-500')}>Private XRPL node access</div>
+                      <div className="flex items-baseline gap-1 mb-3">
+                        <span className={cn('text-lg font-bold', isDark ? 'text-white' : 'text-gray-900')}>$1,500</span>
+                        <span className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-gray-400')}>/ month</span>
+                      </div>
+                      <a href="mailto:enterprise@xrpl.to?subject=Dedicated%20Node%20Inquiry" className="block w-full py-2 rounded-lg text-[11px] font-medium text-center bg-primary/10 text-primary hover:bg-primary/20 transition-all">
+                        Contact sales
+                      </a>
+                    </div>
+                    <div className={cn('p-4 rounded-xl border-[1.5px]', isDark ? 'border-white/10 bg-white/[0.02]' : 'border-gray-200 bg-white')}>
+                      <div className={cn('text-[13px] font-semibold mb-1', isDark ? 'text-white' : 'text-gray-900')}>Full History Node</div>
+                      <div className={cn('text-[11px] mb-3', isDark ? 'text-white/50' : 'text-gray-500')}>Complete ledger history access</div>
+                      <div className="flex items-baseline gap-1 mb-3">
+                        <span className={cn('text-lg font-bold', isDark ? 'text-white' : 'text-gray-900')}>$2,900</span>
+                        <span className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-gray-400')}>/ month</span>
+                      </div>
+                      <a href="mailto:enterprise@xrpl.to?subject=Full%20History%20Node%20Inquiry" className="block w-full py-2 rounded-lg text-[11px] font-medium text-center bg-primary/10 text-primary hover:bg-primary/20 transition-all">
+                        Contact sales
+                      </a>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1613,6 +1848,24 @@ const DashboardPage = () => {
           </div>
         </div>
       )}
+
+      {/* Payment Modal */}
+      <PaymentModal
+        isOpen={paymentModal.isOpen}
+        onClose={() => setPaymentModal({ isOpen: false, type: null, item: null })}
+        purchaseType={paymentModal.type}
+        item={paymentModal.item}
+        billingPeriod={billingPeriod}
+        walletAddress={walletAddress}
+        onSuccess={(data) => {
+          setStripeSuccess({
+            credits: data.creditsAdded,
+            tier: data.tier,
+            message: data.creditsAdded ? `${data.creditsAdded.toLocaleString()} credits added` : `Upgraded to ${data.tier}`
+          });
+          fetchUsage();
+        }}
+      />
 
       <Footer />
     </div>

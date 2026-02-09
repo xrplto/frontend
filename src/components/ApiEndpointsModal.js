@@ -1,6 +1,7 @@
 import { memo, useState, useContext, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { useRouter } from 'next/router';
+import styled from '@emotion/styled';
 import {
   Code2,
   Copy,
@@ -17,7 +18,21 @@ import {
 } from 'lucide-react';
 import { AppContext } from 'src/context/AppContext';
 import { cn } from 'src/utils/cn';
-import axios from 'axios';
+import api from 'src/utils/api';
+
+const StyledApiButton = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 11px;
+  font-weight: 500;
+  transition: all 0.3s;
+  overflow: hidden;
+  position: relative;
+`;
+
 
 // JSON syntax highlighter
 const JsonHighlight = ({ data, maxLen = 800 }) => {
@@ -50,7 +65,7 @@ if (typeof window !== 'undefined') {
 
   if (!window.__apiInterceptorInstalled) {
     window.__apiInterceptorInstalled = true;
-    axios.interceptors.request.use((config) => {
+    api.interceptors.request.use((config) => {
       const url = config.url || '';
       if (url.includes('api.xrpl.to/v1/')) {
         const baseUrl = url.split('?')[0];
@@ -105,7 +120,7 @@ export const API_REFERENCE = {
       },
       { method: 'POST', path: '/search', desc: 'Search tokens, NFTs, collections, accounts' },
       { method: 'GET', path: '/tags', desc: 'List all token tags' },
-      { method: 'GET', path: '/creators/:address', desc: 'Token creator profile and tokens' }
+      { method: 'GET', path: '/creator-activity/:id', desc: 'Creator activity by md5 or address' }
     ]
   },
   charts: {
@@ -229,7 +244,7 @@ export const API_REFERENCE = {
   traders: {
     label: 'Traders',
     endpoints: [
-      { method: 'GET', path: '/traders/:address', desc: 'Full trader profile with all tokens' },
+      { method: 'GET', path: '/traders/:account', desc: 'Full trader profile with all tokens' },
       {
         method: 'GET',
         path: '/traders/token-traders/:md5',
@@ -245,20 +260,20 @@ export const API_REFERENCE = {
         path: '/token/analytics/traders',
         desc: 'All traders with cumulative stats'
       },
-      { method: 'GET', path: '/token/analytics/trader/:address', desc: 'Trader cumulative stats' },
+      { method: 'GET', path: '/token/analytics/trader/:account', desc: 'Trader cumulative stats' },
       {
         method: 'GET',
-        path: '/token/analytics/trader/:address/tokens',
+        path: '/token/analytics/trader/:account/tokens',
         desc: 'Trader token-specific metrics'
       },
       {
         method: 'GET',
-        path: '/token/analytics/trader/:address/history',
+        path: '/token/analytics/trader/:account/history',
         desc: 'Trader volume history'
       },
       {
         method: 'GET',
-        path: '/token/analytics/trader/:address/trades',
+        path: '/token/analytics/trader/:account/trades',
         desc: 'Trader trade history'
       },
       { method: 'GET', path: '/token/analytics/token/:md5', desc: 'Token analytics' },
@@ -308,7 +323,7 @@ export const API_REFERENCE = {
       { method: 'GET', path: '/nft/collections/:slug/ohlc/:date/sales', desc: 'Collection sales for specific date' },
       { method: 'GET', path: '/nft/holders/:slug', desc: 'Collection holder list with pagination' },
       { method: 'GET', path: '/nft/holders/:slug/distribution', desc: 'Collection holder distribution stats' },
-      { method: 'GET', path: '/nft/holders/address/:address', desc: 'NFT holdings for specific address' },
+      { method: 'GET', path: '/nft/holders/address/:account', desc: 'NFT holdings for specific address' },
       { method: 'GET', path: '/nft/analytics/collection/:slug/traders', desc: 'Collection top traders analytics' },
       {
         method: 'GET',
@@ -319,10 +334,10 @@ export const API_REFERENCE = {
       { method: 'GET', path: '/nft/traders/:account/volume', desc: 'Trader volume stats' },
       {
         method: 'GET',
-        path: '/nft/account/:address/nfts',
+        path: '/nft/account/:account/nfts',
         desc: 'NFTs/collections owned with portfolio value'
       },
-      { method: 'GET', path: '/nft/account/:address/offers', desc: "Account's NFT offers" },
+      { method: 'GET', path: '/nft/account/:account/offers', desc: "Account's NFT offers" },
       { method: 'GET', path: '/nft/stats/global', desc: 'Global NFT market stats' },
       { method: 'GET', path: '/nft/global-metrics', desc: 'Global NFT metrics' },
       { method: 'GET', path: '/nft/brokers/stats', desc: 'Broker fee statistics' }
@@ -332,20 +347,20 @@ export const API_REFERENCE = {
     label: 'NFT Analytics',
     endpoints: [
       { method: 'GET', path: '/nft/analytics/traders', desc: 'NFT trader leaderboard' },
-      { method: 'GET', path: '/nft/analytics/trader/:address', desc: 'NFT trader profile' },
+      { method: 'GET', path: '/nft/analytics/trader/:account', desc: 'NFT trader profile' },
       {
         method: 'GET',
-        path: '/nft/analytics/trader/:address/history',
+        path: '/nft/analytics/trader/:account/history',
         desc: 'NFT trader daily history'
       },
       {
         method: 'GET',
-        path: '/nft/analytics/trader/:address/collections',
+        path: '/nft/analytics/trader/:account/collections',
         desc: 'NFT trader collection breakdown'
       },
       {
         method: 'GET',
-        path: '/nft/analytics/trader/:address/trades',
+        path: '/nft/analytics/trader/:account/trades',
         desc: 'NFT trader trade history'
       },
       {
@@ -379,6 +394,48 @@ export const API_REFERENCE = {
       { method: 'GET', path: '/news/unapproved-sources', desc: 'List unapproved news sources' },
       { method: 'GET', path: '/news/sentiment-chart', desc: 'Sentiment chart data' }
     ]
+  },
+  creatorActivity: {
+    label: 'Creator Activity',
+    endpoints: [
+      { method: 'GET', path: '/creator-activity/:identifier', desc: 'Creator activity by md5 or address' }
+    ]
+  },
+  faucet: {
+    label: 'Faucet (Testnet)',
+    endpoints: [
+      { method: 'GET', path: '/faucet', desc: 'Faucet status and balance' },
+      { method: 'POST', path: '/faucet', desc: 'Request testnet XRP (200 XRP, 24h cooldown)' }
+    ]
+  },
+  chat: {
+    label: 'Chat',
+    endpoints: [
+      { method: 'GET', path: '/chat/session', desc: 'Create chat session token' },
+      { method: 'GET', path: '/chat/status', desc: 'Get online user count' },
+      { method: 'GET', path: '/chat/messages', desc: 'Get recent chat messages' },
+      { method: 'GET', path: '/chat/access', desc: 'Check chat access tier' }
+    ]
+  },
+  websocket: {
+    label: 'WebSocket',
+    endpoints: [
+      { method: 'WS', path: '/ws/sync', desc: 'Multi-token market sync stream' },
+      { method: 'WS', path: '/ws/token/:md5', desc: 'Single token real-time updates' },
+      { method: 'WS', path: '/ws/ohlc/:md5', desc: 'OHLC candlestick stream' },
+      { method: 'WS', path: '/ws/history/:md5', desc: 'Trade history stream' },
+      { method: 'WS', path: '/ws/holders/:id', desc: 'Token holder updates' },
+      { method: 'WS', path: '/ws/orderbook', desc: 'Live orderbook depth (base, quote params)' },
+      { method: 'WS', path: '/ws/ledger', desc: 'Ledger close stream' },
+      { method: 'WS', path: '/ws/trustlines/:account', desc: 'Account trustline updates' },
+      { method: 'WS', path: '/ws/news', desc: 'Real-time news feed' },
+      { method: 'WS', path: '/ws/account/balance/:account', desc: 'Account XRP balance stream' },
+      { method: 'WS', path: '/ws/account/balance/pair/:account', desc: 'Token pair balance stream' },
+      { method: 'WS', path: '/ws/account/offers/:account', desc: 'Account open DEX offers stream' },
+      { method: 'WS', path: '/ws/amm/info', desc: 'Live AMM pool info (asset, asset2 params)' },
+      { method: 'WS', path: '/ws/creator/:identifier', desc: 'Creator activity stream (md5 or address)' },
+      { method: 'WS', path: '/ws/chat', desc: 'Real-time chat messages' }
+    ]
   }
 };
 
@@ -395,13 +452,13 @@ export const PAGE_ENDPOINTS = {
   '/gainers': ['/tokens', '/sparkline/:md5', '/tags'],
   '/spotlight': ['/tokens', '/sparkline/:md5', '/tags'],
   '/watchlist': ['/tokens', '/watchlist', '/sparkline/:md5'],
-  '/token/[slug]': ['/token/:id', '/ohlc/:md5', '/sparkline/:md5', '/holders/info/:md5', '/holders/graph/:md5', '/holders/list/:md5', '/history', '/pairs/:md5', '/orderbook', '/traders/token-traders/:md5', '/amm', '/ai/token/:md5', '/dex/quote', '/stats/rates'],
+  '/token/[slug]': ['/token/:id', '/ohlc/:md5', '/sparkline/:md5', '/holders/info/:md5', '/holders/graph/:md5', '/holders/list/:id', '/history', '/pairs/:md5', '/orderbook', '/traders/token-traders/:md5', '/amm', '/ai/token/:md5', '/dex/quote', '/stats/rates'],
   '/amm': ['/amm', '/amm/info', '/amm/liquidity-chart'],
   '/nfts': ['/nft/collections', '/nft/stats/global'],
   '/nfts/[slug]': ['/nft/collections/:slug', '/nft/collections/:slug/nfts', '/nft/collections/:slug/traits', '/nft/collections/:slug/ohlc', '/nft/collections/:slug/ohlc/:date/sales', '/nft/holders/:slug', '/nft/holders/:slug/distribution', '/nft/analytics/collection/:slug/traders'],
-  '/address/[...acct]': ['/account/balance/:account', '/account/info/live/:account', '/trustlines/:account', '/traders/:address', '/history', '/nft/account/:address/nfts', '/nft/analytics/trader/:address', '/nft/analytics/trader/:address/collections', '/nft/analytics/trader/:address/history', '/nft/analytics/trader/:address/trades', '/account-tx-explain/:account'],
+  '/address/[...acct]': ['/account/balance/:account', '/account/info/live/:account', '/trustlines/:account', '/traders/:account', '/history', '/nft/account/:account/nfts', '/nft/analytics/trader/:account', '/nft/analytics/trader/:account/collections', '/nft/analytics/trader/:account/history', '/nft/analytics/trader/:account/trades', '/account-tx-explain/:account'],
   '/traders': ['/token/analytics/traders', '/token/analytics/market'],
-  '/trader/[address]': ['/traders/:address', '/token/analytics/trader/:address', '/token/analytics/trader/:address/tokens', '/token/analytics/trader/:address/history'],
+  '/trader/[address]': ['/traders/:account', '/token/analytics/trader/:account', '/token/analytics/trader/:account/tokens', '/token/analytics/trader/:account/history'],
   '/news': ['/news', '/news/search', '/news/sentiment-chart']
 };
 
@@ -508,7 +565,7 @@ const ApiEndpointsModal = memo(({ open, onClose, token = null }) => {
     }
     setLoadingPath(ep.path);
     try {
-      const res = await axios.get(`https://api.xrpl.to/v1${url}`);
+      const res = await api.get(`https://api.xrpl.to/v1${url}`);
       await navigator.clipboard.writeText(JSON.stringify(res.data, null, 2));
       setCopiedResponse(ep.path);
       setResponsePreview({ url: ep.path, data: res.data });
@@ -601,8 +658,8 @@ const ApiEndpointsModal = memo(({ open, onClose, token = null }) => {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <span className="px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded-full bg-amber-500/10 text-amber-500 border border-amber-500/20">
-                {getTotalEndpointCount()} Core Endpoints
+              <span className="px-1.5 py-0.5 text-[8px] sm:text-[9px] sm:px-2 font-bold uppercase tracking-wider rounded-full bg-amber-500/10 text-amber-500 border border-amber-500/20">
+                {getTotalEndpointCount()} <span className="hidden sm:inline">Core </span>Endpoints
               </span>
               <button
                 onClick={onClose}
@@ -751,7 +808,9 @@ const ApiEndpointsModal = memo(({ open, onClose, token = null }) => {
                                 'px-1.5 py-0.5 text-[8px] font-bold rounded ring-1 ring-inset',
                                 ep.method === 'GET'
                                   ? 'bg-emerald-500/10 text-emerald-500 ring-emerald-500/20'
-                                  : 'bg-amber-500/10 text-amber-500 ring-amber-500/20'
+                                  : ep.method === 'WS'
+                                    ? 'bg-purple-500/10 text-purple-500 ring-purple-500/20'
+                                    : 'bg-amber-500/10 text-amber-500 ring-amber-500/20'
                               )}
                             >
                               {ep.method}
@@ -925,7 +984,9 @@ const ApiEndpointsModal = memo(({ open, onClose, token = null }) => {
                                     'px-1.5 py-0.5 text-[9px] font-medium rounded shrink-0 mt-0.5',
                                     ep.method === 'GET'
                                       ? 'bg-emerald-500/15 text-emerald-500'
-                                      : 'bg-amber-500/15 text-amber-500'
+                                      : ep.method === 'WS'
+                                        ? 'bg-purple-500/15 text-purple-500'
+                                        : 'bg-amber-500/15 text-amber-500'
                                   )}
                                 >
                                   {ep.method}
@@ -1095,30 +1156,19 @@ export const ApiButton = memo(({ className = '', token = null }) => {
 
   return (
     <>
-      <button
+      <StyledApiButton
         onClick={() => setOpen(true)}
         className={cn(
-          'group relative flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11px] font-medium transition-all duration-300 overflow-hidden',
+          'group border',
           isDark
-            ? 'bg-[#0d0d1a] text-blue-300 border border-blue-500/30 hover:border-blue-400/50 hover:text-white hover:shadow-[0_0_20px_rgba(59,130,246,0.3)]'
-            : 'bg-gradient-to-r from-blue-50 to-cyan-50 text-blue-600 border border-blue-200 hover:from-blue-100 hover:to-cyan-100 hover:border-blue-300',
+            ? 'border-white/10 bg-white/[0.03] hover:bg-white/[0.06] text-white/60 hover:text-white/80'
+            : 'border-gray-200 bg-gray-50 hover:bg-gray-100 text-gray-500 hover:text-gray-700',
           className
         )}
       >
-        {isDark && (
-          <>
-            <span className="absolute inset-0 bg-gradient-to-r from-[#3f96fe]/20 via-[#3f96fe]/10 to-[#3f96fe]/20 animate-pulse" />
-            <span className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(63,150,254,0.2),transparent_70%)]" />
-          </>
-        )}
-        <div className={cn(
-          "relative z-10 p-1 rounded-md",
-          isDark ? "bg-[#3f96fe]/20 text-[#3f96fe]" : "bg-blue-100 text-blue-600"
-        )}>
-          <Code2 size={12} />
-        </div>
-        <span className="relative z-10 uppercase tracking-widest font-bold">API</span>
-      </button>
+        <Code2 size={12} />
+        <span className="uppercase tracking-widest font-bold">API</span>
+      </StyledApiButton>
       <ApiEndpointsModal open={open} onClose={() => setOpen(false)} token={token} />
     </>
   );

@@ -3,7 +3,7 @@ import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import ScrollToTop from 'src/components/ScrollToTop';
 import { useRouter } from 'next/router';
-import axios from 'axios';
+import api from 'src/utils/api';
 import styled from '@emotion/styled';
 import { AppContext } from 'src/context/AppContext';
 import { useSelector } from 'react-redux';
@@ -476,7 +476,7 @@ function RSIAnalysisPage({ data }) {
         return acc;
       }, {});
 
-      const response = await axios.get(`${BASE_URL}/rsi`, { params: cleanParams });
+      const response = await api.get(`${BASE_URL}/rsi`, { params: cleanParams });
 
       if (response.data?.tokens) {
         setTokens(response.data.tokens);
@@ -1287,7 +1287,7 @@ export async function getStaticProps() {
   const BASE_URL = 'https://api.xrpl.to/v1';
 
   try {
-    const res = await axios.get(`${BASE_URL}/rsi`, {
+    const res = await api.get(`${BASE_URL}/rsi`, {
       params: {
         sortBy: 'rsi24h',
         sortType: 'desc',

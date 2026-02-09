@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState, useMemo, useRef } from 'react';
 import styled from '@emotion/styled';
-import axios from 'axios';
+import api from 'src/utils/api';
 import { AppContext } from 'src/context/AppContext';
 import { fNumber, fCurrency5 } from 'src/utils/formatters';
 import { normalizeCurrencyCode } from 'src/utils/parseUtils';
@@ -139,8 +139,11 @@ const Row = styled.div`
   font-size: 12px;
   font-family: var(--font-mono);
   transition: all 0.2s ease;
+  background: ${(props) => props.isUserOrder ? 'rgba(59, 130, 246, 0.12)' : 'transparent'};
+  border-left: ${(props) => props.isUserOrder ? '2px solid #3b82f6' : '2px solid transparent'};
   &:hover {
     background: ${(props) =>
+    props.isUserOrder ? 'rgba(59, 130, 246, 0.18)' :
     props.type === 'ask' ? 'rgba(239, 68, 68, 0.08)' : 'rgba(34, 197, 94, 0.08)'};
   }
 `;
@@ -202,6 +205,23 @@ const SpreadBar = styled.div`
   backdrop-filter: blur(4px);
 `;
 
+const LimitPriceLine = styled.div`
+  position: relative;
+  height: 2px;
+  background: linear-gradient(90deg, transparent 0%, #3b82f6 10%, #3b82f6 90%, transparent 100%);
+  margin: 2px 16px;
+  &::before {
+    content: 'YOUR LIMIT';
+    position: absolute;
+    right: 0;
+    top: -10px;
+    font-size: 8px;
+    font-weight: 600;
+    color: #3b82f6;
+    letter-spacing: 0.5px;
+  }
+`;
+
 const BearEmptyState = ({ isDark, message }) => (
   <div style={{
     display: 'flex',
@@ -229,9 +249,10 @@ const BearEmptyState = ({ isDark, message }) => (
   </div>
 );
 
-const OrderBook = ({ token, onPriceClick }) => {
-  const { themeName } = useContext(AppContext);
+const OrderBook = ({ token, onPriceClick, limitPrice }) => {
+  const { themeName, accountProfile } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
+  const userAccount = accountProfile?.account;
 
   const [bids, setBids] = useState([]);
   const [asks, setAsks] = useState([]);
@@ -273,8 +294,7 @@ const OrderBook = ({ token, onPriceClick }) => {
     }
 
     const rlusdUrl = `${BASE_URL}/token/rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De-524C555344000000000000000000000000000000`;
-    console.log('[OrderBook] Fetching RLUSD token:', rlusdUrl);
-    const promise = axios
+    const promise = api
       .get(rlusdUrl)
       .then((res) => res.data?.token);
     fetchInFlight.set(rlusdKey, promise);
@@ -351,39 +371,37 @@ const OrderBook = ({ token, onPriceClick }) => {
       quote_issuer: effectiveToken.issuer,
       limit: '30'
     });
-    const wsUrl = `wss://api.xrpl.to/ws/orderbook?${params}`;
-    console.log('[OrderBook] WS connecting:', wsUrl);
-    const ws = new WebSocket(wsUrl);
-    wsRef.current = ws;
 
-    ws.onopen = () => {
-      console.log('[OrderBook] WS connected');
-      setWsConnected(true);
-    };
-    ws.onclose = () => {
-      console.log('[OrderBook] WS closed');
-      setWsConnected(false);
-    };
-    ws.onerror = (e) => {
-      console.error('[OrderBook] WS error:', e);
-      setWsConnected(false);
-    };
-
-    ws.onmessage = (event) => {
+    let ws = null;
+    (async () => {
       try {
-        const msg = JSON.parse(event.data);
-        if (msg.type === 'snapshot') {
-          processWsOrderbook(msg.bids, msg.asks);
-        } else if (msg.e === 'depth') {
-          processWsOrderbook(msg.b, msg.a);
-        }
-      } catch (e) {
-        console.error('OrderBook WS parse error:', e);
+        const res = await fetch(`/api/ws/session?type=orderbook&${params}`);
+        const { wsUrl } = await res.json();
+        ws = new WebSocket(wsUrl);
+        wsRef.current = ws;
+
+        ws.onopen = () => setWsConnected(true);
+        ws.onclose = () => setWsConnected(false);
+        ws.onerror = () => setWsConnected(false);
+        ws.onmessage = (event) => {
+          try {
+            const msg = JSON.parse(event.data);
+            if (msg.type === 'snapshot') {
+              processWsOrderbook(msg.bids, msg.asks);
+            } else if (msg.e === 'depth') {
+              processWsOrderbook(msg.b, msg.a);
+            }
+          } catch {
+            // Parse error
+          }
+        };
+      } catch {
+        // Session error
       }
-    };
+    })();
 
     return () => {
-      ws.close();
+      if (ws) ws.close();
       wsRef.current = null;
       setWsConnected(false);
     };
@@ -407,8 +425,6 @@ const OrderBook = ({ token, onPriceClick }) => {
       });
       params.append('quote_issuer', effectiveToken.issuer);
       const url = `${BASE_URL}/orderbook?${params}`;
-      const t0 = performance.now();
-      console.log('[OrderBook] HTTP fetch:', url);
 
       // Reuse in-flight request (StrictMode protection) - only for initial load
       if (!isUpdate && fetchInFlight.has(pairKey)) {
@@ -422,7 +438,7 @@ const OrderBook = ({ token, onPriceClick }) => {
       }
 
       // Create fetch promise
-      const fetchPromise = axios.get(url).then((r) => r.data);
+      const fetchPromise = api.get(url).then((r) => r.data);
       if (!isUpdate) {
         fetchInFlight.set(pairKey, fetchPromise);
       }
@@ -432,16 +448,12 @@ const OrderBook = ({ token, onPriceClick }) => {
 
         if (!mountedRef.current) return;
 
-        console.log(`[OrderBook] HTTP done in ${(performance.now() - t0).toFixed(0)}ms, bids=${res.data?.bids?.length || 0} asks=${res.data?.asks?.length || 0}`);
         if (res.data?.success) {
           processOrderbookData(res.data);
         }
         fetchInFlight.delete(pairKey);
-      } catch (err) {
+      } catch {
         fetchInFlight.delete(pairKey);
-        if (err.name !== 'AbortError' && err.name !== 'CanceledError') {
-          console.error('[OrderBook] HTTP error:', err.message);
-        }
       }
     }
 
@@ -661,71 +673,136 @@ const OrderBook = ({ token, onPriceClick }) => {
               const cumSum = arr.slice(0, idx + 1).reduce((s, a) => s + a.amount, 0);
               const avgPrice = arr.slice(0, idx + 1).reduce((s, a) => s + a.price * a.amount, 0) / cumSum;
               const rowKey = `ask-${idx}`;
+              const nextAsk = arr[idx + 1];
+              const showLimitLine = limitPrice && nextAsk && ask.price > limitPrice && nextAsk.price <= limitPrice;
+              const isUserOrder = userAccount && acc === userAccount;
               return (
-                <Row
-                  key={idx}
-                  type="ask"
-                  onClick={() => onPriceClick?.(ask.price)}
-                  onMouseEnter={() => setHoveredRow(rowKey)}
-                  onMouseLeave={() => setHoveredRow(null)}
-                >
-                  <DepthBar type="ask" width={(ask.amount / askMax) * 100} />
-                  <PriceDisplay price={ask.price} type="ask" />
-                  <Amount isDark={isDark}>{fNumber(ask.amount)}</Amount>
-                  <Maker
-                    isDark={isDark}
-                    title={acc || ''}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      acc && window.open(`/address/${acc}`, '_blank');
-                    }}
+                <React.Fragment key={idx}>
+                  <Row
+                    type="ask"
+                    isUserOrder={isUserOrder}
+                    onClick={() => onPriceClick?.(ask.price)}
+                    onMouseEnter={() => setHoveredRow(rowKey)}
+                    onMouseLeave={() => setHoveredRow(null)}
                   >
-                    {acc ? `${acc.slice(1, 5)}…${acc.slice(-2)}` : ''}
-                  </Maker>
-                  {hoveredRow === rowKey && (
-                    <div style={{
-                      position: 'absolute',
-                      left: '50%',
-                      top: '-28px',
-                      transform: 'translateX(-50%)',
-                      background: isDark ? 'rgba(0,0,0,0.9)' : 'rgba(255,255,255,0.95)',
-                      border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
-                      borderRadius: '6px',
-                      padding: '4px 8px',
-                      fontSize: '9px',
-                      whiteSpace: 'nowrap',
-                      zIndex: 10,
-                      boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
-                    }}>
-                      <span style={{ color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>Σ </span>
-                      <span style={{ color: '#ef4444' }}>{fNumber(cumSum)}</span>
-                      <span style={{ color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)' }}> · </span>
-                      <span style={{ color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>Avg </span>
-                      <span>{renderInlinePrice(avgPrice)}</span>
-                    </div>
-                  )}
-                </Row>
+                    <DepthBar type="ask" width={(ask.amount / askMax) * 100} />
+                    <PriceDisplay price={ask.price} type="ask" />
+                    <Amount isDark={isDark}>{fNumber(ask.amount)}</Amount>
+                    <Maker
+                      isDark={isDark}
+                      title={acc || ''}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        acc && window.open(`/address/${acc}`, '_blank');
+                      }}
+                      style={isUserOrder ? { color: '#3b82f6', fontWeight: 600 } : {}}
+                    >
+                      {isUserOrder ? 'YOU' : acc ? `${acc.slice(1, 5)}…${acc.slice(-2)}` : ''}
+                    </Maker>
+                    {hoveredRow === rowKey && (
+                      <div style={{
+                        position: 'absolute',
+                        left: '50%',
+                        top: '-28px',
+                        transform: 'translateX(-50%)',
+                        background: isDark ? 'rgba(0,0,0,0.9)' : 'rgba(255,255,255,0.95)',
+                        border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
+                        borderRadius: '6px',
+                        padding: '4px 8px',
+                        fontSize: '9px',
+                        whiteSpace: 'nowrap',
+                        zIndex: 10,
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
+                      }}>
+                        <span style={{ color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>Σ </span>
+                        <span style={{ color: '#ef4444' }}>{fNumber(cumSum)}</span>
+                        <span style={{ color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)' }}> · </span>
+                        <span style={{ color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>Avg </span>
+                        <span>{renderInlinePrice(avgPrice)}</span>
+                      </div>
+                    )}
+                  </Row>
+                  {showLimitLine && <LimitPriceLine />}
+                </React.Fragment>
               );
             })}
           </Side>
         )}
 
         {/* Spread indicator */}
-        {viewMode === 'both' && (
-          <SpreadBar isDark={isDark}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <span style={{ color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)', fontSize: '10px' }}>SPREAD</span>
-              <span style={{ color: isDark ? '#fff' : '#000', fontWeight: 600 }}>
-                {spreadPct != null ? `${spreadPct.toFixed(3)}%` : '—'}
-              </span>
+        {viewMode === 'both' && (() => {
+          const inSpread = limitPrice && bestBid != null && bestAsk != null && limitPrice > bestBid && limitPrice < bestAsk;
+          const spreadSize = bestAsk && bestBid ? bestAsk - bestBid : 0;
+          const positionPct = inSpread && spreadSize > 0 ? ((limitPrice - bestBid) / spreadSize) * 100 : 50;
+
+          return inSpread ? (
+            <div style={{
+              padding: '8px 16px',
+              background: isDark ? 'rgba(59,130,246,0.08)' : 'rgba(59,130,246,0.06)',
+              borderTop: `1px solid ${isDark ? 'rgba(59,130,246,0.2)' : 'rgba(59,130,246,0.15)'}`,
+              borderBottom: `1px solid ${isDark ? 'rgba(59,130,246,0.2)' : 'rgba(59,130,246,0.15)'}`,
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                <span style={{ color: '#2ecc71', fontSize: '10px', fontFamily: 'var(--font-mono)' }}>{renderInlinePrice(bestBid)}</span>
+                <span style={{ color: '#3b82f6', fontSize: '11px', fontWeight: 700, letterSpacing: '0.5px' }}>
+                  YOUR LIMIT
+                </span>
+                <span style={{ color: '#ff4d4f', fontSize: '10px', fontFamily: 'var(--font-mono)' }}>{renderInlinePrice(bestAsk)}</span>
+              </div>
+              <div style={{ position: 'relative', height: '4px', borderRadius: '2px', background: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' }}>
+                <div style={{
+                  position: 'absolute',
+                  left: 0,
+                  top: 0,
+                  bottom: 0,
+                  width: `${positionPct}%`,
+                  background: 'linear-gradient(90deg, #22c55e, #3b82f6)',
+                  borderRadius: '2px 0 0 2px',
+                }} />
+                <div style={{
+                  position: 'absolute',
+                  right: 0,
+                  top: 0,
+                  bottom: 0,
+                  width: `${100 - positionPct}%`,
+                  background: 'linear-gradient(90deg, #3b82f6, #ef4444)',
+                  borderRadius: '0 2px 2px 0',
+                }} />
+                <div style={{
+                  position: 'absolute',
+                  left: `${positionPct}%`,
+                  top: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  width: '10px',
+                  height: '10px',
+                  borderRadius: '50%',
+                  background: '#3b82f6',
+                  border: '2px solid #fff',
+                  boxShadow: '0 0 6px rgba(59,130,246,0.6)',
+                }} />
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'center', marginTop: '6px' }}>
+                <span style={{ color: '#3b82f6', fontSize: '12px', fontWeight: 600, fontFamily: 'var(--font-mono)' }}>
+                  {renderInlinePrice(limitPrice)}
+                </span>
+              </div>
             </div>
-            <div style={{ display: 'flex', gap: '12px' }}>
-              <span style={{ color: '#2ecc71' }}>{bestBid != null ? renderInlinePrice(bestBid) : '—'}</span>
-              <span style={{ color: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' }}>/</span>
-              <span style={{ color: '#ff4d4f' }}>{bestAsk != null ? renderInlinePrice(bestAsk) : '—'}</span>
-            </div>
-          </SpreadBar>
-        )}
+          ) : (
+            <SpreadBar isDark={isDark}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <span style={{ color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)', fontSize: '10px' }}>SPREAD</span>
+                <span style={{ color: isDark ? '#fff' : '#000', fontWeight: 600 }}>
+                  {spreadPct != null ? `${spreadPct.toFixed(3)}%` : '—'}
+                </span>
+              </div>
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <span style={{ color: '#2ecc71' }}>{bestBid != null ? renderInlinePrice(bestBid) : '—'}</span>
+                <span style={{ color: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' }}>/</span>
+                <span style={{ color: '#ff4d4f' }}>{bestAsk != null ? renderInlinePrice(bestAsk) : '—'}</span>
+              </div>
+            </SpreadBar>
+          );
+        })()}
 
         {/* Bids (Buy Orders) */}
         {(viewMode === 'both' || viewMode === 'buy') && (
@@ -740,50 +817,57 @@ const OrderBook = ({ token, onPriceClick }) => {
               const cumSum = bids.slice(0, idx + 1).reduce((s, b) => s + b.amount, 0);
               const avgPrice = bids.slice(0, idx + 1).reduce((s, b) => s + b.price * b.amount, 0) / cumSum;
               const rowKey = `bid-${idx}`;
+              const nextBid = bids[idx + 1];
+              const showLimitLine = limitPrice && nextBid && bid.price > limitPrice && nextBid.price <= limitPrice;
+              const isUserOrder = userAccount && acc === userAccount;
               return (
-                <Row
-                  key={idx}
-                  type="bid"
-                  onClick={() => onPriceClick?.(bid.price)}
-                  onMouseEnter={() => setHoveredRow(rowKey)}
-                  onMouseLeave={() => setHoveredRow(null)}
-                >
-                  <DepthBar type="bid" width={(bid.amount / bidMax) * 100} />
-                  <PriceDisplay price={bid.price} type="bid" />
-                  <Amount isDark={isDark}>{fNumber(bid.amount)}</Amount>
-                  <Maker
-                    isDark={isDark}
-                    title={acc || ''}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      acc && window.open(`/address/${acc}`, '_blank');
-                    }}
+                <React.Fragment key={idx}>
+                  <Row
+                    type="bid"
+                    isUserOrder={isUserOrder}
+                    onClick={() => onPriceClick?.(bid.price)}
+                    onMouseEnter={() => setHoveredRow(rowKey)}
+                    onMouseLeave={() => setHoveredRow(null)}
                   >
-                    {acc ? `${acc.slice(1, 5)}…${acc.slice(-2)}` : ''}
-                  </Maker>
-                  {hoveredRow === rowKey && (
-                    <div style={{
-                      position: 'absolute',
-                      left: '50%',
-                      top: '-28px',
-                      transform: 'translateX(-50%)',
-                      background: isDark ? 'rgba(0,0,0,0.9)' : 'rgba(255,255,255,0.95)',
-                      border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
-                      borderRadius: '6px',
-                      padding: '4px 8px',
-                      fontSize: '9px',
-                      whiteSpace: 'nowrap',
-                      zIndex: 10,
-                      boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
-                    }}>
-                      <span style={{ color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>Σ </span>
-                      <span style={{ color: '#22c55e' }}>{fNumber(cumSum)}</span>
-                      <span style={{ color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)' }}> · </span>
-                      <span style={{ color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>Avg </span>
-                      <span>{renderInlinePrice(avgPrice)}</span>
-                    </div>
-                  )}
-                </Row>
+                    <DepthBar type="bid" width={(bid.amount / bidMax) * 100} />
+                    <PriceDisplay price={bid.price} type="bid" />
+                    <Amount isDark={isDark}>{fNumber(bid.amount)}</Amount>
+                    <Maker
+                      isDark={isDark}
+                      title={acc || ''}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        acc && window.open(`/address/${acc}`, '_blank');
+                      }}
+                      style={isUserOrder ? { color: '#3b82f6', fontWeight: 600 } : {}}
+                    >
+                      {isUserOrder ? 'YOU' : acc ? `${acc.slice(1, 5)}…${acc.slice(-2)}` : ''}
+                    </Maker>
+                    {hoveredRow === rowKey && (
+                      <div style={{
+                        position: 'absolute',
+                        left: '50%',
+                        top: '-28px',
+                        transform: 'translateX(-50%)',
+                        background: isDark ? 'rgba(0,0,0,0.9)' : 'rgba(255,255,255,0.95)',
+                        border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
+                        borderRadius: '6px',
+                        padding: '4px 8px',
+                        fontSize: '9px',
+                        whiteSpace: 'nowrap',
+                        zIndex: 10,
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
+                      }}>
+                        <span style={{ color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>Σ </span>
+                        <span style={{ color: '#22c55e' }}>{fNumber(cumSum)}</span>
+                        <span style={{ color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)' }}> · </span>
+                        <span style={{ color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>Avg </span>
+                        <span>{renderInlinePrice(avgPrice)}</span>
+                      </div>
+                    )}
+                  </Row>
+                  {showLimitLine && <LimitPriceLine />}
+                </React.Fragment>
               );
             })}
           </Side>

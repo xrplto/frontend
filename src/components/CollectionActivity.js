@@ -1,4 +1,4 @@
-import axios from 'axios';
+import api from 'src/utils/api';
 import { useState, useEffect, useContext } from 'react';
 import { ExternalLink, ChevronLeft, ChevronRight, MessageCircle } from 'lucide-react';
 import { cn } from 'src/utils/cn';
@@ -67,7 +67,7 @@ export default function AccountTransactions({ creatorAccount, collectionSlug }) 
       const params = new URLSearchParams({ page: page.toString(), limit: '20' });
       if (filterType) params.append('type', filterType);
 
-      const res = await axios.get(
+      const res = await api.get(
         `https://api.xrpl.to/v1/nft/collections/${collectionSlug}/history?${params}`
       );
 

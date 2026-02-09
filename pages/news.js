@@ -1,3 +1,4 @@
+import { apiFetch } from 'src/utils/api';
 import { useState, useEffect, useMemo, useCallback, memo, useContext, useRef } from 'react';
 import { useRouter } from 'next/router';
 import dynamic from 'next/dynamic';
@@ -564,7 +565,7 @@ function NewsPage({
   useEffect(() => {
     const fetchChart = async () => {
       try {
-        const res = await fetch(
+        const res = await apiFetch(
           `https://api.xrpl.to/v1/news/sentiment-chart?days=${chartPeriod === 'all' ? 9999 : chartPeriod}`
         );
         if (res.ok) setChartData(await res.json());
@@ -797,7 +798,7 @@ export async function getServerSideProps({ query }) {
     console.log('Fetching:', endpoint);
     const [newsRes, chartRes] = await Promise.all([
       fetch(endpoint),
-      fetch('https://api.xrpl.to/v1/news/sentiment-chart?days=30')
+      apiFetch('https://api.xrpl.to/v1/news/sentiment-chart?days=30')
     ]);
 
     console.log('News response status:', newsRes.status, 'url:', newsRes.url);

@@ -1,5 +1,5 @@
 import { useRouter } from 'next/router';
-import axios from 'axios';
+import api from 'src/utils/api';
 import { useState, useMemo, useEffect, useContext, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { AppContext } from 'src/context/AppContext';
@@ -774,7 +774,7 @@ const TokenLinkWithTooltip = ({ slug, currency, rawCurrency, md5, variant = 'bod
       if (isLpToken) {
         setLoading(true);
         try {
-          const response = await axios.get(`https://api.xrpl.to/v1/token/${slug}`);
+          const response = await api.get(`https://api.xrpl.to/v1/token/${slug}`);
           setTokenInfo(response.data);
         } catch (err) {
           console.error('Failed to fetch token info for LP token', err);
@@ -794,9 +794,9 @@ const TokenLinkWithTooltip = ({ slug, currency, rawCurrency, md5, variant = 'bod
     try {
       let response;
       if (isXRP) {
-        response = await axios.get('https://api.xrpl.to/v1/token/xrpl-xrp');
+        response = await api.get('https://api.xrpl.to/v1/token/xrpl-xrp');
       } else {
-        response = await axios.get(`https://api.xrpl.to/v1/token/${slug}`);
+        response = await api.get(`https://api.xrpl.to/v1/token/${slug}`);
       }
       setTokenInfo(response.data);
     } catch (err) {
@@ -889,7 +889,7 @@ const XrpDisplay = ({ variant = 'body2', showText = true }) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.get('https://api.xrpl.to/v1/token/xrpl-xrp');
+      const response = await api.get('https://api.xrpl.to/v1/token/xrpl-xrp');
       setXrpTokenInfo(response.data);
     } catch (err) {
       console.error('Failed to fetch XRP info', err);
@@ -949,7 +949,7 @@ const AmountDisplay = ({ amount, variant = 'body1' }) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.get('https://api.xrpl.to/v1/token/xrpl-xrp');
+      const response = await api.get('https://api.xrpl.to/v1/token/xrpl-xrp');
       setXrpTokenInfo(response.data);
     } catch (err) {
       console.error('Failed to fetch XRP info', err);
@@ -2355,7 +2355,7 @@ const TransactionDetails = ({ txData }) => {
     if (aiLoading || aiExplanation) return;
     setAiLoading(true);
     try {
-      const response = await axios.get(`https://api.xrpl.to/v1/tx-explain/${hash}`);
+      const response = await api.get(`https://api.xrpl.to/v1/tx-explain/${hash}`);
       if (response.data) {
         setAiExplanation(response.data);
       }
@@ -2767,7 +2767,7 @@ const TransactionDetails = ({ txData }) => {
       const fetchNftInfo = async () => {
         setNftInfoLoading(true);
         try {
-          const response = await axios.get(
+          const response = await api.get(
             `https://api.xrpl.to/v1/nft/${acceptedOfferDetails.nftokenID}`
           );
           if (response.data?.NFTokenID) {
@@ -2792,7 +2792,7 @@ const TransactionDetails = ({ txData }) => {
       const fetchNftInfo = async () => {
         setOfferNftInfoLoading(true);
         try {
-          const response = await axios.get(`https://api.xrpl.to/v1/nft/${NFTokenID}`);
+          const response = await api.get(`https://api.xrpl.to/v1/nft/${NFTokenID}`);
           if (response.data?.NFTokenID) {
             setOfferNftInfo(response.data);
           }
@@ -2811,7 +2811,7 @@ const TransactionDetails = ({ txData }) => {
       const fetchNftInfo = async () => {
         setMintedNftInfoLoading(true);
         try {
-          const response = await axios.get(`https://api.xrpl.to/v1/nft/${meta.nftoken_id}`);
+          const response = await api.get(`https://api.xrpl.to/v1/nft/${meta.nftoken_id}`);
           if (response.data?.NFTokenID) {
             setMintedNftInfo(response.data);
           }
@@ -2830,7 +2830,7 @@ const TransactionDetails = ({ txData }) => {
       cancelledNftOffers.forEach((offer) => {
         if (!cancelledNftInfo[offer.NFTokenID] && !cancelledNftInfoLoading[offer.NFTokenID]) {
           setCancelledNftInfoLoading((prev) => ({ ...prev, [offer.NFTokenID]: true }));
-          axios
+          api
             .get(`https://api.xrpl.to/v1/nft/${offer.NFTokenID}`)
             .then((response) => {
               if (response.data?.NFTokenID) {
@@ -3133,8 +3133,8 @@ const TransactionDetails = ({ txData }) => {
       try {
         // Fetch both endpoints - balance has more info, live has RegularKey
         const [balanceRes, liveRes] = await Promise.all([
-          axios.get(`https://api.xrpl.to/v1/account/balance/${Destination}?rank=true`).catch(() => null),
-          axios.get(`https://api.xrpl.to/v1/account/info/live/${Destination}`).catch(() => null)
+          api.get(`https://api.xrpl.to/v1/account/balance/${Destination}?rank=true`).catch(() => null),
+          api.get(`https://api.xrpl.to/v1/account/info/live/${Destination}`).catch(() => null)
         ]);
 
         const balanceData = balanceRes?.data;
@@ -5068,7 +5068,7 @@ export async function getServerSideProps(context) {
     };
   }
 
-  const response = await axios.get(`https://api.xrpl.to/v1/tx/${hash}`).catch(() => null);
+  const response = await api.get(`https://api.xrpl.to/v1/tx/${hash}`).catch(() => null);
 
   if (!response || !response.data) {
     return {

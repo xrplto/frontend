@@ -1,4 +1,4 @@
-import axios from 'axios';
+import api from 'src/utils/api';
 import { useState, useContext } from 'react';
 import Decimal from 'decimal.js-light';
 import { X, CheckCircle, ArrowRight } from 'lucide-react';

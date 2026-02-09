@@ -30,17 +30,23 @@ import Link from 'next/link';
 
 // Styled Components
 const Container = styled.div`
-  position: relative;
-  z-index: 2;
-  margin-bottom: 12px;
-  width: 100%;
-  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-radius: 12px;
+  border: 1.5px solid
+    ${(props) => (props.isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)')};
   background: transparent;
-  overflow: visible;
+  padding: 10px 14px;
+  position: relative;
+  margin-bottom: 12px;
+  box-sizing: border-box;
+  overflow: hidden;
 
   @media (max-width: 600px) {
-    margin: 8px 0;
-    padding: 0;
+    padding: 6px 8px;
+    gap: 6px;
+    margin-bottom: 8px;
   }
 `;
 
@@ -56,8 +62,7 @@ const Stack = styled.div`
 const Grid = styled.div`
   display: grid;
   grid-template-columns: 1.1fr 1fr 0.8fr 0.9fr 1fr 1.6fr;
-  gap: 10px;
-  width: 100%;
+  gap: 8px;
 
   @media (max-width: 1400px) {
     grid-template-columns: repeat(3, 1fr);
@@ -74,8 +79,7 @@ const Grid = styled.div`
   @media (max-width: 600px) {
     display: flex;
     overflow-x: auto;
-    gap: 8px;
-    padding-bottom: 4px;
+    gap: 5px;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
     &::-webkit-scrollbar {
@@ -85,8 +89,8 @@ const Grid = styled.div`
 `;
 
 const MetricBox = styled.div`
-  padding: 10px 16px;
-  height: 82px;
+  padding: 8px 12px;
+  height: 78px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -103,11 +107,12 @@ const MetricBox = styled.div`
   }
 
   @media (max-width: 600px) {
-    padding: 10px 12px;
-    height: 68px;
+    padding: 6px 8px;
+    height: 56px;
     flex: 0 0 auto;
-    min-width: 95px;
-    border-radius: 12px;
+    min-width: 72px;
+    border-radius: 10px;
+    gap: 4px;
   }
 `;
 
@@ -118,7 +123,7 @@ const MetricTitle = styled.span`
   letter-spacing: 0.02em;
 
   @media (max-width: 600px) {
-    font-size: 0.58rem;
+    font-size: 0.52rem;
   }
 `;
 
@@ -131,7 +136,7 @@ const MetricValue = styled.span`
   white-space: nowrap;
 
   @media (max-width: 600px) {
-    font-size: 0.92rem;
+    font-size: 0.78rem;
   }
 `;
 
@@ -149,8 +154,8 @@ const PercentageChange = styled.span`
     props.isPositive ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)'};
 
   @media (max-width: 600px) {
-    font-size: 0.58rem;
-    padding: 1px 3px;
+    font-size: 0.5rem;
+    padding: 1px 2px;
   }
 `;
 
@@ -238,8 +243,8 @@ const CircularProgress = styled.div`
 const ChartMetricBox = styled(MetricBox)`
   grid-column: span 1;
   overflow: visible;
-  height: 82px;
-  padding: 10px 14px;
+  height: 72px;
+  padding: 6px 10px;
   justify-content: flex-start;
   gap: 0;
 
@@ -260,15 +265,17 @@ const ChartMetricBox = styled(MetricBox)`
   }
 `;
 
-const MobileChartBox = styled(MetricBox)`
+const MobileChartBox = styled.div`
   display: none;
 
   @media (max-width: 600px) {
     display: flex;
+    flex-direction: column;
     margin-top: 4px;
-    width: 100%;
     justify-content: flex-start;
-    gap: 4px;
+    gap: 2px;
+    padding: 0;
+    overflow: hidden;
   }
 `;
 
@@ -335,13 +342,21 @@ const TokenChart = ({ data, theme, activeFiatCurrency, darkMode }) => {
     if (!data || data.length === 0 || !canvasRef.current) return;
 
     const canvas = canvasRef.current;
+    let retryCount = 0;
+    let retryTimeout;
 
     const draw = () => {
       if (!canvas) return;
       const ctx = canvas.getContext('2d');
       const rect = canvas.getBoundingClientRect();
-      // Skip drawing if canvas is not visible (0 dimensions)
-      if (rect.width === 0 || rect.height === 0) return;
+      // Retry if canvas not visible yet (up to 10 attempts)
+      if (rect.width === 0 || rect.height === 0) {
+        if (retryCount < 10) {
+          retryCount++;
+          retryTimeout = setTimeout(() => requestAnimationFrame(draw), 100);
+        }
+        return;
+      }
 
       // Get last 30 days of data
       const chartData = data.slice(-30);
@@ -439,6 +454,7 @@ const TokenChart = ({ data, theme, activeFiatCurrency, darkMode }) => {
 
     return () => {
       cancelAnimationFrame(rafId);
+      clearTimeout(retryTimeout);
       window.removeEventListener('resize', draw);
       if (resizeObserver) {
         resizeObserver.disconnect();
@@ -633,7 +649,7 @@ const TokenChart = ({ data, theme, activeFiatCurrency, darkMode }) => {
         style={{
           width: '100%',
           height: '100%',
-          minHeight: '38px',
+          minHeight: '20px',
           position: 'relative'
         }}
         onMouseMove={handleMouseMove}
@@ -665,7 +681,7 @@ export const SummaryTag = ({ tagName }) => {
     margin-top: 16px;
 
     @media (max-width: 600px) {
-      margin-top: 8px;
+      margin-top: 4px;
     }
   `;
 
@@ -676,7 +692,8 @@ export const SummaryTag = ({ tagName }) => {
     line-height: 1.2;
 
     @media (max-width: 600px) {
-      font-size: 1.25rem;
+      font-size: 1.1rem;
+      margin: 0 0 4px 0;
     }
   `;
 
@@ -685,6 +702,10 @@ export const SummaryTag = ({ tagName }) => {
     font-weight: 400;
     line-height: 1.4;
     opacity: 0.6;
+
+    @media (max-width: 600px) {
+      font-size: 0.7rem;
+    }
   `;
 
   return (
@@ -708,7 +729,7 @@ export const SummaryWatchList = () => {
     margin-top: 16px;
 
     @media (max-width: 600px) {
-      margin-top: 8px;
+      margin-top: 4px;
     }
   `;
 
@@ -720,7 +741,7 @@ export const SummaryWatchList = () => {
     letter-spacing: -0.00833em;
 
     @media (max-width: 600px) {
-      font-size: 1.5rem;
+      font-size: 1.1rem;
     }
   `;
 
@@ -730,6 +751,11 @@ export const SummaryWatchList = () => {
     line-height: 1.5;
     letter-spacing: 0.00938em;
     margin-top: 16px;
+
+    @media (max-width: 600px) {
+      font-size: 0.7rem;
+      margin-top: 8px;
+    }
   `;
 
   return (
@@ -968,11 +994,10 @@ export default function Summary() {
     activeFiatCurrency === 'XRP' ? currencySymbols.USD : currencySymbols[activeFiatCurrency];
 
   return (
-    <Container>
-      <Stack spacing="4px">
+    <Container isDark={darkMode}>
         {/* Main Metrics Section */}
         {isLoading ? (
-          <div style={{ width: '100%', paddingBottom: '0' }}>
+          <>
             <Grid cols={8} mdCols={4} smCols={3}>
               {[...Array(7)].map((_, i) => (
                 <MetricBox key={`summary-skeleton-${i}`} isDark={darkMode}>
@@ -981,16 +1006,16 @@ export default function Summary() {
                 </MetricBox>
               ))}
             </Grid>
-          </div>
+          </>
         ) : (
-          <div style={{ width: '100%' }}>
+          <>
             <Grid>
-              <MetricBox isDark={darkMode} style={isMobile ? { minWidth: '110px' } : {}}>
+              <MetricBox isDark={darkMode} style={isMobile ? { minWidth: '90px' } : {}}>
                 <MetricTitle isDark={darkMode}>MCap / TVL</MetricTitle>
                 <div
                   style={{
                     display: 'flex',
-                    gap: isMobile ? '12px' : '20px',
+                    gap: isMobile ? '8px' : '20px',
                     alignItems: 'center',
                     width: '100%'
                   }}
@@ -998,7 +1023,7 @@ export default function Summary() {
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
                     <MetricValue
                       isDark={darkMode}
-                      style={{ fontSize: isMobile ? '0.85rem' : '1.15rem' }}
+                      style={{ fontSize: isMobile ? '0.72rem' : '1.15rem' }}
                     >
                       {currencySymbols[activeFiatCurrency]}
                       {formatNumberWithDecimals(
@@ -1018,7 +1043,7 @@ export default function Summary() {
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
                     <MetricValue
                       isDark={darkMode}
-                      style={{ fontSize: isMobile ? '0.85rem' : '1.15rem', opacity: 0.6 }}
+                      style={{ fontSize: isMobile ? '0.72rem' : '1.15rem', opacity: 0.6 }}
                     >
                       {currencySymbols[activeFiatCurrency]}
                       {formatNumberWithDecimals(
@@ -1146,12 +1171,12 @@ export default function Summary() {
                   const total = buyVol + sellVol;
                   const buyPercent = total > 0 ? (buyVol / total) * 100 : 50;
                   return (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '3px' : '4px' }}>
                       <span
                         style={{
-                          fontSize: '0.58rem',
+                          fontSize: isMobile ? '0.48rem' : '0.58rem',
                           fontWeight: 500,
-                          padding: '1px 4px',
+                          padding: isMobile ? '1px 2px' : '1px 4px',
                           borderRadius: '4px',
                           background: 'rgba(16, 185, 129, 0.1)',
                           color: '#10b981'
@@ -1161,9 +1186,9 @@ export default function Summary() {
                       </span>
                       <span
                         style={{
-                          fontSize: '0.58rem',
+                          fontSize: isMobile ? '0.48rem' : '0.58rem',
                           fontWeight: 500,
-                          padding: '1px 4px',
+                          padding: isMobile ? '1px 2px' : '1px 4px',
                           borderRadius: '4px',
                           background: 'rgba(239, 68, 68, 0.1)',
                           color: '#ef4444'
@@ -1178,7 +1203,7 @@ export default function Summary() {
 
               <MetricBox
                 isDark={darkMode}
-                style={isMobile ? { minWidth: '130px' } : {}}
+                style={isMobile ? { minWidth: '100px' } : {}}
               >
                 <MetricTitle isDark={darkMode}>Market</MetricTitle>
                 {(() => {
@@ -1197,7 +1222,7 @@ export default function Summary() {
                     <div
                       style={{
                         display: 'flex',
-                        gap: isMobile ? '16px' : '20px',
+                        gap: isMobile ? '10px' : '20px',
                         alignItems: 'center',
                         width: '100%',
                         justifyContent: 'flex-start'
@@ -1209,17 +1234,17 @@ export default function Summary() {
                           display: 'flex',
                           flexDirection: 'column',
                           alignItems: 'center',
-                          gap: '3px'
+                          gap: isMobile ? '2px' : '3px'
                         }}
                       >
-                        <div style={{ position: 'relative', width: '40px', height: '22px' }}>
+                        <div style={{ position: 'relative', width: isMobile ? '32px' : '40px', height: isMobile ? '18px' : '22px' }}>
                           {/* Semi-circle background */}
                           <div
                             style={{
                               position: 'absolute',
-                              width: '40px',
-                              height: '20px',
-                              borderRadius: '20px 20px 0 0',
+                              width: isMobile ? '32px' : '40px',
+                              height: isMobile ? '16px' : '20px',
+                              borderRadius: isMobile ? '16px 16px 0 0' : '20px 20px 0 0',
                               background: `conic-gradient(from 180deg, #ef4444 0deg, #fbbf24 90deg, #10b981 180deg)`,
                               opacity: 0.2
                             }}
@@ -1231,7 +1256,7 @@ export default function Summary() {
                               bottom: '0',
                               left: '50%',
                               width: '2px',
-                              height: '16px',
+                              height: isMobile ? '12px' : '16px',
                               background: sentColor,
                               transformOrigin: 'bottom center',
                               transform: `translateX(-50%) rotate(${(sentiment - 50) * 1.8}deg)`,
@@ -1245,17 +1270,17 @@ export default function Summary() {
                               bottom: '-2px',
                               left: '50%',
                               transform: 'translateX(-50%)',
-                              width: '6px',
-                              height: '6px',
+                              width: isMobile ? '5px' : '6px',
+                              height: isMobile ? '5px' : '6px',
                               borderRadius: '50%',
                               background: sentColor
                             }}
                           />
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '3px' }}>
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: isMobile ? '2px' : '3px' }}>
                           <span
                             style={{
-                              fontSize: '1.15rem',
+                              fontSize: isMobile ? '0.85rem' : '1.15rem',
                               fontWeight: 600,
                               color: sentColor,
                               lineHeight: 1
@@ -1265,7 +1290,7 @@ export default function Summary() {
                           </span>
                           <span
                             style={{
-                              fontSize: '0.52rem',
+                              fontSize: isMobile ? '0.45rem' : '0.52rem',
                               color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'
                             }}
                           >
@@ -1280,17 +1305,17 @@ export default function Summary() {
                           display: 'flex',
                           flexDirection: 'column',
                           alignItems: 'center',
-                          gap: '3px'
+                          gap: isMobile ? '2px' : '3px'
                         }}
                       >
-                        <div style={{ position: 'relative', width: '40px', height: '22px' }}>
+                        <div style={{ position: 'relative', width: isMobile ? '32px' : '40px', height: isMobile ? '18px' : '22px' }}>
                           {/* Semi-circle background */}
                           <div
                             style={{
                               position: 'absolute',
-                              width: '40px',
-                              height: '20px',
-                              borderRadius: '20px 20px 0 0',
+                              width: isMobile ? '32px' : '40px',
+                              height: isMobile ? '16px' : '20px',
+                              borderRadius: isMobile ? '16px 16px 0 0' : '20px 20px 0 0',
                               background: `conic-gradient(from 180deg, #8b5cf6 0deg, #10b981 90deg, #ef4444 180deg)`,
                               opacity: 0.2
                             }}
@@ -1302,7 +1327,7 @@ export default function Summary() {
                               bottom: '0',
                               left: '50%',
                               width: '2px',
-                              height: '16px',
+                              height: isMobile ? '12px' : '16px',
                               background: rsiColor,
                               transformOrigin: 'bottom center',
                               transform: `translateX(-50%) rotate(${(rsi - 50) * 1.8}deg)`,
@@ -1316,17 +1341,17 @@ export default function Summary() {
                               bottom: '-2px',
                               left: '50%',
                               transform: 'translateX(-50%)',
-                              width: '6px',
-                              height: '6px',
+                              width: isMobile ? '5px' : '6px',
+                              height: isMobile ? '5px' : '6px',
                               borderRadius: '50%',
                               background: rsiColor
                             }}
                           />
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '3px' }}>
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: isMobile ? '2px' : '3px' }}>
                           <span
                             style={{
-                              fontSize: '1.15rem',
+                              fontSize: isMobile ? '0.85rem' : '1.15rem',
                               fontWeight: 600,
                               color: rsiColor,
                               lineHeight: 1
@@ -1336,7 +1361,7 @@ export default function Summary() {
                           </span>
                           <span
                             style={{
-                              fontSize: '0.52rem',
+                              fontSize: isMobile ? '0.45rem' : '0.52rem',
                               color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'
                             }}
                           >
@@ -1505,7 +1530,7 @@ export default function Summary() {
                         </Link>
                       )}
                     </div>
-                    <div style={{ flex: 1, width: '100%', minHeight: 0 }}>
+                    <div style={{ height: '22px', width: '100%' }}>
                       <TokenChart
                         data={chartData}
                         activeFiatCurrency={activeFiatCurrency}
@@ -1516,9 +1541,8 @@ export default function Summary() {
                 );
               })()}
             </MobileChartBox>
-          </div>
+          </>
         )}
-      </Stack>
     </Container>
   );
 }

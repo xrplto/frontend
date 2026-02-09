@@ -90,7 +90,7 @@ export async function getStaticProps({ params }) {
   let metrics = null;
 
   try {
-    const metricsResponse = await axios.get(
+    const metricsResponse = await api.get(
       `${BASE_URL}/tokens?start=0&limit=50&sortBy=vol24hxrp&sortType=desc&filter=`
     );
 

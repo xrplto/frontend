@@ -1,6 +1,6 @@
 import { useState, useContext, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import axios from 'axios';
+import api from 'src/utils/api';
 import styled from '@emotion/styled';
 import { AppContext } from 'src/context/AppContext';
 import Header from 'src/components/Header';
@@ -781,10 +781,10 @@ export async function getServerSideProps({ query }) {
 
   try {
     const [tradersRes, marketRes] = await Promise.all([
-      axios.get(
+      api.get(
         `${BASE_URL}/nft/analytics/traders?sortBy=${sortBy}&limit=${ROWS_PER_PAGE}&page=${page}`
       ),
-      axios.get(`${BASE_URL}/nft/analytics/market`)
+      api.get(`${BASE_URL}/nft/analytics/market`)
     ]);
     const traders = tradersRes.data.traders || [];
     const pagination = tradersRes.data.pagination || {};

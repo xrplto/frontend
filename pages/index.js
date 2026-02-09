@@ -114,12 +114,10 @@ function Overview({ data }) {
       <div
         id="back-to-top-anchor"
         className={
-          notificationPanelOpen ? 'mx-auto px-0 mt-4' : 'mx-auto max-w-[1920px] px-0 md:px-4 mt-4'
+          notificationPanelOpen ? 'mx-auto px-4 mt-4' : 'mx-auto max-w-[1920px] px-4 mt-4'
         }
       >
-        <div className="w-full px-0 py-0">
-          <Summary />
-        </div>
+        <Summary />
       </div>
 
       <div className="mx-auto max-w-[1920px] px-4">

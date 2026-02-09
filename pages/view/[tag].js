@@ -1,4 +1,4 @@
-import axios from 'axios';
+import api from 'src/utils/api';
 import { performance } from 'perf_hooks';
 import { useState, useEffect, useContext } from 'react';
 
@@ -78,7 +78,7 @@ export async function getServerSideProps(ctx) {
   try {
     var t1 = performance.now();
 
-    const res = await axios.get(
+    const res = await api.get(
       `${BASE_URL}/tokens?tag=${tag}&start=0&limit=100&sortBy=vol24hxrp&sortType=desc&filter=&tags=yes`
     );
 
@@ -118,7 +118,7 @@ export async function getServerSideProps(ctx) {
 //     try {
 //         var t1 = performance.now();
 
-//         const res = await axios.get(`${BASE_URL}/tokens?start=0&limit=100&sortBy=vol24hxrp&sortType=desc&filter=&showNew=false&showSlug=false`);
+//         const res = await api.get(`${BASE_URL}/tokens?start=0&limit=100&sortBy=vol24hxrp&sortType=desc&filter=&showNew=false&showSlug=false`);
 
 //         data = res.data;
 

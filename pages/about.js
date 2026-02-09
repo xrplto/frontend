@@ -1,6 +1,6 @@
 import React, { useContext, memo, useState, useCallback, useMemo } from 'react';
 import styled from '@emotion/styled';
-import axios from 'axios';
+import api from 'src/utils/api';
 import { AppContext } from 'src/context/AppContext';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
@@ -20,6 +20,7 @@ const Container = styled.div`
   margin: 0 auto;
   padding: 0 16px;
   width: 100%;
+  flex: 1;
 
   @media (min-width: 768px) {
     padding: 0 16px;
@@ -617,7 +618,7 @@ export async function getStaticProps() {
   let data = null;
   try {
     // var t1 = performance.now();
-    // const res = await axios.get(`${BASE_URL}/banxa/currencies`);
+    // const res = await api.get(`${BASE_URL}/banxa/currencies`);
     // data = res.data;
     // var t2 = performance.now();
     // var dt = (t2 - t1).toFixed(2);

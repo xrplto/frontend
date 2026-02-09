@@ -1,6 +1,6 @@
 import { useState, useContext } from 'react';
 import { useRouter } from 'next/router';
-import axios from 'axios';
+import api from 'src/utils/api';
 import styled from '@emotion/styled';
 import { AppContext } from 'src/context/AppContext';
 import Header from 'src/components/Header';
@@ -792,10 +792,10 @@ export async function getServerSideProps({ query }) {
 
   try {
     const [tradersRes, summaryRes] = await Promise.all([
-      axios.get(
+      api.get(
         `${BASE_URL}/token/analytics/traders?sortBy=${sortBy}&limit=${ROWS_PER_PAGE}&page=${page}`
       ),
-      axios.get(`${BASE_URL}/token/analytics/traders/summary`)
+      api.get(`${BASE_URL}/token/analytics/traders/summary`)
     ]);
     const traders = tradersRes.data.data || [];
     const pagination = tradersRes.data.pagination || {};

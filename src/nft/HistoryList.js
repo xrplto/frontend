@@ -1,4 +1,4 @@
-import axios from 'axios';
+import api from 'src/utils/api';
 import { useState, useEffect, useMemo, useContext } from 'react';
 import Link from 'next/link';
 import {
@@ -71,7 +71,7 @@ export default function HistoryList({ nft }) {
       return;
     }
     setLoading(true);
-    axios
+    api
       .get(`https://api.xrpl.to/v1/nft/history?NFTokenID=${nft.NFTokenID}&limit=200`)
       .then((res) => {
         if (res.data?.histories) {

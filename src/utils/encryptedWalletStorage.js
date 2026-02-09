@@ -14,23 +14,193 @@ const isDev = process.env.NODE_ENV === 'development';
 const devLog = isDev ? (...args) => console.log('[WalletStorage]', ...args) : () => {};
 const devError = isDev ? (...args) => console.error('[WalletStorage]', ...args) : () => {};
 
-// Simple device ID using localStorage (100% accurate per browser)
-// Clears when user clears storage - acceptable trade-off
+// Device ID with WebAuthn hardware binding + HMAC integrity fallback
+// Uses platform authenticator (Face ID/Touch ID/Windows Hello) when available
 const deviceFingerprint = {
   _cachedDeviceId: null,
+  _hmacKey: null,
+  _webAuthnSupported: null,
+
+  // Check if WebAuthn with platform authenticator is available
+  async _checkWebAuthnSupport() {
+    if (this._webAuthnSupported !== null) return this._webAuthnSupported;
+    if (typeof window === 'undefined' || !window.PublicKeyCredential) {
+      this._webAuthnSupported = false;
+      return false;
+    }
+    try {
+      this._webAuthnSupported = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+    } catch {
+      this._webAuthnSupported = false;
+    }
+    return this._webAuthnSupported;
+  },
+
+  // Create WebAuthn credential for hardware binding
+  async _createWebAuthnCredential(deviceId) {
+    const challenge = crypto.getRandomValues(new Uint8Array(32));
+    const credential = await navigator.credentials.create({
+      publicKey: {
+        challenge,
+        rp: { name: 'XRPL.to Wallet', id: window.location.hostname },
+        user: {
+          id: new TextEncoder().encode(deviceId),
+          name: 'wallet-device',
+          displayName: 'Wallet Device'
+        },
+        pubKeyCredParams: [{ alg: -7, type: 'public-key' }, { alg: -257, type: 'public-key' }],
+        authenticatorSelection: {
+          authenticatorAttachment: 'platform',
+          userVerification: 'required',
+          residentKey: 'preferred'
+        },
+        timeout: 60000
+      }
+    });
+    return credential ? btoa(String.fromCharCode(...new Uint8Array(credential.rawId))) : null;
+  },
+
+  // Verify WebAuthn credential exists on this device
+  async _verifyWebAuthnCredential(credentialId) {
+    try {
+      const rawId = Uint8Array.from(atob(credentialId), c => c.charCodeAt(0));
+      const challenge = crypto.getRandomValues(new Uint8Array(32));
+      await navigator.credentials.get({
+        publicKey: {
+          challenge,
+          allowCredentials: [{ id: rawId, type: 'public-key' }],
+          userVerification: 'required',
+          timeout: 60000
+        }
+      });
+      return true;
+    } catch {
+      return false;
+    }
+  },
+
+  async _getHmacKey() {
+    if (this._hmacKey) return this._hmacKey;
+    const db = await new Promise((resolve, reject) => {
+      const req = indexedDB.open('XRPLWalletDB');
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+
+    let hmacSeed = await new Promise((resolve) => {
+      if (!db.objectStoreNames.contains('keys')) { resolve(null); return; }
+      const tx = db.transaction(['keys'], 'readonly');
+      const req = tx.objectStore('keys').get('hmac_seed');
+      req.onsuccess = () => resolve(req.result?.seed || null);
+      req.onerror = () => resolve(null);
+    });
+
+    if (!hmacSeed) {
+      hmacSeed = crypto.getRandomValues(new Uint8Array(32));
+      try {
+        const tx = db.transaction(['keys'], 'readwrite');
+        tx.objectStore('keys').put({ id: 'hmac_seed', seed: hmacSeed });
+      } catch (e) { /* keys store may not exist yet */ }
+    }
+
+    this._hmacKey = await crypto.subtle.importKey(
+      'raw', hmacSeed, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign', 'verify']
+    );
+    return this._hmacKey;
+  },
+
+  async _computeHmac(data) {
+    const key = await this._getHmacKey();
+    const signature = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(data));
+    return btoa(String.fromCharCode(...new Uint8Array(signature)));
+  },
+
+  async _verifyHmac(data, hmac) {
+    if (!hmac) return false;
+    try {
+      const key = await this._getHmacKey();
+      const signature = Uint8Array.from(atob(hmac), c => c.charCodeAt(0));
+      return crypto.subtle.verify('HMAC', key, signature, new TextEncoder().encode(data));
+    } catch {
+      return false;
+    }
+  },
 
   async getDeviceId() {
     if (this._cachedDeviceId) return this._cachedDeviceId;
     if (typeof window === 'undefined') return null;
 
-    let deviceId = localStorage.getItem('device_key_id');
-    if (!deviceId) {
-      deviceId = crypto.randomUUID();
-      localStorage.setItem('device_key_id', deviceId);
+    const stored = localStorage.getItem('device_key_id');
+
+    if (stored) {
+      // Parse stored format: deviceId:hmac or deviceId:hmac:webauthn
+      // HMAC is base64 (A-Za-z0-9+/=), split only on first two colons
+      const firstColon = stored.indexOf(':');
+      const secondColon = firstColon > -1 ? stored.indexOf(':', firstColon + 1) : -1;
+      let deviceId, hmac, webAuthnId;
+      if (firstColon === -1) {
+        // No HMAC — regenerate
+        localStorage.removeItem('device_key_id');
+        return this.getDeviceId();
+      } else if (secondColon === -1) {
+        deviceId = stored.substring(0, firstColon);
+        hmac = stored.substring(firstColon + 1);
+      } else {
+        deviceId = stored.substring(0, firstColon);
+        hmac = stored.substring(firstColon + 1, secondColon);
+        webAuthnId = stored.substring(secondColon + 1);
+      }
+
+      // Verify HMAC integrity first
+      const hmacValid = await this._verifyHmac(deviceId, hmac);
+      if (!hmacValid) {
+        // Corrupted or tampered — regenerate instead of throwing
+        console.warn('[deviceFingerprint] HMAC verification failed, regenerating device ID');
+        localStorage.removeItem('device_key_id');
+        this._cachedDeviceId = null;
+        return this.getDeviceId();
+      }
+
+      // If WebAuthn credential exists, verify hardware binding
+      if (webAuthnId && await this._checkWebAuthnSupport()) {
+        const hwValid = await this._verifyWebAuthnCredential(webAuthnId);
+        if (!hwValid) {
+          throw new Error('Hardware binding verification failed - different device');
+        }
+      }
+
+      this._cachedDeviceId = deviceId;
+      return deviceId;
     }
+
+    // Generate new device ID
+    const deviceId = crypto.randomUUID();
+    const hmac = await this._computeHmac(deviceId);
+
+    // Try to create WebAuthn hardware binding
+    let webAuthnId = null;
+    if (await this._checkWebAuthnSupport()) {
+      try {
+        webAuthnId = await this._createWebAuthnCredential(deviceId);
+      } catch (e) {
+        devLog('[WebAuthn] Hardware binding unavailable:', e.message);
+      }
+    }
+
+    // Store with or without WebAuthn
+    const storageValue = webAuthnId
+      ? `${deviceId}:${hmac}:${webAuthnId}`
+      : `${deviceId}:${hmac}`;
+    localStorage.setItem('device_key_id', storageValue);
 
     this._cachedDeviceId = deviceId;
     return deviceId;
+  },
+
+  // Check if current device has hardware binding
+  async hasHardwareBinding() {
+    const stored = localStorage.getItem('device_key_id');
+    return stored && stored.split(':').length === 3;
   }
 };
 
@@ -131,109 +301,120 @@ const securityUtils = {
 export class UnifiedWalletStorage {
   // Static shared DB promise - ensures only ONE connection across ALL instances
   static _sharedDbPromise = null;
+  // Static master key cache - non-extractable CryptoKey
+  static _masterKey = null;
+  static _masterKeyPromise = null;
+  // Static credential cache with auto-expiry
+  static _credentialCache = new Map();
+  static _cacheTimeout = null;
+  static _cacheTimeoutMs = 15 * 60 * 1000; // 15 minutes
+  static _visibilityHandler = null;
 
   constructor() {
     this.dbName = 'XRPLWalletDB';
     this.walletsStore = 'wallets';
-    this.version = 1;
-    this._entropyNeedsCheck = false; // Flag to check IndexedDB for existing backup
-    this._entropyRestored = false; // Track if entropy restoration was attempted
-    this.localStorageKey = this.generateLocalStorageKey();
+    this.keysStore = 'keys'; // New store for CryptoKeys
+    this.version = 2; // Bump version for new store
+    this._setupCacheExpiry();
   }
 
-  // Ensure entropy is restored from IndexedDB before any critical operations
-  // This handles the case where localStorage was cleared but IndexedDB has backup
-  async ensureEntropyRestored() {
-    if (this._entropyRestored) return; // Already done
-    this._entropyRestored = true;
+  // Setup auto-expiry for credential cache
+  _setupCacheExpiry() {
+    if (typeof window === 'undefined') return;
 
+    // Clear cache when tab becomes hidden (user switches away)
+    if (!UnifiedWalletStorage._visibilityHandler) {
+      UnifiedWalletStorage._visibilityHandler = () => {
+        if (document.hidden) {
+          this._clearCredentialCache();
+        }
+      };
+      document.addEventListener('visibilitychange', UnifiedWalletStorage._visibilityHandler);
+    }
+  }
+
+  _resetCacheTimeout() {
+    if (UnifiedWalletStorage._cacheTimeout) {
+      clearTimeout(UnifiedWalletStorage._cacheTimeout);
+    }
+    UnifiedWalletStorage._cacheTimeout = setTimeout(() => {
+      this._clearCredentialCache();
+    }, UnifiedWalletStorage._cacheTimeoutMs);
+  }
+
+  _clearCredentialCache() {
+    UnifiedWalletStorage._credentialCache.clear();
+    if (UnifiedWalletStorage._cacheTimeout) {
+      clearTimeout(UnifiedWalletStorage._cacheTimeout);
+      UnifiedWalletStorage._cacheTimeout = null;
+    }
+    devLog('[Security] Credential cache cleared');
+  }
+
+  /**
+   * Get or create master encryption key (non-extractable CryptoKey in IndexedDB)
+   * This key CANNOT be exported via JavaScript - XSS protection
+   */
+  async getMasterKey() {
+    // Return cached key if available
+    if (UnifiedWalletStorage._masterKey) {
+      return UnifiedWalletStorage._masterKey;
+    }
+
+    // Prevent race conditions - only one key creation at a time
+    if (UnifiedWalletStorage._masterKeyPromise) {
+      return UnifiedWalletStorage._masterKeyPromise;
+    }
+
+    UnifiedWalletStorage._masterKeyPromise = this._initMasterKey();
     try {
-      const currentEntropy = localStorage.getItem('__wk_entropy__');
-      const backupEntropy = await this.getEntropyFromIndexedDB();
+      const key = await UnifiedWalletStorage._masterKeyPromise;
+      UnifiedWalletStorage._masterKey = key;
+      return key;
+    } finally {
+      UnifiedWalletStorage._masterKeyPromise = null;
+    }
+  }
 
-      console.log(
-        '[ensureEntropyRestored] Current:',
-        currentEntropy ? 'EXISTS' : 'NULL',
-        'Backup:',
-        backupEntropy ? 'EXISTS' : 'NULL'
-      );
+  async _initMasterKey() {
+    const db = await this.initDB();
 
-      if (backupEntropy && currentEntropy !== backupEntropy) {
-        // IndexedDB has DIFFERENT entropy - restore it
-        console.log('[ensureEntropyRestored] Restoring entropy from IndexedDB backup');
-        localStorage.setItem('__wk_entropy__', backupEntropy);
-        this.localStorageKey = 'xrpl-wallet-v1-' + backupEntropy;
-      } else if (!backupEntropy && currentEntropy) {
-        // No backup exists - backup current entropy
-        console.log('[ensureEntropyRestored] Backing up current entropy to IndexedDB');
-        await this.backupEntropyToIndexedDB(currentEntropy);
+    // Try to load existing key from IndexedDB
+    const existingKey = await new Promise((resolve) => {
+      if (!db.objectStoreNames.contains(this.keysStore)) {
+        resolve(null);
+        return;
       }
-    } catch (e) {
-      console.error('[ensureEntropyRestored] Error:', e);
-    }
-  }
+      const tx = db.transaction([this.keysStore], 'readonly');
+      const req = tx.objectStore(this.keysStore).get('master');
+      req.onsuccess = () => resolve(req.result?.key || null);
+      req.onerror = () => resolve(null);
+    });
 
-  // Backup entropy to IndexedDB (prevents lockout if localStorage cleared)
-  async backupEntropyToIndexedDB(entropy) {
-    try {
-      const db = await this.initDB();
-      const tx = db.transaction([this.walletsStore], 'readwrite');
-      tx.objectStore(this.walletsStore).put({
-        id: '__entropy_backup__',
-        lookupHash: '__entropy_backup__',
-        data: entropy,
-        timestamp: Date.now()
-      });
-    } catch (e) {
-      /* silent */
-    }
-  }
-
-  // Restore entropy from IndexedDB backup
-  async getEntropyFromIndexedDB() {
-    console.log('[getEntropyFromIndexedDB] Starting...');
-    try {
-      const db = await this.initDB();
-      console.log('[getEntropyFromIndexedDB] DB initialized, querying...');
-      return new Promise((resolve) => {
-        const req = db
-          .transaction([this.walletsStore], 'readonly')
-          .objectStore(this.walletsStore)
-          .get('__entropy_backup__');
-        req.onsuccess = () => {
-          console.log('[getEntropyFromIndexedDB] Success:', req.result?.data ? 'EXISTS' : 'NULL');
-          resolve(req.result?.data || null);
-        };
-        req.onerror = () => {
-          console.log('[getEntropyFromIndexedDB] Error');
-          resolve(null);
-        };
-      });
-    } catch (e) {
-      console.log('[getEntropyFromIndexedDB] Exception:', e.message);
-      return null;
-    }
-  }
-
-  // Generate a device-specific key for localStorage encryption
-  // Uses ONLY random entropy (stable) - no browser fingerprinting (unstable)
-  generateLocalStorageKey() {
-    if (typeof window === 'undefined') return 'server-side-key';
-
-    // Check for stored random entropy (128 bits of cryptographic randomness)
-    let storedEntropy = localStorage.getItem('__wk_entropy__');
-    if (!storedEntropy) {
-      const randomBytes = crypto.getRandomValues(new Uint8Array(16));
-      storedEntropy = btoa(String.fromCharCode(...randomBytes));
-      localStorage.setItem('__wk_entropy__', storedEntropy);
-      // DON'T backup yet - mark for IndexedDB check first
-      // IndexedDB may have existing backup that we should restore instead
-      this._entropyNeedsCheck = true;
+    if (existingKey) {
+      devLog('[MasterKey] Loaded existing non-extractable key from IndexedDB');
+      return existingKey;
     }
 
-    // Key derivation: entropy + version (no unstable browser fingerprinting)
-    // The entropy provides 128 bits of randomness, PBKDF2 provides the stretching
-    return 'xrpl-wallet-v1-' + storedEntropy;
+    // Generate fresh non-extractable key
+    devLog('[MasterKey] Generating new non-extractable CryptoKey');
+    const masterKey = await crypto.subtle.generateKey(
+      { name: 'AES-GCM', length: 256 },
+      false, // NON-EXTRACTABLE - key never leaves browser's secure storage
+      ['encrypt', 'decrypt']
+    );
+
+    // Store CryptoKey object in IndexedDB (structured clone preserves non-extractable property)
+    await new Promise((resolve, reject) => {
+      const tx = db.transaction([this.keysStore], 'readwrite');
+      const store = tx.objectStore(this.keysStore);
+      const req = store.put({ id: 'master', key: masterKey, createdAt: Date.now() });
+      req.onsuccess = () => resolve();
+      req.onerror = () => reject(req.error);
+    });
+
+    devLog('[MasterKey] Stored non-extractable key in IndexedDB');
+    return masterKey;
   }
 
   // Check if Web Crypto API is available (secure context required)
@@ -243,7 +424,7 @@ export class UnifiedWalletStorage {
     );
   }
 
-  // Encrypt data for localStorage (using Web Crypto API)
+  // Encrypt data for localStorage using non-extractable master key
   async encryptForLocalStorage(data) {
     if (!this.isSecureContext()) {
       throw new Error('HTTPS required for wallet encryption');
@@ -252,87 +433,49 @@ export class UnifiedWalletStorage {
     const encoder = new TextEncoder();
     const dataString = typeof data === 'string' ? data : JSON.stringify(data);
 
-    const salt = crypto.getRandomValues(new Uint8Array(16));
+    // Get non-extractable master key from IndexedDB
+    const masterKey = await this.getMasterKey();
     const iv = crypto.getRandomValues(new Uint8Array(12));
-
-    const keyMaterial = await crypto.subtle.importKey(
-      'raw',
-      encoder.encode(this.localStorageKey),
-      'PBKDF2',
-      false,
-      ['deriveBits', 'deriveKey']
-    );
-
-    const key = await crypto.subtle.deriveKey(
-      {
-        name: 'PBKDF2',
-        salt: salt,
-        iterations: 600000, // OWASP 2025 standard
-        hash: 'SHA-256'
-      },
-      keyMaterial,
-      { name: 'AES-GCM', length: 256 },
-      false,
-      ['encrypt', 'decrypt']
-    );
 
     const encrypted = await crypto.subtle.encrypt(
       { name: 'AES-GCM', iv: iv },
-      key,
+      masterKey,
       encoder.encode(dataString)
     );
 
-    // Combine salt + iv + encrypted data
-    const combined = new Uint8Array(salt.length + iv.length + encrypted.byteLength);
-    combined.set(salt, 0);
-    combined.set(iv, salt.length);
-    combined.set(new Uint8Array(encrypted), salt.length + iv.length);
+    // Combine version + iv + encrypted data (no salt needed - key is already derived)
+    const version = new Uint8Array([2]); // Version 2 = non-extractable key
+    const combined = new Uint8Array(1 + iv.length + encrypted.byteLength);
+    combined.set(version, 0);
+    combined.set(iv, 1);
+    combined.set(new Uint8Array(encrypted), 1 + iv.length);
 
-    // Convert to base64 for storage
     return btoa(String.fromCharCode(...combined));
   }
 
-  // Decrypt data from localStorage
+  // Decrypt data from localStorage using non-extractable master key
   async decryptFromLocalStorage(encryptedData) {
     if (!this.isSecureContext()) {
       throw new Error('HTTPS required for wallet decryption');
     }
 
-    const encoder = new TextEncoder();
     const combined = Uint8Array.from(atob(encryptedData), (c) => c.charCodeAt(0));
 
-    const salt = combined.slice(0, 16);
-    const iv = combined.slice(16, 28);
-    const encrypted = combined.slice(28);
+    // Version 2 format: version(1) + iv(12) + data
+    if (combined[0] !== 2) {
+      throw new Error('Invalid format - clear browser data and create new wallet');
+    }
+    const iv = combined.slice(1, 13);
+    const encrypted = combined.slice(13);
 
-    const keyMaterial = await crypto.subtle.importKey(
-      'raw',
-      encoder.encode(this.localStorageKey),
-      'PBKDF2',
-      false,
-      ['deriveBits', 'deriveKey']
-    );
-
-    const key = await crypto.subtle.deriveKey(
-      {
-        name: 'PBKDF2',
-        salt: salt,
-        iterations: 600000,
-        hash: 'SHA-256'
-      },
-      keyMaterial,
-      { name: 'AES-GCM', length: 256 },
-      false,
-      ['encrypt', 'decrypt']
-    );
-
-    const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: iv }, key, encrypted);
+    const masterKey = await this.getMasterKey();
+    const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, masterKey, encrypted);
 
     const decoded = new TextDecoder().decode(decrypted);
     try {
       return JSON.parse(decoded);
     } catch {
-      return decoded; // Plain string (e.g., passwords)
+      return decoded;
     }
   }
 
@@ -459,41 +602,42 @@ export class UnifiedWalletStorage {
 
   async _initDBInternal() {
     console.log('[_initDBInternal] Starting...');
-    // First, detect existing database version and check if store exists
-    const { existingVersion, hasStore } = await new Promise((resolve) => {
+    // First, detect existing database version and check if stores exist
+    const { existingVersion, hasWalletsStore, hasKeysStore } = await new Promise((resolve) => {
       console.log('[_initDBInternal] Opening DB to detect version...');
       const detectRequest = indexedDB.open(this.dbName);
 
       // Timeout to prevent hanging forever
       const timeout = setTimeout(() => {
         console.error('[_initDBInternal] DB open TIMEOUT - using defaults');
-        resolve({ existingVersion: 1, hasStore: false });
+        resolve({ existingVersion: 1, hasWalletsStore: false, hasKeysStore: false });
       }, 5000);
 
       detectRequest.onblocked = () => {
         console.error('[_initDBInternal] DB BLOCKED - close other tabs using this site');
         clearTimeout(timeout);
-        resolve({ existingVersion: 1, hasStore: false });
+        resolve({ existingVersion: 1, hasWalletsStore: false, hasKeysStore: false });
       };
       detectRequest.onsuccess = () => {
         clearTimeout(timeout);
         const db = detectRequest.result;
         const version = db.version;
-        const hasStore = db.objectStoreNames.contains(this.walletsStore);
+        const hasWalletsStore = db.objectStoreNames.contains(this.walletsStore);
+        const hasKeysStore = db.objectStoreNames.contains(this.keysStore);
         db.close();
-        console.log('[_initDBInternal] Detected version:', version, 'hasStore:', hasStore);
-        resolve({ existingVersion: version, hasStore });
+        console.log('[_initDBInternal] Detected version:', version, 'walletsStore:', hasWalletsStore, 'keysStore:', hasKeysStore);
+        resolve({ existingVersion: version, hasWalletsStore, hasKeysStore });
       };
       detectRequest.onerror = () => {
         clearTimeout(timeout);
         console.log('[_initDBInternal] Detection error');
-        resolve({ existingVersion: 1, hasStore: false });
+        resolve({ existingVersion: 1, hasWalletsStore: false, hasKeysStore: false });
       };
     });
 
-    // If store doesn't exist, we need to bump version to trigger onupgradeneeded
+    // If any store doesn't exist, we need to bump version to trigger onupgradeneeded
     let targetVersion = Math.max(existingVersion, this.version);
-    if (!hasStore) {
+    if (!hasWalletsStore || !hasKeysStore) {
       targetVersion = existingVersion + 1;
     }
     this.version = targetVersion;
@@ -537,6 +681,12 @@ export class UnifiedWalletStorage {
           });
         } else {
           store = transaction.objectStore(this.walletsStore);
+        }
+
+        // Create keys store for non-extractable CryptoKeys (XSS protection)
+        if (!db.objectStoreNames.contains(this.keysStore)) {
+          db.createObjectStore(this.keysStore, { keyPath: 'id' });
+          console.log('[_initDBInternal] Created keys store for non-extractable CryptoKeys');
         }
 
         // 2025 Security: Only index non-sensitive fields
@@ -618,38 +768,24 @@ export class UnifiedWalletStorage {
   }
 
   async decryptData(encryptedString, pin) {
-    // Decode base64 string
     const combinedBuffer = new Uint8Array(
       atob(encryptedString)
         .split('')
         .map((char) => char.charCodeAt(0))
     );
 
-    // Check for version byte
-    const version = combinedBuffer[0];
-
-    let salt, iv, encrypted;
-
-    if (version === 1) {
-      // Version 1 format (with version byte)
-      salt = combinedBuffer.slice(1, 17);
-      iv = combinedBuffer.slice(17, 29);
-      encrypted = combinedBuffer.slice(29);
-    } else {
-      // Legacy format (no version) - for backward compatibility
-      salt = combinedBuffer.slice(0, 16);
-      iv = combinedBuffer.slice(16, 28);
-      encrypted = combinedBuffer.slice(28);
+    // Version 1 format: version(1) + salt(16) + iv(12) + data
+    if (combinedBuffer[0] !== 1) {
+      throw new Error('Invalid format - clear browser data and create new wallet');
     }
+    const salt = combinedBuffer.slice(1, 17);
+    const iv = combinedBuffer.slice(17, 29);
+    const encrypted = combinedBuffer.slice(29);
 
     const key = await this.deriveKey(pin, salt);
-
-    // AES-GCM will automatically verify the authentication tag
-    // and throw if data has been tampered with
     const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, encrypted);
 
-    const decoder = new TextDecoder();
-    return JSON.parse(decoder.decode(decrypted));
+    return JSON.parse(new TextDecoder().decode(decrypted));
   }
 
   async storeWallet(walletData, pin) {
@@ -1064,23 +1200,24 @@ export class UnifiedWalletStorage {
     // Store password encrypted in localStorage for auto-decryption
     await this.setSecureItem(`device_pwd_${passkeyId}`, userSecret);
 
-    // Also store in memory cache for this session
-    if (!this.credentialCache) this.credentialCache = new Map();
-    this.credentialCache.set(passkeyId, userSecret);
+    // Cache in memory with auto-expiry (15 min or tab switch)
+    UnifiedWalletStorage._credentialCache.set(passkeyId, userSecret);
+    this._resetCacheTimeout();
   }
 
   async getWalletCredential(passkeyId) {
-    // Check memory cache first
-    if (this.credentialCache && this.credentialCache.has(passkeyId)) {
-      return this.credentialCache.get(passkeyId);
+    // Check memory cache first (expires after 15 min or tab switch)
+    if (UnifiedWalletStorage._credentialCache.has(passkeyId)) {
+      this._resetCacheTimeout(); // Reset on access
+      return UnifiedWalletStorage._credentialCache.get(passkeyId);
     }
 
     // Try to get from encrypted localStorage
     const storedPassword = await this.getSecureItem(`device_pwd_${passkeyId}`);
     if (storedPassword) {
-      // Cache in memory for this session
-      if (!this.credentialCache) this.credentialCache = new Map();
-      this.credentialCache.set(passkeyId, storedPassword);
+      // Cache in memory with expiry
+      UnifiedWalletStorage._credentialCache.set(passkeyId, storedPassword);
+      this._resetCacheTimeout();
       return storedPassword;
     }
 
@@ -1092,6 +1229,11 @@ export class UnifiedWalletStorage {
     }
 
     return null;
+  }
+
+  // Force lock wallet (clear all cached credentials)
+  lockWallet() {
+    this._clearCredentialCache();
   }
 
   async getWallets(pin) {
@@ -1152,27 +1294,9 @@ export class UnifiedWalletStorage {
    */
   async handleSocialLogin(profile, accessToken, backend) {
     devLog('handleSocialLogin:', profile.provider);
-    console.log('[handleSocialLogin] Step 1: Checking entropy...');
 
-    // CRITICAL: ALWAYS check IndexedDB backup and compare with localStorage
-    // This handles the case where AppContext creates an instance before callback.js
-    const currentEntropy = localStorage.getItem('__wk_entropy__');
-    console.log('[handleSocialLogin] Current entropy:', currentEntropy ? 'EXISTS' : 'NULL');
-
-    console.log('[handleSocialLogin] Step 2: Getting entropy from IndexedDB...');
-    const backupEntropy = await this.getEntropyFromIndexedDB();
-    console.log('[handleSocialLogin] Backup entropy:', backupEntropy ? 'EXISTS' : 'NULL');
-
-    if (backupEntropy && currentEntropy !== backupEntropy) {
-      // IndexedDB has DIFFERENT entropy - it's the correct one, restore it
-      console.log('[handleSocialLogin] Entropy mismatch - restoring from IndexedDB backup');
-      localStorage.setItem('__wk_entropy__', backupEntropy);
-      this.localStorageKey = this.generateLocalStorageKey();
-    } else if (!backupEntropy && currentEntropy) {
-      // No backup exists - this is a NEW user, backup current entropy
-      console.log('[handleSocialLogin] No backup - backing up current entropy');
-      await this.backupEntropyToIndexedDB(currentEntropy);
-    }
+    // Ensure master key is initialized
+    await this.getMasterKey();
 
     try {
       const walletId = `${profile.provider}_${profile.id}`;
@@ -1479,104 +1603,86 @@ export class UnifiedWalletStorage {
     return Wallet.fromEntropy(Array.from(entropy));
   }
 
-  // Backend storage methods removed - wallets are ONLY stored locally
+  // ============ QR Sync - Transfer wallet between devices ============
 
   /**
-   * Get encrypted wallet blob for backup download
-   * Returns ONLY encrypted data - no metadata exposed
+   * Export single wallet for QR Sync (compact format for QR code)
+   * Encrypted with user's password - same password needed to import
    */
-  async getEncryptedWalletBlob(address) {
-    try {
-      const db = await this.initDB();
-
-      if (!db.objectStoreNames.contains(this.walletsStore)) {
-        return null;
-      }
-
-      // Generate lookup hash
-      const encoder = new TextEncoder();
-      const addressHash = await crypto.subtle.digest('SHA-256', encoder.encode(address));
-      const lookupHash = btoa(String.fromCharCode(...new Uint8Array(addressHash))).slice(0, 12);
-
-      return new Promise((resolve, reject) => {
-        const transaction = db.transaction([this.walletsStore], 'readonly');
-        const store = transaction.objectStore(this.walletsStore);
-
-        // Get all records and find by lookupHash
-        const request = store.getAll();
-
-        request.onsuccess = () => {
-          const records = request.result || [];
-          const walletRecord = records.find((r) => r.lookupHash === lookupHash);
-
-          if (walletRecord && walletRecord.data) {
-            // Return ONLY the encrypted blob - no metadata
-            resolve({
-              version: '2.0',
-              data: walletRecord.data, // Everything is encrypted inside
-              format: 'AES-GCM-PBKDF2-1M' // Just format info, no sensitive data
-            });
-          } else {
-            resolve(null);
-          }
-        };
-
-        request.onerror = () => {
-          devError('Error getting encrypted wallet:', request.error);
-          resolve(null);
-        };
-      });
-    } catch (error) {
-      devError('Error getting encrypted wallet blob:', error);
-      return null;
+  async exportForQRSync(address, password) {
+    // Get wallet data
+    const wallet = await this.getWallet(address, password);
+    if (!wallet || !wallet.seed) {
+      throw new Error('Wallet not found');
     }
+
+    // Compact payload (minimize QR size)
+    const payload = {
+      v: 1,
+      s: wallet.seed,
+      a: wallet.address,
+      t: Date.now() + 300000 // Expires in 5 minutes
+    };
+
+    // Encrypt with same password
+    const encrypted = await this.encryptData(payload, password);
+
+    // Return as compact string for QR (using XRPLTO: prefix to avoid Xaman hijacking)
+    return `XRPLTO:${encrypted}`;
   }
 
   /**
-   * Export all wallets for a provider as encrypted backup
-   * Returns encrypted backup containing all 5 wallets
+   * Import wallet from QR Sync data
+   * Requires the same password used during export
    */
-  async exportAllWallets(provider, providerId, password) {
-    try {
-      // Get all wallets for this provider
-      const wallets = await this.getAllWalletsForProvider(provider, providerId, password);
-
-      if (!wallets || wallets.length === 0) {
-        throw new Error('No wallets found to export');
-      }
-
-      // Create backup data with all wallets
-      const backupData = {
-        version: '3.0',
-        provider: provider,
-        walletCount: wallets.length,
-        wallets: wallets.map((w) => ({
-          address: w.address,
-          publicKey: w.publicKey,
-          seed: w.seed,
-          imported: w.imported || false,
-          createdAt: w.createdAt || Date.now()
-        })),
-        exportedAt: Date.now()
-      };
-
-      // Encrypt the entire backup with the password
-      const encrypted = await this.encryptData(backupData, password);
-
-      return {
-        type: 'xrpl-encrypted-wallet',
-        version: '3.0',
-        provider: provider,
-        walletCount: wallets.length,
-        data: {
-          encrypted: encrypted
-        },
-        exportedAt: new Date().toISOString()
-      };
-    } catch (error) {
-      devError('Error exporting wallets:', error);
-      throw error;
+  async importFromQRSync(qrData, password) {
+    // Support both old XRPL: and new XRPLTO: prefix
+    if (!qrData.startsWith('XRPLTO:') && !qrData.startsWith('XRPL:')) {
+      throw new Error('Invalid QR format');
     }
+
+    const encrypted = qrData.startsWith('XRPLTO:') ? qrData.slice(7) : qrData.slice(5);
+
+    // Decrypt with password
+    let payload;
+    try {
+      payload = await this.decryptData(encrypted, password);
+    } catch (e) {
+      throw new Error('Invalid password');
+    }
+
+    // Validate payload
+    if (payload.v !== 1 || !payload.s || !payload.a) {
+      throw new Error('Invalid QR data');
+    }
+
+    // Check expiry
+    if (payload.t < Date.now()) {
+      throw new Error('QR code expired - generate a new one');
+    }
+
+    // Verify seed matches address
+    const testWallet = Wallet.fromSeed(payload.s);
+    if (testWallet.address !== payload.a) {
+      throw new Error('Wallet data corrupted');
+    }
+
+    // Store the wallet
+    const walletData = {
+      address: payload.a,
+      publicKey: testWallet.publicKey,
+      seed: payload.s,
+      wallet_type: 'imported',
+      importedAt: Date.now(),
+      importedVia: 'qr_sync'
+    };
+
+    await this.storeWallet(walletData, password);
+
+    return {
+      address: payload.a,
+      publicKey: testWallet.publicKey
+    };
   }
 }
 

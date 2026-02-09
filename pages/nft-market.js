@@ -1,5 +1,5 @@
 import { useState, useContext, useMemo, useRef, useCallback, useEffect } from 'react';
-import axios from 'axios';
+import api from 'src/utils/api';
 import styled from '@emotion/styled';
 import { AppContext } from 'src/context/AppContext';
 import Header from 'src/components/Header';
@@ -1578,7 +1578,7 @@ export default function NFTMarketPage({ stats }) {
 
 export async function getServerSideProps() {
   try {
-    const response = await axios.get(`${BASE_URL}/nft/analytics/market`);
+    const response = await api.get(`${BASE_URL}/nft/analytics/market`);
     const data = response.data;
 
     // Map new API structure

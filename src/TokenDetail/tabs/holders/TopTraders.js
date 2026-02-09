@@ -1,5 +1,5 @@
 import { useState, useEffect, useContext, useMemo } from 'react';
-import axios from 'axios';
+import api from 'src/utils/api';
 import Link from 'next/link';
 import { Loader2, Activity, Search, X, ChevronLeft, ChevronRight, MessageCircle, Tag, Trash2 } from 'lucide-react';
 import { AppContext } from 'src/context/AppContext';
@@ -50,9 +50,9 @@ export default function TopTraders({ token, walletLabels: walletLabelsProp = {},
     setLabelSaving(true);
     try {
       if (walletLabels[wallet]) {
-        await axios.delete(`https://api.xrpl.to/api/user/${accountLogin}/labels/${wallet}`);
+        await api.delete(`https://api.xrpl.to/api/user/${accountLogin}/labels/${wallet}`);
       }
-      const res = await axios.post(`https://api.xrpl.to/api/user/${accountLogin}/labels`, { wallet, label: labelInput.trim() });
+      const res = await api.post(`https://api.xrpl.to/api/user/${accountLogin}/labels`, { wallet, label: labelInput.trim() });
       const newLabels = { ...walletLabels, [wallet]: res.data?.label || labelInput.trim() };
       setWalletLabels(newLabels);
       onLabelsChange?.(newLabels);
@@ -66,7 +66,7 @@ export default function TopTraders({ token, walletLabels: walletLabelsProp = {},
     if (!accountLogin) return;
     setLabelSaving(true);
     try {
-      await axios.delete(`https://api.xrpl.to/api/user/${accountLogin}/labels/${wallet}`);
+      await api.delete(`https://api.xrpl.to/api/user/${accountLogin}/labels/${wallet}`);
       const newLabels = { ...walletLabels };
       delete newLabels[wallet];
       setWalletLabels(newLabels);
@@ -158,7 +158,7 @@ export default function TopTraders({ token, walletLabels: walletLabelsProp = {},
             winRate: 'winRate'
           };
           const sortBy = sortMap[sortType] || 'volume24h';
-          response = await axios.get(
+          response = await api.get(
             `${BASE_URL}/analytics/cumulative-stats?limit=${fetchLimit}&sortBy=${sortBy}&sortOrder=desc&includeAMM=false`
           );
           if (response.status === 200) {
@@ -173,7 +173,7 @@ export default function TopTraders({ token, walletLabels: walletLabelsProp = {},
           const searchParam = debouncedSearch
             ? `&search=${encodeURIComponent(debouncedSearch)}`
             : '';
-          response = await axios.get(
+          response = await api.get(
             `${BASE_URL}/traders/token-traders/${tokenMd5}?interval=${interval}&limit=${fetchLimit}&offset=${offset}&sortBy=${sortBy}${searchParam}`
           );
           if (response.status === 200) {

@@ -1584,7 +1584,7 @@ export function parseTransaction(rawTx, userAddress, decodeCurrency = normalizeC
     const offerCount = tx.NFTokenOffers?.length || 0;
     amount = offerCount > 1 ? `${offerCount} offers` : '1 offer';
     counterparty = tx.Account;
-    // Extract NFTokenID from first cancelled offer in metadata
+    // Extract NFTokenID for display next to type (not in spent/received columns)
     const cancelledOffer = meta?.AffectedNodes?.find(
       (n) => n.DeletedNode?.LedgerEntryType === 'NFTokenOffer'
     );

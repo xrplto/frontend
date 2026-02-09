@@ -1,4 +1,4 @@
-import axios from 'axios';
+import api from 'src/utils/api';
 import React, { useState, useEffect, useContext, useCallback, memo, useRef } from 'react';
 import styled from '@emotion/styled';
 import { AppContext } from 'src/context/AppContext';
@@ -1196,7 +1196,7 @@ export default function CollectionList({
         params.set('tag', tag);
       }
 
-      axios
+      api
         .get(`${BASE_URL}/nft/collections?${params.toString()}`)
         .then((res) => {
           if (res.status === 200 && res.data) {
