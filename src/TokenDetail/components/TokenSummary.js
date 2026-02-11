@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import Decimal from 'decimal.js-light';
 import Image from 'next/image';
+import VerificationBadge from 'src/components/VerificationBadge';
 import api from 'src/utils/api';
 import { toast } from 'sonner';
 import { TokenShareModal as Share } from 'src/components/ShareButtons';
@@ -615,38 +616,7 @@ const TokenSummary = memo(({ token }) => {
               }}
             />
             {/* Verification Badge by Tier */}
-            {currentVerified >= 1 && currentVerified <= 4 && (
-              <div
-                className={cn(
-                  'absolute -bottom-1 -right-1 p-[3px] rounded-full ring-2 animate-in fade-in duration-300',
-                  isDark ? 'ring-[#0a0a0a]' : 'ring-white',
-                  // Tier 1: Official - Blue gradient (highest)
-                  currentVerified === 1 && 'bg-gradient-to-br from-cyan-400 via-blue-500 to-indigo-600 shadow-[0_0_12px_rgba(59,130,246,0.6)]',
-                  // Tier 2: Premium (1000 XRP) - Violet/Purple gradient
-                  currentVerified === 2 && 'bg-gradient-to-br from-fuchsia-400 via-purple-500 to-violet-600 shadow-[0_0_10px_rgba(168,85,247,0.5)]',
-                  // Tier 3: Standard (500 XRP) - Yellow/Gold gradient
-                  currentVerified === 3 && 'bg-gradient-to-br from-yellow-400 via-amber-500 to-orange-500 shadow-[0_0_8px_rgba(251,191,36,0.5)]',
-                  // Tier 4: Basic (100 XRP) - Green
-                  currentVerified === 4 && 'bg-green-500 shadow-md shadow-green-500/30'
-                )}
-                title={
-                  currentVerified === 1 ? 'Official' :
-                  currentVerified === 2 ? 'Premium Verified (1000 XRP)' :
-                  currentVerified === 3 ? 'Standard Verified (500 XRP)' :
-                  'Basic Verified (100 XRP)'
-                }
-              >
-                {currentVerified === 1 ? (
-                  <Star size={10} strokeWidth={2.5} className="text-white drop-shadow-md" fill="currentColor" />
-                ) : currentVerified === 2 ? (
-                  <Sparkles size={10} strokeWidth={2.5} className="text-white drop-shadow-md" />
-                ) : currentVerified === 3 ? (
-                  <Check size={10} strokeWidth={3} className="text-white drop-shadow-sm" />
-                ) : (
-                  <Check size={9} strokeWidth={3} className="text-white" />
-                )}
-              </div>
-            )}
+            <VerificationBadge verified={currentVerified} size="md" isDark={isDark} />
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 mb-1">

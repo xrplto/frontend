@@ -46,8 +46,10 @@ import {
   LayoutDashboard,
   FileText,
   Info,
+  Star,
   Image as ImageIcon
 } from 'lucide-react';
+import VerificationBadge from 'src/components/VerificationBadge';
 
 const BASE_URL = 'https://api.xrpl.to/v1';
 
@@ -1211,11 +1213,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                                     className="w-8 h-8 rounded-full object-cover shadow-sm group-hover:scale-105 transition-transform"
                                     alt=""
                                   />
-                                  {token.verified >= 1 && (
-                                    <div className="absolute -right-0.5 -bottom-0.5 bg-blue-500 rounded-full border-2 border-black w-3.5 h-3.5 flex items-center justify-center">
-                                      <Check size={8} className="text-white" />
-                                    </div>
-                                  )}
+                                  <VerificationBadge verified={token.verified} size="sm" isDark={isDark} />
                                 </div>
                                 <div className="flex-1 min-w-0">
                                   <div className="flex items-center gap-2">
@@ -1273,11 +1271,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                                     className="w-8 h-8 rounded-lg object-cover shadow-sm group-hover:scale-105 transition-transform"
                                     alt=""
                                   />
-                                  {col.verified >= 1 && (
-                                    <div className="absolute -right-0.5 -bottom-0.5 bg-blue-500 rounded-full border-2 border-black w-3.5 h-3.5 flex items-center justify-center">
-                                      <Check size={8} className="text-white" />
-                                    </div>
-                                  )}
+                                  <VerificationBadge verified={col.verified} size="sm" isDark={isDark} />
                                 </div>
                                 <div className="flex-1 min-w-0">
                                   <div className="flex items-center gap-2">
@@ -1519,11 +1513,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                               className="w-8 h-8 rounded-full object-cover group-hover:scale-105 transition-transform"
                               alt=""
                             />
-                            {token.verified >= 1 && (
-                              <div className="absolute -right-0.5 -bottom-0.5 bg-blue-500 rounded-full border-2 border-black w-3.5 h-3.5 flex items-center justify-center">
-                                <Check size={8} className="text-white" />
-                              </div>
-                            )}
+                            <VerificationBadge verified={token.verified} size="sm" isDark={isDark} />
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2">
@@ -1581,11 +1571,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                               className="w-8 h-8 rounded-lg object-cover group-hover:scale-105 transition-transform"
                               alt=""
                             />
-                            {col.verified >= 1 && (
-                              <div className="absolute -right-0.5 -bottom-0.5 bg-blue-500 rounded-full border-2 border-black w-3.5 h-3.5 flex items-center justify-center">
-                                <Check size={8} className="text-white" />
-                              </div>
-                            )}
+                            <VerificationBadge verified={col.verified} size="sm" isDark={isDark} />
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2">
@@ -1730,11 +1716,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                               className="w-8 h-8 rounded-full object-cover shadow-sm group-hover:scale-105 transition-transform"
                               alt=""
                             />
-                            {token.verified >= 1 && (
-                              <div className="absolute -right-0.5 -bottom-0.5 bg-blue-500 rounded-full border-2 border-black w-3.5 h-3.5 flex items-center justify-center">
-                                <Check size={8} className="text-white" />
-                              </div>
-                            )}
+                            <VerificationBadge verified={token.verified} size="sm" isDark={isDark} />
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2">
@@ -1792,11 +1774,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                               className="w-8 h-8 rounded-lg object-cover shadow-sm group-hover:scale-105 transition-transform"
                               alt=""
                             />
-                            {col.verified >= 1 && (
-                              <div className="absolute -right-0.5 -bottom-0.5 bg-blue-500 rounded-full border-2 border-black w-3.5 h-3.5 flex items-center justify-center">
-                                <Check size={8} className="text-white" />
-                              </div>
-                            )}
+                            <VerificationBadge verified={col.verified} size="sm" isDark={isDark} />
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2">
@@ -2036,11 +2014,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                               className="w-8 h-8 rounded-full object-cover shadow-sm group-hover:scale-105 transition-transform"
                               alt=""
                             />
-                            {token.verified >= 1 && (
-                              <div className="absolute -right-0.5 -bottom-0.5 bg-blue-500 rounded-full border-2 border-black w-3.5 h-3.5 flex items-center justify-center">
-                                <Check size={8} className="text-white" />
-                              </div>
-                            )}
+                            <VerificationBadge verified={token.verified} size="sm" isDark={isDark} />
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2">
@@ -2098,11 +2072,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                               className="w-8 h-8 rounded-lg object-cover shadow-sm group-hover:scale-105 transition-transform"
                               alt=""
                             />
-                            {col.verified >= 1 && (
-                              <div className="absolute -right-0.5 -bottom-0.5 bg-blue-500 rounded-full border-2 border-black w-3.5 h-3.5 flex items-center justify-center">
-                                <Check size={8} className="text-white" />
-                              </div>
-                            )}
+                            <VerificationBadge verified={col.verified} size="sm" isDark={isDark} />
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2">

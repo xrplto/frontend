@@ -47,6 +47,7 @@ import {
   Link2,
   MessageCircle
 } from 'lucide-react';
+import VerificationBadge from 'src/components/VerificationBadge';
 
 // Simple Pagination Component
 const Pagination = ({
@@ -3394,27 +3395,33 @@ export default function CollectionView({ collection }) {
       >
         {/* Top Row: Logo + Name + Actions */}
         <div className="flex items-center gap-3 mb-3">
-          <Image
-            src={`https://s1.xrpl.to/nft-collection/${logoImage}`}
-            alt={name}
-            width={40}
-            height={40}
-            className="rounded-lg"
-          />
+          <div className="relative">
+            <Image
+              src={`https://s1.xrpl.to/nft-collection/${logoImage}`}
+              alt={name}
+              width={40}
+              height={40}
+              className="rounded-lg"
+            />
+            <VerificationBadge verified={verified} size="sm" isDark={isDark} />
+          </div>
           <div className="flex items-center gap-2 flex-wrap">
             <span
               className={cn('text-base font-semibold', isDark ? 'text-white' : 'text-gray-900')}
             >
               {name}
             </span>
-            {verified >= 1 && (
+            {verified >= 1 && verified <= 4 && (
               <span
                 className={cn(
                   'px-2 py-0.5 text-[10px] font-semibold uppercase rounded',
-                  isDark ? 'bg-green-500/10 text-green-400' : 'bg-green-50 text-green-600'
+                  verified === 1 && (isDark ? 'bg-blue-500/10 text-blue-400' : 'bg-blue-50 text-blue-600'),
+                  verified === 2 && (isDark ? 'bg-purple-500/10 text-purple-400' : 'bg-purple-50 text-purple-600'),
+                  verified === 3 && (isDark ? 'bg-amber-500/10 text-amber-400' : 'bg-amber-50 text-amber-600'),
+                  verified === 4 && (isDark ? 'bg-green-500/10 text-green-400' : 'bg-green-50 text-green-600')
                 )}
               >
-                Verified
+                {verified === 1 ? 'Official' : verified === 2 ? 'Premium' : verified === 3 ? 'Standard' : 'Verified'}
               </span>
             )}
             {tags?.length > 0 &&

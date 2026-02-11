@@ -1,6 +1,7 @@
 import { memo, useContext, useState, useRef, useEffect, useCallback } from 'react';
-import { X, Plus, Search, Trash2, ChevronLeft, Check } from 'lucide-react';
+import { X, Plus, Search, Trash2, ChevronLeft, Check, Star, Sparkles } from 'lucide-react';
 import api from 'src/utils/api';
+import VerificationBadge from 'src/components/VerificationBadge';
 import { AppContext } from 'src/context/AppContext';
 import { useTokenTabs, addTokenToTabs } from 'src/hooks/useTokenTabs';
 import { cn } from 'src/utils/cn';
@@ -367,11 +368,7 @@ const TokenTabs = memo(({ currentMd5 }) => {
                           alt=""
                           onError={(e) => (e.target.src = '/static/alt.webp')}
                         />
-                        {token.verified && (
-                          <div className="absolute -bottom-0.5 -right-0.5 bg-blue-500 text-white p-[2px] rounded-full ring-2 ring-[#111111]">
-                            <Check size={8} strokeWidth={4} />
-                          </div>
-                        )}
+                        <VerificationBadge verified={token.verified} size="sm" isDark={isDark} />
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
