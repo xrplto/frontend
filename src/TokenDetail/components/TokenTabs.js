@@ -412,12 +412,15 @@ const TokenTabs = memo(({ currentMd5 }) => {
                         isDark ? 'hover:bg-white/[0.04]' : 'hover:bg-gray-50'
                       )}
                     >
-                      <img
-                        src={`https://s1.xrpl.to/nft-collection/${col.logoImage}`}
-                        className="w-10 h-10 rounded-xl object-cover shadow-sm bg-black/5"
-                        alt=""
-                        onError={(e) => (e.target.src = '/static/alt.webp')}
-                      />
+                      <div className="relative">
+                        <img
+                          src={`https://s1.xrpl.to/nft-collection/${col.logoImage}`}
+                          className="w-10 h-10 rounded-xl object-cover shadow-sm bg-black/5"
+                          alt=""
+                          onError={(e) => (e.target.src = '/static/alt.webp')}
+                        />
+                        <VerificationBadge verified={col.verified === 'yes' ? 4 : col.verified} size="sm" isDark={isDark} />
+                      </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <span className={cn('text-[15px] font-bold', isDark ? 'text-white' : 'text-gray-900')}>
@@ -428,11 +431,6 @@ const TokenTabs = memo(({ currentMd5 }) => {
                           {col.account}
                         </p>
                       </div>
-                      {col.verified === 'yes' && (
-                        <div className="p-1 rounded-full bg-blue-500/10 text-blue-500">
-                          <Check size={12} strokeWidth={3} />
-                        </div>
-                      )}
                     </div>
                   ))}
                 </div>

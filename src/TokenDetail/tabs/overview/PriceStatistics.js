@@ -1,4 +1,4 @@
-import { apiFetch } from 'src/utils/api';
+import { apiFetch, getWalletAuthHeaders } from 'src/utils/api';
 import Decimal from 'decimal.js-light';
 import PropTypes from 'prop-types';
 import { useState, useEffect, useContext, useRef, useMemo, useCallback, memo } from 'react';
@@ -312,6 +312,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
   const [activityOpen, setActivityOpen] = useState(false);
   const [transactions, setTransactions] = useState([]);
   const [loadingTx, setLoadingTx] = useState(false);
+  const [showAllExchanges, setShowAllExchanges] = useState(false);
 
   const {
     name,
@@ -414,13 +415,14 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
     if (!accountLogin || !labelInput.trim()) return;
     setLabelSaving(true);
     try {
+      const authHeaders = await getWalletAuthHeaders(accountProfile);
       if (creatorLabel) {
-        await api.delete(`https://api.xrpl.to/api/user/${accountLogin}/labels/${creator}`);
+        await api.delete(`https://api.xrpl.to/api/user/${accountLogin}/labels/${creator}`, { headers: authHeaders });
       }
       const res = await api.post(`https://api.xrpl.to/api/user/${accountLogin}/labels`, {
         wallet: creator,
         label: labelInput.trim()
-      });
+      }, { headers: authHeaders });
       setCreatorLabel(res.data?.label || labelInput.trim());
       setEditingLabel(false);
       setLabelInput('');
@@ -434,7 +436,8 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
     if (!accountLogin || !creatorLabel) return;
     setLabelSaving(true);
     try {
-      await api.delete(`https://api.xrpl.to/api/user/${accountLogin}/labels/${creator}`);
+      const authHeaders = await getWalletAuthHeaders(accountProfile);
+      await api.delete(`https://api.xrpl.to/api/user/${accountLogin}/labels/${creator}`, { headers: authHeaders });
       setCreatorLabel(null);
       setEditingLabel(false);
       setLabelInput('');
@@ -752,18 +755,19 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
         {(aiReview || aiLoading) && (
           <Box
             className={cn(
-              'm-1.5 p-3 rounded-xl border transition-all duration-300',
-              isDark ? 'bg-white/[0.02] border-white/[0.06] hover:bg-white/[0.04]' : 'bg-black/[0.015] border-black/[0.05] hover:bg-black/[0.025]'
+              'm-2 p-4 rounded-xl border transition-all duration-300 relative overflow-hidden',
+              isDark 
+                ? 'bg-white/[0.03] border-white/[0.08] hover:bg-white/[0.05] shadow-[0_4px_20px_rgba(0,0,0,0.3)]' 
+                : 'bg-black/[0.015] border-black/[0.05] hover:bg-black/[0.025] shadow-[0_4px_15px_rgba(0,0,0,0.05)]'
             )}
           >
             {aiLoading ? (
-              <Stack direction="row" alignItems="center" style={{ gap: '10px' }}>
-                <div
-                  className="w-4 h-4 border-2 border-violet-500/20 border-t-violet-500 rounded-full animate-spin"
-                />
-                <Typography
-                  className="text-[11px] font-bold uppercase tracking-widest opacity-40 ml-1"
-                >
+              <Stack direction="row" alignItems="center" style={{ gap: '12px', padding: '4px 0' }}>
+                <div className="relative">
+                  <div className="w-5 h-5 border-2 border-violet-500/20 border-t-violet-500 rounded-full animate-spin" />
+                  <div className="absolute inset-0 bg-violet-500/10 blur-sm rounded-full" />
+                </div>
+                <Typography className="text-[11px] font-bold uppercase tracking-[0.15em] text-violet-500/80">
                   AI Security Audit in progress...
                 </Typography>
               </Stack>
@@ -773,70 +777,76 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                 const score = aiReview.score;
                 const color =
                   score <= 2
-                    ? '#22c55e'
+                    ? '#10b981'
                     : score <= 4
                       ? '#84cc16'
                       : score <= 6
                         ? '#f59e0b'
                         : '#ef4444';
+                
                 const label =
                   aiReview.riskLevel ||
                   (score <= 2 ? 'Low' : score <= 4 ? 'Moderate' : score <= 6 ? 'Elevated' : 'High');
                 const Icon = score <= 2 ? ShieldCheck : score <= 6 ? ShieldAlert : AlertTriangle;
 
                 return (
-                  <div className="flex flex-col gap-2.5">
+                  <div className="flex flex-col gap-3.5">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Icon size={16} color={color} strokeWidth={2.5} />
-                        <span className="text-[11px] font-bold uppercase tracking-widest opacity-50">Safety Score</span>
+                      <div className="flex items-center gap-2.5">
+                        <div 
+                          className="p-1.5 rounded-lg"
+                          style={{ backgroundColor: `${color}15`, border: `1px solid ${color}25` }}
+                        >
+                          <Icon size={16} color={color} strokeWidth={2.5} />
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-[10px] font-black uppercase tracking-[0.12em] opacity-40 leading-none mb-1">Safety Score</span>
+                          <span className="text-[12px] font-bold" style={{ color }}>{label} Risk Profile</span>
+                        </div>
                       </div>
-                      <div className="flex items-baseline gap-0.5">
-                        <span className="text-[16px] font-black tracking-tight" style={{ color }}>{score}</span>
-                        <span className="text-[10px] font-bold opacity-30 tracking-widest uppercase">/ 10</span>
+                      <div className="flex items-center bg-black/5 dark:bg-white/5 px-2.5 py-1 rounded-lg border border-black/5 dark:border-white/5">
+                        <span className="text-[20px] font-black tracking-tighter leading-none" style={{ color }}>{score}</span>
+                        <span className="text-[10px] font-bold opacity-30 tracking-widest uppercase ml-1">/ 10</span>
                       </div>
                     </div>
 
-                    <div className="h-1.5 w-full bg-black/10 dark:bg-white/5 rounded-full overflow-hidden flex relative">
+                    <div className="relative h-2 w-full bg-black/10 dark:bg-white/5 rounded-full overflow-hidden">
                       <div
-                        className="h-full transition-all duration-1000 ease-out shadow-[0_0_10px_rgba(34,197,94,0.3)]"
+                        className="h-full transition-all duration-1000 ease-out rounded-full"
                         style={{
                           width: `${(10 - score) * 10}%`,
-                          backgroundColor: color,
+                          background: `linear-gradient(90deg, ${color}cc, ${color})`,
                           boxShadow: `0 0 12px ${color}40`
                         }}
                       />
                     </div>
 
-                    <div className="flex items-center justify-between">
-                      <span
-                        className="text-[10px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-md border"
-                        style={{
-                          color,
-                          borderColor: `${color}20`,
-                          backgroundColor: `${color}10`
-                        }}
-                      >
-                        {label} Risk
-                      </span>
-                      <div className="flex items-center gap-3">
+                    <div className="flex items-center justify-between mt-0.5">
+                      <div className="flex items-center gap-4">
                         {aiReview.riskCount > 0 && (
-                          <div className="flex items-center gap-1">
-                            <div className="w-1 h-1 rounded-full bg-amber-500 shadow-[0_0_6px_rgba(245,158,11,0.5)]" />
-                            <span className="text-[10px] font-bold text-amber-500 uppercase tracking-widest">
-                              {aiReview.riskCount} Alert{aiReview.riskCount !== 1 ? 's' : ''}
+                          <div className="flex items-center gap-1.5">
+                            <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+                            <span className="text-[10px] font-bold text-red-500/90 uppercase tracking-widest">
+                              {aiReview.riskCount} Risks
                             </span>
                           </div>
                         )}
                         {aiReview.positiveCount > 0 && (
-                          <div className="flex items-center gap-1">
-                            <div className="w-1 h-1 rounded-full bg-green-500 shadow-[0_0_6px_rgba(34,197,94,0.5)]" />
-                            <span className="text-[10px] font-bold text-green-500 uppercase tracking-widest">
-                              {aiReview.positiveCount} Pass{aiReview.positiveCount !== 1 ? 'es' : ''}
+                          <div className="flex items-center gap-1.5">
+                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                            <span className="text-[10px] font-bold text-emerald-500/90 uppercase tracking-widest">
+                              {aiReview.positiveCount} Passes
                             </span>
                           </div>
                         )}
                       </div>
+                      
+                      {aiReview.md5 && (
+                        <div className="flex items-center gap-1 opacity-40 hover:opacity-100 transition-opacity cursor-help">
+                          <Sparkles size={10} />
+                          <span className="text-[9px] font-bold uppercase tracking-tighter">AI Analysis</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 );
@@ -1029,31 +1039,28 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                 const total = (buy24hxrp || 0) + (sell24hxrp || 0);
                 const buyRaw = total > 0 ? ((buy24hxrp || 0) / total) * 100 : 0;
                 const sellRaw = total > 0 ? ((sell24hxrp || 0) / total) * 100 : 0;
-                // Ensure minimum 3% visual width if there's any activity
-                const buyPct = buy24hxrp > 0 ? Math.max(buyRaw, 3) : 0;
-                const sellPct = sell24hxrp > 0 ? Math.max(sellRaw, 3) : 0;
-                // Format: show 1 decimal if < 1%, otherwise whole number
+                const buyPct = buy24hxrp > 0 ? Math.max(buyRaw, 2) : 0;
+                const sellPct = sell24hxrp > 0 ? Math.max(sellRaw, 2) : 0;
                 const formatPct = (val) => (val > 0 && val < 1 ? '<1' : val.toFixed(0));
                 return (
                   <TableRowStyled isDark={isDark}>
-                    <ModernTableCell colSpan={2} style={{ padding: '4px 10px 6px' }}>
-                      <Stack
-                        direction="row"
-                        alignItems="center"
-                        style={{ gap: '8px' }}
-                      >
-                        <Typography style={{ fontSize: '9px', color: '#10b981', fontWeight: 500, minWidth: '38px' }}>
-                          {formatPct(buyRaw)}% Buy
-                        </Typography>
-                        <Box style={{ flex: 1, height: '5px', borderRadius: '3px', overflow: 'hidden', background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }}>
-                          <Stack direction="row" style={{ height: '100%' }}>
-                            <div style={{ width: `${buyPct}%`, background: '#10b981' }} />
-                            <div style={{ width: `${sellPct}%`, background: '#f43f5e' }} />
-                          </Stack>
-                        </Box>
-                        <Typography style={{ fontSize: '9px', color: '#f43f5e', fontWeight: 500, minWidth: '38px', textAlign: 'right' }}>
-                          {formatPct(sellRaw)}% Sell
-                        </Typography>
+                    <ModernTableCell colSpan={2} style={{ padding: '8px 12px 10px' }}>
+                      <Stack direction="row" alignItems="center" style={{ gap: '10px' }}>
+                        <div className="flex flex-col min-w-[40px]">
+                          <span className="text-[10px] font-black text-emerald-500 leading-none">{formatPct(buyRaw)}%</span>
+                          <span className="text-[8px] font-bold opacity-40 uppercase tracking-tighter">Buy</span>
+                        </div>
+                        <div className="flex-1 relative">
+                          <Box style={{ height: '6px', borderRadius: '4px', overflow: 'hidden', background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)', display: 'flex' }}>
+                            <div style={{ width: `${buyPct}%`, background: 'linear-gradient(90deg, #059669, #10b981)', transition: 'width 1s ease-out' }} />
+                            <div style={{ width: `${sellPct}%`, background: 'linear-gradient(90deg, #f43f5e, #e11d48)', transition: 'width 1s ease-out' }} />
+                          </Box>
+                          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[2px] h-full bg-white/20 dark:bg-black/20" />
+                        </div>
+                        <div className="flex flex-col min-w-[40px] text-right">
+                          <span className="text-[10px] font-black text-rose-500 leading-none">{formatPct(sellRaw)}%</span>
+                          <span className="text-[8px] font-bold opacity-40 uppercase tracking-tighter">Sell</span>
+                        </div>
                       </Stack>
                     </ModernTableCell>
                   </TableRowStyled>
@@ -1067,10 +1074,14 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                   style={{
                     fontWeight: 400,
                     color: isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.5)',
-                    fontSize: '13px'
+                    fontSize: '13px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px'
                   }}
                   noWrap
                 >
+                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500/50" />
                   Buys (24h)
                 </Typography>
               </ModernTableCell>
@@ -1080,26 +1091,28 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                   alignItems="center"
                   style={{ justifyContent: 'flex-end', gap: '8px' }}
                 >
-                  <Typography style={{ fontWeight: 500, color: '#10b981', fontSize: '13px' }}>
-                    {fNumber(buy24hxrp || 0)} XRP
+                  <Typography style={{ fontWeight: 700, color: '#10b981', fontSize: '13px', fontFamily: 'var(--font-mono)' }}>
+                    {fNumber(buy24hxrp || 0)} <span className="text-[10px] opacity-60">XRP</span>
                   </Typography>
+                  <div className="h-4 w-[1px] bg-black/5 dark:bg-white/5" />
                   <Stack direction="row" alignItems="center" style={{ gap: '4px' }}>
                     <Typography
                       style={{
-                        color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.45)',
+                        color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)',
                         fontSize: '11px',
-                        fontWeight: 500
+                        fontWeight: 600
                       }}
                     >
-                      {fNumber(uniqueBuyers24h || 0)}
+                      {fNumber(uniqueBuyers24h || 0)} <span className="text-[9px] font-bold opacity-40 uppercase">u</span>
                     </Typography>
                     <Typography
                       style={{
-                        color: isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.2)',
-                        fontSize: '10px'
+                        color: isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.25)',
+                        fontSize: '10px',
+                        fontWeight: 500
                       }}
                     >
-                      {fNumber(buyTxns24h || buy24htx || 0)} tx
+                      {fNumber(buyTxns24h || buy24htx || 0)} <span className="text-[8px] opacity-60 uppercase">tx</span>
                     </Typography>
                   </Stack>
                 </Stack>
@@ -1113,10 +1126,14 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                   style={{
                     fontWeight: 400,
                     color: isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.5)',
-                    fontSize: '13px'
+                    fontSize: '13px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px'
                   }}
                   noWrap
                 >
+                  <div className="w-1.5 h-1.5 rounded-full bg-rose-500/50" />
                   Sells (24h)
                 </Typography>
               </ModernTableCell>
@@ -1126,26 +1143,28 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                   alignItems="center"
                   style={{ justifyContent: 'flex-end', gap: '8px' }}
                 >
-                  <Typography style={{ fontWeight: 500, color: '#f43f5e', fontSize: '13px' }}>
-                    {fNumber(sell24hxrp || 0)} XRP
+                  <Typography style={{ fontWeight: 700, color: '#f43f5e', fontSize: '13px', fontFamily: 'var(--font-mono)' }}>
+                    {fNumber(sell24hxrp || 0)} <span className="text-[10px] opacity-60">XRP</span>
                   </Typography>
+                  <div className="h-4 w-[1px] bg-black/5 dark:bg-white/5" />
                   <Stack direction="row" alignItems="center" style={{ gap: '4px' }}>
                     <Typography
                       style={{
-                        color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.45)',
+                        color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)',
                         fontSize: '11px',
-                        fontWeight: 500
+                        fontWeight: 600
                       }}
                     >
-                      {fNumber(uniqueSellers24h || 0)}
+                      {fNumber(uniqueSellers24h || 0)} <span className="text-[9px] font-bold opacity-40 uppercase">u</span>
                     </Typography>
                     <Typography
                       style={{
-                        color: isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.2)',
-                        fontSize: '10px'
+                        color: isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.25)',
+                        fontSize: '10px',
+                        fontWeight: 500
                       }}
                     >
-                      {fNumber(sellTxns24h || sell24htx || 0)} tx
+                      {fNumber(sellTxns24h || sell24htx || 0)} <span className="text-[8px] opacity-60 uppercase">tx</span>
                     </Typography>
                   </Stack>
                 </Stack>
@@ -1155,19 +1174,21 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
             {/* ========== AMM LIQUIDITY GROUP ========== */}
             {(deposit24hxrp > 0 || withdraw24hxrp > 0) && (
               <tr>
-                <td colSpan={2} style={{ padding: '12px 10px 6px' }}>
-                  <Stack direction="row" alignItems="center" style={{ gap: '6px' }}>
-                    <div style={{ width: '3px', height: '10px', borderRadius: '2px', background: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.12)' }} />
+                <td colSpan={2} style={{ padding: '16px 12px 8px' }}>
+                  <Stack direction="row" alignItems="center" style={{ gap: '8px' }}>
+                    <div className="p-1 rounded-md bg-amber-500/10 border border-amber-500/20">
+                      <Droplet size={10} className="text-amber-500" />
+                    </div>
                     <Typography
                       style={{
                         fontSize: '10px',
-                        fontWeight: 600,
-                        color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
+                        fontWeight: 800,
+                        color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.5)',
                         textTransform: 'uppercase',
-                        letterSpacing: '0.5px'
+                        letterSpacing: '0.1em'
                       }}
                     >
-                      AMM Liquidity
+                      AMM Liquidity Flow
                     </Typography>
                   </Stack>
                 </td>
@@ -1182,29 +1203,25 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                 const total = depositAbs + withdrawAbs;
                 const inRaw = total > 0 ? (depositAbs / total) * 100 : 0;
                 const outRaw = total > 0 ? (withdrawAbs / total) * 100 : 0;
-                const inPct = depositAbs > 0 ? Math.max(inRaw, 3) : 0;
-                const outPct = withdrawAbs > 0 ? Math.max(outRaw, 3) : 0;
+                const inPct = depositAbs > 0 ? Math.max(inRaw, 2) : 0;
+                const outPct = withdrawAbs > 0 ? Math.max(outRaw, 2) : 0;
                 const formatPct = (val) => (val > 0 && val < 1 ? '<1' : val.toFixed(0));
                 return (
                   <TableRowStyled isDark={isDark}>
-                    <ModernTableCell colSpan={2} style={{ padding: '4px 10px 6px' }}>
-                      <Stack
-                        direction="row"
-                        alignItems="center"
-                        style={{ gap: '8px' }}
-                      >
-                        <Typography style={{ fontSize: '9px', color: '#10b981', fontWeight: 500, minWidth: '48px' }}>
-                          {formatPct(inRaw)}% Dep
-                        </Typography>
-                        <Box style={{ flex: 1, height: '5px', borderRadius: '3px', overflow: 'hidden', background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }}>
-                          <Stack direction="row" style={{ height: '100%' }}>
-                            <div style={{ width: `${inPct}%`, background: '#10b981' }} />
-                            <div style={{ width: `${outPct}%`, background: '#f59e0b' }} />
-                          </Stack>
+                    <ModernTableCell colSpan={2} style={{ padding: '8px 12px 10px' }}>
+                      <Stack direction="row" alignItems="center" style={{ gap: '10px' }}>
+                        <div className="flex flex-col min-w-[40px]">
+                          <span className="text-[10px] font-black text-emerald-500 leading-none">{formatPct(inRaw)}%</span>
+                          <span className="text-[8px] font-bold opacity-40 uppercase tracking-tighter">In</span>
+                        </div>
+                        <Box style={{ flex: 1, height: '6px', borderRadius: '4px', overflow: 'hidden', background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)', display: 'flex' }}>
+                          <div style={{ width: `${inPct}%`, background: 'linear-gradient(90deg, #10b981, #34d399)', transition: 'width 1s ease-out' }} />
+                          <div style={{ width: `${outPct}%`, background: 'linear-gradient(90deg, #f59e0b, #fbbf24)', transition: 'width 1s ease-out' }} />
                         </Box>
-                        <Typography style={{ fontSize: '9px', color: '#f59e0b', fontWeight: 500, minWidth: '48px', textAlign: 'right' }}>
-                          {formatPct(outRaw)}% Wd
-                        </Typography>
+                        <div className="flex flex-col min-w-[40px] text-right">
+                          <span className="text-[10px] font-black text-amber-500 leading-none">{formatPct(outRaw)}%</span>
+                          <span className="text-[8px] font-bold opacity-40 uppercase tracking-tighter">Out</span>
+                        </div>
                       </Stack>
                     </ModernTableCell>
                   </TableRowStyled>
@@ -1219,11 +1236,15 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                     style={{
                       fontWeight: 400,
                       color: isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.5)',
-                      fontSize: '13px'
+                      fontSize: '13px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px'
                     }}
                     noWrap
                   >
-                    AMM Deposits (24h)
+                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500/50" />
+                    AMM Deposits
                   </Typography>
                 </ModernTableCell>
                 <ModernTableCell>
@@ -1232,17 +1253,18 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                     alignItems="center"
                     style={{ justifyContent: 'flex-end', gap: '8px' }}
                   >
-                    <Typography style={{ fontWeight: 500, color: '#10b981', fontSize: '13px' }}>
-                      {fNumber(deposit24hxrp)} XRP
+                    <Typography style={{ fontWeight: 700, color: '#10b981', fontSize: '13px', fontFamily: 'var(--font-mono)' }}>
+                      {fNumber(deposit24hxrp)} <span className="text-[10px] opacity-60">XRP</span>
                     </Typography>
                     {deposit24htx ? (
                       <Typography
                         style={{
-                          color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.3)',
-                          fontSize: '11px'
+                          color: isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.25)',
+                          fontSize: '10px',
+                          fontWeight: 500
                         }}
                       >
-                        {fNumber(deposit24htx)} tx
+                        {fNumber(deposit24htx)} <span className="text-[8px] opacity-60 uppercase">tx</span>
                       </Typography>
                     ) : null}
                   </Stack>
@@ -1258,11 +1280,15 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                     style={{
                       fontWeight: 400,
                       color: isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.5)',
-                      fontSize: '13px'
+                      fontSize: '13px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px'
                     }}
                     noWrap
                   >
-                    AMM Withdrawals (24h)
+                    <div className="w-1.5 h-1.5 rounded-full bg-amber-500/50" />
+                    AMM Withdrawals
                   </Typography>
                 </ModernTableCell>
                 <ModernTableCell>
@@ -1271,17 +1297,18 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                     alignItems="center"
                     style={{ justifyContent: 'flex-end', gap: '8px' }}
                   >
-                    <Typography style={{ fontWeight: 500, color: '#f59e0b', fontSize: '13px' }}>
-                      {fNumber(Math.abs(withdraw24hxrp))} XRP
+                    <Typography style={{ fontWeight: 700, color: '#f59e0b', fontSize: '13px', fontFamily: 'var(--font-mono)' }}>
+                      {fNumber(Math.abs(withdraw24hxrp))} <span className="text-[10px] opacity-60">XRP</span>
                     </Typography>
                     {withdraw24htx ? (
                       <Typography
                         style={{
-                          color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.3)',
-                          fontSize: '11px'
+                          color: isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.25)',
+                          fontSize: '10px',
+                          fontWeight: 500
                         }}
                       >
-                        {fNumber(withdraw24htx)} tx
+                        {fNumber(withdraw24htx)} <span className="text-[8px] opacity-60 uppercase">tx</span>
                       </Typography>
                     ) : null}
                   </Stack>
@@ -1297,11 +1324,15 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                     style={{
                       fontWeight: 400,
                       color: isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.5)',
-                      fontSize: '13px'
+                      fontSize: '13px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px'
                     }}
                     noWrap
                   >
-                    LP Burned
+                    <Flame size={12} className={cn((lpBurnedPercent || 0) >= 50 ? 'text-emerald-500' : 'text-amber-500')} />
+                    LP Status
                   </Typography>
                 </ModernTableCell>
                 <ModernTableCell>
@@ -1313,24 +1344,26 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                     <Typography
                       style={{
                         fontSize: '13px',
-                        fontWeight: 500,
+                        fontWeight: 700,
+                        fontFamily: 'var(--font-mono)',
                         color:
-                          (lpBurnedPercent || 0) >= 50
+                          (lpBurnedPercent || 0) >= 80
                             ? '#10b981'
                             : (lpBurnedPercent || 0) >= 20
                               ? '#f59e0b'
                               : '#f43f5e'
                       }}
                     >
-                      {(lpBurnedPercent || 0).toFixed(2)}%
+                      {(lpBurnedPercent || 0).toFixed(2)}% <span className="text-[10px] opacity-40 font-bold uppercase tracking-tighter">Burned</span>
                     </Typography>
                     <Box
                       style={{
-                        width: '36px',
-                        height: '4px',
-                        borderRadius: '2px',
+                        width: '40px',
+                        height: '6px',
+                        borderRadius: '3px',
                         background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)',
-                        overflow: 'hidden'
+                        overflow: 'hidden',
+                        display: 'flex'
                       }}
                     >
                       <div
@@ -1338,50 +1371,36 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                           width: `${Math.min(lpBurnedPercent || 0, 100)}%`,
                           height: '100%',
                           background:
-                            (lpBurnedPercent || 0) >= 50
-                              ? '#10b981'
+                            (lpBurnedPercent || 0) >= 80
+                              ? 'linear-gradient(90deg, #059669, #10b981)'
                               : (lpBurnedPercent || 0) >= 20
-                                ? '#f59e0b'
-                                : '#f43f5e'
+                                ? 'linear-gradient(90deg, #d97706, #f59e0b)'
+                                : 'linear-gradient(90deg, #e11d48, #f43f5e)'
                         }}
                       />
                     </Box>
-                    <Stack direction="row" alignItems="center" style={{ gap: '3px' }}>
+                    <div className="flex items-center gap-1 bg-black/5 dark:bg-white/5 px-1.5 py-0.5 rounded-md border border-black/5 dark:border-white/5">
                       <Typography
                         style={{
                           fontSize: '10px',
-                          fontWeight: 500,
-                          color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.4)'
+                          fontWeight: 700,
+                          color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)',
+                          fontFamily: 'var(--font-mono)'
                         }}
                       >
                         {lpBurnedHolders || 0}
                       </Typography>
                       <Typography
                         style={{
-                          fontSize: '9px',
-                          color: isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.2)'
+                          fontSize: '8px',
+                          fontWeight: 800,
+                          color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)',
+                          textTransform: 'uppercase'
                         }}
                       >
-                        burned
+                        / {lpHolderCount || 0}
                       </Typography>
-                      <Typography
-                        style={{
-                          fontSize: '10px',
-                          fontWeight: 500,
-                          color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.4)'
-                        }}
-                      >
-                        {lpHolderCount || 0}
-                      </Typography>
-                      <Typography
-                        style={{
-                          fontSize: '9px',
-                          color: isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.2)'
-                        }}
-                      >
-                        total
-                      </Typography>
-                    </Stack>
+                    </div>
                   </Stack>
                 </ModernTableCell>
               </TableRowStyled>
@@ -1390,19 +1409,21 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
             {/* ========== TOKEN INFO GROUP ========== */}
             {(date || dateon || creator) && (
               <tr>
-                <td colSpan={2} style={{ padding: '12px 10px 6px' }}>
-                  <Stack direction="row" alignItems="center" style={{ gap: '6px' }}>
-                    <div style={{ width: '3px', height: '10px', borderRadius: '2px', background: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.12)' }} />
+                <td colSpan={2} style={{ padding: '16px 12px 8px' }}>
+                  <Stack direction="row" alignItems="center" style={{ gap: '8px' }}>
+                    <div className="p-1 rounded-md bg-blue-500/10 border border-blue-500/20">
+                      <Link2 size={10} className="text-blue-500" />
+                    </div>
                     <Typography
                       style={{
                         fontSize: '10px',
-                        fontWeight: 600,
-                        color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
+                        fontWeight: 800,
+                        color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.5)',
                         textTransform: 'uppercase',
-                        letterSpacing: '0.5px'
+                        letterSpacing: '0.1em'
                       }}
                     >
-                      Token Info
+                      Transparency & Origin
                     </Typography>
                   </Stack>
                 </td>
@@ -1446,10 +1467,14 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                     style={{
                       fontWeight: 400,
                       color: isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.5)',
-                      fontSize: '13px'
+                      fontSize: '13px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px'
                     }}
                     noWrap
                   >
+                    <Settings size={12} className="opacity-40" />
                     Creator
                   </Typography>
                 </ModernTableCell>
@@ -1457,7 +1482,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                   <Stack
                     direction="row"
                     alignItems="center"
-                    style={{ justifyContent: 'flex-end', gap: '8px' }}
+                    style={{ justifyContent: 'flex-end', gap: '6px' }}
                   >
                     <Tooltip title="Click to view activity">
                       <Chip
@@ -1468,23 +1493,25 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                           paddingRight: '10px',
                           borderRadius: '8px',
                           height: '28px',
-                          background: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)',
-                          border: `1px solid ${activityOpen ? (isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.12)') : isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'}`,
+                          background: activityOpen ? (isDark ? 'rgba(99,102,241,0.15)' : 'rgba(99,102,241,0.1)') : (isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)'),
+                          border: `1px solid ${activityOpen ? (isDark ? 'rgba(99,102,241,0.4)' : 'rgba(99,102,241,0.3)') : isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'}`,
                           maxWidth: isMobile ? '110px' : '180px',
                           overflow: 'hidden',
-                          cursor: 'pointer'
+                          cursor: 'pointer',
+                          transition: 'all 0.2s ease'
                         }}
                       >
                         {creatorLabel ? (
                           <Typography
                             variant="caption"
                             style={{
-                              fontWeight: 500,
+                              fontWeight: 700,
                               fontSize: '11px',
                               overflow: 'hidden',
                               textOverflow: 'ellipsis',
                               whiteSpace: 'nowrap',
-                              color: '#6366f1'
+                              color: '#6366f1',
+                              letterSpacing: '-0.01em'
                             }}
                           >
                             {creatorLabel}
@@ -1493,7 +1520,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                           <Typography
                             variant="caption"
                             style={{
-                              fontWeight: 400,
+                              fontWeight: 500,
                               fontSize: '11px',
                               fontFamily: 'var(--font-mono)',
                               overflow: 'hidden',
@@ -1502,90 +1529,77 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                               color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.65)'
                             }}
                           >
-                            {creator}
+                            {creator.slice(0, 12)}...
                           </Typography>
                         )}
                       </Chip>
                     </Tooltip>
-                    <Tooltip title="Copy address">
-                      <IconButton
-                        onClick={handleCopyCreator}
-                        size="small"
-                        style={{
-                          padding: '4px',
-                          width: '26px',
-                          height: '26px',
-                          borderRadius: '6px',
-                          background: 'transparent',
-                          border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'}`,
-                          flexShrink: 0
-                        }}
-                      >
-                        <Copy
-                          size={13}
-                          color={isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.4)'}
-                        />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Message creator">
-                      <IconButton
-                        onClick={() => window.dispatchEvent(new CustomEvent('openDm', { detail: { user: creator, tokenMd5: token.md5 } }))}
-                        size="small"
-                        style={{
-                          padding: '4px',
-                          width: '26px',
-                          height: '26px',
-                          borderRadius: '6px',
-                          background: 'transparent',
-                          border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'}`,
-                          flexShrink: 0
-                        }}
-                      >
-                        <MessageCircle
-                          size={13}
-                          color={isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.4)'}
-                        />
-                      </IconButton>
-                    </Tooltip>
-                    {accountLogin && !editingLabel && (
-                      <Tooltip title={creatorLabel ? 'Edit label' : 'Add label'}>
+                    
+                    <div className="flex items-center bg-black/[0.03] dark:bg-white/[0.04] p-0.5 rounded-lg border border-black/[0.05] dark:border-white/[0.08]">
+                      <Tooltip title="Copy address">
                         <IconButton
-                          onClick={() => {
-                            setEditingLabel(true);
-                            setLabelInput(creatorLabel || '');
-                          }}
+                          onClick={handleCopyCreator}
                           size="small"
                           style={{
                             padding: '4px',
                             width: '26px',
                             height: '26px',
                             borderRadius: '6px',
-                            background: creatorLabel ? 'rgba(99,102,241,0.1)' : 'transparent',
-                            border: `1px solid ${creatorLabel ? 'rgba(99,102,241,0.3)' : isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'}`,
-                            flexShrink: 0
                           }}
                         >
-                          <Tag size={13} color={creatorLabel ? '#6366f1' : isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.4)'} />
+                          <Copy
+                            size={13}
+                            color={isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'}
+                          />
                         </IconButton>
                       </Tooltip>
-                    )}
+                      <Tooltip title="Message creator">
+                        <IconButton
+                          onClick={() => window.dispatchEvent(new CustomEvent('openDm', { detail: { user: creator, tokenMd5: token.md5 } }))}
+                          size="small"
+                          style={{
+                            padding: '4px',
+                            width: '26px',
+                            height: '26px',
+                            borderRadius: '6px',
+                          }}
+                        >
+                          <MessageCircle
+                            size={13}
+                            color={isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'}
+                          />
+                        </IconButton>
+                      </Tooltip>
+                      {accountLogin && !editingLabel && (
+                        <Tooltip title={creatorLabel ? 'Edit label' : 'Add label'}>
+                          <IconButton
+                            onClick={() => {
+                              setEditingLabel(true);
+                              setLabelInput(creatorLabel || '');
+                            }}
+                            size="small"
+                            style={{
+                              padding: '4px',
+                              width: '26px',
+                              height: '26px',
+                              borderRadius: '6px',
+                              background: creatorLabel ? 'rgba(99,102,241,0.1)' : 'transparent',
+                            }}
+                          >
+                            <Tag size={13} color={creatorLabel ? '#6366f1' : isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'} />
+                          </IconButton>
+                        </Tooltip>
+                      )}
+                    </div>
+
                     {editingLabel && (
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <div className="flex items-center gap-1.5 p-1 bg-violet-500/5 rounded-lg border border-violet-500/10">
                         <input
                           type="text"
                           value={labelInput}
                           onChange={(e) => setLabelInput(e.target.value)}
                           placeholder="Label..."
-                          style={{
-                            padding: '4px 8px',
-                            fontSize: '11px',
-                            borderRadius: '6px',
-                            border: `1px solid ${isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)'}`,
-                            background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)',
-                            color: isDark ? '#fff' : '#000',
-                            width: '80px',
-                            outline: 'none'
-                          }}
+                          className="px-2 py-1 text-[11px] font-bold rounded-md bg-white/5 border border-white/5 outline-none w-20"
                           onKeyDown={(e) => {
                             if (e.key === 'Enter') handleSaveCreatorLabel();
                             if (e.key === 'Escape') {
@@ -1599,50 +1613,19 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                           onClick={handleSaveCreatorLabel}
                           disabled={labelSaving || !labelInput.trim()}
                           size="small"
-                          style={{
-                            padding: '4px',
-                            width: '24px',
-                            height: '24px',
-                            borderRadius: '4px',
-                            background: 'rgba(34,197,94,0.1)',
-                            border: '1px solid rgba(34,197,94,0.3)'
-                          }}
+                          className="bg-emerald-500/10 border border-emerald-500/20"
                         >
-                          <CheckCircle size={12} color="#22c55e" />
+                          <CheckCircle size={12} color="#10b981" />
                         </IconButton>
-                        {creatorLabel && (
-                          <IconButton
-                            onClick={handleDeleteCreatorLabel}
-                            disabled={labelSaving}
-                            size="small"
-                            style={{
-                              padding: '4px',
-                              width: '24px',
-                              height: '24px',
-                              borderRadius: '4px',
-                              background: 'rgba(239,68,68,0.1)',
-                              border: '1px solid rgba(239,68,68,0.3)'
-                            }}
-                          >
-                            <Trash2 size={12} color="#ef4444" />
-                          </IconButton>
-                        )}
                         <IconButton
                           onClick={() => {
                             setEditingLabel(false);
                             setLabelInput('');
                           }}
                           size="small"
-                          style={{
-                            padding: '4px',
-                            width: '24px',
-                            height: '24px',
-                            borderRadius: '4px',
-                            background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
-                            border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)'}`
-                          }}
+                          className="bg-black/5 dark:bg-white/5"
                         >
-                          <X size={12} color={isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.4)'} />
+                          <X size={12} color={isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'} />
                         </IconButton>
                       </div>
                     )}
@@ -1659,10 +1642,14 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                     style={{
                       fontWeight: 400,
                       color: isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.5)',
-                      fontSize: '13px'
+                      fontSize: '13px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px'
                     }}
                     noWrap
                   >
+                    <Tag size={12} className="opacity-40" />
                     Your Label
                   </Typography>
                 </ModernTableCell>
@@ -1678,11 +1665,10 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                       border: '1px solid rgba(99,102,241,0.2)'
                     }}
                   >
-                    <Tag size={11} color="#6366f1" style={{ marginRight: '6px' }} />
                     <Typography
                       variant="caption"
                       style={{
-                        fontWeight: 500,
+                        fontWeight: 700,
                         fontSize: '11px',
                         color: '#6366f1'
                       }}
@@ -1703,11 +1689,15 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                       style={{
                         fontWeight: 400,
                         color: isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.5)',
-                        fontSize: isMobile ? '11px' : '13px'
+                        fontSize: isMobile ? '11px' : '13px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px'
                       }}
                       noWrap
                     >
-                      {isMobile ? 'Last Action' : 'Creator Last Action'}
+                      <BarChart2 size={12} className="opacity-40" />
+                      {isMobile ? 'Last Act' : 'Creator Last Act'}
                     </Typography>
                   </ModernTableCell>
                   <ModernTableCell>
@@ -1728,7 +1718,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                           <Typography
                             variant="body2"
                             style={{
-                              fontWeight: 500,
+                              fontWeight: 700,
                               color:
                                 creatorLastAction.side === 'buy'
                                   ? '#10b981'
@@ -1737,21 +1727,23 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                                     : creatorLastAction.side === 'transfer_out'
                                       ? '#f59e0b'
                                       : '#8b5cf6',
-                              fontSize: isMobile ? '10px' : '12px',
-                              textTransform: 'uppercase'
+                              fontSize: isMobile ? '10px' : '11px',
+                              textTransform: 'uppercase',
+                              letterSpacing: '0.02em'
                             }}
                           >
                             {(() => {
                               const side = creatorLastAction.side || creatorLastAction.type || '';
                               const labels = {
                                 transfer_out: 'Sent',
-                                receive: 'Received',
-                                deposit: 'LP Add',
-                                withdraw: 'LP Remove',
-                                amm_create: 'LP Create',
+                                receive: 'Recv',
+                                deposit: 'LP+',
+                                withdraw: 'LP-',
+                                amm_create: 'LP*',
                                 check_create: 'Check',
-                                check_receive: 'Check In',
-                                check_send: 'Check Out'
+                                check_receive: 'Cash',
+                                check_send: 'Check-',
+                                check_cancel: 'Cancel'
                               };
                               return labels[side] || side.replace(/^other_/, '').replace(/_/g, ' ');
                             })()}
@@ -1759,8 +1751,10 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                           <Typography
                             variant="caption"
                             style={{
-                              color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.55)',
-                              fontSize: isMobile ? '9px' : '11px'
+                              color: isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.8)',
+                              fontSize: isMobile ? '10px' : '12px',
+                              fontFamily: 'var(--font-mono)',
+                              fontWeight: 600
                             }}
                           >
                             {creatorLastAction.amountType === 'token' && creatorLastAction.token > 0
@@ -1769,15 +1763,9 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                                 ? `${fNumber(creatorLastAction.xrp)} XRP`
                                 : null}
                           </Typography>
-                          <Typography
-                            variant="caption"
-                            style={{
-                              color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)',
-                              fontSize: isMobile ? '9px' : '10px'
-                            }}
-                          >
+                          <div className="text-[10px] font-bold opacity-30 tracking-tighter uppercase ml-1">
                             {formatLastActionTime(creatorLastAction.time)}
-                          </Typography>
+                          </div>
                         </Stack>
                       </Link>
                     </Tooltip>
@@ -2289,61 +2277,44 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
 
             {/* Creator Token Flow - Compact Row */}
             {creator && tokenFlow && (tokenFlow.totalTransferred || tokenFlow.totalSoldXrp > 0) && (
-              <TableRowStyled isDark={isDark} onClick={() => setFlowModalOpen(true)} style={{ cursor: 'pointer' }}>
+              <TableRowStyled 
+                isDark={isDark} 
+                onClick={() => setFlowModalOpen(true)} 
+                style={{ 
+                  cursor: 'pointer',
+                  background: isDark ? 'linear-gradient(90deg, rgba(139,92,246,0.06), transparent)' : 'linear-gradient(90deg, rgba(139,92,246,0.04), transparent)',
+                  borderLeft: '3px solid #8b5cf6'
+                }}
+              >
                 <ModernTableCell>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <ArrowLeftRight size={13} color="#8b5cf6" strokeWidth={1.5} style={{ flexShrink: 0 }} />
-                    <span style={{
-                      fontWeight: 400,
-                      color: isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.5)',
-                      fontSize: '13px'
-                    }}>
-                      Token Flow
+                  <div className="flex items-center gap-2.5">
+                    <div className="relative flex items-center justify-center w-6 h-6 rounded-lg bg-violet-500/10 border border-violet-500/20">
+                      <ArrowLeftRight size={14} color="#8b5cf6" strokeWidth={2.5} />
+                      <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-violet-400 rounded-full blur-[1px] animate-pulse" />
+                    </div>
+                    <span className="font-bold text-[13px] text-violet-500 tracking-tight">
+                      Flow Analysis
                     </span>
                   </div>
                 </ModernTableCell>
                 <ModernTableCell>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '6px', flexWrap: 'wrap' }}>
-                    <span style={{
-                      fontSize: '10px',
-                      padding: '2px 7px',
-                      borderRadius: '5px',
-                      background: 'rgba(139,92,246,0.08)',
-                      border: '1px solid rgba(139,92,246,0.12)',
-                      color: '#8b5cf6',
-                      fontWeight: 500,
-                      fontFamily: 'var(--font-mono)'
-                    }}>
-                      {tokenFlow.recipientCount || 0} wallets
-                    </span>
-                    {tokenFlow.netFlowXrp != null && tokenFlow.netFlowXrp !== 0 && (
-                      <span style={{
-                        fontSize: '10px',
-                        padding: '2px 7px',
-                        borderRadius: '5px',
-                        background: tokenFlow.netFlowXrp > 0 ? 'rgba(34,197,94,0.08)' : 'rgba(239,68,68,0.08)',
-                        border: `1px solid ${tokenFlow.netFlowXrp > 0 ? 'rgba(34,197,94,0.12)' : 'rgba(239,68,68,0.12)'}`,
-                        color: tokenFlow.netFlowXrp > 0 ? '#22c55e' : '#ef4444',
-                        fontWeight: 500,
-                        fontFamily: 'var(--font-mono)'
-                      }}>
-                        {tokenFlow.netFlowXrp > 0 ? '+' : '-'}{fNumber(Math.abs(tokenFlow.netFlowXrp))} XRP
+                  <div className="flex items-center justify-end gap-2">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-violet-500/10 text-violet-500 font-bold border border-violet-500/20">
+                        {tokenFlow.recipientCount || 0} Wallets
                       </span>
-                    )}
-                    {!isMobile && tokenFlow.linkedGroupCount > 0 && (
-                      <span style={{
-                        fontSize: '10px',
-                        padding: '2px 7px',
-                        borderRadius: '5px',
-                        background: 'rgba(239,68,68,0.08)',
-                        border: '1px solid rgba(239,68,68,0.12)',
-                        color: '#ef4444',
-                        fontWeight: 500
-                      }}>
-                        {tokenFlow.linkedGroupCount} linked
-                      </span>
-                    )}
-                    <ChevronDown size={13} color={isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.2)'} style={{ transform: 'rotate(-90deg)', flexShrink: 0 }} />
+                      {tokenFlow.netFlowXrp != null && tokenFlow.netFlowXrp !== 0 && (
+                        <span className={cn(
+                          "text-[10px] px-2 py-0.5 rounded-full font-bold border",
+                          tokenFlow.netFlowXrp > 0 
+                            ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" 
+                            : "bg-rose-500/10 text-rose-500 border-rose-500/20"
+                        )}>
+                          {tokenFlow.netFlowXrp > 0 ? '+' : '-'}{fNumber(Math.abs(tokenFlow.netFlowXrp))} <span className="text-[8px] opacity-70 uppercase">XRP</span>
+                        </span>
+                      )}
+                    </div>
+                    <ChevronDown size={14} className="opacity-30 -rotate-90" />
                   </div>
                 </ModernTableCell>
               </TableRowStyled>
@@ -2376,35 +2347,35 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                   {/* Scrollable Content */}
                   <ScrollableBox style={{ flex: 1, minHeight: 0 }}>
 
-                  {/* Summary Row */}
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', padding: '10px 16px' }}>
+                  {/* Summary Stats Grid */}
+                  <div style={{ 
+                    display: 'grid', 
+                    gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', 
+                    gap: '10px', 
+                    padding: '16px' 
+                  }}>
                     {[
-                      { label: 'Recipients', value: tokenFlow.recipientCount || 0, color: '#8b5cf6' },
-                      tokenFlow.holdingCount > 0 && { label: 'Holding', value: tokenFlow.holdingCount, color: '#22c55e' },
-                      tokenFlow.netFlowXrp != null && tokenFlow.netFlowXrp !== 0 && {
-                        label: 'Profit',
-                        value: `${tokenFlow.netFlowXrp > 0 ? '+' : '-'}${fNumber(Math.abs(tokenFlow.netFlowXrp))} XRP`,
-                        color: tokenFlow.netFlowXrp > 0 ? '#22c55e' : '#ef4444'
-                      },
-                      tokenFlow.totalBoughtXrp > 0 && { label: 'Bought', value: `${fNumber(tokenFlow.totalBoughtXrp)} XRP`, color: '#22c55e' },
-                      tokenFlow.totalSoldXrp > 0 && { label: 'Sold', value: `${fNumber(tokenFlow.totalSoldXrp)} XRP`, color: '#ef4444' },
-                      tokenFlow.totalToExchanges > 0 && { label: 'CEX', value: `${fNumber(tokenFlow.totalToExchanges)} XRP`, color: '#f59e0b' },
-                      tokenFlow.linkedGroupCount > 0 && { label: 'Linked', value: `${tokenFlow.linkedGroupCount} groups`, color: '#ef4444' }
-                    ].filter(Boolean).map((s, i) => (
-                      <span key={i} style={{
-                        fontSize: '10px',
-                        padding: '3px 8px',
-                        borderRadius: '6px',
-                        background: `${s.color}10`,
-                        border: `1px solid ${s.color}20`,
-                        color: s.color,
-                        fontWeight: 500,
-                        fontFamily: 'var(--font-mono)',
-                        whiteSpace: 'nowrap'
+                      { label: 'Distribution', value: `${tokenFlow.recipientCount || 0} Wallets`, sub: 'Total Recipients', color: '#8b5cf6', icon: <Layers size={14}/> },
+                      { label: 'CEX Outflow', value: `${fNumber(tokenFlow.totalToExchanges || 0)} XRP`, sub: 'Sent to Exchanges', color: '#f59e0b', icon: <ArrowUpRight size={14}/> },
+                      { label: 'Net Flow', value: `${fNumber(Math.abs(tokenFlow.netFlowXrp || 0))} XRP`, sub: tokenFlow.netFlowXrp > 0 ? 'Total Profit' : 'Total Loss', color: tokenFlow.netFlowXrp > 0 ? '#22c55e' : '#ef4444', icon: <BarChart2 size={14}/> },
+                      { label: 'Current Hold', value: `${tokenFlow.holdingCount || 0} Wallets`, sub: 'Still holding tokens', color: '#3b82f6', icon: <Droplet size={14}/> }
+                    ].map((s, i) => (
+                      <div key={i} style={{
+                        padding: '12px',
+                        borderRadius: '12px',
+                        background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
+                        border: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)'}`,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '2px'
                       }}>
-                        <span style={{ opacity: 0.6, fontFamily: 'inherit', marginRight: '4px', fontSize: '9px', textTransform: 'uppercase' }}>{s.label}</span>
-                        {s.value}
-                      </span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+                          <span style={{ color: s.color, display: 'flex' }}>{s.icon}</span>
+                          <span style={{ fontSize: '9px', fontWeight: 600, color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{s.label}</span>
+                        </div>
+                        <span style={{ fontSize: '15px', fontWeight: 700, color: isDark ? '#fff' : '#1a1a1a', fontFamily: 'var(--font-mono)' }}>{s.value}</span>
+                        <span style={{ fontSize: '9px', color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.35)' }}>{s.sub}</span>
+                      </div>
                     ))}
                   </div>
 
@@ -2420,37 +2391,64 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                       grouped.set(addr, prev);
                     });
                     const exchanges = [...grouped.values()].sort((a, b) => b.xrp - a.xrp);
+                    const displayedExchanges = showAllExchanges ? exchanges : exchanges.slice(0, 5);
+                    
                     return (
-                      <div style={{ margin: '0 16px 6px', borderRadius: '8px', overflow: 'hidden', border: `1px solid ${isDark ? 'rgba(245,158,11,0.1)' : 'rgba(245,158,11,0.08)'}` }}>
-                        {exchanges.map((ex, i) => {
-                          const pct = tokenFlow.totalToExchanges > 0 ? (ex.xrp / tokenFlow.totalToExchanges) * 100 : 0;
-                          return (
-                            <div key={ex.address} style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '8px',
-                              padding: '4px 10px',
-                              borderTop: i > 0 ? `1px solid ${isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)'}` : 'none'
-                            }}>
-                              <ArrowUpRight size={10} color="#f59e0b" strokeWidth={2} style={{ flexShrink: 0 }} />
-                              <Link href={`/address/${ex.address}`} target="_blank" style={{
-                                fontFamily: 'var(--font-mono)', fontSize: '10px', color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.5)',
-                                textDecoration: 'none', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'
+                      <div style={{ margin: '0 16px 16px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <ArrowUpRight size={14} color="#f59e0b" strokeWidth={2} />
+                            <span style={{ fontSize: '11px', fontWeight: 600, color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.5)', textTransform: 'uppercase', letterSpacing: '0.02em' }}>CEX Deposits Breakdown</span>
+                          </div>
+                          {exchanges.length > 5 && (
+                            <button 
+                              onClick={() => setShowAllExchanges(!showAllExchanges)}
+                              style={{ 
+                                background: 'transparent', 
+                                border: 'none', 
+                                color: '#3b82f6', 
+                                fontSize: '10px', 
+                                fontWeight: 600, 
+                                cursor: 'pointer',
+                                padding: '2px 4px'
+                              }}
+                            >
+                              {showAllExchanges ? 'Show Less' : `+${exchanges.length - 5} More`}
+                            </button>
+                          )}
+                        </div>
+                        <div style={{ borderRadius: '12px', overflow: 'hidden', border: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)'}`, background: isDark ? 'rgba(255,255,255,0.01)' : 'rgba(0,0,0,0.01)' }}>
+                          {displayedExchanges.map((ex, i) => {
+                            const pct = tokenFlow.totalToExchanges > 0 ? (ex.xrp / tokenFlow.totalToExchanges) * 100 : 0;
+                            return (
+                              <div key={ex.address} style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '10px',
+                                padding: '8px 12px',
+                                borderTop: i > 0 ? `1px solid ${isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)'}` : 'none'
                               }}>
-                                {ex.name || ex.address.slice(0, 12)}
-                              </Link>
-                              <div style={{ flex: 1, height: '3px', borderRadius: '2px', background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)', overflow: 'hidden', minWidth: '20px' }}>
-                                <div style={{ width: `${Math.max(pct, 2)}%`, height: '100%', background: '#f59e0b', borderRadius: '2px' }} />
+                                <Link href={`/address/${ex.address}`} target="_blank" style={{
+                                  fontFamily: 'var(--font-mono)', fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.7)',
+                                  textDecoration: 'none', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100px'
+                                }}>
+                                  {ex.name || ex.address.slice(0, 10)}
+                                </Link>
+                                <div style={{ flex: 1, height: '6px', borderRadius: '3px', background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)', overflow: 'hidden' }}>
+                                  <div style={{ width: `${Math.max(pct, 2)}%`, height: '100%', background: '#f59e0b', borderRadius: '3px' }} />
+                                </div>
+                                <div style={{ textAlign: 'right', minWidth: '80px' }}>
+                                  <span style={{ fontSize: '11px', fontWeight: 700, color: '#f59e0b', fontFamily: 'var(--font-mono)' }}>
+                                    {fNumber(ex.xrp)} XRP
+                                  </span>
+                                  <div style={{ fontSize: '9px', color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.35)' }}>
+                                    {ex.depositors.size} wallets
+                                  </div>
+                                </div>
                               </div>
-                              <span style={{ fontSize: '10px', fontWeight: 600, color: '#f59e0b', fontFamily: 'var(--font-mono)', flexShrink: 0 }}>
-                                {fNumber(ex.xrp)} XRP
-                              </span>
-                              <span style={{ fontSize: '9px', color: isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.2)', flexShrink: 0 }}>
-                                {ex.depositors.size}w
-                              </span>
-                            </div>
-                          );
-                        })}
+                            );
+                          })}
+                        </div>
                       </div>
                     );
                   })()}
@@ -2459,44 +2457,48 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                   {tokenFlow.linkedAddresses?.length > 0 && (() => {
                     const linkedColors = ['#f97316', '#ec4899', '#8b5cf6', '#14b8a6', '#eab308', '#06b6d4'];
                     return (
-                      <div style={{ margin: '0 16px 6px', borderRadius: '8px', overflow: 'hidden', border: `1px solid ${isDark ? 'rgba(239,68,68,0.1)' : 'rgba(239,68,68,0.08)'}` }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '4px 10px', background: isDark ? 'rgba(239,68,68,0.04)' : 'rgba(239,68,68,0.03)' }}>
-                          <Link2 size={10} color="#ef4444" strokeWidth={2} />
-                          <span style={{ fontSize: '9px', fontWeight: 600, color: '#ef4444', textTransform: 'uppercase', letterSpacing: '0.3px' }}>Linked</span>
-                          <span style={{ fontSize: '9px', color: isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.2)' }}>same exchange tag</span>
+                      <div style={{ margin: '0 16px 20px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+                          <Link2 size={14} color="#ef4444" strokeWidth={2} />
+                          <span style={{ fontSize: '11px', fontWeight: 600, color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.5)', textTransform: 'uppercase', letterSpacing: '0.02em' }}>Linked Wallets (Same CEX Tag)</span>
                         </div>
-                        {tokenFlow.linkedAddresses.map((group, i) => {
-                          const color = linkedColors[i % linkedColors.length];
-                          const keyParts = (group.exchangeKey || '').split(':');
-                          const exAddr = keyParts[0] || '';
-                          const exTag = keyParts[1] || '';
-                          return (
-                            <div key={i} style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '6px',
-                              padding: '3px 10px',
-                              borderTop: i > 0 ? `1px solid ${isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)'}` : 'none'
-                            }}>
-                              <span style={{ width: '3px', height: '12px', borderRadius: '1px', background: color, flexShrink: 0 }} />
-                              <div style={{ flex: 1, display: 'flex', flexWrap: 'wrap', gap: '3px', alignItems: 'center' }}>
-                                {(group.addresses || []).map(addr => (
-                                  <Link key={addr} href={`/address/${addr}`} target="_blank" style={{
-                                    fontFamily: 'var(--font-mono)', fontSize: '9px', color, textDecoration: 'none',
-                                    padding: '1px 5px', borderRadius: '3px', background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)'
-                                  }}>
-                                    {addr.slice(0, 8)}
-                                  </Link>
-                                ))}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          {tokenFlow.linkedAddresses.map((group, i) => {
+                            const color = linkedColors[i % linkedColors.length];
+                            const keyParts = (group.exchangeKey || '').split(':');
+                            const exAddr = keyParts[0] || '';
+                            const exTag = keyParts[1] || '';
+                            return (
+                              <div key={i} style={{
+                                padding: '12px',
+                                borderRadius: '12px',
+                                border: `1px solid ${color}25`,
+                                background: `${color}08`,
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '12px'
+                              }}>
+                                <div style={{ width: '4px', height: '32px', borderRadius: '2px', background: color, flexShrink: 0 }} />
+                                <div style={{ flex: 1 }}>
+                                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginBottom: '6px' }}>
+                                    {(group.addresses || []).map(addr => (
+                                      <Link key={addr} href={`/address/${addr}`} target="_blank" style={{
+                                        fontFamily: 'var(--font-mono)', fontSize: '10px', color, textDecoration: 'none',
+                                        padding: '2px 8px', borderRadius: '4px', background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
+                                        border: `1px solid ${color}20`
+                                      }}>
+                                        {addr.slice(0, 10)}
+                                      </Link>
+                                    ))}
+                                  </div>
+                                  <div style={{ fontSize: '9px', color: isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.45)', fontFamily: 'var(--font-mono)', fontWeight: 500 }}>
+                                    Tag: {exTag} · CEX: {exAddr.slice(0, 8)}
+                                  </div>
+                                </div>
                               </div>
-                              {exAddr && (
-                                <span style={{ fontSize: '8px', fontFamily: 'var(--font-mono)', color: isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.2)', flexShrink: 0, whiteSpace: 'nowrap' }}>
-                                  {exAddr.slice(0, 8)}:{exTag}
-                                </span>
-                              )}
-                            </div>
-                          );
-                        })}
+                            );
+                          })}
+                        </div>
                       </div>
                     );
                   })()}
@@ -2504,32 +2506,30 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                   {/* Recipient Table */}
                     {tokenFlow.recipients?.length > 0 && (
                       <>
-                        {/* Table Header */}
+                        {/* Enhanced Table Header */}
                         <div style={{
                           display: 'grid',
-                          gridTemplateColumns: isMobile ? 'minmax(0,1fr) 70px 80px' : 'minmax(0,1fr) 65px 90px 95px 95px 95px',
-                          padding: '8px 16px',
-                          background: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)',
-                          borderTop: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)'}`,
-                          borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)'}`,
+                          gridTemplateColumns: isMobile ? 'minmax(0,1fr) 60px 80px' : 'minmax(0,1fr) 70px 100px 100px 100px 100px',
+                          padding: '10px 16px',
+                          background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
+                          borderTop: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'}`,
+                          borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'}`,
                           position: 'sticky',
                           top: 0,
                           zIndex: 1
                         }}>
-                          <span style={{ fontSize: '10px', fontWeight: 600, color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.35)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Wallet</span>
-                          <span style={{ fontSize: '10px', fontWeight: 600, color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.35)', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'center' }}>Source</span>
+                          <span style={{ fontSize: '9px', fontWeight: 700, color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Recipient Wallet</span>
+                          <span style={{ fontSize: '9px', fontWeight: 700, color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>Source</span>
                           {!isMobile && (
-                            <span style={{ fontSize: '10px', fontWeight: 600, color: '#8b5cf6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'right' }}>Received</span>
+                            <>
+                              <span style={{ fontSize: '9px', fontWeight: 700, color: '#8b5cf6', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'right' }}>Allocated</span>
+                              <span style={{ fontSize: '9px', fontWeight: 700, color: '#22c55e', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'right' }}>Bought</span>
+                              <span style={{ fontSize: '9px', fontWeight: 700, color: '#ef4444', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'right' }}>Sold</span>
+                            </>
                           )}
-                          {!isMobile && (
-                            <span style={{ fontSize: '10px', fontWeight: 600, color: '#22c55e', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'right' }}>Bought</span>
-                          )}
-                          {!isMobile && (
-                            <span style={{ fontSize: '10px', fontWeight: 600, color: '#ef4444', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'right' }}>Sold</span>
-                          )}
-                          <span style={{ fontSize: '10px', fontWeight: 600, color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.35)', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'right' }}>Profit</span>
+                          <span style={{ fontSize: '9px', fontWeight: 700, color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'right' }}>Realized PnL</span>
                         </div>
-                        {/* Table Rows */}
+                        {/* Enhanced Table Rows */}
                         {(() => {
                           const linkedColors = ['#f97316', '#ec4899', '#8b5cf6', '#14b8a6', '#eab308', '#06b6d4'];
                           const addressColorMap = {};
@@ -2544,174 +2544,120 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                             const actionColors = { sold: '#ef4444', holding: '#22c55e', transferred: '#f59e0b' };
                             const actionColor = actionColors[r.action] || '#8b5cf6';
                             const fromAddr = r.from || '';
-                            const isDirect = r.relation === 'direct';
+                            const isDirect = r.relation === 'direct' || fromAddr === creator;
                             const linkedColor = addressColorMap[r.address];
                             return (
                               <div
                                 key={r.address}
                                 style={{
                                   display: 'grid',
-                                  gridTemplateColumns: isMobile ? 'minmax(0,1fr) 70px 80px' : 'minmax(0,1fr) 65px 90px 95px 95px 95px',
-                                  padding: isMobile ? '6px 16px' : '5px 16px',
+                                  gridTemplateColumns: isMobile ? 'minmax(0,1fr) 60px 80px' : 'minmax(0,1fr) 70px 100px 100px 100px 100px',
+                                  padding: isMobile ? '8px 16px' : '6px 16px',
                                   alignItems: 'center',
                                   borderBottom: idx < arr.length - 1 ? `1px solid ${isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)'}` : 'none',
                                   background: isIndirect
-                                    ? (isDark ? 'rgba(245,158,11,0.03)' : 'rgba(245,158,11,0.02)')
+                                    ? (isDark ? 'rgba(245,158,11,0.04)' : 'rgba(245,158,11,0.02)')
                                     : 'transparent',
                                   transition: 'background 0.1s ease'
                                 }}
-                                onMouseEnter={(e) => { if (!isIndirect) e.currentTarget.style.background = isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.01)'; }}
-                                onMouseLeave={(e) => { if (!isIndirect) e.currentTarget.style.background = 'transparent'; }}
                               >
                                 {/* Wallet cell */}
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: 0 }}>
-                                  {linkedColor && (
-                                    <span style={{
-                                      width: '3px',
-                                      height: '20px',
-                                      borderRadius: '2px',
-                                      background: linkedColor,
-                                      flexShrink: 0
-                                    }} />
-                                  )}
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
+                                  <div style={{ position: 'relative', flexShrink: 0 }}>
+                                    <div style={{ 
+                                      width: '24px', 
+                                      height: '24px', 
+                                      borderRadius: '6px', 
+                                      background: linkedColor ? `${linkedColor}15` : (isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)'),
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                      border: `1px solid ${linkedColor ? `${linkedColor}30` : 'transparent'}`
+                                    }}>
+                                      <span style={{ fontSize: '10px', color: linkedColor || (isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'), fontWeight: 700 }}>{idx + 1}</span>
+                                    </div>
+                                    {linkedColor && <div style={{ position: 'absolute', top: '-2px', right: '-2px', width: '8px', height: '8px', borderRadius: '50%', background: linkedColor, border: `2px solid ${isDark ? '#0a0a0a' : '#fff'}` }} />}
+                                  </div>
                                   <div style={{ minWidth: 0, flex: 1 }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '2px' }}>
                                       <Link
                                         href={`/address/${r.address}`}
                                         target="_blank"
                                         style={{
                                           fontFamily: 'var(--font-mono)',
                                           fontSize: '11px',
-                                          color: linkedColor || (isDark ? 'rgba(255,255,255,0.75)' : 'rgba(0,0,0,0.65)'),
-                                          textDecoration: 'none',
-                                          overflow: 'hidden',
-                                          textOverflow: 'ellipsis',
-                                          whiteSpace: 'nowrap'
+                                          fontWeight: 600,
+                                          color: isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.85)',
+                                          textDecoration: 'none'
                                         }}
                                       >
                                         {isMobile ? r.address.slice(0, 8) : r.address.slice(0, 12)}
                                       </Link>
                                       {r.address === creator && (
-                                        <span style={{
-                                          fontSize: '8px',
-                                          padding: '1px 5px',
-                                          borderRadius: '4px',
-                                          background: 'rgba(139,92,246,0.12)',
-                                          color: '#8b5cf6',
-                                          fontWeight: 600,
-                                          textTransform: 'uppercase',
-                                          flexShrink: 0,
-                                          lineHeight: '14px'
-                                        }}>
-                                          Creator
-                                        </span>
+                                        <span style={{ fontSize: '8px', padding: '1px 4px', borderRadius: '4px', background: 'rgba(139,92,246,0.15)', color: '#8b5cf6', fontWeight: 700, textTransform: 'uppercase' }}>DEV</span>
                                       )}
+                                      {r.exchangeDeposits > 0 && (
+                                        <ArrowUpRight size={10} color="#f59e0b" strokeWidth={3} />
+                                      )}
+                                    </div>
+                                    <div style={{ display: 'flex', gap: '6px' }}>
                                       {r.action && (
-                                        <span style={{
-                                          fontSize: '8px',
-                                          padding: '1px 5px',
-                                          borderRadius: '4px',
-                                          background: `${actionColor}12`,
-                                          color: actionColor,
-                                          fontWeight: 600,
-                                          textTransform: 'uppercase',
-                                          flexShrink: 0,
-                                          lineHeight: '14px'
-                                        }}>
+                                        <span style={{ fontSize: '8px', color: actionColor, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.02em' }}>
                                           {actionLabels[r.action] || r.action}
                                         </span>
                                       )}
-                                      {r.exchangeDeposits > 0 && (
-                                        <span style={{
-                                          fontSize: '8px',
-                                          padding: '1px 5px',
-                                          borderRadius: '4px',
-                                          background: 'rgba(245,158,11,0.1)',
-                                          color: '#f59e0b',
-                                          fontWeight: 600,
-                                          flexShrink: 0,
-                                          lineHeight: '14px'
-                                        }}>
-                                          CEX
+                                      {isMobile && (
+                                        <span style={{ fontSize: '8px', color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.4)', fontFamily: 'var(--font-mono)' }}>
+                                          Rec: {fNumber(r.received)}
                                         </span>
                                       )}
                                     </div>
-                                    {/* Mobile: show received + buy/sell inline */}
-                                    {isMobile && (r.received > 0 || r.boughtXrp > 0 || r.soldXrp > 0) && (
-                                      <div style={{ display: 'flex', gap: '8px', marginTop: '2px' }}>
-                                        {r.received > 0 && (
-                                          <span style={{ fontSize: '9px', color: '#8b5cf6', fontFamily: 'var(--font-mono)' }}>
-                                            {fNumber(r.received)} {name}
-                                          </span>
-                                        )}
-                                        {r.boughtXrp > 0 && (
-                                          <span style={{ fontSize: '9px', color: '#22c55e', fontFamily: 'var(--font-mono)' }}>
-                                            +{fNumber(r.boughtXrp)} XRP
-                                          </span>
-                                        )}
-                                        {r.soldXrp > 0 && (
-                                          <span style={{ fontSize: '9px', color: '#ef4444', fontFamily: 'var(--font-mono)' }}>
-                                            -{fNumber(r.soldXrp)} XRP
-                                          </span>
-                                        )}
-                                      </div>
-                                    )}
                                   </div>
                                 </div>
                                 {/* Source */}
-                                <span style={{
-                                  fontSize: '10px',
-                                  textAlign: 'center',
-                                  fontWeight: 500,
-                                  color: isDirect ? '#8b5cf6' : '#f59e0b',
-                                  fontFamily: isDirect ? 'inherit' : 'var(--font-mono)'
-                                }}>
-                                  {isDirect ? 'Creator' : fromAddr === creator ? 'Creator' : fromAddr ? fromAddr.slice(0, 6) + '..' : '—'}
-                                </span>
-                                {/* Received (desktop) */}
+                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                  {isDirect ? (
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+                                      <div style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#8b5cf6' }} />
+                                      <span style={{ fontSize: '9px', fontWeight: 700, color: '#8b5cf6', textTransform: 'uppercase' }}>Direct</span>
+                                    </div>
+                                  ) : (
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+                                      <ArrowLeftRight size={10} color="#f59e0b" />
+                                      <span style={{ fontSize: '9px', fontWeight: 600, color: '#f59e0b', fontFamily: 'var(--font-mono)' }}>{fromAddr.slice(0, 4)}</span>
+                                    </div>
+                                  )}
+                                </div>
+                                {/* Allocated (desktop) */}
                                 {!isMobile && (
-                                  <span style={{
-                                    fontSize: '11px',
-                                    color: '#8b5cf6',
-                                    fontWeight: 500,
-                                    textAlign: 'right',
-                                    fontFamily: 'var(--font-mono)'
-                                  }}>
-                                    {r.received > 0 ? `${fNumber(r.received)} ${name}` : '—'}
+                                  <span style={{ fontSize: '11px', color: '#8b5cf6', fontWeight: 600, textAlign: 'right', fontFamily: 'var(--font-mono)' }}>
+                                    {r.received > 0 ? fNumber(r.received) : '—'}
                                   </span>
                                 )}
                                 {/* Bought (desktop) */}
                                 {!isMobile && (
-                                  <span style={{
-                                    fontSize: '11px',
-                                    textAlign: 'right',
-                                    fontFamily: 'var(--font-mono)',
-                                    color: r.boughtXrp > 0 ? '#22c55e' : (isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.12)')
-                                  }}>
-                                    {r.boughtXrp > 0 ? `${fNumber(r.boughtXrp)} XRP` : '—'}
+                                  <span style={{ fontSize: '11px', textAlign: 'right', fontFamily: 'var(--font-mono)', color: r.boughtXrp > 0 ? '#22c55e' : (isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)') }}>
+                                    {r.boughtXrp > 0 ? fNumber(r.boughtXrp) : '—'}
                                   </span>
                                 )}
                                 {/* Sold (desktop) */}
                                 {!isMobile && (
-                                  <span style={{
-                                    fontSize: '11px',
-                                    textAlign: 'right',
-                                    fontFamily: 'var(--font-mono)',
-                                    color: r.soldXrp > 0 ? '#ef4444' : (isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.12)')
-                                  }}>
-                                    {r.soldXrp > 0 ? `${fNumber(r.soldXrp)} XRP` : '—'}
+                                  <span style={{ fontSize: '11px', textAlign: 'right', fontFamily: 'var(--font-mono)', color: r.soldXrp > 0 ? '#ef4444' : (isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)') }}>
+                                    {r.soldXrp > 0 ? fNumber(r.soldXrp) : '—'}
                                   </span>
                                 )}
-                                {/* Net */}
-                                <span style={{
-                                  fontSize: '11px',
-                                  color: netPnl > 0 ? '#22c55e' : netPnl < 0 ? '#ef4444' : (isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.12)'),
-                                  fontWeight: netPnl !== 0 ? 600 : 400,
-                                  textAlign: 'right',
-                                  fontFamily: 'var(--font-mono)'
-                                }}>
-                                  {netPnl !== 0 ? `${netPnl > 0 ? '+' : '-'}${fNumber(Math.abs(netPnl))} XRP` : '—'}
-                                </span>
+                                {/* Realized PnL */}
+                                <div style={{ textAlign: 'right' }}>
+                                  <span style={{
+                                    fontSize: '11px',
+                                    color: netPnl > 0 ? '#22c55e' : netPnl < 0 ? '#ef4444' : (isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'),
+                                    fontWeight: 700,
+                                    fontFamily: 'var(--font-mono)'
+                                  }}>
+                                    {netPnl !== 0 ? `${netPnl > 0 ? '+' : '-'}${fNumber(Math.abs(netPnl))}` : '0'}
+                                  </span>
+                                  <div style={{ fontSize: '8px', color: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.25)', textTransform: 'uppercase', fontWeight: 600 }}>XRP</div>
+                                </div>
                               </div>
                             );
                           });
@@ -2809,21 +2755,22 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                           >
                             {typeof col.name === 'object' ? col.name?.collection_name || '' : col.name || ''}
                           </Typography>
-                          {(col.verified === true || col.verified >= 1 || col.verified === 'yes') && (
-                            <span
-                              style={{
-                                padding: '1px 5px',
-                                borderRadius: '3px',
-                                fontSize: '8px',
-                                fontWeight: 500,
-                                background: isDark ? 'rgba(34,197,94,0.1)' : 'rgba(240,253,244,1)',
-                                color: isDark ? '#4ade80' : '#16a34a',
-                                flexShrink: 0
-                              }}
-                            >
-                              Verified
-                            </span>
-                          )}
+                          {(() => {
+                            const v = col.verified === true || col.verified === 'yes' ? 4 : col.verified;
+                            if (!v || v < 1 || v > 4) return null;
+                            const colors = {
+                              1: { bg: isDark ? 'rgba(59,130,246,0.1)' : 'rgba(239,246,255,1)', fg: isDark ? '#60a5fa' : '#2563eb' },
+                              2: { bg: isDark ? 'rgba(168,85,247,0.1)' : 'rgba(250,245,255,1)', fg: isDark ? '#c084fc' : '#9333ea' },
+                              3: { bg: isDark ? 'rgba(245,158,11,0.1)' : 'rgba(255,251,235,1)', fg: isDark ? '#fbbf24' : '#d97706' },
+                              4: { bg: isDark ? 'rgba(34,197,94,0.1)' : 'rgba(240,253,244,1)', fg: isDark ? '#4ade80' : '#16a34a' },
+                            };
+                            const labels = { 1: 'Official', 2: 'Premium', 3: 'Standard', 4: 'Verified' };
+                            return (
+                              <span style={{ padding: '1px 5px', borderRadius: '3px', fontSize: '8px', fontWeight: 500, background: colors[v].bg, color: colors[v].fg, flexShrink: 0 }}>
+                                {labels[v]}
+                              </span>
+                            );
+                          })()}
                         </Stack>
                         <Typography
                           style={{

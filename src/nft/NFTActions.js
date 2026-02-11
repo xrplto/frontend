@@ -8,7 +8,6 @@ import { FacebookShareButton, TwitterShareButton, FacebookIcon } from '../compon
 import {
   ChevronDown,
   Share2,
-  BadgeCheck,
   BarChart3,
   MessageSquare,
   Check,
