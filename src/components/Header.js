@@ -2493,6 +2493,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   />
                   {/* Dropdown trigger - opens modal */}
                   <button
+                    aria-label="Wallet options"
                     onClick={() => setOpenWalletModal(true)}
                     className={cn(
                       'flex items-center justify-center px-1.5 h-full transition-all duration-200',
@@ -2510,6 +2511,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                 </div>
               ) : (
                 <button
+                  aria-label="Connect wallet"
                   onClick={() => setOpenWalletModal(true)}
                   className={cn(
                     'flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-[12px] font-medium transition-all duration-200 border',
