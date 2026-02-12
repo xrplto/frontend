@@ -1,5 +1,6 @@
 import { Check, AlertTriangle, X } from 'lucide-react';
 import { PuffLoader } from './Spinners';
+import { cn } from 'src/utils/cn';
 
 /**
  * Transaction Preview Modal - shared between Swap and NFT actions
@@ -24,129 +25,30 @@ export default function TxPreviewModal({
 }) {
   if (!simulating && !preview) return null;
 
-  const overlayStyle = {
-    position: 'fixed',
-    inset: 0,
-    zIndex: 9999,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    background: 'rgba(0,0,0,0.92)',
-    backdropFilter: 'blur(4px)'
-  };
-
-  const modalStyle = {
-    width: '100%',
-    maxWidth: '340px',
-    margin: '0 16px',
-    padding: '20px',
-    borderRadius: '16px',
-    background: isDark ? '#000' : '#fff',
-    border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`
-  };
-
-  const headerStyle = {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: '16px'
-  };
-
-  const closeButtonStyle = {
-    padding: '6px',
-    borderRadius: '8px',
-    border: 'none',
-    background: 'transparent',
-    cursor: 'pointer',
-    color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'
-  };
-
   const iconContainerStyle = (color) => ({
-    width: '48px',
-    height: '48px',
-    borderRadius: '12px',
-    background: `${color}15`,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    margin: '0 auto 16px'
-  });
-
-  const titleStyle = {
-    textAlign: 'center',
-    fontSize: '16px',
-    fontWeight: 600,
-    color: isDark ? '#fff' : '#111',
-    marginBottom: '6px'
-  };
-
-  const descStyle = {
-    textAlign: 'center',
-    fontSize: '13px',
-    color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)',
-    marginBottom: '16px'
-  };
-
-  const errorBoxStyle = {
-    padding: '12px',
-    borderRadius: '10px',
-    marginBottom: '16px',
-    background: 'rgba(239,68,68,0.08)'
-  };
-
-  const warningBoxStyle = {
-    padding: '12px',
-    borderRadius: '10px',
-    marginBottom: '16px',
-    background: 'rgba(245,158,11,0.08)'
-  };
-
-  const buttonRowStyle = {
-    display: 'flex',
-    gap: '10px'
-  };
-
-  const cancelButtonStyle = {
-    flex: 1,
-    padding: '12px',
-    borderRadius: '10px',
-    border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
-    background: 'transparent',
-    color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)',
-    fontSize: '13px',
-    fontWeight: 500,
-    cursor: 'pointer'
-  };
-
-  const confirmButtonStyle = (color, disabled) => ({
-    flex: 1,
-    padding: '12px',
-    borderRadius: '10px',
-    border: 'none',
-    background: disabled ? (isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)') : color,
-    color: disabled ? (isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)') : '#fff',
-    fontSize: '13px',
-    fontWeight: 600,
-    cursor: disabled ? 'not-allowed' : 'pointer'
+    background: `${color}15`
   });
 
   return (
-    <div style={overlayStyle}>
-      <div style={modalStyle}>
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-[rgba(0,0,0,0.92)] backdrop-blur-[4px]">
+      <div className={cn(
+        'w-full max-w-[340px] mx-4 p-5 rounded-2xl border',
+        isDark ? 'bg-black border-white/[0.08]' : 'bg-white border-black/[0.08]'
+      )}>
         {/* Header */}
-        <div style={headerStyle}>
-          <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)' }}>
+        <div className="flex items-center justify-between mb-4">
+          <span className={cn('text-[11px]', isDark ? 'text-white/30' : 'text-black/30')}>
             Preview · No funds sent yet
           </span>
-          <button style={closeButtonStyle} onClick={onClose}>
+          <button className={cn('p-1.5 rounded-lg border-none bg-transparent cursor-pointer', isDark ? 'text-white/40' : 'text-black/40')} onClick={onClose}>
             <X size={16} />
           </button>
         </div>
 
         {simulating ? (
-          <div style={{ padding: '32px 0', textAlign: 'center' }}>
+          <div className="py-8 text-center">
             <PuffLoader size={40} color="#3b82f6" />
-            <p style={{ marginTop: '12px', fontSize: '13px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
+            <p className={cn('mt-3 text-[13px]', isDark ? 'text-white/50' : 'text-black/50')}>
               Simulating transaction...
             </p>
           </div>
@@ -154,37 +56,37 @@ export default function TxPreviewModal({
           <>
             {/* Status Icon */}
             {preview.status === 'success' && (
-              <div style={iconContainerStyle('#22c55e')}>
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-4" style={iconContainerStyle('#22c55e')}>
                 <Check size={24} color="#22c55e" />
               </div>
             )}
             {preview.status === 'warning' && (
-              <div style={iconContainerStyle('#f59e0b')}>
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-4" style={iconContainerStyle('#f59e0b')}>
                 <AlertTriangle size={24} color="#f59e0b" />
               </div>
             )}
             {preview.status === 'error' && (
-              <div style={iconContainerStyle('#ef4444')}>
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-4" style={iconContainerStyle('#ef4444')}>
                 <AlertTriangle size={24} color="#ef4444" />
               </div>
             )}
 
             {/* Title */}
-            <h3 style={titleStyle}>{preview.title}</h3>
+            <h3 className={cn('text-center text-base font-semibold mb-1.5', isDark ? 'text-white' : 'text-[#111]')}>{preview.title}</h3>
 
             {/* Description */}
-            {preview.description && <p style={descStyle}>{preview.description}</p>}
+            {preview.description && <p className={cn('text-center text-[13px] mb-4', isDark ? 'text-white/50' : 'text-black/50')}>{preview.description}</p>}
 
             {/* Error Box */}
             {preview.status === 'error' && preview.error && (
-              <div style={errorBoxStyle}>
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
-                  <AlertTriangle size={16} color="#ef4444" style={{ marginTop: '2px', flexShrink: 0 }} />
+              <div className="p-3 rounded-[10px] mb-4 bg-red-500/[0.08]">
+                <div className="flex items-start gap-2">
+                  <AlertTriangle size={16} color="#ef4444" className="mt-0.5 shrink-0" />
                   <div>
-                    <p style={{ fontSize: '12px', fontWeight: 600, color: '#ef4444', marginBottom: '2px' }}>
+                    <p className="text-xs font-semibold text-red-500 mb-0.5">
                       {preview.engineResult}
                     </p>
-                    <p style={{ fontSize: '11px', color: 'rgba(239,68,68,0.8)' }}>{preview.error}</p>
+                    <p className="text-[11px] text-red-500/80">{preview.error}</p>
                   </div>
                 </div>
               </div>
@@ -192,10 +94,10 @@ export default function TxPreviewModal({
 
             {/* Warning Box */}
             {preview.status === 'warning' && preview.warning && (
-              <div style={warningBoxStyle}>
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
-                  <AlertTriangle size={16} color="#f59e0b" style={{ marginTop: '2px', flexShrink: 0 }} />
-                  <p style={{ fontSize: '12px', color: '#f59e0b' }}>{preview.warning}</p>
+              <div className="p-3 rounded-[10px] mb-4 bg-amber-500/[0.08]">
+                <div className="flex items-start gap-2">
+                  <AlertTriangle size={16} color="#f59e0b" className="mt-0.5 shrink-0" />
+                  <p className="text-xs text-amber-500">{preview.warning}</p>
                 </div>
               </div>
             )}
@@ -204,15 +106,15 @@ export default function TxPreviewModal({
             {children}
 
             {/* Buttons */}
-            <div style={buttonRowStyle}>
-              <button style={cancelButtonStyle} onClick={onClose}>Cancel</button>
+            <div className="flex gap-[10px]">
+              <button className={cn('flex-1 p-3 rounded-[10px] border bg-transparent text-[13px] font-medium cursor-pointer', isDark ? 'border-white/10 text-white/60' : 'border-black/10 text-black/60')} onClick={onClose}>Cancel</button>
               {preview.status !== 'error' && onConfirm && (
-                <button style={confirmButtonStyle(confirmColor, false)} onClick={onConfirm}>
+                <button className="flex-1 p-3 rounded-[10px] border-none text-[13px] font-semibold cursor-pointer text-white" style={{ background: confirmColor }} onClick={onConfirm}>
                   {confirmLabel}
                 </button>
               )}
               {preview.status === 'error' && (
-                <button style={confirmButtonStyle('#666', true)} disabled>
+                <button className={cn('flex-1 p-3 rounded-[10px] border-none text-[13px] font-semibold cursor-not-allowed', isDark ? 'bg-white/5 text-white/30' : 'bg-black/5 text-black/30')} disabled>
                   Cannot Execute
                 </button>
               )}

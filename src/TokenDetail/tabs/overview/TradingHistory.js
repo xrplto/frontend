@@ -1,4 +1,4 @@
-import { apiFetch } from 'src/utils/api';
+import api, { apiFetch, submitTransaction, simulateTransaction } from 'src/utils/api';
 import React, {
   useState,
   useEffect,
@@ -11,17 +11,18 @@ import React, {
 } from 'react';
 import { createPortal } from 'react-dom';
 import { MD5 } from 'crypto-js';
-import styled from '@emotion/styled';
-import api from 'src/utils/api';
 import { useSelector } from 'react-redux';
+import { toast } from 'sonner';
+import { configureMemos } from 'src/utils/parseUtils';
 import TopTraders from 'src/TokenDetail/tabs/holders/TopTraders';
 import RichList from 'src/TokenDetail/tabs/holders/RichList';
-import { AppContext } from 'src/context/AppContext';
+import { WalletContext, AppContext } from 'src/context/AppContext';
 import { selectMetrics } from 'src/redux/statusSlice';
 import {
   ExternalLink,
   X,
   Plus,
+  Minus,
   Loader2,
   Activity,
   Droplets,
@@ -38,50 +39,46 @@ import {
   TrendingUp,
   TrendingDown,
   ArrowUpDown,
-  Filter
+  Filter,
+  CheckCircle,
+  AlertTriangle,
+  Search
 } from 'lucide-react';
 import { cn } from 'src/utils/cn';
 
 const SYMBOLS = { USD: '$', EUR: '€', JPY: '¥', CNH: '¥', XRP: '✕' };
 
-const Spinner = styled(Loader2)`
-  animation: spin 1s linear infinite;
-  @keyframes spin {
-    to {
-      transform: rotate(360deg);
-    }
-  }
-`;
+const Spinner = ({ className, ...p }) => <Loader2 className={cn('animate-spin', className)} {...p} />;
 
 const BearEmptyState = ({ isDark, title, subtitle }) => (
-  <div style={{ border: isDark ? '1.5px dashed rgba(255,255,255,0.1)' : '1.5px dashed rgba(0,0,0,0.1)', borderRadius: 12, background: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)' }}>
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
-      <div style={{ position: 'relative', width: 48, height: 48, marginBottom: 12 }}>
-        <div style={{ position: 'absolute', top: -3, left: 0, width: 16, height: 16, borderRadius: '50%', background: isDark ? 'rgba(255,255,255,0.15)' : '#d1d5db' }}>
-          <div style={{ position: 'absolute', top: 3, left: 3, width: 10, height: 10, borderRadius: '50%', background: isDark ? 'rgba(255,255,255,0.1)' : '#e5e7eb' }} />
+  <div className={cn('rounded-[12px]', isDark ? 'border-[1.5px] border-dashed border-white/10 bg-white/[0.02]' : 'border-[1.5px] border-dashed border-black/10 bg-black/[0.02]')}>
+    <div className="flex flex-col items-center justify-center p-6">
+      <div className="relative w-[48px] h-[48px] mb-3">
+        <div className={cn('absolute -top-[3px] left-0 w-[16px] h-[16px] rounded-full', isDark ? 'bg-white/15' : 'bg-[#d1d5db]')}>
+          <div className={cn('absolute top-[3px] left-[3px] w-[10px] h-[10px] rounded-full', isDark ? 'bg-white/10' : 'bg-[#e5e7eb]')} />
         </div>
-        <div style={{ position: 'absolute', top: -3, right: 0, width: 16, height: 16, borderRadius: '50%', background: isDark ? 'rgba(255,255,255,0.15)' : '#d1d5db' }}>
-          <div style={{ position: 'absolute', top: 3, right: 3, width: 10, height: 10, borderRadius: '50%', background: isDark ? 'rgba(255,255,255,0.1)' : '#e5e7eb' }} />
+        <div className={cn('absolute -top-[3px] right-0 w-[16px] h-[16px] rounded-full', isDark ? 'bg-white/15' : 'bg-[#d1d5db]')}>
+          <div className={cn('absolute top-[3px] right-[3px] w-[10px] h-[10px] rounded-full', isDark ? 'bg-white/10' : 'bg-[#e5e7eb]')} />
         </div>
-        <div style={{ position: 'absolute', top: 6, left: '50%', transform: 'translateX(-50%)', width: 40, height: 36, borderRadius: '50%', background: isDark ? 'rgba(255,255,255,0.15)' : '#d1d5db', overflow: 'hidden' }}>
+        <div className={cn('absolute top-[6px] left-1/2 -translate-x-1/2 w-[40px] h-[36px] rounded-full overflow-hidden', isDark ? 'bg-white/15' : 'bg-[#d1d5db]')}>
           {[0, 1, 2, 3, 4].map(i => (
-            <div key={i} style={{ height: 2, width: '100%', background: isDark ? 'rgba(255,255,255,0.15)' : '#e5e7eb', marginTop: i * 2.5 + 2 }} />
+            <div key={i} className={cn('h-[2px] w-full', isDark ? 'bg-white/15' : 'bg-[#e5e7eb]')} style={{ marginTop: i * 2.5 + 2 }} />
           ))}
-          <div style={{ position: 'absolute', top: 10, left: 6, width: 10, height: 10 }}>
-            <div style={{ position: 'absolute', width: 8, height: 2, background: isDark ? 'rgba(255,255,255,0.4)' : '#6b7280', transform: 'rotate(45deg)', top: 4 }} />
-            <div style={{ position: 'absolute', width: 8, height: 2, background: isDark ? 'rgba(255,255,255,0.4)' : '#6b7280', transform: 'rotate(-45deg)', top: 4 }} />
+          <div className="absolute top-[10px] left-[6px] w-[10px] h-[10px]">
+            <div className={cn('absolute w-[8px] h-[2px] rotate-45 top-[4px]', isDark ? 'bg-white/40' : 'bg-[#6b7280]')} />
+            <div className={cn('absolute w-[8px] h-[2px] -rotate-45 top-[4px]', isDark ? 'bg-white/40' : 'bg-[#6b7280]')} />
           </div>
-          <div style={{ position: 'absolute', top: 10, right: 6, width: 10, height: 10 }}>
-            <div style={{ position: 'absolute', width: 8, height: 2, background: isDark ? 'rgba(255,255,255,0.4)' : '#6b7280', transform: 'rotate(45deg)', top: 4 }} />
-            <div style={{ position: 'absolute', width: 8, height: 2, background: isDark ? 'rgba(255,255,255,0.4)' : '#6b7280', transform: 'rotate(-45deg)', top: 4 }} />
+          <div className="absolute top-[10px] right-[6px] w-[10px] h-[10px]">
+            <div className={cn('absolute w-[8px] h-[2px] rotate-45 top-[4px]', isDark ? 'bg-white/40' : 'bg-[#6b7280]')} />
+            <div className={cn('absolute w-[8px] h-[2px] -rotate-45 top-[4px]', isDark ? 'bg-white/40' : 'bg-[#6b7280]')} />
           </div>
-          <div style={{ position: 'absolute', bottom: 5, left: '50%', transform: 'translateX(-50%)', width: 18, height: 12, borderRadius: '50%', background: isDark ? 'rgba(255,255,255,0.1)' : '#e5e7eb' }}>
-            <div style={{ position: 'absolute', top: 2, left: '50%', transform: 'translateX(-50%)', width: 8, height: 6, borderRadius: '50%', background: isDark ? 'rgba(255,255,255,0.25)' : '#9ca3af' }} />
+          <div className={cn('absolute bottom-[5px] left-1/2 -translate-x-1/2 w-[18px] h-[12px] rounded-full', isDark ? 'bg-white/10' : 'bg-[#e5e7eb]')}>
+            <div className={cn('absolute top-[2px] left-1/2 -translate-x-1/2 w-[8px] h-[6px] rounded-full', isDark ? 'bg-white/25' : 'bg-[#9ca3af]')} />
           </div>
         </div>
       </div>
-      <span style={{ fontSize: 11, fontWeight: 500, letterSpacing: '0.05em', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', textTransform: 'uppercase', marginBottom: 4 }}>{title}</span>
-      <span style={{ fontSize: 10, color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)' }}>{subtitle}</span>
+      <span className={cn('text-[11px] font-medium tracking-[0.05em] uppercase mb-1', isDark ? 'text-white/50' : 'text-black/50')}>{title}</span>
+      <span className={cn('text-[10px]', isDark ? 'text-white/30' : 'text-black/30')}>{subtitle}</span>
     </div>
   </div>
 );
@@ -115,7 +112,7 @@ const MiniSparkline = memo(
     const areaD = `${pathD} L ${width},${height} L 0,${height} Z`;
 
     return (
-      <svg width={width} height={height} style={{ display: 'block' }}>
+      <svg width={width} height={height} className="block">
         <defs>
           <linearGradient id={`sparkGrad-${isUp ? 'up' : 'down'}`} x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor={trendColor} stopOpacity="0.3" />
@@ -577,16 +574,10 @@ const TierIcon = ({ xrpValue, isDark }) => {
   const IconComponent = tier.Icon;
   return (
     <span
-      style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        width: '28px',
-        height: '18px',
-        borderRadius: '4px',
-        border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'}`,
-        background: isDark ? 'rgba(255,255,255,0.025)' : 'rgba(0,0,0,0.015)'
-      }}
+      className={cn(
+        'inline-flex items-center justify-center w-[28px] h-[18px] rounded-[4px] border',
+        isDark ? 'border-white/[0.08] bg-white/[0.025]' : 'border-black/[0.06] bg-black/[0.015]'
+      )}
     >
       <IconComponent color={tier.color} />
     </span>
@@ -596,45 +587,21 @@ const TierIcon = ({ xrpValue, isDark }) => {
 // Tier tooltip component
 const TierHelpIcon = ({ isDark }) => (
   <span
-    style={{ position: 'relative', display: 'inline-flex', marginLeft: '4px', cursor: 'help' }}
-    className="tier-help"
+    className={cn('relative inline-flex ml-1 cursor-help', 'tier-help')}
   >
     <span
-      style={{
-        fontSize: '9px',
-        width: '12px',
-        height: '12px',
-        borderRadius: '50%',
-        border: `1px solid ${isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'}`,
-        display: 'inline-flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'
-      }}
+      className={cn(
+        'text-[9px] w-[12px] h-[12px] rounded-full border inline-flex items-center justify-center',
+        isDark ? 'border-white/30 text-white/40' : 'border-black/30 text-black/40'
+      )}
     >
       ?
     </span>
     <span
-      className="tier-tooltip"
-      style={{
-        position: 'absolute',
-        bottom: '18px',
-        left: '50%',
-        transform: 'translateX(-50%)',
-        background: isDark ? '#1a1a1a' : '#fff',
-        border: `1px solid ${isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)'}`,
-        borderRadius: '6px',
-        padding: '8px 10px',
-        fontSize: '10px',
-        whiteSpace: 'nowrap',
-        opacity: 0,
-        visibility: 'hidden',
-        transition: 'opacity 0.15s, visibility 0.15s',
-        zIndex: 100,
-        boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-        lineHeight: 1.5,
-        color: isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.8)'
-      }}
+      className={cn(
+        'tier-tooltip absolute bottom-[18px] left-1/2 -translate-x-1/2 rounded-[6px] py-2 px-[10px] text-[10px] whitespace-nowrap opacity-0 invisible transition-[opacity,visibility] duration-150 z-[100] shadow-[0_2px_8px_rgba(0,0,0,0.15)] leading-[1.5] border',
+        isDark ? 'bg-[#1a1a1a] border-white/15 text-white/80' : 'bg-white border-black/10 text-black/80'
+      )}
     >
       &lt;100 · 100-500 · 500-2K
       <br />
@@ -660,272 +627,162 @@ const highlightAnimation = (isDark) => `
 `;
 
 // Styled components with improved design
-const LiveIndicator = styled.div`
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 3px 8px;
-  border-radius: 20px;
-  background: ${(props) => (props.isDark ? 'rgba(34,197,94,0.08)' : 'rgba(34,197,94,0.05)')};
-  border: 1px solid ${(props) => (props.isDark ? 'rgba(34,197,94,0.15)' : 'rgba(34,197,94,0.1)')};
-`;
+const LiveIndicator = ({ isDark, className, children, ...p }) => (
+  <div
+    className={cn('inline-flex items-center gap-[5px] py-[3px] px-2 rounded-[20px] border', isDark ? 'bg-green-500/[0.08] border-green-500/[0.15]' : 'bg-green-500/[0.05] border-green-500/10', className)}
+    {...p}
+  >{children}</div>
+);
 
-const LiveCircle = styled.div`
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #22c55e;
-  box-shadow: 0 0 8px rgba(34, 197, 94, 0.4);
-  animation: pulse-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-  @keyframes pulse-glow {
-    0%, 100% {
-      opacity: 0.6;
-      transform: scale(0.95);
-      box-shadow: 0 0 4px rgba(34, 197, 94, 0.2);
-    }
-    50% {
-      opacity: 1;
-      transform: scale(1.05);
-      box-shadow: 0 0 12px rgba(34, 197, 94, 0.6);
-    }
-  }
-`;
+const LiveCircle = ({ className, ...p }) => (
+  <div
+    className={cn('w-[6px] h-[6px] rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.4)] animate-pulse', className)}
+    {...p}
+  />
+);
 
-const Card = styled.div`
-  background: transparent;
-  border-bottom: 1px solid
-    ${(props) => (props.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)')};
-  position: relative;
-  animation: ${(props) => (props.isNew ? 'highlight 0.8s ease-out' : 'none')};
-  transition: all 0.2s ease;
-  &:last-child {
-    border-bottom: none;
-  }
-  &:hover {
-    background: ${(props) => (props.isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)')};
-  }
-  ${(props) => props.isNew && highlightAnimation(props.isDark)}
-  @media (max-width: 640px) {
-    padding: 0 12px;
-  }
-`;
+const Card = ({ isDark, isNew, className, children, ...p }) => (
+  <div
+    className={cn(
+      'bg-transparent border-b relative transition-all duration-200 last:border-b-0',
+      'max-sm:px-3',
+      isDark ? 'border-white/[0.05] hover:bg-white/[0.03]' : 'border-black/[0.04] hover:bg-black/[0.02]',
+      className
+    )}
+    style={isNew ? { animation: 'highlight 0.8s ease-out' } : undefined}
+    {...p}
+  >
+    {isNew && <style>{highlightAnimation(isDark)}</style>}
+    {children}
+  </div>
+);
 
-const CardContent = styled.div`
-  padding: 8px 0;
-  @media (max-width: 640px) {
-    padding: 12px 0;
-  }
-`;
+const CardContent = ({ className, children, ...p }) => (
+  <div className={cn('py-2 max-sm:py-3', className)} {...p}>{children}</div>
+);
 
-const TradeTypeChip = styled.div`
-  font-size: 11px;
-  font-weight: 500;
-  color: ${(props) => (props.tradetype === 'BUY' ? '#22c55e' : '#ef4444')};
-  width: 36px;
-  @media (max-width: 640px) {
-    font-size: 12px;
-    font-weight: 500;
-    width: 40px;
-  }
-`;
+const TradeTypeChip = ({ tradetype, className, children, ...p }) => (
+  <div
+    className={cn('text-[11px] font-medium w-9 max-sm:text-xs max-sm:w-10', tradetype === 'BUY' ? 'text-green-500' : 'text-red-500', className)}
+    {...p}
+  >{children}</div>
+);
 
-const VolumeIndicator = styled.div`
-  position: absolute;
-  left: 0;
-  top: 0;
-  height: 100%;
-  width: ${(props) => props.volume}%;
-  background: ${(props) => (props.isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)')};
-  transition: width 0.2s;
-`;
+const VolumeIndicator = ({ volume, isDark, className, ...p }) => (
+  <div
+    className={cn('absolute left-0 top-0 h-full transition-[width] duration-200', isDark ? 'bg-white/[0.04]' : 'bg-black/[0.03]', className)}
+    style={{ width: `${volume}%` }}
+    {...p}
+  />
+);
 
 // Bar cell for showing colored bars behind values
-const BarCell = styled.div`
-  position: relative;
-  display: flex;
-  align-items: center;
-  height: 28px;
-  padding: 0 10px;
-  border-radius: 6px;
-  overflow: hidden;
-  &::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 50%;
-    transform: translateY(-50%);
-    height: 80%;
-    width: ${(props) => Math.min(100, Math.max(8, props.barWidth || 0))}%;
-    background: ${(props) =>
-    props.isCreate
-      ? props.isDark
-        ? 'linear-gradient(90deg, rgba(20, 184, 166, 0.15) 0%, rgba(20, 184, 166, 0.05) 100%)'
-        : 'linear-gradient(90deg, rgba(20, 184, 166, 0.10) 0%, rgba(20, 184, 166, 0.03) 100%)'
-      : props.isLP
-        ? props.isDark
-          ? 'linear-gradient(90deg, rgba(139, 92, 246, 0.15) 0%, rgba(139, 92, 246, 0.05) 100%)'
-          : 'linear-gradient(90deg, rgba(139, 92, 246, 0.10) 0%, rgba(139, 92, 246, 0.03) 100%)'
-        : props.isBuy
-          ? props.isDark
-            ? 'linear-gradient(90deg, rgba(34, 197, 94, 0.18) 0%, rgba(34, 197, 94, 0.05) 100%)'
-            : 'linear-gradient(90deg, rgba(34, 197, 94, 0.12) 0%, rgba(34, 197, 94, 0.03) 100%)'
-          : props.isDark
-            ? 'linear-gradient(90deg, rgba(239, 68, 68, 0.18) 0%, rgba(239, 68, 68, 0.05) 100%)'
-            : 'linear-gradient(90deg, rgba(239, 68, 68, 0.12) 0%, rgba(239, 68, 68, 0.03) 100%)'};
-    border-radius: 2px;
-    border-left: 3px solid
-      ${(props) =>
-    props.isCreate
-      ? 'rgba(20, 184, 166, 0.6)'
-      : props.isLP
-        ? 'rgba(139, 92, 246, 0.6)'
-        : props.isBuy
-          ? props.isDark
-            ? '#22c55e'
-            : '#16a34a'
-          : props.isDark
-            ? '#ef4444'
-            : '#dc2626'};
-    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-  & > span {
-    position: relative;
-    z-index: 1;
-    font-weight: 500;
-  }
-`;
+const BarCell = ({ barWidth, isCreate, isLP, isBuy, isDark, className, children, ...p }) => {
+  const w = Math.min(100, Math.max(8, barWidth || 0));
+  const bg = isCreate
+    ? (isDark ? 'linear-gradient(90deg, rgba(20,184,166,0.15) 0%, rgba(20,184,166,0.05) 100%)' : 'linear-gradient(90deg, rgba(20,184,166,0.10) 0%, rgba(20,184,166,0.03) 100%)')
+    : isLP
+      ? (isDark ? 'linear-gradient(90deg, rgba(139,92,246,0.15) 0%, rgba(139,92,246,0.05) 100%)' : 'linear-gradient(90deg, rgba(139,92,246,0.10) 0%, rgba(139,92,246,0.03) 100%)')
+      : isBuy
+        ? (isDark ? 'linear-gradient(90deg, rgba(34,197,94,0.18) 0%, rgba(34,197,94,0.05) 100%)' : 'linear-gradient(90deg, rgba(34,197,94,0.12) 0%, rgba(34,197,94,0.03) 100%)')
+        : (isDark ? 'linear-gradient(90deg, rgba(239,68,68,0.18) 0%, rgba(239,68,68,0.05) 100%)' : 'linear-gradient(90deg, rgba(239,68,68,0.12) 0%, rgba(239,68,68,0.03) 100%)');
+  const borderLeftColor = isCreate ? 'rgba(20,184,166,0.6)' : isLP ? 'rgba(139,92,246,0.6)' : isBuy ? (isDark ? '#22c55e' : '#16a34a') : (isDark ? '#ef4444' : '#dc2626');
+  return (
+    <div className={cn('relative flex items-center h-7 px-[10px] rounded-[6px] overflow-hidden [&>span]:relative [&>span]:z-[1] [&>span]:font-medium', className)} {...p}>
+      <div
+        className="absolute left-0 top-1/2 -translate-y-1/2 h-[80%] rounded-sm"
+        style={{ width: `${w}%`, background: bg, borderLeft: `3px solid ${borderLeftColor}`, transition: 'width 0.4s cubic-bezier(0.4,0,0.2,1)' }}
+      />
+      {children}
+    </div>
+  );
+};
 
-const RefreshIcon = styled.button`
-  background: transparent;
-  border: none;
-  padding: 4px;
-  cursor: pointer;
-  color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)')};
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: color 0.15s;
-  &:hover {
-    color: #3b82f6;
-  }
-`;
+const RefreshIcon = ({ isDark, className, children, ...p }) => (
+  <button
+    className={cn('bg-transparent border-none p-1 cursor-pointer flex items-center justify-center transition-[color] duration-150 hover:text-blue-500', isDark ? 'text-white/40' : 'text-black/40', className)}
+    {...p}
+  >{children}</button>
+);
 
-const Pagination = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1px;
-`;
+const Pagination = ({ className, children, ...p }) => (
+  <div className={cn('flex items-center justify-center gap-px', className)} {...p}>{children}</div>
+);
 
-const PaginationButton = styled.button`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.45)')};
-  background: ${(props) => (props.isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)')};
-  border: 1px solid ${(props) => (props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)')};
-  border-radius: 8px;
-  padding: 6px;
-  cursor: pointer;
-  transition: all 0.2s;
-  &:hover:not(:disabled) {
-    background: ${(props) => (props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)')};
-    color: #3b82f6;
-    border-color: rgba(59, 130, 246, 0.4);
-  }
-  &:disabled {
-    opacity: 0.25;
-    cursor: default;
-  }
-`;
+const PaginationButton = ({ isDark, className, children, ...p }) => (
+  <button
+    className={cn(
+      'flex items-center justify-center rounded-lg p-[6px] cursor-pointer border transition-all duration-200',
+      'hover:enabled:text-blue-500 hover:enabled:border-blue-500/40',
+      'disabled:opacity-25 disabled:cursor-default',
+      isDark ? 'text-white/45 bg-white/[0.03] border-white/[0.08] hover:enabled:bg-white/[0.08]' : 'text-black/45 bg-black/[0.03] border-black/[0.08] hover:enabled:bg-black/[0.06]',
+      className
+    )}
+    {...p}
+  >{children}</button>
+);
 
-const PageInfo = styled.span`
-  font-size: 11px;
-  color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)')};
-  padding: 0 6px;
-  white-space: nowrap;
-`;
+const PageInfo = ({ isDark, className, children, ...p }) => (
+  <span className={cn('text-[11px] px-[6px] whitespace-nowrap', isDark ? 'text-white/50' : 'text-black/50', className)} {...p}>{children}</span>
+);
 
-const Table = styled.table`
-  width: 100%;
-  border-collapse: collapse;
-  color: ${(props) => (props.isDark ? '#FFFFFF' : '#212B36')};
-`;
+const Table = ({ isDark, className, children, ...p }) => (
+  <table className={cn('w-full border-collapse', isDark ? 'text-white' : 'text-[#212B36]', className)} {...p}>{children}</table>
+);
 
-const TableHeader = styled.div`
-  display: flex;
-  padding: 8px 0;
-  border-bottom: 1px solid
-    ${(props) => (props.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)')};
-  & > div {
-    font-size: 9px;
-    font-weight: 400;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.4)')};
-  }
-`;
+const TableHeader = ({ isDark, className, children, ...p }) => (
+  <div
+    className={cn(
+      'flex py-2 border-b',
+      isDark ? 'border-white/[0.06] [&>div]:text-white/[0.35]' : 'border-black/[0.06] [&>div]:text-black/40',
+      '[&>div]:text-[9px] [&>div]:font-normal [&>div]:uppercase [&>div]:tracking-[0.04em]',
+      className
+    )}
+    {...p}
+  >{children}</div>
+);
 
-const TableHead = styled.thead``;
-const TableBody = styled.tbody``;
-const TableRow = styled.tr`
-  &:hover {
-    background-color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.015)')};
-  }
-  border-bottom: 1px solid
-    ${(props) => (props.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)')};
-`;
+const TableHead = ({ className, children, ...p }) => <thead className={className} {...p}>{children}</thead>;
+const TableBody = ({ className, children, ...p }) => <tbody className={className} {...p}>{children}</tbody>;
 
-const TableCell = styled.td`
-  padding: 12px;
-  font-size: ${(props) => (props.size === 'small' ? '13px' : '14px')};
-  text-align: ${(props) => props.align || 'left'};
-  font-weight: ${(props) => props.fontWeight || 400};
-  opacity: ${(props) => props.opacity || 1};
-  text-transform: ${(props) => props.textTransform || 'none'};
-`;
+const TableRow = ({ isDark, className, children, ...p }) => (
+  <tr
+    className={cn('border-b', isDark ? 'hover:bg-white/[0.02] border-white/[0.05]' : 'hover:bg-black/[0.015] border-black/[0.05]', className)}
+    {...p}
+  >{children}</tr>
+);
 
-const TableContainer = styled.div`
-  border-radius: 12px;
-  border: 1.5px solid ${(props) => (props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)')};
-  overflow: auto;
-  background: transparent;
-`;
+const TableCell = ({ size, align, fontWeight, opacity, textTransform, className, children, ...p }) => (
+  <td
+    className={cn('p-3', className)}
+    style={{ fontSize: size === 'small' ? '13px' : '14px', textAlign: align || 'left', fontWeight: fontWeight || 400, opacity: opacity || 1, textTransform: textTransform || 'none' }}
+    {...p}
+  >{children}</td>
+);
 
-const Link = styled.a`
-  text-decoration: none;
-  color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)')};
-  font-size: 11px;
-  &:hover {
-    color: #3b82f6;
-  }
-`;
+const TableContainer = ({ isDark, className, children, ...p }) => (
+  <div
+    className={cn('rounded-xl border-[1.5px] overflow-auto bg-transparent', isDark ? 'border-white/10' : 'border-black/[0.06]', className)}
+    {...p}
+  >{children}</div>
+);
+
+const Link = ({ isDark, className, children, ...p }) => (
+  <a className={cn('no-underline text-[11px] hover:text-blue-500', isDark ? 'text-white/50' : 'text-black/50', className)} {...p}>{children}</a>
+);
 
 const Tooltip = ({ title, children, arrow }) => {
   const [show, setShow] = useState(false);
   return (
     <div
-      style={{ position: 'relative', display: 'inline-block' }}
+      className="relative inline-block"
       onMouseEnter={() => setShow(true)}
       onMouseLeave={() => setShow(false)}
     >
       {children}
       {show && (
         <div
-          style={{
-            position: 'absolute',
-            bottom: '100%',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            padding: '4px 8px',
-            background: 'rgba(0,0,0,0.9)',
-            color: '#fff',
-            borderRadius: '4px',
-            fontSize: '12px',
-            whiteSpace: 'pre-line',
-            zIndex: 1000,
-            marginBottom: '4px'
-          }}
+          className="absolute bottom-full left-1/2 -translate-x-1/2 py-1 px-2 bg-black/90 text-white rounded-[4px] text-[12px] whitespace-pre-line z-[1000] mb-1"
         >
           {title}
         </div>
@@ -934,192 +791,99 @@ const Tooltip = ({ title, children, arrow }) => {
   );
 };
 
-const IconButton = styled.button`
-  padding: 4px;
-  background: transparent;
-  border: none;
-  border-radius: 8px;
-  color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)')};
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  transition: color 0.15s;
-  &:hover {
-    color: #3b82f6;
-  }
-`;
+const IconButton = ({ isDark, className, children, ...p }) => (
+  <button
+    className={cn('p-1 bg-transparent border-none rounded-lg cursor-pointer inline-flex items-center justify-center transition-[color] duration-150 hover:text-blue-500', isDark ? 'text-white/40' : 'text-black/40', className)}
+    {...p}
+  >{children}</button>
+);
 
-const FormControlLabel = styled.label`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  font-weight: 400;
-  color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.9)')};
-  cursor: pointer;
-`;
+const FormControlLabel = ({ isDark, className, children, ...p }) => (
+  <label
+    className={cn('flex items-center gap-2 text-[13px] font-normal cursor-pointer', isDark ? 'text-white/90' : 'text-black/90', className)}
+    {...p}
+  >{children}</label>
+);
 
-const Tabs = styled.div`
-  display: flex;
-  gap: 8px;
-  margin-bottom: 12px;
-  @media (max-width: 640px) {
-    width: 100%;
-    gap: 6px;
-  }
-`;
+const Tabs = ({ className, children, ...p }) => (
+  <div className={cn('flex gap-2 mb-3 max-sm:w-full max-sm:gap-[6px]', className)} {...p}>{children}</div>
+);
 
-const Tab = styled.button`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  font-size: 12px;
-  font-weight: 500;
-  letter-spacing: 0.05em;
-  padding: 10px 16px;
-  background: transparent;
-  border: 1px solid
-    ${(props) =>
-    props.selected
-      ? props.isDark
-        ? 'rgba(255,255,255,0.2)'
-        : 'rgba(0,0,0,0.2)'
-      : props.isDark
-        ? 'rgba(255,255,255,0.1)'
-        : 'rgba(0,0,0,0.1)'};
-  border-radius: 6px;
-  color: ${(props) =>
-    props.selected
-      ? props.isDark
-        ? '#fff'
-        : '#1a1a1a'
-      : props.isDark
-        ? 'rgba(255,255,255,0.4)'
-        : 'rgba(0,0,0,0.4)'};
-  cursor: pointer;
-  transition: all 0.15s ease;
-  white-space: nowrap;
-  flex-shrink: 0;
-  text-transform: uppercase;
-  &:hover:not(:disabled) {
-    border-color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)')};
-    color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)')};
-  }
-  @media (max-width: 640px) {
-    flex: 1;
-    padding: 8px 4px;
-    font-size: 10px;
-    gap: 3px;
-    & svg {
-      width: 14px;
-      height: 14px;
-    }
-    & > span {
-      display: ${(props) => (props.selected ? 'inline' : 'none')};
-    }
-  }
-`;
+const Tab = ({ selected, isDark, className, children, ...p }) => (
+  <button
+    className={cn(
+      'inline-flex items-center justify-center gap-2 text-xs font-medium tracking-[0.05em] py-[10px] px-4 bg-transparent border rounded-[6px] cursor-pointer transition-all duration-150 whitespace-nowrap shrink-0 uppercase',
+      'max-sm:flex-1 max-sm:py-2 max-sm:px-1 max-sm:text-[10px] max-sm:gap-[3px] max-sm:[&_svg]:w-[14px] max-sm:[&_svg]:h-[14px]',
+      selected
+        ? isDark ? 'border-white/20 text-white' : 'border-black/20 text-[#1a1a1a]'
+        : isDark ? 'border-white/10 text-white/40' : 'border-black/10 text-black/40',
+      !selected && (isDark ? 'hover:enabled:border-white/[0.15] hover:enabled:text-white/70' : 'hover:enabled:border-black/[0.15] hover:enabled:text-black/60'),
+      !selected && 'max-sm:[&>span]:hidden',
+      className
+    )}
+    {...p}
+  >{children}</button>
+);
 
-const Button = styled.button`
-  padding: ${(props) => (props.size === 'small' ? '4px 10px' : '6px 12px')};
-  font-size: 11px;
-  font-weight: 400;
-  border-radius: 6px;
-  border: 1px solid ${(props) => (props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)')};
-  background: transparent;
-  color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)')};
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  transition: all 0.15s ease;
-  &:hover {
-    border-color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.25)')};
-    color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.8)')};
-  }
-`;
+const Button = ({ size, isDark, className, children, ...p }) => (
+  <button
+    className={cn(
+      'text-[11px] font-normal rounded-[6px] border bg-transparent cursor-pointer inline-flex items-center gap-1 transition-all duration-150',
+      isDark ? 'border-white/10 text-white/60 hover:border-white/25 hover:text-white/90' : 'border-black/[0.08] text-black/60 hover:border-black/25 hover:text-black/80',
+      className
+    )}
+    style={{ padding: size === 'small' ? '4px 10px' : '6px 12px' }}
+    {...p}
+  >{children}</button>
+);
 
-const Dialog = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(4px);
-  display: ${(props) => (props.open ? 'flex' : 'none')};
-  align-items: center;
-  justify-content: center;
-  z-index: 99999;
-  padding: 16px;
-  box-sizing: border-box;
-`;
+const Dialog = ({ open, className, children, ...p }) => (
+  <div
+    className={cn('fixed inset-0 w-screen h-screen bg-black/40 backdrop-blur-[4px] items-center justify-center z-[99999] p-4 box-border', open ? 'flex' : 'hidden', className)}
+    {...p}
+  >{children}</div>
+);
 
-const DialogPaper = styled.div`
-  background: ${(props) => (props.isDark ? '#0a0f16' : '#ffffff')};
-  border: 1px solid ${(props) => (props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)')};
-  border-radius: 12px;
-  max-width: 420px;
-  width: 100%;
-  max-height: calc(100vh - 32px);
-  overflow: auto;
-`;
+const DialogPaper = ({ isDark, className, children, ...p }) => (
+  <div
+    className={cn('border rounded-[14px] max-w-[420px] w-[90%] max-h-[calc(100vh-32px)] overflow-auto mx-auto', isDark ? 'bg-[#0a0a0a] border-white/10' : 'bg-white border-black/10', className)}
+    {...p}
+  >{children}</div>
+);
 
-const DialogTitle = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px 20px;
-  font-size: 15px;
-  font-weight: 500;
-  color: ${(props) => (props.isDark ? '#fff' : '#1a1a1a')};
-`;
+const DialogTitle = ({ isDark, className, children, ...p }) => (
+  <div
+    className={cn('flex justify-between items-center py-4 px-5 text-[15px] font-semibold border-b', isDark ? 'text-white border-white/[0.06]' : 'text-[#1a1a1a] border-black/[0.06]', className)}
+    {...p}
+  >{children}</div>
+);
 
-const DialogContent = styled.div`
-  padding: 0 20px 20px;
-  color: ${(props) => (props.isDark ? '#fff' : '#1a1a1a')};
-`;
+const DialogContent = ({ isDark, className, children, ...p }) => (
+  <div className={cn('pt-4 px-5 pb-5', isDark ? 'text-white' : 'text-[#1a1a1a]', className)} {...p}>{children}</div>
+);
 
-const TextField = styled.input`
-  width: 100%;
-  padding: 10px 12px;
-  font-size: 13px;
-  border: 1px solid ${(props) => (props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)')};
-  border-radius: 8px;
-  background: ${(props) => (props.isDark ? 'rgba(255,255,255,0.025)' : 'rgba(0,0,0,0.02)')};
-  color: ${(props) => (props.isDark ? '#fff' : '#1a1a1a')};
-  transition: border-color 0.15s ease;
-  &:focus {
-    outline: none;
-    border-color: rgba(255, 255, 255, 0.25);
-  }
-  &::placeholder {
-    color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.35)')};
-  }
-`;
+const TextField = ({ isDark, className, ...p }) => (
+  <input
+    className={cn(
+      'w-full py-3 px-[14px] text-sm border-[1.5px] rounded-[10px] box-border transition-[border-color] duration-150 focus:outline-none focus:border-blue-500',
+      isDark ? 'border-white/10 bg-white/[0.04] text-white placeholder:text-white/25' : 'border-black/10 bg-black/[0.02] text-[#1a1a1a] placeholder:text-black/[0.35]',
+      className
+    )}
+    {...p}
+  />
+);
 
-const FormControl = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-`;
+const FormControl = ({ className, children, ...p }) => (
+  <div className={cn('flex flex-col gap-[6px]', className)} {...p}>{children}</div>
+);
 
-const RadioGroup = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-`;
+const RadioGroup = ({ className, children, ...p }) => (
+  <div className={cn('flex flex-col gap-[6px]', className)} {...p}>{children}</div>
+);
 
-const Radio = styled.input`
-  width: 14px;
-  height: 14px;
-  cursor: pointer;
-  accent-color: #3b82f6;
-`;
+const Radio = ({ className, ...p }) => (
+  <input className={cn('w-[14px] h-[14px] cursor-pointer accent-blue-500', className)} {...p} />
+);
 
 // Helper functions
 const formatRelativeTime = (timestamp, includeAgo = false) => {
@@ -1200,7 +964,7 @@ const formatPrice = (value) => {
   if (f?.compact)
     return (
       <>
-        0.0<sub style={{ fontSize: '0.6em' }}>{f.zeros}</sub>
+        0.0<sub className="text-[0.6em]">{f.zeros}</sub>
         {f.significant}
       </>
     );
@@ -1212,7 +976,7 @@ const formatTradeDisplay = (value) => {
   if (f?.compact)
     return (
       <>
-        0.0<sub style={{ fontSize: '0.6em' }}>{f.zeros}</sub>
+        0.0<sub className="text-[0.6em]">{f.zeros}</sub>
         {f.significant}
       </>
     );
@@ -1244,9 +1008,57 @@ const parseValue = (value) => {
   return parseFloat(value);
 };
 
+const SubTab = ({ selected, isDark, className, children, ...p }) => (
+  <button
+    className={cn(
+      'text-[11px] font-semibold py-2 px-4 border-none cursor-pointer uppercase tracking-[0.05em] rounded-lg transition-all duration-200',
+      'max-sm:py-[6px] max-sm:px-[10px] max-sm:text-[10px] max-sm:flex-1',
+      selected
+        ? isDark ? 'bg-white/[0.08] text-white' : 'bg-black/[0.05] text-[#1a1a1a]'
+        : isDark ? 'bg-transparent text-white/40' : 'bg-transparent text-black/50',
+      isDark ? 'hover:bg-white/[0.04] hover:text-white/80' : 'hover:bg-black/[0.03] hover:text-black/70',
+      className
+    )}
+    {...p}
+  >{children}</button>
+);
+
+const StatGrid = ({ isDark, className, children, ...p }) => (
+  <div
+    className={cn('grid grid-cols-2 gap-px border rounded-xl overflow-hidden', isDark ? 'bg-white/[0.06] border-white/[0.06]' : 'bg-black/[0.06] border-black/[0.06]', className)}
+    {...p}
+  >{children}</div>
+);
+
+const StatItem = ({ isDark, className, children, ...p }) => (
+  <div className={cn('py-3 px-4 flex flex-col gap-1', isDark ? 'bg-[#0d0d0d]' : 'bg-white', className)} {...p}>{children}</div>
+);
+
+const Label = ({ isDark, className, children, ...p }) => (
+  <span className={cn('text-[10px] font-medium uppercase tracking-[0.05em]', isDark ? 'text-white/40' : 'text-black/40', className)} {...p}>{children}</span>
+);
+
+const Value = ({ isDark, className, children, ...p }) => (
+  <div className={cn('text-[15px] font-semibold flex items-baseline gap-1', isDark ? 'text-white' : 'text-[#1a1a1a]', className)} {...p}>{children}</div>
+);
+
+const OfferCard = ({ isDark, className, children, ...p }) => (
+  <div
+    className={cn('border rounded-xl p-3 transition-all duration-200', isDark ? 'bg-white/[0.02] border-white/[0.06] hover:border-white/[0.12] hover:bg-white/[0.03]' : 'bg-black/[0.01] border-black/[0.06] hover:border-black/[0.12] hover:bg-black/[0.02]', className)}
+    {...p}
+  >{children}</div>
+);
+
+const CancelButton = ({ isDark, className, children, ...p }) => (
+  <button
+    className={cn('text-[10px] font-semibold py-[6px] px-3 bg-transparent border rounded-[6px] text-red-500 cursor-pointer uppercase tracking-[0.02em] transition-all duration-200 hover:bg-red-500/[0.08] hover:border-red-500', isDark ? 'border-red-500/20' : 'border-red-500/30', className)}
+    {...p}
+  >{children}</button>
+);
+
 // My Activity Tab Component - Shows user's trading history and open offers
-const MyActivityTab = ({ token, isDark, isMobile, onTransactionClick }) => {
-  const { accountProfile } = useContext(AppContext);
+const MyActivityTab = memo(({ token, isDark, isMobile, onTransactionClick }) => {
+  const { accountProfile } = useContext(WalletContext);
   const [activeSubTab, setActiveSubTab] = useState('assets'); // 'assets', 'history', or 'offers'
   const [loading, setLoading] = useState(false);
   const [openOffers, setOpenOffers] = useState([]);
@@ -1278,7 +1090,6 @@ const MyActivityTab = ({ token, isDark, isMobile, onTransactionClick }) => {
         limit: offersLimit.toString()
       });
       const offersUrl = `https://api.xrpl.to/api/account/offers/${account}?${params}`;
-      console.log('[TradingHistory] Fetching offers:', offersUrl);
       const res = await api.get(offersUrl);
       if (res.data?.success) {
         setOpenOffers(res.data.offers || []);
@@ -1305,7 +1116,6 @@ const MyActivityTab = ({ token, isDark, isMobile, onTransactionClick }) => {
     setAssetsLoading(true);
     try {
       const statsUrl = `https://api.xrpl.to/api/account/token-stats/${account}/${token.md5}`;
-      console.log('[TradingHistory] Fetching token stats:', statsUrl);
       const res = await api.get(statsUrl);
       const stats = res.data;
       if (stats) {
@@ -1359,10 +1169,9 @@ const MyActivityTab = ({ token, isDark, isMobile, onTransactionClick }) => {
     try {
       let url = `https://api.xrpl.to/api/history?account=${account}&md5=${token.md5}&limit=20`;
       if (loadMore && tradesCursor) url += `&cursor=${tradesCursor}`;
-      console.log('[TradingHistory] Fetching my trades:', url);
       const res = await api.get(url);
-      const trades = res.data?.hists || res.data?.trades || [];
-      const nextCursor = res.data?.nextCursor || null;
+      const trades = res.data?.data || res.data?.hists || res.data?.trades || [];
+      const nextCursor = res.data?.meta?.nextCursor || res.data?.nextCursor || null;
 
       if (loadMore) {
         setMyTrades(prev => [...prev, ...trades]);
@@ -1391,99 +1200,103 @@ const MyActivityTab = ({ token, isDark, isMobile, onTransactionClick }) => {
     }
   }, [activeSubTab, tradesInitialized]);
 
-  const handleCancelOffer = (offerId) => {
-    // TODO: Implement offer cancellation
+  const [cancellingOffer, setCancellingOffer] = useState(null);
+
+  const handleCancelOffer = async (offerSequence) => {
+    const account = accountProfile?.account || accountProfile?.address;
+    if (!account) { toast.error('Wallet not connected'); return; }
+
+    setCancellingOffer(offerSequence);
+    const toastId = toast.loading('Cancelling offer...');
+
+    try {
+      const { Wallet: XRPLWallet } = await import('xrpl');
+      const { EncryptedWalletStorage, deviceFingerprint } = await import('src/utils/encryptedWalletStorage');
+
+      const walletStorage = new EncryptedWalletStorage();
+      let seed = null;
+
+      if (accountProfile.wallet_type === 'oauth' || accountProfile.wallet_type === 'social') {
+        const walletId = `${accountProfile.provider}_${accountProfile.provider_id}`;
+        const storedPassword = await walletStorage.getSecureItem(`wallet_pwd_${walletId}`);
+        if (storedPassword) {
+          const walletData = await walletStorage.getWallet(account, storedPassword);
+          seed = walletData?.seed;
+        }
+      } else if (accountProfile.wallet_type === 'device') {
+        const deviceKeyId = await deviceFingerprint.getDeviceId();
+        if (deviceKeyId) {
+          const storedPassword = await walletStorage.getWalletCredential(deviceKeyId);
+          if (storedPassword) {
+            const walletData = await walletStorage.getWallet(account, storedPassword);
+            seed = walletData?.seed;
+          }
+        }
+      }
+
+      if (!seed) {
+        toast.error('Could not retrieve wallet credentials', { id: toastId });
+        setCancellingOffer(null);
+        return;
+      }
+
+      const algorithm = seed.startsWith('sEd') ? 'ed25519' : 'secp256k1';
+      const deviceWallet = XRPLWallet.fromSeed(seed, { algorithm });
+
+      const tx = {
+        TransactionType: 'OfferCancel',
+        Account: account,
+        OfferSequence: offerSequence,
+        SourceTag: 161803
+      };
+
+      const result = await submitTransaction(deviceWallet, tx);
+      if (!result.success) { toast.error('Failed to cancel offer', { id: toastId }); return; }
+
+      toast.loading('Waiting for confirmation...', { id: toastId });
+      let validated = false;
+      for (let i = 0; i < 15; i++) {
+        await new Promise(r => setTimeout(r, 500));
+        try {
+          const txRes = await api.get(`https://api.xrpl.to/v1/tx/${result.hash}`);
+          if (txRes.data?.validated) { validated = true; break; }
+        } catch (e) { /* continue */ }
+      }
+
+      if (validated) {
+        toast.success('Offer cancelled', { id: toastId, duration: 3000 });
+      } else {
+        toast.success('Offer submitted', { id: toastId, description: 'Validation pending...' });
+      }
+      setOpenOffers(prev => prev.filter(o => o.seq !== offerSequence));
+      setOffersTotal(prev => Math.max(0, prev - 1));
+    } catch (err) {
+      console.error('[TradingHistory] Cancel offer error:', err);
+      toast.error(err.message || 'Failed to cancel offer', { id: toastId });
+    } finally {
+      setCancellingOffer(null);
+    }
   };
-
-  const SubTab = styled.button`
-    font-size: 12px;
-    font-weight: 500;
-    padding: 10px 16px;
-    background: ${(props) =>
-      props.selected
-        ? props.isDark
-          ? 'rgba(255,255,255,0.05)'
-          : 'rgba(0,0,0,0.04)'
-        : 'transparent'};
-    border: none;
-    border-right: 1px solid
-      ${(props) => (props.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)')};
-    color: ${(props) =>
-      props.selected
-        ? props.isDark
-          ? 'rgba(255,255,255,0.9)'
-          : 'rgba(0,0,0,0.8)'
-        : props.isDark
-          ? 'rgba(255,255,255,0.5)'
-          : 'rgba(0,0,0,0.5)'};
-    cursor: pointer;
-    transition: all 0.15s;
-    text-transform: uppercase;
-    letter-spacing: 0.02em;
-    &:last-child {
-      border-right: none;
-    }
-    &:hover {
-      background: ${(props) => (props.isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)')};
-      color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.7)')};
-    }
-    @media (max-width: 640px) {
-      padding: 8px 12px;
-      font-size: 11px;
-    }
-  `;
-
-  const OfferCard = styled.div`
-    background: ${(props) => (props.isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)')};
-    border: 1.5px solid ${(props) => (props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)')};
-    border-radius: 12px;
-    padding: 14px;
-    &:hover {
-      border-color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)')};
-    }
-  `;
-
-  const CancelButton = styled.button`
-    font-size: 11px;
-    font-weight: 500;
-    padding: 6px 12px;
-    background: transparent;
-    border: 1.5px solid ${(props) => (props.isDark ? 'rgba(239,68,68,0.3)' : 'rgba(239,68,68,0.4)')};
-    border-radius: 8px;
-    color: #ef4444;
-    cursor: pointer;
-    transition: all 0.15s;
-    &:hover {
-      background: rgba(239, 68, 68, 0.1);
-      border-color: #ef4444;
-    }
-  `;
 
   const tokenCurrency = token ? (token.currency ? decodeCurrency(token.currency) : token.name || 'MPT') : 'TOKEN';
 
   // Empty state when not connected
   const notConnectedState = (
     <div
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: '10px',
-        padding: '24px',
-        borderRadius: '10px',
-        border: `1.5px dashed ${isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)'}`
-      }}
+      className={cn(
+        'flex flex-col items-center justify-center gap-3 py-8 px-6 rounded-[12px] border border-dashed',
+        isDark ? 'border-white/10 bg-white/[0.01]' : 'border-black/10 bg-black/[0.01]'
+      )}
     >
-      <Wallet
-        size={18}
-        strokeWidth={1.5}
-        style={{ color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}
-      />
+      <div className={cn('p-[10px] rounded-full', isDark ? 'bg-white/[0.04]' : 'bg-black/[0.04]')}>
+        <Wallet
+          size={20}
+          strokeWidth={1.5}
+          className={cn(isDark ? 'text-white/40' : 'text-black/40')}
+        />
+      </div>
       <span
-        style={{
-          fontSize: '13px',
-          color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)'
-        }}
+        className={cn('text-[13px] font-medium', isDark ? 'text-white/40' : 'text-black/50')}
       >
         Connect wallet to view activity
       </span>
@@ -1497,19 +1310,10 @@ const MyActivityTab = ({ token, isDark, isMobile, onTransactionClick }) => {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+    <div className="flex flex-col gap-4">
       {/* Sub-tabs */}
       <div
-        style={{
-          display: 'inline-flex',
-          gap: '0',
-          padding: '0',
-          background: 'transparent',
-          border: `1.5px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
-          borderRadius: '12px',
-          marginBottom: '4px',
-          overflow: 'hidden'
-        }}
+        className={cn('flex gap-1 p-1 rounded-[12px] w-fit', isDark ? 'bg-white/[0.03]' : 'bg-black/[0.03]')}
       >
         <SubTab
           selected={activeSubTab === 'assets'}
@@ -1523,168 +1327,133 @@ const MyActivityTab = ({ token, isDark, isMobile, onTransactionClick }) => {
           onClick={() => setActiveSubTab('history')}
           isDark={isDark}
         >
-          My Trades
+          History
         </SubTab>
         <SubTab
           selected={activeSubTab === 'offers'}
           onClick={() => setActiveSubTab('offers')}
           isDark={isDark}
         >
-          Open Offers ({offersTotal})
+          Offers {offersTotal > 0 && `(${offersTotal})`}
         </SubTab>
       </div>
 
       {/* Assets */}
       {activeSubTab === 'assets' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        <div className="flex flex-col gap-3">
           {assetsLoading ? (
-            <div style={{ textAlign: 'center', padding: '24px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
-              <Spinner size={20} style={{ marginBottom: '8px' }} />
-              <div style={{ fontSize: '12px' }}>Loading assets...</div>
+            <div className={cn('text-center p-8', isDark ? 'text-white/50' : 'text-black/50')}>
+              <Spinner size={24} className="mb-3 opacity-50" />
+              <div className="text-[12px] font-medium tracking-[0.02em]">Fetching assets...</div>
             </div>
           ) : !tokenAssets ? (
-            <div style={{ textAlign: 'center', padding: '24px', border: `1.5px dashed ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`, borderRadius: '10px' }}>
-              <span style={{ fontSize: '12px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>No position in this token</span>
+            <div className={cn('text-center p-8 rounded-[12px] border border-dashed', isDark ? 'border-white/10 bg-white/[0.01]' : 'border-black/10 bg-black/[0.01]')}>
+              <span className={cn('text-[13px] font-medium', isDark ? 'text-white/40' : 'text-black/40')}>No position in this token</span>
             </div>
           ) : (
             <>
-              {/* Balance Card */}
-              <OfferCard isDark={isDark}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
-                  <div>
-                    <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', display: 'block', marginBottom: '4px' }}>Balance</span>
-                    <span style={{ fontSize: '22px', fontWeight: 600, color: isDark ? '#fff' : '#1a1a1a' }}>
-                      {formatTradeDisplay(tokenAssets.balance)} <span style={{ fontSize: '14px', opacity: 0.5 }}>{tokenCurrency}</span>
-                    </span>
+              {/* Balance & Value */}
+              <StatGrid isDark={isDark}>
+                <StatItem isDark={isDark} className={cn('col-span-2', isDark ? '!bg-white/[0.02]' : '!bg-black/[0.01]')}>
+                  <Label isDark={isDark}>Portfolio Balance</Label>
+                  <div className="flex justify-between items-end">
+                    <div className={cn('text-[24px] font-bold', isDark ? 'text-white' : 'text-[#1a1a1a]')}>
+                      {formatTradeDisplay(tokenAssets.balance)} <span className="text-[14px] font-medium opacity-40">{tokenCurrency}</span>
+                    </div>
+                    <div className={cn('text-[16px] font-semibold mb-1', isDark ? 'text-white/70' : 'text-black/70')}>
+                      ≈ {(tokenAssets.totalValue || 0).toFixed(2)} <span className="text-[11px] font-medium opacity-60">XRP</span>
+                    </div>
                   </div>
-                  <div style={{ textAlign: 'right' }}>
-                    <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', display: 'block', marginBottom: '4px' }}>Value</span>
-                    <span style={{ fontSize: '18px', fontWeight: 500, color: isDark ? '#fff' : '#1a1a1a' }}>
-                      {(tokenAssets.totalValue || 0).toFixed(2)} <span style={{ fontSize: '12px', opacity: 0.5 }}>XRP</span>
-                    </span>
-                  </div>
-                </div>
-              </OfferCard>
-
-              {/* P&L Cards */}
-              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '12px' }}>
-                <OfferCard isDark={isDark}>
-                  <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', display: 'block', marginBottom: '6px' }}>Unrealized P&L</span>
+                </StatItem>
+                
+                <StatItem isDark={isDark}>
+                  <Label isDark={isDark}>Unrealized P&L</Label>
                   {tokenAssets.pnl != null ? (
-                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-                      <span style={{ fontSize: '18px', fontWeight: 600, color: tokenAssets.pnl >= 0 ? '#22c55e' : '#ef4444' }}>
-                        {tokenAssets.pnl >= 0 ? '+' : ''}{tokenAssets.pnl.toFixed(2)} XRP
+                    <div className="flex flex-col">
+                      <span className={cn('text-[16px] font-bold', tokenAssets.pnl >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]')}>
+                        {tokenAssets.pnl >= 0 ? '+' : ''}{tokenAssets.pnl.toFixed(2)} <span className="text-[11px] font-semibold">XRP</span>
                       </span>
-                      <span style={{ fontSize: '12px', fontWeight: 500, color: tokenAssets.pnl >= 0 ? '#22c55e' : '#ef4444' }}>
-                        ({tokenAssets.pnl >= 0 ? '+' : ''}{(tokenAssets.pnlPercent || 0).toFixed(2)}%)
+                      <span className={cn('text-[12px] font-semibold opacity-90', tokenAssets.pnl >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]')}>
+                        {tokenAssets.pnl >= 0 ? '+' : ''}{(tokenAssets.pnlPercent || 0).toFixed(2)}%
                       </span>
                     </div>
                   ) : (
-                    <span style={{ fontSize: '12px', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>No trade history</span>
+                    <span className={cn('text-[14px] font-medium', isDark ? 'text-white/30' : 'text-black/30')}>—</span>
                   )}
-                </OfferCard>
+                </StatItem>
 
-                <OfferCard isDark={isDark}>
-                  <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', display: 'block', marginBottom: '6px' }}>Realized P&L</span>
+                <StatItem isDark={isDark}>
+                  <Label isDark={isDark}>Realized P&L</Label>
                   {tokenAssets.tradeCount > 0 ? (
-                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-                      <span style={{ fontSize: '18px', fontWeight: 600, color: tokenAssets.realizedPnl >= 0 ? '#22c55e' : '#ef4444' }}>
-                        {tokenAssets.realizedPnl >= 0 ? '+' : ''}{tokenAssets.realizedPnl.toFixed(2)} XRP
-                      </span>
-                    </div>
+                    <span className={cn('text-[16px] font-bold', tokenAssets.realizedPnl >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]')}>
+                      {tokenAssets.realizedPnl >= 0 ? '+' : ''}{tokenAssets.realizedPnl.toFixed(2)} <span className="text-[11px] font-semibold">XRP</span>
+                    </span>
                   ) : (
-                    <span style={{ fontSize: '12px', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>—</span>
+                    <span className={cn('text-[14px] font-medium', isDark ? 'text-white/30' : 'text-black/30')}>—</span>
                   )}
-                </OfferCard>
-              </div>
+                </StatItem>
 
-              {/* Avg Buy Price + Total ROI */}
-              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '12px' }}>
-                <OfferCard isDark={isDark}>
-                  <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', display: 'block', marginBottom: '6px' }}>Avg Buy Price</span>
+                <StatItem isDark={isDark}>
+                  <Label isDark={isDark}>Avg Buy Price</Label>
                   {tokenAssets.avgBuyPrice != null ? (
-                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-                      <span style={{ fontSize: '16px', fontWeight: 500, color: isDark ? '#fff' : '#1a1a1a', fontFamily: 'var(--font-mono)' }}>
-                        {formatPrice(tokenAssets.avgBuyPrice)}
-                      </span>
-                      <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>XRP</span>
-                    </div>
+                    <Value isDark={isDark} className="font-mono !text-[14px]">
+                      {formatPrice(tokenAssets.avgBuyPrice)} <span className="text-[10px] opacity-40">XRP</span>
+                    </Value>
                   ) : (
-                    <span style={{ fontSize: '12px', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>—</span>
+                    <span className={cn('text-[14px] font-medium', isDark ? 'text-white/30' : 'text-black/30')}>—</span>
                   )}
-                </OfferCard>
+                </StatItem>
 
-                <OfferCard isDark={isDark}>
-                  <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', display: 'block', marginBottom: '6px' }}>Total ROI</span>
+                <StatItem isDark={isDark}>
+                  <Label isDark={isDark}>Total ROI</Label>
                   {tokenAssets.tradeCount > 0 ? (
-                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-                      <span style={{ fontSize: '18px', fontWeight: 600, color: tokenAssets.totalRoi >= 0 ? '#22c55e' : '#ef4444' }}>
-                        {tokenAssets.totalRoi >= 0 ? '+' : ''}{tokenAssets.totalRoi.toFixed(2)}%
-                      </span>
-                    </div>
+                    <span className={cn('text-[16px] font-bold', tokenAssets.totalRoi >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]')}>
+                      {tokenAssets.totalRoi >= 0 ? '+' : ''}{tokenAssets.totalRoi.toFixed(2)}%
+                    </span>
                   ) : (
-                    <span style={{ fontSize: '12px', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>—</span>
+                    <span className={cn('text-[14px] font-medium', isDark ? 'text-white/30' : 'text-black/30')}>—</span>
                   )}
-                </OfferCard>
-              </div>
+                </StatItem>
+              </StatGrid>
 
               {/* Trade Summary */}
               {tokenAssets.tradeCount > 0 && (
-                <OfferCard isDark={isDark}>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', alignItems: 'center' }}>
-                    <div>
-                      <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', display: 'block', marginBottom: '2px' }}>Trades</span>
-                      <span style={{ fontSize: '14px', fontWeight: 600, color: isDark ? '#fff' : '#1a1a1a' }}>{tokenAssets.tradeCount}</span>
-                    </div>
-                    <div style={{ width: '1px', height: '24px', background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)' }} />
-                    <div>
-                      <span style={{ fontSize: '11px', color: '#22c55e', display: 'block', marginBottom: '2px' }}>Bought</span>
-                      <span style={{ fontSize: '13px', fontWeight: 500, color: isDark ? '#fff' : '#1a1a1a' }}>
-                        {formatTradeDisplay(tokenAssets.totalBought)} <span style={{ opacity: 0.5, fontSize: '11px' }}>{tokenCurrency}</span>
-                      </span>
-                      <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', display: 'block' }}>
-                        {formatTradeDisplay(tokenAssets.totalSpentXRP)} XRP
-                      </span>
-                    </div>
-                    <div style={{ width: '1px', height: '24px', background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)' }} />
-                    <div>
-                      <span style={{ fontSize: '11px', color: '#ef4444', display: 'block', marginBottom: '2px' }}>Sold</span>
-                      <span style={{ fontSize: '13px', fontWeight: 500, color: isDark ? '#fff' : '#1a1a1a' }}>
-                        {formatTradeDisplay(tokenAssets.totalSold)} <span style={{ opacity: 0.5, fontSize: '11px' }}>{tokenCurrency}</span>
-                      </span>
-                      <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', display: 'block' }}>
-                        {formatTradeDisplay(tokenAssets.totalReceivedXRP)} XRP
-                      </span>
-                    </div>
-                    {tokenAssets.firstTradeTime && (
-                      <>
-                        <div style={{ width: '1px', height: '24px', background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)' }} />
-                        <div>
-                          <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', display: 'block', marginBottom: '2px' }}>Trading since</span>
-                          <span style={{ fontSize: '13px', fontWeight: 500, color: isDark ? '#fff' : '#1a1a1a' }}>
-                            {formatRelativeTime(tokenAssets.firstTradeTime)}
-                          </span>
-                        </div>
-                      </>
-                    )}
+                <div className={cn('flex gap-2 p-3 rounded-[12px] border', isDark ? 'bg-white/[0.02] border-white/5' : 'bg-black/[0.02] border-black/5')}>
+                  <div className="flex-1">
+                    <Label isDark={isDark} className="text-[9px] mb-[2px] block">Trades</Label>
+                    <span className="text-[13px] font-semibold">{tokenAssets.tradeCount}</span>
                   </div>
-                </OfferCard>
+                  <div className="flex-[2]">
+                    <Label isDark={isDark} className="text-[9px] mb-[2px] block text-[#22c55e]">Bought</Label>
+                    <div className="text-[11px] font-medium">
+                      {formatTradeDisplay(tokenAssets.totalBought)} {tokenCurrency}
+                      <span className="opacity-40 ml-1">({formatTradeDisplay(tokenAssets.totalSpentXRP)} XRP)</span>
+                    </div>
+                  </div>
+                  <div className="flex-[2]">
+                    <Label isDark={isDark} className="text-[9px] mb-[2px] block text-[#ef4444]">Sold</Label>
+                    <div className="text-[11px] font-medium">
+                      {formatTradeDisplay(tokenAssets.totalSold)} {tokenCurrency}
+                      <span className="opacity-40 ml-1">({formatTradeDisplay(tokenAssets.totalReceivedXRP)} XRP)</span>
+                    </div>
+                  </div>
+                </div>
               )}
 
-              {/* Trustline Info */}
-              <OfferCard isDark={isDark}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: tokenAssets.trustlineSet ? '#22c55e' : '#ef4444' }} />
-                    <span style={{ fontSize: '12px', color: isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.8)' }}>
-                      Trustline {tokenAssets.trustlineSet ? 'Active' : 'Not Set'}
-                    </span>
-                  </div>
-                  <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
-                    Limit: {abbreviateNumber(tokenAssets.limitAmount || 0)}
+              {/* Trustline Status */}
+              <div className={cn('flex justify-between items-center py-[10px] px-4 rounded-[10px] border', isDark ? 'bg-white/[0.02] border-white/5' : 'bg-black/[0.01] border-black/5')}>
+                <div className="flex items-center gap-2">
+                  <div className={cn('w-[6px] h-[6px] rounded-full', tokenAssets.trustlineSet ? 'bg-[#22c55e] shadow-[0_0_8px_rgba(34,197,94,0.4)]' : 'bg-[#ef4444] shadow-[0_0_8px_rgba(239,68,68,0.4)]')} />
+                  <span className={cn('text-[11px] font-semibold uppercase tracking-[0.02em]', isDark ? 'text-white/60' : 'text-black/60')}>
+                    Trustline {tokenAssets.trustlineSet ? 'Enabled' : 'Disabled'}
                   </span>
                 </div>
-              </OfferCard>
+                {tokenAssets.limitAmount > 0 && (
+                  <span className={cn('text-[10px] font-medium', isDark ? 'text-white/30' : 'text-black/40')}>
+                    Limit: {abbreviateNumber(tokenAssets.limitAmount)}
+                  </span>
+                )}
+              </div>
             </>
           )}
         </div>
@@ -1694,28 +1463,26 @@ const MyActivityTab = ({ token, isDark, isMobile, onTransactionClick }) => {
       {activeSubTab === 'history' && (
         <>
           {tradesLoading && myTrades.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '24px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
-              <Spinner size={20} style={{ marginBottom: '8px' }} />
-              <div style={{ fontSize: '12px' }}>Loading trades...</div>
+            <div className={cn('text-center p-8', isDark ? 'text-white/50' : 'text-black/50')}>
+              <Spinner size={24} className="opacity-50" />
             </div>
           ) : myTrades.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '24px', border: `1.5px dashed ${isDark ? 'rgba(59,130,246,0.18)' : 'rgba(0,0,0,0.15)'}`, borderRadius: '10px' }}>
-              <span style={{ fontSize: '12px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>No trades yet for this token</span>
+            <div className={cn('text-center p-8 rounded-[12px] border border-dashed', isDark ? 'border-white/10 bg-white/[0.01]' : 'border-black/10 bg-black/[0.01]')}>
+              <span className={cn('text-[13px] font-medium', isDark ? 'text-white/40' : 'text-black/40')}>No trade history found</span>
             </div>
           ) : (
-            <>
-              {/* Header */}
+            <div className="flex flex-col">
               {!isMobile && (
-                <TableHeader isDark={isDark}>
-                  <div style={{ flex: '0.7' }}>Time</div>
-                  <div style={{ flex: '0.5' }}>Type</div>
-                  <div style={{ flex: '1' }}>Amount</div>
-                  <div style={{ flex: '0.8' }}>Price</div>
-                  <div style={{ flex: '0.8' }}>Total</div>
-                  <div style={{ flex: '0.3' }}></div>
-                </TableHeader>
+                <div className={cn('flex px-3 pb-2 border-b text-[9px] font-semibold uppercase tracking-[0.05em]', isDark ? 'border-white/[0.06] text-white/30' : 'border-black/[0.06] text-black/40')}>
+                  <div className="flex-[0.6]">Time</div>
+                  <div className="flex-[0.4]">Action</div>
+                  <div className="flex-[1.2]">Amount</div>
+                  <div className="flex-1">Price</div>
+                  <div className="flex-[0.8]">Total</div>
+                  <div className="w-6"></div>
+                </div>
               )}
-              <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <div className="flex flex-col">
                 {myTrades.map((trade, idx) => {
                   const isBuy = trade.paid?.currency === 'XRP';
                   const tokenAmount = isBuy ? trade.got : trade.paid;
@@ -1723,74 +1490,72 @@ const MyActivityTab = ({ token, isDark, isMobile, onTransactionClick }) => {
                   const price = parseFloat(xrpAmount?.value) / parseFloat(tokenAmount?.value) || 0;
 
                   return (
-                    <Card key={trade._id || trade.hash || idx} isDark={isDark}>
-                      <CardContent style={{ padding: isMobile ? '10px 0' : '6px 0' }}>
-                        {isMobile ? (
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                              <span style={{ fontSize: '11px', fontWeight: 500, color: isBuy ? '#22c55e' : '#ef4444' }}>{isBuy ? 'Buy' : 'Sell'}</span>
-                              <span style={{ fontSize: '10px', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>
+                    <div 
+                      key={trade._id || trade.hash || idx} 
+                      className={cn('py-[10px] px-3 border-b flex items-center transition-colors duration-200 cursor-default', isDark ? 'border-white/[0.04] hover:bg-white/[0.02]' : 'border-black/[0.04] hover:bg-black/[0.01]')}
+                    >
+                      {isMobile ? (
+                        <div className="flex w-full justify-between items-center">
+                          <div className="flex flex-col gap-[2px]">
+                            <div className="flex items-center gap-[6px]">
+                              <span className={cn('text-[11px] font-bold', isBuy ? 'text-[#22c55e]' : 'text-[#ef4444]')}>{isBuy ? 'BUY' : 'SELL'}</span>
+                              <span className={cn('text-[10px]', isDark ? 'text-white/30' : 'text-black/40')}>
                                 {formatRelativeTime(trade.time)}
                               </span>
                             </div>
-                            <span style={{ fontSize: '12px', color: isDark ? '#fff' : '#1a1a1a' }}>
-                              {formatTradeDisplay(tokenAmount?.value)} {tokenCurrency}
+                            <span className={cn('text-[13px] font-semibold', isDark ? 'text-white' : 'text-[#1a1a1a]')}>
+                              {formatTradeDisplay(tokenAmount?.value)} <span className="text-[10px] opacity-40">{tokenCurrency}</span>
                             </span>
-                            <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)' }}>
+                          </div>
+                          <div className="flex flex-col items-end gap-[2px]">
+                            <span className="text-[12px] font-medium font-mono">
+                              {formatPrice(price)} <span className="text-[9px] opacity-40">XRP</span>
+                            </span>
+                            <span className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-black/50')}>
                               {formatTradeDisplay(xrpAmount?.value)} XRP
                             </span>
                           </div>
-                        ) : (
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                            <span style={{ flex: '0.7', fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
-                              {formatRelativeTime(trade.time)}
-                            </span>
-                            <span style={{ flex: '0.5', fontSize: '11px', fontWeight: 500, color: isBuy ? '#22c55e' : '#ef4444' }}>
-                              {isBuy ? 'Buy' : 'Sell'}
-                            </span>
-                            <span style={{ flex: '1', fontSize: '12px', color: isDark ? '#fff' : '#1a1a1a' }}>
-                              {formatTradeDisplay(tokenAmount?.value)} <span style={{ opacity: 0.5 }}>{tokenCurrency}</span>
-                            </span>
-                            <span style={{ flex: '0.8', fontSize: '12px', fontFamily: 'var(--font-mono)', color: isDark ? '#fff' : '#1a1a1a' }}>
-                              {formatPrice(price)}
-                            </span>
-                            <span style={{ flex: '0.8', fontSize: '12px', color: isDark ? '#fff' : '#1a1a1a' }}>
-                              {formatTradeDisplay(xrpAmount?.value)} <span style={{ opacity: 0.5 }}>XRP</span>
-                            </span>
-                            <div style={{ flex: '0.3' }}>
-                              <IconButton onClick={() => onTransactionClick && onTransactionClick(trade.hash)} isDark={isDark}>
-                                <ExternalLink size={12} />
-                              </IconButton>
-                            </div>
-                          </div>
-                        )}
-                      </CardContent>
-                    </Card>
+                        </div>
+                      ) : (
+                        <>
+                          <span className={cn('flex-[0.6] text-[11px]', isDark ? 'text-white/40' : 'text-black/50')}>
+                            {formatRelativeTime(trade.time)}
+                          </span>
+                          <span className={cn('flex-[0.4] text-[11px] font-bold', isBuy ? 'text-[#22c55e]' : 'text-[#ef4444]')}>
+                            {isBuy ? 'BUY' : 'SELL'}
+                          </span>
+                          <span className="flex-[1.2] text-[13px] font-semibold">
+                            {formatTradeDisplay(tokenAmount?.value)} <span className="text-[10px] opacity-40 font-medium">{tokenCurrency}</span>
+                          </span>
+                          <span className="flex-1 text-[12px] font-mono font-medium">
+                            {formatPrice(price)}
+                          </span>
+                          <span className={cn('flex-[0.8] text-[12px] font-medium', isDark ? 'text-white/70' : 'text-black/70')}>
+                            {formatTradeDisplay(xrpAmount?.value)} <span className="text-[10px] opacity-40">XRP</span>
+                          </span>
+                          <IconButton onClick={() => onTransactionClick && onTransactionClick(trade.hash)} isDark={isDark} className="w-6">
+                            <ExternalLink size={12} strokeWidth={2} />
+                          </IconButton>
+                        </>
+                      )}
+                    </div>
                   );
                 })}
               </div>
-              {/* Load More */}
               {tradesHasMore && (
                 <button
                   onClick={() => fetchMyTrades(true)}
                   disabled={tradesLoading}
-                  style={{
-                    marginTop: '12px',
-                    padding: '10px 16px',
-                    fontSize: '12px',
-                    fontWeight: 500,
-                    background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)',
-                    border: `1.5px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
-                    borderRadius: '8px',
-                    color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)',
-                    cursor: tradesLoading ? 'not-allowed' : 'pointer',
-                    width: '100%'
-                  }}
+                  className={cn(
+                    'mt-3 p-[10px] text-[11px] font-semibold uppercase tracking-[0.05em] rounded-lg border w-full transition-all duration-200',
+                    tradesLoading ? 'cursor-not-allowed' : 'cursor-pointer',
+                    isDark ? 'bg-white/[0.04] border-white/[0.06] text-white/50 hover:enabled:bg-white/[0.08]' : 'bg-black/[0.03] border-black/[0.06] text-black/50 hover:enabled:bg-black/[0.05]'
+                  )}
                 >
                   {tradesLoading ? 'Loading...' : 'Load More'}
                 </button>
               )}
-            </>
+            </div>
           )}
         </>
       )}
@@ -1799,125 +1564,91 @@ const MyActivityTab = ({ token, isDark, isMobile, onTransactionClick }) => {
       {activeSubTab === 'offers' && (
         <>
           {loading ? (
-            <div style={{ display: 'flex', justifyContent: 'center', padding: '24px' }}>
-              <Spinner size={24} />
+            <div className="flex justify-center p-8">
+              <Spinner size={24} className="opacity-50" />
             </div>
           ) : openOffers.length === 0 ? (
             <div
-              style={{
-                textAlign: 'center',
-                padding: '24px',
-                border: `1.5px dashed ${isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'}`,
-                borderRadius: '10px'
-              }}
+              className={cn('text-center p-8 rounded-[12px] border border-dashed', isDark ? 'border-white/10 bg-white/[0.01]' : 'border-black/10 bg-black/[0.01]')}
             >
-              <span style={{ color: 'inherit' }}>No open offers for this token</span>
+              <span className={cn('text-[13px] font-medium', isDark ? 'text-white/40' : 'text-black/40')}>No open offers</span>
             </div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div className="flex flex-col gap-2">
               {openOffers.map((offer) => {
-                const isBuy = offer.takerGets?.currency === 'XRP' || offer.takerGets?.value;
+                const gets = offer.gets || offer.takerGets || {};
+                const pays = offer.pays || offer.takerPays || {};
+                const isBuy = gets.currency === 'XRP' || gets.name === 'XRP';
                 const type = isBuy ? 'BUY' : 'SELL';
                 const tokenAmount = isBuy
-                  ? parseFloat(offer.takerPays?.value || offer.takerPays || 0)
-                  : parseFloat(offer.takerGets?.value || offer.takerGets || 0);
+                  ? parseFloat(pays.value || 0)
+                  : parseFloat(gets.value || 0);
                 const xrpAmount = isBuy
-                  ? parseFloat(offer.takerGets?.value || offer.takerGets || 0) / 1000000
-                  : parseFloat(offer.takerPays?.value || offer.takerPays || 0) / 1000000;
+                  ? parseFloat(gets.value || 0)
+                  : parseFloat(pays.value || 0);
                 const price = tokenAmount > 0 ? xrpAmount / tokenAmount : 0;
                 const total = xrpAmount;
 
+                // Expiration: stored as unix ms in offer.expire
+                const expireMs = offer.expire;
+                let expiryLabel = null;
+                if (expireMs) {
+                  const now = Date.now();
+                  if (expireMs <= now) {
+                    expiryLabel = 'Expired';
+                  } else {
+                    const diff = expireMs - now;
+                    const hours = Math.floor(diff / 3600000);
+                    const mins = Math.floor((diff % 3600000) / 60000);
+                    if (hours >= 24) {
+                      const days = Math.floor(hours / 24);
+                      expiryLabel = `${days}d ${hours % 24}h`;
+                    } else if (hours > 0) {
+                      expiryLabel = `${hours}h ${mins}m`;
+                    } else {
+                      expiryLabel = `${mins}m`;
+                    }
+                  }
+                }
+
                 return (
                   <OfferCard key={offer.seq || offer._id} isDark={isDark}>
-                    <div
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        flexWrap: 'wrap',
-                        gap: '12px'
-                      }}
-                    >
-                      {/* Left side - Offer details */}
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: 1 }}>
-                        <TradeTypeChip
-                          tradetype={type}
-                          style={{ fontSize: '12px', fontWeight: 600 }}
-                        >
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="flex items-center gap-3 flex-1">
+                        <div className={cn('text-[10px] font-extrabold py-1 px-2 rounded-[6px] tracking-[0.02em]', isBuy ? 'text-[#22c55e] bg-[rgba(34,197,94,0.1)]' : 'text-[#ef4444] bg-[rgba(239,68,68,0.1)]')}>
                           {type}
-                        </TradeTypeChip>
-
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                          <span
-                            style={{
-                              fontSize: '13px',
-                              fontWeight: 500,
-                              color: isDark ? '#fff' : '#1a1a1a'
-                            }}
-                          >
-                            {formatTradeDisplay(tokenAmount)}{' '}
-                            <span style={{ opacity: 0.5 }}>{tokenCurrency}</span>
-                          </span>
-                          <span
-                            style={{
-                              fontSize: '11px',
-                              color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)'
-                            }}
-                          >
-                            @ {formatPrice(price)} XRP
-                          </span>
                         </div>
 
-                        <div
-                          style={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: '2px',
-                            paddingLeft: '16px',
-                            borderLeft: `1px solid ${isDark ? 'rgba(59,130,246,0.12)' : 'rgba(0,0,0,0.1)'}`
-                          }}
-                        >
-                          <span
-                            style={{
-                              fontSize: '13px',
-                              fontWeight: 500,
-                              color: isDark ? '#fff' : '#1a1a1a'
-                            }}
-                          >
-                            {formatXRPAmount(total)} <span style={{ opacity: 0.5 }}>XRP</span>
+                        <div className="flex flex-col">
+                          <span className="text-[14px] font-semibold">
+                            {formatTradeDisplay(tokenAmount)}{' '}
+                            <span className="text-[10px] opacity-40">{tokenCurrency}</span>
                           </span>
-                          <span
-                            style={{
-                              fontSize: '11px',
-                              color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)'
-                            }}
-                          >
-                            Total value
+                          <span className={cn('text-[11px] font-mono', isDark ? 'text-white/40' : 'text-black/50')}>
+                            @ {formatPrice(price)} XRP
                           </span>
                         </div>
                       </div>
 
-                      {/* Right side - Sequence and actions */}
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                        <div style={{ textAlign: 'right' }}>
-                          <span
-                            style={{
-                              fontSize: '11px',
-                              color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)',
-                              display: 'block'
-                            }}
-                          >
-                            Seq #{offer.seq}
+                      <div className="flex items-center gap-4">
+                        {expiryLabel && (
+                          <div className={cn(
+                            'text-[10px] font-medium py-[3px] px-[6px] rounded whitespace-nowrap',
+                            expiryLabel === 'Expired' ? 'text-[#ef4444] bg-[rgba(239,68,68,0.08)]' : isDark ? 'text-white/45 bg-white/[0.04]' : 'text-black/45 bg-black/[0.04]'
+                          )}>
+                            {expiryLabel === 'Expired' ? 'Expired' : `Expires ${expiryLabel}`}
+                          </div>
+                        )}
+                        <div className={cn('text-right', isMobile ? 'hidden' : 'block')}>
+                          <span className="text-[13px] font-semibold">
+                            {formatXRPAmount(total)} <span className="text-[10px] opacity-40">XRP</span>
                           </span>
-                          {offer.expiration && (
-                            <span style={{ fontSize: '10px', color: '#f59e0b' }}>
-                              Expires {formatRelativeTime(offer.expiration * 1000)}
-                            </span>
-                          )}
+                          <span className={cn('text-[9px] block uppercase', isDark ? 'text-white/30' : 'text-black/40')}>
+                            Total Value
+                          </span>
                         </div>
-
-                        <CancelButton onClick={() => handleCancelOffer(offer.seq)} isDark={isDark}>
-                          Cancel
+                        <CancelButton onClick={() => handleCancelOffer(offer.seq)} isDark={isDark} disabled={cancellingOffer === offer.seq}>
+                          {cancellingOffer === offer.seq ? 'Cancelling...' : 'Cancel'}
                         </CancelButton>
                       </div>
                     </div>
@@ -1929,51 +1660,31 @@ const MyActivityTab = ({ token, isDark, isMobile, onTransactionClick }) => {
 
           {/* Pagination */}
           {offersTotal > offersLimit && (
-            <div className="flex items-center justify-center gap-1 pt-3">
+            <div className="flex items-center justify-center gap-2 pt-3">
               <button
                 onClick={() => setOffersPage((p) => Math.max(0, p - 1))}
                 disabled={offersPage === 0}
-                className={cn(
-                  'p-1.5 rounded-md transition-colors',
-                  offersPage === 0 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-white/10',
-                  isDark ? 'text-white/50' : 'text-gray-500'
-                )}
-                title="Previous"
+                className={cn('p-[6px] rounded-lg border-none disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer', isDark ? 'bg-white/[0.04] text-white' : 'bg-black/[0.03] text-[#1a1a1a]')}
               >
                 <ChevronLeft size={14} />
               </button>
-              <span
-                className={cn(
-                  'text-[11px] px-2 tabular-nums',
-                  isDark ? 'text-white/40' : 'text-gray-500'
-                )}
-              >
-                {offersPage + 1}
-                <span style={{ opacity: 0.5 }}>/</span>
-                {Math.ceil(offersTotal / offersLimit)}
+              <span className={cn('text-[11px] font-semibold', isDark ? 'text-white/40' : 'text-black/50')}>
+                {offersPage + 1} <span className="opacity-50">/</span> {Math.ceil(offersTotal / offersLimit)}
               </span>
               <button
                 onClick={() => setOffersPage((p) => p + 1)}
                 disabled={(offersPage + 1) * offersLimit >= offersTotal}
-                className={cn(
-                  'p-1.5 rounded-md transition-colors',
-                  (offersPage + 1) * offersLimit >= offersTotal
-                    ? 'opacity-30 cursor-not-allowed'
-                    : 'hover:bg-white/10',
-                  isDark ? 'text-white/50' : 'text-gray-500'
-                )}
-                title="Next"
+                className={cn('p-[6px] rounded-lg border-none disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer', isDark ? 'bg-white/[0.04] text-white' : 'bg-black/[0.03] text-[#1a1a1a]')}
               >
                 <ChevronRight size={14} />
               </button>
             </div>
           )}
-
         </>
       )}
     </div>
   );
-};
+});
 
 // Inline Expandable Trade Details Component
 const TradeDetails = ({ trade, account, isDark, onClose, walletLabel }) => {
@@ -2037,43 +1748,24 @@ const TradeDetails = ({ trade, account, isDark, onClose, walletLabel }) => {
 
   return (
     <div
-      style={{
-        padding: '12px 8px',
-        background: isDark ? 'rgba(0,0,0,0.4)' : 'rgba(128,128,128,0.1)',
-        borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
-        animation: 'expandIn 0.15s ease-out'
-      }}
+      className={cn('py-3 px-2 border-b animate-[expandIn_0.15s_ease-out]', isDark ? 'bg-black/40 border-white/10' : 'bg-[rgba(128,128,128,0.1)] border-black/10')}
     >
       <style>{`@keyframes expandIn { from { opacity: 0; max-height: 0; } to { opacity: 1; max-height: 400px; } }`}</style>
       {loading ? (
-        <div style={{ display: 'flex', justifyContent: 'center', padding: '12px' }}>
+        <div className="flex justify-center p-3">
           <Spinner size={18} />
         </div>
       ) : (
-        <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+        <div className="flex gap-4 flex-wrap">
           {/* Trader Info */}
           {account && (
-            <div style={{ minWidth: '120px', maxWidth: '180px', overflow: 'hidden' }}>
-              <div
-                style={{
-                  fontSize: '9px',
-                  color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'
-                }}
-              >
+            <div className="min-w-[120px] max-w-[180px] overflow-hidden">
+              <div className={cn('text-[9px]', isDark ? 'text-white/40' : 'text-black/40')}>
                 Trader
               </div>
               <a
                 href={`/address/${account}`}
-                style={{
-                  fontSize: '11px',
-                  fontFamily: 'var(--font-mono)',
-                  color: '#3b82f6',
-                  textDecoration: 'none',
-                  display: 'block',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap'
-                }}
+                className="text-[11px] font-mono text-[#3b82f6] no-underline block overflow-hidden text-ellipsis whitespace-nowrap"
                 title={account}
               >
                 {walletLabel || `${account.slice(0, 6)}...${account.slice(-4)}`}
@@ -2081,12 +1773,7 @@ const TradeDetails = ({ trade, account, isDark, onClose, walletLabel }) => {
               {(profileData?.balance ||
                 profileData?.Balance ||
                 profileData?.account_data?.Balance) && (
-                  <div
-                    style={{
-                      fontSize: '10px',
-                      color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)'
-                    }}
-                  >
+                  <div className={cn('text-[10px]', isDark ? 'text-white/50' : 'text-black/50')}>
                     {dropsToXrp(
                       profileData?.balance ||
                       profileData?.Balance ||
@@ -2100,53 +1787,32 @@ const TradeDetails = ({ trade, account, isDark, onClose, walletLabel }) => {
           {/* TX Info */}
           {txData && (
             <>
-              <div style={{ minWidth: '100px' }}>
-                <div
-                  style={{
-                    fontSize: '9px',
-                    color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'
-                  }}
-                >
+              <div className="min-w-[100px]">
+                <div className={cn('text-[9px]', isDark ? 'text-white/40' : 'text-black/40')}>
                   Status
                 </div>
                 <span
-                  style={{
-                    fontSize: '10px',
-                    padding: '2px 6px',
-                    borderRadius: '4px',
-                    background:
-                      txData.meta?.TransactionResult === 'tesSUCCESS'
-                        ? 'rgba(34,197,94,0.15)'
-                        : 'rgba(239,68,68,0.15)',
-                    color: txData.meta?.TransactionResult === 'tesSUCCESS' ? '#22c55e' : '#ef4444'
-                  }}
+                  className={cn(
+                    'text-[10px] py-[2px] px-[6px] rounded',
+                    txData.meta?.TransactionResult === 'tesSUCCESS' ? 'bg-[rgba(34,197,94,0.15)] text-[#22c55e]' : 'bg-[rgba(239,68,68,0.15)] text-[#ef4444]'
+                  )}
                 >
                   {txData.meta?.TransactionResult === 'tesSUCCESS' ? 'Success' : 'Failed'}
                 </span>
               </div>
-              <div style={{ minWidth: '80px' }}>
-                <div
-                  style={{
-                    fontSize: '9px',
-                    color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'
-                  }}
-                >
+              <div className="min-w-[80px]">
+                <div className={cn('text-[9px]', isDark ? 'text-white/40' : 'text-black/40')}>
                   Fee
                 </div>
-                <div style={{ fontSize: '11px', color: isDark ? '#fff' : '#1a1a1a' }}>
+                <div className={cn('text-[11px]', isDark ? 'text-white' : 'text-[#1a1a1a]')}>
                   {dropsToXrp(txData.Fee)} XRP
                 </div>
               </div>
-              <div style={{ minWidth: '80px' }}>
-                <div
-                  style={{
-                    fontSize: '9px',
-                    color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'
-                  }}
-                >
+              <div className="min-w-[80px]">
+                <div className={cn('text-[9px]', isDark ? 'text-white/40' : 'text-black/40')}>
                   Ledger
                 </div>
-                <div style={{ fontSize: '11px', color: isDark ? '#fff' : '#1a1a1a' }}>
+                <div className={cn('text-[11px]', isDark ? 'text-white' : 'text-[#1a1a1a]')}>
                   #{txData.ledger_index}
                 </div>
               </div>
@@ -2171,49 +1837,23 @@ const TradeDetails = ({ trade, account, isDark, onClose, walletLabel }) => {
               };
               const data = memo?.MemoData ? decodeMemo(memo.MemoData) : null;
               return data ? (
-                <div style={{ minWidth: '120px', maxWidth: '200px' }}>
-                  <div
-                    style={{
-                      fontSize: '9px',
-                      color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'
-                    }}
-                  >
+                <div className="min-w-[120px] max-w-[200px]">
+                  <div className={cn('text-[9px]', isDark ? 'text-white/40' : 'text-black/40')}>
                     Memo
                   </div>
-                  <div
-                    style={{
-                      fontSize: '10px',
-                      color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap'
-                    }}
-                  >
+                  <div className={cn('text-[10px] overflow-hidden text-ellipsis whitespace-nowrap', isDark ? 'text-white/70' : 'text-black/70')}>
                     {data}
                   </div>
                 </div>
               ) : null;
             })()}
           {/* Action Buttons */}
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginLeft: 'auto' }}>
+          <div className="flex gap-2 items-center ml-auto">
             <a
               href={`/tx/${trade.hash}`}
               target="_blank"
               rel="noopener noreferrer"
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '5px',
-                fontSize: '11px',
-                fontWeight: 500,
-                color: '#fff',
-                background: '#3b82f6',
-                border: 'none',
-                borderRadius: '6px',
-                padding: '6px 12px',
-                textDecoration: 'none',
-                cursor: 'pointer'
-              }}
+              className="flex items-center gap-[5px] text-[11px] font-medium text-white bg-[#3b82f6] border-none rounded-[6px] py-[6px] px-3 no-underline cursor-pointer"
             >
               <ExternalLink size={12} />
               <span>View Details</span>
@@ -2241,17 +1881,11 @@ const TradeDetails = ({ trade, account, isDark, onClose, walletLabel }) => {
             </button>
             <button
               onClick={onClose}
-              style={{
-                background: 'transparent',
-                border: 'none',
-                cursor: 'pointer',
-                padding: '4px',
-                marginLeft: '4px'
-              }}
+              className="bg-transparent border-none cursor-pointer p-1 ml-1"
             >
               <X
                 size={14}
-                style={{ color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.4)' }}
+                className={cn(isDark ? 'text-white/50' : 'text-black/40')}
               />
             </button>
           </div>
@@ -2278,56 +1912,44 @@ const TradeDetails = ({ trade, account, isDark, onClose, walletLabel }) => {
           }
           return (
             <div
-              style={{
-                marginTop: '8px',
-                padding: '12px 16px',
-                background: isDark ? 'rgba(167,139,250,0.08)' : 'rgba(167,139,250,0.05)',
-                borderTop: `1px solid ${isDark ? 'rgba(139,92,246,0.15)' : 'rgba(139,92,246,0.1)'}`
-              }}
+              className={cn(
+                'mt-3 p-4 rounded-[12px] border relative overflow-hidden',
+                isDark ? 'border-[rgba(139,92,246,0.15)] shadow-[0_4px_20px_rgba(0,0,0,0.2)]' : 'border-[rgba(139,92,246,0.1)] shadow-[0_4px_20px_rgba(139,92,246,0.05)]'
+              )}
+              style={{ background: isDark ? 'linear-gradient(145deg, rgba(139, 92, 246, 0.08) 0%, rgba(139, 92, 246, 0.02) 100%)' : 'linear-gradient(145deg, rgba(139, 92, 246, 0.04) 0%, rgba(139, 92, 246, 0.01) 100%)' }}
             >
-              <div style={{ fontSize: '13px', marginBottom: keyPoints.length ? '12px' : 0 }}>
-                <span style={{ color: '#a78bfa', fontWeight: 500 }}>
-                  {aiExplanation.extracted?.type || 'Trade'}:
-                </span>{' '}
-                <span style={{ color: isDark ? '#fff' : '#1a1a1a' }}>{summaryText}</span>
+              <Sparkles
+                size={40}
+                className={cn('absolute -top-2 -right-2 text-[#8b5cf6] rotate-[15deg]', isDark ? 'opacity-5' : 'opacity-[0.03]')}
+              />
+              <div className="flex items-center gap-2 mb-3">
+                <div className="text-[9px] font-bold uppercase py-[2px] px-[6px] rounded bg-[rgba(139,92,246,0.2)] text-[#a78bfa] tracking-[0.05em]">
+                  {aiExplanation.extracted?.type || 'Analysis'}
+                </div>
+                <div className={cn('text-[11px] font-medium', isDark ? 'text-white/40' : 'text-black/40')}>
+                  AI Insight
+                </div>
               </div>
+
+              <div
+                className={cn('text-[13px] leading-[1.5]', isDark ? 'text-white/95' : 'text-[#1a1a1a]', keyPoints.length ? 'mb-4' : 'mb-0')}
+              >
+                {summaryText}
+              </div>
+
               {keyPoints.length > 0 && (
                 <div>
-                  <div
-                    style={{
-                      fontSize: '10px',
-                      fontWeight: 500,
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.05em',
-                      color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)',
-                      marginBottom: '8px'
-                    }}
-                  >
+                  <div className={cn('text-[10px] font-semibold uppercase tracking-[0.05em] mb-[10px] flex items-center gap-[6px]', isDark ? 'text-white/40' : 'text-black/50')}>
+                    <div className={cn('w-3 h-px', isDark ? 'bg-white/20' : 'bg-black/10')} />
                     Key Points
                   </div>
-                  <ul
-                    style={{
-                      margin: 0,
-                      padding: 0,
-                      listStyle: 'none',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: '6px'
-                    }}
-                  >
+                  <ul className="m-0 p-0 list-none flex flex-col gap-2">
                     {keyPoints.map((point, idx) => (
                       <li
                         key={idx}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'flex-start',
-                          gap: '8px',
-                          fontSize: '12px',
-                          fontFamily: 'var(--font-mono)',
-                          color: isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.7)'
-                        }}
+                        className={cn('flex items-start gap-[10px] text-[12px] leading-[1.4]', isDark ? 'text-white/80' : 'text-black/70')}
                       >
-                        <span style={{ color: '#8b5cf6' }}>•</span>
+                        <div className="w-1 h-1 rounded-full bg-[#8b5cf6] mt-[6px] shrink-0" />
                         <span>{typeof point === 'string' ? point : JSON.stringify(point)}</span>
                       </li>
                     ))}
@@ -2361,7 +1983,8 @@ const TradingHistory = ({
   const isMobile = isMobileState || isMobileProp;
 
   // Fiat currency conversion
-  const { activeFiatCurrency, accountProfile } = useContext(AppContext);
+  const { accountProfile } = useContext(WalletContext);
+  const { activeFiatCurrency } = useContext(AppContext);
   const metrics = useSelector(selectMetrics);
   const exchRate =
     metrics[activeFiatCurrency] || (activeFiatCurrency === 'CNH' ? metrics.CNY : null) || 1;
@@ -2394,10 +2017,24 @@ const TradingHistory = ({
   // AMM Pools state
   const [ammPools, setAmmPools] = useState([]);
   const [ammLoading, setAmmLoading] = useState(false);
-  const [addLiquidityDialog, setAddLiquidityDialog] = useState({ open: false, pool: null });
+  // Unified liquidity dialog state
+  const [liquidityDialog, setLiquidityDialog] = useState({ open: false, pool: null, tab: 'add' }); // tab: 'add' | 'remove'
   const [depositAmount1, setDepositAmount1] = useState('');
   const [depositAmount2, setDepositAmount2] = useState('');
   const [depositMode, setDepositMode] = useState('double'); // 'double', 'single1', 'single2'
+  const [depositLoading, setDepositLoading] = useState(false);
+  const [withdrawAmount1, setWithdrawAmount1] = useState('');
+  const [withdrawAmount2, setWithdrawAmount2] = useState('');
+  const [withdrawMode, setWithdrawMode] = useState('double'); // 'double', 'single1', 'single2', 'all'
+  const [withdrawLoading, setWithdrawLoading] = useState(false);
+  const [pendingDeposit, setPendingDeposit] = useState(null); // { tx, deviceWallet, simResult }
+  const [pendingWithdraw, setPendingWithdraw] = useState(null); // { tx, deviceWallet, simResult }
+  // Backwards-compat aliases for existing code
+  const addLiquidityDialog = liquidityDialog;
+  const withdrawDialog = liquidityDialog;
+
+  // User wallet balances for pool assets (fetched when modal opens)
+  const [userPoolBalances, setUserPoolBalances] = useState({ asset1: null, asset2: null });
 
   // Pool UI enhancements
   const [expandedPoolId, setExpandedPoolId] = useState(null);
@@ -2406,6 +2043,33 @@ const TradingHistory = ({
   const [poolTypeFilter, setPoolTypeFilter] = useState('all'); // 'all', 'xrp', 'token'
   const [poolSortBy, setPoolSortBy] = useState('liquidity'); // 'liquidity', 'apy', 'volume', 'fees'
   const [poolSortDir, setPoolSortDir] = useState('desc'); // 'asc', 'desc'
+
+  // User LP token balances: { ammAccount: { balance, share, asset1Amount, asset2Amount } }
+  const [userLpBalances, setUserLpBalances] = useState({});
+  const [lpRefreshCounter, setLpRefreshCounter] = useState(0);
+  // IL position data: { poolId: { ilPercent, holdValueXrp, poolValueXrp, ... } }
+  const [ilPositions, setIlPositions] = useState({});
+
+  // Create Pool state
+  const [createPoolOpen, setCreatePoolOpen] = useState(false);
+  const [createPoolSearch, setCreatePoolSearch] = useState('');
+  const [createPoolSearchResults, setCreatePoolSearchResults] = useState([]);
+  const [createPoolSearchLoading, setCreatePoolSearchLoading] = useState(false);
+  const [createPoolAsset2, setCreatePoolAsset2] = useState(null); // { currency, issuer, name, image }
+  const [createPoolAmount1, setCreatePoolAmount1] = useState('');
+  const [createPoolAmount2, setCreatePoolAmount2] = useState('');
+  const [createPoolFee, setCreatePoolFee] = useState(500); // 0-1000 => 0%-1%
+  const [createPoolLoading, setCreatePoolLoading] = useState(false);
+  const [pendingCreatePool, setPendingCreatePool] = useState(null); // { tx, deviceWallet, simResult } or { error }
+  const [createPoolBalances, setCreatePoolBalances] = useState({ asset1: null, asset2: null });
+  const formatShare = (share) => {
+    const pct = share * 100;
+    if (pct >= 1) return pct.toFixed(2) + '%';
+    if (pct >= 0.01) return pct.toFixed(2) + '%';
+    if (pct >= 0.0001) return pct.toFixed(4) + '%';
+    if (pct > 0) return '<0.0001%';
+    return '0%';
+  };
 
   // Wallet labels from logged-in user
   const [walletLabels, setWalletLabels] = useState({});
@@ -2437,11 +2101,8 @@ const TradingHistory = ({
       setAmmLoading(true);
       try {
         const ammUrl = `https://api.xrpl.to/v1/amm?issuer=${token.issuer}&currency=${token.currency}&sortBy=fees`;
-        const t0 = performance.now();
-        console.log('[TradingHistory] Fetching AMM pools:', ammUrl);
         const res = await apiFetch(ammUrl);
         const data = await res.json();
-        console.log(`[TradingHistory] AMM pools done in ${(performance.now() - t0).toFixed(0)}ms, ${data.pools?.length || 0} pools`);
         // Sort to ensure main XRP pool appears first
         const pools = data.pools || [];
         pools.sort((a, b) => {
@@ -2472,7 +2133,6 @@ const TradingHistory = ({
             try {
               // Try 1m first, fall back to 1w if no data
               const chartUrl = `https://api.xrpl.to/v1/amm/liquidity-chart?ammAccount=${poolAccount}&period=1m`;
-              console.log('[TradingHistory] Fetching pool chart:', chartUrl);
               let chartRes = await apiFetch(chartUrl);
               let chartData = await chartRes.json();
 
@@ -2513,6 +2173,66 @@ const TradingHistory = ({
       }
     }
   };
+
+  // Fetch user LP balances when pools are loaded and user is logged in
+  useEffect(() => {
+    const userAddr = accountProfile?.account || accountProfile?.address;
+    if (!userAddr || ammPools.length === 0) return;
+
+    const fetchLpBalances = async () => {
+      const balances = {};
+      await Promise.all(
+        ammPools.map(async (pool) => {
+          const ammAccount = pool.ammAccount || pool.account || pool._id;
+          const lpCurrency = pool.lpTokenCurrency;
+          if (!ammAccount || !lpCurrency) return;
+          try {
+            const resp = await apiFetch(
+              `https://api.xrpl.to/api/account/trustline/${userAddr}/${ammAccount}/${lpCurrency}`
+            );
+            const data = await resp.json();
+            if (data?.hasTrustline && data.balance > 0) {
+              const userBal = data.balance;
+              const totalLp = pool.currentLiquidity?.lpTokenBalance || 0;
+              const share = totalLp > 0 ? userBal / totalLp : 0;
+              balances[ammAccount] = {
+                balance: userBal,
+                totalLp,
+                share,
+                asset1Amount: share * (pool.currentLiquidity?.asset1Amount || 0),
+                asset2Amount: share * (pool.currentLiquidity?.asset2Amount || 0)
+              };
+            }
+          } catch (err) {
+            // Silently ignore - user may not have LP tokens
+          }
+        })
+      );
+      setUserLpBalances(balances);
+    };
+
+    fetchLpBalances();
+  }, [ammPools, accountProfile?.account, accountProfile?.address, lpRefreshCounter]);
+
+  // Fetch IL position data from analytics
+  useEffect(() => {
+    const userAddr = accountProfile?.account || accountProfile?.address;
+    if (!userAddr || ammPools.length === 0) return;
+
+    const fetchIlData = async () => {
+      try {
+        const resp = await apiFetch(`https://api.xrpl.to/api/lp-positions/${userAddr}`);
+        const data = await resp.json();
+        if (data?.result === 'success' && data.positions) {
+          setIlPositions(data.positions);
+        }
+      } catch (err) {
+        // Silently ignore - IL data is supplementary
+      }
+    };
+
+    fetchIlData();
+  }, [ammPools, accountProfile?.account, accountProfile?.address, lpRefreshCounter]);
 
   const fetchTradingHistory = useCallback(
     async (useCursor = null, isRefresh = false, useDirection = 'desc') => {
@@ -2569,11 +2289,8 @@ const TradingHistory = ({
         }
 
         const historyUrl = `https://api.xrpl.to/v1/history?${params}`;
-        const t0 = performance.now();
-        console.log('[TradingHistory] Fetching history:', historyUrl);
         const response = await fetch(historyUrl);
         const data = await response.json();
-        console.log(`[TradingHistory] History done in ${(performance.now() - t0).toFixed(0)}ms, ${data.data?.length || data.hists?.length || 0} trades`);
 
         if (data.success) {
           const hists = data.data || data.hists || [];
@@ -2662,12 +2379,10 @@ const TradingHistory = ({
         const res = await fetch(`/api/ws/session?type=history&id=${tokenId}&${wsParams}`);
         const { wsUrl } = await res.json();
         if (!isMounted) return;
-        console.log('[History WS] Connecting:', wsUrl);
         const ws = new WebSocket(wsUrl);
         wsRef.current = ws;
 
         ws.onopen = () => {
-      console.log('[History WS] Connected');
       wsPingRef.current = setInterval(() => {
         if (ws.readyState === WebSocket.OPEN) {
           ws.send(JSON.stringify({ type: 'ping' }));
@@ -2743,7 +2458,6 @@ const TradingHistory = ({
     };
 
     ws.onclose = (ev) => {
-          console.log(`[History WS] Closed code=${ev.code} reason="${ev.reason}"`);
           if (wsPingRef.current) {
             clearInterval(wsPingRef.current);
             wsPingRef.current = null;
@@ -2876,18 +2590,267 @@ const TradingHistory = ({
   }, [tokenId, totalRecords, limit, fetchTradingHistory]);
 
   const handleAddLiquidity = (pool) => {
-    setAddLiquidityDialog({ open: true, pool });
+    setLiquidityDialog({ open: true, pool, tab: 'add' });
     setDepositAmount1('');
     setDepositAmount2('');
     setDepositMode('double');
   };
 
   const handleCloseDialog = () => {
-    setAddLiquidityDialog({ open: false, pool: null });
+    setLiquidityDialog({ open: false, pool: null, tab: 'add' });
+    setUserPoolBalances({ asset1: null, asset2: null });
+    setPendingDeposit(null);
+    setPendingWithdraw(null);
   };
+
+  // Does an XRP pair exist for this token?
+  // ammPools is already filtered for this token by the API query, so just check for XRP in any pool
+  const hasXrpPool = useMemo(() => {
+    return ammPools.some(pool =>
+      pool.asset1?.currency === 'XRP' || pool.asset2?.currency === 'XRP'
+    );
+  }, [ammPools]);
+
+  // === Create Pool handlers ===
+  const handleOpenCreatePool = (presetAsset2) => {
+    const account = accountProfile?.account || accountProfile?.address;
+    if (!account) { toast.error('Connect wallet first'); return; }
+    setCreatePoolOpen(true);
+    setCreatePoolAmount1('');
+    setCreatePoolAmount2('');
+    setCreatePoolFee(500);
+    setCreatePoolSearch('');
+    setCreatePoolSearchResults([]);
+    setPendingCreatePool(null);
+    setCreatePoolBalances({ asset1: null, asset2: null });
+
+    if (presetAsset2) {
+      handleSelectAsset2(presetAsset2);
+    } else {
+      setCreatePoolAsset2(null);
+    }
+  };
+
+  const handleCloseCreatePool = () => {
+    setCreatePoolOpen(false);
+    setCreatePoolAsset2(null);
+    setPendingCreatePool(null);
+    setCreatePoolBalances({ asset1: null, asset2: null });
+  };
+
+  // Search for tokens to pair with
+  const createPoolSearchTimer = useRef(null);
+  const handleCreatePoolSearch = (query) => {
+    setCreatePoolSearch(query);
+    if (createPoolSearchTimer.current) clearTimeout(createPoolSearchTimer.current);
+    if (!query || query.length < 2) { setCreatePoolSearchResults([]); return; }
+    createPoolSearchTimer.current = setTimeout(async () => {
+      setCreatePoolSearchLoading(true);
+      try {
+        const res = await api.get(`https://api.xrpl.to/v1/tokens?filter=${encodeURIComponent(query)}&start=0&limit=20&sortBy=vol24hxrp&sortType=desc`);
+        // Build set of currencies that already have a pool with this token
+        const existingPoolCurrencies = new Set();
+        const normalizeKey = (issuer, currency) =>
+          currency === 'XRP' ? 'XRP' : `${issuer}_${currency}`;
+        ammPools.forEach(pool => {
+          const other = (pool.asset1?.issuer === token?.issuer && pool.asset1?.currency === token?.currency)
+            ? pool.asset2 : pool.asset1;
+          if (other) existingPoolCurrencies.add(normalizeKey(other.issuer, other.currency));
+        });
+        const tokens = (res.data?.tokens || []).filter(t => {
+          if (t.issuer === token?.issuer && t.currency === token?.currency) return false;
+          // Exclude tokens that already have a pool with this token
+          if (existingPoolCurrencies.has(normalizeKey(t.issuer, t.currency))) return false;
+          return true;
+        });
+        setCreatePoolSearchResults(tokens);
+      } catch (err) {
+        console.error('[CreatePool] Search error:', err);
+        setCreatePoolSearchResults([]);
+      }
+      setCreatePoolSearchLoading(false);
+    }, 300);
+  };
+
+  const handleSelectAsset2 = (selected) => {
+    const isXrp = selected.currency === 'XRP' && !selected.issuer;
+    setCreatePoolAsset2({
+      currency: isXrp ? 'XRP' : selected.currency,
+      issuer: isXrp ? undefined : selected.issuer,
+      name: isXrp ? 'XRP' : (selected.name || decodeCurrency(selected.currency)),
+      image: getTokenImageUrl(selected.issuer, selected.currency)
+    });
+    setCreatePoolSearch('');
+    setCreatePoolSearchResults([]);
+    setPendingCreatePool(null);
+    setCreatePoolAmount1('');
+    setCreatePoolAmount2('');
+
+    // Fetch balances for both assets
+    const account = accountProfile?.account || accountProfile?.address;
+    if (!account) return;
+    const fetchBal = async (asset) => {
+      if (!asset.issuer || asset.currency === 'XRP') {
+        try {
+          const resp = await apiFetch(`https://api.xrpl.to/api/account/info/${account}`);
+          const data = await resp.json();
+          return data?.balance ?? 0;
+        } catch { return 0; }
+      }
+      try {
+        const resp = await apiFetch(`https://api.xrpl.to/api/account/trustline/${account}/${asset.issuer}/${encodeURIComponent(asset.currency)}`);
+        const data = await resp.json();
+        return data?.hasTrustline ? (data.balance ?? 0) : 0;
+      } catch { return 0; }
+    };
+    const asset1 = { currency: token?.currency, issuer: token?.issuer };
+    const asset2 = { currency: isXrp ? 'XRP' : selected.currency, issuer: isXrp ? undefined : selected.issuer };
+    Promise.all([fetchBal(asset1), fetchBal(asset2)])
+      .then(([b1, b2]) => setCreatePoolBalances({ asset1: b1, asset2: b2 }));
+  };
+
+  const handleSubmitCreatePool = async () => {
+    const account = accountProfile?.account || accountProfile?.address;
+    if (!account) { toast.error('Connect wallet first'); return; }
+    if (!createPoolAsset2) { toast.error('Select a token to pair with'); return; }
+    if (!createPoolAmount1 || !createPoolAmount2 || parseFloat(createPoolAmount1) <= 0 || parseFloat(createPoolAmount2) <= 0) {
+      toast.error('Enter amounts for both assets'); return;
+    }
+
+    setCreatePoolLoading(true);
+    const toastId = toast.loading('Simulating pool creation...');
+
+    try {
+      const { Wallet: XRPLWallet } = await import('xrpl');
+      const { EncryptedWalletStorage, deviceFingerprint } = await import('src/utils/encryptedWalletStorage');
+
+      const walletStorage = new EncryptedWalletStorage();
+      const deviceKeyId = await deviceFingerprint.getDeviceId();
+      const storedPassword = await walletStorage.getWalletCredential(deviceKeyId);
+      if (!storedPassword) { toast.error('Wallet locked', { id: toastId }); setCreatePoolLoading(false); return; }
+
+      const walletData = await walletStorage.getWallet(account, storedPassword);
+      if (!walletData?.seed) { toast.error('Could not retrieve credentials', { id: toastId }); setCreatePoolLoading(false); return; }
+
+      const algorithm = walletData.seed.startsWith('sEd') ? 'ed25519' : 'secp256k1';
+      const deviceWallet = XRPLWallet.fromSeed(walletData.seed, { algorithm });
+
+      // Build asset references
+      const asset1Id = token?.currency === 'XRP'
+        ? { currency: 'XRP' }
+        : { currency: token.currency, issuer: token.issuer };
+      const asset2Id = createPoolAsset2.currency === 'XRP'
+        ? { currency: 'XRP' }
+        : { currency: createPoolAsset2.currency, issuer: createPoolAsset2.issuer };
+
+      const amount1 = token?.currency === 'XRP'
+        ? String(Math.floor(parseFloat(createPoolAmount1) * 1_000_000))
+        : { currency: token.currency, issuer: token.issuer, value: String(createPoolAmount1) };
+      const amount2 = createPoolAsset2.currency === 'XRP'
+        ? String(Math.floor(parseFloat(createPoolAmount2) * 1_000_000))
+        : { currency: createPoolAsset2.currency, issuer: createPoolAsset2.issuer, value: String(createPoolAmount2) };
+
+      const tx = {
+        TransactionType: 'AMMCreate',
+        Account: account,
+        Amount: amount1,
+        Amount2: amount2,
+        TradingFee: createPoolFee,
+        SourceTag: 161803,
+        Memos: configureMemos('', '', 'AMM Create via https://xrpl.to')
+      };
+
+      const simResult = await simulateTransaction(tx);
+      toast.dismiss(toastId);
+
+      if (simResult.engine_result !== 'tesSUCCESS') {
+        setPendingCreatePool({ tx: null, error: simResult.engine_result_message || simResult.engine_result });
+        setCreatePoolLoading(false);
+        return;
+      }
+
+      // Parse fee from simulation
+      const fee = parseInt(simResult?.meta?.Fee || simResult?.fee || '12', 10) / 1_000_000;
+      setPendingCreatePool({ tx, deviceWallet, simResult, fee });
+    } catch (err) {
+      console.error('[AMM Create] Simulation error:', err);
+      setPendingCreatePool({ tx: null, error: err.message?.slice(0, 120) || 'Simulation failed' });
+    }
+    setCreatePoolLoading(false);
+  };
+
+  const handleConfirmCreatePool = async () => {
+    if (!pendingCreatePool?.tx) return;
+    const { tx, deviceWallet } = pendingCreatePool;
+    setCreatePoolLoading(true);
+    const toastId = toast.loading('Signing & submitting...');
+
+    try {
+      const result = await submitTransaction(deviceWallet, tx);
+      const txHash = result.hash || result.tx_json?.hash;
+      const engineResult = result.engine_result || result.result?.engine_result;
+
+      if (engineResult !== 'tesSUCCESS') {
+        toast.error('Pool creation failed', { id: toastId, description: result.engine_result_message || engineResult });
+        setCreatePoolLoading(false);
+        return;
+      }
+
+      toast.loading('Waiting for confirmation...', { id: toastId });
+      let validated = false;
+      for (let i = 0; i < 15; i++) {
+        await new Promise(r => setTimeout(r, 500));
+        try {
+          const txRes = await api.get(`https://api.xrpl.to/v1/tx/${txHash}`);
+          if (txRes.data?.validated) { validated = true; break; }
+        } catch { /* continue */ }
+      }
+
+      if (validated) {
+        toast.success('Pool created!', { id: toastId, duration: 4000 });
+      } else {
+        toast.success('Pool submitted', { id: toastId, description: 'Validation pending...' });
+      }
+
+      handleCloseCreatePool();
+      // Refresh pools list
+      setAmmPools([]);
+      handleTabChange(null, 1);
+    } catch (err) {
+      console.error('[AMM Create] Submit error:', err);
+      toast.error(err.message || 'Failed to create pool', { id: toastId });
+    }
+    setCreatePoolLoading(false);
+  };
+
+  // Fetch user wallet balances for pool assets when modal opens
+  useEffect(() => {
+    const pool = liquidityDialog.pool;
+    const userAddr = accountProfile?.account || accountProfile?.address;
+    if (!liquidityDialog.open || !pool || !userAddr) return;
+
+    const fetchBal = async (asset) => {
+      if (asset.currency === 'XRP') {
+        try {
+          const resp = await apiFetch(`https://api.xrpl.to/api/account/info/${userAddr}`);
+          const data = await resp.json();
+          return data?.balance ?? 0;
+        } catch { return 0; }
+      }
+      try {
+        const resp = await apiFetch(`https://api.xrpl.to/api/account/trustline/${userAddr}/${asset.issuer}/${encodeURIComponent(asset.currency)}`);
+        const data = await resp.json();
+        return data?.hasTrustline ? (data.balance ?? 0) : 0;
+      } catch { return 0; }
+    };
+
+    Promise.all([fetchBal(pool.asset1), fetchBal(pool.asset2)])
+      .then(([b1, b2]) => setUserPoolBalances({ asset1: b1, asset2: b2 }));
+  }, [liquidityDialog.open, liquidityDialog.pool, accountProfile?.account, accountProfile?.address, lpRefreshCounter]);
 
   const handleAmount1Change = (value) => {
     setDepositAmount1(value);
+    setPendingDeposit(null);
     if (depositMode === 'double') {
       if (!value) {
         setDepositAmount2('');
@@ -2901,6 +2864,7 @@ const TradingHistory = ({
 
   const handleAmount2Change = (value) => {
     setDepositAmount2(value);
+    setPendingDeposit(null);
     if (depositMode === 'double') {
       if (!value) {
         setDepositAmount1('');
@@ -2912,9 +2876,384 @@ const TradingHistory = ({
     }
   };
 
-  const handleSubmitDeposit = () => {
-    // TODO: Implement AMM deposit using proper wallet integration
-    handleCloseDialog();
+  // Withdraw amount handlers — linked in "double" mode
+  const handleWithdrawAmount1Change = (value) => {
+    setWithdrawAmount1(value);
+    setPendingWithdraw(null);
+    if (withdrawMode === 'double') {
+      if (!value) {
+        setWithdrawAmount2('');
+      } else if (liquidityDialog.pool?.currentLiquidity) {
+        const pool = liquidityDialog.pool;
+        const ratio = pool.currentLiquidity.asset2Amount / pool.currentLiquidity.asset1Amount;
+        setWithdrawAmount2((parseFloat(value) * ratio).toFixed(6));
+      }
+    }
+  };
+
+  const handleWithdrawAmount2Change = (value) => {
+    setWithdrawAmount2(value);
+    setPendingWithdraw(null);
+    if (withdrawMode === 'double') {
+      if (!value) {
+        setWithdrawAmount1('');
+      } else if (liquidityDialog.pool?.currentLiquidity) {
+        const pool = liquidityDialog.pool;
+        const ratio = pool.currentLiquidity.asset1Amount / pool.currentLiquidity.asset2Amount;
+        setWithdrawAmount1((parseFloat(value) * ratio).toFixed(6));
+      }
+    }
+  };
+
+  // Calculate max withdrawable for single-asset mode (full LP position in one asset)
+  const getWithdrawMax = (assetKey) => {
+    const pool = liquidityDialog.pool;
+    if (!pool?.currentLiquidity) return 0;
+    const pa = pool.ammAccount || pool.account || pool._id;
+    const lp = userLpBalances[pa];
+    if (!lp || lp.balance <= 0) return 0;
+    const a1 = lp.asset1Amount || 0;
+    const a2 = lp.asset2Amount || 0;
+    if (assetKey === 'asset1') {
+      // All LP → asset1: pro-rata asset1 + asset2 converted at pool rate
+      const rate = pool.currentLiquidity.asset1Amount / pool.currentLiquidity.asset2Amount;
+      return a1 + a2 * rate;
+    } else {
+      // All LP → asset2: pro-rata asset2 + asset1 converted at pool rate
+      const rate = pool.currentLiquidity.asset2Amount / pool.currentLiquidity.asset1Amount;
+      return a2 + a1 * rate;
+    }
+  };
+
+  // Parse simulation metadata to extract actual deposit/withdraw amounts and LP tokens
+  const parseAmmSimulation = (simResult, pool, txType) => {
+    const meta = simResult?.meta;
+    if (!meta?.AffectedNodes) return null;
+
+    const account = accountProfile?.account || accountProfile?.address;
+    let lpTokenChange = 0;
+    let asset1Change = 0;
+    let asset2Change = 0;
+    const fee = parseInt(simResult?.meta?.Fee || simResult?.fee || '12', 10) / 1_000_000;
+
+    for (const node of meta.AffectedNodes) {
+      const mod = node.ModifiedNode || node.CreatedNode || node.DeletedNode;
+      if (!mod) continue;
+
+      // LP token balance change (RippleState where issuer is the AMM account)
+      if (mod.LedgerEntryType === 'RippleState') {
+        const final = mod.FinalFields || mod.NewFields;
+        const prev = mod.PreviousFields;
+        if (!final) continue;
+
+        const ammAccount = pool.ammAccount || pool.account || pool._id;
+        const lowAccount = final.LowLimit?.issuer;
+        const highAccount = final.HighLimit?.issuer;
+        const isLpToken = lowAccount === ammAccount || highAccount === ammAccount;
+
+        if (isLpToken) {
+          const finalBal = parseFloat(final.Balance?.value || 0);
+          const prevBal = prev?.Balance ? parseFloat(prev.Balance.value || 0) : 0;
+          // LP balance is negative from AMM's perspective if user is low account
+          const userIsLow = lowAccount === account;
+          lpTokenChange = userIsLow ? -(finalBal - prevBal) : (finalBal - prevBal);
+        } else {
+          // Token balance change for user
+          const isUserLine = lowAccount === account || highAccount === account;
+          if (isUserLine) {
+            const finalBal = parseFloat(final.Balance?.value || 0);
+            const prevBal = prev?.Balance ? parseFloat(prev.Balance.value || 0) : 0;
+            const diff = finalBal - prevBal;
+            const userIsLow = lowAccount === account;
+            const change = userIsLow ? -diff : diff;
+
+            const currency = final.Balance?.currency || final.LowLimit?.currency || final.HighLimit?.currency;
+            if (currency === pool.asset1.currency) asset1Change = change;
+            else if (currency === pool.asset2.currency) asset2Change = change;
+          }
+        }
+      }
+
+      // XRP balance change (AccountRoot)
+      if (mod.LedgerEntryType === 'AccountRoot') {
+        const final = mod.FinalFields || mod.NewFields;
+        const prev = mod.PreviousFields;
+        if (final?.Account === account && prev?.Balance) {
+          const finalBal = parseInt(final.Balance, 10) / 1_000_000;
+          const prevBal = parseInt(prev.Balance, 10) / 1_000_000;
+          const diff = finalBal - prevBal + fee; // Add back fee to get actual asset change
+          if (pool.asset1.currency === 'XRP') asset1Change = diff;
+          else if (pool.asset2.currency === 'XRP') asset2Change = diff;
+        }
+      }
+    }
+
+    return {
+      asset1: { amount: Math.abs(asset1Change), currency: pool.asset1.currency, name: decodeCurrency(pool.asset1.currency) },
+      asset2: { amount: Math.abs(asset2Change), currency: pool.asset2.currency, name: decodeCurrency(pool.asset2.currency) },
+      lpTokens: Math.abs(lpTokenChange),
+      fee,
+      isDeposit: txType === 'deposit'
+    };
+  };
+
+  const makeAssetId = (asset) =>
+    asset.currency === 'XRP' ? { currency: 'XRP' } : { currency: asset.currency, issuer: asset.issuer };
+
+  const makeAmount = (asset, value) =>
+    asset.currency === 'XRP'
+      ? String(Math.floor(parseFloat(value) * 1_000_000))
+      : { currency: asset.currency, issuer: asset.issuer, value: String(value) };
+
+  const handleSubmitDeposit = async () => {
+    const pool = addLiquidityDialog.pool;
+    if (!pool) return;
+
+    const account = accountProfile?.account || accountProfile?.address;
+    if (!account) { toast.error('Wallet not connected'); return; }
+
+    const amt1 = parseFloat(depositAmount1);
+    const amt2 = parseFloat(depositAmount2);
+    if (depositMode === 'double' && (!amt1 || !amt2)) { toast.error('Enter both amounts'); return; }
+    if (depositMode === 'single1' && !amt1) { toast.error('Enter amount'); return; }
+    if (depositMode === 'single2' && !amt2) { toast.error('Enter amount'); return; }
+
+    setDepositLoading(true);
+    const toastId = toast.loading('Simulating deposit...');
+
+    try {
+      const { Wallet: XRPLWallet } = await import('xrpl');
+      const { EncryptedWalletStorage, deviceFingerprint } = await import('src/utils/encryptedWalletStorage');
+
+      const walletStorage = new EncryptedWalletStorage();
+      const deviceKeyId = await deviceFingerprint.getDeviceId();
+      const storedPassword = await walletStorage.getWalletCredential(deviceKeyId);
+      if (!storedPassword) { toast.error('Wallet locked', { id: toastId }); setDepositLoading(false); return; }
+
+      const walletData = await walletStorage.getWallet(account, storedPassword);
+      if (!walletData?.seed) { toast.error('Could not retrieve credentials', { id: toastId }); setDepositLoading(false); return; }
+
+      const algorithm = walletData.seed.startsWith('sEd') ? 'ed25519' : 'secp256k1';
+      const deviceWallet = XRPLWallet.fromSeed(walletData.seed, { algorithm });
+
+      const tx = {
+        TransactionType: 'AMMDeposit',
+        Account: account,
+        Asset: makeAssetId(pool.asset1),
+        Asset2: makeAssetId(pool.asset2),
+        SourceTag: 161803,
+        Memos: configureMemos('', '', 'AMM Deposit via https://xrpl.to')
+      };
+
+      if (depositMode === 'double') {
+        tx.Amount = makeAmount(pool.asset1, depositAmount1);
+        tx.Amount2 = makeAmount(pool.asset2, depositAmount2);
+        tx.Flags = 1048576; // tfTwoAsset
+      } else if (depositMode === 'single1') {
+        tx.Amount = makeAmount(pool.asset1, depositAmount1);
+        tx.Flags = 524288; // tfSingleAsset
+      } else {
+        tx.Amount = makeAmount(pool.asset2, depositAmount2);
+        tx.Flags = 524288; // tfSingleAsset
+      }
+
+      // Simulate only — wait for user confirmation before submitting
+      const simResult = await simulateTransaction(tx);
+      toast.dismiss(toastId);
+
+      if (simResult.engine_result !== 'tesSUCCESS') {
+        setPendingDeposit({ tx: null, error: simResult.engine_result_message || simResult.engine_result });
+        setDepositLoading(false);
+        return;
+      }
+
+      const preview = parseAmmSimulation(simResult, pool, 'deposit');
+      setPendingDeposit({ tx, deviceWallet, simResult, preview });
+    } catch (err) {
+      console.error('[AMM Deposit] Simulation error:', err);
+      setPendingDeposit({ tx: null, error: err.message?.slice(0, 80) || 'Simulation failed' });
+    }
+    setDepositLoading(false);
+  };
+
+  const handleConfirmDeposit = async () => {
+    if (!pendingDeposit) return;
+    const { tx, deviceWallet } = pendingDeposit;
+    setDepositLoading(true);
+    const toastId = toast.loading('Signing & submitting...');
+
+    try {
+      const result = await submitTransaction(deviceWallet, tx);
+      const txHash = result.hash || result.tx_json?.hash;
+      const engineResult = result.engine_result || result.result?.engine_result;
+
+      if (engineResult !== 'tesSUCCESS') {
+        toast.error('Deposit failed', { id: toastId, description: result.engine_result_message || engineResult });
+        setDepositLoading(false);
+        return;
+      }
+
+      // Poll for on-chain confirmation
+      toast.loading('Waiting for confirmation...', { id: toastId });
+      let validated = false;
+      for (let i = 0; i < 15; i++) {
+        await new Promise(r => setTimeout(r, 500));
+        try {
+          const txRes = await api.get(`https://api.xrpl.to/v1/tx/${txHash}`);
+          if (txRes.data?.validated) {
+            const txResult = txRes.data?.meta?.TransactionResult || txRes.data?.engine_result;
+            if (txResult === 'tesSUCCESS') { validated = true; break; }
+            else { toast.error('Deposit failed on-chain', { id: toastId, description: txResult }); setDepositLoading(false); return; }
+          }
+        } catch (e) { /* continue polling */ }
+      }
+
+      if (validated) {
+        toast.success('Liquidity added!', { id: toastId, description: `TX: ${txHash?.slice(0, 8)}...` });
+      } else {
+        toast.success('Deposit submitted', { id: toastId, description: 'Confirmation pending...' });
+      }
+      setPendingDeposit(null);
+      setDepositAmount1('');
+      setDepositAmount2('');
+      setLpRefreshCounter(c => c + 1);
+    } catch (err) {
+      console.error('[AMM Deposit]', err);
+      toast.error('Deposit failed', { id: toastId, description: err.message?.slice(0, 60) });
+      setPendingDeposit(null);
+    }
+    setDepositLoading(false);
+  };
+
+  const handleWithdrawLiquidity = (pool) => {
+    setLiquidityDialog({ open: true, pool, tab: 'remove' });
+    setWithdrawAmount1('');
+    setWithdrawAmount2('');
+    setWithdrawMode('double');
+  };
+
+  const handleCloseWithdrawDialog = () => {
+    setLiquidityDialog({ open: false, pool: null, tab: 'add' });
+  };
+
+  const handleSubmitWithdraw = async () => {
+    const pool = withdrawDialog.pool;
+    if (!pool) return;
+
+    const account = accountProfile?.account || accountProfile?.address;
+    if (!account) { toast.error('Wallet not connected'); return; }
+
+    if (withdrawMode === 'double' && !parseFloat(withdrawAmount1) && !parseFloat(withdrawAmount2)) { toast.error('Enter amounts'); return; }
+    if (withdrawMode === 'single1' && !parseFloat(withdrawAmount1)) { toast.error('Enter amount'); return; }
+    if (withdrawMode === 'single2' && !parseFloat(withdrawAmount2)) { toast.error('Enter amount'); return; }
+
+    setWithdrawLoading(true);
+    const toastId = toast.loading('Simulating withdrawal...');
+
+    try {
+      const { Wallet: XRPLWallet } = await import('xrpl');
+      const { EncryptedWalletStorage, deviceFingerprint } = await import('src/utils/encryptedWalletStorage');
+
+      const walletStorage = new EncryptedWalletStorage();
+      const deviceKeyId = await deviceFingerprint.getDeviceId();
+      const storedPassword = await walletStorage.getWalletCredential(deviceKeyId);
+      if (!storedPassword) { toast.error('Wallet locked', { id: toastId }); setWithdrawLoading(false); return; }
+
+      const walletData = await walletStorage.getWallet(account, storedPassword);
+      if (!walletData?.seed) { toast.error('Could not retrieve credentials', { id: toastId }); setWithdrawLoading(false); return; }
+
+      const algorithm = walletData.seed.startsWith('sEd') ? 'ed25519' : 'secp256k1';
+      const deviceWallet = XRPLWallet.fromSeed(walletData.seed, { algorithm });
+
+      const tx = {
+        TransactionType: 'AMMWithdraw',
+        Account: account,
+        Asset: makeAssetId(pool.asset1),
+        Asset2: makeAssetId(pool.asset2),
+        SourceTag: 161803,
+        Memos: configureMemos('', '', 'AMM Withdraw via https://xrpl.to')
+      };
+
+      if (withdrawMode === 'all') {
+        tx.Flags = 131072; // tfWithdrawAll
+      } else if (withdrawMode === 'double') {
+        tx.Amount = makeAmount(pool.asset1, withdrawAmount1);
+        tx.Amount2 = makeAmount(pool.asset2, withdrawAmount2);
+        tx.Flags = 1048576; // tfTwoAsset
+      } else if (withdrawMode === 'single1') {
+        tx.Amount = makeAmount(pool.asset1, withdrawAmount1);
+        tx.Flags = 524288; // tfSingleAsset
+      } else {
+        tx.Amount = makeAmount(pool.asset2, withdrawAmount2);
+        tx.Flags = 524288; // tfSingleAsset
+      }
+
+      // Simulate only — wait for user confirmation before submitting
+      const simResult = await simulateTransaction(tx);
+      toast.dismiss(toastId);
+
+      if (simResult.engine_result !== 'tesSUCCESS') {
+        setPendingWithdraw({ tx: null, error: simResult.engine_result_message || simResult.engine_result });
+        setWithdrawLoading(false);
+        return;
+      }
+
+      const preview = parseAmmSimulation(simResult, pool, 'withdraw');
+      setPendingWithdraw({ tx, deviceWallet, simResult, preview });
+    } catch (err) {
+      console.error('[AMM Withdraw] Simulation error:', err);
+      setPendingWithdraw({ tx: null, error: err.message?.slice(0, 80) || 'Simulation failed' });
+    }
+    setWithdrawLoading(false);
+  };
+
+  const handleConfirmWithdraw = async () => {
+    if (!pendingWithdraw) return;
+    const { tx, deviceWallet } = pendingWithdraw;
+    setWithdrawLoading(true);
+    const toastId = toast.loading('Signing & submitting...');
+
+    try {
+      const result = await submitTransaction(deviceWallet, tx);
+      const txHash = result.hash || result.tx_json?.hash;
+      const engineResult = result.engine_result || result.result?.engine_result;
+
+      if (engineResult !== 'tesSUCCESS') {
+        toast.error('Withdraw failed', { id: toastId, description: result.engine_result_message || engineResult });
+        setWithdrawLoading(false);
+        return;
+      }
+
+      // Poll for on-chain confirmation
+      toast.loading('Waiting for confirmation...', { id: toastId });
+      let validated = false;
+      for (let i = 0; i < 15; i++) {
+        await new Promise(r => setTimeout(r, 500));
+        try {
+          const txRes = await api.get(`https://api.xrpl.to/v1/tx/${txHash}`);
+          if (txRes.data?.validated) {
+            const txResult = txRes.data?.meta?.TransactionResult || txRes.data?.engine_result;
+            if (txResult === 'tesSUCCESS') { validated = true; break; }
+            else { toast.error('Withdraw failed on-chain', { id: toastId, description: txResult }); setWithdrawLoading(false); return; }
+          }
+        } catch (e) { /* continue polling */ }
+      }
+
+      if (validated) {
+        toast.success('Liquidity removed!', { id: toastId, description: `TX: ${txHash?.slice(0, 8)}...` });
+      } else {
+        toast.success('Withdrawal submitted', { id: toastId, description: 'Confirmation pending...' });
+      }
+      setPendingWithdraw(null);
+      setWithdrawAmount1('');
+      setWithdrawAmount2('');
+      setLpRefreshCounter(c => c + 1);
+    } catch (err) {
+      console.error('[AMM Withdraw]', err);
+      toast.error('Withdraw failed', { id: toastId, description: err.message?.slice(0, 60) });
+      setPendingWithdraw(null);
+    }
+    setWithdrawLoading(false);
   };
 
   // Fetch chart data for a specific pool
@@ -3143,54 +3482,20 @@ const TradingHistory = ({
             isNew={newTradeIds.has(trade._id || trade.id)}
             isDark={isDark}
           >
-            <CardContent style={{ padding: '4px 0' }}>
-              <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: '52px 36px 1fr 1fr 24px',
-                  gap: '6px',
-                  alignItems: 'center'
-                }}
-              >
+            <CardContent className="!py-[6px] !px-0">
+              <div className="grid grid-cols-[52px_36px_1fr_1fr_24px] gap-2 items-center">
                 {/* Time */}
-                <span
-                  style={{
-                    fontSize: '10px',
-                    fontWeight: 500,
-                    color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.5)',
-                    fontVariantNumeric: 'tabular-nums'
-                  }}
-                >
+                <span className={cn('text-[10px] font-semibold tabular-nums', isDark ? 'text-white/45' : 'text-black/45')}>
                   {formatRelativeTime(trade.time)}
                 </span>
 
                 {/* Type */}
                 {isLiquidity ? (
-                  <span
-                    style={{
-                      fontSize: '9px',
-                      fontWeight: 700,
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.02em',
-                      color:
-                        trade.type === 'withdraw'
-                          ? '#f59e0b'
-                          : trade.type === 'create'
-                            ? '#14b8a6'
-                            : '#8b5cf6'
-                    }}
-                  >
+                  <span className={cn('text-[9px] font-bold uppercase tracking-[0.04em]', trade.type === 'withdraw' ? 'text-[#f59e0b]' : trade.type === 'create' ? 'text-[#14b8a6]' : 'text-[#8b5cf6]')}>
                     {getLiquidityLabel()}
                   </span>
                 ) : (
-                  <span
-                    style={{
-                      fontSize: '10px',
-                      fontWeight: 800,
-                      textTransform: 'uppercase',
-                      color: isBuy ? '#22c55e' : '#ef4444'
-                    }}
-                  >
+                  <span className={cn('text-[10px] font-extrabold uppercase tracking-[0.04em]', isBuy ? 'text-[#22c55e]' : 'text-[#ef4444]')}>
                     {isBuy ? 'Buy' : 'Sell'}
                   </span>
                 )}
@@ -3202,13 +3507,10 @@ const TradingHistory = ({
                   isLP={isLiquidity}
                   isCreate={trade.type === 'create'}
                   isDark={isDark}
-                  style={{ height: '24px', padding: '0 6px' }}
+                  className="h-[26px] !px-2"
                 >
-                  <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: isDark ? '#fff' : '#1a1a1a' }}>
-                    {formatTradeDisplay(amountData.value)}{' '}
-                    <span style={{ opacity: 0.4, fontSize: '9px', fontWeight: 400 }}>
-                      {decodeCurrency(amountData.currency)}
-                    </span>
+                  <span className={cn('text-[11px] font-semibold font-mono', isDark ? 'text-white' : 'text-[#1a1a1a]')}>
+                    {formatTradeDisplay(amountData.value)}
                   </span>
                 </BarCell>
 
@@ -3219,13 +3521,10 @@ const TradingHistory = ({
                   isLP={isLiquidity}
                   isCreate={trade.type === 'create'}
                   isDark={isDark}
-                  style={{ height: '24px', padding: '0 6px' }}
+                  className="h-[26px] !px-2"
                 >
-                  <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: isDark ? '#fff' : '#1a1a1a' }}>
-                    {formatTradeDisplay(totalData.value)}{' '}
-                    <span style={{ opacity: 0.4, fontSize: '9px', fontWeight: 400 }}>
-                      {decodeCurrency(totalData.currency)}
-                    </span>
+                  <span className={cn('text-[11px] font-semibold font-mono', isDark ? 'text-white' : 'text-[#1a1a1a]')}>
+                    {formatTradeDisplay(totalData.value)}
                   </span>
                 </BarCell>
 
@@ -3233,12 +3532,9 @@ const TradingHistory = ({
                 <IconButton
                   onClick={() => handleTxClick(trade.hash, addressToShow)}
                   isDark={isDark}
-                  style={{
-                    padding: '4px',
-                    background: 'transparent'
-                  }}
+                  className="p-1 bg-transparent"
                 >
-                  <ExternalLink size={12} />
+                  <ExternalLink size={12} strokeWidth={2.5} />
                 </IconButton>
               </div>
             </CardContent>
@@ -3256,15 +3552,10 @@ const TradingHistory = ({
           isNew={newTradeIds.has(trade._id || trade.id)}
           isDark={isDark}
         >
-          <CardContent style={{ padding: '4px 0' }}>
+          <CardContent className="!py-[6px] !px-0">
             <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: `70px 50px 90px 1fr 1fr ${activeFiatCurrency !== 'XRP' ? '70px ' : ''}95px 70px 40px`,
-                gap: '8px',
-                alignItems: 'center',
-                cursor: 'pointer'
-              }}
+              className="grid gap-2 items-center cursor-pointer"
+              style={{ gridTemplateColumns: `70px 50px 90px 1fr 1fr ${activeFiatCurrency !== 'XRP' ? '70px ' : ''}95px 70px 40px` }}
               onClick={() =>
                 setExpandedTradeId(
                   expandedTradeId === (trade._id || trade.id) ? null : trade._id || trade.id
@@ -3272,66 +3563,25 @@ const TradingHistory = ({
               }
             >
               {/* Time */}
-              <span
-                style={{
-                  fontSize: '11px',
-                  fontWeight: 500,
-                  color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.5)',
-                  fontVariantNumeric: 'tabular-nums'
-                }}
-              >
+              <span className={cn('text-[11px] font-semibold tabular-nums', isDark ? 'text-white/45' : 'text-black/45')}>
                 {formatRelativeTime(trade.time, true)}
               </span>
 
               {/* Type */}
               {isLiquidity ? (
-                <span
-                  style={{
-                    fontSize: '10px',
-                    fontWeight: 700,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.02em',
-                    color:
-                      trade.type === 'withdraw'
-                        ? '#f59e0b'
-                        : trade.type === 'create'
-                          ? '#14b8a6'
-                          : '#8b5cf6'
-                  }}
-                >
+                <span className={cn('text-[10px] font-bold uppercase tracking-[0.04em]', trade.type === 'withdraw' ? 'text-[#f59e0b]' : trade.type === 'create' ? 'text-[#14b8a6]' : 'text-[#8b5cf6]')}>
                   {getLiquidityLabel()}
                 </span>
               ) : (
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '4px'
-                  }}
-                >
-                  <span
-                    style={{
-                      fontSize: '11px',
-                      fontWeight: 800,
-                      textTransform: 'uppercase',
-                      color: isBuy ? '#22c55e' : '#ef4444'
-                    }}
-                  >
+                <div className="flex items-center gap-1">
+                  <span className={cn('text-[11px] font-extrabold uppercase tracking-[0.04em]', isBuy ? 'text-[#22c55e]' : 'text-[#ef4444]')}>
                     {isBuy ? 'Buy' : 'Sell'}
                   </span>
                 </div>
               )}
 
               {/* Price */}
-              <span
-                style={{
-                  fontSize: '12px',
-                  fontWeight: 600,
-                  fontFamily: 'var(--font-mono)',
-                  color: isDark ? '#fff' : '#1a1a1a',
-                  letterSpacing: '-0.02em'
-                }}
-              >
+              <span className={cn('text-[12px] font-bold font-mono -tracking-[0.02em]', isDark ? 'text-white' : 'text-[#1a1a1a]')}>
                 {isLiquidity ? '-' : formatPrice(price)}
               </span>
 
@@ -3343,9 +3593,9 @@ const TradingHistory = ({
                 isCreate={trade.type === 'create'}
                 isDark={isDark}
               >
-                <span style={{ fontSize: '12px', fontFamily: 'var(--font-mono)', color: isDark ? '#fff' : '#1a1a1a' }}>
+                <span className={cn('text-[12px] font-mono', isDark ? 'text-white' : 'text-[#1a1a1a]')}>
                   {formatTradeDisplay(amountData.value)}{' '}
-                  <span style={{ opacity: 0.4, fontSize: '10px', fontWeight: 400 }}>
+                  <span className="opacity-40 text-[10px] font-normal">
                     {decodeCurrency(amountData.currency)}
                   </span>
                 </span>
@@ -3359,9 +3609,9 @@ const TradingHistory = ({
                 isCreate={trade.type === 'create'}
                 isDark={isDark}
               >
-                <span style={{ fontSize: '12px', fontFamily: 'var(--font-mono)', color: isDark ? '#fff' : '#1a1a1a' }}>
+                <span className={cn('text-[12px] font-mono', isDark ? 'text-white' : 'text-[#1a1a1a]')}>
                   {formatTradeDisplay(totalData.value)}{' '}
-                  <span style={{ opacity: 0.4, fontSize: '10px', fontWeight: 400 }}>
+                  <span className="opacity-40 text-[10px] font-normal">
                     {decodeCurrency(totalData.currency)}
                   </span>
                 </span>
@@ -3369,15 +3619,7 @@ const TradingHistory = ({
 
               {/* Fiat Value */}
               {activeFiatCurrency !== 'XRP' && (
-                <span
-                  style={{
-                    fontSize: '11px',
-                    fontWeight: 500,
-                    color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)',
-                    textAlign: 'right',
-                    fontFamily: 'var(--font-mono)'
-                  }}
-                >
+                <span className={cn('text-[11px] font-medium text-right font-mono', isDark ? 'text-white/60' : 'text-black/60')}>
                   {SYMBOLS[activeFiatCurrency]}
                   {formatTradeDisplay(
                     (xrpAmount > 0
@@ -3394,57 +3636,31 @@ const TradingHistory = ({
                 rel="noopener noreferrer"
                 onClick={(e) => e.stopPropagation()}
                 className={cn(
-                  'inline-flex items-center gap-2 px-2 py-1 rounded-md border transition-all duration-200',
+                  'inline-flex items-center gap-2 px-2 py-1 rounded-md border transition-all duration-200 text-[11px] font-mono no-underline whitespace-nowrap overflow-hidden text-ellipsis max-w-[95px]',
                   isDark
                     ? 'bg-white/[0.03] border-white/[0.06] hover:bg-white/[0.08] hover:border-white/[0.12] text-white/50 hover:text-white/80'
                     : 'bg-black/[0.02] border-black/[0.04] hover:bg-black/[0.04] hover:border-black/[0.08] text-gray-500 hover:text-gray-900'
                 )}
-                style={{
-                  fontSize: '11px',
-                  fontFamily: 'var(--font-mono)',
-                  textDecoration: 'none',
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  maxWidth: '95px'
-                }}
                 title={addressToShow}
               >
                 {dotColor && (
                   <span
-                    style={{
-                      width: '5px',
-                      height: '5px',
-                      borderRadius: '50%',
-                      background: dotColor,
-                      boxShadow: `0 0 6px ${dotColor}80`,
-                      flexShrink: 0
-                    }}
+                    className="w-[5px] h-[5px] rounded-full shrink-0"
+                    style={{ background: dotColor, boxShadow: `0 0 6px ${dotColor}80` }}
                   />
                 )}
                 {walletLabels[addressToShow] ? (
-                  <span style={{ fontWeight: 600, color: '#3b82f6' }}>{walletLabels[addressToShow]}</span>
+                  <span className="font-semibold text-[#3b82f6]">{walletLabels[addressToShow]}</span>
                 ) : addressToShow ? `${addressToShow.slice(0, 4)}...${addressToShow.slice(-4)}` : '-'}
               </a>
 
               {/* Source */}
-              <span
-                style={{
-                  fontSize: '10px',
-                  fontWeight: 500,
-                  color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.4)',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.02em'
-                }}
-              >
+              <span className={cn('text-[10px] font-medium overflow-hidden text-ellipsis whitespace-nowrap uppercase tracking-[0.02em]', isDark ? 'text-white/35' : 'text-black/40')}>
                 {getSourceTagName(trade.sourceTag) || (isLiquidity ? 'AMM' : '')}
               </span>
 
               {/* Animal tier icon */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.8 }}>
+              <div className="flex items-center justify-center opacity-80">
                 <TierIcon xrpValue={xrpAmount} isDark={isDark} />
               </div>
             </div>
@@ -3477,8 +3693,8 @@ const TradingHistory = ({
 
   if (loading) {
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-        <div style={{ display: 'flex', justifyContent: 'center', padding: '32px' }}>
+      <div className="flex flex-col gap-3">
+        <div className="flex justify-center p-8">
           <Spinner size={32} />
         </div>
       </div>
@@ -3494,26 +3710,8 @@ const TradingHistory = ({
   );
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '8px',
-        width: '100%',
-        flex: 1,
-        position: 'relative',
-        zIndex: 0
-      }}
-    >
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          flexWrap: 'wrap',
-          gap: '8px'
-        }}
-      >
+    <div className="flex flex-col gap-2 w-full flex-1 relative z-0">
+      <div className="flex items-center justify-between flex-wrap gap-2">
         <Tabs isDark={isDark}>
           <Tab selected={tabValue === 0} onClick={(e) => handleTabChange(e, 0)} isDark={isDark}>
             <Activity size={14} />
@@ -3537,39 +3735,25 @@ const TradingHistory = ({
           </Tab>
         </Tabs>
         {tabValue === 0 && !isMobile && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+          <div className="flex items-center gap-2 flex-wrap">
             <select
               value={pairType}
               onChange={(e) => setPairType(e.target.value)}
-              style={{
-                padding: '5px 8px',
-                fontSize: '11px',
-                fontWeight: 500,
-                borderRadius: '6px',
-                border: `1px solid ${pairType ? '#3b82f6' : isDark ? 'rgba(59,130,246,0.15)' : 'rgba(0,0,0,0.12)'}`,
-                background: isDark
-                  ? pairType
-                    ? 'rgba(59,130,246,0.15)'
-                    : 'rgba(0,0,0,0.8)'
-                  : pairType
-                    ? 'rgba(59,130,246,0.1)'
-                    : '#fff',
-                color: pairType ? '#3b82f6' : isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)',
-                cursor: 'pointer',
-                outline: 'none',
-                colorScheme: isDark ? 'dark' : 'light',
-                WebkitAppearance: 'none',
-                MozAppearance: 'none',
-                appearance: 'none'
-              }}
+              className={cn(
+                'py-[5px] px-2 text-[11px] font-medium rounded-[6px] border cursor-pointer outline-none appearance-none',
+                isDark ? 'color-scheme-dark' : 'color-scheme-light',
+                pairType
+                  ? cn('border-[#3b82f6] text-[#3b82f6]', isDark ? 'bg-[rgba(59,130,246,0.15)]' : 'bg-[rgba(59,130,246,0.1)]')
+                  : cn(isDark ? 'border-[rgba(59,130,246,0.15)] bg-black/80 text-white/60' : 'border-black/[0.12] bg-white text-black/60')
+              )}
             >
-              <option value="" style={{ background: isDark ? '#1a1a1a' : '#fff' }}>
+              <option value="" className={isDark ? 'bg-[#1a1a1a]' : 'bg-white'}>
                 All Pairs
               </option>
-              <option value="xrp" style={{ background: isDark ? '#1a1a1a' : '#fff' }}>
+              <option value="xrp" className={isDark ? 'bg-[#1a1a1a]' : 'bg-white'}>
                 XRP Pairs
               </option>
-              <option value="token" style={{ background: isDark ? '#1a1a1a' : '#fff' }}>
+              <option value="token" className={isDark ? 'bg-[#1a1a1a]' : 'bg-white'}>
                 Token Pairs
               </option>
             </select>
@@ -3583,40 +3767,21 @@ const TradingHistory = ({
                   setLiquidityType('');
                 }
               }}
-              style={{
-                padding: '5px 8px',
-                fontSize: '11px',
-                fontWeight: 500,
-                borderRadius: '6px',
-                border: `1px solid ${historyType !== 'trades' ? '#3b82f6' : isDark ? 'rgba(59,130,246,0.15)' : 'rgba(0,0,0,0.12)'}`,
-                background: isDark
-                  ? historyType !== 'trades'
-                    ? 'rgba(59,130,246,0.15)'
-                    : 'rgba(0,0,0,0.8)'
-                  : historyType !== 'trades'
-                    ? 'rgba(59,130,246,0.1)'
-                    : '#fff',
-                color:
-                  historyType !== 'trades'
-                    ? '#3b82f6'
-                    : isDark
-                      ? 'rgba(255,255,255,0.6)'
-                      : 'rgba(0,0,0,0.6)',
-                cursor: 'pointer',
-                outline: 'none',
-                colorScheme: isDark ? 'dark' : 'light',
-                WebkitAppearance: 'none',
-                MozAppearance: 'none',
-                appearance: 'none'
-              }}
+              className={cn(
+                'py-[5px] px-2 text-[11px] font-medium rounded-[6px] border cursor-pointer outline-none appearance-none',
+                isDark ? 'color-scheme-dark' : 'color-scheme-light',
+                historyType !== 'trades'
+                  ? cn('border-[#3b82f6] text-[#3b82f6]', isDark ? 'bg-[rgba(59,130,246,0.15)]' : 'bg-[rgba(59,130,246,0.1)]')
+                  : cn(isDark ? 'border-[rgba(59,130,246,0.15)] bg-black/80 text-white/60' : 'border-black/[0.12] bg-white text-black/60')
+              )}
             >
-              <option value="trades" style={{ background: isDark ? '#1a1a1a' : '#fff' }}>
+              <option value="trades" className={isDark ? 'bg-[#1a1a1a]' : 'bg-white'}>
                 Trades
               </option>
-              <option value="liquidity" style={{ background: isDark ? '#1a1a1a' : '#fff' }}>
+              <option value="liquidity" className={isDark ? 'bg-[#1a1a1a]' : 'bg-white'}>
                 Liquidity
               </option>
-              <option value="all" style={{ background: isDark ? '#1a1a1a' : '#fff' }}>
+              <option value="all" className={isDark ? 'bg-[#1a1a1a]' : 'bg-white'}>
                 All
               </option>
             </select>
@@ -3624,42 +3789,24 @@ const TradingHistory = ({
               <select
                 value={liquidityType}
                 onChange={(e) => setLiquidityType(e.target.value)}
-                style={{
-                  padding: '5px 8px',
-                  fontSize: '11px',
-                  fontWeight: 500,
-                  borderRadius: '6px',
-                  border: `1px solid ${liquidityType ? '#8b5cf6' : isDark ? 'rgba(59,130,246,0.15)' : 'rgba(0,0,0,0.12)'}`,
-                  background: isDark
-                    ? liquidityType
-                      ? 'rgba(139,92,246,0.15)'
-                      : 'rgba(0,0,0,0.8)'
-                    : liquidityType
-                      ? 'rgba(139,92,246,0.1)'
-                      : '#fff',
-                  color: liquidityType
-                    ? '#8b5cf6'
-                    : isDark
-                      ? 'rgba(255,255,255,0.6)'
-                      : 'rgba(0,0,0,0.6)',
-                  cursor: 'pointer',
-                  outline: 'none',
-                  colorScheme: isDark ? 'dark' : 'light',
-                  WebkitAppearance: 'none',
-                  MozAppearance: 'none',
-                  appearance: 'none'
-                }}
+                className={cn(
+                  'py-[5px] px-2 text-[11px] font-medium rounded-[6px] border cursor-pointer outline-none appearance-none',
+                  isDark ? 'color-scheme-dark' : 'color-scheme-light',
+                  liquidityType
+                    ? cn('border-[#8b5cf6] text-[#8b5cf6]', isDark ? 'bg-[rgba(139,92,246,0.15)]' : 'bg-[rgba(139,92,246,0.1)]')
+                    : cn(isDark ? 'border-[rgba(59,130,246,0.15)] bg-black/80 text-white/60' : 'border-black/[0.12] bg-white text-black/60')
+                )}
               >
-                <option value="" style={{ background: isDark ? '#1a1a1a' : '#fff' }}>
+                <option value="" className={isDark ? 'bg-[#1a1a1a]' : 'bg-white'}>
                   All Events
                 </option>
-                <option value="deposit" style={{ background: isDark ? '#1a1a1a' : '#fff' }}>
+                <option value="deposit" className={isDark ? 'bg-[#1a1a1a]' : 'bg-white'}>
                   Deposits
                 </option>
-                <option value="withdraw" style={{ background: isDark ? '#1a1a1a' : '#fff' }}>
+                <option value="withdraw" className={isDark ? 'bg-[#1a1a1a]' : 'bg-white'}>
                   Withdrawals
                 </option>
-                <option value="create" style={{ background: isDark ? '#1a1a1a' : '#fff' }}>
+                <option value="create" className={isDark ? 'bg-[#1a1a1a]' : 'bg-white'}>
                   Pool Creates
                 </option>
               </select>
@@ -3667,47 +3814,33 @@ const TradingHistory = ({
             <select
               value={xrpAmount}
               onChange={(e) => setXrpAmount(e.target.value)}
-              style={{
-                padding: '5px 8px',
-                fontSize: '11px',
-                fontWeight: 500,
-                borderRadius: '6px',
-                border: `1px solid ${xrpAmount ? '#3b82f6' : isDark ? 'rgba(59,130,246,0.15)' : 'rgba(0,0,0,0.12)'}`,
-                background: isDark
-                  ? xrpAmount
-                    ? 'rgba(59,130,246,0.15)'
-                    : 'rgba(0,0,0,0.8)'
-                  : xrpAmount
-                    ? 'rgba(59,130,246,0.1)'
-                    : '#fff',
-                color: xrpAmount ? '#3b82f6' : isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)',
-                cursor: 'pointer',
-                outline: 'none',
-                colorScheme: isDark ? 'dark' : 'light',
-                WebkitAppearance: 'none',
-                MozAppearance: 'none',
-                appearance: 'none'
-              }}
+              className={cn(
+                'py-[5px] px-2 text-[11px] font-medium rounded-[6px] border cursor-pointer outline-none appearance-none',
+                isDark ? 'color-scheme-dark' : 'color-scheme-light',
+                xrpAmount
+                  ? cn('border-[#3b82f6] text-[#3b82f6]', isDark ? 'bg-[rgba(59,130,246,0.15)]' : 'bg-[rgba(59,130,246,0.1)]')
+                  : cn(isDark ? 'border-[rgba(59,130,246,0.15)] bg-black/80 text-white/60' : 'border-black/[0.12] bg-white text-black/60')
+              )}
             >
-              <option value="" style={{ background: isDark ? '#1a1a1a' : '#fff' }}>
+              <option value="" className={isDark ? 'bg-[#1a1a1a]' : 'bg-white'}>
                 Min XRP
               </option>
-              <option value="100" style={{ background: isDark ? '#1a1a1a' : '#fff' }}>
+              <option value="100" className={isDark ? 'bg-[#1a1a1a]' : 'bg-white'}>
                 100+
               </option>
-              <option value="500" style={{ background: isDark ? '#1a1a1a' : '#fff' }}>
+              <option value="500" className={isDark ? 'bg-[#1a1a1a]' : 'bg-white'}>
                 500+
               </option>
-              <option value="1000" style={{ background: isDark ? '#1a1a1a' : '#fff' }}>
+              <option value="1000" className={isDark ? 'bg-[#1a1a1a]' : 'bg-white'}>
                 1k+
               </option>
-              <option value="2500" style={{ background: isDark ? '#1a1a1a' : '#fff' }}>
+              <option value="2500" className={isDark ? 'bg-[#1a1a1a]' : 'bg-white'}>
                 2.5k+
               </option>
-              <option value="5000" style={{ background: isDark ? '#1a1a1a' : '#fff' }}>
+              <option value="5000" className={isDark ? 'bg-[#1a1a1a]' : 'bg-white'}>
                 5k+
               </option>
-              <option value="10000" style={{ background: isDark ? '#1a1a1a' : '#fff' }}>
+              <option value="10000" className={isDark ? 'bg-[#1a1a1a]' : 'bg-white'}>
                 10k+
               </option>
             </select>
@@ -3716,23 +3849,13 @@ const TradingHistory = ({
               value={accountFilter}
               onChange={(e) => setAccountFilter(e.target.value)}
               placeholder="Filter account..."
-              style={{
-                padding: '5px 8px',
-                fontSize: '11px',
-                fontWeight: 500,
-                borderRadius: '6px',
-                border: `1px solid ${accountFilter ? '#3b82f6' : isDark ? 'rgba(59,130,246,0.15)' : 'rgba(0,0,0,0.12)'}`,
-                background: isDark
-                  ? accountFilter
-                    ? 'rgba(59,130,246,0.15)'
-                    : 'rgba(0,0,0,0.8)'
-                  : accountFilter
-                    ? 'rgba(59,130,246,0.1)'
-                    : '#fff',
-                color: isDark ? '#fff' : '#1a1a1a',
-                outline: 'none',
-                width: '120px'
-              }}
+              className={cn(
+                'py-[5px] px-2 text-[11px] font-medium rounded-[6px] border outline-none w-[120px]',
+                isDark ? 'text-white' : 'text-[#1a1a1a]',
+                accountFilter
+                  ? cn('border-[#3b82f6]', isDark ? 'bg-[rgba(59,130,246,0.15)]' : 'bg-[rgba(59,130,246,0.1)]')
+                  : cn(isDark ? 'border-[rgba(59,130,246,0.15)] bg-black/80' : 'border-black/[0.12] bg-white')
+              )}
             />
           </div>
         )}
@@ -3743,116 +3866,36 @@ const TradingHistory = ({
           {/* Desktop header - hidden on mobile */}
           {!isMobile && (
             <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: `70px 50px 90px 1fr 1fr ${activeFiatCurrency !== 'XRP' ? '70px ' : ''}95px 70px 40px`,
-                gap: '8px',
-                padding: '12px 0',
-                position: 'sticky',
-                top: 0,
-                zIndex: 10,
-                background: isDark ? 'rgba(10,10,10,0.8)' : 'rgba(255,255,255,0.8)',
-                backdropFilter: 'blur(8px)',
-                borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`
-              }}
+              className={cn('grid gap-2 py-3 sticky top-0 z-10 backdrop-blur-[8px] border-b', isDark ? 'bg-[rgba(10,10,10,0.8)] border-white/[0.08]' : 'bg-[rgba(255,255,255,0.8)] border-black/[0.08]')}
+              style={{ gridTemplateColumns: `70px 50px 90px 1fr 1fr ${activeFiatCurrency !== 'XRP' ? '70px ' : ''}95px 70px 40px` }}
             >
-              <div
-                style={{
-                  fontSize: '11px',
-                  fontWeight: 600,
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.08em',
-                  color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px'
-                }}
-              >
+              <div className={cn('text-[11px] font-semibold uppercase tracking-[0.08em] flex items-center gap-[6px]', isDark ? 'text-white/40' : 'text-black/40')}>
                 Time
                 <LiveIndicator isDark={isDark}>
                   <LiveCircle />
                 </LiveIndicator>
               </div>
-              <div
-                style={{
-                  fontSize: '11px',
-                  fontWeight: 600,
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.08em',
-                  color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'
-                }}
-              >
+              <div className={cn('text-[11px] font-semibold uppercase tracking-[0.08em]', isDark ? 'text-white/40' : 'text-black/40')}>
                 Type
               </div>
-              <div
-                style={{
-                  fontSize: '11px',
-                  fontWeight: 600,
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.08em',
-                  color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'
-                }}
-              >
+              <div className={cn('text-[11px] font-semibold uppercase tracking-[0.08em]', isDark ? 'text-white/40' : 'text-black/40')}>
                 Price
               </div>
-              <div
-                style={{
-                  fontSize: '11px',
-                  fontWeight: 600,
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.08em',
-                  color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
-                  paddingLeft: '10px'
-                }}
-              >
+              <div className={cn('text-[11px] font-semibold uppercase tracking-[0.08em] pl-[10px]', isDark ? 'text-white/40' : 'text-black/40')}>
                 Amount
               </div>
-              <div
-                style={{
-                  fontSize: '11px',
-                  fontWeight: 600,
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.08em',
-                  color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
-                  paddingLeft: '10px'
-                }}
-              >
+              <div className={cn('text-[11px] font-semibold uppercase tracking-[0.08em] pl-[10px]', isDark ? 'text-white/40' : 'text-black/40')}>
                 Value
               </div>
               {activeFiatCurrency !== 'XRP' && (
-                <div
-                  style={{
-                    fontSize: '11px',
-                    fontWeight: 600,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.08em',
-                    color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
-                    textAlign: 'right'
-                  }}
-                >
+                <div className={cn('text-[11px] font-semibold uppercase tracking-[0.08em] text-right', isDark ? 'text-white/40' : 'text-black/40')}>
                   {activeFiatCurrency}
                 </div>
               )}
-              <div
-                style={{
-                  fontSize: '11px',
-                  fontWeight: 600,
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.08em',
-                  color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'
-                }}
-              >
+              <div className={cn('text-[11px] font-semibold uppercase tracking-[0.08em]', isDark ? 'text-white/40' : 'text-black/40')}>
                 Trader
               </div>
-              <div
-                style={{
-                  fontSize: '11px',
-                  fontWeight: 600,
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.08em',
-                  color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'
-                }}
-              >
+              <div className={cn('text-[11px] font-semibold uppercase tracking-[0.08em]', isDark ? 'text-white/40' : 'text-black/40')}>
                 Source
               </div>
               <div></div>
@@ -3861,21 +3904,11 @@ const TradingHistory = ({
 
           {/* Mobile header with column labels */}
           {isMobile && (
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: '52px 36px 1fr 1fr 24px',
-                gap: '6px',
-                alignItems: 'center',
-                padding: '4px 12px',
-                marginBottom: '4px',
-                borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`
-              }}
-            >
-              <span style={{ fontSize: '9px', fontWeight: 500, textTransform: 'uppercase', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>Time</span>
-              <span style={{ fontSize: '9px', fontWeight: 500, textTransform: 'uppercase', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>Type</span>
-              <span style={{ fontSize: '9px', fontWeight: 500, textTransform: 'uppercase', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>Amount</span>
-              <span style={{ fontSize: '9px', fontWeight: 500, textTransform: 'uppercase', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>Total</span>
+            <div className={cn('grid grid-cols-[52px_36px_1fr_1fr_24px] gap-[6px] items-center px-3 py-1 mb-1 border-b', isDark ? 'border-white/[0.06]' : 'border-black/[0.06]')}>
+              <span className={cn('text-[9px] font-medium uppercase', isDark ? 'text-white/40' : 'text-black/40')}>Time</span>
+              <span className={cn('text-[9px] font-medium uppercase', isDark ? 'text-white/40' : 'text-black/40')}>Type</span>
+              <span className={cn('text-[9px] font-medium uppercase', isDark ? 'text-white/40' : 'text-black/40')}>Amount</span>
+              <span className={cn('text-[9px] font-medium uppercase', isDark ? 'text-white/40' : 'text-black/40')}>Total</span>
               <span></span>
             </div>
           )}
@@ -3883,21 +3916,14 @@ const TradingHistory = ({
           {trades.length === 0 ? (
             emptyState
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'auto' }}>
+            <div className="flex flex-col flex-1 overflow-auto">
               {renderedTrades}
             </div>
           )}
 
           {/* Cursor-based pagination */}
           {(totalRecords > limit || currentPage > 1) && (
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                marginTop: '10px'
-              }}
-            >
+            <div className="flex justify-center items-center mt-[10px]">
               <Pagination isDark={isDark}>
                 <PaginationButton
                   onClick={handleFirstPage}
@@ -3917,7 +3943,7 @@ const TradingHistory = ({
                 </PaginationButton>
                 <PageInfo isDark={isDark}>
                   {currentPage.toLocaleString()}
-                  <span style={{ opacity: 0.5 }}>/</span>
+                  <span className="opacity-50">/</span>
                   {Math.ceil(totalRecords / limit).toLocaleString()}
                 </PageInfo>
                 <PaginationButton
@@ -3943,21 +3969,12 @@ const TradingHistory = ({
       )}
 
       {tabValue === 1 && (
-        <div>
+        <div className="flex flex-col gap-4">
           {/* Pool Controls - Filter & Sort */}
           {!ammLoading && ammPools.length > 0 && (
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                gap: '8px',
-                marginBottom: '12px',
-                flexWrap: 'wrap'
-              }}
-            >
+            <div className="flex items-center justify-between gap-3 flex-wrap">
               {/* Pool Type Filter */}
-              <div style={{ display: 'flex', gap: '4px' }}>
+              <div className={cn('flex gap-1 p-1 rounded-[10px]', isDark ? 'bg-white/[0.03]' : 'bg-black/[0.03]')}>
                 {[
                   { value: 'all', label: 'All' },
                   { value: 'xrp', label: 'XRP Pools' },
@@ -3966,155 +3983,98 @@ const TradingHistory = ({
                   <button
                     key={value}
                     onClick={() => setPoolTypeFilter(value)}
-                    style={{
-                      padding: '5px 10px',
-                      fontSize: '11px',
-                      fontWeight: poolTypeFilter === value ? 500 : 400,
-                      borderRadius: '6px',
-                      border:
-                        poolTypeFilter === value
-                          ? '1px solid #3b82f6'
-                          : isDark
-                            ? '1px solid rgba(255,255,255,0.1)'
-                            : '1px solid rgba(0,0,0,0.08)',
-                      background:
-                        poolTypeFilter === value
-                          ? isDark
-                            ? 'rgba(255,255,255,0.08)'
-                            : 'rgba(0,0,0,0.06)'
-                          : 'transparent',
-                      color:
-                        poolTypeFilter === value
-                          ? '#3b82f6'
-                          : isDark
-                            ? 'rgba(255,255,255,0.6)'
-                            : 'rgba(0,0,0,0.6)',
-                      cursor: 'pointer'
-                    }}
+                    className={cn(
+                      'py-[6px] px-3 text-[11px] font-semibold rounded-lg border-none cursor-pointer transition-all duration-200 whitespace-nowrap',
+                      poolTypeFilter === value
+                        ? cn(isDark ? 'bg-white/[0.08] text-white' : 'bg-white text-[#1a1a1a] shadow-[0_1px_3px_rgba(0,0,0,0.1)]')
+                        : cn('bg-transparent', isDark ? 'text-white/45' : 'text-black/50')
+                    )}
                   >
                     {label}
                   </button>
                 ))}
               </div>
-              {/* Sort Control */}
-              {!isMobile && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  <span
-                    style={{
-                      fontSize: '10px',
-                      color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
-                      textTransform: 'uppercase'
-                    }}
-                  >
-                    Sort:
-                  </span>
-                  <select
-                    value={poolSortBy}
-                    onChange={(e) => setPoolSortBy(e.target.value)}
-                    style={{
-                      padding: '4px 8px',
-                      fontSize: '11px',
-                      borderRadius: '5px',
-                      border: isDark
-                        ? '1px solid rgba(255,255,255,0.1)'
-                        : '1px solid rgba(0,0,0,0.08)',
-                      background: isDark ? 'rgba(0,0,0,0.4)' : '#fff',
-                      color: isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.8)',
-                      cursor: 'pointer',
-                      outline: 'none'
-                    }}
-                  >
-                    <option value="liquidity">TVL</option>
-                    <option value="apy">APY</option>
-                    <option value="volume">Volume</option>
-                    <option value="fees">Fees</option>
-                  </select>
+
+              {/* Sort Control + Create Pool */}
+              <div className="flex items-center gap-2">
+                <div className={cn('flex items-center rounded-[10px] p-[2px]', isDark ? 'bg-white/[0.03]' : 'bg-black/[0.03]')}>
+                  <div className="flex items-center gap-1 pl-[10px] pr-2">
+                    <Filter
+                      size={12}
+                      className={cn(isDark ? 'text-white/30' : 'text-black/30')}
+                    />
+                    <select
+                      value={poolSortBy}
+                      onChange={(e) => setPoolSortBy(e.target.value)}
+                      className={cn('py-[6px] px-1 text-[11px] font-semibold border-none bg-transparent cursor-pointer outline-none appearance-none', isDark ? 'text-white/80' : 'text-black/80')}
+                    >
+                      <option value="liquidity">TVL</option>
+                      <option value="apy">APY</option>
+                      <option value="volume">Volume</option>
+                      <option value="fees">Fees</option>
+                    </select>
+                  </div>
                   <button
                     onClick={() => setPoolSortDir((prev) => (prev === 'desc' ? 'asc' : 'desc'))}
-                    style={{
-                      padding: '4px 6px',
-                      fontSize: '11px',
-                      borderRadius: '5px',
-                      border: isDark
-                        ? '1px solid rgba(255,255,255,0.1)'
-                        : '1px solid rgba(0,0,0,0.08)',
-                      background: 'transparent',
-                      color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center'
-                    }}
+                    className={cn(
+                      'w-7 h-7 rounded-lg border-none cursor-pointer flex items-center justify-center transition-all duration-200',
+                      isDark ? 'bg-white/5 text-white' : 'bg-white text-[#1a1a1a] shadow-[0_1px_2px_rgba(0,0,0,0.05)]'
+                    )}
                     title={poolSortDir === 'desc' ? 'Highest first' : 'Lowest first'}
                   >
                     {poolSortDir === 'desc' ? <ChevronDown size={14} /> : <ChevronUp size={14} />}
                   </button>
                 </div>
-              )}
+                <button
+                  onClick={() => handleOpenCreatePool()}
+                  className="flex items-center gap-[5px] py-[7px] px-[14px] text-[11px] font-semibold rounded-[10px] border-none bg-[#137DFE] text-white cursor-pointer transition-all duration-150 whitespace-nowrap"
+                >
+                  <Plus size={13} />
+                  Create Pool
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Missing XRP pool banner */}
+          {!ammLoading && ammPools.length > 0 && !hasXrpPool && token?.currency !== 'XRP' && (
+            <div className={cn('flex items-center justify-between gap-3 py-[10px] px-[14px] rounded-[10px] border-[1.5px]', isDark ? 'bg-[rgba(19,125,254,0.06)] border-[rgba(19,125,254,0.15)]' : 'bg-[rgba(19,125,254,0.04)] border-[rgba(19,125,254,0.12)]')}>
+              <div className="flex items-center gap-2">
+                <Droplets size={14} className="text-[#137DFE] shrink-0" />
+                <span className={cn('text-[12px]', isDark ? 'text-white/70' : 'text-black/60')}>
+                  No {decodeCurrency(token?.currency)} / XRP pool exists yet
+                </span>
+              </div>
+              <button
+                onClick={() => handleOpenCreatePool({ currency: 'XRP' })}
+                className="flex items-center gap-1 py-[5px] px-3 text-[11px] font-semibold rounded-lg border-none bg-[#137DFE] text-white cursor-pointer whitespace-nowrap transition-all duration-150"
+              >
+                <Plus size={12} />
+                Create XRP Pool
+              </button>
             </div>
           )}
 
           {ammLoading ? (
-            <div style={{ display: 'flex', justifyContent: 'center', padding: '24px' }}>
+            <div className="flex justify-center p-6">
               <Spinner size={20} />
             </div>
           ) : ammPools.length === 0 ? (
-            <BearEmptyState isDark={isDark} title="No pools found" subtitle="AMM pools will appear here when available" />
+            <div className="flex flex-col items-center gap-3 py-8 px-4">
+              <BearEmptyState isDark={isDark} title="No pools found" subtitle="Be the first to create a liquidity pool for this token" />
+              <button
+                onClick={() => handleOpenCreatePool({ currency: 'XRP' })}
+                className="flex items-center gap-[6px] py-[10px] px-5 text-[13px] font-semibold rounded-[10px] border-none bg-[#137DFE] text-white cursor-pointer transition-all duration-150"
+              >
+                <Plus size={15} />
+                Create {token?.currency === 'XRP' ? '' : decodeCurrency(token?.currency) + ' / '}XRP Pool
+              </button>
+            </div>
           ) : filteredAndSortedPools.length === 0 ? (
             <BearEmptyState isDark={isDark} title={`No ${poolTypeFilter === 'xrp' ? 'XRP' : 'token/token'} pools found`} subtitle="Try a different filter" />
           ) : isMobile ? (
-            /* Mobile compact pool rows */
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
-              {/* Mobile header */}
-              <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: '1fr 60px 70px 32px',
-                  gap: '6px',
-                  alignItems: 'center',
-                  padding: '6px 0 6px 6px',
-                  marginBottom: '4px',
-                  borderBottom: isDark
-                    ? '1px solid rgba(255,255,255,0.08)'
-                    : '1px solid rgba(0,0,0,0.08)'
-                }}
-              >
-                <span
-                  style={{
-                    fontSize: '10px',
-                    fontWeight: 500,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.03em',
-                    color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)'
-                  }}
-                >
-                  Pool
-                </span>
-                <span
-                  style={{
-                    fontSize: '10px',
-                    fontWeight: 500,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.03em',
-                    color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)',
-                    textAlign: 'center'
-                  }}
-                >
-                  Trend
-                </span>
-                <span
-                  style={{
-                    fontSize: '10px',
-                    fontWeight: 500,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.03em',
-                    color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)',
-                    textAlign: 'right'
-                  }}
-                >
-                  APY / TVL
-                </span>
-                <span></span>
-              </div>
+            /* Mobile pool cards */
+            <div className="flex flex-col gap-2">
               {filteredAndSortedPools.map((pool) => {
                 const asset1 =
                   pool.asset1?.currency === 'XRP' ? 'XRP' : decodeCurrency(pool.asset1?.currency);
@@ -4132,300 +4092,215 @@ const TradingHistory = ({
                 const chartData = poolChartData[poolAccount];
                 const isChartLoading = poolChartLoading[poolAccount];
                 const isExpanded = expandedPoolId === pool._id;
+                const userPosition = userLpBalances[poolAccount];
+
                 return (
-                  <div key={pool._id}>
+                  <div
+                    key={pool._id}
+                    className={cn(
+                      'rounded-[14px] overflow-hidden transition-all duration-200 border',
+                      isDark ? 'bg-white/[0.03]' : 'bg-black/[0.02]',
+                      isMainPool ? 'border-[#3b82f6]' : isDark ? 'border-white/[0.06]' : 'border-black/[0.06]'
+                    )}
+                  >
                     <div
                       onClick={() => handlePoolExpand(pool._id, pool)}
-                      style={{
-                        display: 'grid',
-                        gridTemplateColumns: '1fr 60px 70px 32px',
-                        gap: '6px',
-                        alignItems: 'center',
-                        padding: '8px 0 8px 6px',
-                        borderBottom: isExpanded
-                          ? 'none'
-                          : isDark
-                            ? '1px solid rgba(255,255,255,0.04)'
-                            : '1px solid rgba(0,0,0,0.04)',
-                        background: isMainPool
-                          ? isDark
-                            ? 'rgba(255,255,255,0.06)'
-                            : 'rgba(0,0,0,0.04)'
-                          : 'transparent',
-                        boxShadow: isMainPool ? 'inset 3px 0 0 #3b82f6' : 'none',
-                        borderRadius: isMainPool ? '6px' : '0',
-                        marginBottom: isMainPool && !isExpanded ? '4px' : '0',
-                        cursor: 'pointer'
-                      }}
+                      className="p-3 cursor-pointer"
                     >
-                      {/* Pool pair */}
-                      <div
-                        style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: 0 }}
-                      >
-                        <div style={{ display: 'flex', flexShrink: 0 }}>
-                          <img
-                            src={getTokenImageUrl(pool.asset1.issuer, pool.asset1.currency)}
-                            alt=""
-                            style={{ width: 18, height: 18, borderRadius: '50%' }}
-                          />
-                          <img
-                            src={getTokenImageUrl(pool.asset2.issuer, pool.asset2.currency)}
-                            alt=""
-                            style={{ width: 18, height: 18, borderRadius: '50%', marginLeft: -6 }}
-                          />
-                        </div>
-                        <span
-                          style={{
-                            fontSize: '12px',
-                            fontWeight: 500,
-                            color: isDark ? '#fff' : '#1a1a1a',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap'
-                          }}
-                        >
-                          {asset1}/{asset2}
-                        </span>
-                        {isMainPool && (
-                          <span
-                            style={{
-                              fontSize: '8px',
-                              fontWeight: 600,
-                              padding: '2px 4px',
-                              borderRadius: '3px',
-                              background: '#3b82f6',
-                              color: '#fff',
-                              flexShrink: 0
-                            }}
-                          >
-                            MAIN
-                          </span>
-                        )}
-                      </div>
-                      {/* Mini Chart */}
-                      <div
-                        style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}
-                      >
-                        {chartData && chartData.length >= 2 ? (
-                          <MiniSparkline data={chartData} width={50} height={20} isDark={isDark} />
-                        ) : isChartLoading ? (
-                          <Spinner size={12} style={{ opacity: 0.5 }} />
-                        ) : (
-                          <span
-                            style={{
-                              fontSize: '9px',
-                              color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
-                              fontWeight: 500
-                            }}
-                          >
-                            NEW
-                          </span>
-                        )}
-                      </div>
-                      {/* APY & TVL */}
-                      <div
-                        style={{
-                          display: 'flex',
-                          flexDirection: 'column',
-                          alignItems: 'flex-end',
-                          gap: '2px'
-                        }}
-                      >
-                        <span
-                          style={{
-                            fontSize: '11px',
-                            fontWeight: hasApy ? 500 : 400,
-                            color: hasApy
-                              ? '#22c55e'
-                              : isDark
-                                ? 'rgba(255,255,255,0.3)'
-                                : 'rgba(0,0,0,0.3)'
-                          }}
-                        >
-                          {hasApy ? `${pool.apy7d.apy.toFixed(1)}%` : '-'}
-                        </span>
-                        <span
-                          style={{
-                            fontSize: '10px',
-                            color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)'
-                          }}
-                        >
-                          {pool.apy7d?.liquidity > 0
-                            ? `${abbreviateNumber(pool.apy7d.liquidity)}`
-                            : '-'}
-                        </span>
-                      </div>
-                      {/* Expand/Add */}
-                      <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleAddLiquidity(pool);
-                          }}
-                          style={{
-                            width: '28px',
-                            height: '28px',
-                            fontSize: '10px',
-                            fontWeight: 500,
-                            borderRadius: '6px',
-                            border: 'none',
-                            background: '#3b82f6',
-                            color: '#fff',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center'
-                          }}
-                        >
-                          <Plus size={14} />
-                        </button>
-                      </div>
-                    </div>
-                    {/* Expanded content */}
-                    {isExpanded && (
-                      <div
-                        style={{
-                          padding: '12px',
-                          background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
-                          borderRadius: '0 0 8px 8px',
-                          marginBottom: '8px',
-                          borderBottom: isDark
-                            ? '1px solid rgba(255,255,255,0.06)'
-                            : '1px solid rgba(0,0,0,0.06)'
-                        }}
-                      >
-                        {/* Chart section - conditional */}
-                        {isChartLoading ? (
-                          <div
-                            style={{ display: 'flex', justifyContent: 'center', padding: '20px' }}
-                          >
-                            <Spinner size={16} />
-                          </div>
-                        ) : chartData && chartData.length > 0 ? (
-                          <div style={{ marginBottom: '12px' }}>
-                            <MiniSparkline
-                              data={chartData}
-                              width={280}
-                              height={60}
-                              isDark={isDark}
+                      <div className="flex justify-between items-start mb-[10px]">
+                        <div className="flex items-center gap-[10px]">
+                          <div className="flex shrink-0">
+                            <img
+                              src={getTokenImageUrl(pool.asset1.issuer, pool.asset1.currency)}
+                              alt=""
+                              className={cn('w-6 h-6 rounded-full', isDark ? 'border-[1.5px] border-[#1a1a1a]' : 'border-[1.5px] border-white')}
+                            />
+                            <img
+                              src={getTokenImageUrl(pool.asset2.issuer, pool.asset2.currency)}
+                              alt=""
+                              className={cn('w-6 h-6 rounded-full -ml-[10px]', isDark ? 'border-[1.5px] border-[#1a1a1a]' : 'border-[1.5px] border-white')}
                             />
                           </div>
-                        ) : null}
-                        {/* Stats Grid - always show */}
-                        <div
-                          style={{
-                            display: 'grid',
-                            gridTemplateColumns: 'repeat(2, 1fr)',
-                            gap: '8px'
-                          }}
-                        >
-                          <div
-                            style={{
-                              padding: '8px',
-                              background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
-                              borderRadius: '6px'
-                            }}
-                          >
-                            <div
-                              style={{
-                                fontSize: '9px',
-                                textTransform: 'uppercase',
-                                color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
-                                marginBottom: '2px'
-                              }}
-                            >
-                              Fee
+                          <div className="flex flex-col">
+                            <div className="flex items-center gap-[6px]">
+                              <span className={cn('text-[13px] font-semibold', isDark ? 'text-white' : 'text-[#1a1a1a]')}>
+                                {asset1}/{asset2}
+                              </span>
+                              {isMainPool && (
+                                <span className="text-[9px] font-bold py-[2px] px-[6px] rounded-full bg-[rgba(59,130,246,0.15)] text-[#3b82f6] uppercase">
+                                  Main
+                                </span>
+                              )}
                             </div>
-                            <div
-                              style={{
-                                fontSize: '12px',
-                                fontWeight: 500,
-                                color: isDark ? '#fff' : '#1a1a1a'
-                              }}
-                            >
-                              {pool.tradingFee ? (pool.tradingFee / 100000).toFixed(3) : '-'}%
-                            </div>
+                            <span className={cn('text-[10px] font-medium', isDark ? 'text-white/40' : 'text-black/50')}>
+                              {(pool.tradingFee / 100000).toFixed(3)}% Fee
+                            </span>
                           </div>
-                          <div
-                            style={{
-                              padding: '8px',
-                              background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
-                              borderRadius: '6px'
-                            }}
-                          >
-                            <div
-                              style={{
-                                fontSize: '9px',
-                                textTransform: 'uppercase',
-                                color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
-                                marginBottom: '2px'
-                              }}
-                            >
-                              Vol 7d
-                            </div>
-                            <div
-                              style={{
-                                fontSize: '12px',
-                                fontWeight: 500,
-                                color: isDark ? '#fff' : '#1a1a1a'
-                              }}
-                            >
-                              {pool.apy7d?.volume > 0 ? abbreviateNumber(pool.apy7d.volume) : '-'}
-                            </div>
+                        </div>
+
+                        <div className="text-right">
+                          <div className={cn('text-[14px] font-bold', hasApy ? 'text-[#22c55e]' : isDark ? 'text-white' : 'text-[#1a1a1a]')}>
+                            {hasApy ? `${pool.apy7d.apy.toFixed(1)}%` : '-%'}
                           </div>
-                          <div
-                            style={{
-                              padding: '8px',
-                              background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
-                              borderRadius: '6px'
+                          <div className={cn('text-[10px] font-semibold uppercase tracking-[0.02em]', isDark ? 'text-white/40' : 'text-black/50')}>
+                            APY
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className={cn('flex items-center justify-between gap-3 py-2 px-[10px] rounded-[10px]', isDark ? 'bg-black/20' : 'bg-white/50')}>
+                        <div className="flex flex-col gap-[2px]">
+                          <span className={cn('text-[10px] font-medium uppercase', isDark ? 'text-white/40' : 'text-black/50')}>
+                            TVL
+                          </span>
+                          <span className={cn('text-[12px] font-semibold', isDark ? 'text-white/90' : 'text-black/90')}>
+                            {pool.apy7d?.liquidity > 0
+                              ? `${abbreviateNumber(pool.apy7d.liquidity)} XRP`
+                              : '-'}
+                          </span>
+                        </div>
+
+                        <div className="flex flex-col gap-[2px] items-center">
+                          <span className={cn('text-[10px] font-medium uppercase', isDark ? 'text-white/40' : 'text-black/50')}>
+                            Trend
+                          </span>
+                          {chartData && chartData.length >= 2 ? (
+                            <MiniSparkline data={chartData} width={50} height={18} isDark={isDark} />
+                          ) : (
+                            <span className={cn('text-[10px] font-semibold', isDark ? 'text-white/20' : 'text-black/20')}>
+                              NEW
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="flex flex-col gap-[2px] items-end">
+                          <span className={cn('text-[10px] font-medium uppercase', isDark ? 'text-white/40' : 'text-black/50')}>
+                            Volume 7d
+                          </span>
+                          <span className={cn('text-[12px] font-semibold', isDark ? 'text-white/90' : 'text-black/90')}>
+                            {pool.apy7d?.volume > 0
+                              ? `${abbreviateNumber(pool.apy7d.volume)} XRP`
+                              : '-'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Expanded content */}
+                    {isExpanded && (
+                      <div className={cn('px-3 pb-3 border-t', isDark ? 'border-white/[0.06]' : 'border-black/[0.06]')}>
+                        {/* Action Buttons */}
+                        <div className="grid grid-cols-2 gap-2 py-3">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleAddLiquidity(pool);
                             }}
+                            className="p-[10px] text-[12px] font-bold rounded-[10px] border-none bg-[#3b82f6] text-white cursor-pointer flex items-center justify-center gap-[6px]"
                           >
-                            <div
-                              style={{
-                                fontSize: '9px',
-                                textTransform: 'uppercase',
-                                color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
-                                marginBottom: '2px'
-                              }}
-                            >
+                            <Plus size={16} /> Add Liquidity
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleWithdrawLiquidity(pool);
+                            }}
+                            className={cn('p-[10px] text-[12px] font-bold rounded-[10px] border cursor-pointer flex items-center justify-center gap-[6px]', isDark ? 'border-white/10 bg-white/5 text-white' : 'border-black/10 bg-white text-[#1a1a1a]')}
+                          >
+                            <Minus size={16} /> Withdraw
+                          </button>
+                        </div>
+
+                        {/* User Position */}
+                        {userPosition && userPosition.balance > 0 && (() => {
+                          const ilData = ilPositions[pool._id];
+                          const hasIl = ilData && typeof ilData.ilPercent === 'number';
+                          const ilColor = hasIl
+                            ? ilData.ilPercent >= 0 ? '#08AA09' : '#ef4444'
+                            : null;
+                          return (
+                          <div className="p-3 bg-[rgba(59,130,246,0.1)] rounded-[12px] border border-[rgba(59,130,246,0.2)] mb-3">
+                            <div className="flex justify-between items-center mb-2">
+                              <span className="text-[11px] font-bold text-[#3b82f6]">
+                                YOUR POSITION
+                              </span>
+                              <span className="text-[11px] font-bold text-[#3b82f6]">
+                                {formatShare(userPosition.share)} share
+                              </span>
+                            </div>
+                            <div className="flex justify-between">
+                              <div className="flex flex-col">
+                                <span className={cn('text-[13px] font-semibold', isDark ? 'text-white' : 'text-[#1a1a1a]')}>
+                                  {abbreviateNumber(userPosition.asset1Amount)} {asset1}
+                                </span>
+                                <span className={cn('text-[13px] font-semibold', isDark ? 'text-white' : 'text-[#1a1a1a]')}>
+                                  {abbreviateNumber(userPosition.asset2Amount)} {asset2}
+                                </span>
+                              </div>
+                              <div className="text-right">
+                                <span className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-black/50')}>
+                                  LP Balance:
+                                </span>
+                                <div className={cn('text-[13px] font-semibold', isDark ? 'text-white' : 'text-[#1a1a1a]')}>
+                                  {abbreviateNumber(userPosition.balance)}
+                                </div>
+                              </div>
+                            </div>
+                            {/* Impermanent Loss */}
+                            {hasIl && (() => {
+                              const diff = ilData.poolValueXrp - ilData.holdValueXrp;
+                              return (
+                              <div className={cn('mt-2 py-2 px-[10px] rounded-lg flex flex-col gap-[6px]', isDark ? 'bg-black/20' : 'bg-black/[0.03]')}>
+                                <div className="flex justify-between items-center">
+                                  <span className={cn('text-[10px] font-semibold', isDark ? 'text-white/40' : 'text-black/50')}>
+                                    Worth if held (no pool)
+                                  </span>
+                                  <span className={cn('text-[12px] font-semibold', isDark ? 'text-white/90' : 'text-black/90')}>
+                                    {abbreviateNumber(ilData.holdValueXrp)} XRP
+                                  </span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                  <span className={cn('text-[10px] font-semibold', isDark ? 'text-white/40' : 'text-black/50')}>
+                                    Worth in pool now
+                                  </span>
+                                  <span className={cn('text-[12px] font-semibold', isDark ? 'text-white/90' : 'text-black/90')}>
+                                    {abbreviateNumber(ilData.poolValueXrp)} XRP
+                                  </span>
+                                </div>
+                                <div className={cn('border-t pt-[5px] flex justify-between items-center', isDark ? 'border-white/[0.06]' : 'border-black/[0.06]')}>
+                                  <span className={cn('text-[10px] font-semibold', isDark ? 'text-white/40' : 'text-black/50')}>
+                                    Impermanent {ilData.ilPercent >= 0 ? 'gain' : 'loss'}
+                                  </span>
+                                  <span className="text-[12px] font-bold" style={{ color: ilColor }}>
+                                    {diff >= 0 ? '+' : ''}{abbreviateNumber(diff)} XRP ({ilData.ilPercent >= 0 ? '+' : ''}{ilData.ilPercent.toFixed(2)}%)
+                                  </span>
+                                </div>
+                              </div>
+                              );
+                            })()}
+                          </div>
+                          );
+                        })()}
+
+                        {/* Additional Stats */}
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className={cn('p-[10px] rounded-[10px]', isDark ? 'bg-black/20' : 'bg-black/[0.03]')}>
+                            <span className={cn('text-[9px] uppercase block mb-[2px]', isDark ? 'text-white/40' : 'text-black/50')}>
                               Fees 7d
-                            </div>
-                            <div
-                              style={{
-                                fontSize: '12px',
-                                fontWeight: 500,
-                                color: isDark ? '#fff' : '#1a1a1a'
-                              }}
-                            >
-                              {pool.apy7d?.fees > 0 ? abbreviateNumber(pool.apy7d.fees) : '-'}
-                            </div>
+                            </span>
+                            <span className={cn('text-[12px] font-semibold', isDark ? 'text-white' : 'text-[#1a1a1a]')}>
+                              {pool.apy7d?.fees > 0
+                                ? `${abbreviateNumber(pool.apy7d.fees)} XRP`
+                                : '-'}
+                            </span>
                           </div>
-                          <div
-                            style={{
-                              padding: '8px',
-                              background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
-                              borderRadius: '6px'
-                            }}
-                          >
-                            <div
-                              style={{
-                                fontSize: '9px',
-                                textTransform: 'uppercase',
-                                color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
-                                marginBottom: '2px'
-                              }}
-                            >
+                          <div className={cn('p-[10px] rounded-[10px]', isDark ? 'bg-black/20' : 'bg-black/[0.03]')}>
+                            <span className={cn('text-[9px] uppercase block mb-[2px]', isDark ? 'text-white/40' : 'text-black/50')}>
                               Last Trade
-                            </div>
-                            <div
-                              style={{
-                                fontSize: '12px',
-                                fontWeight: 500,
-                                color: isDark ? '#fff' : '#1a1a1a'
-                              }}
-                            >
+                            </span>
+                            <span className={cn('text-[12px] font-semibold', isDark ? 'text-white' : 'text-[#1a1a1a]')}>
                               {pool.lastTraded ? formatRelativeTime(pool.lastTraded) : '-'}
-                            </div>
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -4435,114 +4310,46 @@ const TradingHistory = ({
               })}
             </div>
           ) : (
-            /* Desktop grid layout with expandable rows */
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
+            /* Desktop grid layout */
+            <div className="flex flex-col gap-1">
               {/* Header */}
-              <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'minmax(140px, 1.5fr) 70px repeat(5, 1fr) 70px 28px',
-                  gap: '12px',
-                  padding: '8px 0 8px 6px',
-                  borderBottom: isDark
-                    ? '1px solid rgba(255,255,255,0.06)'
-                    : '1px solid rgba(0,0,0,0.06)'
-                }}
-              >
-                <span
-                  style={{
-                    fontSize: '10px',
-                    fontWeight: 500,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.05em',
-                    color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'
-                  }}
-                >
+              <div className={cn('grid grid-cols-[minmax(160px,1.2fr)_70px_1fr_1fr_1fr_1.2fr_80px_140px_32px] gap-3 py-[10px] px-4 border-b items-center', isDark ? 'border-white/[0.06]' : 'border-black/[0.06]')}>
+                <span className={cn('text-[10px] font-semibold uppercase tracking-[0.05em]', isDark ? 'text-white/35' : 'text-black/40')}>
                   Pool
                 </span>
-                <span
-                  style={{
-                    fontSize: '10px',
-                    fontWeight: 500,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.05em',
-                    color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
-                    textAlign: 'center'
-                  }}
-                >
+                <span className={cn('text-[10px] font-semibold uppercase tracking-[0.05em] text-center', isDark ? 'text-white/35' : 'text-black/40')}>
                   Trend
                 </span>
-                <span
-                  style={{
-                    fontSize: '10px',
-                    fontWeight: 500,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.05em',
-                    color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
-                    textAlign: 'right'
-                  }}
-                >
+                <span className={cn('text-[10px] font-semibold uppercase tracking-[0.05em] text-right', isDark ? 'text-white/35' : 'text-black/40')}>
                   Fee
                 </span>
                 <span
-                  style={{
-                    fontSize: '10px',
-                    fontWeight: 500,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.05em',
-                    color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
-                    textAlign: 'right',
-                    cursor: 'pointer'
-                  }}
+                  className={cn('text-[10px] font-semibold uppercase tracking-[0.05em] text-right cursor-pointer flex items-center justify-end gap-1', poolSortBy === 'apy' ? 'text-[#3b82f6]' : isDark ? 'text-white/35' : 'text-black/40')}
                   onClick={() => handlePoolSort('apy')}
                 >
-                  APY {poolSortBy === 'apy' && <span>{poolSortDir === 'desc' ? '↓' : '↑'}</span>}
+                  APY {poolSortBy === 'apy' && (poolSortDir === 'desc' ? <ChevronDown size={10} /> : <ChevronUp size={10} />)}
                 </span>
                 <span
-                  style={{
-                    fontSize: '10px',
-                    fontWeight: 500,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.05em',
-                    color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
-                    textAlign: 'right',
-                    cursor: 'pointer'
-                  }}
+                  className={cn('text-[10px] font-semibold uppercase tracking-[0.05em] text-right cursor-pointer flex items-center justify-end gap-1', poolSortBy === 'volume' ? 'text-[#3b82f6]' : isDark ? 'text-white/35' : 'text-black/40')}
                   onClick={() => handlePoolSort('volume')}
                 >
-                  Vol 7d{' '}
-                  {poolSortBy === 'volume' && <span>{poolSortDir === 'desc' ? '↓' : '↑'}</span>}
+                  Volume {poolSortBy === 'volume' && (poolSortDir === 'desc' ? <ChevronDown size={10} /> : <ChevronUp size={10} />)}
                 </span>
                 <span
-                  style={{
-                    fontSize: '10px',
-                    fontWeight: 500,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.05em',
-                    color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
-                    textAlign: 'right',
-                    cursor: 'pointer'
-                  }}
+                  className={cn('text-[10px] font-semibold uppercase tracking-[0.05em] text-right cursor-pointer flex items-center justify-end gap-1', poolSortBy === 'liquidity' ? 'text-[#3b82f6]' : isDark ? 'text-white/35' : 'text-black/40')}
                   onClick={() => handlePoolSort('liquidity')}
                 >
-                  TVL{' '}
-                  {poolSortBy === 'liquidity' && <span>{poolSortDir === 'desc' ? '↓' : '↑'}</span>}
+                  TVL {poolSortBy === 'liquidity' && (poolSortDir === 'desc' ? <ChevronDown size={10} /> : <ChevronUp size={10} />)}
                 </span>
-                <span
-                  style={{
-                    fontSize: '10px',
-                    fontWeight: 500,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.05em',
-                    color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
-                    textAlign: 'right'
-                  }}
-                >
-                  Last
+                <span className={cn('text-[10px] font-semibold uppercase tracking-[0.05em] text-right', isDark ? 'text-white/35' : 'text-black/40')}>
+                  Last Trade
                 </span>
-                <span></span>
+                <span className={cn('text-[10px] font-semibold uppercase tracking-[0.05em] text-center', isDark ? 'text-white/35' : 'text-black/40')}>
+                  Actions
+                </span>
                 <span></span>
               </div>
+
               {/* Rows */}
               {filteredAndSortedPools.map((pool) => {
                 const asset1 =
@@ -4561,434 +4368,248 @@ const TradingHistory = ({
                 const poolAccount = pool.ammAccount || pool.account || pool._id;
                 const chartData = poolChartData[poolAccount];
                 const isExpanded = expandedPoolId === pool._id;
+                const userPosition = userLpBalances[poolAccount];
+
                 return (
                   <div key={pool._id}>
                     <div
                       onClick={() => handlePoolExpand(pool._id, pool)}
-                      style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'minmax(140px, 1.5fr) 70px repeat(5, 1fr) 70px 28px',
-                        gap: '12px',
-                        padding: '10px 0 10px 6px',
-                        borderBottom: isExpanded
-                          ? 'none'
-                          : isDark
-                            ? '1px solid rgba(255,255,255,0.04)'
-                            : '1px solid rgba(0,0,0,0.04)',
-                        alignItems: 'center',
-                        background: isMainPool
-                          ? isDark
-                            ? 'rgba(255,255,255,0.06)'
-                            : 'rgba(0,0,0,0.04)'
+                      className={cn(
+                        'grid grid-cols-[minmax(160px,1.2fr)_70px_1fr_1fr_1fr_1.2fr_80px_140px_32px] gap-3 py-3 px-4 items-center cursor-pointer transition-all duration-150',
+                        isExpanded ? 'border-b-0' : isDark ? 'border-b border-white/[0.04]' : 'border-b border-black/[0.04]',
+                        isMainPool
+                          ? cn('rounded-t-[12px] shadow-[inset_4px_0_0_#3b82f6]', isDark ? 'bg-[rgba(59,130,246,0.06)]' : 'bg-[rgba(59,130,246,0.03)]')
                           : isExpanded
-                            ? isDark
-                              ? 'rgba(255,255,255,0.03)'
-                              : 'rgba(0,0,0,0.02)'
-                            : 'transparent',
-                        borderRadius: isMainPool || isExpanded ? '8px 8px 0 0' : '0',
-                        boxShadow: isMainPool ? 'inset 3px 0 0 #3b82f6' : 'none',
-                        cursor: 'pointer',
-                        transition: 'background 0.15s ease'
-                      }}
+                            ? cn('rounded-t-[12px]', isDark ? 'bg-white/[0.03]' : 'bg-black/[0.02]')
+                            : 'bg-transparent rounded-none'
+                      )}
                     >
                       {/* Pool pair */}
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <div style={{ display: 'flex' }}>
+                      <div className="flex items-center gap-[10px]">
+                        <div className="flex shrink-0">
                           <img
                             src={getTokenImageUrl(pool.asset1.issuer, pool.asset1.currency)}
                             alt=""
-                            style={{ width: 20, height: 20, borderRadius: '50%' }}
+                            className={cn('w-6 h-6 rounded-full', isDark ? 'border-[1.5px] border-[#1a1a1a]' : 'border-[1.5px] border-white')}
                           />
                           <img
                             src={getTokenImageUrl(pool.asset2.issuer, pool.asset2.currency)}
                             alt=""
-                            style={{ width: 20, height: 20, borderRadius: '50%', marginLeft: -7 }}
+                            className={cn('w-6 h-6 rounded-full -ml-[10px]', isDark ? 'border-[1.5px] border-[#1a1a1a]' : 'border-[1.5px] border-white')}
                           />
                         </div>
-                        <span
-                          style={{
-                            fontSize: '12px',
-                            fontWeight: 500,
-                            color: isDark ? '#fff' : '#1a1a1a'
-                          }}
-                        >
-                          {asset1}/{asset2}
-                        </span>
-                        {isMainPool && (
-                          <span
-                            style={{
-                              fontSize: '9px',
-                              fontWeight: 600,
-                              padding: '3px 8px',
-                              borderRadius: '4px',
-                              background: 'linear-gradient(135deg, #3b82f6, #2563eb)',
-                              color: '#fff',
-                              letterSpacing: '0.5px',
-                              boxShadow: '0 1px 3px rgba(59,130,246,0.3)'
-                            }}
-                          >
-                            MAIN
-                          </span>
-                        )}
+                        <div className="flex flex-col">
+                          <div className="flex items-center gap-[6px]">
+                            <span className={cn('text-[13px] font-semibold', isDark ? 'text-white' : 'text-[#1a1a1a]')}>
+                              {asset1}/{asset2}
+                            </span>
+                            {isMainPool && (
+                              <span className="text-[8px] font-extrabold py-px px-[5px] rounded bg-[#3b82f6] text-white uppercase">
+                                Main
+                              </span>
+                            )}
+                          </div>
+                        </div>
                       </div>
+
                       {/* Mini Chart */}
-                      <div style={{ display: 'flex', justifyContent: 'center' }}>
+                      <div className="flex justify-center">
                         {chartData && chartData.length >= 2 ? (
-                          <MiniSparkline data={chartData} width={60} height={24} isDark={isDark} />
-                        ) : poolChartLoading[poolAccount] ? (
-                          <Spinner size={12} style={{ opacity: 0.5 }} />
+                          <MiniSparkline data={chartData} width={50} height={18} isDark={isDark} />
                         ) : (
-                          <span
-                            style={{
-                              fontSize: '9px',
-                              color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
-                              fontWeight: 500
-                            }}
-                          >
-                            NEW
+                          <span className={cn('text-[9px] font-bold uppercase', isDark ? 'text-white/20' : 'text-black/20')}>
+                            New
                           </span>
                         )}
                       </div>
+
                       {/* Fee */}
-                      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                        <span
-                          style={{
-                            fontSize: '11px',
-                            color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)'
-                          }}
-                        >
+                      <div className="text-right">
+                        <span className={cn('text-[12px] font-medium', isDark ? 'text-white/60' : 'text-black/60')}>
                           {feePercent}%
                         </span>
                       </div>
+
                       {/* APY */}
-                      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                        <span
-                          style={{
-                            fontSize: '11px',
-                            fontWeight: hasApy ? 500 : 400,
-                            color: hasApy
-                              ? '#22c55e'
-                              : isDark
-                                ? 'rgba(255,255,255,0.3)'
-                                : 'rgba(0,0,0,0.3)'
-                          }}
-                        >
-                          {hasApy ? `${pool.apy7d.apy.toFixed(1)}%` : '-'}
+                      <div className="text-right">
+                        <span className={cn('text-[13px] font-bold', hasApy ? 'text-[#22c55e]' : isDark ? 'text-white/30' : 'text-black/30')}>
+                          {hasApy ? `${pool.apy7d.apy.toFixed(1)}%` : '-%'}
                         </span>
                       </div>
+
                       {/* Volume */}
-                      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                        <span
-                          style={{
-                            fontSize: '11px',
-                            color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)'
-                          }}
-                        >
+                      <div className="text-right">
+                        <span className={cn('text-[12px] font-medium', isDark ? 'text-white/80' : 'text-black/80')}>
                           {pool.apy7d?.volume > 0 ? abbreviateNumber(pool.apy7d.volume) : '-'}
                         </span>
                       </div>
+
                       {/* Liquidity/TVL */}
-                      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                        {pool.apy7d?.liquidity > 0 ? (
-                          <span style={{ fontSize: '11px', color: isDark ? '#fff' : '#1a1a1a' }}>
-                            {abbreviateNumber(pool.apy7d.liquidity)}{' '}
-                            <span style={{ opacity: 0.5 }}>XRP</span>
-                          </span>
-                        ) : pool.currentLiquidity ? (
-                          <div
-                            style={{
-                              display: 'flex',
-                              flexDirection: 'column',
-                              alignItems: 'flex-end',
-                              lineHeight: 1.3
-                            }}
-                          >
-                            <span
-                              style={{
-                                fontSize: '10px',
-                                color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)'
-                              }}
-                            >
-                              {abbreviateNumber(pool.currentLiquidity.asset1Amount)} {asset1}
-                            </span>
-                            <span
-                              style={{
-                                fontSize: '10px',
-                                color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)'
-                              }}
-                            >
-                              {abbreviateNumber(pool.currentLiquidity.asset2Amount)} {asset2}
-                            </span>
-                          </div>
-                        ) : (
-                          <span style={{ fontSize: '11px', opacity: 0.3 }}>-</span>
-                        )}
+                      <div className="text-right">
+                        <span className={cn('text-[13px] font-semibold', isDark ? 'text-white' : 'text-[#1a1a1a]')}>
+                          {pool.apy7d?.liquidity > 0
+                            ? `${abbreviateNumber(pool.apy7d.liquidity)} XRP`
+                            : '-'}
+                        </span>
                       </div>
+
                       {/* Last Trade */}
-                      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                        <span
-                          style={{
-                            fontSize: '11px',
-                            color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)'
-                          }}
-                        >
+                      <div className="text-right">
+                        <span className={cn('text-[11px] font-medium', isDark ? 'text-white/40' : 'text-black/50')}>
                           {pool.lastTraded ? formatRelativeTime(pool.lastTraded) : '-'}
                         </span>
                       </div>
-                      {/* Action */}
-                      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+
+                      {/* Actions */}
+                      <div className="flex justify-center gap-[6px]">
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
                             handleAddLiquidity(pool);
                           }}
-                          style={{
-                            padding: '4px 10px',
-                            fontSize: '11px',
-                            fontWeight: 500,
-                            borderRadius: '6px',
-                            border: 'none',
-                            background: '#3b82f6',
-                            color: '#fff',
-                            cursor: 'pointer',
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '4px'
-                          }}
+                          className="py-[6px] px-3 text-[11px] font-bold rounded-lg border-none bg-[#3b82f6] text-white cursor-pointer transition-all duration-200"
                         >
-                          <Plus size={12} /> Add
+                          Add
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleWithdrawLiquidity(pool);
+                          }}
+                          className={cn('py-[6px] px-3 text-[11px] font-bold rounded-lg border cursor-pointer transition-all duration-200', isDark ? 'border-white/10 bg-white/5 text-white' : 'border-black/10 bg-white text-[#1a1a1a]')}
+                        >
+                          Withdraw
                         </button>
                       </div>
+
                       {/* Expand indicator */}
-                      <div
-                        style={{
-                          display: 'flex',
-                          justifyContent: 'center',
-                          color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'
-                        }}
-                      >
-                        {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                      <div className={cn('flex justify-center', isDark ? 'text-white/20' : 'text-black/20')}>
+                        {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                       </div>
                     </div>
+
                     {/* Expanded Details */}
                     {isExpanded && (
-                      <div
-                        style={{
-                          padding: '16px',
-                          background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
-                          borderRadius: '0 0 8px 8px',
-                          marginBottom: '8px',
-                          borderBottom: isDark
-                            ? '1px solid rgba(255,255,255,0.06)'
-                            : '1px solid rgba(0,0,0,0.06)',
-                          marginLeft: isMainPool ? '-4px' : '0',
-                          marginRight: isMainPool ? '-4px' : '0',
-                          borderLeft: isMainPool ? '3px solid #3b82f6' : 'none'
-                        }}
-                      >
-                        <div
-                          style={{
-                            display: 'grid',
-                            gridTemplateColumns:
-                              chartData && chartData.length > 0 ? '1fr 280px' : '1fr',
-                            gap: '20px',
-                            alignItems: 'start'
-                          }}
-                        >
-                          {/* Stats - Always shown */}
-                          <div
-                            style={{
-                              display: 'grid',
-                              gridTemplateColumns: 'repeat(3, 1fr)',
-                              gap: '12px'
-                            }}
-                          >
-                            <div
-                              style={{
-                                padding: '12px',
-                                background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
-                                borderRadius: '8px'
-                              }}
-                            >
-                              <div
-                                style={{
-                                  fontSize: '10px',
-                                  textTransform: 'uppercase',
-                                  color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
-                                  marginBottom: '4px'
-                                }}
-                              >
-                                Fees Earned (7d)
-                              </div>
-                              <div
-                                style={{
-                                  fontSize: '14px',
-                                  fontWeight: 500,
-                                  color: isDark ? '#fff' : '#1a1a1a'
-                                }}
-                              >
-                                {pool.apy7d?.fees > 0
-                                  ? `${abbreviateNumber(pool.apy7d.fees)} XRP`
-                                  : '-'}
-                              </div>
+                      <div className={cn(
+                        'py-5 px-6 rounded-b-[12px] mb-2 border-t',
+                        isDark ? 'bg-white/[0.03] border-white/5' : 'bg-black/[0.015] border-black/5',
+                        isMainPool && 'shadow-[inset_4px_0_0_#3b82f6]'
+                      )}>
+                        <div className="grid grid-cols-[1.5fr_1fr] gap-8 items-start">
+                          {/* Stats Section */}
+                          <div className="flex flex-col gap-5">
+                            <div className="grid grid-cols-3 gap-3">
+                              {[
+                                { label: 'Fees Earned (7d)', value: pool.apy7d?.fees > 0 ? `${abbreviateNumber(pool.apy7d.fees)} XRP` : '-' },
+                                { label: 'Volume (7d)', value: pool.apy7d?.volume > 0 ? `${abbreviateNumber(pool.apy7d.volume)} XRP` : '-' },
+                                { label: 'Trading Fee', value: `${feePercent}%` }
+                              ].map((stat, i) => (
+                                <div
+                                  key={i}
+                                  className={cn('p-3 rounded-[10px] border', isDark ? 'bg-black/20 border-white/5' : 'bg-white border-black/5')}
+                                >
+                                  <div className={cn('text-[9px] font-bold uppercase mb-1', isDark ? 'text-white/35' : 'text-black/40')}>
+                                    {stat.label}
+                                  </div>
+                                  <div className={cn('text-[15px] font-semibold', isDark ? 'text-white' : 'text-[#1a1a1a]')}>
+                                    {stat.value}
+                                  </div>
+                                </div>
+                              ))}
                             </div>
-                            <div
-                              style={{
-                                padding: '12px',
-                                background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
-                                borderRadius: '8px'
-                              }}
-                            >
-                              <div
-                                style={{
-                                  fontSize: '10px',
-                                  textTransform: 'uppercase',
-                                  color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
-                                  marginBottom: '4px'
-                                }}
-                              >
-                                Volume (7d)
-                              </div>
-                              <div
-                                style={{
-                                  fontSize: '14px',
-                                  fontWeight: 500,
-                                  color: isDark ? '#fff' : '#1a1a1a'
-                                }}
-                              >
-                                {pool.apy7d?.volume > 0
-                                  ? `${abbreviateNumber(pool.apy7d.volume)} XRP`
-                                  : '-'}
-                              </div>
-                            </div>
-                            <div
-                              style={{
-                                padding: '12px',
-                                background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
-                                borderRadius: '8px'
-                              }}
-                            >
-                              <div
-                                style={{
-                                  fontSize: '10px',
-                                  textTransform: 'uppercase',
-                                  color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
-                                  marginBottom: '4px'
-                                }}
-                              >
-                                Trading Fee
-                              </div>
-                              <div
-                                style={{
-                                  fontSize: '14px',
-                                  fontWeight: 500,
-                                  color: isDark ? '#fff' : '#1a1a1a'
-                                }}
-                              >
-                                {feePercent}%
-                              </div>
-                            </div>
+
                             {/* Pool Composition */}
-                            <div
-                              style={{
-                                padding: '12px',
-                                background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
-                                borderRadius: '8px',
-                                gridColumn: 'span 3'
-                              }}
-                            >
-                              <div
-                                style={{
-                                  fontSize: '10px',
-                                  textTransform: 'uppercase',
-                                  color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
-                                  marginBottom: '6px'
-                                }}
-                              >
+                            <div className={cn('p-4 rounded-[12px] border', isDark ? 'bg-black/20 border-white/5' : 'bg-white border-black/5')}>
+                              <div className={cn('text-[10px] font-bold uppercase mb-3', isDark ? 'text-white/35' : 'text-black/40')}>
                                 Pool Composition
                               </div>
-                              <div style={{ display: 'flex', gap: '16px' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                  <img
-                                    src={getTokenImageUrl(pool.asset1.issuer, pool.asset1.currency)}
-                                    alt=""
-                                    style={{ width: 16, height: 16, borderRadius: '50%' }}
-                                  />
-                                  <span
-                                    style={{
-                                      fontSize: '12px',
-                                      color: isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.8)'
-                                    }}
-                                  >
-                                    {pool.currentLiquidity
-                                      ? abbreviateNumber(pool.currentLiquidity.asset1Amount)
-                                      : '-'}{' '}
-                                    {asset1}
-                                  </span>
+                              <div className="flex gap-8">
+                                <div className="flex items-center gap-[10px]">
+                                  <img src={getTokenImageUrl(pool.asset1.issuer, pool.asset1.currency)} alt="" className="w-6 h-6 rounded-full" />
+                                  <div className="flex flex-col">
+                                    <span className="text-[14px] font-semibold">{pool.currentLiquidity ? abbreviateNumber(pool.currentLiquidity.asset1Amount) : '-'}</span>
+                                    <span className={cn('text-[10px] font-semibold', isDark ? 'text-white/40' : 'text-black/50')}>{asset1}</span>
+                                  </div>
                                 </div>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                  <img
-                                    src={getTokenImageUrl(pool.asset2.issuer, pool.asset2.currency)}
-                                    alt=""
-                                    style={{ width: 16, height: 16, borderRadius: '50%' }}
-                                  />
-                                  <span
-                                    style={{
-                                      fontSize: '12px',
-                                      color: isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.8)'
-                                    }}
-                                  >
-                                    {pool.currentLiquidity
-                                      ? abbreviateNumber(pool.currentLiquidity.asset2Amount)
-                                      : '-'}{' '}
-                                    {asset2}
-                                  </span>
+                                <div className="flex items-center gap-[10px]">
+                                  <img src={getTokenImageUrl(pool.asset2.issuer, pool.asset2.currency)} alt="" className="w-6 h-6 rounded-full" />
+                                  <div className="flex flex-col">
+                                    <span className="text-[14px] font-semibold">{pool.currentLiquidity ? abbreviateNumber(pool.currentLiquidity.asset2Amount) : '-'}</span>
+                                    <span className={cn('text-[10px] font-semibold', isDark ? 'text-white/40' : 'text-black/50')}>{asset2}</span>
+                                  </div>
                                 </div>
                               </div>
                             </div>
+
+                            {/* User Position */}
+                            {userPosition && userPosition.balance > 0 && (() => {
+                              const ilData = ilPositions[pool._id];
+                              const hasIl = ilData && typeof ilData.ilPercent === 'number';
+                              const ilColor = hasIl
+                                ? ilData.ilPercent >= 0 ? '#08AA09' : '#ef4444'
+                                : null;
+                              return (
+                              <div className="p-4 bg-[rgba(59,130,246,0.1)] rounded-[12px] border border-[rgba(59,130,246,0.2)]">
+                                <div className="flex justify-between items-center mb-3">
+                                  <span className="text-[11px] font-extrabold text-[#3b82f6] uppercase">Your Position</span>
+                                  <span className="text-[11px] font-extrabold text-[#3b82f6]">{formatShare(userPosition.share)} of pool</span>
+                                </div>
+                                <div className="flex gap-8">
+                                  <div className="flex items-center gap-2">
+                                    <img src={getTokenImageUrl(pool.asset1.issuer, pool.asset1.currency)} alt="" className="w-[18px] h-[18px] rounded-full" />
+                                    <span className="text-[13px] font-semibold">{abbreviateNumber(userPosition.asset1Amount)} {asset1}</span>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <img src={getTokenImageUrl(pool.asset2.issuer, pool.asset2.currency)} alt="" className="w-[18px] h-[18px] rounded-full" />
+                                    <span className="text-[13px] font-semibold">{abbreviateNumber(userPosition.asset2Amount)} {asset2}</span>
+                                  </div>
+                                </div>
+                                {/* Impermanent Loss */}
+                                {hasIl && (() => {
+                                  const diff = ilData.poolValueXrp - ilData.holdValueXrp;
+                                  return (
+                                  <div className={cn('flex gap-6 items-end mt-3 py-[10px] px-3 rounded-lg', isDark ? 'bg-black/20' : 'bg-black/[0.03]')}>
+                                    <div className="flex flex-col gap-[2px]">
+                                      <span className={cn('text-[9px] font-bold uppercase', isDark ? 'text-white/35' : 'text-black/40')}>Worth if held (no pool)</span>
+                                      <span className={cn('text-[13px] font-semibold', isDark ? 'text-white/90' : 'text-black/90')}>
+                                        {abbreviateNumber(ilData.holdValueXrp)} XRP
+                                      </span>
+                                    </div>
+                                    <div className="flex flex-col gap-[2px]">
+                                      <span className={cn('text-[9px] font-bold uppercase', isDark ? 'text-white/35' : 'text-black/40')}>Worth in pool now</span>
+                                      <span className={cn('text-[13px] font-semibold', isDark ? 'text-white/90' : 'text-black/90')}>
+                                        {abbreviateNumber(ilData.poolValueXrp)} XRP
+                                      </span>
+                                    </div>
+                                    <div className="flex flex-col gap-[2px]">
+                                      <span className={cn('text-[9px] font-bold uppercase', isDark ? 'text-white/35' : 'text-black/40')}>Impermanent {ilData.ilPercent >= 0 ? 'gain' : 'loss'}</span>
+                                      <span className="text-[14px] font-bold" style={{ color: ilColor }}>
+                                        {diff >= 0 ? '+' : ''}{abbreviateNumber(diff)} XRP ({ilData.ilPercent >= 0 ? '+' : ''}{ilData.ilPercent.toFixed(2)}%)
+                                      </span>
+                                    </div>
+                                  </div>
+                                  );
+                                })()}
+                              </div>
+                              );
+                            })()}
                           </div>
-                          {/* Large Chart - Only shown when chart data is available */}
-                          {chartData && chartData.length > 0 ? (
-                            <div
-                              style={{
-                                padding: '12px',
-                                background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
-                                borderRadius: '8px'
-                              }}
-                            >
-                              <div
-                                style={{
-                                  fontSize: '10px',
-                                  textTransform: 'uppercase',
-                                  color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
-                                  marginBottom: '8px'
-                                }}
-                              >
-                                TVL (30 days)
+
+                          {/* Chart Section */}
+                          <div className={cn('p-5 rounded-xl h-full border', isDark ? 'bg-black/20 border-white/[0.05]' : 'bg-white border-black/[0.05]')}>
+                            <div className={cn('text-[10px] font-bold uppercase mb-4', isDark ? 'text-white/35' : 'text-black/40')}>
+                              TVL History (30d)
+                            </div>
+                            {chartData && chartData.length > 0 ? (
+                              <div className="flex justify-center">
+                                <MiniSparkline data={chartData} width={280} height={120} isDark={isDark} />
                               </div>
-                              <MiniSparkline
-                                data={chartData}
-                                width={256}
-                                height={80}
-                                isDark={isDark}
-                              />
-                            </div>
-                          ) : poolChartLoading[poolAccount] ? (
-                            <div
-                              style={{
-                                padding: '12px',
-                                background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
-                                borderRadius: '8px',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                minHeight: '100px'
-                              }}
-                            >
-                              <Spinner size={20} />
-                            </div>
-                          ) : null}
+                            ) : (
+                              <div className={cn('h-[120px] flex items-center justify-center text-[11px] font-semibold', isDark ? 'text-white/20' : 'text-black/20')}>
+                                {isChartLoading ? <Spinner size={24} /> : 'CHART DATA UNAVAILABLE'}
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </div>
                     )}
@@ -5017,324 +4638,708 @@ const TradingHistory = ({
         />
       )}
 
-      {/* Add Liquidity Dialog - Using Portal to escape stacking context */}
+      {/* Liquidity Dialog - Combined Add/Remove */}
       {typeof document !== 'undefined' &&
-        addLiquidityDialog.open &&
+        liquidityDialog.open &&
         createPortal(
           <Dialog
-            open={addLiquidityDialog.open}
+            open={liquidityDialog.open}
             isDark={isDark}
             onClick={(e) => e.target === e.currentTarget && handleCloseDialog()}
           >
             <DialogPaper isDark={isDark}>
               <DialogTitle isDark={isDark}>
-                Add Liquidity
-                <IconButton onClick={handleCloseDialog} isDark={isDark} style={{ padding: '6px' }}>
+                Manage Liquidity
+                <IconButton onClick={handleCloseDialog} isDark={isDark} className="p-[6px]">
                   <X size={18} />
                 </IconButton>
               </DialogTitle>
               <DialogContent isDark={isDark}>
-                {addLiquidityDialog.pool && (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {liquidityDialog.pool && (
+                  <div className="flex flex-col gap-[14px]">
                     {/* Pool Info */}
-                    <div
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '10px',
-                        padding: '12px 14px',
-                        background: isDark ? 'rgba(255,255,255,0.02)' : '#f9fafb',
-                        borderRadius: '8px',
-                        border: `1.5px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)'}`
-                      }}
-                    >
-                      <div style={{ display: 'flex' }}>
-                        <img
-                          src={getTokenImageUrl(
-                            addLiquidityDialog.pool.asset1.issuer,
-                            addLiquidityDialog.pool.asset1.currency
-                          )}
-                          alt=""
-                          style={{ width: 24, height: 24, borderRadius: '50%' }}
-                        />
-                        <img
-                          src={getTokenImageUrl(
-                            addLiquidityDialog.pool.asset2.issuer,
-                            addLiquidityDialog.pool.asset2.currency
-                          )}
-                          alt=""
-                          style={{ width: 24, height: 24, borderRadius: '50%', marginLeft: -8 }}
-                        />
+                    <div className={cn('flex items-center gap-[10px] py-3 px-[14px] rounded-[10px] border-[1.5px]', isDark ? 'bg-white/[0.03] border-white/[0.08]' : 'bg-[#f9fafb] border-black/[0.08]')}>
+                      <div className="flex">
+                        <img src={getTokenImageUrl(liquidityDialog.pool.asset1.issuer, liquidityDialog.pool.asset1.currency)} alt="" className="w-7 h-7 rounded-full" />
+                        <img src={getTokenImageUrl(liquidityDialog.pool.asset2.issuer, liquidityDialog.pool.asset2.currency)} alt="" className="w-7 h-7 rounded-full -ml-[10px]" />
                       </div>
-                      <span
-                        style={{
-                          fontSize: '14px',
-                          fontWeight: 500,
-                          color: isDark ? '#fff' : '#1a1a1a'
-                        }}
-                      >
-                        {decodeCurrency(addLiquidityDialog.pool.asset1.currency)}/
-                        {decodeCurrency(addLiquidityDialog.pool.asset2.currency)}
+                      <span className={cn('text-[15px] font-semibold', isDark ? 'text-white' : 'text-[#1a1a1a]')}>
+                        {decodeCurrency(liquidityDialog.pool.asset1.currency)}/{decodeCurrency(liquidityDialog.pool.asset2.currency)}
                       </span>
-                    </div>
-
-                    {/* Deposit Mode */}
-                    <div>
-                      <div
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '12px',
-                          marginBottom: '12px'
-                        }}
-                      >
-                        <span
-                          style={{
-                            fontSize: '11px',
-                            fontWeight: 500,
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.5px',
-                            color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.5)'
-                          }}
-                        >
-                          Deposit Mode
+                      {liquidityDialog.pool.tradingFee != null && (
+                        <span className={cn('ml-auto text-[11px]', isDark ? 'text-white/40' : 'text-black/40')}>
+                          Fee {(liquidityDialog.pool.tradingFee / 1000).toFixed(2)}%
                         </span>
-                        <div
-                          style={{
-                            flex: 1,
-                            height: '1px',
-                            backgroundImage: `radial-gradient(circle, ${isDark ? 'rgba(66,133,244,0.5)' : 'rgba(66,133,244,0.3)'} 1px, transparent 1px)`,
-                            backgroundSize: '6px 1px'
-                          }}
-                        />
-                      </div>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        <label
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '8px',
-                            padding: '10px 12px',
-                            borderRadius: '8px',
-                            cursor: 'pointer',
-                            border: `1.5px solid ${depositMode === 'double' ? '#4285f4' : isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
-                            background:
-                              depositMode === 'double'
-                                ? isDark
-                                  ? 'rgba(66,133,244,0.1)'
-                                  : 'rgba(66,133,244,0.05)'
-                                : 'transparent'
-                          }}
-                        >
-                          <input
-                            type="radio"
-                            value="double"
-                            checked={depositMode === 'double'}
-                            onChange={(e) => setDepositMode(e.target.value)}
-                            style={{ accentColor: '#4285f4' }}
-                          />
-                          <span style={{ fontSize: '13px', color: isDark ? '#fff' : '#1a1a1a' }}>
-                            Double-asset (both tokens, no fee)
-                          </span>
-                        </label>
-                        <label
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '8px',
-                            padding: '10px 12px',
-                            borderRadius: '8px',
-                            cursor: 'pointer',
-                            border: `1.5px solid ${depositMode === 'single1' ? '#4285f4' : isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
-                            background:
-                              depositMode === 'single1'
-                                ? isDark
-                                  ? 'rgba(66,133,244,0.1)'
-                                  : 'rgba(66,133,244,0.05)'
-                                : 'transparent'
-                          }}
-                        >
-                          <input
-                            type="radio"
-                            value="single1"
-                            checked={depositMode === 'single1'}
-                            onChange={(e) => setDepositMode(e.target.value)}
-                            style={{ accentColor: '#4285f4' }}
-                          />
-                          <span style={{ fontSize: '13px', color: isDark ? '#fff' : '#1a1a1a' }}>
-                            Single-asset ({decodeCurrency(addLiquidityDialog.pool.asset1.currency)}{' '}
-                            only)
-                          </span>
-                        </label>
-                        <label
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '8px',
-                            padding: '10px 12px',
-                            borderRadius: '8px',
-                            cursor: 'pointer',
-                            border: `1.5px solid ${depositMode === 'single2' ? '#4285f4' : isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
-                            background:
-                              depositMode === 'single2'
-                                ? isDark
-                                  ? 'rgba(66,133,244,0.1)'
-                                  : 'rgba(66,133,244,0.05)'
-                                : 'transparent'
-                          }}
-                        >
-                          <input
-                            type="radio"
-                            value="single2"
-                            checked={depositMode === 'single2'}
-                            onChange={(e) => setDepositMode(e.target.value)}
-                            style={{ accentColor: '#4285f4' }}
-                          />
-                          <span style={{ fontSize: '13px', color: isDark ? '#fff' : '#1a1a1a' }}>
-                            Single-asset ({decodeCurrency(addLiquidityDialog.pool.asset2.currency)}{' '}
-                            only)
-                          </span>
-                        </label>
-                      </div>
+                      )}
                     </div>
 
-                    {/* Asset 1 Input */}
-                    {(depositMode === 'double' || depositMode === 'single1') && (
-                      <div>
-                        <div
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '12px',
-                            marginBottom: '10px'
-                          }}
+                    {/* Current Position */}
+                    {(() => {
+                      const pa = liquidityDialog.pool.ammAccount || liquidityDialog.pool.account || liquidityDialog.pool._id;
+                      const lp = userLpBalances[pa];
+                      if (!lp || lp.balance <= 0) return null;
+                      const ilData = ilPositions[liquidityDialog.pool._id];
+                      const hasIl = ilData && typeof ilData.ilPercent === 'number';
+                      const ilColor = hasIl
+                        ? ilData.ilPercent >= 0 ? '#08AA09' : '#ef4444'
+                        : null;
+                      return (
+                        <div className={cn('py-3 px-[14px] rounded-[10px] border-[1.5px]', isDark ? 'bg-[rgba(59,130,246,0.06)] border-[rgba(59,130,246,0.15)]' : 'bg-[rgba(59,130,246,0.04)] border-[rgba(59,130,246,0.12)]')}>
+                          <div className="flex justify-between items-center mb-[10px]">
+                            <span className="text-[11px] uppercase tracking-[0.5px] text-[#3b82f6] font-semibold">Your Position</span>
+                            <span className="text-[11px] font-semibold text-[#3b82f6]">{formatShare(lp.share)}</span>
+                          </div>
+                          <div className="flex gap-4">
+                            <div className="flex items-center gap-[6px]">
+                              <img src={getTokenImageUrl(liquidityDialog.pool.asset1.issuer, liquidityDialog.pool.asset1.currency)} alt="" className="w-4 h-4 rounded-full" />
+                              <span className={cn('text-[13px] font-medium', isDark ? 'text-white/85' : 'text-black/85')}>{abbreviateNumber(lp.asset1Amount)}</span>
+                              <span className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-black/40')}>{decodeCurrency(liquidityDialog.pool.asset1.currency)}</span>
+                            </div>
+                            <div className="flex items-center gap-[6px]">
+                              <img src={getTokenImageUrl(liquidityDialog.pool.asset2.issuer, liquidityDialog.pool.asset2.currency)} alt="" className="w-4 h-4 rounded-full" />
+                              <span className={cn('text-[13px] font-medium', isDark ? 'text-white/85' : 'text-black/85')}>{abbreviateNumber(lp.asset2Amount)}</span>
+                              <span className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-black/40')}>{decodeCurrency(liquidityDialog.pool.asset2.currency)}</span>
+                            </div>
+                          </div>
+                          {hasIl && (() => {
+                            const diff = ilData.poolValueXrp - ilData.holdValueXrp;
+                            return (
+                            <div className={cn('mt-[10px] py-2 px-[10px] rounded-lg flex flex-col gap-[5px]', isDark ? 'bg-black/15' : 'bg-black/[0.03]')}>
+                              <div className="flex justify-between items-center">
+                                <span className={cn('text-[10px] font-semibold', isDark ? 'text-white/40' : 'text-black/50')}>Worth if held (no pool)</span>
+                                <span className={cn('text-[12px] font-semibold', isDark ? 'text-white/85' : 'text-black/85')}>{abbreviateNumber(ilData.holdValueXrp)} XRP</span>
+                              </div>
+                              <div className="flex justify-between items-center">
+                                <span className={cn('text-[10px] font-semibold', isDark ? 'text-white/40' : 'text-black/50')}>Worth in pool now</span>
+                                <span className={cn('text-[12px] font-semibold', isDark ? 'text-white/85' : 'text-black/85')}>{abbreviateNumber(ilData.poolValueXrp)} XRP</span>
+                              </div>
+                              <div className={cn('pt-1 flex justify-between items-center border-t', isDark ? 'border-white/[0.06]' : 'border-black/[0.06]')}>
+                                <span className={cn('text-[10px] font-semibold', isDark ? 'text-white/40' : 'text-black/50')}>Impermanent {ilData.ilPercent >= 0 ? 'gain' : 'loss'}</span>
+                                <span className="text-[12px] font-bold" style={{ color: ilColor }}>{diff >= 0 ? '+' : ''}{abbreviateNumber(diff)} XRP ({ilData.ilPercent >= 0 ? '+' : ''}{ilData.ilPercent.toFixed(2)}%)</span>
+                              </div>
+                            </div>
+                            );
+                          })()}
+                        </div>
+                      );
+                    })()}
+
+                    {/* Add / Remove Tab Toggle */}
+                    <div className={cn('flex rounded-[10px] overflow-hidden p-[3px]', isDark ? 'bg-white/[0.04]' : 'bg-black/[0.04]')}>
+                      {['add', 'remove'].map((t) => (
+                        <button
+                          key={t}
+                          onClick={() => setLiquidityDialog((prev) => ({ ...prev, tab: t }))}
+                          className={cn(
+                            'flex-1 py-[9px] px-0 text-[13px] font-medium border-none rounded-lg cursor-pointer transition-all duration-150',
+                            liquidityDialog.tab === t
+                              ? cn('text-white', t === 'add' ? 'bg-[#3b82f6]' : isDark ? 'bg-white/[0.12]' : 'bg-[#1a1a1a]')
+                              : cn('bg-transparent', isDark ? 'text-white/45' : 'text-black/45')
+                          )}
                         >
-                          <span
-                            style={{
-                              fontSize: '11px',
-                              fontWeight: 500,
-                              textTransform: 'uppercase',
-                              letterSpacing: '0.5px',
-                              color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.5)'
-                            }}
-                          >
-                            {decodeCurrency(addLiquidityDialog.pool.asset1.currency)}
-                          </span>
-                          <div
-                            style={{
-                              flex: 1,
-                              height: '1px',
-                              backgroundImage: `radial-gradient(circle, ${isDark ? 'rgba(66,133,244,0.5)' : 'rgba(66,133,244,0.3)'} 1px, transparent 1px)`,
-                              backgroundSize: '6px 1px'
-                            }}
-                          />
+                          {t === 'add' ? 'Add' : 'Remove'}
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* ===== ADD TAB ===== */}
+                    {liquidityDialog.tab === 'add' && (
+                      <>
+                        {/* Deposit Mode */}
+                        <div className="flex flex-col gap-[6px]">
+                          {[
+                            { value: 'double', label: 'Both tokens', desc: 'No trading fee' },
+                            { value: 'single1', label: `${decodeCurrency(liquidityDialog.pool.asset1.currency)} only`, desc: 'Trading fee applies' },
+                            { value: 'single2', label: `${decodeCurrency(liquidityDialog.pool.asset2.currency)} only`, desc: 'Trading fee applies' }
+                          ].map((opt) => (
+                            <label key={opt.value} className={cn('flex items-center gap-[10px] py-[10px] px-[14px] rounded-[10px] cursor-pointer border-[1.5px] transition-all duration-150', depositMode === opt.value ? cn('border-[#3b82f6]', isDark ? 'bg-[rgba(59,130,246,0.08)]' : 'bg-[rgba(59,130,246,0.04)]') : cn('bg-transparent', isDark ? 'border-white/[0.08]' : 'border-black/[0.08]'))}>
+                              <input type="radio" value={opt.value} checked={depositMode === opt.value} onChange={(e) => setDepositMode(e.target.value)} className="accent-[#3b82f6]" />
+                              <div className="flex flex-col gap-[2px]">
+                                <span className={cn('text-[13px] font-medium', isDark ? 'text-white' : 'text-[#1a1a1a]')}>{opt.label}</span>
+                                <span className={cn('text-[11px]', isDark ? 'text-white/35' : 'text-black/35')}>{opt.desc}</span>
+                              </div>
+                            </label>
+                          ))}
                         </div>
-                        <div style={{ position: 'relative' }}>
-                          <TextField
-                            value={depositAmount1}
-                            onChange={(e) => handleAmount1Change(e.target.value)}
-                            type="number"
-                            placeholder="0.00"
-                            isDark={isDark}
-                            style={{ paddingRight: '70px' }}
-                          />
-                          <span
-                            style={{
-                              position: 'absolute',
-                              right: '14px',
-                              top: '50%',
-                              transform: 'translateY(-50%)',
-                              fontSize: '13px',
-                              fontWeight: 500,
-                              color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'
-                            }}
+
+                        {/* Asset 1 Input */}
+                        {(depositMode === 'double' || depositMode === 'single1') && (
+                          <div>
+                            <div className="flex justify-between items-center mb-[6px]">
+                              <span className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-black/40')}>
+                                {decodeCurrency(liquidityDialog.pool.asset1.currency)}
+                              </span>
+                              {userPoolBalances.asset1 != null && (
+                                <div className="flex items-center gap-[6px]">
+                                  <span className={cn('text-[10px]', isDark ? 'text-white/45' : 'text-black/45')}>
+                                    {Number(userPoolBalances.asset1).toFixed(4).replace(/\.?0+$/, '')} {decodeCurrency(liquidityDialog.pool.asset1.currency)}
+                                  </span>
+                                  {[0.5, 1].map((p) => (
+                                    <button key={p} onClick={() => { const v = (Number(userPoolBalances.asset1) * p).toFixed(6); handleAmount1Change(v); }} disabled={!userPoolBalances.asset1} className={cn('py-[2px] px-[6px] text-[9px] font-semibold rounded border-none text-[#3b82f6]', userPoolBalances.asset1 ? 'cursor-pointer opacity-100' : 'cursor-not-allowed opacity-30', isDark ? 'bg-[rgba(59,130,246,0.15)]' : 'bg-[rgba(59,130,246,0.1)]')}>
+                                      {p === 1 ? 'MAX' : '50%'}
+                                    </button>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                            <div className="relative">
+                              <TextField value={depositAmount1} onChange={(e) => handleAmount1Change(e.target.value)} type="number" placeholder="0.00" isDark={isDark} />
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Asset 2 Input */}
+                        {(depositMode === 'double' || depositMode === 'single2') && (
+                          <div>
+                            <div className="flex justify-between items-center mb-[6px]">
+                              <span className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-black/40')}>
+                                {decodeCurrency(liquidityDialog.pool.asset2.currency)}
+                              </span>
+                              {userPoolBalances.asset2 != null && (
+                                <div className="flex items-center gap-[6px]">
+                                  <span className={cn('text-[10px]', isDark ? 'text-white/45' : 'text-black/45')}>
+                                    {Number(userPoolBalances.asset2).toFixed(4).replace(/\.?0+$/, '')} {decodeCurrency(liquidityDialog.pool.asset2.currency)}
+                                  </span>
+                                  {[0.5, 1].map((p) => (
+                                    <button key={p} onClick={() => { const v = (Number(userPoolBalances.asset2) * p).toFixed(6); handleAmount2Change(v); }} disabled={!userPoolBalances.asset2} className={cn('py-[2px] px-[6px] text-[9px] font-semibold rounded border-none text-[#3b82f6]', userPoolBalances.asset2 ? 'cursor-pointer opacity-100' : 'cursor-not-allowed opacity-30', isDark ? 'bg-[rgba(59,130,246,0.15)]' : 'bg-[rgba(59,130,246,0.1)]')}>
+                                      {p === 1 ? 'MAX' : '50%'}
+                                    </button>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                            <div className="relative">
+                              <TextField value={depositAmount2} onChange={(e) => handleAmount2Change(e.target.value)} type="number" placeholder="0.00" isDark={isDark} />
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Simulation result */}
+                        {pendingDeposit && pendingDeposit.error && (
+                          <div className={cn('py-[10px] px-[14px] rounded-[10px] border-[1.5px] border-[rgba(239,68,68,0.2)] flex flex-col gap-[6px] text-[12px]', isDark ? 'bg-[rgba(239,68,68,0.08)]' : 'bg-[rgba(239,68,68,0.05)]')}>
+                            <div className="flex items-center gap-[6px] text-[#ef4444] font-semibold text-[11px] uppercase tracking-[0.05em]">
+                              <AlertTriangle size={13} />
+                              Simulation Failed
+                            </div>
+                            <span className={cn('leading-normal', isDark ? 'text-white/70' : 'text-black/60')}>{pendingDeposit.error}</span>
+                          </div>
+                        )}
+                        {pendingDeposit && pendingDeposit.preview && (
+                          <div className={cn('py-[10px] px-[14px] rounded-[10px] border-[1.5px] flex flex-col gap-2 text-[12px]', isDark ? 'bg-white/[0.03] border-white/[0.08]' : 'bg-black/[0.02] border-black/[0.08]')}>
+                            <div className="flex items-center gap-[6px] text-[#08AA09] font-semibold text-[11px] uppercase tracking-[0.05em]">
+                              <CheckCircle size={13} />
+                              Transaction Preview
+                            </div>
+                            <div className={cn('flex flex-col gap-1', isDark ? 'text-white/70' : 'text-black/60')}>
+                              {pendingDeposit.preview.asset1.amount > 0 && (
+                                <div className="flex justify-between">
+                                  <span>Deposit {pendingDeposit.preview.asset1.name}</span>
+                                  <span className={cn('font-semibold', isDark ? 'text-white' : 'text-black')}>{pendingDeposit.preview.asset1.amount < 0.001 ? pendingDeposit.preview.asset1.amount.toFixed(6) : pendingDeposit.preview.asset1.amount.toFixed(4)}</span>
+                                </div>
+                              )}
+                              {pendingDeposit.preview.asset2.amount > 0 && (
+                                <div className="flex justify-between">
+                                  <span>Deposit {pendingDeposit.preview.asset2.name}</span>
+                                  <span className={cn('font-semibold', isDark ? 'text-white' : 'text-black')}>{pendingDeposit.preview.asset2.amount < 0.001 ? pendingDeposit.preview.asset2.amount.toFixed(6) : pendingDeposit.preview.asset2.amount.toFixed(4)}</span>
+                                </div>
+                              )}
+                              {pendingDeposit.preview.lpTokens > 0 && (
+                                <div className="flex justify-between">
+                                  <span>LP tokens received</span>
+                                  <span className="font-semibold text-[#3b82f6]">{pendingDeposit.preview.lpTokens < 0.001 ? pendingDeposit.preview.lpTokens.toFixed(6) : pendingDeposit.preview.lpTokens.toFixed(4)}</span>
+                                </div>
+                              )}
+                              <div className="flex justify-between">
+                                <span>Network fee</span>
+                                <span className={cn('font-semibold', isDark ? 'text-white' : 'text-black')}>{pendingDeposit.preview.fee} XRP</span>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Submit / Confirm */}
+                        {pendingDeposit && pendingDeposit.error ? (
+                          <button
+                            onClick={() => setPendingDeposit(null)}
+                            className={cn('p-[13px] text-[14px] font-semibold w-full border-none rounded-[10px] cursor-pointer', isDark ? 'bg-white/[0.06] text-white/70' : 'bg-black/[0.06] text-black/60')}
                           >
-                            {decodeCurrency(addLiquidityDialog.pool.asset1.currency)}
-                          </span>
-                        </div>
-                      </div>
+                            Dismiss
+                          </button>
+                        ) : pendingDeposit && pendingDeposit.tx ? (
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => setPendingDeposit(null)}
+                              className={cn('flex-1 p-[13px] text-[14px] font-semibold border-none rounded-[10px] cursor-pointer', isDark ? 'bg-white/[0.06] text-white/70' : 'bg-black/[0.06] text-black/60')}
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              onClick={handleConfirmDeposit}
+                              disabled={depositLoading}
+                              className={cn('flex-[2] p-[13px] text-[14px] font-semibold text-white border-none rounded-[10px] flex items-center justify-center gap-2', depositLoading ? cn('cursor-not-allowed', isDark ? 'bg-[#222]' : 'bg-[#ccc]') : 'cursor-pointer bg-[#08AA09]')}
+                            >
+                              {depositLoading && <Spinner size={16} />}
+                              {depositLoading ? 'Depositing...' : 'Confirm Deposit'}
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={handleSubmitDeposit}
+                            disabled={depositLoading}
+                            className={cn('p-[13px] text-[14px] font-semibold w-full text-white border-none rounded-[10px] flex items-center justify-center gap-2 transition-all duration-150', depositLoading ? cn('cursor-not-allowed', isDark ? 'bg-[#222]' : 'bg-[#ccc]') : 'cursor-pointer bg-[#3b82f6]')}
+                          >
+                            {depositLoading && <Spinner size={16} />}
+                            {depositLoading ? 'Simulating...' : 'Add Liquidity'}
+                          </button>
+                        )}
+                      </>
                     )}
 
-                    {/* Asset 2 Input */}
-                    {(depositMode === 'double' || depositMode === 'single2') && (
-                      <div>
-                        <div
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '12px',
-                            marginBottom: '10px'
-                          }}
-                        >
-                          <span
-                            style={{
-                              fontSize: '11px',
-                              fontWeight: 500,
-                              textTransform: 'uppercase',
-                              letterSpacing: '0.5px',
-                              color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.5)'
-                            }}
-                          >
-                            {decodeCurrency(addLiquidityDialog.pool.asset2.currency)}
-                          </span>
-                          <div
-                            style={{
-                              flex: 1,
-                              height: '1px',
-                              backgroundImage: `radial-gradient(circle, ${isDark ? 'rgba(66,133,244,0.5)' : 'rgba(66,133,244,0.3)'} 1px, transparent 1px)`,
-                              backgroundSize: '6px 1px'
-                            }}
-                          />
+                    {/* ===== REMOVE TAB ===== */}
+                    {liquidityDialog.tab === 'remove' && (
+                      <>
+                        {/* Withdraw Mode */}
+                        <div className="flex flex-col gap-[6px]">
+                          {[
+                            { value: 'all', label: 'Withdraw all', desc: 'No trading fee' },
+                            { value: 'double', label: 'Both tokens', desc: 'Balanced at pool ratio' },
+                            { value: 'single1', label: `${decodeCurrency(liquidityDialog.pool.asset1.currency)} only`, desc: 'Trading fee applies' },
+                            { value: 'single2', label: `${decodeCurrency(liquidityDialog.pool.asset2.currency)} only`, desc: 'Trading fee applies' }
+                          ].map((opt) => (
+                            <label key={opt.value} className={cn('flex items-center gap-[10px] py-[10px] px-[14px] rounded-[10px] cursor-pointer border-[1.5px] transition-all duration-150', withdrawMode === opt.value ? cn('border-[#3b82f6]', isDark ? 'bg-[rgba(59,130,246,0.08)]' : 'bg-[rgba(59,130,246,0.04)]') : cn('bg-transparent', isDark ? 'border-white/[0.08]' : 'border-black/[0.08]'))}>
+                              <input type="radio" value={opt.value} checked={withdrawMode === opt.value} onChange={(e) => { setWithdrawMode(e.target.value); setWithdrawAmount1(''); setWithdrawAmount2(''); setPendingWithdraw(null); }} className="accent-[#3b82f6]" />
+                              <div className="flex flex-col gap-[2px]">
+                                <span className={cn('text-[13px] font-medium', isDark ? 'text-white' : 'text-[#1a1a1a]')}>{opt.label}</span>
+                                <span className={cn('text-[11px]', isDark ? 'text-white/35' : 'text-black/35')}>{opt.desc}</span>
+                              </div>
+                            </label>
+                          ))}
                         </div>
-                        <div style={{ position: 'relative' }}>
-                          <TextField
-                            value={depositAmount2}
-                            onChange={(e) => handleAmount2Change(e.target.value)}
-                            type="number"
-                            placeholder="0.00"
-                            isDark={isDark}
-                            style={{ paddingRight: '70px' }}
-                          />
-                          <span
-                            style={{
-                              position: 'absolute',
-                              right: '14px',
-                              top: '50%',
-                              transform: 'translateY(-50%)',
-                              fontSize: '13px',
-                              fontWeight: 500,
-                              color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'
-                            }}
-                          >
-                            {decodeCurrency(addLiquidityDialog.pool.asset2.currency)}
-                          </span>
-                        </div>
-                      </div>
-                    )}
 
-                    {/* Submit Button */}
-                    <button
-                      onClick={handleSubmitDeposit}
-                      style={{
-                        padding: '12px 24px',
-                        fontSize: '14px',
-                        fontWeight: 500,
-                        width: '100%',
-                        background: '#4285f4',
-                        color: '#fff',
-                        border: '1.5px solid #4285f4',
-                        borderRadius: '8px',
-                        cursor: 'pointer',
-                        marginTop: '4px',
-                        transition: 'background 0.15s, opacity 0.15s'
-                      }}
-                      onMouseOver={(e) => (e.target.style.opacity = '0.9')}
-                      onMouseOut={(e) => (e.target.style.opacity = '1')}
-                    >
-                      Add Liquidity
-                    </button>
+                        {/* Asset 1 Input */}
+                        {(withdrawMode === 'double' || withdrawMode === 'single1') && (
+                          <div>
+                            <div className="flex justify-between items-center mb-[6px]">
+                              <span className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-black/40')}>
+                                {decodeCurrency(liquidityDialog.pool.asset1.currency)}
+                              </span>
+                              {(() => {
+                                const pa = liquidityDialog.pool.ammAccount || liquidityDialog.pool.account || liquidityDialog.pool._id;
+                                const lp = userLpBalances[pa];
+                                if (!lp || lp.balance <= 0) return null;
+                                const maxVal = withdrawMode === 'single1' ? getWithdrawMax('asset1') : lp.asset1Amount;
+                                return (
+                                  <span
+                                    onClick={() => handleWithdrawAmount1Change(maxVal.toFixed(6))}
+                                    className="text-[10px] text-[#3b82f6] cursor-pointer font-medium"
+                                  >
+                                    Max: {Number(maxVal).toFixed(4).replace(/\.?0+$/, '')}
+                                  </span>
+                                );
+                              })()}
+                            </div>
+                            <div className="relative">
+                              <TextField value={withdrawAmount1} onChange={(e) => handleWithdrawAmount1Change(e.target.value)} type="number" placeholder="0.00" isDark={isDark} />
+                            </div>
+                            {/* Percentage buttons */}
+                            {(() => {
+                              const pa = liquidityDialog.pool.ammAccount || liquidityDialog.pool.account || liquidityDialog.pool._id;
+                              const lp = userLpBalances[pa];
+                              if (!lp || lp.balance <= 0) return null;
+                              const maxVal = withdrawMode === 'single1' ? getWithdrawMax('asset1') : lp.asset1Amount;
+                              return (
+                                <div className="flex gap-1 mt-[6px]">
+                                  {[0.25, 0.5, 0.75, 1].map((p) => (
+                                    <button key={p} onClick={() => handleWithdrawAmount1Change((maxVal * p).toFixed(6))} className={cn('py-[2px] px-[6px] text-[9px] font-semibold rounded border-none cursor-pointer text-[#3b82f6]', isDark ? 'bg-[rgba(59,130,246,0.15)]' : 'bg-[rgba(59,130,246,0.1)]')}>
+                                      {p * 100}%
+                                    </button>
+                                  ))}
+                                </div>
+                              );
+                            })()}
+                          </div>
+                        )}
+
+                        {/* Asset 2 Input */}
+                        {(withdrawMode === 'double' || withdrawMode === 'single2') && (
+                          <div>
+                            <div className="flex justify-between items-center mb-[6px]">
+                              <span className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-black/40')}>
+                                {decodeCurrency(liquidityDialog.pool.asset2.currency)}
+                              </span>
+                              {(() => {
+                                const pa = liquidityDialog.pool.ammAccount || liquidityDialog.pool.account || liquidityDialog.pool._id;
+                                const lp = userLpBalances[pa];
+                                if (!lp || lp.balance <= 0) return null;
+                                const maxVal = withdrawMode === 'single2' ? getWithdrawMax('asset2') : lp.asset2Amount;
+                                return (
+                                  <span
+                                    onClick={() => handleWithdrawAmount2Change(maxVal.toFixed(6))}
+                                    className="text-[10px] text-[#3b82f6] cursor-pointer font-medium"
+                                  >
+                                    Max: {Number(maxVal).toFixed(4).replace(/\.?0+$/, '')}
+                                  </span>
+                                );
+                              })()}
+                            </div>
+                            <div className="relative">
+                              <TextField value={withdrawAmount2} onChange={(e) => handleWithdrawAmount2Change(e.target.value)} type="number" placeholder="0.00" isDark={isDark} />
+                            </div>
+                            {/* Percentage buttons */}
+                            {(() => {
+                              const pa = liquidityDialog.pool.ammAccount || liquidityDialog.pool.account || liquidityDialog.pool._id;
+                              const lp = userLpBalances[pa];
+                              if (!lp || lp.balance <= 0) return null;
+                              const maxVal = withdrawMode === 'single2' ? getWithdrawMax('asset2') : lp.asset2Amount;
+                              return (
+                                <div className="flex gap-1 mt-[6px]">
+                                  {[0.25, 0.5, 0.75, 1].map((p) => (
+                                    <button key={p} onClick={() => handleWithdrawAmount2Change((maxVal * p).toFixed(6))} className={cn('py-[2px] px-[6px] text-[9px] font-semibold rounded border-none cursor-pointer text-[#3b82f6]', isDark ? 'bg-[rgba(59,130,246,0.15)]' : 'bg-[rgba(59,130,246,0.1)]')}>
+                                      {p * 100}%
+                                    </button>
+                                  ))}
+                                </div>
+                              );
+                            })()}
+                          </div>
+                        )}
+
+                        {/* Withdraw All info */}
+                        {withdrawMode === 'all' && (
+                          <div className={cn('py-3 px-[14px] rounded-[10px] border-[1.5px] text-[12px] leading-relaxed', isDark ? 'bg-white/[0.03] border-white/[0.06] text-white/50' : 'bg-black/[0.02] border-black/[0.06] text-black/50')}>
+                            Redeems all LP tokens for proportional amounts of both assets. No trading fee applies.
+                          </div>
+                        )}
+
+                        {/* Simulation result */}
+                        {pendingWithdraw && pendingWithdraw.error && (
+                          <div className={cn('py-[10px] px-[14px] rounded-[10px] border-[1.5px] border-[rgba(239,68,68,0.2)] flex flex-col gap-[6px] text-[12px]', isDark ? 'bg-[rgba(239,68,68,0.08)]' : 'bg-[rgba(239,68,68,0.05)]')}>
+                            <div className="flex items-center gap-[6px] text-[#ef4444] font-semibold text-[11px] uppercase tracking-[0.05em]">
+                              <AlertTriangle size={13} />
+                              Simulation Failed
+                            </div>
+                            <span className={cn('leading-normal', isDark ? 'text-white/70' : 'text-black/60')}>{pendingWithdraw.error}</span>
+                          </div>
+                        )}
+                        {pendingWithdraw && pendingWithdraw.preview && (
+                          <div className={cn('py-[10px] px-[14px] rounded-[10px] border-[1.5px] flex flex-col gap-2 text-[12px]', isDark ? 'bg-white/[0.03] border-white/[0.08]' : 'bg-black/[0.02] border-black/[0.08]')}>
+                            <div className="flex items-center gap-[6px] text-[#08AA09] font-semibold text-[11px] uppercase tracking-[0.05em]">
+                              <CheckCircle size={13} />
+                              Transaction Preview
+                            </div>
+                            <div className={cn('flex flex-col gap-1', isDark ? 'text-white/70' : 'text-black/60')}>
+                              {pendingWithdraw.preview.asset1.amount > 0 && (
+                                <div className="flex justify-between">
+                                  <span>Receive {pendingWithdraw.preview.asset1.name}</span>
+                                  <span className={cn('font-semibold', isDark ? 'text-white' : 'text-black')}>{pendingWithdraw.preview.asset1.amount < 0.001 ? pendingWithdraw.preview.asset1.amount.toFixed(6) : pendingWithdraw.preview.asset1.amount.toFixed(4)}</span>
+                                </div>
+                              )}
+                              {pendingWithdraw.preview.asset2.amount > 0 && (
+                                <div className="flex justify-between">
+                                  <span>Receive {pendingWithdraw.preview.asset2.name}</span>
+                                  <span className={cn('font-semibold', isDark ? 'text-white' : 'text-black')}>{pendingWithdraw.preview.asset2.amount < 0.001 ? pendingWithdraw.preview.asset2.amount.toFixed(6) : pendingWithdraw.preview.asset2.amount.toFixed(4)}</span>
+                                </div>
+                              )}
+                              {pendingWithdraw.preview.lpTokens > 0 && (
+                                <div className="flex justify-between">
+                                  <span>LP tokens burned</span>
+                                  <span className="font-semibold text-[#ef4444]">{pendingWithdraw.preview.lpTokens < 0.001 ? pendingWithdraw.preview.lpTokens.toFixed(6) : pendingWithdraw.preview.lpTokens.toFixed(4)}</span>
+                                </div>
+                              )}
+                              <div className="flex justify-between">
+                                <span>Network fee</span>
+                                <span className={cn('font-semibold', isDark ? 'text-white' : 'text-black')}>{pendingWithdraw.preview.fee} XRP</span>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Submit / Confirm */}
+                        {pendingWithdraw && pendingWithdraw.error ? (
+                          <button
+                            onClick={() => setPendingWithdraw(null)}
+                            className={cn('p-[13px] text-[14px] font-semibold w-full border-none rounded-[10px] cursor-pointer', isDark ? 'bg-white/[0.06] text-white/70' : 'bg-black/[0.06] text-black/60')}
+                          >
+                            Dismiss
+                          </button>
+                        ) : pendingWithdraw && pendingWithdraw.tx ? (
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => setPendingWithdraw(null)}
+                              className={cn('flex-1 p-[13px] text-[14px] font-semibold border-none rounded-[10px] cursor-pointer', isDark ? 'bg-white/[0.06] text-white/70' : 'bg-black/[0.06] text-black/60')}
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              onClick={handleConfirmWithdraw}
+                              disabled={withdrawLoading}
+                              className={cn('flex-[2] p-[13px] text-[14px] font-semibold text-white border-none rounded-[10px] flex items-center justify-center gap-2', withdrawLoading ? cn('cursor-not-allowed', isDark ? 'bg-[#222]' : 'bg-[#ccc]') : 'cursor-pointer bg-[#08AA09]')}
+                            >
+                              {withdrawLoading && <Spinner size={16} />}
+                              {withdrawLoading ? 'Withdrawing...' : 'Confirm Withdrawal'}
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={handleSubmitWithdraw}
+                            disabled={withdrawLoading}
+                            className={cn('p-[13px] text-[14px] font-semibold w-full text-white border-none rounded-[10px] flex items-center justify-center gap-2 transition-all duration-150', withdrawLoading ? cn('cursor-not-allowed', isDark ? 'bg-[#222]' : 'bg-[#ccc]') : cn('cursor-pointer', isDark ? 'bg-white/10' : 'bg-[#1a1a1a]'))}
+                          >
+                            {withdrawLoading && <Spinner size={16} />}
+                            {withdrawLoading ? 'Simulating...' : withdrawMode === 'all' ? 'Withdraw All' : 'Remove Liquidity'}
+                          </button>
+                        )}
+                      </>
+                    )}
                   </div>
                 )}
+              </DialogContent>
+            </DialogPaper>
+          </Dialog>,
+          document.body
+        )}
+
+      {/* Create Pool Dialog */}
+      {typeof document !== 'undefined' &&
+        createPoolOpen &&
+        createPortal(
+          <Dialog
+            open={createPoolOpen}
+            isDark={isDark}
+            onClick={(e) => e.target === e.currentTarget && handleCloseCreatePool()}
+          >
+            <DialogPaper isDark={isDark}>
+              <DialogTitle isDark={isDark}>
+                Create Pool
+                <IconButton onClick={handleCloseCreatePool} isDark={isDark} className="p-[6px]">
+                  <X size={18} />
+                </IconButton>
+              </DialogTitle>
+              <DialogContent isDark={isDark}>
+                <div className="flex flex-col gap-[14px]">
+                  {/* Asset 1 - Current token (fixed) */}
+                  <div className={cn('py-3 px-[14px] rounded-[10px] border-[1.5px]', isDark ? 'bg-white/[0.03] border-white/[0.08]' : 'bg-[#f9fafb] border-black/[0.08]')}>
+                    <div className={cn('text-[10px] font-semibold uppercase tracking-[0.5px] mb-2', isDark ? 'text-white/35' : 'text-black/40')}>Asset 1</div>
+                    <div className="flex items-center gap-[10px]">
+                      <img src={getTokenImageUrl(token?.issuer, token?.currency)} alt="" className="w-7 h-7 rounded-full" />
+                      <span className={cn('text-[15px] font-semibold', isDark ? 'text-white' : 'text-[#1a1a1a]')}>
+                        {token?.currency === 'XRP' ? 'XRP' : decodeCurrency(token?.currency)}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Asset 2 - Token search/select */}
+                  <div className={cn('py-3 px-[14px] rounded-[10px] border-[1.5px]', isDark ? 'bg-white/[0.03] border-white/[0.08]' : 'bg-[#f9fafb] border-black/[0.08]')}>
+                    <div className={cn('text-[10px] font-semibold uppercase tracking-[0.5px] mb-2', isDark ? 'text-white/35' : 'text-black/40')}>Asset 2</div>
+                    {createPoolAsset2 ? (
+                      <div className="flex items-center gap-[10px]">
+                        <img src={createPoolAsset2.image} alt="" className="w-7 h-7 rounded-full" />
+                        <span className={cn('text-[15px] font-semibold', isDark ? 'text-white' : 'text-[#1a1a1a]')}>
+                          {createPoolAsset2.name}
+                        </span>
+                        <button
+                          onClick={() => { setCreatePoolAsset2(null); setPendingCreatePool(null); setCreatePoolAmount1(''); setCreatePoolAmount2(''); }}
+                          className={cn('ml-auto py-1 px-2 text-[10px] font-semibold rounded-md border-none cursor-pointer', isDark ? 'bg-white/[0.08] text-white/60' : 'bg-black/[0.06] text-black/50')}
+                        >
+                          Change
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="relative">
+                        <div className="relative">
+                          <Search size={14} className={cn('absolute left-[10px] top-1/2 -translate-y-1/2', isDark ? 'text-white/30' : 'text-black/30')} />
+                          <TextField
+                            value={createPoolSearch}
+                            onChange={(e) => handleCreatePoolSearch(e.target.value)}
+                            placeholder="Search token to pair with..."
+                            isDark={isDark}
+                            className="!pl-8"
+                          />
+                        </div>
+                        {(createPoolSearchResults.length > 0 || createPoolSearchLoading) && (
+                          <div className={cn('mt-[6px] max-h-[180px] overflow-y-auto rounded-lg border-[1.5px]', isDark ? 'border-white/[0.08] bg-[#111]' : 'border-black/[0.08] bg-white')}>
+                            {createPoolSearchLoading && (
+                              <div className="flex justify-center p-3">
+                                <Spinner size={16} />
+                              </div>
+                            )}
+                            {createPoolSearchResults.map((t, i) => {
+                              const isXrp = t.currency === 'XRP' && !t.issuer;
+                              const name = isXrp ? 'XRP' : (t.name || decodeCurrency(t.currency));
+                              return (
+                                <button
+                                  key={`${t.issuer || ''}_${t.currency}_${i}`}
+                                  onClick={() => handleSelectAsset2(t)}
+                                  className={cn('w-full flex items-center gap-[10px] py-[10px] px-3 border-none bg-transparent cursor-pointer text-left transition-[background] duration-100 border-b', isDark ? 'border-b-white/[0.04] text-white hover:bg-white/[0.04]' : 'border-b-black/[0.04] text-[#1a1a1a] hover:bg-black/[0.03]')}
+                                >
+                                  <img src={getTokenImageUrl(t.issuer, t.currency)} alt="" className="w-[22px] h-[22px] rounded-full" />
+                                  <div className="flex flex-col gap-px">
+                                    <span className="text-[13px] font-semibold">{name}</span>
+                                    {!isXrp && t.issuer && (
+                                      <span className={cn('text-[10px]', isDark ? 'text-white/30' : 'text-black/35')}>
+                                        {t.issuer.slice(0, 8)}...{t.issuer.slice(-6)}
+                                      </span>
+                                    )}
+                                  </div>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Amount inputs — only show after asset2 is selected */}
+                  {createPoolAsset2 && (
+                    <>
+                      {/* Amount 1 */}
+                      <div>
+                        <div className="flex justify-between items-center mb-[6px]">
+                          <span className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-black/40')}>
+                            {token?.currency === 'XRP' ? 'XRP' : decodeCurrency(token?.currency)} amount
+                          </span>
+                          {createPoolBalances.asset1 != null && (
+                            <div className="flex items-center gap-[6px]">
+                              <span className={cn('text-[10px]', isDark ? 'text-white/45' : 'text-black/45')}>
+                                {Number(createPoolBalances.asset1).toFixed(4).replace(/\.?0+$/, '')}
+                              </span>
+                              {[0.5, 1].map((p) => (
+                                <button key={p} onClick={() => setCreatePoolAmount1((Number(createPoolBalances.asset1) * p).toFixed(6))} className={cn('py-[2px] px-[6px] text-[9px] font-semibold rounded border-none cursor-pointer text-[#3b82f6]', isDark ? 'bg-[rgba(59,130,246,0.15)]' : 'bg-[rgba(59,130,246,0.1)]')}>
+                                  {p === 1 ? 'MAX' : '50%'}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                        <TextField value={createPoolAmount1} onChange={(e) => { setCreatePoolAmount1(e.target.value); setPendingCreatePool(null); }} type="number" placeholder="0.00" isDark={isDark} />
+                      </div>
+
+                      {/* Amount 2 */}
+                      <div>
+                        <div className="flex justify-between items-center mb-[6px]">
+                          <span className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-black/40')}>
+                            {createPoolAsset2.name} amount
+                          </span>
+                          {createPoolBalances.asset2 != null && (
+                            <div className="flex items-center gap-[6px]">
+                              <span className={cn('text-[10px]', isDark ? 'text-white/45' : 'text-black/45')}>
+                                {Number(createPoolBalances.asset2).toFixed(4).replace(/\.?0+$/, '')}
+                              </span>
+                              {[0.5, 1].map((p) => (
+                                <button key={p} onClick={() => setCreatePoolAmount2((Number(createPoolBalances.asset2) * p).toFixed(6))} className={cn('py-[2px] px-[6px] text-[9px] font-semibold rounded border-none cursor-pointer text-[#3b82f6]', isDark ? 'bg-[rgba(59,130,246,0.15)]' : 'bg-[rgba(59,130,246,0.1)]')}>
+                                  {p === 1 ? 'MAX' : '50%'}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                        <TextField value={createPoolAmount2} onChange={(e) => { setCreatePoolAmount2(e.target.value); setPendingCreatePool(null); }} type="number" placeholder="0.00" isDark={isDark} />
+                      </div>
+
+                      {/* Trading Fee Slider */}
+                      <div>
+                        <div className="flex justify-between items-center mb-2">
+                          <span className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-black/40')}>Trading Fee</span>
+                          <span className={cn('text-[13px] font-semibold', isDark ? 'text-white' : 'text-[#1a1a1a]')}>{(createPoolFee / 1000).toFixed(2)}%</span>
+                        </div>
+                        <input
+                          type="range"
+                          min={0}
+                          max={1000}
+                          step={1}
+                          value={createPoolFee}
+                          onChange={(e) => { setCreatePoolFee(Number(e.target.value)); setPendingCreatePool(null); }}
+                          className="w-full accent-[#137DFE]"
+                        />
+                        <div className={cn('flex justify-between text-[9px] mt-[2px]', isDark ? 'text-white/25' : 'text-black/30')}>
+                          <span>0%</span>
+                          <span>0.5%</span>
+                          <span>1%</span>
+                        </div>
+                      </div>
+
+                      {/* Warning about equal value */}
+                      <div className={cn('py-[10px] px-[14px] rounded-[10px] border-[1.5px] border-[rgba(246,175,1,0.15)] flex items-start gap-2 text-[11px] leading-normal', isDark ? 'bg-[rgba(246,175,1,0.06)] text-white/60' : 'bg-[rgba(246,175,1,0.05)] text-black/55')}>
+                        <AlertTriangle size={14} className="text-[#F6AF01] shrink-0 mt-px" />
+                        <span>Deposit roughly equal-value amounts of each asset. Imbalanced pools can be immediately arbitraged. Creation costs ~0.2 XRP (owner reserve).</span>
+                      </div>
+
+                      {/* Simulation result */}
+                      {pendingCreatePool && pendingCreatePool.error && (
+                        <div className={cn('py-[10px] px-[14px] rounded-[10px] border-[1.5px] border-[rgba(239,68,68,0.2)] flex flex-col gap-[6px] text-[12px]', isDark ? 'bg-[rgba(239,68,68,0.08)]' : 'bg-[rgba(239,68,68,0.05)]')}>
+                          <div className="flex items-center gap-[6px] text-[#ef4444] font-semibold text-[11px] uppercase tracking-[0.05em]">
+                            <AlertTriangle size={13} />
+                            Simulation Failed
+                          </div>
+                          <span className={cn('leading-normal', isDark ? 'text-white/70' : 'text-black/60')}>{pendingCreatePool.error}</span>
+                        </div>
+                      )}
+                      {pendingCreatePool && pendingCreatePool.tx && (
+                        <div className={cn('py-[10px] px-[14px] rounded-[10px] border-[1.5px] flex flex-col gap-2 text-[12px]', isDark ? 'bg-white/[0.03] border-white/[0.08]' : 'bg-black/[0.02] border-black/[0.08]')}>
+                          <div className="flex items-center gap-[6px] text-[#08AA09] font-semibold text-[11px] uppercase tracking-[0.05em]">
+                            <CheckCircle size={13} />
+                            Ready to Create
+                          </div>
+                          <div className={cn('flex flex-col gap-1', isDark ? 'text-white/70' : 'text-black/60')}>
+                            <div className="flex justify-between">
+                              <span>Deposit {token?.currency === 'XRP' ? 'XRP' : decodeCurrency(token?.currency)}</span>
+                              <span className={cn('font-semibold', isDark ? 'text-white' : 'text-black')}>{Number(createPoolAmount1).toFixed(4)}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>Deposit {createPoolAsset2.name}</span>
+                              <span className={cn('font-semibold', isDark ? 'text-white' : 'text-black')}>{Number(createPoolAmount2).toFixed(4)}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>Trading fee</span>
+                              <span className={cn('font-semibold', isDark ? 'text-white' : 'text-black')}>{(createPoolFee / 1000).toFixed(2)}%</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>Network fee</span>
+                              <span className={cn('font-semibold', isDark ? 'text-white' : 'text-black')}>{pendingCreatePool.fee} XRP</span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Submit / Confirm buttons */}
+                      {pendingCreatePool && pendingCreatePool.error ? (
+                        <button
+                          onClick={() => setPendingCreatePool(null)}
+                          className={cn('p-[13px] text-[14px] font-semibold w-full border-none rounded-[10px] cursor-pointer', isDark ? 'bg-white/[0.06] text-white/70' : 'bg-black/[0.06] text-black/60')}
+                        >
+                          Dismiss
+                        </button>
+                      ) : pendingCreatePool && pendingCreatePool.tx ? (
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => setPendingCreatePool(null)}
+                            className={cn('flex-1 p-[13px] text-[14px] font-semibold border-none rounded-[10px] cursor-pointer', isDark ? 'bg-white/[0.06] text-white/70' : 'bg-black/[0.06] text-black/60')}
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            onClick={handleConfirmCreatePool}
+                            disabled={createPoolLoading}
+                            className={cn('flex-[2] p-[13px] text-[14px] font-semibold text-white border-none rounded-[10px] flex items-center justify-center gap-2', createPoolLoading ? cn('cursor-not-allowed', isDark ? 'bg-[#222]' : 'bg-[#ccc]') : 'cursor-pointer bg-[#08AA09]')}
+                          >
+                            {createPoolLoading && <Spinner size={16} />}
+                            {createPoolLoading ? 'Creating...' : 'Confirm & Create Pool'}
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={handleSubmitCreatePool}
+                          disabled={createPoolLoading || !createPoolAmount1 || !createPoolAmount2}
+                          className={cn('p-[13px] text-[14px] font-semibold w-full text-white border-none rounded-[10px] flex items-center justify-center gap-2 transition-all duration-150', (createPoolLoading || !createPoolAmount1 || !createPoolAmount2) ? cn('cursor-not-allowed', isDark ? 'bg-[#222]' : 'bg-[#ccc]') : 'cursor-pointer bg-[#137DFE]')}
+                        >
+                          {createPoolLoading && <Spinner size={16} />}
+                          {createPoolLoading ? 'Simulating...' : 'Create Pool'}
+                        </button>
+                      )}
+                    </>
+                  )}
+                </div>
               </DialogContent>
             </DialogPaper>
           </Dialog>,

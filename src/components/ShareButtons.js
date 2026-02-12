@@ -17,7 +17,7 @@ import {
   Share2
 } from 'lucide-react';
 
-import { AppContext } from 'src/context/AppContext';
+import { ThemeContext, AppContext } from 'src/context/AppContext';
 import { useSelector } from 'react-redux';
 import { selectActiveFiatCurrency, selectMetrics } from 'src/redux/statusSlice';
 import { fNumber } from 'src/utils/formatters';
@@ -31,7 +31,7 @@ const XSocialIcon = ({ size = 20 }) => (
 
 // Reusable Share Dropdown Component
 export function ShareDropdown({ url, title, buttonLabel = 'Share' }) {
-  const { themeName } = useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
   const isDark = themeName === 'XrplToDarkTheme';
   const [open, setOpen] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
@@ -390,7 +390,8 @@ const currencySymbols = {
 
 // Token Share Modal Component
 export function TokenShareModal({ token, className }) {
-  const { openSnackbar, themeName } = useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
+  const { openSnackbar } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
   const metrics = useSelector(selectMetrics);
   const activeFiatCurrency = useSelector(selectActiveFiatCurrency);
@@ -487,7 +488,8 @@ export function TokenShareModal({ token, className }) {
 
 // NFT Collection Share Modal
 export function NFTShareModal({ name, imageUrl, url }) {
-  const { openSnackbar, themeName } = useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
+  const { openSnackbar } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
   const [open, setOpen] = useState(false);
 
@@ -596,7 +598,8 @@ export function NFTShareModal({ name, imageUrl, url }) {
 
 // Transaction Share Modal
 export function TxShareModal({ hash, type }) {
-  const { openSnackbar, themeName } = useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
+  const { openSnackbar } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
   const [open, setOpen] = useState(false);
 

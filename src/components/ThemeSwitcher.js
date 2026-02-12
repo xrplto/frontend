@@ -1,7 +1,7 @@
 import React, { useContext, useState } from 'react';
 import { Palette, Sun, Moon } from 'lucide-react';
 import { cn } from 'src/utils/cn';
-import { AppContext } from 'src/context/AppContext';
+import { ThemeContext } from 'src/context/AppContext';
 
 const themes = [
   {
@@ -19,7 +19,7 @@ const themes = [
 ];
 
 export default function ThemeSwitcher() {
-  const { themeName, setTheme } = useContext(AppContext);
+  const { themeName, setTheme } = useContext(ThemeContext);
   const [anchorEl, setAnchorEl] = useState(null);
   const isDark = themeName === 'XrplToDarkTheme';
 

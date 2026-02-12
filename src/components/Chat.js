@@ -1,7 +1,7 @@
 import { apiFetch } from 'src/utils/api';
 import React, { useState, useEffect, useRef, useCallback, useContext, useMemo } from 'react';
 import { X, Inbox, Ban, VolumeX, Shield, HelpCircle, Send, ChevronLeft, ChevronDown, Plus, Clock, CheckCircle, AlertCircle, Loader2, Check, CheckCheck, MessageCircle } from 'lucide-react';
-import { AppContext } from 'src/context/AppContext';
+import { ThemeContext } from 'src/context/AppContext';
 
 // Local emotes from /emotes/
 const EMOTES = [
@@ -29,17 +29,28 @@ const EMOTES = [
 let emoteCache = EMOTES;
 const fetchGlobalEmotes = async () => emoteCache;
 
-// User avatar cache
+// User avatar cache - deduplicates fetches so the same wallet is only fetched once
 const userAvatarCache = {};
-const fetchUserAvatar = async (wallet) => {
-  if (!wallet || userAvatarCache[wallet] !== undefined) return userAvatarCache[wallet];
-  userAvatarCache[wallet] = null; // Mark as fetching
-  try {
-    const res = await apiFetch(`https://api.xrpl.to/api/user/${wallet}`);
-    const data = await res.json();
-    userAvatarCache[wallet] = data?.user?.avatar || null;
-  } catch { userAvatarCache[wallet] = null; }
-  return userAvatarCache[wallet];
+const loadedImgUrls = new Set();
+const avatarFetchPromises = {};
+const fetchAvatar = (wallet) => {
+  if (userAvatarCache[wallet]) return Promise.resolve(userAvatarCache[wallet]);
+  if (avatarFetchPromises[wallet]) return avatarFetchPromises[wallet];
+  avatarFetchPromises[wallet] = apiFetch(`https://api.xrpl.to/api/user/${wallet}`)
+    .then(r => r.json())
+    .then(data => {
+      const result = { avatar: data?.user?.avatar || null, nftId: data?.user?.avatarNftId || null };
+      userAvatarCache[wallet] = result;
+      delete avatarFetchPromises[wallet];
+      return result;
+    })
+    .catch(() => {
+      const result = { avatar: null, nftId: null };
+      userAvatarCache[wallet] = result;
+      delete avatarFetchPromises[wallet];
+      return result;
+    });
+  return avatarFetchPromises[wallet];
 };
 
 const EmotePicker = ({ onSelect, inputRef, input, setInput }) => {
@@ -123,20 +134,21 @@ const ChatAvatar = ({ wallet }) => {
   const [nftId, setNftId] = useState(cached?.nftId);
   const [nftData, setNftData] = useState(null);
   const [showTip, setShowTip] = useState(false);
+  const [imgLoaded, setImgLoaded] = useState(() => loadedImgUrls.has(cached?.avatar));
 
   useEffect(() => {
-    if (!wallet || userAvatarCache[wallet]) return;
-    (async () => {
-      try {
-        const res = await apiFetch(`https://api.xrpl.to/api/user/${wallet}`);
-        const data = await res.json();
-        const url = data?.user?.avatar;
-        const id = data?.user?.avatarNftId;
-        userAvatarCache[wallet] = { avatar: url, nftId: id };
-        setAvatar(url);
-        setNftId(id);
-      } catch { userAvatarCache[wallet] = { avatar: null, nftId: null }; }
-    })();
+    if (!wallet) return;
+    if (userAvatarCache[wallet]) {
+      setAvatar(userAvatarCache[wallet].avatar);
+      setNftId(userAvatarCache[wallet].nftId);
+      if (loadedImgUrls.has(userAvatarCache[wallet].avatar)) setImgLoaded(true);
+      return;
+    }
+    fetchAvatar(wallet).then(({ avatar: url, nftId: id }) => {
+      setAvatar(url);
+      setNftId(id);
+      if (loadedImgUrls.has(url)) setImgLoaded(true);
+    });
   }, [wallet]);
 
   const handleHover = async () => {
@@ -152,7 +164,7 @@ const ChatAvatar = ({ wallet }) => {
   return (
     <span className="relative">
       <a href={nftId ? `/nft/${nftId}` : '#'} onClick={e => e.stopPropagation()}>
-        <img src={avatar} alt="" className="w-3.5 h-3.5 rounded object-cover shrink-0 cursor-pointer" onMouseEnter={handleHover} onMouseLeave={() => setShowTip(false)} />
+        <img src={avatar} alt="" loading="lazy" decoding="async" className={`w-3.5 h-3.5 rounded object-cover shrink-0 cursor-pointer transition-opacity duration-200 ${imgLoaded ? 'opacity-100' : 'opacity-0'}`} onLoad={() => { loadedImgUrls.add(avatar); setImgLoaded(true); }} onMouseEnter={handleHover} onMouseLeave={() => setShowTip(false)} />
       </a>
       {showTip && (
         <div className="absolute bottom-full left-0 mb-1 px-2 py-1 rounded bg-black/95 border border-white/10 text-[10px] whitespace-nowrap z-50">
@@ -168,30 +180,37 @@ const ChatAvatar = ({ wallet }) => {
 const DmAvatar = ({ wallet, size = 'sm' }) => {
   const cached = userAvatarCache[wallet];
   const [avatar, setAvatar] = useState(cached?.avatar || null);
+  const [imgLoaded, setImgLoaded] = useState(() => loadedImgUrls.has(cached?.avatar));
 
   useEffect(() => {
     if (!wallet) return;
-    if (userAvatarCache[wallet]) { setAvatar(userAvatarCache[wallet].avatar); return; }
-    (async () => {
-      try {
-        const res = await apiFetch(`https://api.xrpl.to/api/user/${wallet}`);
-        const data = await res.json();
-        const url = data?.user?.avatar || null;
-        userAvatarCache[wallet] = { avatar: url, nftId: data?.user?.avatarNftId || null };
-        setAvatar(url);
-      } catch { userAvatarCache[wallet] = { avatar: null, nftId: null }; }
-    })();
+    if (userAvatarCache[wallet]) {
+      setAvatar(userAvatarCache[wallet].avatar);
+      if (loadedImgUrls.has(userAvatarCache[wallet].avatar)) setImgLoaded(true);
+      return;
+    }
+    fetchAvatar(wallet).then(({ avatar: url }) => {
+      setAvatar(url);
+      if (loadedImgUrls.has(url)) setImgLoaded(true);
+    });
   }, [wallet]);
 
-  const s = size === 'sm' ? 'w-4 h-4' : 'w-8 h-8';
-  const t = size === 'sm' ? 'text-[7px]' : 'text-[10px]';
+  const s = size === 'sm' ? 'w-5 h-5' : 'w-8 h-8';
+  const t = size === 'sm' ? 'text-[8px]' : 'text-[10px]';
 
-  if (avatar) return <img src={avatar} alt="" className={`${s} rounded-full object-cover shrink-0`} />;
-  return (
+  const fallback = (
     <span className={`${s} rounded-full bg-[#650CD4]/20 flex items-center justify-center ${t} text-[#650CD4] font-medium shrink-0`}>
       {wallet?.slice(1, 3).toUpperCase()}
     </span>
   );
+
+  if (avatar) return (
+    <span className={`${s} relative shrink-0`}>
+      {!imgLoaded && fallback}
+      <img src={avatar} alt="" loading="lazy" decoding="async" className={`${s} rounded-full object-cover shrink-0 ${imgLoaded ? '' : 'absolute inset-0'} transition-opacity duration-200 ${imgLoaded ? 'opacity-100' : 'opacity-0'}`} onLoad={() => { loadedImgUrls.add(avatar); setImgLoaded(true); }} />
+    </span>
+  );
+  return fallback;
 };
 
 const TokenPreview = ({ match }) => {
@@ -235,24 +254,25 @@ const TokenPreview = ({ match }) => {
 
   return (
     <span className="relative inline-block" onMouseEnter={() => setShowTooltip(true)} onMouseLeave={() => setShowTooltip(false)}>
-      <a href={`/token/${match}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-1.5 py-0.5 rounded-md bg-[#137DFE]/10 border border-[#137DFE]/20 hover:border-[#137DFE]/40 transition-colors text-xs">
+      <a href={`/token/${match}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 px-1 py-px rounded bg-[#137DFE]/10 border border-[#137DFE]/20 hover:border-[#137DFE]/40 transition-colors text-[11px] leading-tight">
         {imgSrc && !imgError ? (
-          <img src={imgSrc} alt="" className="w-4 h-4 rounded-full object-cover" onError={() => setImgError(true)} />
+          <img src={imgSrc} alt="" className="w-3.5 h-3.5 rounded-full object-cover" onError={() => setImgError(true)} />
         ) : (
-          <span className="w-4 h-4 rounded-full bg-[#137DFE]/30 flex items-center justify-center text-[8px] text-[#137DFE]">T</span>
+          <span className="w-3.5 h-3.5 rounded-full bg-[#137DFE]/30 flex items-center justify-center text-[7px] text-[#137DFE]">T</span>
         )}
         <span className="font-medium text-[#137DFE]">{token.name || token.currency?.slice(0, 6)}</span>
+        <span className={`font-mono ${isUp ? 'text-[#08AA09]' : 'text-red-500'}`}>{isUp ? '+' : ''}{change.toFixed(1)}%</span>
       </a>
       {showTooltip && (
-        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50">
-          <div className="px-3 py-2.5 rounded-lg bg-[#1a1a1a] border border-white/10 shadow-xl text-[11px] min-w-[180px]">
-            <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
-              <div><span className="text-white/40">Price</span><div className="font-mono font-medium text-white">{formatPrice(token.exch)}</div></div>
-              <div><span className="text-white/40">24h</span><div className={`font-medium ${isUp ? 'text-[#08AA09]' : 'text-red-500'}`}>{isUp ? '+' : ''}{change.toFixed(2)}%</div></div>
-              <div><span className="text-white/40">MCap</span><div className="text-white/80">{formatMcap(token.marketcap)}</div></div>
-              <div><span className="text-white/40">Holders</span><div className="text-white/80">{token.holders?.toLocaleString() || '-'}</div></div>
+        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 z-50">
+          <div className="px-2 py-1.5 rounded-lg bg-[#1a1a1a] border border-white/10 shadow-xl text-[10px] whitespace-nowrap">
+            <div className="flex items-center gap-2">
+              <span className="font-mono font-medium text-white">{formatPrice(token.exch)}</span>
+              <span className="text-white/40">MCap</span>
+              <span className="text-white/80">{formatMcap(token.marketcap)}</span>
+              <span className="text-white/40">Holders</span>
+              <span className="text-white/80">{token.holders?.toLocaleString() || '-'}</span>
             </div>
-            <div className="text-white/30 text-[9px] mt-2 pt-1.5 border-t border-white/5">Created {timeAgo(token.dateon)}</div>
           </div>
           <div className="absolute left-1/2 -translate-x-1/2 -bottom-1 w-2 h-2 bg-[#1a1a1a] border-r border-b border-white/10 rotate-45" />
         </div>
@@ -297,24 +317,25 @@ const AttachedTokenPreview = ({ md5 }) => {
 
   return (
     <span className="relative inline-block" onMouseEnter={() => setShowTooltip(true)} onMouseLeave={() => setShowTooltip(false)}>
-      <a href={`/token/${md5}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-1.5 py-0.5 rounded-md bg-[#137DFE]/10 border border-[#137DFE]/20 hover:border-[#137DFE]/40 transition-colors text-xs">
+      <a href={`/token/${md5}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 px-1 py-px rounded bg-[#137DFE]/10 border border-[#137DFE]/20 hover:border-[#137DFE]/40 transition-colors text-[11px] leading-tight">
         {!imgError ? (
-          <img src={`https://s1.xrpl.to/token/${md5}`} alt="" className="w-4 h-4 rounded-full object-cover" onError={() => setImgError(true)} />
+          <img src={`https://s1.xrpl.to/token/${md5}`} alt="" className="w-3.5 h-3.5 rounded-full object-cover" onError={() => setImgError(true)} />
         ) : (
-          <span className="w-4 h-4 rounded-full bg-[#137DFE]/30 flex items-center justify-center text-[8px] text-[#137DFE]">T</span>
+          <span className="w-3.5 h-3.5 rounded-full bg-[#137DFE]/30 flex items-center justify-center text-[7px] text-[#137DFE]">T</span>
         )}
         <span className="font-medium text-[#137DFE]">{token.name || token.currency?.slice(0, 6)}</span>
+        <span className={`font-mono ${isUp ? 'text-[#08AA09]' : 'text-red-500'}`}>{isUp ? '+' : ''}{change.toFixed(1)}%</span>
       </a>
       {showTooltip && (
-        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50">
-          <div className="px-3 py-2.5 rounded-lg bg-[#1a1a1a] border border-white/10 shadow-xl text-[11px] min-w-[180px]">
-            <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
-              <div><span className="text-white/40">Price</span><div className="font-mono font-medium text-white">{formatPrice(token.exch)}</div></div>
-              <div><span className="text-white/40">24h</span><div className={`font-medium ${isUp ? 'text-[#08AA09]' : 'text-red-500'}`}>{isUp ? '+' : ''}{change.toFixed(2)}%</div></div>
-              <div><span className="text-white/40">MCap</span><div className="text-white/80">{formatMcap(token.marketcap)}</div></div>
-              <div><span className="text-white/40">Holders</span><div className="text-white/80">{token.holders?.toLocaleString() || '-'}</div></div>
+        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 z-50">
+          <div className="px-2 py-1.5 rounded-lg bg-[#1a1a1a] border border-white/10 shadow-xl text-[10px] whitespace-nowrap">
+            <div className="flex items-center gap-2">
+              <span className="font-mono font-medium text-white">{formatPrice(token.exch)}</span>
+              <span className="text-white/40">MCap</span>
+              <span className="text-white/80">{formatMcap(token.marketcap)}</span>
+              <span className="text-white/40">Holders</span>
+              <span className="text-white/80">{token.holders?.toLocaleString() || '-'}</span>
             </div>
-            <div className="text-white/30 text-[9px] mt-2 pt-1.5 border-t border-white/5">Created {timeAgo(token.dateon)}</div>
           </div>
           <div className="absolute left-1/2 -translate-x-1/2 -bottom-1 w-2 h-2 bg-[#1a1a1a] border-r border-b border-white/10 rotate-45" />
         </div>
@@ -752,7 +773,7 @@ const Chat = () => {
       return null;
     }
   };
-  const { themeName } = useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
   const isDark = themeName === 'XrplToDarkTheme';
   const [isOpen, setIsOpen] = useState(() => {
     if (typeof window === 'undefined') return false;
@@ -784,13 +805,20 @@ const Chat = () => {
       return JSON.parse(localStorage.getItem('chat_closed_dms') || '[]');
     } catch { return []; }
   });
+  const [dmReadAt, setDmReadAt] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('chat_dm_read_at') || '{}'); } catch { return {}; }
+  });
   const wsRef = useRef(null);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
   const dmTabsRef = useRef(dmTabs);
   const authUserRef = useRef(null);
+  const activeTabRef = useRef(activeTab);
+  const dmReadAtRef = useRef(dmReadAt);
   useEffect(() => { dmTabsRef.current = dmTabs; }, [dmTabs]);
   useEffect(() => { authUserRef.current = authUser; }, [authUser]);
+  useEffect(() => { activeTabRef.current = activeTab; }, [activeTab]);
+  useEffect(() => { dmReadAtRef.current = dmReadAt; }, [dmReadAt]);
   // Sync authUser wallet with localStorage
   useEffect(() => {
     const handleStorage = () => {
@@ -849,10 +877,15 @@ const Chat = () => {
 
   const handleMessagesScroll = useCallback((e) => {
     const el = e.target;
-    const nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
-    isNearBottomRef.current = nearBottom;
-    setShowScrollBtn(!nearBottom);
-    if (nearBottom) setNewMsgCount(0);
+    const sh = el.scrollHeight;
+    const st = el.scrollTop;
+    const ch = el.clientHeight;
+    requestAnimationFrame(() => {
+      const nearBottom = sh - st - ch < 80;
+      isNearBottomRef.current = nearBottom;
+      setShowScrollBtn(!nearBottom);
+      if (nearBottom) setNewMsgCount(0);
+    });
   }, []);
 
   const scrollToBottom = () => {
@@ -904,11 +937,16 @@ const Chat = () => {
     messages.filter(m => m.isPrivate || m.type === 'private').forEach(m => {
       const other = getWallet(m) === authUser?.wallet ? getRecipient(m) : getWallet(m);
       if (other && (!convos[other] || m.timestamp > convos[other].timestamp)) {
-        convos[other] = { ...m, unread: !convos[other]?.read && getWallet(m) !== authUser?.wallet };
+        convos[other] = { ...m };
       }
     });
+    Object.keys(convos).forEach(other => {
+      const msg = convos[other];
+      const lastRead = dmReadAt[other] || 0;
+      convos[other].unread = getWallet(msg) !== authUser?.wallet && msg.timestamp > lastRead;
+    });
     return Object.entries(convos).sort((a, b) => b[1].timestamp - a[1].timestamp);
-  }, [messages, authUser?.wallet]);
+  }, [messages, authUser?.wallet, dmReadAt]);
 
   // Poll status when chat is closed
   useEffect(() => {
@@ -971,6 +1009,13 @@ const Chat = () => {
           setOnlineCount(data.count);
           break;
         case 'inbox':
+          if (data.dmReadAt) {
+            setDmReadAt(prev => {
+              const merged = { ...prev, ...data.dmReadAt };
+              localStorage.setItem('chat_dm_read_at', JSON.stringify(merged));
+              return merged;
+            });
+          }
           if (data.conversations?.length) {
             // Add users to DM tabs (except closed ones and self)
             const closed = JSON.parse(localStorage.getItem('chat_closed_dms') || '[]');
@@ -1010,6 +1055,18 @@ const Chat = () => {
             const newTabs = [...dmTabsRef.current, dmUser];
             setDmTabs(newTabs);
             localStorage.setItem('chat_dm_tabs', JSON.stringify(newTabs));
+          }
+          // Auto-read if user is viewing this conversation
+          if (dmUser && dmUser === activeTabRef.current && senderWallet !== myWallet2) {
+            const now = Date.now();
+            setDmReadAt(prev => {
+              const updated = { ...prev, [dmUser]: now };
+              localStorage.setItem('chat_dm_read_at', JSON.stringify(updated));
+              return updated;
+            });
+            if (ws.readyState === WebSocket.OPEN) {
+              ws.send(JSON.stringify({ type: 'read', with: dmUser }));
+            }
           }
           break;
         case 'history':
@@ -1129,7 +1186,13 @@ const Chat = () => {
 
   useEffect(() => {
     try { localStorage.setItem('chat_open', isOpen); } catch { }
-    if (isOpen) setTimeout(() => messagesEndRef.current?.scrollIntoView(), 100);
+    if (isOpen) {
+      // Scroll immediately and again after messages render
+      const scroll = () => messagesEndRef.current?.scrollIntoView();
+      scroll();
+      setTimeout(scroll, 100);
+      setTimeout(scroll, 300);
+    }
   }, [isOpen]);
 
   useEffect(() => {
@@ -1146,6 +1209,10 @@ const Chat = () => {
       container.removeEventListener('focusout', handleFocusOut);
     };
   }, [isOpen]);
+
+  useEffect(() => {
+    if (isOpen) messagesEndRef.current?.scrollIntoView();
+  }, [activeTab]);
 
   useEffect(() => {
     if (!showInbox) return;
@@ -1200,7 +1267,13 @@ const Chat = () => {
     setActiveTab(user);
     setPrivateTo(user);
     inputRef.current?.focus();
-    // Request DM history and mark as read
+    // Mark conversation as read locally
+    setDmReadAt(prev => {
+      const updated = { ...prev, [user]: Date.now() };
+      localStorage.setItem('chat_dm_read_at', JSON.stringify(updated));
+      return updated;
+    });
+    // Request DM history and mark as read on server
     if (wsRef.current?.readyState === WebSocket.OPEN) {
       wsRef.current.send(JSON.stringify({ type: 'history', with: user }));
       wsRef.current.send(JSON.stringify({ type: 'read', with: user }));
@@ -1295,8 +1368,8 @@ const Chat = () => {
               <div className="relative inbox-dropdown">
                 <button onClick={() => setShowInbox(!showInbox)} className={`relative p-2 max-sm:p-2.5 rounded-lg transition-colors active:scale-95 ${showInbox ? 'bg-[#650CD4] text-white' : 'hover:bg-white/10 active:bg-white/20'}`}>
                   <Inbox size={16} className="max-sm:w-5 max-sm:h-5" />
-                  {conversations.length > 0 && (
-                    <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-[#650CD4] text-white text-[9px] font-medium flex items-center justify-center">{conversations.length}</span>
+                  {conversations.filter(([, m]) => m.unread).length > 0 && (
+                    <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-[#650CD4] text-white text-[9px] font-medium flex items-center justify-center">{conversations.filter(([, m]) => m.unread).length}</span>
                   )}
                 </button>
                 {showInbox && (
@@ -1373,10 +1446,10 @@ const Chat = () => {
 
                 return (
                   <>
-                    <div className="flex gap-1.5 px-2 py-2 border-b border-inherit overflow-x-auto scrollbar-hide overscroll-x-contain touch-pan-x shrink-0">
+                    <div className="flex gap-1 px-1.5 py-1.5 border-b border-inherit overflow-x-auto scrollbar-hide overscroll-x-contain touch-pan-x shrink-0">
                       <button
                         onClick={() => { setActiveTab('general'); setPrivateTo(''); }}
-                        className={`px-3 py-1.5 text-xs rounded-lg shrink-0 font-medium transition-all active:scale-95 ${activeTab === 'general' ? 'bg-[#137DFE] text-white' : 'bg-white/5 hover:bg-white/10 active:bg-white/15'}`}
+                        className={`px-2.5 py-1 text-[11px] rounded-md shrink-0 font-medium transition-all active:scale-95 ${activeTab === 'general' ? 'bg-[#137DFE] text-white' : 'bg-white/5 hover:bg-white/10 active:bg-white/15'}`}
                       >
                         General
                       </button>
@@ -1385,19 +1458,21 @@ const Chat = () => {
                         const bMsg = conversations.find(([u]) => u === b)?.[1]?.timestamp || 0;
                         return bMsg - aMsg;
                       }).map(user => {
-                        const hasUnread = activeTab !== user && messages.some(m => (m.isPrivate || m.type === 'private') && getWallet(m) === user && !m.readAt);
+                        const lastRead = dmReadAt[user] || 0;
+                        const hasUnread = activeTab !== user && messages.some(m => (m.isPrivate || m.type === 'private') && getWallet(m) === user && m.timestamp > lastRead);
                         return (
                         <button
                           key={user}
                           onClick={() => openDmTab(user)}
-                          className={`group/tab px-2.5 py-1.5 text-xs rounded-lg shrink-0 flex items-center gap-1.5 font-medium transition-all active:scale-95 ${activeTab === user ? 'bg-[#650CD4] text-white' : hasUnread ? 'bg-[#F6AF01]/10 hover:bg-[#F6AF01]/20 active:bg-[#F6AF01]/30' : 'bg-white/5 hover:bg-white/10 active:bg-white/15'}`}
+                          title={user}
+                          className={`group/tab px-1.5 py-1 text-[11px] rounded-md shrink-0 flex items-center gap-1 font-medium transition-all active:scale-95 ${activeTab === user ? 'bg-[#650CD4] text-white' : hasUnread ? 'bg-[#F6AF01]/10 hover:bg-[#F6AF01]/20 active:bg-[#F6AF01]/30' : 'bg-white/5 hover:bg-white/10 active:bg-white/15'}`}
                         >
                           <span className="relative">
                             <DmAvatar wallet={user} size="sm" />
                             {hasUnread && <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-[#F6AF01] animate-pulse" />}
                           </span>
-                          <span className={`${getTierTextColor(getUserTier(user))}`}>{user.slice(0, 4)}...{user.slice(-4)}</span>
-                          <span onClick={(e) => closeDmTab(user, e)} className="p-0.5 -mr-0.5 rounded opacity-0 group-hover/tab:opacity-50 hover:!opacity-100 active:!opacity-100 hover:text-red-400 active:text-red-400 transition-opacity"><X size={10} /></span>
+                          <span className={`${getTierTextColor(getUserTier(user))}`}>{user.slice(0, 4)}..{user.slice(-3)}</span>
+                          <span onClick={(e) => closeDmTab(user, e)} className="p-0.5 -mr-0.5 rounded opacity-0 group-hover/tab:opacity-50 hover:!opacity-100 active:!opacity-100 hover:text-red-400 active:text-red-400 transition-opacity"><X size={9} /></span>
                         </button>
                         );
                       })}

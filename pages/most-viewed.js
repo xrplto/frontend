@@ -6,7 +6,7 @@ import ScrollToTop from 'src/components/ScrollToTop';
 import Summary from 'src/TokenList/Summary';
 import { useRouter } from 'next/router';
 import { getTokens } from 'src/utils/formatters';
-import { AppContext } from 'src/context/AppContext';
+import { ThemeContext } from 'src/context/AppContext';
 
 function getInitialTokens(data) {
   if (data) return data.tokens;
@@ -14,7 +14,7 @@ function getInitialTokens(data) {
 }
 
 function MostViewedPage({ data }) {
-  const { themeName } = useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
   const isDark = themeName === 'XrplToDarkTheme';
   const [tokens, setTokens] = useState(() => getInitialTokens(data));
   const [notificationPanelOpen, setNotificationPanelOpen] = useState(false);

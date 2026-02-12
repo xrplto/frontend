@@ -22,21 +22,18 @@ function Detail({ data }) {
   const [token, setToken] = useState(data.token);
   const [creatorPanelOpen, setCreatorPanelOpen] = useState(false);
   const [transactionPanelOpen, setTransactionPanelOpen] = useState(false);
-  const [orderBookOpen, setOrderBookOpen] = useState(false);
   const [notificationPanelOpen, setNotificationPanelOpen] = useState(false);
   const tokenName = token.name || 'Token';
 
   // Page load timing
   useEffect(() => {
-    console.log(`[TokenPage] Component mounted, token: ${data.token?.name} (${data.token?.md5})`);
     const mountTime = (typeof performance !== 'undefined' ? performance.now() : Date.now()) - PAGE_LOAD_START;
-    console.log(`[TokenPage] Time to mount: ${mountTime.toFixed(0)}ms`);
 
     // Log when page is fully interactive
     if (typeof window !== 'undefined') {
       requestIdleCallback(() => {
         const idleTime = (typeof performance !== 'undefined' ? performance.now() : Date.now()) - PAGE_LOAD_START;
-        console.log(`[TokenPage] Fully interactive: ${idleTime.toFixed(0)}ms`);
+        // fully interactive
       });
     }
   }, []);
@@ -74,7 +71,7 @@ function Detail({ data }) {
   });
 
   const isPanelOpen =
-    creatorPanelOpen || transactionPanelOpen || orderBookOpen || notificationPanelOpen;
+    creatorPanelOpen || transactionPanelOpen || notificationPanelOpen;
 
   return (
     <main className="overflow-hidden min-h-screen">
@@ -92,8 +89,6 @@ function Detail({ data }) {
           creatorPanelOpen={creatorPanelOpen}
           onTransactionPanelToggle={(open) => setTransactionPanelOpen(open)}
           transactionPanelOpen={transactionPanelOpen}
-          onOrderBookToggle={(open) => setOrderBookOpen(open)}
-          orderBookOpen={orderBookOpen}
           notificationPanelOpen={notificationPanelOpen}
         />
       </article>
@@ -149,13 +144,10 @@ export async function getStaticProps({ params }) {
 
     // https://api.xrpl.to/v1/token/bitstamp-usd
     const apiUrl = `${BASE_URL}/token/${slug}?desc=yes`;
-    console.log('[getStaticProps] Fetching:', apiUrl);
     const res = await api.get(apiUrl, {
       timeout: 10000,
       validateStatus: (status) => status === 200
     });
-    console.log('[getStaticProps] Response status:', res.status, 'has token:', !!res.data?.token);
-
     if (res.data && typeof res.data === 'object') {
       data = res.data.data || res.data;
       if (tab && data) data.tab = tab;

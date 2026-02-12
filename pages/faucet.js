@@ -1,151 +1,137 @@
 import React, { useContext, useState } from 'react';
-import styled from '@emotion/styled';
-import { AppContext } from 'src/context/AppContext';
+import { ThemeContext } from 'src/context/AppContext';
+import { cn } from 'src/utils/cn';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import { Droplets, Loader2, CheckCircle, XCircle } from 'lucide-react';
 
 const API_URL = 'https://api.xrpl.to/v1';
 
-const PageWrapper = styled.div`
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-`;
+const PageWrapper = ({ className, children, ...p }) => (
+  <div className={cn('min-h-screen flex flex-col', className)} {...p}>
+    {children}
+  </div>
+);
 
-const Container = styled.div`
-  max-width: 600px;
-  margin: 0 auto;
-  padding: 40px 16px;
-  flex: 1;
-`;
+const Container = ({ className, children, ...p }) => (
+  <div
+    className={cn('max-w-[600px] mx-auto flex-1 py-10 px-4', className)}
+    {...p}
+  >
+    {children}
+  </div>
+);
 
-const Title = styled.h1`
-  font-size: 2rem;
-  font-weight: 600;
-  text-align: center;
-  margin-bottom: 8px;
-  color: ${p => p.isDark ? '#fff' : '#000'};
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-`;
+const Title = ({ className, children, isDark, ...p }) => (
+  <h1
+    className={cn(
+      'text-[2rem] font-semibold text-center mb-2 flex items-center justify-center gap-3',
+      isDark ? 'text-white' : 'text-black',
+      className
+    )}
+    {...p}
+  >
+    {children}
+  </h1>
+);
 
-const Subtitle = styled.p`
-  text-align: center;
-  color: ${p => p.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)'};
-  margin-bottom: 32px;
-  font-size: 14px;
-`;
+const Subtitle = ({ className, children, isDark, ...p }) => (
+  <p
+    className={cn('text-center mb-8 text-sm', isDark ? 'text-white/50' : 'text-black/50', className)}
+    {...p}
+  >
+    {children}
+  </p>
+);
 
-const Card = styled.div`
-  background: ${p => p.isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)'};
-  border: 1px solid ${p => p.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};
-  border-radius: 12px;
-  padding: 24px;
-`;
+const Card = ({ className, children, isDark, ...p }) => (
+  <div
+    className={cn(
+      'rounded-xl p-6 border',
+      isDark ? 'bg-white/[0.03] border-white/10' : 'bg-black/[0.02] border-black/10',
+      className
+    )}
+    {...p}
+  >
+    {children}
+  </div>
+);
 
-const Label = styled.label`
-  display: block;
-  font-size: 12px;
-  font-weight: 500;
-  margin-bottom: 8px;
-  color: ${p => p.isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)'};
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-`;
+const Label = ({ className, children, isDark, ...p }) => (
+  <label
+    className={cn('block text-xs font-medium mb-2 uppercase tracking-[0.5px]', isDark ? 'text-white/70' : 'text-black/70', className)}
+    {...p}
+  >
+    {children}
+  </label>
+);
 
-const Input = styled.input`
-  width: 100%;
-  padding: 12px 16px;
-  font-size: 14px;
-  border-radius: 8px;
-  border: 1px solid ${p => p.isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'};
-  background: ${p => p.isDark ? 'rgba(0,0,0,0.3)' : '#fff'};
-  color: ${p => p.isDark ? '#fff' : '#000'};
-  outline: none;
-  font-family: monospace;
+const Input = ({ className, isDark, ...p }) => (
+  <input
+    className={cn(
+      'w-full px-4 py-3 text-sm rounded-lg outline-none font-mono border focus:border-[#3b82f6]',
+      isDark ? 'border-white/[0.15] bg-[rgba(0,0,0,0.3)] text-white' : 'border-black/[0.15] bg-white text-black',
+      className
+    )}
+    {...p}
+  />
+);
 
-  &:focus {
-    border-color: #3b82f6;
-  }
+const Button = ({ className, children, ...p }) => (
+  <button
+    className={cn(
+      'w-full py-3.5 mt-4 text-sm font-semibold rounded-lg border-none bg-[#3b82f6] text-white cursor-pointer flex items-center justify-center gap-2',
+      'hover:enabled:bg-[#2563eb]',
+      'disabled:opacity-60 disabled:cursor-not-allowed',
+      className
+    )}
+    {...p}
+  >
+    {children}
+  </button>
+);
 
-  &::placeholder {
-    color: ${p => p.isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'};
-  }
-`;
+const Message = ({ className, children, success, error, ...p }) => (
+  <div
+    className={cn(
+      'mt-4 p-3 px-4 rounded-lg text-[13px] flex items-start gap-2.5 border',
+      success && 'bg-green-500/10 border-green-500/30 text-green-500',
+      error && 'bg-red-500/10 border-red-500/30 text-red-500',
+      className
+    )}
+    {...p}
+  >
+    {children}
+  </div>
+);
 
-const Button = styled.button`
-  width: 100%;
-  padding: 14px;
-  margin-top: 16px;
-  font-size: 14px;
-  font-weight: 600;
-  border-radius: 8px;
-  border: none;
-  background: #3b82f6;
-  color: #fff;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
+const Info = ({ className, children, isDark, ...p }) => (
+  <div
+    className={cn(
+      'mt-6 p-4 rounded-lg text-[13px] leading-relaxed',
+      isDark ? 'bg-blue-500/10 text-white/60' : 'bg-blue-500/5 text-black/60',
+      className
+    )}
+    {...p}
+  >
+    {children}
+  </div>
+);
 
-  &:hover:not(:disabled) {
-    background: #2563eb;
-  }
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-`;
-
-const Message = styled.div`
-  margin-top: 16px;
-  padding: 12px 16px;
-  border-radius: 8px;
-  font-size: 13px;
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-
-  ${p => p.success && `
-    background: rgba(34, 197, 94, 0.1);
-    border: 1px solid rgba(34, 197, 94, 0.3);
-    color: #22c55e;
-  `}
-
-  ${p => p.error && `
-    background: rgba(239, 68, 68, 0.1);
-    border: 1px solid rgba(239, 68, 68, 0.3);
-    color: #ef4444;
-  `}
-`;
-
-const Info = styled.div`
-  margin-top: 24px;
-  padding: 16px;
-  background: ${p => p.isDark ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.05)'};
-  border-radius: 8px;
-  font-size: 13px;
-  color: ${p => p.isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)'};
-  line-height: 1.6;
-`;
-
-const TxLink = styled.a`
-  color: #3b82f6;
-  text-decoration: none;
-  word-break: break-all;
-
-  &:hover {
-    text-decoration: underline;
-  }
-`;
+const TxLink = ({ className, children, ...p }) => (
+  <a
+    className={cn(
+      'text-[#3b82f6] no-underline break-all hover:underline',
+      className
+    )}
+    {...p}
+  >
+    {children}
+  </a>
+);
 
 export default function FaucetPage() {
-  const { darkMode } = useContext(AppContext);
+  const { darkMode } = useContext(ThemeContext);
   const [address, setAddress] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
@@ -194,7 +180,7 @@ export default function FaucetPage() {
         </Title>
         <Subtitle isDark={darkMode}>
           Get free XRP for development and testing on XRPL Testnet<br />
-          <code style={{ fontSize: 11, opacity: 0.7 }}>wss://s.altnet.rippletest.net:51233</code>
+          <code className="text-[11px] opacity-70">wss://s.altnet.rippletest.net:51233</code>
         </Subtitle>
 
         <Card isDark={darkMode}>
@@ -211,7 +197,7 @@ export default function FaucetPage() {
             <Button type="submit" disabled={loading || !address.trim()}>
               {loading ? (
                 <>
-                  <Loader2 size={18} className="animate-spin" style={{ animation: 'spin 1s linear infinite' }} />
+                  <Loader2 size={18} className="animate-spin" />
                   Sending...
                 </>
               ) : (
@@ -225,7 +211,7 @@ export default function FaucetPage() {
 
           {result?.success && (
             <Message success>
-              <CheckCircle size={18} style={{ flexShrink: 0, marginTop: 2 }} />
+              <CheckCircle size={18} className="shrink-0 mt-0.5" />
               <div>
                 <strong>Success!</strong> Sent {result.amount} XRP<br />
                 <TxLink
@@ -241,7 +227,7 @@ export default function FaucetPage() {
 
           {result?.error && (
             <Message error>
-              <XCircle size={18} style={{ flexShrink: 0, marginTop: 2 }} />
+              <XCircle size={18} className="shrink-0 mt-0.5" />
               <div>
                 {result.error === 'cooldown active' ? (
                   <>

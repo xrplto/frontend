@@ -1,6 +1,6 @@
 import api from 'src/utils/api';
 import { useState, useEffect, useContext } from 'react';
-import { AppContext } from 'src/context/AppContext';
+import { AppContext, ThemeContext, WalletContext } from 'src/context/AppContext';
 import { cn } from 'src/utils/cn';
 import { X, ShoppingCart } from 'lucide-react';
 import { PulseLoader } from '../components/Spinners';
@@ -16,10 +16,11 @@ export default function BuyMintDialog({
   setXrpBalance
 }) {
   const BASE_URL = 'https://api.xrpl.to/v1';
-  const { themeName } = useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
   const isDark = themeName === 'XrplToDarkTheme';
 
-  const { accountProfile, openSnackbar } = useContext(AppContext);
+  const { accountProfile } = useContext(WalletContext);
+  const { openSnackbar } = useContext(AppContext);
   const account = accountProfile?.account;
   const accountToken = accountProfile?.token;
 

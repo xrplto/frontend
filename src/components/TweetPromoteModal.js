@@ -1,7 +1,7 @@
 import { useState, useEffect, useContext, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { cn } from 'src/utils/cn';
-import { AppContext } from 'src/context/AppContext';
+import { ThemeContext, WalletContext } from 'src/context/AppContext';
 import { Check, Loader2, ExternalLink, AlertCircle, X, Gift, Trophy, Crown, Award, Megaphone, Info } from 'lucide-react';
 import api from 'src/utils/api';
 
@@ -27,7 +27,8 @@ function TierIcon({ tierId, size = 12 }) {
 }
 
 export default function TweetPromoteModal({ token, tweetCount = 0, onCountChange, open: externalOpen, onOpenChange, wrapperClassName, className }) {
-  const { themeName, accountProfile } = useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
+  const { accountProfile } = useContext(WalletContext);
   const isDark = themeName === 'XrplToDarkTheme';
 
   const [internalOpen, setInternalOpen] = useState(false);

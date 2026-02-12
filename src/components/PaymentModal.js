@@ -1,7 +1,7 @@
 import { useState, useContext, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { cn } from 'src/utils/cn';
-import { AppContext } from 'src/context/AppContext';
+import { ThemeContext, WalletContext } from 'src/context/AppContext';
 import {
   X,
   Check,
@@ -26,7 +26,8 @@ export default function PaymentModal({
   walletAddress,
   onSuccess
 }) {
-  const { themeName, setOpenWalletModal } = useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
+  const { setOpenWalletModal } = useContext(WalletContext);
   const isDark = themeName === 'XrplToDarkTheme';
 
   const [paymentMethod, setPaymentMethod] = useState('card');

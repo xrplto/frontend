@@ -3,7 +3,7 @@ import api from 'src/utils/api';
 import Link from 'next/link';
 import { ChevronDown, Trash2, ExternalLink, Loader2, X, Compass } from 'lucide-react';
 import { cn } from 'src/utils/cn';
-import { AppContext } from 'src/context/AppContext';
+import { ThemeContext, AppContext } from 'src/context/AppContext';
 
 const BASE_URL = 'https://api.xrpl.to';
 const CDN_URL = 'https://s1.xrpl.to/nft/';
@@ -45,16 +45,6 @@ function NFTCard({ nft, onRemove, isDark }) {
   const [removing, setRemoving] = useState(false);
 
   const imgUrl = getNftImageUrl(nft);
-
-  // Debug: log NFT data structure
-  console.log('[NFTWatchList] NFT data:', {
-    nftokenId: nft.nftokenId,
-    name: nft.name,
-    image: nft.image,
-    files: nft.files,
-    meta: nft.meta,
-    resolvedUrl: imgUrl
-  });
 
   const handleRemove = async (e) => {
     e.preventDefault();
@@ -240,7 +230,8 @@ function CollectionGroup({ slug, data, onRemove, isDark, defaultOpen = false }) 
 }
 
 export default function NFTWatchList({ account }) {
-  const { themeName, openSnackbar } = useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
+  const { openSnackbar } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
 
   const [watchlist, setWatchlist] = useState({});

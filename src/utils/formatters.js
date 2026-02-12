@@ -1,8 +1,15 @@
 import { format, formatDistanceToNow, formatDistanceToNowStrict } from 'date-fns';
 import api from 'src/utils/api';
-import hashicon from 'hashicon';
+// hashicon loaded lazily - only needed for avatar generation
+let _hashicon = null;
+const getHashicon = () => {
+  if (!_hashicon && typeof window !== 'undefined') {
+    _hashicon = import('hashicon').then(m => m.default);
+  }
+  return _hashicon;
+};
 import { useContext } from 'react';
-import { AppContext } from 'src/context/AppContext';
+import { ThemeContext } from 'src/context/AppContext';
 
 // ==== THEME COMPATIBILITY ====
 
@@ -25,7 +32,7 @@ export function alpha(color, opacity) {
 
 // MUI-compatible useTheme hook for legacy code
 export function useTheme() {
-  const { themeName } = useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
   const isDark = themeName === 'XrplToDarkTheme';
 
   return {
@@ -263,11 +270,19 @@ export function isEqual(a, b) {
 
 // ==== XRPL SPECIFIC HELPERS ====
 
+let _hashiconResolved = null;
+getHashicon()?.then(h => { _hashiconResolved = h; });
+
 export function getHashIcon(account) {
   const fallback = '/static/account_logo.webp';
   if (typeof window === 'undefined' || !account) return fallback;
+  if (!_hashiconResolved) {
+    // Trigger load for next call
+    getHashicon()?.then(h => { _hashiconResolved = h; });
+    return fallback;
+  }
   try {
-    const icon = hashicon(account, { size: 64 });
+    const icon = _hashiconResolved(account, { size: 64 });
     return icon.toDataURL();
   } catch (e) {
     return fallback;

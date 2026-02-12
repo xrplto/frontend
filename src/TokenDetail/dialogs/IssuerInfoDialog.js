@@ -3,14 +3,15 @@ import { useContext } from 'react';
 import { X, Copy, MessageCircle } from 'lucide-react';
 
 // Context
-import { AppContext } from 'src/context/AppContext';
+import { ThemeContext, AppContext } from 'src/context/AppContext';
 
 // Utils
 import { cn } from 'src/utils/cn';
 import { fNumber } from 'src/utils/formatters';
 
 export default function IssuerInfoDialog({ open, setOpen, token }) {
-  const { themeName, openSnackbar } = useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
+  const { openSnackbar } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
 
   const { issuer, name, user, currency, md5, ext, issuer_info } = token;

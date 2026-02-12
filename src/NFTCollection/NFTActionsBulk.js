@@ -1,6 +1,6 @@
 import api from 'src/utils/api';
 import React, { useEffect, useState, useContext } from 'react';
-import { AppContext } from 'src/context/AppContext';
+import { ThemeContext, WalletContext, AppContext } from 'src/context/AppContext';
 import { cn } from 'src/utils/cn';
 import { Tag, Store } from 'lucide-react';
 import { PuffLoader, BarLoader } from '../components/Spinners';
@@ -14,10 +14,11 @@ const NFToken = {
 
 export default function NFTActionsBulk({ nft }) {
   const BASE_URL = 'https://api.xrpl.to/v1';
-  const { themeName } = useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
   const isDark = themeName === 'XrplToDarkTheme';
 
-  const { accountProfile, openSnackbar } = useContext(AppContext);
+  const { accountProfile } = useContext(WalletContext);
+  const { openSnackbar } = useContext(AppContext);
   const accountLogin = accountProfile?.account;
   const accountToken = accountProfile?.token;
 

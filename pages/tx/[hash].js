@@ -2,7 +2,7 @@ import { useRouter } from 'next/router';
 import api from 'src/utils/api';
 import { useState, useMemo, useEffect, useContext, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { AppContext } from 'src/context/AppContext';
+import { ThemeContext } from 'src/context/AppContext';
 import { cn } from 'src/utils/cn';
 import { Copy, Sparkles } from 'lucide-react';
 import { TxShareModal } from 'src/components/ShareButtons';
@@ -41,7 +41,7 @@ const alpha = (color, opacity) => {
 };
 
 const useTheme = () => {
-  const { themeName } = useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
   const isDark = themeName === 'XrplToDarkTheme';
   return {
     palette: {
@@ -101,25 +101,19 @@ const Typography = ({ children, variant, component: C, sx, ...p }) => {
   );
 };
 const Card = ({ children, sx, ...p }) => (
-  <div style={{ borderRadius: '12px', ...sx2style(sx) }} {...p}>
+  <div className="rounded-xl" style={sx2style(sx)} {...p}>
     {children}
   </div>
 );
 const CardContent = ({ children, sx, ...p }) => (
-  <div style={{ padding: '16px', ...sx2style(sx) }} {...p}>
+  <div className="p-4" style={sx2style(sx)} {...p}>
     {children}
   </div>
 );
 const Chip = ({ label, sx, ...p }) => (
   <span
-    style={{
-      display: 'inline-flex',
-      alignItems: 'center',
-      borderRadius: '9999px',
-      padding: '2px 8px',
-      fontSize: '12px',
-      ...sx2style(sx)
-    }}
+    className="inline-flex items-center rounded-full px-2 py-0.5 text-[12px]"
+    style={sx2style(sx)}
     {...p}
   >
     {label}
@@ -127,13 +121,8 @@ const Chip = ({ label, sx, ...p }) => (
 );
 const Stack = ({ children, direction = 'column', spacing = 1, alignItems, sx, ...p }) => (
   <div
-    style={{
-      display: 'flex',
-      flexDirection: direction === 'row' ? 'row' : 'column',
-      gap: `${spacing * 8}px`,
-      alignItems,
-      ...sx2style(sx)
-    }}
+    className={cn('flex', direction === 'row' ? 'flex-row' : 'flex-col')}
+    style={{ gap: `${spacing * 8}px`, alignItems, ...sx2style(sx) }}
     {...p}
   >
     {children}
@@ -141,17 +130,8 @@ const Stack = ({ children, direction = 'column', spacing = 1, alignItems, sx, ..
 );
 const Avatar = ({ src, children, sx, onError, ...p }) => (
   <div
-    style={{
-      width: 40,
-      height: 40,
-      borderRadius: '50%',
-      overflow: 'hidden',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      backgroundColor: '#e0e0e0',
-      ...sx2style(sx)
-    }}
+    className="w-10 h-10 rounded-full overflow-hidden flex items-center justify-center bg-[#e0e0e0]"
+    style={sx2style(sx)}
     {...p}
   >
     {src ? (
@@ -159,7 +139,7 @@ const Avatar = ({ src, children, sx, onError, ...p }) => (
         key={src}
         src={src}
         alt=""
-        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+        className="w-full h-full object-cover"
         onError={onError}
       />
     ) : (
@@ -171,7 +151,7 @@ const Tooltip = ({ children, title, onOpen, ...p }) => {
   const [show, setShow] = useState(false);
   const [pos, setPos] = useState({ top: 0, left: 0 });
   const ref = useRef(null);
-  const { themeName } = useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
   const isDark = themeName === 'XrplToDarkTheme';
   const handleEnter = () => {
     setShow(true);
@@ -184,7 +164,7 @@ const Tooltip = ({ children, title, onOpen, ...p }) => {
   return (
     <span
       ref={ref}
-      style={{ display: 'inline-flex' }}
+      className="inline-flex"
       onMouseEnter={handleEnter}
       onMouseLeave={() => setShow(false)}
       {...p}
@@ -196,21 +176,13 @@ const Tooltip = ({ children, title, onOpen, ...p }) => {
         typeof window !== 'undefined' &&
         createPortal(
           <div
-            style={{
-              position: 'fixed',
-              top: pos.top,
-              left: pos.left,
-              transform: 'translate(-50%, -100%)',
-              zIndex: 99999,
-              minWidth: 200,
-              background: isDark ? 'rgba(0,0,0,0.85)' : 'rgba(255,255,255,0.9)',
-              backdropFilter: 'blur(12px)',
-              WebkitBackdropFilter: 'blur(12px)',
-              border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
-              borderRadius: 12,
-              padding: 12,
-              boxShadow: '0 8px 32px rgba(0,0,0,0.3)'
-            }}
+            className={cn(
+              'fixed z-[99999] min-w-[200px] -translate-x-1/2 -translate-y-full rounded-xl p-3 backdrop-blur-[12px] shadow-[0_8px_32px_rgba(0,0,0,0.3)] border',
+              isDark
+                ? 'bg-black/85 border-white/10'
+                : 'bg-white/90 border-black/10'
+            )}
+            style={{ top: pos.top, left: pos.left }}
           >
             {title}
           </div>,
@@ -222,15 +194,8 @@ const Tooltip = ({ children, title, onOpen, ...p }) => {
 const IconButton = ({ children, onClick, sx, ...p }) => (
   <button
     type="button"
-    style={{
-      background: 'none',
-      border: 'none',
-      cursor: 'pointer',
-      padding: '8px',
-      borderRadius: '50%',
-      display: 'inline-flex',
-      ...sx2style(sx)
-    }}
+    className="bg-transparent border-none cursor-pointer p-2 rounded-full inline-flex"
+    style={sx2style(sx)}
     onClick={onClick}
     {...p}
   >
@@ -239,12 +204,8 @@ const IconButton = ({ children, onClick, sx, ...p }) => (
 );
 const Divider = ({ sx, ...p }) => (
   <hr
-    style={{
-      border: 'none',
-      borderTop: '1px solid rgba(128,128,128,0.2)',
-      margin: '8px 0',
-      ...sx2style(sx)
-    }}
+    className="border-none border-t border-gray-500/20 my-2"
+    style={sx2style(sx)}
     {...p}
   />
 );
@@ -256,7 +217,8 @@ const Grid = ({ children, container, spacing = 0, size, sx, ...p }) => {
   if (container)
     return (
       <div
-        style={{ display: 'flex', flexWrap: 'wrap', gap: `${spacing * 8}px`, ...sx2style(sx) }}
+        className="flex flex-wrap"
+        style={{ gap: `${spacing * 8}px`, ...sx2style(sx) }}
         {...p}
       >
         {children}
@@ -341,7 +303,7 @@ const KNOWN_SOURCE_TAGS = {
 };
 // Helper to render JSON with syntax highlighting
 const JsonViewer = ({ data, isDark: isDarkProp }) => {
-  const { themeName } = useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
   const isDark = isDarkProp ?? themeName === 'XrplToDarkTheme';
   const [copied, setCopied] = useState(false);
   const jsonString = JSON.stringify(data, null, 2);
@@ -413,7 +375,7 @@ const JsonViewer = ({ data, isDark: isDarkProp }) => {
 };
 
 const DetailRow = ({ label, children, index = 0, alignValue = 'right' }) => {
-  const { themeName } = useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
   const isDark = themeName === 'XrplToDarkTheme';
   const isOdd = index % 2 === 1;
 
@@ -441,10 +403,10 @@ const DetailRow = ({ label, children, index = 0, alignValue = 'right' }) => {
 const TokenTooltipContent = ({ md5, tokenInfo, loading, error }) => {
   if (error) return <Typography sx={{ p: 1 }}>{error}</Typography>;
   if (loading) return <Typography sx={{ p: 1 }}>Loading...</Typography>;
-  if (!tokenInfo || !tokenInfo.success || !tokenInfo.data?.token)
+  const token = tokenInfo?.data?.token || tokenInfo?.token;
+  const exch = tokenInfo?.data?.exch || tokenInfo?.exch;
+  if (!tokenInfo || !token)
     return <Typography sx={{ p: 1 }}>No data available.</Typography>;
-
-  const { token, exch } = tokenInfo.data;
   const imageUrl = md5 ? `https://s1.xrpl.to/token/${md5}` : null;
   const isXRP = token.currency === 'XRP' && token.issuer === 'XRPL';
 
@@ -669,34 +631,28 @@ const TokenTooltipContent = ({ md5, tokenInfo, loading, error }) => {
     border: '1px solid rgba(16,185,129,0.2)'
   };
   const Row = ({ label, value }) => (
-    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0' }}>
-      <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px' }}>{label}</span>
-      <span style={{ color: 'rgba(255,255,255,0.9)', fontSize: '13px', fontWeight: 500 }}>
+    <div className="flex justify-between py-1">
+      <span className="text-white/50 text-[13px]">{label}</span>
+      <span className="text-white/90 text-[13px] font-medium">
         {value}
       </span>
     </div>
   );
 
   return (
-    <div style={{ minWidth: 280, maxWidth: 320 }}>
+    <div className="min-w-[280px] max-w-[320px]">
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+      <div className="flex items-center gap-3 mb-4">
         {imageUrl && <Avatar src={imageUrl} sx={{ width: 40, height: 40 }} />}
         <div>
-          <div style={{ fontSize: '16px', fontWeight: 500, color: '#fff' }}>
+          <div className="text-[16px] font-medium text-white">
             {token.name || token.user || 'Unknown'}
           </div>
           {token.user && token.name !== token.user && (
-            <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)' }}>"{token.user}"</div>
+            <div className="text-[12px] text-white/50">"{token.user}"</div>
           )}
           {token.issuer && (
-            <div
-              style={{
-                fontSize: '11px',
-                color: 'rgba(255,255,255,0.4)',
-                fontFamily: 'var(--font-mono)'
-              }}
-            >
+            <div className="text-[11px] text-white/40 font-mono">
               {token.issuer.slice(0, 8)}...{token.issuer.slice(-6)}
             </div>
           )}
@@ -705,7 +661,7 @@ const TokenTooltipContent = ({ md5, tokenInfo, loading, error }) => {
 
       {/* Price */}
       {(token.usd || token.exch) && (
-        <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+        <div className="flex gap-2 mb-4">
           {token.usd && <Chip label={`$${new Decimal(token.usd).toFixed(6)}`} sx={chipStyle} />}
           {token.exch && (
             <Chip label={`${new Decimal(token.exch).toFixed(6)} XRP`} sx={chipStyle} />
@@ -714,9 +670,7 @@ const TokenTooltipContent = ({ md5, tokenInfo, loading, error }) => {
       )}
 
       {/* Market Data Grid */}
-      <div
-        style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: 12, marginBottom: 12 }}
-      >
+      <div className="border-t border-white/10 pt-3 mb-3">
         {token.marketcap > 0 && (
           <Row label="Market Cap" value={`${formatDecimal(new Decimal(token.marketcap), 0)} XRP`} />
         )}
@@ -731,7 +685,7 @@ const TokenTooltipContent = ({ md5, tokenInfo, loading, error }) => {
 
       {/* Features & Social Row */}
       {(token.kyc || token.AMM || token.social?.twitter) && (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 }}>
+        <div className="flex flex-wrap gap-1.5 mb-3">
           {token.kyc && <Chip label="KYC" sx={greenChipStyle} />}
           {token.AMM && <Chip label="AMM" sx={chipStyle} />}
           {token.social?.twitter && <Chip label="Twitter" sx={chipStyle} />}
@@ -740,16 +694,14 @@ const TokenTooltipContent = ({ md5, tokenInfo, loading, error }) => {
 
       {/* Info */}
       {token.domain && (
-        <div
-          style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: 12, marginBottom: 12 }}
-        >
+        <div className="border-t border-white/10 pt-3 mb-3">
           <Row label="Domain" value={token.domain} />
         </div>
       )}
 
       {/* Tags */}
       {token.tags?.length > 0 && (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+        <div className="flex flex-wrap gap-1.5">
           {token.tags.slice(0, 4).map((tag) => (
             <Chip key={tag} label={tag} sx={chipStyle} />
           ))}
@@ -966,7 +918,7 @@ const AmountDisplay = ({ amount, variant = 'body1' }) => {
           src="https://s1.xrpl.to/token/84e5efeb89c4eae8f68188982dc290d8"
           sx={{ width: 20, height: 20 }}
         />
-        <Typography variant={variant}>{dropsToXrp(amount)} XRP</Typography>
+        <Typography variant={variant}>{formatDecimal(new Decimal(dropsToXrp(amount)))} XRP</Typography>
       </Box>
     );
 
@@ -1009,7 +961,7 @@ const AmountDisplay = ({ amount, variant = 'body1' }) => {
             src="https://s1.xrpl.to/token/84e5efeb89c4eae8f68188982dc290d8"
             sx={{ width: 20, height: 20 }}
           />
-          <Typography variant={variant}>{xrpValue} XRP</Typography>
+          <Typography variant={variant}>{formatDecimal(new Decimal(xrpValue))} XRP</Typography>
         </Box>
       );
       return (
@@ -1855,7 +1807,7 @@ const TransactionSummaryCard = ({
   isBurn,
   isBlackholed
 }) => {
-  const { themeName } = useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
   const isDark = themeName === 'XrplToDarkTheme';
   const { hash, TransactionType, Account, meta, date, ledger_index, Fee, Flags } = txData;
   const [copied, setCopied] = useState(false);
@@ -1895,10 +1847,10 @@ const TransactionSummaryCard = ({
 
   return (
     <div
-      className={cn('rounded-xl mb-4 overflow-hidden', isDark ? 'bg-transparent' : 'bg-white')}
-      style={{
-        border: `1.5px solid ${isDark ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.08)'}`
-      }}
+      className={cn(
+        'rounded-xl mb-4 overflow-hidden border-[1.5px]',
+        isDark ? 'bg-transparent border-white/10' : 'bg-white border-black/[0.08]'
+      )}
     >
       {/* Header bar */}
       <div
@@ -3108,7 +3060,7 @@ const TransactionDetails = ({ txData }) => {
     }
   }
 
-  const { themeName } = useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
   const isDark = themeName === 'XrplToDarkTheme';
   const [activeTab, setActiveTab] = useState('summary');
 
@@ -3163,7 +3115,7 @@ const TransactionDetails = ({ txData }) => {
         }
       } catch (err) {
         // If account info not found, can't confirm blackholed
-        console.log('Could not fetch account info for blackhole check');
+        // Could not fetch account info for blackhole check
       }
     };
 
@@ -3188,10 +3140,10 @@ const TransactionDetails = ({ txData }) => {
       {/* SUMMARY Tab */}
       {activeTab === 'summary' && (
         <div
-          className={cn('rounded-xl overflow-hidden', isDark ? 'bg-transparent' : 'bg-white')}
-          style={{
-            border: `1.5px solid ${isDark ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.08)'}`
-          }}
+          className={cn(
+            'rounded-xl overflow-hidden border-[1.5px]',
+            isDark ? 'bg-transparent border-white/10' : 'bg-white border-black/[0.08]'
+          )}
         >
           <div
             className={cn(
@@ -3244,13 +3196,8 @@ const TransactionDetails = ({ txData }) => {
                         <Typography
                           component="span"
                           variant="body2"
-                          sx={{
-                            color: theme.palette.primary.main,
-                            textDecoration: 'none',
-                            fontFamily: 'var(--font-mono)',
-                            fontSize: '13px',
-                            '&:hover': { textDecoration: 'underline' }
-                          }}
+                          className="font-mono text-[13px] no-underline hover:underline"
+                          sx={{ color: theme.palette.primary.main }}
                         >
                           {Account}
                         </Typography>
@@ -3265,13 +3212,8 @@ const TransactionDetails = ({ txData }) => {
                           <Typography
                             component="span"
                             variant="body2"
-                            sx={{
-                              color: theme.palette.primary.main,
-                              textDecoration: 'none',
-                              fontFamily: 'var(--font-mono)',
-                              fontSize: '13px',
-                              '&:hover': { textDecoration: 'underline' }
-                            }}
+                            className="font-mono text-[13px] no-underline hover:underline"
+                            sx={{ color: theme.palette.primary.main }}
                           >
                             {Account}
                           </Typography>
@@ -3283,37 +3225,37 @@ const TransactionDetails = ({ txData }) => {
                         {isDestBlackholed && destAccountData ? (
                           <Tooltip
                             title={
-                              <div style={{ minWidth: 240 }}>
-                                <div style={{ fontSize: '13px', fontWeight: 500, marginBottom: 4, color: '#f87171' }}>
+                              <div className="min-w-[240px]">
+                                <div className="text-[13px] font-medium mb-1 text-[#f87171]">
                                   Blackholed Account
                                 </div>
-                                <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', marginBottom: 8, fontFamily: 'var(--font-mono)' }}>
+                                <div className="text-[11px] text-white/50 mb-2 font-mono">
                                   {Destination.slice(0, 10)}...{Destination.slice(-8)}
                                 </div>
-                                <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: 8 }}>
-                                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginBottom: 4 }}>
-                                    <span style={{ color: 'rgba(255,255,255,0.5)' }}>Balance</span>
-                                    <span style={{ color: '#fff' }}>{destAccountData.total?.toFixed(2) || '0'} XRP</span>
+                                <div className="border-t border-white/10 pt-2">
+                                  <div className="flex justify-between text-[11px] mb-1">
+                                    <span className="text-white/50">Balance</span>
+                                    <span className="text-white">{destAccountData.total?.toFixed(2) || '0'} XRP</span>
                                   </div>
                                   {destAccountData.rank && (
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginBottom: 4 }}>
-                                      <span style={{ color: 'rgba(255,255,255,0.5)' }}>Richlist Rank</span>
-                                      <span style={{ color: '#fff' }}>#{destAccountData.rank.toLocaleString()}</span>
+                                    <div className="flex justify-between text-[11px] mb-1">
+                                      <span className="text-white/50">Richlist Rank</span>
+                                      <span className="text-white">#{destAccountData.rank.toLocaleString()}</span>
                                     </div>
                                   )}
                                   {destAccountData.inception && (
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginBottom: 4 }}>
-                                      <span style={{ color: 'rgba(255,255,255,0.5)' }}>Created</span>
-                                      <span style={{ color: '#fff' }}>{new Date(destAccountData.inception).toLocaleDateString()}</span>
+                                    <div className="flex justify-between text-[11px] mb-1">
+                                      <span className="text-white/50">Created</span>
+                                      <span className="text-white">{new Date(destAccountData.inception).toLocaleDateString()}</span>
                                     </div>
                                   )}
-                                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginBottom: 4 }}>
-                                    <span style={{ color: 'rgba(255,255,255,0.5)' }}>Master Key</span>
-                                    <span style={{ color: '#f87171' }}>Disabled</span>
+                                  <div className="flex justify-between text-[11px] mb-1">
+                                    <span className="text-white/50">Master Key</span>
+                                    <span className="text-[#f87171]">Disabled</span>
                                   </div>
-                                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px' }}>
-                                    <span style={{ color: 'rgba(255,255,255,0.5)' }}>Regular Key</span>
-                                    <span style={{ color: '#f87171', fontFamily: 'var(--font-mono)', fontSize: '10px' }}>
+                                  <div className="flex justify-between text-[11px]">
+                                    <span className="text-white/50">Regular Key</span>
+                                    <span className="text-[#f87171] font-mono text-[10px]">
                                       {destAccountData.RegularKey ? `${destAccountData.RegularKey.slice(0, 8)}...` : 'None'}
                                     </span>
                                   </div>
@@ -3325,13 +3267,7 @@ const TransactionDetails = ({ txData }) => {
                               <Typography
                                 component="span"
                                 variant="body2"
-                                sx={{
-                                  color: '#f87171',
-                                  textDecoration: 'none',
-                                  fontFamily: 'var(--font-mono)',
-                                  fontSize: '13px',
-                                  '&:hover': { textDecoration: 'underline' }
-                                }}
+                                className="font-mono text-[13px] text-[#f87171] no-underline hover:underline"
                               >
                                 {Destination}
                               </Typography>
@@ -3342,13 +3278,8 @@ const TransactionDetails = ({ txData }) => {
                             <Typography
                               component="span"
                               variant="body2"
-                              sx={{
-                                color: theme.palette.primary.main,
-                                textDecoration: 'none',
-                                fontFamily: 'var(--font-mono)',
-                                fontSize: '13px',
-                                '&:hover': { textDecoration: 'underline' }
-                              }}
+                              className="font-mono text-[13px] no-underline hover:underline"
+                              sx={{ color: theme.palette.primary.main }}
                             >
                               {Destination}
                             </Typography>
@@ -3357,11 +3288,11 @@ const TransactionDetails = ({ txData }) => {
                         {isBurn && (
                           <Tooltip
                             title={
-                              <div style={{ minWidth: 200 }}>
-                                <div style={{ fontSize: '13px', fontWeight: 500, marginBottom: 8, color: isDestBlackholed ? '#f87171' : '#fb923c' }}>
+                              <div className="min-w-[200px]">
+                                <div className={cn('text-[13px] font-medium mb-2', isDestBlackholed ? 'text-[#f87171]' : 'text-[#fb923c]')}>
                                   {isDestBlackholed ? 'Blackholed Account' : 'Token Burn'}
                                 </div>
-                                <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)', lineHeight: 1.4 }}>
+                                <div className="text-[12px] text-white/70 leading-[1.4]">
                                   {isDestBlackholed
                                     ? 'This account has its master key disabled and no valid regular key. It cannot sign transactions, making tokens sent here permanently destroyed.'
                                     : 'Tokens sent back to their issuer are burned and permanently removed from circulation.'}
@@ -3541,12 +3472,7 @@ const TransactionDetails = ({ txData }) => {
                         ammChanges.assetsDeposited.map((asset, idx) => (
                           <span
                             key={`${asset.currency}-${idx}`}
-                            className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[13px]"
-                            style={{
-                              backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                              border: '1px solid rgba(239, 68, 68, 0.2)',
-                              color: '#ef4444'
-                            }}
+                            className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[13px] bg-red-500/10 border border-red-500/20 text-[#ef4444]"
                           >
                             -{formatDecimal(new Decimal(asset.value))}
                             {asset.currency === 'XRP' ? (
@@ -3564,24 +3490,12 @@ const TransactionDetails = ({ txData }) => {
                       ) : (
                         <>
                           {Amount && (
-                            <div
-                              style={{
-                                border: '1px solid #666',
-                                borderRadius: '6px',
-                                padding: '6px 10px'
-                              }}
-                            >
+                            <div className="border border-[#666] rounded-md px-2.5 py-1.5">
                               <AmountDisplay amount={Amount} />
                             </div>
                           )}
                           {Amount2 && (
-                            <div
-                              style={{
-                                border: '1px solid #666',
-                                borderRadius: '6px',
-                                padding: '6px 10px'
-                              }}
-                            >
+                            <div className="border border-[#666] rounded-md px-2.5 py-1.5">
                               <AmountDisplay amount={Amount2} />
                             </div>
                           )}
@@ -3595,12 +3509,7 @@ const TransactionDetails = ({ txData }) => {
                   <DetailRow label="LP Tokens Received">
                     <div className="flex items-center gap-2">
                       <span
-                        className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[13px]"
-                        style={{
-                          backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                          border: '1px solid rgba(16, 185, 129, 0.2)',
-                          color: '#10b981'
-                        }}
+                        className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[13px] bg-emerald-500/10 border border-emerald-500/20 text-[#10b981]"
                       >
                         +{formatDecimal(new Decimal(ammChanges.lpTokenChange.value))}
                         <TokenDisplay
@@ -4097,12 +4006,7 @@ const TransactionDetails = ({ txData }) => {
                     {ammChanges?.lpTokenChange ? (
                       <div className="flex items-center gap-2">
                         <span
-                          className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[13px]"
-                          style={{
-                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                            border: '1px solid rgba(239, 68, 68, 0.2)',
-                            color: '#ef4444'
-                          }}
+                          className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[13px] bg-red-500/10 border border-red-500/20 text-[#ef4444]"
                         >
                           -{formatDecimal(new Decimal(ammChanges.lpTokenChange.value))}
                           <TokenDisplay
@@ -4125,12 +4029,7 @@ const TransactionDetails = ({ txData }) => {
                       {ammChanges.assetsReceived.map((asset, idx) => (
                         <span
                           key={`${asset.currency}-${idx}`}
-                          className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[13px]"
-                          style={{
-                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                            border: '1px solid rgba(16, 185, 129, 0.2)',
-                            color: '#10b981'
-                          }}
+                          className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[13px] bg-emerald-500/10 border border-emerald-500/20 text-[#10b981]"
                         >
                           +{formatDecimal(new Decimal(asset.value))}
                           {asset.currency === 'XRP' ? (
@@ -4186,14 +4085,14 @@ const TransactionDetails = ({ txData }) => {
                 )}
                 {txData.EmailHash && (
                   <DetailRow label="Email Hash">
-                    <Typography variant="body1" sx={{ fontFamily: 'var(--font-mono)' }}>
+                    <Typography variant="body1" className="font-mono">
                       {txData.EmailHash}
                     </Typography>
                   </DetailRow>
                 )}
                 {txData.MessageKey && (
                   <DetailRow label="Message Key">
-                    <Typography variant="body1" sx={{ fontFamily: 'var(--font-mono)' }}>
+                    <Typography variant="body1" className="font-mono">
                       {txData.MessageKey}
                     </Typography>
                   </DetailRow>
@@ -4239,7 +4138,7 @@ const TransactionDetails = ({ txData }) => {
                   <DetailRow label="Check ID">
                     <Typography
                       variant="body1"
-                      sx={{ fontFamily: 'var(--font-mono)', wordBreak: 'break-all' }}
+                      className="font-mono break-all"
                     >
                       {txData.CheckID}
                     </Typography>
@@ -4281,7 +4180,7 @@ const TransactionDetails = ({ txData }) => {
                   <DetailRow label="Condition">
                     <Typography
                       variant="body2"
-                      sx={{ fontFamily: 'var(--font-mono)', wordBreak: 'break-all' }}
+                      className="font-mono break-all"
                     >
                       {txData.Condition}
                     </Typography>
@@ -4291,7 +4190,7 @@ const TransactionDetails = ({ txData }) => {
                   <DetailRow label="Fulfillment">
                     <Typography
                       variant="body2"
-                      sx={{ fontFamily: 'var(--font-mono)', wordBreak: 'break-all' }}
+                      className="font-mono break-all"
                     >
                       {txData.Fulfillment}
                     </Typography>
@@ -4309,7 +4208,7 @@ const TransactionDetails = ({ txData }) => {
                   <DetailRow label="Channel ID">
                     <Typography
                       variant="body1"
-                      sx={{ fontFamily: 'var(--font-mono)', wordBreak: 'break-all' }}
+                      className="font-mono break-all"
                     >
                       {txData.Channel}
                     </Typography>
@@ -4324,7 +4223,7 @@ const TransactionDetails = ({ txData }) => {
                   <DetailRow label="Public Key">
                     <Typography
                       variant="body2"
-                      sx={{ fontFamily: 'var(--font-mono)', wordBreak: 'break-all' }}
+                      className="font-mono break-all"
                     >
                       {txData.PublicKey}
                     </Typography>
@@ -4421,12 +4320,7 @@ const TransactionDetails = ({ txData }) => {
                     <div className="flex flex-wrap gap-2">
                       {Amount && (
                         <span
-                          className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[13px]"
-                          style={{
-                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                            border: '1px solid rgba(239, 68, 68, 0.2)',
-                            color: '#ef4444'
-                          }}
+                          className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[13px] bg-red-500/10 border border-red-500/20 text-[#ef4444]"
                         >
                           -{typeof Amount === 'string' ? (
                             <>
@@ -4448,12 +4342,7 @@ const TransactionDetails = ({ txData }) => {
                       )}
                       {Amount2 && (
                         <span
-                          className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[13px]"
-                          style={{
-                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                            border: '1px solid rgba(239, 68, 68, 0.2)',
-                            color: '#ef4444'
-                          }}
+                          className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[13px] bg-red-500/10 border border-red-500/20 text-[#ef4444]"
                         >
                           -{typeof Amount2 === 'string' ? (
                             <>
@@ -4480,12 +4369,7 @@ const TransactionDetails = ({ txData }) => {
                 {ammCreateDetails?.lpTokenBalance && (
                   <DetailRow label="Received">
                     <span
-                      className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[13px]"
-                      style={{
-                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                        border: '1px solid rgba(16, 185, 129, 0.2)',
-                        color: '#10b981'
-                      }}
+                      className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[13px] bg-emerald-500/10 border border-emerald-500/20 text-[#10b981]"
                     >
                       +{formatDecimal(new Decimal(ammCreateDetails.lpTokenBalance.value))}
                       {(() => {
@@ -4728,17 +4612,17 @@ const TransactionDetails = ({ txData }) => {
       {/* BALANCES Tab */}
       {activeTab === 'balances' && (
         <div
-          className={cn('rounded-xl overflow-hidden', isDark ? 'bg-transparent' : 'bg-white')}
-          style={{
-            border: `1.5px solid ${isDark ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.08)'}`
-          }}
+          className={cn(
+            'rounded-xl overflow-hidden border-[1.5px]',
+            isDark ? 'bg-transparent border-white/10' : 'bg-white border-black/[0.08]'
+          )}
         >
           <div
             className={cn(
               'px-4 py-3',
               isDark
-                ? 'border-b border-[rgba(255,255,255,0.10)]'
-                : 'border-b border-[rgba(0,0,0,0.08)]'
+                ? 'border-b border-white/10'
+                : 'border-b border-black/[0.08]'
             )}
           >
             <span
@@ -4752,8 +4636,7 @@ const TransactionDetails = ({ txData }) => {
           </div>
           {balanceChanges.length > 0 && isSuccess ? (
             <div
-              className="divide-y"
-              style={{ borderColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }}
+              className={cn('divide-y', isDark ? 'divide-white/5' : 'divide-black/5')}
             >
               {balanceChanges.map(({ account, changes }, idx) => (
                 <div
@@ -4821,17 +4704,17 @@ const TransactionDetails = ({ txData }) => {
       {/* TECHNICAL Tab */}
       {activeTab === 'technical' && (
         <div
-          className={cn('rounded-xl overflow-hidden', isDark ? 'bg-transparent' : 'bg-white')}
-          style={{
-            border: `1.5px solid ${isDark ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.08)'}`
-          }}
+          className={cn(
+            'rounded-xl overflow-hidden border-[1.5px]',
+            isDark ? 'bg-transparent border-white/10' : 'bg-white border-black/[0.08]'
+          )}
         >
           <div
             className={cn(
               'px-4 py-3',
               isDark
-                ? 'border-b border-[rgba(255,255,255,0.10)]'
-                : 'border-b border-[rgba(0,0,0,0.08)]'
+                ? 'border-b border-white/10'
+                : 'border-b border-black/[0.08]'
             )}
           >
             <span
@@ -4881,17 +4764,17 @@ const TransactionDetails = ({ txData }) => {
       {/* RAW Tab */}
       {activeTab === 'raw' && (
         <div
-          className={cn('rounded-xl overflow-hidden', isDark ? 'bg-transparent' : 'bg-white')}
-          style={{
-            border: `1.5px solid ${isDark ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.08)'}`
-          }}
+          className={cn(
+            'rounded-xl overflow-hidden border-[1.5px]',
+            isDark ? 'bg-transparent border-white/10' : 'bg-white border-black/[0.08]'
+          )}
         >
           <div
             className={cn(
               'px-4 py-3',
               isDark
-                ? 'border-b border-[rgba(255,255,255,0.10)]'
-                : 'border-b border-[rgba(0,0,0,0.08)]'
+                ? 'border-b border-white/10'
+                : 'border-b border-black/[0.08]'
             )}
           >
             <span
@@ -4945,7 +4828,7 @@ const TransactionDetails = ({ txData }) => {
 
 const TxPage = ({ txData, error }) => {
   const router = useRouter();
-  const { themeName } = useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
   const isDark = themeName === 'XrplToDarkTheme';
 
   if (router.isFallback) {

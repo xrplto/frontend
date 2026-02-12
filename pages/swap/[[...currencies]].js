@@ -1,7 +1,7 @@
 import { useState, useEffect, useContext } from 'react';
 
 // Context
-import { AppContext } from 'src/context/AppContext';
+import { WalletContext } from 'src/context/AppContext';
 
 // Components
 import Header from 'src/components/Header';
@@ -28,7 +28,7 @@ const DEFAULT_PAIR = {
 };
 
 function SwapPage({ data }) {
-  const { accountProfile } = useContext(AppContext);
+  const { accountProfile } = useContext(WalletContext);
 
   // Prevent body scroll
   useEffect(() => {

@@ -1,10 +1,10 @@
 import React, { useContext, useEffect, useState, useMemo, useRef } from 'react';
-import styled from '@emotion/styled';
 import api from 'src/utils/api';
-import { AppContext } from 'src/context/AppContext';
+import { ThemeContext, WalletContext } from 'src/context/AppContext';
 import { fNumber, fCurrency5 } from 'src/utils/formatters';
 import { normalizeCurrencyCode } from 'src/utils/parseUtils';
 import { Wifi, WifiOff } from 'lucide-react';
+import { cn } from 'src/utils/cn';
 
 // Format price with compact notation for small values (matches TokenSummary)
 const formatPrice = (price) => {
@@ -57,200 +57,186 @@ import { BookOpen } from 'lucide-react';
 const BASE_URL = 'https://api.xrpl.to/v1';
 const fetchInFlight = new Map();
 
-const Container = styled.div`
-  overflow: hidden;
-  height: 100%;
-  min-height: 600px;
-  display: flex;
-  flex-direction: column;
-  background: ${(props) => (props.isDark ? 'transparent' : '#fff')};
-`;
+const Container = ({ className, children, isDark, ...p }) => (
+  <div
+    className={cn('overflow-hidden h-full min-h-[600px] flex flex-col', isDark ? 'bg-transparent' : 'bg-white', className)}
+    {...p}
+  >
+    {children}
+  </div>
+);
 
-const Header = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 16px;
-  background: ${(props) => (props.isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)')};
-  border-bottom: 1px solid
-    ${(props) => (props.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)')};
-`;
+const Header = ({ className, children, isDark, ...p }) => (
+  <div
+    className={cn(
+      'flex justify-between items-center px-4 py-3 border-b',
+      isDark ? 'bg-white/[0.02] border-white/[0.06]' : 'bg-black/[0.02] border-black/[0.06]',
+      className
+    )}
+    {...p}
+  >
+    {children}
+  </div>
+);
 
-const Title = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  font-weight: 600;
-  color: ${(props) => (props.isDark ? '#fff' : '#212B36')};
-  letter-spacing: 0.3px;
-`;
+const Title = ({ className, children, isDark, ...p }) => (
+  <div
+    className={cn('flex items-center gap-2 text-[13px] font-semibold tracking-wide', isDark ? 'text-white' : 'text-[#212B36]', className)}
+    {...p}
+  >
+    {children}
+  </div>
+);
 
-const Content = styled.div`
-  display: grid;
-  grid-template-rows: 1fr auto 1fr;
-  flex: 1;
-  min-height: 0;
-  overflow: hidden;
-`;
+const Content = ({ className, children, ...p }) => (
+  <div
+    className={cn('grid flex-1 min-h-0 overflow-hidden', className)}
+    style={{ gridTemplateRows: '1fr auto 1fr', ...p.style }}
+    {...(({ style, ...rest }) => rest)(p)}
+  >
+    {children}
+  </div>
+);
 
-const Side = styled.div`
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-  &::-webkit-scrollbar {
-    width: 4px;
-  }
-  &::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  &::-webkit-scrollbar-thumb {
-    background: ${(props) => (props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)')};
-    border-radius: 10px;
-  }
-`;
+const Side = React.forwardRef(({ className, children, type, ...p }, ref) => (
+  <div
+    ref={ref}
+    className={cn('flex-1 min-h-0 overflow-y-auto', className)}
+    style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+    {...p}
+  >
+    <style>{`.side-scroll::-webkit-scrollbar { width: 4px; } .side-scroll::-webkit-scrollbar-track { background: transparent; }`}</style>
+    {children}
+  </div>
+));
 
-const ColumnHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  padding: 6px 16px;
-  font-size: 10px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
-  position: sticky;
-  top: 0;
-  z-index: 2;
-  background: ${(props) => (props.isDark ? '#010815' : '#fafafa')};
-  border-bottom: 1px solid
-    ${(props) => (props.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)')};
-  color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)')};
-`;
+const ColumnHeader = ({ className, children, isDark, ...p }) => (
+  <div
+    className={cn(
+      'flex justify-between px-4 py-1.5 text-[10px] font-semibold uppercase tracking-widest sticky top-0 z-[2] border-b',
+      isDark ? 'bg-[#010815] border-white/[0.06] text-white/40' : 'bg-[#fafafa] border-black/[0.06] text-black/40',
+      className
+    )}
+    {...p}
+  >
+    {children}
+  </div>
+);
 
-const Row = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 6px 16px;
-  position: relative;
-  cursor: pointer;
-  font-size: 12px;
-  font-family: var(--font-mono);
-  transition: all 0.2s ease;
-  background: ${(props) => props.isUserOrder ? 'rgba(59, 130, 246, 0.12)' : 'transparent'};
-  border-left: ${(props) => props.isUserOrder ? '2px solid #3b82f6' : '2px solid transparent'};
-  &:hover {
-    background: ${(props) =>
-    props.isUserOrder ? 'rgba(59, 130, 246, 0.18)' :
-    props.type === 'ask' ? 'rgba(239, 68, 68, 0.08)' : 'rgba(34, 197, 94, 0.08)'};
-  }
-`;
+const Row = ({ className, children, type, isUserOrder, onClick, ...p }) => (
+  <div
+    className={cn(
+      'flex justify-between items-center px-4 py-1.5 relative cursor-pointer text-xs transition-all duration-200 border-l-2 font-mono',
+      isUserOrder ? 'border-l-[#3b82f6]' : 'border-l-transparent',
+      className
+    )}
+    style={{
+      background: isUserOrder ? 'rgba(59, 130, 246, 0.12)' : 'transparent'
+    }}
+    onClick={onClick}
+    onMouseEnter={(e) => {
+      e.currentTarget.style.background = isUserOrder
+        ? 'rgba(59, 130, 246, 0.18)'
+        : type === 'ask'
+          ? 'rgba(239, 68, 68, 0.08)'
+          : 'rgba(34, 197, 94, 0.08)';
+    }}
+    onMouseLeave={(e) => {
+      e.currentTarget.style.background = isUserOrder ? 'rgba(59, 130, 246, 0.12)' : 'transparent';
+    }}
+    {...p}
+  >
+    {children}
+  </div>
+);
 
-const DepthBar = styled.div`
-  position: absolute;
-  top: 1px;
-  bottom: 1px;
-  ${(props) => (props.type === 'bid' ? 'left: 0;' : 'right: 0;')}
-  background: ${(props) =>
-    props.type === 'ask' ? 'rgba(239, 68, 68, 0.12)' : 'rgba(34, 197, 94, 0.12)'};
-  width: ${(props) => props.width}%;
-  pointer-events: none;
-  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-`;
+const DepthBar = ({ className, type, width, ...p }) => (
+  <div
+    className={cn(
+      'absolute top-px bottom-px pointer-events-none transition-[width] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]',
+      type === 'bid' ? 'left-0' : 'right-0',
+      type === 'ask' ? 'bg-red-500/[0.12]' : 'bg-green-500/[0.12]',
+      className
+    )}
+    style={{ width: `${width}%` }}
+    {...p}
+  />
+);
 
-const Price = styled.span`
-  color: ${(props) => (props.type === 'ask' ? '#ff4d4f' : '#2ecc71')};
-  position: relative;
-  z-index: 1;
-  font-weight: 500;
-`;
+const Price = ({ className, children, type, ...p }) => (
+  <span
+    className={cn('relative z-[1] font-medium', type === 'ask' ? 'text-[#ff4d4f]' : 'text-[#2ecc71]', className)}
+    {...p}
+  >
+    {children}
+  </span>
+);
 
-const Amount = styled.span`
-  color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.85)' : 'rgba(0,0,0,0.85)')};
-  position: relative;
-  z-index: 1;
-  text-align: right;
-  flex: 1;
-  margin-right: 24px;
-`;
+const Amount = ({ className, children, isDark, ...p }) => (
+  <span
+    className={cn('relative z-[1] text-right flex-1 mr-6', isDark ? 'text-white/[0.85]' : 'text-black/[0.85]', className)}
+    {...p}
+  >
+    {children}
+  </span>
+);
 
-const Maker = styled.span`
-  color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)')};
-  font-size: 10px;
-  position: relative;
-  z-index: 1;
-  cursor: pointer;
-  width: 50px;
-  text-align: right;
-  transition: color 0.2s;
-  &:hover {
-    color: #3b82f6;
-  }
-`;
+const Maker = ({ className, children, isDark, onClick, ...p }) => (
+  <span
+    className={cn('relative z-[1] cursor-pointer w-[50px] text-right text-[10px] transition-colors duration-200 hover:text-[#3b82f6]', isDark ? 'text-white/[0.35]' : 'text-black/[0.35]', className)}
+    onClick={onClick}
+    {...p}
+  >
+    {children}
+  </span>
+);
 
-const SpreadBar = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 16px;
-  background: ${(props) => (props.isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.04)')};
-  border-top: 1px solid ${(props) => (props.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)')};
-  border-bottom: 1px solid
-    ${(props) => (props.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)')};
-  font-size: 11px;
-  font-family: var(--font-mono);
-  flex-shrink: 0;
-  backdrop-filter: blur(4px);
-`;
+const SpreadBar = ({ className, children, isDark, ...p }) => (
+  <div
+    className={cn(
+      'flex justify-between items-center px-4 py-2.5 text-[11px] flex-shrink-0 backdrop-blur-[4px] border-y font-mono',
+      isDark ? 'bg-white/[0.03] border-white/[0.06]' : 'bg-black/[0.04] border-black/[0.06]',
+      className
+    )}
+    {...p}
+  >
+    {children}
+  </div>
+);
 
-const LimitPriceLine = styled.div`
-  position: relative;
-  height: 2px;
-  background: linear-gradient(90deg, transparent 0%, #3b82f6 10%, #3b82f6 90%, transparent 100%);
-  margin: 2px 16px;
-  &::before {
-    content: 'YOUR LIMIT';
-    position: absolute;
-    right: 0;
-    top: -10px;
-    font-size: 8px;
-    font-weight: 600;
-    color: #3b82f6;
-    letter-spacing: 0.5px;
-  }
-`;
+const LimitPriceLine = ({ className, ...p }) => (
+  <div
+    className={cn('relative h-0.5 mx-4 my-0.5', className)}
+    style={{
+      background: 'linear-gradient(90deg, transparent 0%, #3b82f6 10%, #3b82f6 90%, transparent 100%)'
+    }}
+    {...p}
+  >
+    <span
+      className="absolute right-0 -top-2.5 text-[8px] font-semibold text-[#3b82f6] tracking-[0.5px]"
+    >
+      YOUR LIMIT
+    </span>
+  </div>
+);
 
 const BearEmptyState = ({ isDark, message }) => (
-  <div style={{
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '40px 20px',
-    margin: '12px',
-    borderRadius: '12px',
-    background: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)',
-    border: `1.5px dashed ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`,
-    color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
-    gap: '12px'
-  }}>
-    <BookOpen size={24} style={{ opacity: 0.3 }} />
-    <span style={{
-      fontSize: '11px',
-      fontWeight: 500,
-      letterSpacing: '0.05em',
-      textTransform: 'uppercase',
-      textAlign: 'center'
-    }}>
+  <div className={cn(
+    'flex flex-col items-center justify-center px-[20px] py-[40px] m-[12px] rounded-[12px] gap-[12px]',
+    isDark
+      ? 'bg-white/[0.02] border-[1.5px] border-dashed border-white/[0.06] text-white/40'
+      : 'bg-black/[0.02] border-[1.5px] border-dashed border-black/[0.06] text-black/40'
+  )}>
+    <BookOpen size={24} className="opacity-30" />
+    <span className="text-[11px] font-medium tracking-[0.05em] uppercase text-center">
       {message}
     </span>
   </div>
 );
 
 const OrderBook = ({ token, onPriceClick, limitPrice }) => {
-  const { themeName, accountProfile } = useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
+  const { accountProfile } = useContext(WalletContext);
   const isDark = themeName === 'XrplToDarkTheme';
   const userAccount = accountProfile?.account;
 
@@ -589,8 +575,8 @@ const OrderBook = ({ token, onPriceClick, limitPrice }) => {
     <Container isDark={isDark}>
       <Header isDark={isDark}>
         <Title isDark={isDark} />
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <div style={{ display: 'flex', background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)', borderRadius: '6px', padding: '2px' }}>
+        <div className="flex items-center gap-[10px]">
+          <div className={cn('flex rounded-[6px] p-[2px]', isDark ? 'bg-white/[0.05]' : 'bg-black/[0.05]')}>
             {[
               { id: 'both', label: 'Both' },
               { id: 'buy', label: 'Buy' },
@@ -599,35 +585,25 @@ const OrderBook = ({ token, onPriceClick, limitPrice }) => {
               <button
                 key={mode.id}
                 onClick={() => setViewMode(mode.id)}
+                className="h-[24px] px-[8px] rounded-[4px] border-none cursor-pointer text-[10px] font-semibold transition-all duration-200 flex items-center gap-[4px]"
                 style={{
-                  height: '24px',
-                  padding: '0 8px',
-                  borderRadius: '4px',
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontSize: '10px',
-                  fontWeight: 600,
-                  transition: 'all 0.2s',
                   background: viewMode === mode.id
                     ? (isDark ? 'rgba(255,255,255,0.1)' : '#fff')
                     : 'transparent',
                   color: viewMode === mode.id
                     ? (isDark ? '#fff' : '#000')
                     : (isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'),
-                  boxShadow: viewMode === mode.id && !isDark ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px'
+                  boxShadow: viewMode === mode.id && !isDark ? '0 1px 3px rgba(0,0,0,0.1)' : 'none'
                 }}
               >
                 {mode.id === 'both' && (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5px' }}>
-                    <div style={{ width: '8px', height: '2px', background: '#ff4d4f', borderRadius: '1px' }} />
-                    <div style={{ width: '8px', height: '2px', background: '#2ecc71', borderRadius: '1px' }} />
+                  <div className="flex flex-col gap-[1.5px]">
+                    <div className="w-[8px] h-[2px] bg-[#ff4d4f] rounded-[1px]" />
+                    <div className="w-[8px] h-[2px] bg-[#2ecc71] rounded-[1px]" />
                   </div>
                 )}
-                {mode.id === 'buy' && <div style={{ width: '8px', height: '6px', background: '#2ecc71', borderRadius: '1px' }} />}
-                {mode.id === 'sell' && <div style={{ width: '8px', height: '6px', background: '#ff4d4f', borderRadius: '1px' }} />}
+                {mode.id === 'buy' && <div className="w-[8px] h-[6px] bg-[#2ecc71] rounded-[1px]" />}
+                {mode.id === 'sell' && <div className="w-[8px] h-[6px] bg-[#ff4d4f] rounded-[1px]" />}
                 {mode.label}
               </button>
             ))}
@@ -635,26 +611,20 @@ const OrderBook = ({ token, onPriceClick, limitPrice }) => {
           <select
             value={precision}
             onChange={(e) => setPrecision(Number(e.target.value))}
+            className={cn(
+              'py-[4px] pl-[10px] pr-[24px] rounded-[6px] text-[10px] font-medium cursor-pointer outline-none appearance-none bg-no-repeat transition-all duration-200',
+              isDark
+                ? 'bg-[#1a1f2e] text-white border border-white/10'
+                : 'bg-[#f4f6f8] text-[#212B36] border border-black/10'
+            )}
             style={{
-              padding: '4px 24px 4px 10px',
-              borderRadius: '6px',
-              border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
-              fontSize: '10px',
-              fontWeight: 500,
-              background: isDark ? '#1a1f2e' : '#f4f6f8',
-              color: isDark ? '#fff' : '#212B36',
-              cursor: 'pointer',
-              outline: 'none',
-              appearance: 'none',
               backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='${isDark ? '%23ffffff' : '%232c3e50'}' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`,
-              backgroundRepeat: 'no-repeat',
-              backgroundPosition: 'right 8px center',
-              transition: 'all 0.2s'
+              backgroundPosition: 'right 8px center'
             }}
           >
-            <option value={4} style={{ background: isDark ? '#1a1f2e' : '#fff', color: isDark ? '#fff' : '#000' }}>4 Decimals</option>
-            <option value={6} style={{ background: isDark ? '#1a1f2e' : '#fff', color: isDark ? '#fff' : '#000' }}>6 Decimals</option>
-            <option value={8} style={{ background: isDark ? '#1a1f2e' : '#fff', color: isDark ? '#fff' : '#000' }}>8 Decimals</option>
+            <option value={4} className={cn(isDark ? 'bg-[#1a1f2e] text-white' : 'bg-white text-black')}>4 Decimals</option>
+            <option value={6} className={cn(isDark ? 'bg-[#1a1f2e] text-white' : 'bg-white text-black')}>6 Decimals</option>
+            <option value={8} className={cn(isDark ? 'bg-[#1a1f2e] text-white' : 'bg-white text-black')}>8 Decimals</option>
           </select>
         </div>
       </Header>
@@ -664,7 +634,7 @@ const OrderBook = ({ token, onPriceClick, limitPrice }) => {
         {(viewMode === 'both' || viewMode === 'sell') && (
           <Side ref={asksSideRef} type="asks">
             <ColumnHeader isDark={isDark}>
-              <span style={{ color: '#ff4d4f' }}>Price (XRP)</span>
+              <span className="text-[#ff4d4f]">Price (XRP)</span>
               <span>Size ({normalizeCurrencyCode(displayToken?.currency) || 'Token'})</span>
               <span>Maker</span>
             </ColumnHeader>
@@ -697,27 +667,19 @@ const OrderBook = ({ token, onPriceClick, limitPrice }) => {
                       }}
                       style={isUserOrder ? { color: '#3b82f6', fontWeight: 600 } : {}}
                     >
-                      {isUserOrder ? 'YOU' : acc ? `${acc.slice(1, 5)}…${acc.slice(-2)}` : ''}
+                      {isUserOrder ? 'YOU' : acc ? `${acc.slice(1, 5)}\u2026${acc.slice(-2)}` : ''}
                     </Maker>
                     {hoveredRow === rowKey && (
-                      <div style={{
-                        position: 'absolute',
-                        left: '50%',
-                        top: '-28px',
-                        transform: 'translateX(-50%)',
-                        background: isDark ? 'rgba(0,0,0,0.9)' : 'rgba(255,255,255,0.95)',
-                        border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
-                        borderRadius: '6px',
-                        padding: '4px 8px',
-                        fontSize: '9px',
-                        whiteSpace: 'nowrap',
-                        zIndex: 10,
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
-                      }}>
-                        <span style={{ color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>Σ </span>
-                        <span style={{ color: '#ef4444' }}>{fNumber(cumSum)}</span>
-                        <span style={{ color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)' }}> · </span>
-                        <span style={{ color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>Avg </span>
+                      <div className={cn(
+                        'absolute left-1/2 -top-[28px] -translate-x-1/2 rounded-[6px] px-[8px] py-[4px] text-[9px] whitespace-nowrap z-10 shadow-[0_4px_12px_rgba(0,0,0,0.3)]',
+                        isDark
+                          ? 'bg-black/90 border border-white/10'
+                          : 'bg-white/95 border border-black/10'
+                      )}>
+                        <span className={cn(isDark ? 'text-white/50' : 'text-black/50')}>{'\u03A3'} </span>
+                        <span className="text-[#ef4444]">{fNumber(cumSum)}</span>
+                        <span className={cn(isDark ? 'text-white/30' : 'text-black/30')}> {'\u00B7'} </span>
+                        <span className={cn(isDark ? 'text-white/50' : 'text-black/50')}>Avg </span>
                         <span>{renderInlinePrice(avgPrice)}</span>
                       </div>
                     )}
@@ -736,69 +698,59 @@ const OrderBook = ({ token, onPriceClick, limitPrice }) => {
           const positionPct = inSpread && spreadSize > 0 ? ((limitPrice - bestBid) / spreadSize) * 100 : 50;
 
           return inSpread ? (
-            <div style={{
-              padding: '8px 16px',
-              background: isDark ? 'rgba(59,130,246,0.08)' : 'rgba(59,130,246,0.06)',
-              borderTop: `1px solid ${isDark ? 'rgba(59,130,246,0.2)' : 'rgba(59,130,246,0.15)'}`,
-              borderBottom: `1px solid ${isDark ? 'rgba(59,130,246,0.2)' : 'rgba(59,130,246,0.15)'}`,
-            }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                <span style={{ color: '#2ecc71', fontSize: '10px', fontFamily: 'var(--font-mono)' }}>{renderInlinePrice(bestBid)}</span>
-                <span style={{ color: '#3b82f6', fontSize: '11px', fontWeight: 700, letterSpacing: '0.5px' }}>
+            <div
+              className={cn(
+                'px-[16px] py-[8px]',
+                isDark
+                  ? 'bg-[rgba(59,130,246,0.08)] border-t border-b border-[rgba(59,130,246,0.2)]'
+                  : 'bg-[rgba(59,130,246,0.06)] border-t border-b border-[rgba(59,130,246,0.15)]'
+              )}
+            >
+              <div className="flex justify-between items-center mb-[6px]">
+                <span className="text-[#2ecc71] text-[10px] font-mono">{renderInlinePrice(bestBid)}</span>
+                <span className="text-[#3b82f6] text-[11px] font-bold tracking-[0.5px]">
                   YOUR LIMIT
                 </span>
-                <span style={{ color: '#ff4d4f', fontSize: '10px', fontFamily: 'var(--font-mono)' }}>{renderInlinePrice(bestAsk)}</span>
+                <span className="text-[#ff4d4f] text-[10px] font-mono">{renderInlinePrice(bestAsk)}</span>
               </div>
-              <div style={{ position: 'relative', height: '4px', borderRadius: '2px', background: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' }}>
-                <div style={{
-                  position: 'absolute',
-                  left: 0,
-                  top: 0,
-                  bottom: 0,
-                  width: `${positionPct}%`,
-                  background: 'linear-gradient(90deg, #22c55e, #3b82f6)',
-                  borderRadius: '2px 0 0 2px',
-                }} />
-                <div style={{
-                  position: 'absolute',
-                  right: 0,
-                  top: 0,
-                  bottom: 0,
-                  width: `${100 - positionPct}%`,
-                  background: 'linear-gradient(90deg, #3b82f6, #ef4444)',
-                  borderRadius: '0 2px 2px 0',
-                }} />
-                <div style={{
-                  position: 'absolute',
-                  left: `${positionPct}%`,
-                  top: '50%',
-                  transform: 'translate(-50%, -50%)',
-                  width: '10px',
-                  height: '10px',
-                  borderRadius: '50%',
-                  background: '#3b82f6',
-                  border: '2px solid #fff',
-                  boxShadow: '0 0 6px rgba(59,130,246,0.6)',
-                }} />
+              <div className={cn('relative h-[4px] rounded-[2px]', isDark ? 'bg-white/10' : 'bg-black/10')}>
+                <div
+                  className="absolute left-0 top-0 bottom-0 rounded-l-[2px]"
+                  style={{
+                    width: `${positionPct}%`,
+                    background: 'linear-gradient(90deg, #22c55e, #3b82f6)'
+                  }}
+                />
+                <div
+                  className="absolute right-0 top-0 bottom-0 rounded-r-[2px]"
+                  style={{
+                    width: `${100 - positionPct}%`,
+                    background: 'linear-gradient(90deg, #3b82f6, #ef4444)'
+                  }}
+                />
+                <div
+                  className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2 w-[10px] h-[10px] rounded-full bg-[#3b82f6] border-2 border-white shadow-[0_0_6px_rgba(59,130,246,0.6)]"
+                  style={{ left: `${positionPct}%` }}
+                />
               </div>
-              <div style={{ display: 'flex', justifyContent: 'center', marginTop: '6px' }}>
-                <span style={{ color: '#3b82f6', fontSize: '12px', fontWeight: 600, fontFamily: 'var(--font-mono)' }}>
+              <div className="flex justify-center mt-[6px]">
+                <span className="text-[#3b82f6] text-[12px] font-semibold font-mono">
                   {renderInlinePrice(limitPrice)}
                 </span>
               </div>
             </div>
           ) : (
             <SpreadBar isDark={isDark}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <span style={{ color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)', fontSize: '10px' }}>SPREAD</span>
-                <span style={{ color: isDark ? '#fff' : '#000', fontWeight: 600 }}>
-                  {spreadPct != null ? `${spreadPct.toFixed(3)}%` : '—'}
+              <div className="flex items-center gap-[4px]">
+                <span className={cn('text-[10px]', isDark ? 'text-white/30' : 'text-black/30')}>SPREAD</span>
+                <span className={cn('font-semibold', isDark ? 'text-white' : 'text-black')}>
+                  {spreadPct != null ? `${spreadPct.toFixed(3)}%` : '\u2014'}
                 </span>
               </div>
-              <div style={{ display: 'flex', gap: '12px' }}>
-                <span style={{ color: '#2ecc71' }}>{bestBid != null ? renderInlinePrice(bestBid) : '—'}</span>
-                <span style={{ color: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' }}>/</span>
-                <span style={{ color: '#ff4d4f' }}>{bestAsk != null ? renderInlinePrice(bestAsk) : '—'}</span>
+              <div className="flex gap-[12px]">
+                <span className="text-[#2ecc71]">{bestBid != null ? renderInlinePrice(bestBid) : '\u2014'}</span>
+                <span className={cn(isDark ? 'text-white/10' : 'text-black/10')}>/</span>
+                <span className="text-[#ff4d4f]">{bestAsk != null ? renderInlinePrice(bestAsk) : '\u2014'}</span>
               </div>
             </SpreadBar>
           );
@@ -808,7 +760,7 @@ const OrderBook = ({ token, onPriceClick, limitPrice }) => {
         {(viewMode === 'both' || viewMode === 'buy') && (
           <Side type="bids">
             <ColumnHeader isDark={isDark}>
-              <span style={{ color: '#2ecc71' }}>Price (XRP)</span>
+              <span className="text-[#2ecc71]">Price (XRP)</span>
               <span>Size ({normalizeCurrencyCode(displayToken?.currency) || 'Token'})</span>
               <span>Maker</span>
             </ColumnHeader>
@@ -841,27 +793,19 @@ const OrderBook = ({ token, onPriceClick, limitPrice }) => {
                       }}
                       style={isUserOrder ? { color: '#3b82f6', fontWeight: 600 } : {}}
                     >
-                      {isUserOrder ? 'YOU' : acc ? `${acc.slice(1, 5)}…${acc.slice(-2)}` : ''}
+                      {isUserOrder ? 'YOU' : acc ? `${acc.slice(1, 5)}\u2026${acc.slice(-2)}` : ''}
                     </Maker>
                     {hoveredRow === rowKey && (
-                      <div style={{
-                        position: 'absolute',
-                        left: '50%',
-                        top: '-28px',
-                        transform: 'translateX(-50%)',
-                        background: isDark ? 'rgba(0,0,0,0.9)' : 'rgba(255,255,255,0.95)',
-                        border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
-                        borderRadius: '6px',
-                        padding: '4px 8px',
-                        fontSize: '9px',
-                        whiteSpace: 'nowrap',
-                        zIndex: 10,
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
-                      }}>
-                        <span style={{ color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>Σ </span>
-                        <span style={{ color: '#22c55e' }}>{fNumber(cumSum)}</span>
-                        <span style={{ color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)' }}> · </span>
-                        <span style={{ color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>Avg </span>
+                      <div className={cn(
+                        'absolute left-1/2 -top-[28px] -translate-x-1/2 rounded-[6px] px-[8px] py-[4px] text-[9px] whitespace-nowrap z-10 shadow-[0_4px_12px_rgba(0,0,0,0.3)]',
+                        isDark
+                          ? 'bg-black/90 border border-white/10'
+                          : 'bg-white/95 border border-black/10'
+                      )}>
+                        <span className={cn(isDark ? 'text-white/50' : 'text-black/50')}>{'\u03A3'} </span>
+                        <span className="text-[#22c55e]">{fNumber(cumSum)}</span>
+                        <span className={cn(isDark ? 'text-white/30' : 'text-black/30')}> {'\u00B7'} </span>
+                        <span className={cn(isDark ? 'text-white/50' : 'text-black/50')}>Avg </span>
                         <span>{renderInlinePrice(avgPrice)}</span>
                       </div>
                     )}

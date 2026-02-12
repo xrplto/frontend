@@ -1,58 +1,55 @@
 import React, { useContext } from 'react';
 import NextLink from 'next/link';
-import styled from '@emotion/styled';
 import { Twitter, Send, MessageCircle } from 'lucide-react';
 import Logo from 'src/components/Logo';
-import { AppContext } from 'src/context/AppContext';
+import { ThemeContext } from 'src/context/AppContext';
+import { alpha } from 'src/utils/color';
+import { cn } from 'src/utils/cn';
 
-// Helper function
-const alpha = (color, opacity) => color.replace(')', `, ${opacity})`);
+// Custom functional components replacing styled components
+const Box = ({ className, children, ...p }) => <div className={className} {...p}>{children}</div>;
 
-// Custom styled components
-const Box = styled.div``;
-const Container = styled.div`
-  max-width: 100%;
-  padding: ${(props) => props.px || '16px'} ${(props) => props.py || '14px'};
-  padding-bottom: ${(props) => props.pb || props.py || '14px'};
-`;
+const Container = ({ className, children, px = '16px', py = '14px', pb, ...p }) => (
+  <div
+    className={cn('w-full', className)}
+    style={{ padding: `${px} ${py}`, paddingBottom: pb || py }}
+    {...p}
+  >
+    {children}
+  </div>
+);
 
-const Typography = styled.div`
-  font-size: ${(props) => (props.variant === 'body2' ? '0.875rem' : '1rem')};
-  color: ${(props) =>
-    props.color === 'text.secondary'
-      ? props.isDark
-        ? 'rgba(255,255,255,0.7)'
-        : 'rgba(0,0,0,0.7)'
-      : 'inherit'};
-  opacity: ${(props) => props.opacity || 1};
-`;
+const Typography = ({ className, children, variant, color, isDark, opacity, ...p }) => (
+  <div
+    className={cn(className)}
+    style={{
+      fontSize: variant === 'body2' ? '0.875rem' : '1rem',
+      color:
+        color === 'text.secondary'
+          ? isDark
+            ? 'rgba(255,255,255,0.7)'
+            : 'rgba(0,0,0,0.7)'
+          : 'inherit',
+      opacity: opacity || 1,
+      ...p.style
+    }}
+    {...(({ style, ...rest }) => rest)(p)}
+  >
+    {children}
+  </div>
+);
 
 const Tooltip = ({ title, children, arrow }) => {
   const [show, setShow] = React.useState(false);
   return (
     <div
-      style={{ position: 'relative', display: 'inline-block' }}
+      className="relative inline-block"
       onMouseEnter={() => setShow(true)}
       onMouseLeave={() => setShow(false)}
     >
       {children}
       {show && (
-        <div
-          style={{
-            position: 'absolute',
-            bottom: '100%',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            padding: '4px 8px',
-            background: 'rgba(0,0,0,0.9)',
-            color: '#fff',
-            borderRadius: '8px',
-            fontSize: '12px',
-            whiteSpace: 'nowrap',
-            zIndex: 1000,
-            marginBottom: '4px'
-          }}
-        >
+        <div className="absolute bottom-full left-1/2 -translate-x-1/2 py-1 px-2 bg-[rgba(0,0,0,0.9)] text-white rounded-lg text-xs whitespace-nowrap z-[1000] mb-1">
           {title}
         </div>
       )}
@@ -60,39 +57,43 @@ const Tooltip = ({ title, children, arrow }) => {
   );
 };
 
-const Root = styled.footer`
-  width: 100%;
-  border-top: 1.5px solid
-    ${(props) => (props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.1)')};
-  background-color: transparent;
-`;
+const Root = ({ className, children, isDark, ...p }) => (
+  <footer
+    className={cn('w-full bg-transparent', className)}
+    style={{
+      borderTop: `1.5px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.1)'}`
+    }}
+    {...p}
+  >
+    {children}
+  </footer>
+);
 
-const Link = styled.a`
-  text-decoration: none;
-  color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)')};
-  font-size: 0.95rem;
-  font-weight: 400;
-  padding: 4px 8px;
-  border-radius: 8px;
-  &:hover {
-    color: #4285f4;
-    background-color: rgba(66, 133, 244, 0.04);
-  }
-`;
+const Link = ({ className, children, isDark, ...p }) => (
+  <a
+    className={cn(
+      'no-underline text-[0.95rem] font-normal p-[4px_8px] rounded-lg hover:text-[#4285f4] hover:bg-[rgba(66,133,244,0.04)]',
+      isDark ? 'text-white/70' : 'text-black/70',
+      className
+    )}
+    {...p}
+  >
+    {children}
+  </a>
+);
 
-const IconButton = styled.a`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 6px;
-  color: ${(props) => (props.$isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)')};
-  border-radius: 8px;
-  text-decoration: none;
-  &:hover {
-    color: #4285f4;
-    background-color: rgba(66, 133, 244, 0.08);
-  }
-`;
+const IconButton = ({ className, children, $isDark, ...p }) => (
+  <a
+    className={cn(
+      'inline-flex items-center justify-center p-[6px] rounded-lg no-underline hover:text-[#4285f4] hover:bg-[rgba(66,133,244,0.08)]',
+      $isDark ? 'text-white/70' : 'text-black/70',
+      className
+    )}
+    {...p}
+  >
+    {children}
+  </a>
+);
 
 const FooterLink = ({ href, children, isDark }) => {
   const external = /^https?:\/\//.test(href || '');
@@ -106,15 +107,10 @@ const FooterLink = ({ href, children, isDark }) => {
   return (
     <NextLink
       href={href}
-      className={`footer-link ${isDark ? 'dark' : 'light'}`}
-      style={{
-        textDecoration: 'none',
-        color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)',
-        fontSize: '0.95rem',
-        fontWeight: 400,
-        padding: '4px 8px',
-        borderRadius: '8px'
-      }}
+      className={cn(
+        'footer-link no-underline text-[0.95rem] font-normal p-[4px_8px] rounded-lg',
+        isDark ? 'dark text-white/70' : 'light text-black/70'
+      )}
     >
       {children}
     </NextLink>
@@ -150,15 +146,7 @@ const SOCIALS = [
 ];
 
 const Group = React.memo(({ items, isDark }) => (
-  <Box
-    style={{
-      display: 'flex',
-      alignItems: 'center',
-      flexWrap: 'wrap',
-      gap: '2px 4px',
-      justifyContent: 'center'
-    }}
-  >
+  <Box className="flex items-center flex-wrap gap-[2px_4px] justify-center">
     {items.map((it) => (
       <FooterLink key={it.label} href={it.href} isDark={isDark}>
         {it.label}
@@ -168,10 +156,10 @@ const Group = React.memo(({ items, isDark }) => (
 ));
 
 const SocialIcons = React.memo(({ isDark }) => (
-  <Box style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+  <Box className="flex items-center gap-1">
     {SOCIALS.map((social) => (
       <Tooltip key={social.label} title={social.label} arrow>
-        <IconButton href={social.href} target="_blank" rel="noreferrer noopener" $isDark={isDark}>
+        <IconButton href={social.href} target="_blank" rel="noreferrer noopener" $isDark={isDark} aria-label={social.label}>
           <social.Icon size={18} />
         </IconButton>
       </Tooltip>
@@ -180,36 +168,28 @@ const SocialIcons = React.memo(({ isDark }) => (
 ));
 
 function Footer() {
-  const { themeName } = useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
   const isDark = themeName === 'XrplToDarkTheme';
   const year = new Date().getFullYear();
 
   return (
     <Root isDark={isDark}>
       <Container px="16px" py="10px" pb="12px">
-        <Box style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        <Box className="flex flex-col gap-3">
           {/* Mobile: stacked, Desktop: row */}
-          <Box
-            style={{
-              display: 'flex',
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              flexWrap: 'wrap',
-              gap: '12px'
-            }}
-          >
-            <Box style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <NextLink href="/" style={{ display: 'inline-flex', textDecoration: 'none' }}>
+          <Box className="flex flex-row items-center justify-between flex-wrap gap-3">
+            <Box className="flex items-center gap-2">
+              <NextLink href="/" className="inline-flex no-underline">
                 <Logo asLink={false} style={{ width: '60px', height: 'auto' }} />
               </NextLink>
               <Typography
                 variant="body2"
                 color="text.secondary"
                 isDark={isDark}
-                style={{ fontSize: '0.85rem', opacity: 0.5 }}
+                opacity={0.5}
+                style={{ fontSize: '0.85rem' }}
               >
-                © {year}
+                &copy; {year}
               </Typography>
             </Box>
             <SocialIcons isDark={isDark} />

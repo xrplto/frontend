@@ -2,14 +2,14 @@ import { useState, useContext, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import { useSelector } from 'react-redux';
-import styled from '@emotion/styled';
+
 import { MD5 } from 'crypto-js';
 import { Wallet as XRPLWallet, xrpToDrops } from 'xrpl';
 import { toast } from 'sonner';
-import { AppContext } from 'src/context/AppContext';
+import { ThemeContext, WalletContext, AppContext } from 'src/context/AppContext';
 import { selectMetrics } from 'src/redux/statusSlice';
 import { cn } from 'src/utils/cn';
-import { apiFetch, submitTransaction } from 'src/utils/api';
+import { apiFetch, submitTransaction, getWalletAuthHeaders } from 'src/utils/api';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import { withdrawalStorage } from 'src/utils/withdrawalStorage';
@@ -85,8 +85,9 @@ const formatBalance = (value) => {
 export default function WalletPage() {
   const router = useRouter();
   const { tab: initialTab } = router.query;
-  const { themeName, accountProfile, setOpenWalletModal, activeFiatCurrency } =
-    useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
+  const { accountProfile, setOpenWalletModal } = useContext(WalletContext);
+  const { activeFiatCurrency } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
 
   const BearIcon = () => (
@@ -760,83 +761,63 @@ export default function WalletPage() {
 
   // Handle sending XRP or tokens
   const handleSend = async () => {
-    console.log('=== HANDLE SEND CLICKED ===');
-    console.log('[handleSend] Starting send...', { sendTo, sendAmount, selectedToken, sendTag, accountProfile: !!accountProfile, address });
-
     if (!sendTo || !sendAmount) {
-      console.log('[handleSend] Missing sendTo or sendAmount', { sendTo, sendAmount });
       toast.error('Missing destination or amount');
       return;
     }
 
     if (!sendTo.startsWith('r') || sendTo.length < 25) {
-      console.log('[handleSend] Invalid destination address', { sendTo });
       toast.error('Invalid destination address');
       return;
     }
 
     const amount = parseFloat(sendAmount);
     if (isNaN(amount) || amount <= 0) {
-      console.log('[handleSend] Invalid amount', { sendAmount, parsed: amount });
       toast.error('Invalid amount');
       return;
     }
 
-    console.log('[handleSend] Validation passed, starting transaction...');
     setSending(true);
     const toastId = toast.loading(`Sending ${sendAmount} ${selectedToken}...`, { description: 'Preparing transaction' });
 
     try {
       let seed = null;
-      console.log('[handleSend] Wallet type:', accountProfile?.wallet_type);
 
       if (accountProfile.wallet_type === 'oauth' || accountProfile.wallet_type === 'social') {
-        console.log('[handleSend] Retrieving OAuth/social wallet seed...');
         const { EncryptedWalletStorage } = await import('src/utils/encryptedWalletStorage');
         const walletStorage = new EncryptedWalletStorage();
         const walletId = `${accountProfile.provider}_${accountProfile.provider_id}`;
         const storedPassword = await walletStorage.getSecureItem(`wallet_pwd_${walletId}`);
-        console.log('[handleSend] OAuth password found:', !!storedPassword);
         if (storedPassword) {
           const walletData = await walletStorage.getWallet(accountProfile.account, storedPassword);
           seed = walletData?.seed;
-          console.log('[handleSend] OAuth seed retrieved:', !!seed);
         }
       } else if (accountProfile.wallet_type === 'device') {
-        console.log('[handleSend] Retrieving device wallet seed...');
         const { EncryptedWalletStorage, deviceFingerprint } = await import('src/utils/encryptedWalletStorage');
         const walletStorage = new EncryptedWalletStorage();
         const deviceKeyId = await deviceFingerprint.getDeviceId();
-        console.log('[handleSend] Device key ID:', deviceKeyId);
         if (deviceKeyId) {
           const storedPassword = await walletStorage.getWalletCredential(deviceKeyId);
-          console.log('[handleSend] Device password found:', !!storedPassword);
           if (storedPassword) {
             const walletData = await walletStorage.getWallet(accountProfile.account, storedPassword);
             seed = walletData?.seed;
-            console.log('[handleSend] Device seed retrieved:', !!seed);
           }
         }
       }
 
       if (!seed) {
-        console.log('[handleSend] No seed found - authentication failed');
         toast.error('Authentication failed', { id: toastId, description: 'Could not retrieve wallet credentials' });
         setSending(false);
         return;
       }
 
       const wallet = XRPLWallet.fromSeed(seed, { algorithm: getAlgorithmFromSeed(seed) });
-      console.log('[handleSend] Wallet created from seed, address:', wallet.address);
 
       let tx;
-      console.log('[handleSend] Looking up token in allTokens, count:', allTokens?.length, 'selectedToken:', selectedToken);
       const token = allTokens.find(t => t.symbol === selectedToken);
-      console.log('[handleSend] Token lookup result:', token ? { symbol: token.symbol, currency: token.currency, issuer: token.issuer } : 'NOT FOUND');
 
       if (selectedToken === 'XRP') {
         const drops = Math.floor(amount * 1000000);
-        console.log('[handleSend] Sending XRP, drops:', drops);
         tx = {
           TransactionType: 'Payment',
           Account: address,
@@ -845,7 +826,6 @@ export default function WalletPage() {
           Amount: String(drops)
         };
       } else if (token?.currency && token?.issuer) {
-        console.log('[handleSend] Sending TOKEN (not XRP):', { currency: token.currency, issuer: token.issuer, symbol: token.symbol, amount });
         tx = {
           TransactionType: 'Payment',
           Account: address,
@@ -858,7 +838,6 @@ export default function WalletPage() {
           }
         };
       } else {
-        console.log('[handleSend] Token not found for:', selectedToken);
         toast.error('Token not found', { id: toastId });
         setSending(false);
         return;
@@ -866,26 +845,21 @@ export default function WalletPage() {
 
       if (sendTag && !isNaN(parseInt(sendTag))) {
         tx.DestinationTag = parseInt(sendTag);
-        console.log('[handleSend] Added destination tag:', tx.DestinationTag);
       }
 
-      console.log('[handleSend] Transaction object:', JSON.stringify(tx, null, 2));
       toast.loading(`Sending ${sendAmount} ${selectedToken}...`, { id: toastId, description: 'Submitting to XRPL' });
 
       const result = await submitTransaction(wallet, tx);
-      console.log('[handleSend] Transaction result:', result);
 
       const txLink = <a href={`/tx/${result.hash}`} target="_blank" rel="noopener noreferrer" className="text-[#137DFE] hover:underline">View tx</a>;
 
       if (result.success) {
-        console.log('[handleSend] SUCCESS! Hash:', result.hash);
         toast.success(`Sent ${sendAmount} ${selectedToken}`, { id: toastId, description: txLink, duration: 8000 });
         setSendAmount('');
         setSendTo('');
         setSendTag('');
         setShowPanel(null);
       } else {
-        console.log('[handleSend] FAILED:', result.engine_result, result.engine_result_message);
         toast.error('Send failed', { id: toastId, description: <span>{result.engine_result} {txLink}</span> });
       }
     } catch (err) {
@@ -893,7 +867,6 @@ export default function WalletPage() {
       toast.error('Send failed', { id: toastId, description: err.message });
     } finally {
       setSending(false);
-      console.log('[handleSend] Done');
     }
   };
 
@@ -1034,24 +1007,8 @@ export default function WalletPage() {
   const [plType, setPlType] = useState('combined'); // 'token' | 'nft' | 'combined'
   const plCardRef = useRef(null);
   const [tokenPnlMap, setTokenPnlMap] = useState(new Map());
+  const [nftCollectionPnlMap, setNftCollectionPnlMap] = useState(new Map());
 
-
-  // Performance logging - track initial load
-  useEffect(() => {
-    if (address) {
-      console.log('[Wallet] ========== INITIAL LOAD START ==========');
-      console.log('[Wallet] Address:', address);
-      console.time('[Wallet] TOTAL INITIAL LOAD');
-    }
-  }, [address]);
-
-  // Log when all loading states are done
-  useEffect(() => {
-    if (address && !tokensLoading) {
-      console.timeEnd('[Wallet] TOTAL INITIAL LOAD');
-      console.log('[Wallet] ========== INITIAL LOAD COMPLETE ==========');
-    }
-  }, [address, tokensLoading]);
 
   // Debug info loader
   useEffect(() => {
@@ -1263,8 +1220,9 @@ export default function WalletPage() {
     Promise.all([
       apiFetch(`${BASE_URL}/v1/account/balance/${address}?rank=true`).then(res => res.json()).catch(() => null),
       apiFetch(`${BASE_URL}/v1/traders/${address}`).then(res => res.json()).catch(() => null),
-      apiFetch(`${BASE_URL}/v1/nft/analytics/trader/${address}`).then(res => res.json()).catch(() => null)
-    ]).then(([balanceData, traderData, nftData]) => {
+      apiFetch(`${BASE_URL}/v1/nft/analytics/trader/${address}`).then(res => res.json()).catch(() => null),
+      apiFetch(`${BASE_URL}/v1/nft/analytics/trader/${address}/collections?sort=profit`).then(res => res.json()).catch(() => null)
+    ]).then(([balanceData, traderData, nftData, nftColData]) => {
       console.timeEnd('[Wallet] fetchAccountInfo');
       const merged = { ...balanceData };
       if (traderData && !traderData.error) {
@@ -1309,6 +1267,19 @@ export default function WalletPage() {
       if (nftData && !nftData.error) {
         setNftStats(nftData);
       }
+      if (nftColData && Array.isArray(nftColData.collections)) {
+        const pnlMap = new Map();
+        nftColData.collections.forEach(c => {
+          if (c.name) {
+            pnlMap.set(c.name, {
+              profit: c.profit || 0,
+              roi: c.roi || 0,
+              trades: c.trades || 0
+            });
+          }
+        });
+        setNftCollectionPnlMap(pnlMap);
+      }
     }).catch(() => console.timeEnd('[Wallet] fetchAccountInfo'));
   }, [address]);
 
@@ -1328,7 +1299,6 @@ export default function WalletPage() {
         });
         const data = await res.json();
         console.timeEnd('[Wallet] fetchNftCollections');
-        console.log('[Wallet] fetchNftCollections: received', data.collections?.length || 0, 'collections');
         if (data.collections) {
           setCollections(
             data.collections.map((col) => ({
@@ -1371,7 +1341,6 @@ export default function WalletPage() {
         ]);
         const [dexData, nftData] = await Promise.all([dexRes.json(), nftRes.json()]);
         console.timeEnd('[Wallet] fetchOffers (DEX+NFT)');
-        console.log('[Wallet] fetchOffers: DEX', dexData.offers?.length || 0, ', NFT', (nftData.offers?.length || 0) + (nftData.incomingOffers?.length || 0));
         if (dexData.success && dexData.offers) {
           setTokenOffers(
             dexData.offers.map((offer) => {
@@ -1381,7 +1350,18 @@ export default function WalletPage() {
               const getsCur = gets?.name || gets?.currency || 'XRP';
               const paysAmt = parseFloat(pays?.value || 0);
               const paysCur = pays?.name || pays?.currency || 'XRP';
-              const rate = getsAmt > 0 ? paysAmt / getsAmt : 0;
+              // Always show rate as XRP/token so it matches API distPct direction
+              let rate, ratePair;
+              if (getsCur === 'XRP' && paysAmt > 0) {
+                rate = getsAmt / paysAmt; // XRP per token (selling token for XRP)
+                ratePair = `XRP/${paysCur}`;
+              } else if (paysCur === 'XRP' && getsAmt > 0) {
+                rate = paysAmt / getsAmt; // XRP per token (buying token with XRP)
+                ratePair = `XRP/${getsCur}`;
+              } else {
+                rate = getsAmt > 0 ? paysAmt / getsAmt : 0;
+                ratePair = `${paysCur}/${getsCur}`;
+              }
               const rateDisplay =
                 rate > 0
                   ? rate >= 1
@@ -1393,10 +1373,11 @@ export default function WalletPage() {
                 type: paysCur === 'XRP' ? 'buy' : 'sell',
                 from: `${getsAmt.toLocaleString(undefined, { maximumFractionDigits: 6 })} ${getsCur}`,
                 to: `${paysAmt.toLocaleString(undefined, { maximumFractionDigits: 6 })} ${paysCur}`,
-                rate: rateDisplay ? `${rateDisplay} ${paysCur}/${getsCur}` : '',
+                rate: rateDisplay ? `${rateDisplay} ${ratePair}` : '',
                 seq: offer.seq || offer.Sequence,
                 funded: offer.funded !== false,
-                distPct: offer.distPct
+                distPct: offer.distPct,
+                expire: offer.expire || null
               };
             })
           );
@@ -1410,7 +1391,7 @@ export default function WalletPage() {
             ? `https://s1.xrpl.to/nft/${offer.files[0].thumbnail.small}`
             : '',
           price:
-            typeof offer.amount === 'number' ? `${(offer.amount / 1000000).toFixed(2)} XRP` : '',
+            typeof offer.amount === 'number' ? (offer.amount / 1000000) : 0,
           floor: offer.floor || 0,
           floorDiffPct: offer.floorDiffPct || 0,
           type,
@@ -1660,9 +1641,10 @@ export default function WalletPage() {
     setSettingAvatar(true);
     setProfileError('');
     try {
+      const authHeaders = await getWalletAuthHeaders(accountProfile);
       const res = await apiFetch(`${BASE_URL}/api/user/${address}/avatar`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...authHeaders },
         body: JSON.stringify({ nftId })
       });
       const data = await res.json();
@@ -1676,6 +1658,17 @@ export default function WalletPage() {
     }
     setSettingAvatar(false);
   };
+
+  // Cache avatar in localStorage so it persists after logout
+  useEffect(() => {
+    if (!address || !profileUser?.avatar) return;
+    try {
+      const masked = `${address.slice(0, 6)}...${address.slice(-4)}`;
+      const cached = JSON.parse(localStorage.getItem('__user_avatars__') || '{}');
+      cached[masked] = profileUser.avatar;
+      localStorage.setItem('__user_avatars__', JSON.stringify(cached));
+    } catch (e) { /* ignore */ }
+  }, [address, profileUser?.avatar]);
 
   // Fetch wallet labels
   useEffect(() => {
@@ -1699,9 +1692,10 @@ export default function WalletPage() {
     setProfileError('');
     setLabelsLoading(true);
     try {
+      const authHeaders = await getWalletAuthHeaders(accountProfile);
       const res = await apiFetch(`${BASE_URL}/api/user/${address}/labels`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...authHeaders },
         body: JSON.stringify({ wallet: newLabelWallet, label: newLabelName })
       });
       const data = await res.json();
@@ -1719,7 +1713,8 @@ export default function WalletPage() {
     if (!address || !wallet) return;
     setDeletingLabel(wallet);
     try {
-      const res = await apiFetch(`${BASE_URL}/api/user/${address}/labels/${wallet}`, { method: 'DELETE' });
+      const authHeaders = await getWalletAuthHeaders(accountProfile);
+      const res = await apiFetch(`${BASE_URL}/api/user/${address}/labels/${wallet}`, { method: 'DELETE', headers: authHeaders });
       if (res.ok) {
         setWalletLabels(prev => prev.filter(l => l.wallet !== wallet));
       }
@@ -1811,9 +1806,10 @@ export default function WalletPage() {
     if (!address || settingBadge) return;
     setSettingBadge(true);
     try {
+      const authHeaders = await getWalletAuthHeaders(accountProfile);
       const res = await apiFetch(`${BASE_URL}/v1/user/${address}/display-badge`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...authHeaders },
         body: JSON.stringify({ badge })
       });
       const data = await res.json();
@@ -1866,7 +1862,6 @@ export default function WalletPage() {
         );
         const data = await res.json();
         console.timeEnd('[Wallet] fetchCollectionNfts');
-        console.log('[Wallet] fetchCollectionNfts: received', data.nfts?.length || 0, 'NFTs');
         if (data.nfts) {
           setCollectionNfts(
             data.nfts.map((nft) => ({
@@ -2078,24 +2073,27 @@ export default function WalletPage() {
             </div>
 
             {/* Tabs */}
-            <div className="flex items-center gap-1.5 mb-6 overflow-x-auto">
+            <div className={cn(
+              "flex items-center gap-1 p-1 mb-6 overflow-x-auto no-scrollbar rounded-xl border transition-colors",
+              isDark ? "bg-white/[0.03] border-white/10" : "bg-gray-100 border-gray-200"
+            )}>
               {tabs.map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => handleTabChange(tab.id)}
                   className={cn(
-                    'flex items-center gap-1.5 px-3 py-2 text-[11px] font-medium tracking-wider rounded-md border transition-all whitespace-nowrap',
+                    'flex items-center gap-2 px-4 py-2 text-[11px] font-bold tracking-tight rounded-lg transition-all duration-200 whitespace-nowrap uppercase',
                     activeTab === tab.id
-                      ? cn(isDark ? 'border-white/20 text-white' : 'border-gray-300 text-gray-900')
+                      ? cn(isDark ? 'bg-[#137DFE] text-white shadow-lg shadow-blue-500/20' : 'bg-white text-[#137DFE] shadow-sm')
                       : cn(
                         isDark
-                          ? 'border-white/10 text-white/40 hover:text-white/60 hover:border-white/15'
-                          : 'border-gray-200 text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                          ? 'text-white/40 hover:text-white/70 hover:bg-white/5'
+                          : 'text-gray-500 hover:text-gray-900 hover:bg-white/50'
                       )
                   )}
                 >
-                  <tab.icon size={13} strokeWidth={1.5} />
-                  {tab.label.toUpperCase()}
+                  <tab.icon size={14} strokeWidth={2} />
+                  {tab.label}
                 </button>
               ))}
             </div>
@@ -2173,357 +2171,189 @@ export default function WalletPage() {
 
                   {/* Content */}
                   {showPanel === 'send' ? (
-                    <div className="p-5">
+                    <div className="p-6">
                       {/* Amount Section */}
-                      {/* Token Selector - Embedded */}
-                      <div
-                        className={cn(
-                          'rounded-xl mb-4 overflow-hidden',
-                          isDark
-                            ? 'bg-white/[0.02] border border-white/[0.08]'
-                            : 'bg-gray-50 border border-gray-100'
-                        )}
-                      >
-                        <button
-                          type="button"
-                          onClick={() => setTokenDropdownOpen(!tokenDropdownOpen)}
-                          className={cn(
-                            'w-full flex items-center justify-between px-4 py-3 transition-colors',
-                            isDark ? 'hover:bg-white/[0.04]' : 'hover:bg-gray-100/50'
-                          )}
-                        >
-                          <div className="flex items-center gap-3">
+                      <div className={cn(
+                        "rounded-2xl p-4 mb-6 border transition-all",
+                        isDark ? "bg-white/[0.02] border-white/5" : "bg-gray-50 border-gray-100"
+                      )}>
+                        <div className="flex justify-between items-center mb-4">
+                          <button
+                            type="button"
+                            onClick={() => setTokenDropdownOpen(!tokenDropdownOpen)}
+                            className={cn(
+                              "flex items-center gap-2 px-3 py-1.5 rounded-xl border transition-all",
+                              isDark ? "bg-white/5 border-white/10 hover:border-white/20" : "bg-white border-gray-200 hover:border-gray-300"
+                            )}
+                          >
                             {(() => {
                               const t = allTokens.find((t) => t.symbol === selectedToken);
                               return t?.md5 ? (
-                                <img
-                                  src={`https://s1.xrpl.to/token/${t.md5}`}
-                                  alt=""
-                                  className="w-8 h-8 rounded-full object-cover"
-                                />
+                                <img src={`https://s1.xrpl.to/token/${t.md5}`} alt="" className="w-5 h-5 rounded-full" />
                               ) : (
-                                <div
-                                  className="w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold text-white"
-                                  style={{ background: t?.color || '#333' }}
-                                >
-                                  {t?.icon || selectedToken[0]}
-                                </div>
+                                <div className="w-5 h-5 rounded-full bg-[#137DFE] flex items-center justify-center text-[8px] font-black text-white">{selectedToken[0]}</div>
                               );
                             })()}
-                            <div className="text-left">
-                              <p
-                                className={cn(
-                                  'text-sm font-medium',
-                                  isDark ? 'text-white' : 'text-gray-900'
-                                )}
-                              >
-                                {selectedToken}
-                              </p>
-                              <p
-                                className={cn(
-                                  'text-[11px]',
-                                  isDark ? 'text-white/40' : 'text-gray-500'
-                                )}
-                              >
-                                Tap to change token
-                              </p>
-                            </div>
+                            <span className={cn("text-xs font-black", isDark ? "text-white" : "text-gray-900")}>{selectedToken}</span>
+                            <ChevronDown size={14} className={cn("transition-transform", tokenDropdownOpen && "rotate-180")} />
+                          </button>
+                          <div className="text-right">
+                            <p className={cn("text-[9px] font-bold uppercase tracking-widest opacity-40")}>Balance</p>
+                            <p className={cn("text-xs font-black tabular-nums")}>{allTokens.find((t) => t.symbol === selectedToken)?.amount || '0'}</p>
                           </div>
-                          <div className="flex items-center gap-3">
-                            <div className="text-right">
-                              <p
-                                className={cn(
-                                  'text-[10px] uppercase',
-                                  isDark ? 'text-white/40' : 'text-gray-500'
-                                )}
-                              >
-                                Balance
-                              </p>
-                              <p
-                                className={cn(
-                                  'text-sm font-medium tabular-nums',
-                                  isDark ? 'text-white/80' : 'text-gray-700'
-                                )}
-                              >
-                                {allTokens.find((t) => t.symbol === selectedToken)?.amount || '0'}
-                              </p>
-                            </div>
-                            <ChevronDown
-                              size={18}
-                              className={cn(
-                                'transition-transform duration-200',
-                                tokenDropdownOpen && 'rotate-180',
-                                isDark ? 'text-white/30' : 'text-gray-400'
-                              )}
-                            />
-                          </div>
-                        </button>
+                        </div>
+
                         {tokenDropdownOpen && (
-                          <div
-                            className={cn(
-                              'border-t max-h-[160px] overflow-y-auto',
-                              isDark ? 'border-white/[0.08]' : 'border-gray-100'
-                            )}
-                          >
+                          <div className={cn(
+                            "mb-4 max-h-[160px] overflow-y-auto no-scrollbar rounded-xl border divide-y transition-all",
+                            isDark ? "bg-black border-white/10 divide-white/5" : "bg-white border-gray-200 divide-gray-50"
+                          )}>
                             {allTokens.map((t) => (
                               <button
                                 key={t.symbol}
-                                type="button"
-                                onClick={() => {
-                                  setSelectedToken(t.symbol);
-                                  setTokenDropdownOpen(false);
-                                }}
+                                onClick={() => { setSelectedToken(t.symbol); setTokenDropdownOpen(false); }}
                                 className={cn(
-                                  'w-full px-4 py-2.5 flex items-center gap-3 text-left transition-colors',
-                                  selectedToken === t.symbol
-                                    ? isDark
-                                      ? 'bg-[#137DFE]/10'
-                                      : 'bg-blue-50'
-                                    : '',
-                                  isDark ? 'hover:bg-white/[0.03]' : 'hover:bg-gray-100/50'
+                                  "w-full px-4 py-2.5 flex items-center justify-between text-left hover:bg-[#137DFE]/5 transition-colors",
+                                  selectedToken === t.symbol && (isDark ? "bg-white/5" : "bg-gray-50")
                                 )}
                               >
-                                {t.md5 ? (
-                                  <img
-                                    src={`https://s1.xrpl.to/token/${t.md5}`}
-                                    alt=""
-                                    className="w-7 h-7 rounded-full object-cover shrink-0"
-                                  />
-                                ) : (
-                                  <div
-                                    className="w-7 h-7 rounded-full flex items-center justify-center text-[9px] font-bold text-white shrink-0"
-                                    style={{ background: t.color }}
-                                  >
-                                    {t.icon || t.symbol[0]}
-                                  </div>
-                                )}
-                                <span
-                                  className={cn(
-                                    'text-sm font-medium flex-1',
-                                    isDark ? 'text-white/90' : 'text-gray-900'
-                                  )}
-                                >
-                                  {t.symbol}
-                                </span>
-                                <span
-                                  className={cn(
-                                    'text-xs tabular-nums',
-                                    isDark ? 'text-white/40' : 'text-gray-500'
-                                  )}
-                                >
-                                  {t.amount}
-                                </span>
-                                {selectedToken === t.symbol && (
-                                  <Check size={16} className="text-[#137DFE]" />
-                                )}
+                                <div className="flex items-center gap-2">
+                                  {t.md5 ? <img src={`https://s1.xrpl.to/token/${t.md5}`} alt="" className="w-6 h-6 rounded-full" /> : <div className="w-6 h-6 rounded-full bg-gray-500 flex items-center justify-center text-[10px] font-black text-white">{t.symbol[0]}</div>}
+                                  <span className={cn("text-xs font-bold", isDark ? "text-white" : "text-gray-900")}>{t.symbol}</span>
+                                </div>
+                                <span className={cn("text-[10px] font-bold tabular-nums opacity-40")}>{t.amount}</span>
                               </button>
                             ))}
                           </div>
                         )}
-                      </div>
 
-                      {/* Amount Input */}
-                      <div
-                        className={cn(
-                          'rounded-xl p-4 mb-4',
-                          isDark ? 'bg-white/[0.02]' : 'bg-gray-50'
-                        )}
-                      >
-                        <input
-                          type="text"
-                          inputMode="decimal"
-                          value={sendAmount}
-                          onChange={(e) => setSendAmount(e.target.value.replace(/[^0-9.]/g, ''))}
-                          placeholder="0"
-                          className={cn(
-                            'w-full text-4xl font-semibold bg-transparent outline-none tabular-nums text-center py-3',
-                            isDark
-                              ? 'text-white placeholder:text-white/15'
-                              : 'text-gray-900 placeholder:text-gray-300'
-                          )}
-                        />
-                        {(() => {
-                          const amt = parseFloat(sendAmount) || 0;
-                          const token = allTokens.find((t) => t.symbol === selectedToken);
-                          const pricePerToken =
-                            token?.rawAmount > 0 ? token.rawValue / token.rawAmount : 0;
-                          const valueInXrp = amt * pricePerToken;
-                          const displayValue =
-                            activeFiatCurrency === 'XRP' ? valueInXrp : valueInXrp / exchRate;
-                          const symbol = currencySymbols[activeFiatCurrency] || '$';
-                          return (
-                            <p
+                        <div className="relative">
+                          <input
+                            type="text"
+                            inputMode="decimal"
+                            value={sendAmount}
+                            onChange={(e) => setSendAmount(e.target.value.replace(/[^0-9.]/g, ''))}
+                            placeholder="0.00"
+                            className={cn(
+                              "w-full text-5xl font-black bg-transparent outline-none tabular-nums text-center py-4 tracking-tighter",
+                              isDark ? "text-white placeholder:text-white/5" : "text-gray-900 placeholder:text-gray-200"
+                            )}
+                          />
+                          {(() => {
+                            const amt = parseFloat(sendAmount) || 0;
+                            const token = allTokens.find((t) => t.symbol === selectedToken);
+                            const pricePerToken = token?.rawAmount > 0 ? token.rawValue / token.rawAmount : 0;
+                            const valueInXrp = amt * pricePerToken;
+                            const displayValue = activeFiatCurrency === 'XRP' ? valueInXrp : valueInXrp * xrpUsdPrice;
+                            return (
+                              <p className={cn("text-[11px] font-bold text-center opacity-40 uppercase tracking-widest")}>
+                                ≈ {currencySymbols[activeFiatCurrency] || '$'}{displayValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {activeFiatCurrency}
+                              </p>
+                            );
+                          })()}
+                        </div>
+
+                        {/* Quick Percentages */}
+                        <div className="flex items-center justify-center gap-2 mt-6">
+                          {[25, 50, 75, 100].map((pct) => (
+                            <button
+                              key={pct}
+                              onClick={() => {
+                                const maxAmt = allTokens.find((t) => t.symbol === selectedToken)?.rawAmount || 0;
+                                setSendAmount(((maxAmt * pct) / 100).toFixed(6).replace(/\.?0+$/, ''));
+                              }}
                               className={cn(
-                                'text-xs text-center mb-3',
-                                isDark ? 'text-white/30' : 'text-gray-400'
+                                "px-3 py-1.5 rounded-lg text-[10px] font-black transition-all border uppercase tracking-widest",
+                                isDark ? "bg-white/5 border-white/5 text-white/40 hover:text-white hover:border-white/20" : "bg-white border-gray-100 text-gray-400 hover:text-[#137DFE] hover:border-[#137DFE]/30"
                               )}
                             >
-                              ≈ {symbol}
-                              {displayValue.toLocaleString(undefined, {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2
-                              })}{' '}
-                              {activeFiatCurrency}
-                            </p>
-                          );
-                        })()}
-
-                        {/* Quick Amount Buttons */}
-                        <div className="flex items-center justify-center gap-1.5">
-                          {[25, 50, 75, 100].map((pct) => {
-                            const maxAmt =
-                              allTokens.find((t) => t.symbol === selectedToken)?.rawAmount || 0;
-                            return (
-                              <button
-                                key={pct}
-                                type="button"
-                                onClick={() => setSendAmount(((maxAmt * pct) / 100).toFixed(2))}
-                                className={cn(
-                                  'px-3 py-1 rounded-md text-[11px] font-medium transition-colors',
-                                  isDark
-                                    ? 'bg-white/[0.05] text-white/60 hover:bg-white/[0.1] hover:text-white'
-                                    : 'bg-white text-gray-600 hover:bg-gray-200 border border-gray-200'
-                                )}
-                              >
-                                {pct === 100 ? 'MAX' : `${pct}%`}
-                              </button>
-                            );
-                          })}
+                              {pct === 100 ? 'MAX' : `${pct}%`}
+                            </button>
+                          ))}
                         </div>
                       </div>
 
                       {/* Recipient */}
-                      <div className="mb-3">
-                        <label
-                          className={cn(
-                            'text-[10px] font-semibold uppercase tracking-wider mb-1.5 block',
-                            isDark ? 'text-white/40' : 'text-gray-500'
-                          )}
-                        >
-                          Recipient
-                        </label>
+                      <div className="space-y-4">
                         <div className="relative">
+                          <p className={cn("text-[10px] font-black uppercase tracking-[0.2em] mb-2 ml-1 opacity-40")}>Recipient</p>
                           <input
                             type="text"
                             value={sendTo}
                             onChange={(e) => setSendTo(e.target.value)}
                             onFocus={() => setShowAddressSuggestions(true)}
                             onBlur={() => setTimeout(() => setShowAddressSuggestions(false), 150)}
-                            placeholder="rAddress..."
+                            placeholder="Wallet Address (r...)"
                             className={cn(
-                              'w-full pl-3 pr-9 py-2.5 rounded-xl text-sm font-mono outline-none transition-all duration-150',
-                              isDark
-                                ? 'bg-white/[0.03] text-white border placeholder:text-white/25'
-                                : 'bg-gray-50 border placeholder:text-gray-400',
-                              sendTo && sendTo.startsWith('r') && sendTo.length >= 25
-                                ? isDark
-                                  ? 'border-emerald-500/50'
-                                  : 'border-emerald-400'
-                                : sendTo
-                                  ? isDark
-                                    ? 'border-amber-500/50'
-                                    : 'border-amber-400'
-                                  : isDark
-                                    ? 'border-white/[0.15] focus:border-[#137DFE]/50'
-                                    : 'border-gray-200 focus:border-[#137DFE]'
+                              "w-full px-4 py-3.5 rounded-2xl text-sm font-bold font-mono outline-none border transition-all",
+                              isDark ? "bg-white/[0.02] border-white/10 text-white focus:border-[#137DFE]/50" : "bg-gray-50 border-gray-200 text-gray-900 focus:border-[#137DFE]"
                             )}
                           />
-                          {sendTo && (
-                            <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                              {sendTo.startsWith('r') && sendTo.length >= 25 ? (
-                                <Check size={14} className="text-[#08AA09]" />
-                              ) : (
-                                <div className="w-1.5 h-1.5 rounded-full bg-[#F6AF01]" />
-                              )}
-                            </div>
-                          )}
-                          {/* Address Suggestions Dropdown */}
                           {showAddressSuggestions && withdrawals.length > 0 && (
                             <div className={cn(
-                              "absolute top-full left-0 right-0 mt-1 rounded-xl border overflow-hidden z-10 max-h-[160px] overflow-y-auto",
-                              isDark ? "bg-[#0a0a0a] border-white/10" : "bg-white border-gray-200 shadow-lg"
+                              "absolute bottom-full left-0 right-0 mb-2 rounded-2xl border overflow-hidden z-10 shadow-2xl animate-in fade-in slide-in-from-bottom-2",
+                              isDark ? "bg-[#0a0a0a] border-white/10" : "bg-white border-gray-200"
                             )}>
-                              {withdrawals.filter(w => !sendTo || w.address.toLowerCase().includes(sendTo.toLowerCase()) || w.name.toLowerCase().includes(sendTo.toLowerCase())).slice(0, 5).map((w) => (
+                              {withdrawals.slice(0, 5).map((w) => (
                                 <button
                                   key={w.id}
-                                  type="button"
-                                  onClick={() => {
-                                    setSendTo(w.address);
-                                    if (w.tag) setSendTag(w.tag);
-                                    setShowAddressSuggestions(false);
-                                  }}
-                                  className={cn(
-                                    "w-full px-3 py-2 text-left transition-colors flex items-center justify-between",
-                                    isDark ? "hover:bg-white/5" : "hover:bg-gray-50"
-                                  )}
+                                  onClick={() => { setSendTo(w.address); if (w.tag) setSendTag(w.tag); setShowAddressSuggestions(false); }}
+                                  className={cn("w-full px-4 py-3 text-left hover:bg-[#137DFE]/5 flex items-center justify-between", isDark ? "border-b border-white/5" : "border-b border-gray-50")}
                                 >
                                   <div>
-                                    <p className={cn("text-[11px] font-medium", isDark ? "text-white" : "text-gray-900")}>{w.name}</p>
-                                    <p className={cn("text-[10px] font-mono", isDark ? "text-white/40" : "text-gray-400")}>{w.address.slice(0, 8)}...{w.address.slice(-6)}</p>
+                                    <p className={cn("text-xs font-black", isDark ? "text-white" : "text-gray-900")}>{w.name}</p>
+                                    <p className={cn("text-[10px] font-bold opacity-40")}>{w.address.slice(0, 12)}...</p>
                                   </div>
-                                  {w.tag && <span className={cn("text-[9px] px-1.5 py-0.5 rounded", isDark ? "bg-white/10 text-white/50" : "bg-gray-100 text-gray-500")}>Tag: {w.tag}</span>}
+                                  <ArrowRight size={14} className="opacity-20" />
                                 </button>
                               ))}
                             </div>
                           )}
                         </div>
-                      </div>
 
-                      {/* Destination Tag */}
-                      <div className="mb-4">
-                        <label
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <p className={cn("text-[10px] font-black uppercase tracking-[0.2em] mb-2 ml-1 opacity-40")}>Tag <span className="opacity-50 font-medium">(Optional)</span></p>
+                            <input
+                              type="text"
+                              value={sendTag}
+                              onChange={(e) => setSendTag(e.target.value.replace(/\D/g, ''))}
+                              placeholder="123456"
+                              className={cn(
+                                "w-full px-4 py-3.5 rounded-2xl text-sm font-bold font-mono outline-none border transition-all",
+                                isDark ? "bg-white/[0.02] border-white/10 text-white focus:border-[#137DFE]/50" : "bg-gray-50 border-gray-200 text-gray-900 focus:border-[#137DFE]"
+                              )}
+                            />
+                          </div>
+                          <div className={cn(
+                            "flex flex-col justify-center px-4 py-3.5 rounded-2xl border",
+                            isDark ? "bg-white/[0.01] border-white/5" : "bg-gray-50/50 border-gray-100"
+                          )}>
+                            <p className={cn("text-[9px] font-black uppercase tracking-widest opacity-30")}>Network Fee</p>
+                            <p className={cn("text-xs font-black tabular-nums", isDark ? "text-white/60" : "text-gray-600")}>0.000012 XRP</p>
+                          </div>
+                        </div>
+
+                        <button
+                          onClick={handleSend}
+                          disabled={sending || !sendTo || !sendAmount || !sendTo.startsWith('r')}
                           className={cn(
-                            'text-[10px] font-semibold uppercase tracking-wider mb-1.5 block',
-                            isDark ? 'text-white/40' : 'text-gray-500'
+                            "w-full py-4 rounded-2xl text-[15px] font-black uppercase tracking-widest transition-all duration-300 flex items-center justify-center gap-3",
+                            !sending && sendTo && sendAmount && sendTo.startsWith('r')
+                              ? "bg-[#137DFE] text-white shadow-xl shadow-blue-500/20 hover:scale-[1.02] active:scale-[0.98]"
+                              : "bg-white/5 text-white/20 border border-white/5 cursor-not-allowed"
                           )}
                         >
-                          Destination Tag{' '}
-                          <span className={isDark ? 'text-white/20' : 'text-gray-400'}>
-                            (optional)
-                          </span>
-                        </label>
-                        <input
-                          type="text"
-                          value={sendTag}
-                          onChange={(e) => setSendTag(e.target.value.replace(/\D/g, ''))}
-                          placeholder="e.g. 12345678"
-                          className={cn(
-                            'w-full px-3 py-2.5 rounded-xl text-sm font-mono outline-none transition-colors duration-150',
-                            isDark
-                              ? 'bg-white/[0.03] text-white border border-white/[0.15] placeholder:text-white/25 focus:border-[#137DFE]/50'
-                              : 'bg-gray-50 border border-gray-200 placeholder:text-gray-400 focus:border-[#137DFE]'
+                          {sending ? (
+                            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                          ) : (
+                            <>
+                              <Send size={18} strokeWidth={3} />
+                              Confirm Send
+                            </>
                           )}
-                        />
+                        </button>
                       </div>
-
-                      {/* Fee Display */}
-                      <div
-                        className={cn(
-                          'flex items-center justify-between py-2.5 px-3 rounded-lg mb-4 text-xs',
-                          isDark ? 'bg-white/[0.02] text-white/50' : 'bg-gray-50 text-gray-500'
-                        )}
-                      >
-                        <span>Network Fee</span>
-                        <span className="font-medium">~0.00001 XRP</span>
-                      </div>
-
-                      {/* Send Button */}
-                      <button
-                        onClick={() => { console.log('=== SEND BUTTON CLICKED ===', { sending, sendTo, sendAmount, selectedToken }); handleSend(); }}
-                        disabled={
-                          sending || !sendTo || !sendAmount || !(sendTo.startsWith('r') && sendTo.length >= 25)
-                        }
-                        className={cn(
-                          'w-full py-3 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-all duration-200',
-                          !sending && sendTo && sendAmount && sendTo.startsWith('r') && sendTo.length >= 25
-                            ? 'bg-[#137DFE] text-white hover:bg-[#137DFE]/90 active:scale-[0.98]'
-                            : isDark
-                              ? 'bg-white/5 text-white/30 cursor-not-allowed'
-                              : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                        )}
-                      >
-                        <Send size={15} /> {sending ? 'Sending...' : `Send ${sendAmount || '0'} ${selectedToken}`}
-                      </button>
                     </div>
                   ) : (
                     <div className="p-5">
@@ -2607,204 +2437,166 @@ export default function WalletPage() {
                   const totalPortfolio = totalValue + nftPortfolioValue;
                   const xrpValue = xrpToken ? parseFloat(xrpToken.amount) : 0;
                   const tokensOnlyValue = totalValue - xrpValue;
-                  const xrpPercent = totalPortfolio > 0 ? (xrpValue / totalPortfolio) * 100 : 0;
-                  const tokensPercent = totalPortfolio > 0 ? (tokensOnlyValue / totalPortfolio) * 100 : 0;
-                  const nftsPercent = totalPortfolio > 0 ? (nftPortfolioValue / totalPortfolio) * 100 : 0;
                   const nftCount = collections.reduce((sum, c) => sum + c.count, 0);
 
                   return (
-                    <div className={cn('rounded-xl border-[1.5px] p-4', isDark ? 'border-white/10' : 'border-gray-200')}>
+                    <div className={cn(
+                      'rounded-2xl border transition-all duration-300',
+                      isDark ? 'bg-white/[0.02] border-white/10' : 'bg-white border-gray-200 shadow-sm'
+                    )}>
                       {/* Portfolio Row */}
-                      <div className="flex items-center">
-                        {/* Portfolio */}
-                        <div className="flex items-center gap-2 pr-6">
-                          <span className={cn('text-[11px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-500')}>Portfolio</span>
-                          <span className={cn('text-xl font-bold tabular-nums', isDark ? 'text-white' : 'text-gray-900')}>
-                            {tokensLoading ? '...' : <>{activeFiatCurrency !== 'XRP' && currencySymbols[activeFiatCurrency]}{(activeFiatCurrency === 'XRP' ? totalPortfolio : totalPortfolio * xrpUsdPrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</>}
-                            <span className={cn('text-xs font-medium ml-1', isDark ? 'text-white/30' : 'text-gray-400')}>{activeFiatCurrency}</span>
-                          </span>
+                      <div className="flex flex-col lg:flex-row lg:items-center p-5 gap-6">
+                        {/* Total Portfolio */}
+                        <div className="flex flex-col gap-1 min-w-[200px]">
+                          <span className={cn('text-[10px] font-bold uppercase tracking-widest', isDark ? 'text-white/30' : 'text-gray-400')}>Total Portfolio</span>
+                          <div className="flex items-baseline gap-1.5">
+                            <span className={cn('text-3xl font-black tabular-nums tracking-tight', isDark ? 'text-white' : 'text-gray-900')}>
+                              {tokensLoading ? '...' : (
+                                <>
+                                  {activeFiatCurrency !== 'XRP' && currencySymbols[activeFiatCurrency]}
+                                  {(activeFiatCurrency === 'XRP' ? totalPortfolio : totalPortfolio * xrpUsdPrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                </>
+                              )}
+                            </span>
+                            <span className={cn('text-xs font-bold', isDark ? 'text-[#137DFE]' : 'text-[#137DFE]')}>{activeFiatCurrency}</span>
+                          </div>
                         </div>
 
-                        <div className={cn('w-px h-6', isDark ? 'bg-white/10' : 'bg-gray-200')} />
+                        <div className={cn('hidden lg:block w-px h-10', isDark ? 'bg-white/10' : 'bg-gray-100')} />
 
-                        {/* XRP */}
-                        <div className="flex items-center gap-2 px-6">
-                          <span className={cn('text-[11px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-500')}>XRP</span>
-                          <span className={cn('text-base font-semibold tabular-nums', isDark ? 'text-white' : 'text-gray-900')}>
-                            {xrpToken ? parseFloat(xrpToken.amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'}
-                          </span>
+                        {/* Stats Grid */}
+                        <div className="flex flex-wrap items-center gap-x-8 gap-y-4 flex-1">
+                          {/* XRP */}
+                          <div className="flex flex-col gap-0.5">
+                            <span className={cn('text-[10px] font-bold uppercase tracking-widest', isDark ? 'text-white/30' : 'text-gray-400')}>XRP Balance</span>
+                            <span className={cn('text-base font-bold tabular-nums', isDark ? 'text-white/90' : 'text-gray-800')}>
+                              {xrpToken ? parseFloat(xrpToken.amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'}
+                            </span>
+                          </div>
+
+                          {/* Tokens */}
+                          <div className="flex flex-col gap-0.5">
+                            <div className="flex items-center gap-1.5">
+                              <span className={cn('text-[10px] font-bold uppercase tracking-widest', isDark ? 'text-white/30' : 'text-gray-400')}>Tokens</span>
+                              <span className={cn('text-[9px] px-1.5 py-0.5 rounded font-bold leading-none', isDark ? 'bg-white/5 text-white/50' : 'bg-gray-100 text-gray-500')}>{allTokens.length}</span>
+                            </div>
+                            <span className={cn('text-base font-bold tabular-nums', isDark ? 'text-white/90' : 'text-gray-800')}>
+                              {activeFiatCurrency !== 'XRP' && currencySymbols[activeFiatCurrency]}{(activeFiatCurrency === 'XRP' ? tokensOnlyValue : tokensOnlyValue * xrpUsdPrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            </span>
+                          </div>
+
+                          {/* NFTs */}
+                          <div className="flex flex-col gap-0.5">
+                            <div className="flex items-center gap-1.5">
+                              <span className={cn('text-[10px] font-bold uppercase tracking-widest', isDark ? 'text-white/30' : 'text-gray-400')}>NFTs</span>
+                              <span className={cn('text-[9px] px-1.5 py-0.5 rounded font-bold leading-none', isDark ? 'bg-white/5 text-white/50' : 'bg-gray-100 text-gray-500')}>{nftCount}</span>
+                            </div>
+                            <span className={cn('text-base font-bold tabular-nums', isDark ? 'text-white/90' : 'text-gray-800')}>
+                              {activeFiatCurrency !== 'XRP' && currencySymbols[activeFiatCurrency]}{(activeFiatCurrency === 'XRP' ? nftPortfolioValue : nftPortfolioValue * xrpUsdPrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            </span>
+                          </div>
                         </div>
 
-                        <div className={cn('w-px h-6', isDark ? 'bg-white/10' : 'bg-gray-200')} />
-
-                        {/* Tokens */}
-                        <div className="flex items-center gap-2 px-6">
-                          <span className={cn('text-[11px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-500')}>
-                            Tokens <span className={isDark ? 'text-white/25' : 'text-gray-400'}>{allTokens.length}</span>
-                          </span>
-                          <span className={cn('text-base font-semibold tabular-nums', isDark ? 'text-white' : 'text-gray-900')}>
-                            {activeFiatCurrency !== 'XRP' && currencySymbols[activeFiatCurrency]}{(activeFiatCurrency === 'XRP' ? tokensOnlyValue : tokensOnlyValue * xrpUsdPrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                            <span className={cn('text-[10px] font-medium ml-0.5', isDark ? 'text-white/30' : 'text-gray-400')}>{activeFiatCurrency}</span>
-                          </span>
-                        </div>
-
-                        <div className={cn('w-px h-6', isDark ? 'bg-white/10' : 'bg-gray-200')} />
-
-                        {/* NFTs */}
-                        <div className="flex items-center gap-2 px-6">
-                          <span className={cn('text-[11px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-500')}>
-                            NFTs <span className={isDark ? 'text-white/25' : 'text-gray-400'}>{nftCount}</span>
-                          </span>
-                          <span className={cn('text-base font-semibold tabular-nums', isDark ? 'text-white' : 'text-gray-900')}>
-                            {activeFiatCurrency !== 'XRP' && currencySymbols[activeFiatCurrency]}{(activeFiatCurrency === 'XRP' ? nftPortfolioValue : nftPortfolioValue * xrpUsdPrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                            <span className={cn('text-[10px] font-medium ml-0.5', isDark ? 'text-white/30' : 'text-gray-400')}>{activeFiatCurrency}</span>
-                          </span>
-                        </div>
-
-                        {/* Actions - pushed right */}
-                        <div className="flex items-center gap-2 ml-auto">
-                          {isInactive && <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/10 text-[#F6AF01] font-semibold">Inactive</span>}
-                          <button onClick={() => setShowPanel('send')} className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-medium bg-[#137DFE] text-white hover:bg-[#137DFE]/90 transition-colors">
-                            <ArrowUpRight size={14} /> Send
+                        {/* Actions */}
+                        <div className="flex items-center gap-2 mt-2 lg:mt-0">
+                          {isInactive && <span className="text-[10px] px-2 py-1 rounded bg-amber-500/10 text-[#F6AF01] font-bold uppercase tracking-wider">Inactive</span>}
+                          <button onClick={() => setShowPanel('send')} className="flex-1 lg:flex-none flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl text-[13px] font-bold bg-[#137DFE] text-white hover:bg-blue-600 shadow-lg shadow-blue-500/20 transition-all active:scale-95">
+                            <ArrowUpRight size={16} strokeWidth={2.5} /> Send
                           </button>
-                          <button onClick={() => setShowPanel('receive')} className={cn('flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-medium transition-colors', isDark ? 'bg-white/[0.05] text-white/80 hover:bg-white/[0.08]' : 'bg-gray-100 text-gray-700 hover:bg-gray-200')}>
-                            <ArrowDownLeft size={14} /> Receive
+                          <button onClick={() => setShowPanel('receive')} className={cn('flex-1 lg:flex-none flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl text-[13px] font-bold transition-all active:scale-95', isDark ? 'bg-white/5 text-white/80 hover:bg-white/10' : 'bg-gray-100 text-gray-700 hover:bg-gray-200')}>
+                            <ArrowDownLeft size={16} strokeWidth={2.5} /> Receive
                           </button>
                         </div>
                       </div>
-                      {/* Account Stats */}
+
+                      {/* Account Stats Strip */}
                       {accountInfo && (
-                        <div className={cn('flex flex-wrap items-center gap-x-2 gap-y-2 px-4 pt-3 mt-3 text-[11px] border-t', isDark ? 'text-white/40 border-white/10' : 'text-gray-500 border-gray-100')}>
-                          {/* Account Section */}
-                          {accountInfo.inception && (
-                            <span>Created <span className={isDark ? 'text-white/70' : 'text-gray-700'}>{new Date(accountInfo.inception).toLocaleDateString()}</span></span>
-                          )}
-                          {accountInfo.reserve > 0 && (
-                            <><span className={isDark ? 'text-white/20' : 'text-gray-300'}>|</span><span>Reserve <span className={isDark ? 'text-white/70' : 'text-gray-700'}>{accountInfo.reserve} XRP</span></span></>
-                          )}
-                          {accountInfo.ownerCount > 0 && (
-                            <><span className={isDark ? 'text-white/20' : 'text-gray-300'}>|</span><span>Objects <span className={isDark ? 'text-white/70' : 'text-gray-700'}>{accountInfo.ownerCount}</span></span></>
-                          )}
+                        <div className={cn(
+                          'flex flex-wrap items-center gap-x-4 gap-y-2 px-5 py-3 rounded-b-2xl border-t transition-colors',
+                          isDark ? 'bg-white/[0.01] border-white/5 text-white/40' : 'bg-gray-50/50 border-gray-100 text-gray-500'
+                        )}>
+                          {/* Account Creation */}
+                          <div className="flex items-center gap-1.5">
+                            <Clock size={12} className="opacity-50" />
+                            <span className="text-[11px]">Born <span className={cn('font-bold', isDark ? 'text-white/70' : 'text-gray-700')}>{new Date(accountInfo.inception).toLocaleDateString()}</span></span>
+                          </div>
+
+                          <span className="opacity-20">|</span>
+
+                          {/* Reserve */}
+                          <div className="flex items-center gap-1.5">
+                            <Shield size={12} className="opacity-50" />
+                            <span className="text-[11px]">Reserve <span className={cn('font-bold', isDark ? 'text-white/70' : 'text-gray-700')}>{accountInfo.reserve} XRP</span></span>
+                          </div>
+
+                          <span className="opacity-20">|</span>
+
+                          {/* Objects */}
+                          <div className="flex items-center gap-1.5">
+                            <Layers size={12} className="opacity-50" />
+                            <span className="text-[11px]">Objects <span className={cn('font-bold', isDark ? 'text-white/70' : 'text-gray-700')}>{accountInfo.ownerCount}</span></span>
+                          </div>
+
+                          {/* XRP Rank */}
                           {accountInfo.rank && (
-                            <><span className={isDark ? 'text-white/20' : 'text-gray-300'}>|</span><span>XRP Rank <span className={isDark ? 'text-white/70' : 'text-gray-700'}>#{accountInfo.rank.toLocaleString()}</span></span></>
+                            <>
+                              <span className="opacity-20">|</span>
+                              <div className="flex items-center gap-1.5">
+                                <Coins size={12} className="text-amber-500 opacity-70" />
+                                <span className="text-[11px]">XRP Rank <span className={cn('font-bold', isDark ? 'text-white/70' : 'text-gray-700')}>#{accountInfo.rank.toLocaleString()}</span></span>
+                              </div>
+                            </>
                           )}
+
                           {/* DEX Trading Section */}
                           {accountInfo.tradingRank && (
-                            <><span className={cn('mx-1 px-1 rounded text-[9px]', isDark ? 'bg-white/5 text-white/30' : 'bg-gray-100 text-gray-400')}>DEX</span><span>Rank <span className={isDark ? 'text-white/70' : 'text-gray-700'}>#{accountInfo.tradingRank.toLocaleString()}</span></span></>
+                            <>
+                              <span className="opacity-20">|</span>
+                              <div className="flex items-center gap-1.5">
+                                <TrendingUp size={12} className="text-[#137DFE] opacity-70" />
+                                <span className="text-[11px]">DEX Rank <span className={cn('font-bold', isDark ? 'text-white/70' : 'text-gray-700')}>#{accountInfo.tradingRank.toLocaleString()}</span></span>
+                              </div>
+                            </>
                           )}
-                          {(accountInfo.pnl !== undefined || accountInfo.dex_profit !== undefined) && (
-                            <><span className={isDark ? 'text-white/20' : 'text-gray-300'}>|</span><span>P&L <span className={((accountInfo.pnl || accountInfo.dex_profit || 0) >= 0) ? 'text-[#08AA09]' : 'text-red-500'}>
-                              {((accountInfo.pnl || accountInfo.dex_profit || 0) >= 0 ? '+' : '')}{(accountInfo.pnl || accountInfo.dex_profit || 0).toLocaleString(undefined, { maximumFractionDigits: 0 })} XRP
-                            </span></span></>
-                          )}
-                          {accountInfo.roi !== undefined && (
-                            <><span className={isDark ? 'text-white/20' : 'text-gray-300'}>|</span><span>ROI <span className={(accountInfo.roi >= 0) ? 'text-[#08AA09]' : 'text-red-500'}>
-                              {accountInfo.roi >= 0 ? '+' : ''}{accountInfo.roi.toFixed(1)}%
-                            </span></span></>
-                          )}
-                          {/* NFT Section */}
+
+                          {/* NFT Rank */}
                           {nftStats?.rank && (
-                            <><span className={cn('mx-1 px-1 rounded text-[9px]', isDark ? 'bg-purple-500/10 text-purple-400' : 'bg-purple-50 text-purple-500')}>NFT</span><span>Rank <span className={isDark ? 'text-white/70' : 'text-gray-700'}>#{nftStats.rank.toLocaleString()}</span></span></>
+                            <>
+                              <span className="opacity-20">|</span>
+                              <div className="flex items-center gap-1.5">
+                                <Image size={12} className="text-purple-500 opacity-70" />
+                                <span className="text-[11px]">NFT Rank <span className={cn('font-bold', isDark ? 'text-white/70' : 'text-gray-700')}>#{nftStats.rank.toLocaleString()}</span></span>
+                              </div>
+                            </>
                           )}
-                          {nftStats?.profit !== undefined && (
-                            <><span className={isDark ? 'text-white/20' : 'text-gray-300'}>|</span><span>P&L <span className={(nftStats.profit >= 0) ? 'text-[#08AA09]' : 'text-red-500'}>
-                              {nftStats.profit >= 0 ? '+' : ''}{nftStats.profit.toLocaleString(undefined, { maximumFractionDigits: 0 })} XRP
-                            </span></span></>
-                          )}
-                          {(accountInfo.totalTrades > 0 || nftStats?.totalTrades > 0) && (
-                            <button
-                              onClick={() => setShowPLCard(true)}
-                              className={cn(
-                                'ml-auto flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium transition-colors',
-                                isDark ? 'bg-[#137DFE]/20 text-[#137DFE] hover:bg-[#137DFE]/30' : 'bg-blue-100 text-blue-600 hover:bg-blue-200'
-                              )}
-                            >
-                              <Share2 size={10} />
-                              Share P/L
-                            </button>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })()}
 
-                {/* Trading Stats Card */}
-                {accountInfo?.totalTrades > 0 && (
-                  <div className={cn(
-                    'rounded-xl border-[1.5px] p-4',
-                    isDark ? 'bg-black/40 border-white/[0.12]' : 'bg-white border-gray-200'
-                  )}>
-                    <div className="flex items-center gap-1.5 mb-3">
-                      <TrendingUp size={12} className={isDark ? 'text-[#137DFE]' : 'text-blue-500'} />
-                      <p className={cn('text-[10px] font-bold uppercase tracking-wider', isDark ? 'text-white/70' : 'text-gray-600')}>
-                        Trading Stats
-                      </p>
-                    </div>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
-                      {/* Win Rate */}
-                      <div>
-                        <p className={cn('text-[9px] font-medium uppercase tracking-wider mb-0.5', isDark ? 'text-white/30' : 'text-gray-400')}>Win Rate</p>
-                        <p className={cn('text-sm font-bold tabular-nums', (accountInfo.winRate || 0) >= 50 ? 'text-[#08AA09]' : 'text-red-400')}>
-                          {(accountInfo.winRate || 0).toFixed(1)}%
-                        </p>
-                        <p className={cn('text-[9px] tabular-nums', isDark ? 'text-white/25' : 'text-gray-400')}>
-                          {accountInfo.winningTrades || 0}W / {accountInfo.losingTrades || 0}L
-                        </p>
-                      </div>
-                      {/* Total Trades */}
-                      <div>
-                        <p className={cn('text-[9px] font-medium uppercase tracking-wider mb-0.5', isDark ? 'text-white/30' : 'text-gray-400')}>Total Trades</p>
-                        <p className={cn('text-sm font-bold tabular-nums', isDark ? 'text-white/90' : 'text-gray-900')}>
-                          {(accountInfo.totalTrades || 0).toLocaleString()}
-                        </p>
-                        {accountInfo.trades24h > 0 && (
-                          <p className={cn('text-[9px] tabular-nums', isDark ? 'text-white/25' : 'text-gray-400')}>
-                            {accountInfo.trades24h} today
-                          </p>
-                        )}
-                      </div>
-                      {/* Tokens Traded */}
-                      <div>
-                        <p className={cn('text-[9px] font-medium uppercase tracking-wider mb-0.5', isDark ? 'text-white/30' : 'text-gray-400')}>Tokens Traded</p>
-                        <p className={cn('text-sm font-bold tabular-nums', isDark ? 'text-white/90' : 'text-gray-900')}>
-                          {(accountInfo.totalTokensTraded || 0).toLocaleString()}
-                        </p>
-                      </div>
-                      {/* Buy Volume */}
-                      <div>
-                        <p className={cn('text-[9px] font-medium uppercase tracking-wider mb-0.5', isDark ? 'text-white/30' : 'text-gray-400')}>Buy Vol</p>
-                        <p className={cn('text-sm font-bold tabular-nums', isDark ? 'text-white/90' : 'text-gray-900')}>
-                          {(() => { const v = accountInfo.buyVolume || 0; return v >= 1000000 ? `${(v/1000000).toFixed(1)}M` : v >= 1000 ? `${(v/1000).toFixed(1)}K` : v.toFixed(0); })()}
-                          <span className={cn('text-[9px] font-normal ml-0.5', isDark ? 'text-white/25' : 'text-gray-400')}>XRP</span>
-                        </p>
-                      </div>
-                      {/* Sell Volume */}
-                      <div>
-                        <p className={cn('text-[9px] font-medium uppercase tracking-wider mb-0.5', isDark ? 'text-white/30' : 'text-gray-400')}>Sell Vol</p>
-                        <p className={cn('text-sm font-bold tabular-nums', isDark ? 'text-white/90' : 'text-gray-900')}>
-                          {(() => { const v = accountInfo.sellVolume || 0; return v >= 1000000 ? `${(v/1000000).toFixed(1)}M` : v >= 1000 ? `${(v/1000).toFixed(1)}K` : v.toFixed(0); })()}
-                          <span className={cn('text-[9px] font-normal ml-0.5', isDark ? 'text-white/25' : 'text-gray-400')}>XRP</span>
-                        </p>
-                      </div>
-                      {/* Best Trade */}
-                      <div>
-                        <p className={cn('text-[9px] font-medium uppercase tracking-wider mb-0.5', isDark ? 'text-white/30' : 'text-gray-400')}>Best Trade</p>
-                        <p className="text-sm font-bold tabular-nums text-[#08AA09]">
-                          {accountInfo.maxProfitTrade > 0 ? <>+{(() => { const v = accountInfo.maxProfitTrade; return v >= 1000000 ? `${(v/1000000).toFixed(1)}M` : v >= 1000 ? `${(v/1000).toFixed(1)}K` : v.toFixed(1); })()}<span className={cn('text-[9px] font-normal ml-0.5', isDark ? 'text-white/25' : 'text-gray-400')}>XRP</span></> : '--'}
-                        </p>
-                      </div>
-                      {/* Worst Trade */}
-                      <div>
-                        <p className={cn('text-[9px] font-medium uppercase tracking-wider mb-0.5', isDark ? 'text-white/30' : 'text-gray-400')}>Worst Trade</p>
-                        <p className="text-sm font-bold tabular-nums text-red-400">
-                          {accountInfo.maxLossTrade < 0 ? <>{(() => { const v = accountInfo.maxLossTrade; const a = Math.abs(v); return (v < 0 ? '-' : '') + (a >= 1000000 ? `${(a/1000000).toFixed(1)}M` : a >= 1000 ? `${(a/1000).toFixed(1)}K` : a.toFixed(1)); })()}<span className={cn('text-[9px] font-normal ml-0.5', isDark ? 'text-white/25' : 'text-gray-400')}>XRP</span></> : '--'}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
+                          {/* P&L */}
+                          {(accountInfo.pnl !== undefined || accountInfo.dex_profit !== undefined) && (
+                            <>
+                              <span className="opacity-20">|</span>
+                              <div className="flex items-center gap-1.5">
+                                <Zap size={12} className={((accountInfo.pnl || accountInfo.dex_profit || 0) >= 0) ? 'text-emerald-500' : 'text-red-500'} />
+                                <span className="text-[11px]">P&L <span className={cn('font-bold', ((accountInfo.pnl || accountInfo.dex_profit || 0) >= 0) ? 'text-emerald-500' : 'text-red-500')}>
+                                  {((accountInfo.pnl || accountInfo.dex_profit || 0) >= 0 ? '+' : '')}{(accountInfo.pnl || accountInfo.dex_profit || 0).toLocaleString(undefined, { maximumFractionDigits: 0 })} XRP
+                                </span></span>
+                              </div>
+                            </>
+                          )}
 
+                                                    <button
+                                                      onClick={() => setShowPLCard(true)}
+                                                      className={cn(
+                                                        'ml-auto flex items-center gap-1.5 px-3 py-1 rounded-lg text-[10px] font-bold transition-all uppercase tracking-wider',
+                                                        isDark ? 'bg-[#137DFE]/10 text-[#137DFE] hover:bg-[#137DFE]/20' : 'bg-blue-50 text-blue-600 hover:bg-blue-100'
+                                                      )}
+                                                    >
+                                                      <Share2 size={12} /> Share Performance
+                                                    </button>
+                                                  </div>
+                                                )}
+                                              </div>
+                                            );
+                                          })()}
                 {/* Main Content Grid - Symmetrical 2 columns */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                   {/* Left Column - Assets */}
@@ -2850,18 +2642,17 @@ export default function WalletPage() {
                         </div>
                       ) : (
                         <>
-                          <div className={cn("grid grid-cols-[1.4fr_0.8fr_0.6fr_0.8fr_0.6fr_0.5fr_44px] gap-3 px-4 py-2 text-[9px] font-bold uppercase tracking-wider", isDark ? "text-white/30 border-b border-white/[0.05]" : "text-gray-400 border-b border-gray-50")}>
+                          <div className={cn("grid grid-cols-[1.4fr_0.8fr_0.6fr_0.8fr_0.6fr_0.5fr] gap-3 px-4 py-2 text-[9px] font-bold uppercase tracking-wider", isDark ? "text-white/30 border-b border-white/[0.05]" : "text-gray-400 border-b border-gray-50")}>
                             <span>Asset</span>
                             <span className="text-right">Balance</span>
                             <span className="text-right">Price</span>
                             <span className="text-right">Value</span>
                             <span className="text-right">P&L</span>
                             <span className="text-right">24h</span>
-                            <span></span>
                           </div>
                           <div className={cn("divide-y", isDark ? "divide-white/[0.04]" : "divide-gray-50")}>
                             {allTokens.slice(0, 5).map((token, idx) => (
-                              <div key={token.symbol} className={cn("grid grid-cols-[1.4fr_0.8fr_0.6fr_0.8fr_0.6fr_0.5fr_44px] gap-3 items-center px-4 py-2 transition-colors", isDark ? "hover:bg-white/[0.03]" : "hover:bg-gray-50/50")}>
+                              <div key={token.symbol} className={cn("grid grid-cols-[1.4fr_0.8fr_0.6fr_0.8fr_0.6fr_0.5fr] gap-3 items-center px-4 py-2 transition-colors", isDark ? "hover:bg-white/[0.03]" : "hover:bg-gray-50/50")}>
                                 <Link href={`/token/${token.slug || token.md5 || MD5(`${token.issuer}_${token.currency}`).toString()}`} className="flex items-center gap-2.5 min-w-0 group">
                                   <div className="relative flex-shrink-0">
                                     <img
@@ -2891,18 +2682,6 @@ export default function WalletPage() {
                                 <p className={cn("text-[10px] tabular-nums text-right font-bold", token.positive ? "text-[#08AA09]" : "text-red-400")}>
                                   {token.change}
                                 </p>
-                                <button
-                                  onClick={(e) => { e.preventDefault(); setSelectedToken(token.symbol); setShowPanel('send'); }}
-                                  className={cn(
-                                    "flex items-center justify-center px-2.5 h-6 rounded-md text-[10px] font-semibold transition-all justify-self-end",
-                                    isDark
-                                      ? "text-[#137DFE] hover:bg-[#137DFE]/10"
-                                      : "text-[#137DFE] hover:bg-blue-50"
-                                  )}
-                                  title="Send Asset"
-                                >
-                                  Send
-                                </button>
                               </div>
                             ))}
                           </div>
@@ -2924,9 +2703,9 @@ export default function WalletPage() {
                     >
                       <div className={cn("flex items-center justify-between px-3 py-2 border-b", isDark ? "border-b-white/[0.08]" : "border-b-gray-100")}>
                         <div className="flex items-center gap-1.5">
-                          <div className={cn("w-1 h-1 rounded-full", isDark ? "bg-[#137DFE]" : "bg-blue-500")} />
+                          <div className={cn("w-1 h-1 rounded-full", isDark ? "bg-purple-500" : "bg-purple-600")} />
                           <p className={cn('text-[10px] font-bold uppercase tracking-wider', isDark ? 'text-white/70' : 'text-gray-600')}>
-                            NFT Collections
+                            NFT Portfolio
                           </p>
                           <span className={cn('text-[9px] px-1 py-px rounded font-bold leading-none', isDark ? 'bg-white/5 text-white/50' : 'bg-gray-100 text-gray-500')}>
                             {collections.length}
@@ -2942,63 +2721,61 @@ export default function WalletPage() {
                       {collectionsLoading ? (
                         <div className={cn('flex-1 flex items-center justify-center py-8', isDark ? 'text-white/40' : 'text-gray-400')}>
                           <div className="animate-pulse flex items-center gap-2">
-                            <div className="w-1.5 h-1.5 rounded-full bg-[#137DFE]" />
-                            <span className="text-[10px] uppercase tracking-widest font-medium">Loading Collections</span>
+                            <div className="w-1.5 h-1.5 rounded-full bg-purple-500" />
+                            <span className="text-[10px] uppercase tracking-widest font-medium">Loading NFTs</span>
                           </div>
                         </div>
                       ) : collections.length === 0 ? (
-                        <div className={cn('p-6 text-center')}>
+                        <div className={cn('p-6 text-center', isDark ? 'text-white/35' : 'text-gray-400')}>
                           <Image size={18} className={cn("mx-auto mb-2", isDark ? "text-white/20" : "text-gray-300")} />
-                          <p className={cn('text-[10px] font-semibold mb-1', isDark ? 'text-white/50' : 'text-gray-500')}>No NFTs Found</p>
-                          <a href="/nfts" className="text-[10px] font-bold text-[#137DFE] hover:text-blue-400">Explore NFTs</a>
+                          <p className={cn('text-[10px] font-semibold mb-1', isDark ? 'text-white/50' : 'text-gray-500')}>No NFTs Yet</p>
+                          <a href="/nfts" className="text-[10px] font-bold text-[#137DFE] hover:text-blue-400">Browse Marketplace</a>
                         </div>
                       ) : (
                         <>
-                          <div className={cn("grid grid-cols-[1.3fr_0.5fr_0.7fr_0.5fr_0.9fr] gap-3 px-4 py-2 text-[9px] font-bold uppercase tracking-wider", isDark ? "text-white/30 border-b border-white/[0.05]" : "text-gray-400 border-b border-gray-50")}>
+                          <div className={cn("grid grid-cols-[1.4fr_0.6fr_0.6fr_0.8fr_0.6fr_0.5fr] gap-3 px-4 py-2 text-[9px] font-bold uppercase tracking-wider", isDark ? "text-white/30 border-b border-white/[0.05]" : "text-gray-400 border-b border-gray-50")}>
                             <span>Collection</span>
                             <span className="text-right">Items</span>
                             <span className="text-right">Floor</span>
+                            <span className="text-right">Value</span>
+                            <span className="text-right">P&L</span>
                             <span className="text-right">24h</span>
-                            <span className="text-right">Est. Value</span>
                           </div>
                           <div className={cn("divide-y", isDark ? "divide-white/[0.04]" : "divide-gray-50")}>
                             {collections.slice(0, 5).map((col, idx) => {
                               const floorChange = col.floor24hAgo && col.floor24hAgo > 0 ? ((col.floor - col.floor24hAgo) / col.floor24hAgo * 100) : 0;
                               const floorPositive = floorChange >= 0;
+                              const colPnl = nftCollectionPnlMap.get(col.name);
                               return (
                               <button
                                 key={col.id}
                                 onClick={() => { setSelectedCollection(col.name); handleTabChange('nfts'); }}
-                                className={cn("w-full grid grid-cols-[1.3fr_0.5fr_0.7fr_0.5fr_0.9fr] gap-3 items-center px-4 py-2 text-left transition-colors", isDark ? "hover:bg-white/[0.03]" : "hover:bg-gray-50/50")}
+                                className={cn("w-full grid grid-cols-[1.4fr_0.6fr_0.6fr_0.8fr_0.6fr_0.5fr] gap-3 items-center px-4 py-2 text-left transition-colors", isDark ? "hover:bg-white/[0.03]" : "hover:bg-gray-50/50")}
                               >
-                                <div className="flex items-center gap-2.5 min-w-0">
+                                <div className="flex items-center gap-2.5 min-w-0 group">
                                   <div className="relative flex-shrink-0">
                                     {col.logo ? (
-                                      <img src={col.logo} alt="" className="w-7 h-7 rounded-lg object-cover ring-1 ring-white/10" />
+                                      <img src={col.logo} alt="" className="w-7 h-7 rounded-full object-cover bg-white/10 ring-1 ring-white/10" onError={(e) => { e.target.onerror = null; e.target.src = '/static/alt.webp'; }} />
                                     ) : (
-                                      <div className={cn("w-7 h-7 rounded-lg flex items-center justify-center text-[8px]", isDark ? "bg-white/5 text-white/30" : "bg-gray-100 text-gray-400")}>NFT</div>
+                                      <div className={cn("w-7 h-7 rounded-full flex items-center justify-center text-[8px] font-bold", isDark ? "bg-white/10 text-white/30" : "bg-gray-100 text-gray-400")}>NFT</div>
                                     )}
-                                    <span className={cn("absolute -bottom-0.5 -right-0.5 text-[7px] font-bold w-3.5 h-3.5 rounded-full flex items-center justify-center", isDark ? "bg-purple-500/20 text-purple-400" : "bg-purple-50 text-purple-500")}>{idx + 1}</span>
+                                    <span className={cn("absolute -bottom-0.5 -right-0.5 text-[7px] font-bold w-3.5 h-3.5 rounded-full flex items-center justify-center", isDark ? "bg-white/10 text-white/50" : "bg-gray-100 text-gray-500")}>{idx + 1}</span>
                                   </div>
                                   <div className="min-w-0">
-                                    <p className={cn("text-[11px] font-bold truncate", isDark ? "text-white/95" : "text-gray-900")}>{col.name}</p>
-                                    <p className={cn("text-[9px]", isDark ? "text-white/30" : "text-gray-400")}>{col.slug || 'Collection'}</p>
+                                    <p className={cn("text-[11px] font-bold truncate group-hover:text-[#137DFE] transition-colors", isDark ? "text-white/95" : "text-gray-900")}>{col.name}</p>
+                                    <p className={cn("text-[9px] truncate", isDark ? "text-white/30" : "text-gray-400")}>{col.slug || 'Collection'}</p>
                                   </div>
                                 </div>
-                                <div className="text-right">
-                                  <p className={cn("text-[11px] font-bold tabular-nums", isDark ? "text-white/80" : "text-gray-700")}>{col.count}</p>
-                                </div>
-                                <div className="text-right">
-                                  <p className={cn("text-[10px] font-medium tabular-nums", isDark ? "text-white/60" : "text-gray-600")}>{col.floor} <span className={cn("text-[8px]", isDark ? "text-white/25" : "text-gray-400")}>XRP</span></p>
-                                </div>
-                                <div className="text-right">
-                                  <p className={cn("text-[10px] font-bold tabular-nums", floorPositive ? "text-[#08AA09]" : "text-red-400")}>
-                                    {floorChange !== 0 ? `${floorPositive ? '+' : ''}${floorChange.toFixed(1)}%` : '—'}
-                                  </p>
-                                </div>
-                                <div className="text-right">
-                                  <p className={cn("text-[11px] font-bold tabular-nums", isDark ? "text-white/90" : "text-gray-900")}>{col.value.toLocaleString()} <span className={cn("text-[8px] font-normal", isDark ? "text-white/25" : "text-gray-400")}>XRP</span></p>
-                                </div>
+                                <p className={cn("text-[10px] tabular-nums text-right", isDark ? "text-white/60" : "text-gray-600")}>{col.count}</p>
+                                <p className={cn("text-[9px] tabular-nums text-right", isDark ? "text-white/40" : "text-gray-500")}>{col.floor}</p>
+                                <p className={cn("text-[10px] font-bold tabular-nums text-right", isDark ? "text-white/90" : "text-gray-900")}>{col.value.toLocaleString()}</p>
+                                {/* P&L */}
+                                <p className={cn("text-[10px] tabular-nums text-right font-bold", (() => { return colPnl && colPnl.profit !== 0 ? (colPnl.profit > 0 ? "text-[#08AA09]" : "text-red-400") : (isDark ? "text-white/25" : "text-gray-400"); })())}>
+                                  {(() => { if (!colPnl) return '--'; const p = colPnl.profit; if (p === 0) return '--'; const a = Math.abs(p); const formatted = a >= 1000000 ? `${(a/1000000).toFixed(1)}M` : a >= 1000 ? `${(a/1000).toFixed(1)}K` : a.toFixed(1); return p > 0 ? `+${formatted}` : `-${formatted}`; })()}
+                                </p>
+                                <p className={cn("text-[10px] tabular-nums text-right font-bold", floorChange === 0 ? (isDark ? "text-white/25" : "text-gray-400") : (floorPositive ? "text-[#08AA09]" : "text-red-400"))}>
+                                  {floorChange !== 0 ? `${floorPositive ? '+' : ''}${floorChange.toFixed(1)}%` : '--'}
+                                </p>
                               </button>
                             )})}
                           </div>
@@ -3114,127 +2891,124 @@ export default function WalletPage() {
                     {/* Token List */}
                     <div
                       className={cn(
-                        'rounded-xl overflow-hidden',
+                        'rounded-2xl overflow-hidden border transition-all duration-300',
                         isDark
-                          ? 'bg-black/50 backdrop-blur-sm border border-white/[0.15]'
-                          : 'bg-white border border-gray-200'
+                          ? 'bg-black/40 backdrop-blur-md border-white/10'
+                          : 'bg-white border-gray-200 shadow-sm'
                       )}
                     >
                       {/* Table Header */}
-                      <div className={cn("grid grid-cols-[2fr_1fr_1fr_1fr_80px_80px_90px_80px_140px] gap-4 px-5 py-2.5 text-[9px] uppercase tracking-wider font-semibold border-b", isDark ? "text-white/40 border-white/[0.08] bg-white/[0.02]" : "text-gray-500 border-gray-100 bg-gray-50")}>
+                      <div className={cn("grid grid-cols-[2.5fr_1.2fr_1.2fr_1.2fr_1fr_1fr_120px] gap-4 px-6 py-3 text-[10px] uppercase tracking-widest font-black border-b", isDark ? "text-white/30 border-white/5 bg-white/[0.01]" : "text-gray-400 border-gray-100 bg-gray-50/50")}>
                         <div>Asset</div>
                         <div className="text-right">Balance</div>
                         <div className="text-right">Price</div>
                         <div className="text-right">Value</div>
                         <div className="text-right">P&L</div>
                         <div className="text-right">24h</div>
-                        <div className="text-right">Vol 24h</div>
-                        <div className="text-right">Holders</div>
-                        <div className="text-right"></div>
+                        <div className="text-right">Actions</div>
                       </div>
 
                       {/* Token Rows */}
                       {filteredTokens.length === 0 ? (
-                        <div className={cn('p-6 text-center', isDark ? 'text-white/35' : 'text-gray-400')}>
+                        <div className={cn('p-12 text-center', isDark ? 'text-white/20' : 'text-gray-300')}>
                           <BearIcon />
-                          <p className={cn('text-[10px] font-medium tracking-wider mb-1', isDark ? 'text-white/60' : 'text-gray-500')}>
-                            NO TOKENS FOUND
+                          <p className={cn('text-xs font-bold tracking-widest uppercase mt-4 mb-2', isDark ? 'text-white/40' : 'text-gray-400')}>
+                            No Tokens Found
                           </p>
-                          <a href="/" className="text-[9px] text-[#137DFE] hover:underline">Browse tokens</a>
+                          <a href="/" className="text-sm font-bold text-[#137DFE] hover:underline">Explore the Market</a>
                         </div>
                       ) : (
                         <div className={cn("divide-y", isDark ? "divide-white/5" : "divide-gray-50")}>
                           {filteredTokens.slice((tokenPage - 1) * tokensPerPage, tokenPage * tokensPerPage).map((token) => (
-                            <div key={token.symbol} onClick={() => token.slug && router.push(`/token/${token.slug}`)} className={cn("grid grid-cols-[2fr_1fr_1fr_1fr_80px_80px_90px_80px_140px] gap-4 px-5 py-3 items-center transition-colors", token.slug && "cursor-pointer", isDark ? "hover:bg-white/[0.04]" : "hover:bg-gray-50")}>
+                            <div key={token.symbol} onClick={() => token.slug && router.push(`/token/${token.slug}`)} className={cn("grid grid-cols-[2.5fr_1.2fr_1.2fr_1.2fr_1fr_1fr_120px] gap-4 px-6 py-4 items-center transition-all duration-200 group", token.slug && "cursor-pointer", isDark ? "hover:bg-white/[0.03]" : "hover:bg-blue-50/30")}>
                               {/* Asset */}
-                              <div className="flex items-center gap-2.5 min-w-0">
-                                <img
-                                  src={`https://s1.xrpl.to/token/${token.md5 || MD5(`${token.issuer}_${token.currency}`).toString()}`}
-                                  alt=""
-                                  className="w-8 h-8 rounded-full object-cover shrink-0 bg-white/10"
-                                  onError={(e) => { e.target.onerror = null; e.target.src = '/static/alt.webp'; }}
-                                />
+                              <div className="flex items-center gap-3 min-w-0">
+                                <div className="relative">
+                                  <img
+                                    src={`https://s1.xrpl.to/token/${token.md5 || MD5(`${token.issuer}_${token.currency}`).toString()}`}
+                                    alt=""
+                                    className="w-10 h-10 rounded-full object-cover shrink-0 bg-white/10 ring-2 ring-white/5 group-hover:ring-[#137DFE]/30 transition-all"
+                                    onError={(e) => { e.target.onerror = null; e.target.src = '/static/alt.webp'; }}
+                                  />
+                                  {token.verified && (
+                                    <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 border-2 border-black flex items-center justify-center" title="Verified">
+                                      <Check size={8} className="text-white" strokeWidth={4} />
+                                    </div>
+                                  )}
+                                </div>
                                 <div className="min-w-0">
-                                  <div className="flex items-center gap-1.5">
-                                    <p className={cn("text-xs font-medium truncate", isDark ? "text-white/90" : "text-gray-900")}>{token.symbol}</p>
-                                    {token.verified && (
-                                      <span
-                                        className={cn(
-                                          'px-1 py-0.5 rounded text-[8px] font-medium flex-shrink-0',
-                                          isDark
-                                            ? 'bg-emerald-500/10 text-[#08AA09]'
-                                            : 'bg-emerald-50 text-emerald-600'
-                                        )}
-                                      >
-                                        Verified
-                                      </span>
-                                    )}
-                                  </div>
-                                  <p className={cn("text-[10px] truncate", isDark ? "text-white/35" : "text-gray-500")}>{token.name}</p>
+                                  <p className={cn("text-sm font-black truncate group-hover:text-[#137DFE] transition-colors", isDark ? "text-white" : "text-gray-900")}>{token.symbol}</p>
+                                  <p className={cn("text-[11px] font-medium truncate", isDark ? "text-white/30" : "text-gray-400")}>{token.name}</p>
                                 </div>
                               </div>
+
                               {/* Balance */}
                               <div className="text-right">
-                                <p className={cn("text-[11px] tabular-nums", isDark ? "text-white/70" : "text-gray-700")}>{token.amount}</p>
-                                {token.percentOwned > 0 && <p className={cn("text-[9px] tabular-nums", isDark ? "text-white/30" : "text-gray-400")}>{token.percentOwned.toFixed(2)}% supply</p>}
+                                <p className={cn("text-[13px] font-bold tabular-nums", isDark ? "text-white/80" : "text-gray-700")}>{token.amount}</p>
+                                {token.percentOwned > 0 && <p className={cn("text-[10px] font-medium tabular-nums", isDark ? "text-white/20" : "text-gray-400")}>{token.percentOwned.toFixed(2)}% supply</p>}
                               </div>
+
                               {/* Price */}
-                              <p className={cn("text-[11px] tabular-nums text-right", isDark ? "text-white/50" : "text-gray-500")}>{token.symbol === 'XRP' ? (activeFiatCurrency === 'XRP' ? '--' : <>{currencySymbols[activeFiatCurrency]}{xrpUsdPrice.toFixed(2)} <span className={isDark ? "text-white/25" : "text-gray-400"}>{activeFiatCurrency}</span></>) : (activeFiatCurrency === 'XRP' ? <>{typeof token.priceDisplay === 'object' && token.priceDisplay.compact ? <>0.0<sub className="text-[0.7em]">{token.priceDisplay.zeros}</sub>{token.priceDisplay.significant}</> : token.priceDisplay} <span className={isDark ? "text-white/25" : "text-gray-400"}>XRP</span></> : <>{currencySymbols[activeFiatCurrency]}{((token.price || 0) * xrpUsdPrice).toFixed((token.price || 0) * xrpUsdPrice >= 1 ? 2 : 6)} <span className={isDark ? "text-white/25" : "text-gray-400"}>{activeFiatCurrency}</span></>)}</p>
+                              <div className="text-right">
+                                <p className={cn("text-[12px] font-bold tabular-nums", isDark ? "text-white/60" : "text-gray-600")}>
+                                  {token.symbol === 'XRP' ? (
+                                    activeFiatCurrency === 'XRP' ? '--' : <>{currencySymbols[activeFiatCurrency]}{xrpUsdPrice.toFixed(2)}</>
+                                  ) : (
+                                    activeFiatCurrency === 'XRP' ? (
+                                      typeof token.priceDisplay === 'object' && token.priceDisplay.compact ? <>0.0<sub className="text-[0.8em]">{token.priceDisplay.zeros}</sub>{token.priceDisplay.significant}</> : token.priceDisplay
+                                    ) : (
+                                      <>{currencySymbols[activeFiatCurrency]}{((token.price || 0) * xrpUsdPrice).toFixed((token.price || 0) * xrpUsdPrice >= 1 ? 2 : 6)}</>
+                                    )
+                                  )}
+                                </p>
+                                <span className={cn("text-[9px] font-bold uppercase tracking-tighter opacity-30")}>{token.symbol === 'XRP' ? activeFiatCurrency : (activeFiatCurrency === 'XRP' ? 'XRP' : activeFiatCurrency)}</span>
+                              </div>
+
                               {/* Value */}
-                              <p className={cn("text-xs font-semibold tabular-nums text-right tracking-tight", isDark ? "text-white" : "text-gray-900")}>{activeFiatCurrency === 'XRP' ? token.value : <>{currencySymbols[activeFiatCurrency]}{((token.rawValue || 0) * xrpUsdPrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} <span className={cn("text-[10px]", isDark ? "text-white/40" : "text-gray-400")}>{activeFiatCurrency}</span></>}</p>
+                              <div className="text-right">
+                                <p className={cn("text-[13px] font-black tabular-nums tracking-tight", isDark ? "text-white" : "text-gray-900")}>
+                                  {activeFiatCurrency === 'XRP' ? token.value : <>{currencySymbols[activeFiatCurrency]}{((token.rawValue || 0) * xrpUsdPrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</>}
+                                </p>
+                                <span className={cn("text-[9px] font-bold uppercase tracking-tighter opacity-30")}>{activeFiatCurrency}</span>
+                              </div>
+
                               {/* P&L */}
                               <div className="text-right">
                                 {(() => {
                                   const pnl = tokenPnlMap.get(token.md5 || MD5(`${token.issuer}_${token.currency}`).toString());
-                                  if (!pnl || pnl.profit === 0) return <p className={cn("text-[11px] tabular-nums", isDark ? "text-white/25" : "text-gray-400")}>--</p>;
+                                  if (!pnl || pnl.profit === 0) return <p className={cn("text-[13px] font-bold", isDark ? "text-white/10" : "text-gray-200")}>--</p>;
                                   const p = pnl.profit;
                                   const a = Math.abs(p);
                                   const formatted = a >= 1000000 ? `${(a/1000000).toFixed(1)}M` : a >= 1000 ? `${(a/1000).toFixed(1)}K` : a.toFixed(1);
-                                  const sign = p > 0 ? '+' : '-';
                                   return (
                                     <>
-                                      <p className={cn("text-[11px] tabular-nums font-medium", p > 0 ? "text-[#08AA09]" : "text-red-400")}>{sign}{formatted} <span className={isDark ? "text-white/25" : "text-gray-400"}>XRP</span></p>
-                                      <p className={cn("text-[9px] tabular-nums", p > 0 ? "text-[#08AA09]/70" : "text-red-400/70")}>{p > 0 ? '+' : ''}{(pnl.roi || 0).toFixed(1)}%</p>
+                                      <p className={cn("text-[13px] font-black tabular-nums", p > 0 ? "text-emerald-500" : "text-red-500")}>{p > 0 ? '+' : '-'}{formatted}</p>
+                                      <p className={cn("text-[10px] font-bold tabular-nums opacity-60", p > 0 ? "text-emerald-500" : "text-red-500")}>{(pnl.roi || 0).toFixed(1)}%</p>
                                     </>
                                   );
                                 })()}
                               </div>
+
                               {/* 24h */}
-                              <p className={cn("text-[11px] tabular-nums text-right font-medium", token.positive ? "text-[#08AA09]" : "text-red-400")}>{token.change}</p>
-                              {/* Vol 24h */}
-                              <p className={cn("text-[11px] tabular-nums text-right", isDark ? "text-white/40" : "text-gray-500")}>{token.vol24h > 0 ? (activeFiatCurrency === 'XRP' ? <>{token.vol24h >= 1000000 ? `${(token.vol24h / 1000000).toFixed(1)}M` : token.vol24h >= 1000 ? `${(token.vol24h / 1000).toFixed(1)}K` : token.vol24h.toFixed(0)} <span className={isDark ? "text-white/25" : "text-gray-400"}>XRP</span></> : <>{currencySymbols[activeFiatCurrency]}{(() => { const v = token.vol24h * xrpUsdPrice; return v >= 1000000 ? `${(v / 1000000).toFixed(1)}M` : v >= 1000 ? `${(v / 1000).toFixed(1)}K` : v.toFixed(0); })()} <span className={isDark ? "text-white/25" : "text-gray-400"}>{activeFiatCurrency}</span></>) : '—'}</p>
-                              {/* Holders */}
-                              <p className={cn("text-[11px] tabular-nums text-right", isDark ? "text-white/40" : "text-gray-500")}>{token.holders > 0 ? token.holders.toLocaleString() : '—'}</p>
+                              <div className="text-right">
+                                <p className={cn("text-[13px] font-black tabular-nums", token.positive ? "text-emerald-500" : "text-red-500")}>{token.change}</p>
+                              </div>
+
                               {/* Actions */}
                               <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
                                 {token.rawAmount >= 0.000001 && token.currency && token.issuer && (
-                                  <button onClick={() => { setBurnModal(token); setBurnAmount(''); }} disabled={burning === token.currency + token.issuer} className={cn("p-1.5 rounded-md transition-colors", isDark ? "text-white/30 hover:text-orange-400 hover:bg-orange-400/10" : "text-gray-400 hover:text-orange-500 hover:bg-orange-50")} title="Burn">
-                                    <Flame size={12} />
+                                  <button onClick={() => { setBurnModal(token); setBurnAmount(''); }} disabled={burning === token.currency + token.issuer} className={cn("p-2 rounded-lg transition-all", isDark ? "text-white/20 hover:text-orange-500 hover:bg-orange-500/10" : "text-gray-300 hover:text-orange-600 hover:bg-orange-50")} title="Burn">
+                                    <Flame size={16} strokeWidth={2.5} />
                                   </button>
                                 )}
-                                {token.currency && token.issuer && <button onClick={() => { setTradeModal(token); setTradeAmount(''); setTradeDirection('sell'); }} className={cn("flex items-center justify-center gap-1 px-2 py-1 rounded-md text-[10px] font-medium transition-colors", isDark ? "text-white/30 hover:text-[#137DFE] hover:bg-[#137DFE]/10" : "text-gray-400 hover:text-[#137DFE] hover:bg-blue-50")} title="Trade">Trade</button>}
-                                {token.rawAmount > 0 && token.rawAmount < 0.000001 && token.currency && token.issuer ? (
-                                  <button
-                                    onClick={() => setDustConfirm({ token, step: 'dex' })}
-                                    disabled={sendingDust === token.currency + token.issuer}
-                                    className={cn("flex items-center justify-center gap-1 w-[52px] py-1 rounded-md text-[10px] font-medium transition-all disabled:opacity-50", isDark ? "text-[#F6AF01] hover:bg-[#F6AF01]/10" : "text-amber-600 hover:bg-amber-50")}
-                                    title="Clear dust"
-                                  >
-                                    <Sparkles size={11} /> {sendingDust === token.currency + token.issuer ? '...' : 'Clear'}
-                                  </button>
-                                ) : (
-                                  <button onClick={() => { setSelectedToken(token.symbol); setShowPanel('send'); }} className={cn("flex items-center justify-center gap-1 w-[52px] py-1 rounded-md text-[10px] font-medium transition-all", isDark ? "text-[#137DFE] hover:bg-[#137DFE]/10" : "text-[#137DFE] hover:bg-blue-50")} title="Send"><Send size={11} /> Send</button>
-                                )}
-                                {token.rawAmount === 0 && token.currency && token.issuer && (
-                                  <button
-                                    onClick={() => handleRemoveTrustline(token)}
-                                    disabled={removingTrustline === token.currency + token.issuer}
-                                    className={cn("flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-medium transition-all disabled:opacity-50", isDark ? "text-red-400 hover:bg-red-400/10" : "text-red-500 hover:bg-red-50")}
-                                    title="Remove trustline"
-                                  >
-                                    <Trash2 size={11} /> {removingTrustline === token.currency + token.issuer ? '...' : 'Remove'}
+                                {token.currency && token.issuer && (
+                                  <button onClick={() => { setTradeModal(token); setTradeAmount(''); setTradeDirection('sell'); }} className={cn("p-2 rounded-lg transition-all", isDark ? "text-white/20 hover:text-[#137DFE] hover:bg-[#137DFE]/10" : "text-gray-300 hover:text-[#137DFE] hover:bg-blue-50")} title="Trade">
+                                    <ArrowRightLeft size={16} strokeWidth={2.5} />
                                   </button>
                                 )}
+                                <button onClick={() => { setSelectedToken(token.symbol); setShowPanel('send'); }} className={cn("p-2 rounded-lg transition-all", isDark ? "text-[#137DFE] bg-[#137DFE]/10 hover:bg-[#137DFE]/20" : "text-[#137DFE] bg-blue-50 hover:bg-blue-100")} title="Send">
+                                  <Send size={16} strokeWidth={2.5} />
+                                </button>
                               </div>
                             </div>
                           ))}
@@ -3377,7 +3151,7 @@ export default function WalletPage() {
                           {/* Header row */}
                           <div
                             className={cn(
-                              'grid grid-cols-[1fr_24px_1fr_1fr_70px_32px] gap-3 px-4 py-2 text-[10px] font-medium uppercase tracking-wider',
+                              'grid grid-cols-[1fr_24px_1fr_1fr_80px_70px_32px] gap-3 px-4 py-2 text-[10px] font-medium uppercase tracking-wider',
                               isDark ? 'text-white/30' : 'text-gray-400'
                             )}
                           >
@@ -3385,6 +3159,7 @@ export default function WalletPage() {
                             <span></span>
                             <span>Buy</span>
                             <span>Rate</span>
+                            <span className="text-right">Expires</span>
                             <span className="text-right">Status</span>
                             <span></span>
                           </div>
@@ -3392,7 +3167,7 @@ export default function WalletPage() {
                             <div
                               key={offer.id}
                               className={cn(
-                                'grid grid-cols-[1fr_24px_1fr_1fr_70px_32px] gap-3 px-4 py-3 items-center transition-all duration-150',
+                                'grid grid-cols-[1fr_24px_1fr_1fr_80px_70px_32px] gap-3 px-4 py-3 items-center transition-all duration-150',
                                 isDark ? 'hover:bg-white/[0.04]' : 'hover:bg-gray-50'
                               )}
                             >
@@ -3447,6 +3222,25 @@ export default function WalletPage() {
                                   >
                                     {offer.distPct > 0 ? '+' : ''}{offer.distPct}% {Math.abs(offer.distPct) < 1 ? 'at market' : 'from market'}
                                   </span>
+                                )}
+                              </div>
+                              <div className="text-right">
+                                {offer.expire ? (
+                                  (() => {
+                                    const diff = offer.expire - Date.now();
+                                    if (diff <= 0) return <span className={cn("text-[9px] font-medium", "text-red-400")}>Expired</span>;
+                                    const days = Math.floor(diff / 86400000);
+                                    const hours = Math.floor((diff % 86400000) / 3600000);
+                                    const mins = Math.floor((diff % 3600000) / 60000);
+                                    const label = days > 0 ? `${days}d ${hours}h` : hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
+                                    return (
+                                      <span className={cn("text-[9px] font-medium", diff < 86400000 ? "text-[#F6AF01]" : isDark ? "text-white/40" : "text-gray-500")} title={new Date(offer.expire).toLocaleString()}>
+                                        {label}
+                                      </span>
+                                    );
+                                  })()
+                                ) : (
+                                  <span className={cn("text-[9px]", isDark ? "text-white/20" : "text-gray-300")}>--</span>
                                 )}
                               </div>
                               <div className="flex justify-end">
@@ -3538,15 +3332,15 @@ export default function WalletPage() {
                                   <p className={cn('text-[9px] truncate', isDark ? 'text-white/40' : 'text-gray-400')}>{offer.collection}</p>
                                 </div>
                               </Link>
-                              <span className={cn('text-[12px] font-medium tabular-nums', isDark ? 'text-white/90' : 'text-gray-900')}>{offer.price}</span>
+                              <span className={cn('text-[12px] font-medium tabular-nums', isDark ? 'text-white/90' : 'text-gray-900')}>{offer.price > 0 ? <>{offer.price.toLocaleString(undefined, { maximumFractionDigits: offer.price >= 100 ? 0 : 2 })} <span className={cn('text-[9px] font-normal', isDark ? 'text-white/30' : 'text-gray-400')}>XRP</span></> : '--'}</span>
                               <div className="flex flex-col">
                                 {offer.floor > 0 ? (
                                   <>
                                     <span className={cn('text-[11px] font-medium tabular-nums', offer.floorDiffPct >= 0 ? 'text-[#08AA09]' : 'text-red-400')}>{offer.floorDiffPct >= 0 ? '+' : ''}{offer.floorDiffPct.toFixed(0)}%</span>
-                                    <span className={cn('text-[9px]', isDark ? 'text-white/30' : 'text-gray-400')}>{offer.floor.toFixed(1)} XRP</span>
+                                    <span className={cn('text-[9px] tabular-nums', isDark ? 'text-white/30' : 'text-gray-400')}>{offer.floor.toLocaleString(undefined, { maximumFractionDigits: offer.floor >= 100 ? 0 : 1 })} XRP</span>
                                   </>
                                 ) : (
-                                  <span className={cn('text-[11px]', isDark ? 'text-white/30' : 'text-gray-400')}>-</span>
+                                  <span className={cn('text-[11px]', isDark ? 'text-white/30' : 'text-gray-400')}>--</span>
                                 )}
                               </div>
                               <div className="flex justify-end">
@@ -5555,7 +5349,7 @@ export default function WalletPage() {
 
                     const drawText = (t, x, y, { color = textColor, size = 14, weight = '400', align = 'left' } = {}) => {
                       ctx.fillStyle = color;
-                      ctx.font = `${weight} ${size * scale}px Inter, system-ui, sans-serif`;
+                      ctx.font = `${weight} ${size * scale}px -apple-system, system-ui, sans-serif`;
                       ctx.textAlign = align;
                       ctx.fillText(t, x * scale, y * scale);
                     };
@@ -5654,7 +5448,7 @@ export default function WalletPage() {
 
                     const drawText = (t, x, y, { color = textColor, size = 14, weight = '400', align = 'left' } = {}) => {
                       ctx.fillStyle = color;
-                      ctx.font = `${weight} ${size * scale}px Inter, system-ui, sans-serif`;
+                      ctx.font = `${weight} ${size * scale}px -apple-system, system-ui, sans-serif`;
                       ctx.textAlign = align;
                       ctx.fillText(t, x * scale, y * scale);
                     };

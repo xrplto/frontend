@@ -1,8 +1,7 @@
 import Decimal from 'decimal.js-light';
 import { useContext, useState, useEffect, useRef, useMemo, memo } from 'react';
 import { createPortal } from 'react-dom';
-import styled from '@emotion/styled';
-import { css } from '@emotion/react';
+import { cn } from 'src/utils/cn';
 
 // Translations removed - not using i18n
 
@@ -23,261 +22,280 @@ const currencySymbols = {
 };
 
 // Components
-import { AppContext } from 'src/context/AppContext';
+import { ThemeContext, WalletContext, AppContext } from 'src/context/AppContext';
 // Removed ECharts dependency
 import { format } from 'date-fns';
 import Link from 'next/link';
 
-// Styled Components
-const Container = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  border-radius: 12px;
-  border: 1.5px solid
-    ${(props) => (props.isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)')};
-  background: transparent;
-  padding: 10px 14px;
-  position: relative;
-  margin-bottom: 12px;
-  box-sizing: border-box;
-  overflow: hidden;
+// Components
+const Container = ({ className, children, isDark, ...p }) => (
+  <div
+    className={cn(
+      'flex flex-col gap-2 rounded-xl relative mb-3 box-border overflow-hidden',
+      'max-[600px]:p-1.5 max-[600px]:gap-1.5 max-[600px]:mb-2',
+      'border-[1.5px] backdrop-blur-[12px] py-[10px] px-[14px]',
+      isDark ? 'border-white/[0.08] bg-[rgba(10,10,10,0.5)]' : 'border-black/[0.06] bg-white/50',
+      className
+    )}
+    {...p}
+  >
+    {/* ::before pseudo-element replacement */}
+    <span
+      className="absolute pointer-events-none z-0 -top-[60px] -right-[60px] w-[180px] h-[180px] rounded-full bg-[radial-gradient(circle,rgba(19,125,254,0.2)_0%,transparent_70%)] blur-[40px]"
+    />
+    {children}
+    <style>{`.summary-container > * { position: relative; z-index: 1; }`}</style>
+  </div>
+);
 
-  @media (max-width: 600px) {
-    padding: 6px 8px;
-    gap: 6px;
-    margin-bottom: 8px;
-  }
-`;
+const Stack = ({ className, children, direction, spacing, alignItems, justifyContent, width, ...p }) => (
+  <div
+    className={cn('flex', className)}
+    style={{
+      flexDirection: direction === 'row' ? 'row' : 'column',
+      gap: spacing || '8px',
+      alignItems: alignItems || 'stretch',
+      justifyContent: justifyContent || 'flex-start',
+      width: width || 'auto'
+    }}
+    {...p}
+  >
+    {children}
+  </div>
+);
+// Note: Stack has all dynamic props, must remain as inline styles
 
-const Stack = styled.div`
-  display: flex;
-  flex-direction: ${(props) => (props.direction === 'row' ? 'row' : 'column')};
-  gap: ${(props) => props.spacing || '8px'};
-  align-items: ${(props) => props.alignItems || 'stretch'};
-  justify-content: ${(props) => props.justifyContent || 'flex-start'};
-  width: ${(props) => props.width || 'auto'};
-`;
+const Grid = ({ className, children, ...p }) => (
+  <>
+    <style>{`
+      .summary-grid {
+        display: grid;
+        grid-template-columns: 1.1fr 1fr 0.8fr 0.9fr 1fr 1.6fr;
+        gap: 8px;
+      }
+      @media (max-width: 1400px) { .summary-grid { grid-template-columns: repeat(3, 1fr); } }
+      @media (max-width: 1024px) { .summary-grid { grid-template-columns: repeat(3, 1fr); } }
+      @media (max-width: 768px) { .summary-grid { grid-template-columns: repeat(2, 1fr); } }
+      @media (max-width: 600px) {
+        .summary-grid {
+          display: flex;
+          overflow-x: auto;
+          gap: 5px;
+          -webkit-overflow-scrolling: touch;
+          scrollbar-width: none;
+        }
+        .summary-grid::-webkit-scrollbar { display: none; }
+      }
+    `}</style>
+    <div className={cn('summary-grid relative z-[1]', className)} {...p}>
+      {children}
+    </div>
+  </>
+);
 
-const Grid = styled.div`
-  display: grid;
-  grid-template-columns: 1.1fr 1fr 0.8fr 0.9fr 1fr 1.6fr;
-  gap: 8px;
+const MetricBox = ({ className, children, isDark, ...p }) => (
+  <div
+    className={cn(
+      'flex flex-col justify-center rounded-xl transition-all duration-200',
+      'max-[600px]:rounded-[10px]',
+      'py-[8px] px-[12px] h-[78px] gap-[6px] backdrop-blur-[4px] border-[1.5px]',
+      isDark ? 'bg-white/[0.02] border-white/[0.08]' : 'bg-black/[0.01] border-black/[0.06]',
+      className
+    )}
+    style={{
+      ...p.style
+    }}
+    onMouseEnter={(e) => {
+      e.currentTarget.style.borderColor = isDark ? 'rgba(19, 125, 254, 0.25)' : 'rgba(19, 125, 254, 0.15)';
+      e.currentTarget.style.background = isDark ? 'rgba(19, 125, 254, 0.05)' : 'rgba(19, 125, 254, 0.03)';
+    }}
+    onMouseLeave={(e) => {
+      e.currentTarget.style.borderColor = isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)';
+      e.currentTarget.style.background = isDark ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.01)';
+    }}
+    {...(({ style, ...rest }) => rest)(p)}
+  >
+    {children}
+  </div>
+);
 
-  @media (max-width: 1400px) {
-    grid-template-columns: repeat(3, 1fr);
-  }
+const MetricTitle = ({ className, children, isDark, ...p }) => (
+  <span
+    className={cn(
+      'text-[0.68rem] max-[600px]:text-[0.52rem] font-normal tracking-[0.02em]',
+      isDark ? 'text-white/50' : 'text-[rgba(33,43,54,0.5)]',
+      className
+    )}
+    {...p}
+  >
+    {children}
+  </span>
+);
 
-  @media (max-width: 1024px) {
-    grid-template-columns: repeat(3, 1fr);
-  }
+const MetricValue = ({ className, children, isDark, ...p }) => (
+  <span
+    className={cn(
+      'text-xl max-[600px]:text-[0.78rem] font-semibold whitespace-nowrap leading-[1] tracking-[-0.02em]',
+      isDark ? 'text-white' : 'text-[#212B36]',
+      className
+    )}
+    style={{
+      ...p.style
+    }}
+    {...(({ style, ...rest }) => rest)(p)}
+  >
+    {children}
+  </span>
+);
 
-  @media (max-width: 768px) {
-    grid-template-columns: repeat(2, 1fr);
-  }
+const PercentageChange = ({ className, children, isPositive, ...p }) => (
+  <span
+    className={cn(
+      'text-[0.68rem] max-[600px]:text-[0.5rem] inline-flex items-center gap-0.5 font-medium rounded',
+      'tracking-[-0.01em] py-px px-1',
+      isPositive ? 'text-[#10b981] bg-[rgba(16,185,129,0.1)]' : 'text-[#ef4444] bg-[rgba(239,68,68,0.1)]',
+      className
+    )}
+    style={{
+      ...p.style
+    }}
+    {...(({ style, ...rest }) => rest)(p)}
+  >
+    {children}
+  </span>
+);
 
-  @media (max-width: 600px) {
-    display: flex;
-    overflow-x: auto;
-    gap: 5px;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    &::-webkit-scrollbar {
-      display: none;
-    }
-  }
-`;
+const VolumePercentage = ({ className, children, isDark, ...p }) => (
+  <span
+    className={cn(
+      'text-[0.58rem] max-[600px]:text-[0.5rem] font-normal',
+      isDark ? 'text-white/[0.45]' : 'text-[rgba(33,43,54,0.45)]',
+      className
+    )}
+    {...p}
+  >
+    {children}
+  </span>
+);
 
-const MetricBox = styled.div`
-  padding: 8px 12px;
-  height: 78px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 6px;
-  border-radius: 12px;
-  background: transparent;
-  border: 1.5px solid
-    ${(props) => (props.isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)')};
-  transition: all 0.15s ease;
+const ContentTypography = ({ className, children, isDark, ...p }) => (
+  <span
+    className={cn(
+      'text-[0.7rem] max-[600px]:text-[0.48rem] max-[480px]:text-[0.45rem] font-normal tracking-[0.01em]',
+      isDark ? 'text-white/70' : 'text-[rgba(33,43,54,0.7)]',
+      className
+    )}
+    {...p}
+  >
+    {children}
+  </span>
+);
 
-  &:hover {
-    border-color: ${(props) => (props.isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)')};
-    background: ${(props) => (props.isDark ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.01)')};
-  }
+const ChartContainer = ({ className, children, height, mt, ...p }) => (
+  <div
+    className={cn('w-full max-[600px]:h-[140px]', className)}
+    style={{
+      height: height || '180px',
+      marginTop: mt || '0'
+    }}
+    {...p}
+  >
+    {children}
+  </div>
+);
 
-  @media (max-width: 600px) {
-    padding: 6px 8px;
-    height: 56px;
-    flex: 0 0 auto;
-    min-width: 72px;
-    border-radius: 10px;
-    gap: 4px;
-  }
-`;
+const TooltipContainer = ({ className, children, darkMode, ...p }) => (
+  <div
+    className={cn(
+      'rounded-lg p-3 relative z-[9999] min-w-[200px] border-[1.5px] shadow-[0_4px_12px_rgba(0,0,0,0.15)]',
+      darkMode ? 'bg-[#1c1c1c] text-white border-white/10' : 'bg-white text-black border-black/10',
+      className
+    )}
+    {...p}
+  >
+    {children}
+  </div>
+);
 
-const MetricTitle = styled.span`
-  font-size: 0.68rem;
-  font-weight: 400;
-  color: ${(props) => (props.isDark ? 'rgba(255, 255, 255, 0.5)' : 'rgba(33, 43, 54, 0.5)')};
-  letter-spacing: 0.02em;
+const Skeleton = ({ className, children, height, width, ...p }) => (
+  <>
+    <style>{`
+      @keyframes summary-loading {
+        0% { background-position: 200% 0; }
+        100% { background-position: -200% 0; }
+      }
+    `}</style>
+    <div
+      className={cn('rounded-lg', className)}
+      style={{
+        background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
+        backgroundSize: '200% 100%',
+        animation: 'summary-loading 1.5s infinite',
+        height: height || '20px',
+        width: width || '100%',
+        ...p.style
+      }}
+      {...(({ style, ...rest }) => rest)(p)}
+    />
+  </>
+);
 
-  @media (max-width: 600px) {
-    font-size: 0.52rem;
-  }
-`;
+const CircularProgress = ({ className, ...p }) => (
+  <>
+    <style>{`
+      @keyframes summary-spin {
+        to { transform: rotate(360deg); }
+      }
+    `}</style>
+    <div
+      className={cn('w-10 h-10 rounded-full border-4 border-black/10 border-t-[#1976d2]', className)}
+      style={{
+        animation: 'summary-spin 1s linear infinite'
+      }}
+      {...p}
+    />
+  </>
+);
 
-const MetricValue = styled.span`
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: ${(props) => (props.isDark ? '#FFFFFF' : '#212B36')};
-  line-height: 1;
-  letter-spacing: -0.02em;
-  white-space: nowrap;
+const ChartMetricBox = ({ className, children, isDark, ...p }) => (
+  <>
+    <style>{`
+      .chart-metric-box {
+        grid-column: span 1;
+        overflow: visible;
+        height: 72px;
+        padding: 6px 10px;
+        justify-content: flex-start;
+        gap: 0;
+      }
+      @media (max-width: 1400px) { .chart-metric-box { grid-column: span 3; } }
+      @media (max-width: 1024px) { .chart-metric-box { grid-column: span 3; } }
+      @media (max-width: 768px) { .chart-metric-box { grid-column: span 2; } }
+      @media (max-width: 600px) { .chart-metric-box { display: none; } }
+    `}</style>
+    <MetricBox
+      className={cn('chart-metric-box', className)}
+      isDark={isDark}
+      style={{ height: '72px', padding: '6px 10px', justifyContent: 'flex-start', gap: 0 }}
+      {...p}
+    >
+      {children}
+    </MetricBox>
+  </>
+);
 
-  @media (max-width: 600px) {
-    font-size: 0.78rem;
-  }
-`;
-
-const PercentageChange = styled.span`
-  font-size: 0.68rem;
-  color: ${(props) => (props.isPositive ? '#10b981' : '#ef4444')};
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
-  font-weight: 500;
-  letter-spacing: -0.01em;
-  padding: 1px 4px;
-  border-radius: 4px;
-  background: ${(props) =>
-    props.isPositive ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)'};
-
-  @media (max-width: 600px) {
-    font-size: 0.5rem;
-    padding: 1px 2px;
-  }
-`;
-
-const VolumePercentage = styled.span`
-  font-size: 0.58rem;
-  color: ${(props) => (props.isDark ? 'rgba(255, 255, 255, 0.45)' : 'rgba(33, 43, 54, 0.45)')};
-  font-weight: 400;
-
-  @media (max-width: 600px) {
-    font-size: 0.5rem;
-  }
-`;
-
-const ContentTypography = styled.span`
-  color: ${(props) => (props.isDark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(33, 43, 54, 0.7)')};
-  font-size: 0.7rem;
-  font-weight: 400;
-  letter-spacing: 0.01em;
-
-  @media (max-width: 600px) {
-    font-size: 0.48rem;
-  }
-
-  @media (max-width: 480px) {
-    font-size: 0.45rem;
-  }
-`;
-
-const ChartContainer = styled.div`
-  width: 100%;
-  height: ${(props) => props.height || '180px'};
-  margin-top: ${(props) => props.mt || '0'};
-
-  @media (max-width: 600px) {
-    height: 140px;
-  }
-`;
-
-const TooltipContainer = styled.div`
-  background: ${(props) => (props.darkMode ? '#1c1c1c' : 'white')};
-  color: ${(props) => (props.darkMode ? '#fff' : '#000')};
-  border: 1.5px solid
-    ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)')};
-  border-radius: 8px;
-  padding: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  min-width: 200px;
-  z-index: 9999;
-  position: relative;
-`;
-
-const Skeleton = styled.div`
-  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-  background-size: 200% 100%;
-  animation: loading 1.5s infinite;
-  border-radius: 8px;
-  height: ${(props) => props.height || '20px'};
-  width: ${(props) => props.width || '100%'};
-
-  @keyframes loading {
-    0% {
-      background-position: 200% 0;
-    }
-    100% {
-      background-position: -200% 0;
-    }
-  }
-`;
-
-const CircularProgress = styled.div`
-  width: 40px;
-  height: 40px;
-  border: 4px solid rgba(0, 0, 0, 0.1);
-  border-top-color: #1976d2;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-
-  @keyframes spin {
-    to {
-      transform: rotate(360deg);
-    }
-  }
-`;
-
-const ChartMetricBox = styled(MetricBox)`
-  grid-column: span 1;
-  overflow: visible;
-  height: 72px;
-  padding: 6px 10px;
-  justify-content: flex-start;
-  gap: 0;
-
-  @media (max-width: 1400px) {
-    grid-column: span 3;
-  }
-
-  @media (max-width: 1024px) {
-    grid-column: span 3;
-  }
-
-  @media (max-width: 768px) {
-    grid-column: span 2;
-  }
-
-  @media (max-width: 600px) {
-    display: none;
-  }
-`;
-
-const MobileChartBox = styled.div`
-  display: none;
-
-  @media (max-width: 600px) {
-    display: flex;
-    flex-direction: column;
-    margin-top: 4px;
-    justify-content: flex-start;
-    gap: 2px;
-    padding: 0;
-    overflow: hidden;
-  }
-`;
+const MobileChartBox = ({ className, children, isDark, ...p }) => (
+  <div
+    className={cn(
+      'hidden max-[600px]:flex max-[600px]:flex-col max-[600px]:mt-1 max-[600px]:justify-start max-[600px]:gap-0.5 max-[600px]:p-0 max-[600px]:overflow-hidden',
+      'relative z-[1]',
+      className
+    )}
+    {...p}
+  >
+    {children}
+  </div>
+);
 
 function Rate(num, exch) {
   if (num === 0 || exch === 0) return '0';
@@ -488,12 +506,9 @@ const TokenChart = ({ data, theme, activeFiatCurrency, darkMode }) => {
         }}
       >
         <div
+          className="text-xs font-medium mb-2 pb-[6px]"
           style={{
-            fontSize: '12px',
-            fontWeight: 500,
-            marginBottom: '8px',
             color: darkMode ? 'rgba(255,255,255,0.9)' : '#333',
-            paddingBottom: '6px',
             borderBottom: darkMode
               ? '1px solid rgba(255, 255, 255, 0.08)'
               : '1px solid rgba(0, 0, 0, 0.06)'
@@ -501,24 +516,24 @@ const TokenChart = ({ data, theme, activeFiatCurrency, darkMode }) => {
         >
           {format(new Date(tooltip.data.originalDate), 'MMM dd, yyyy')}
         </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', margin: '3px 0' }}>
-          <span style={{ opacity: 0.6 }}>New Tokens</span>
-          <span style={{ fontWeight: 500 }}>{tooltip.data.Tokens || 0}</span>
+        <div className="flex justify-between my-[3px]">
+          <span className="opacity-60">New Tokens</span>
+          <span className="font-medium">{tooltip.data.Tokens || 0}</span>
         </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', margin: '3px 0' }}>
-          <span style={{ opacity: 0.6 }}>Market Cap</span>
-          <span style={{ fontWeight: 500 }}>
+        <div className="flex justify-between my-[3px]">
+          <span className="opacity-60">Market Cap</span>
+          <span className="font-medium">
             {currencySymbols[activeFiatCurrency]}
             {formatNumberWithDecimals(tooltip.data.totalMarketcap || 0)}
           </span>
         </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', margin: '3px 0' }}>
-          <span style={{ opacity: 0.6 }}>Avg Holders</span>
-          <span style={{ fontWeight: 500 }}>{Math.round(tooltip.data.avgHolders || 0)}</span>
+        <div className="flex justify-between my-[3px]">
+          <span className="opacity-60">Avg Holders</span>
+          <span className="font-medium">{Math.round(tooltip.data.avgHolders || 0)}</span>
         </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', margin: '3px 0' }}>
-          <span style={{ opacity: 0.6 }}>Volume 24h</span>
-          <span style={{ fontWeight: 500 }}>
+        <div className="flex justify-between my-[3px]">
+          <span className="opacity-60">Volume 24h</span>
+          <span className="font-medium">
             {currencySymbols[activeFiatCurrency]}
             {formatNumberWithDecimals(tooltip.data.totalVolume24h || 0)}
           </span>
@@ -527,23 +542,14 @@ const TokenChart = ({ data, theme, activeFiatCurrency, darkMode }) => {
           Object.entries(tooltip.data.platforms).filter(([, v]) => v > 0).length > 0 && (
             <>
               <div
+                className="mt-[6px] mb-1 pt-[6px]"
                 style={{
                   borderTop: darkMode
                     ? '1px solid rgba(255, 255, 255, 0.08)'
-                    : '1px solid rgba(0, 0, 0, 0.06)',
-                  margin: '6px 0 4px',
-                  paddingTop: '6px'
+                    : '1px solid rgba(0, 0, 0, 0.06)'
                 }}
               >
-                <span
-                  style={{
-                    fontSize: '10px',
-                    fontWeight: 500,
-                    opacity: 0.5,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.03em'
-                  }}
-                >
+                <span className="text-[10px] font-medium opacity-50 uppercase tracking-[0.03em]">
                   Platforms
                 </span>
               </div>
@@ -552,13 +558,7 @@ const TokenChart = ({ data, theme, activeFiatCurrency, darkMode }) => {
                 .map(([platform, count]) => (
                   <div
                     key={platform}
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      margin: '2px 0',
-                      fontSize: '10px',
-                      opacity: 0.7
-                    }}
+                    className="flex justify-between my-[2px] text-[10px] opacity-70"
                   >
                     <span>{platform}</span>
                     <span>{count}</span>
@@ -569,23 +569,14 @@ const TokenChart = ({ data, theme, activeFiatCurrency, darkMode }) => {
         {tooltip.data.tokensInvolved?.length > 0 && (
           <>
             <div
+              className="mt-[6px] mb-1 pt-[6px]"
               style={{
                 borderTop: darkMode
                   ? '1px solid rgba(255, 255, 255, 0.08)'
-                  : '1px solid rgba(0, 0, 0, 0.06)',
-                margin: '6px 0 4px',
-                paddingTop: '6px'
+                  : '1px solid rgba(0, 0, 0, 0.06)'
               }}
             >
-              <span
-                style={{
-                  fontSize: '10px',
-                  fontWeight: 500,
-                  opacity: 0.5,
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.03em'
-                }}
-              >
+              <span className="text-[10px] font-medium opacity-50 uppercase tracking-[0.03em]">
                 Top Tokens
               </span>
             </div>
@@ -595,42 +586,27 @@ const TokenChart = ({ data, theme, activeFiatCurrency, darkMode }) => {
               .map((token, i) => (
                 <div
                   key={`tooltip-token-${i}-${token.md5 || token.name}`}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    margin: '3px 0',
-                    fontSize: '10px'
-                  }}
+                  className="flex items-center justify-between my-[3px] text-[10px]"
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                  <div className="flex items-center gap-[5px]">
                     <div
-                      style={{
-                        width: '14px',
-                        height: '14px',
-                        minWidth: '14px',
-                        minHeight: '14px',
-                        borderRadius: '3px',
-                        overflow: 'hidden',
-                        background: darkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.04)'
-                      }}
+                      className={cn(
+                        'w-[14px] h-[14px] min-w-[14px] min-h-[14px] rounded-[3px] overflow-hidden',
+                        darkMode ? 'bg-white/[0.05]' : 'bg-black/[0.04]'
+                      )}
                     >
                       <img
                         src={`https://s1.xrpl.to/token/${token.md5}`}
                         alt={token.name}
-                        style={{
-                          width: '100%',
-                          height: '100%',
-                          objectFit: 'cover'
-                        }}
+                        className="w-full h-full object-cover"
                         onError={(e) => {
                           e.target.parentElement.style.display = 'none';
                         }}
                       />
                     </div>
-                    <span style={{ opacity: 0.8 }}>{token.name}</span>
+                    <span className="opacity-80">{token.name}</span>
                   </div>
-                  <span style={{ fontWeight: 500 }}>
+                  <span className="font-medium">
                     {formatNumberWithDecimals(token.marketcap || 0)} XRP
                   </span>
                 </div>
@@ -646,23 +622,13 @@ const TokenChart = ({ data, theme, activeFiatCurrency, darkMode }) => {
     <>
       <div
         ref={containerRef}
-        style={{
-          width: '100%',
-          height: '100%',
-          minHeight: '20px',
-          position: 'relative'
-        }}
+        className="w-full h-full min-h-[20px] relative"
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
       >
         <canvas
           ref={canvasRef}
-          style={{
-            width: '100%',
-            height: '100%',
-            display: 'block',
-            cursor: 'pointer'
-          }}
+          className="w-full h-full block cursor-pointer"
         />
       </div>
 
@@ -677,98 +643,40 @@ const TokenChart = ({ data, theme, activeFiatCurrency, darkMode }) => {
 
 // SummaryTag component (previously in separate file)
 export const SummaryTag = ({ tagName }) => {
-  const TagContainer = styled.div`
-    margin-top: 16px;
-
-    @media (max-width: 600px) {
-      margin-top: 4px;
-    }
-  `;
-
-  const TagTitle = styled.h1`
-    margin: 0 0 8px 0;
-    font-size: 1.75rem;
-    font-weight: 400;
-    line-height: 1.2;
-
-    @media (max-width: 600px) {
-      font-size: 1.1rem;
-      margin: 0 0 4px 0;
-    }
-  `;
-
-  const TagSubtitle = styled.div`
-    font-size: 0.875rem;
-    font-weight: 400;
-    line-height: 1.4;
-    opacity: 0.6;
-
-    @media (max-width: 600px) {
-      font-size: 0.7rem;
-    }
-  `;
-
   return (
-    <TagContainer>
-      <TagTitle>{tagName} Tokens</TagTitle>
-      <TagSubtitle>Ranked by 24h trading volume</TagSubtitle>
-    </TagContainer>
+    <div className="mt-4 max-[600px]:mt-1">
+      <h1 className="m-0 mb-2 max-[600px]:mb-1 text-[1.75rem] max-[600px]:text-[1.1rem] font-normal leading-[1.2]">
+        {tagName} Tokens
+      </h1>
+      <div className="text-sm max-[600px]:text-[0.7rem] font-normal leading-[1.4] opacity-60">
+        Ranked by 24h trading volume
+      </div>
+    </div>
   );
 };
 
 // SummaryWatchList component (previously in separate file)
 export const SummaryWatchList = () => {
-  const { accountProfile } = useContext(AppContext);
+  const { accountProfile } = useContext(WalletContext);
   const account = accountProfile?.account;
 
-  const ContentTypography = styled.div`
-    color: rgba(145, 158, 171, 0.99);
-  `;
-
-  const WatchContainer = styled.div`
-    margin-top: 16px;
-
-    @media (max-width: 600px) {
-      margin-top: 4px;
-    }
-  `;
-
-  const WatchTitle = styled.h1`
-    margin: 0;
-    font-size: 2.125rem;
-    font-weight: 300;
-    line-height: 1.235;
-    letter-spacing: -0.00833em;
-
-    @media (max-width: 600px) {
-      font-size: 1.1rem;
-    }
-  `;
-
-  const WatchSubtitle = styled.div`
-    font-size: 1rem;
-    font-weight: 400;
-    line-height: 1.5;
-    letter-spacing: 0.00938em;
-    margin-top: 16px;
-
-    @media (max-width: 600px) {
-      font-size: 0.7rem;
-      margin-top: 8px;
-    }
-  `;
-
   return (
-    <WatchContainer>
-      <WatchTitle>My Token Watchlist</WatchTitle>
+    <div className="mt-4 max-[600px]:mt-1">
+      <h1
+        className="m-0 text-[2.125rem] max-[600px]:text-[1.1rem] font-light leading-[1.235] tracking-[-0.00833em]"
+      >
+        My Token Watchlist
+      </h1>
       {!account && (
-        <WatchSubtitle>
-          <ContentTypography>
+        <div
+          className="text-base max-[600px]:text-[0.7rem] font-normal mt-4 max-[600px]:mt-2 leading-[1.5] tracking-[0.00938em]"
+        >
+          <span className="text-[rgba(145,158,171,0.99)]">
             Track your favorite XRPL tokens. Log in to manage your personalized watchlist.
-          </ContentTypography>
-        </WatchSubtitle>
+          </span>
+        </div>
       )}
-    </WatchContainer>
+    </div>
   );
 };
 
@@ -777,8 +685,9 @@ export default function Summary() {
   // Translation removed - using hardcoded English text
   const metrics = useSelector(selectMetrics);
   const tokenCreation = useSelector(selectTokenCreation);
-  const { activeFiatCurrency, darkMode } = useContext(AppContext);
-  const [isLoading, setIsLoading] = useState(true);
+  const { darkMode } = useContext(ThemeContext);
+  const { activeFiatCurrency } = useContext(AppContext);
+  const [isLoading, setIsLoading] = useState(false);
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 600;
 
   const fiatRate =
@@ -936,10 +845,6 @@ export default function Summary() {
     ]
   });
 
-  useEffect(() => {
-    setIsLoading(false);
-  }, []);
-
   const platformColors = {
     'xrpl.to': '#3b82f6',
     XPMarket: '#ef4444',
@@ -998,8 +903,8 @@ export default function Summary() {
         {/* Main Metrics Section */}
         {isLoading ? (
           <>
-            <Grid cols={8} mdCols={4} smCols={3}>
-              {[...Array(7)].map((_, i) => (
+            <Grid>
+              {[...Array(6)].map((_, i) => (
                 <MetricBox key={`summary-skeleton-${i}`} isDark={darkMode}>
                   <Skeleton height="12px" width="60%" style={{ marginBottom: '4px' }} />
                   <Skeleton height="20px" width="80%" />
@@ -1013,14 +918,9 @@ export default function Summary() {
               <MetricBox isDark={darkMode} style={isMobile ? { minWidth: '90px' } : {}}>
                 <MetricTitle isDark={darkMode}>MCap / TVL</MetricTitle>
                 <div
-                  style={{
-                    display: 'flex',
-                    gap: isMobile ? '8px' : '20px',
-                    alignItems: 'center',
-                    width: '100%'
-                  }}
+                  className={cn('flex items-center w-full', isMobile ? 'gap-2' : 'gap-5')}
                 >
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                  <div className="flex flex-col gap-[3px]">
                     <MetricValue
                       isDark={darkMode}
                       style={{ fontSize: isMobile ? '0.72rem' : '1.15rem' }}
@@ -1040,7 +940,7 @@ export default function Summary() {
                       {Math.abs(metrics.global?.gMarketcapPro || 0).toFixed(1)}%
                     </PercentageChange>
                   </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                  <div className="flex flex-col gap-[3px]">
                     <MetricValue
                       isDark={darkMode}
                       style={{ fontSize: isMobile ? '0.72rem' : '1.15rem', opacity: 0.6 }}
@@ -1101,42 +1001,17 @@ export default function Summary() {
                   const memePercent =
                     ((metrics.global?.gMemeVolume || 0) / (metrics.global?.gDexVolume || 1)) * 100;
                   return (
-                    <div
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '4px',
-                        flexWrap: 'wrap'
-                      }}
-                    >
+                    <div className="flex items-center gap-1 flex-wrap">
                       <PercentageChange isPositive={(metrics.global?.gDexVolumePro || 0) >= 0}>
                         {(metrics.global?.gDexVolumePro || 0) >= 0 ? '↑' : '↓'}
                         {Math.abs(metrics.global?.gDexVolumePro || 0).toFixed(1)}%
                       </PercentageChange>
                       {!isMobile && (
                         <>
-                          <span
-                            style={{
-                              fontSize: '0.58rem',
-                              fontWeight: 500,
-                              padding: '1px 4px',
-                              borderRadius: '4px',
-                              background: 'rgba(16, 185, 129, 0.1)',
-                              color: '#10b981'
-                            }}
-                          >
+                          <span className="text-[0.58rem] font-medium py-px px-1 rounded bg-[rgba(16,185,129,0.1)] text-[#10b981]">
                             {stablePercent.toFixed(0)}% Stable
                           </span>
-                          <span
-                            style={{
-                              fontSize: '0.58rem',
-                              fontWeight: 500,
-                              padding: '1px 4px',
-                              borderRadius: '4px',
-                              background: 'rgba(245, 158, 11, 0.1)',
-                              color: '#f59e0b'
-                            }}
-                          >
+                          <span className="text-[0.58rem] font-medium py-px px-1 rounded bg-[rgba(245,158,11,0.1)] text-[#f59e0b]">
                             {memePercent.toFixed(0)}% Meme
                           </span>
                         </>
@@ -1171,28 +1046,20 @@ export default function Summary() {
                   const total = buyVol + sellVol;
                   const buyPercent = total > 0 ? (buyVol / total) * 100 : 50;
                   return (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '3px' : '4px' }}>
+                    <div className={cn('flex items-center', isMobile ? 'gap-[3px]' : 'gap-1')}>
                       <span
-                        style={{
-                          fontSize: isMobile ? '0.48rem' : '0.58rem',
-                          fontWeight: 500,
-                          padding: isMobile ? '1px 2px' : '1px 4px',
-                          borderRadius: '4px',
-                          background: 'rgba(16, 185, 129, 0.1)',
-                          color: '#10b981'
-                        }}
+                        className={cn(
+                          'font-medium rounded bg-[rgba(16,185,129,0.1)] text-[#10b981]',
+                          isMobile ? 'text-[0.48rem] py-px px-[2px]' : 'text-[0.58rem] py-px px-1'
+                        )}
                       >
                         {buyPercent.toFixed(0)}% Buy
                       </span>
                       <span
-                        style={{
-                          fontSize: isMobile ? '0.48rem' : '0.58rem',
-                          fontWeight: 500,
-                          padding: isMobile ? '1px 2px' : '1px 4px',
-                          borderRadius: '4px',
-                          background: 'rgba(239, 68, 68, 0.1)',
-                          color: '#ef4444'
-                        }}
+                        className={cn(
+                          'font-medium rounded bg-[rgba(239,68,68,0.1)] text-[#ef4444]',
+                          isMobile ? 'text-[0.48rem] py-px px-[2px]' : 'text-[0.58rem] py-px px-1'
+                        )}
                       >
                         {(100 - buyPercent).toFixed(0)}% Sell
                       </span>
@@ -1220,79 +1087,46 @@ export default function Summary() {
 
                   return (
                     <div
-                      style={{
-                        display: 'flex',
-                        gap: isMobile ? '10px' : '20px',
-                        alignItems: 'center',
-                        width: '100%',
-                        justifyContent: 'flex-start'
-                      }}
+                      className={cn('flex items-center w-full justify-start', isMobile ? 'gap-[10px]' : 'gap-5')}
                     >
                       {/* Sentiment gauge */}
                       <div
-                        style={{
-                          display: 'flex',
-                          flexDirection: 'column',
-                          alignItems: 'center',
-                          gap: isMobile ? '2px' : '3px'
-                        }}
+                        className={cn('flex flex-col items-center', isMobile ? 'gap-[2px]' : 'gap-[3px]')}
                       >
-                        <div style={{ position: 'relative', width: isMobile ? '32px' : '40px', height: isMobile ? '18px' : '22px' }}>
+                        <div className={cn('relative', isMobile ? 'w-8 h-[18px]' : 'w-10 h-[22px]')}>
                           {/* Semi-circle background */}
                           <div
-                            style={{
-                              position: 'absolute',
-                              width: isMobile ? '32px' : '40px',
-                              height: isMobile ? '16px' : '20px',
-                              borderRadius: isMobile ? '16px 16px 0 0' : '20px 20px 0 0',
-                              background: `conic-gradient(from 180deg, #ef4444 0deg, #fbbf24 90deg, #10b981 180deg)`,
-                              opacity: 0.2
-                            }}
+                            className={cn(
+                              'absolute opacity-20 bg-[conic-gradient(from_180deg,#ef4444_0deg,#fbbf24_90deg,#10b981_180deg)]',
+                              isMobile ? 'w-8 h-4 rounded-t-[16px]' : 'w-10 h-5 rounded-t-[20px]'
+                            )}
                           />
                           {/* Needle */}
                           <div
+                            className={cn('absolute bottom-0 left-1/2 w-[2px] rounded-[1px] origin-bottom', isMobile ? 'h-3' : 'h-4')}
                             style={{
-                              position: 'absolute',
-                              bottom: '0',
-                              left: '50%',
-                              width: '2px',
-                              height: isMobile ? '12px' : '16px',
                               background: sentColor,
-                              transformOrigin: 'bottom center',
-                              transform: `translateX(-50%) rotate(${(sentiment - 50) * 1.8}deg)`,
-                              borderRadius: '1px'
+                              transform: `translateX(-50%) rotate(${(sentiment - 50) * 1.8}deg)`
                             }}
                           />
                           {/* Center dot */}
                           <div
-                            style={{
-                              position: 'absolute',
-                              bottom: '-2px',
-                              left: '50%',
-                              transform: 'translateX(-50%)',
-                              width: isMobile ? '5px' : '6px',
-                              height: isMobile ? '5px' : '6px',
-                              borderRadius: '50%',
-                              background: sentColor
-                            }}
+                            className={cn('absolute -bottom-[2px] left-1/2 -translate-x-1/2 rounded-full', isMobile ? 'w-[5px] h-[5px]' : 'w-[6px] h-[6px]')}
+                            style={{ background: sentColor }}
                           />
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'baseline', gap: isMobile ? '2px' : '3px' }}>
+                        <div className={cn('flex items-baseline', isMobile ? 'gap-[2px]' : 'gap-[3px]')}>
                           <span
-                            style={{
-                              fontSize: isMobile ? '0.85rem' : '1.15rem',
-                              fontWeight: 600,
-                              color: sentColor,
-                              lineHeight: 1
-                            }}
+                            className={cn('font-semibold leading-[1]', isMobile ? 'text-[0.85rem]' : 'text-[1.15rem]')}
+                            style={{ color: sentColor }}
                           >
                             {sentiment.toFixed(0)}
                           </span>
                           <span
-                            style={{
-                              fontSize: isMobile ? '0.45rem' : '0.52rem',
-                              color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'
-                            }}
+                            className={cn(
+                              isMobile ? 'text-[0.45rem]' : 'text-[0.52rem]',
+                              darkMode ? 'text-white/40' : 'text-black/40'
+                            )}
                           >
                             Sentiment
                           </span>
@@ -1301,69 +1135,42 @@ export default function Summary() {
 
                       {/* RSI gauge */}
                       <div
-                        style={{
-                          display: 'flex',
-                          flexDirection: 'column',
-                          alignItems: 'center',
-                          gap: isMobile ? '2px' : '3px'
-                        }}
+                        className={cn('flex flex-col items-center', isMobile ? 'gap-[2px]' : 'gap-[3px]')}
                       >
-                        <div style={{ position: 'relative', width: isMobile ? '32px' : '40px', height: isMobile ? '18px' : '22px' }}>
+                        <div className={cn('relative', isMobile ? 'w-8 h-[18px]' : 'w-10 h-[22px]')}>
                           {/* Semi-circle background */}
                           <div
-                            style={{
-                              position: 'absolute',
-                              width: isMobile ? '32px' : '40px',
-                              height: isMobile ? '16px' : '20px',
-                              borderRadius: isMobile ? '16px 16px 0 0' : '20px 20px 0 0',
-                              background: `conic-gradient(from 180deg, #8b5cf6 0deg, #10b981 90deg, #ef4444 180deg)`,
-                              opacity: 0.2
-                            }}
+                            className={cn(
+                              'absolute opacity-20 bg-[conic-gradient(from_180deg,#8b5cf6_0deg,#10b981_90deg,#ef4444_180deg)]',
+                              isMobile ? 'w-8 h-4 rounded-t-[16px]' : 'w-10 h-5 rounded-t-[20px]'
+                            )}
                           />
                           {/* Needle */}
                           <div
+                            className={cn('absolute bottom-0 left-1/2 w-[2px] rounded-[1px] origin-bottom', isMobile ? 'h-3' : 'h-4')}
                             style={{
-                              position: 'absolute',
-                              bottom: '0',
-                              left: '50%',
-                              width: '2px',
-                              height: isMobile ? '12px' : '16px',
                               background: rsiColor,
-                              transformOrigin: 'bottom center',
-                              transform: `translateX(-50%) rotate(${(rsi - 50) * 1.8}deg)`,
-                              borderRadius: '1px'
+                              transform: `translateX(-50%) rotate(${(rsi - 50) * 1.8}deg)`
                             }}
                           />
                           {/* Center dot */}
                           <div
-                            style={{
-                              position: 'absolute',
-                              bottom: '-2px',
-                              left: '50%',
-                              transform: 'translateX(-50%)',
-                              width: isMobile ? '5px' : '6px',
-                              height: isMobile ? '5px' : '6px',
-                              borderRadius: '50%',
-                              background: rsiColor
-                            }}
+                            className={cn('absolute -bottom-[2px] left-1/2 -translate-x-1/2 rounded-full', isMobile ? 'w-[5px] h-[5px]' : 'w-[6px] h-[6px]')}
+                            style={{ background: rsiColor }}
                           />
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'baseline', gap: isMobile ? '2px' : '3px' }}>
+                        <div className={cn('flex items-baseline', isMobile ? 'gap-[2px]' : 'gap-[3px]')}>
                           <span
-                            style={{
-                              fontSize: isMobile ? '0.85rem' : '1.15rem',
-                              fontWeight: 600,
-                              color: rsiColor,
-                              lineHeight: 1
-                            }}
+                            className={cn('font-semibold leading-[1]', isMobile ? 'text-[0.85rem]' : 'text-[1.15rem]')}
+                            style={{ color: rsiColor }}
                           >
                             {rsi.toFixed(0)}
                           </span>
                           <span
-                            style={{
-                              fontSize: isMobile ? '0.45rem' : '0.52rem',
-                              color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'
-                            }}
+                            className={cn(
+                              isMobile ? 'text-[0.45rem]' : 'text-[0.52rem]',
+                              darkMode ? 'text-white/40' : 'text-black/40'
+                            )}
                           >
                             RSI
                           </span>
@@ -1381,37 +1188,22 @@ export default function Summary() {
                   const isUp = today >= yesterday;
                   return (
                     <>
-                      <div
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                          width: '100%',
-                          marginBottom: '4px'
-                        }}
-                      >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <div className="flex items-center justify-between w-full mb-1">
+                        <div className="flex items-center gap-2">
                           <MetricTitle isDark={darkMode}>New Tokens</MetricTitle>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <div className="flex items-center gap-1">
                             <span
-                              style={{
-                                fontSize: '1rem',
-                                fontWeight: 600,
-                                color: darkMode ? '#fff' : '#212B36'
-                              }}
+                              className={cn('text-base font-semibold', darkMode ? 'text-white' : 'text-[#212B36]')}
                             >
                               {today}
                             </span>
                             <span
-                              style={{
-                                fontSize: '0.52rem',
-                                color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'
-                              }}
+                              className={cn('text-[0.52rem]', darkMode ? 'text-white/40' : 'text-black/40')}
                             >
                               today
                             </span>
                             <span
-                              style={{ fontSize: '0.7rem', color: isUp ? '#10b981' : '#ef4444' }}
+                              className={cn('text-[0.7rem]', isUp ? 'text-[#10b981]' : 'text-[#ef4444]')}
                             >
                               {isUp ? '↑' : '↓'}
                             </span>
@@ -1420,34 +1212,21 @@ export default function Summary() {
                         {latestToken && (
                           <Link
                             href={`/token/${latestToken.md5}`}
-                            style={{
-                              fontSize: '0.58rem',
-                              color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)',
-                              textDecoration: 'none',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '6px',
-                              borderLeft: `1px solid ${darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
-                              paddingLeft: '8px'
-                            }}
+                            className={cn(
+                              'text-[0.58rem] no-underline flex items-center gap-[6px] pl-2 border-l',
+                              darkMode ? 'text-white/50 border-white/10' : 'text-black/50 border-black/10'
+                            )}
                           >
-                            <span
-                              style={{
-                                maxWidth: '70px',
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                                whiteSpace: 'nowrap'
-                              }}
-                            >
+                            <span className="max-w-[70px] overflow-hidden text-ellipsis whitespace-nowrap">
                               {latestToken.name}
                             </span>
-                            <span style={{ color: '#10b981', fontWeight: 500 }}>
+                            <span className="text-[#10b981] font-medium">
                               {formatNumberWithDecimals(latestToken.marketcap || 0)} XRP
                             </span>
                           </Link>
                         )}
                       </div>
-                      <div style={{ flex: 1, width: '100%', minHeight: 0 }}>
+                      <div className="flex-1 w-full min-h-0">
                         <TokenChart
                           data={chartData}
                           activeFiatCurrency={activeFiatCurrency}
@@ -1467,35 +1246,21 @@ export default function Summary() {
                 const isUp = today >= yesterday;
                 return (
                   <>
-                    <div
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        width: '100%'
-                      }}
-                    >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <div className="flex items-center justify-between w-full">
+                      <div className="flex items-center gap-[6px]">
                         <MetricTitle isDark={darkMode}>New Tokens</MetricTitle>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+                        <div className="flex items-center gap-[3px]">
                           <span
-                            style={{
-                              fontSize: '0.85rem',
-                              fontWeight: 600,
-                              color: darkMode ? '#fff' : '#212B36'
-                            }}
+                            className={cn('text-[0.85rem] font-semibold', darkMode ? 'text-white' : 'text-[#212B36]')}
                           >
                             {today}
                           </span>
                           <span
-                            style={{
-                              fontSize: '0.48rem',
-                              color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'
-                            }}
+                            className={cn('text-[0.48rem]', darkMode ? 'text-white/40' : 'text-black/40')}
                           >
                             today
                           </span>
-                          <span style={{ fontSize: '0.65rem', color: isUp ? '#10b981' : '#ef4444' }}>
+                          <span className={cn('text-[0.65rem]', isUp ? 'text-[#10b981]' : 'text-[#ef4444]')}>
                             {isUp ? '↑' : '↓'}
                           </span>
                         </div>
@@ -1503,34 +1268,21 @@ export default function Summary() {
                       {latestToken && (
                         <Link
                           href={`/token/${latestToken.md5}`}
-                          style={{
-                            fontSize: '0.48rem',
-                            color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)',
-                            textDecoration: 'none',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '4px',
-                            borderLeft: `1px solid ${darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
-                            paddingLeft: '6px'
-                          }}
+                          className={cn(
+                            'text-[0.48rem] no-underline flex items-center gap-1 pl-[6px] border-l',
+                            darkMode ? 'text-white/50 border-white/10' : 'text-black/50 border-black/10'
+                          )}
                         >
-                          <span
-                            style={{
-                              maxWidth: '50px',
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                              whiteSpace: 'nowrap'
-                            }}
-                          >
+                          <span className="max-w-[50px] overflow-hidden text-ellipsis whitespace-nowrap">
                             {latestToken.name}
                           </span>
-                          <span style={{ color: '#10b981', fontWeight: 500 }}>
+                          <span className="text-[#10b981] font-medium">
                             {formatNumberWithDecimals(latestToken.marketcap || 0)} XRP
                           </span>
                         </Link>
                       )}
                     </div>
-                    <div style={{ height: '22px', width: '100%' }}>
+                    <div className="h-[22px] w-full">
                       <TokenChart
                         data={chartData}
                         activeFiatCurrency={activeFiatCurrency}

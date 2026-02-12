@@ -7,7 +7,7 @@ import { cn } from 'src/utils/cn';
 import { PulseLoader } from './Spinners';
 
 // Context
-import { AppContext } from 'src/context/AppContext';
+import { ThemeContext, WalletContext, AppContext } from 'src/context/AppContext';
 
 // Redux
 import { useSelector } from 'react-redux';
@@ -107,7 +107,9 @@ export default function EditTokenDialog({ token, setToken }) {
   const fileRef = useRef();
 
   const BASE_URL = 'https://api.xrpl.to';
-  const { accountProfile, openSnackbar, setOpenWalletModal, themeName } = useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
+  const { accountProfile, setOpenWalletModal } = useContext(WalletContext);
+  const { openSnackbar } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
   const [loading, setLoading] = useState(false);
 

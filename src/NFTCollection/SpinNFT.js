@@ -25,7 +25,7 @@ const useWindowSize = () => {
 
 // Context
 import { useContext } from 'react';
-import { AppContext } from 'src/context/AppContext';
+import { ThemeContext, WalletContext, AppContext } from 'src/context/AppContext';
 
 // Icons
 import { Edit, CheckCircle2 } from 'lucide-react';
@@ -76,7 +76,9 @@ export default function SpinNFT({ collection, setView }) {
   // Sound effects removed for build simplicity
   const play = () => {};
 
-  const { themeName, accountProfile, openSnackbar, sync, setSync } = useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
+  const { accountProfile } = useContext(WalletContext);
+  const { openSnackbar, sync, setSync } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
   const account = accountProfile?.account;
   const accountToken = accountProfile?.token;
@@ -319,23 +321,20 @@ export default function SpinNFT({ collection, setView }) {
               <img
                 src={spinImgUrl}
                 alt="NFT spinning animation"
-                className="w-full object-cover rounded-xl"
-                style={{ display: spinning ? 'block' : 'none' }}
+                className={cn('w-full object-cover rounded-xl', spinning ? 'block' : 'hidden')}
               />
               {isVideo ? (
                 <video
                   src={nftImgUrl}
                   title="NFT video"
                   controls
-                  className="w-full object-cover rounded-xl"
-                  style={{ display: spinning ? 'none' : 'block' }}
+                  className={cn('w-full object-cover rounded-xl', spinning ? 'hidden' : 'block')}
                 />
               ) : (
                 <img
                   src={nftImgUrl}
                   alt="NFT image"
-                  className="w-full object-cover rounded-xl"
-                  style={{ display: spinning ? 'none' : 'block' }}
+                  className={cn('w-full object-cover rounded-xl', spinning ? 'hidden' : 'block')}
                 />
               )}
 

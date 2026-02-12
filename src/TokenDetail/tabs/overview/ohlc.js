@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef, memo, useContext, useMemo, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import styled from '@emotion/styled';
 import {
   TrendingUp,
   CandlestickChart,
@@ -20,9 +19,10 @@ import {
 import api from 'src/utils/api';
 import { useSelector } from 'react-redux';
 import { selectMetrics } from 'src/redux/statusSlice';
-import { AppContext } from 'src/context/AppContext';
+import { ThemeContext, AppContext } from 'src/context/AppContext';
+import { cn } from 'src/utils/cn';
 
-const SYMBOLS = { USD: '$', EUR: '€', JPY: '¥', CNH: '¥', XRP: '✕' };
+const SYMBOLS = { USD: '$', EUR: '\u20AC', JPY: '\u00A5', CNH: '\u00A5', XRP: '\u2715' };
 const BASE_URL = 'https://api.xrpl.to/v1';
 // WebSocket URLs fetched via session endpoint for auth
 
@@ -51,134 +51,119 @@ const formatMcap = (v) => {
   return v < 1 ? v.toFixed(2) : Math.round(v).toString();
 };
 
-const Card = styled.div`
-  width: 100%;
-  padding: ${(p) => (p.isMobile ? '12px' : '16px')};
-  background: ${(p) => (p.isDark ? 'rgba(255,255,255,0.01)' : '#fff')};
-  border: 1px solid ${(p) => (p.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.08)')};
-  border-radius: 12px;
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  ${(p) =>
-    p.isFullscreen &&
-    `position:fixed;inset:0;z-index:99999;border-radius:0;background:${p.isDark ? '#06090e' : '#fff'};border:none;padding:16px 20px;`}
-`;
+const Card = ({ className, children, isDark, isMobile, isFullscreen, ...p }) => (
+  <div
+    className={cn(
+      'w-full relative overflow-hidden flex flex-col',
+      !isFullscreen && 'rounded-xl',
+      className
+    )}
+    style={{
+      padding: isFullscreen ? '16px 20px' : isMobile ? '12px' : '16px',
+      background: isFullscreen
+        ? (isDark ? '#06090e' : '#fff')
+        : (isDark ? 'rgba(255,255,255,0.01)' : '#fff'),
+      border: isFullscreen ? 'none' : `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.08)'}`,
+      ...(isFullscreen && { position: 'fixed', inset: 0, zIndex: 99999, borderRadius: 0 }),
+      ...p.style
+    }}
+    {...(({ style, ...rest }) => rest)(p)}
+  >
+    {children}
+  </div>
+);
 
-const ChartHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-  gap: 12px;
-  @media (max-width: 900px) {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-`;
+const ChartHeader = ({ className, children, ...p }) => (
+  <div
+    className={cn(
+      'flex justify-between items-center mb-3 gap-3',
+      'max-[900px]:flex-col max-[900px]:items-start',
+      className
+    )}
+    {...p}
+  >
+    {children}
+  </div>
+);
 
-const HeaderSection = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-`;
+const HeaderSection = ({ className, children, ...p }) => (
+  <div className={cn('flex items-center gap-2 flex-wrap', className)} {...p}>
+    {children}
+  </div>
+);
 
-const ToolGroup = styled.div`
-  display: flex;
-  background: ${(p) => (p.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)')};
-  padding: 2px;
-  border-radius: 8px;
-  gap: 2px;
-`;
+const ToolGroup = ({ className, children, isDark, ...p }) => (
+  <div
+    className={cn(
+      'flex p-[3px] rounded-[10px] gap-[2px] border',
+      isDark ? 'bg-white/[0.04] border-white/[0.06]' : 'bg-black/[0.03] border-black/[0.06]',
+      className
+    )}
+    {...p}
+  >
+    {children}
+  </div>
+);
 
-const ToolBtn = styled.button`
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: ${(p) => (p.isMobile ? '4px 8px' : '5px 10px')};
-  font-size: ${(p) => (p.isMobile ? '10px' : '11px')};
-  font-weight: ${(p) => (p.isActive ? 600 : 500)};
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  background: ${(p) => (p.isActive ? (p.isDark ? 'rgba(255,255,255,0.1)' : '#fff') : 'transparent')};
-  color: ${(p) =>
-    p.isActive
-      ? p.isDark
-        ? '#fff'
-        : '#000'
-      : p.isDark
-        ? 'rgba(255,255,255,0.45)'
-        : 'rgba(0,0,0,0.45)'};
-  box-shadow: ${(p) => (p.isActive && !p.isDark ? '0 1px 3px rgba(0,0,0,0.1)' : 'none')};
-  
-  & svg {
-    width: 14px;
-    height: 14px;
-    opacity: ${(p) => (p.isActive ? 1 : 0.6)};
-  }
+const ToolBtn = ({ className, children, isActive, isMobile, isDark, ...p }) => (
+  <button
+    className={cn(
+      'flex items-center gap-[6px] font-semibold rounded-md border-none cursor-pointer transition-all duration-200',
+      isMobile ? 'px-2 py-1 text-[10px]' : 'px-3 py-[6px] text-[11px]',
+      isActive
+        ? 'bg-[#3b82f6] text-white hover:bg-[#2563eb]'
+        : cn(
+            'bg-transparent',
+            isDark ? 'text-white/50 hover:text-white hover:bg-white/[0.08]' : 'text-black/50 hover:text-black hover:bg-black/[0.05]'
+          ),
+      '[&_svg]:w-[14px] [&_svg]:h-[14px] [&_svg]:stroke-[2.5]',
+      isActive ? '[&_svg]:opacity-100' : '[&_svg]:opacity-70',
+      className
+    )}
+    {...p}
+  >
+    {children}
+  </button>
+);
 
-  &:hover {
-    color: ${(p) => (p.isDark ? '#fff' : '#000')};
-    background: ${(p) => (!p.isActive ? (p.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)') : '')};
-  }
-`;
-
-const Spinner = styled(Loader2)`
-  animation: spin 1s linear infinite;
-  @keyframes spin {
-    to {
-      transform: rotate(360deg);
-    }
-  }
-`;
+const Spinner = ({ className, ...p }) => (
+  <Loader2 className={cn('animate-spin', className)} {...p} />
+);
 
 const BearEmptyState = ({ isDark, message = 'No chart data' }) => (
-  <div style={{
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '48px 24px',
-    width: '100%',
-    height: '100%',
-    gap: '16px',
-    background: isDark ? 'rgba(255,255,255,0.01)' : 'rgba(0,0,0,0.01)',
-    border: `1.5px dashed ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`,
-    borderRadius: '16px'
-  }}>
-    <div style={{ position: 'relative', width: 56, height: 56, opacity: 0.6 }}>
-      <div style={{ position: 'absolute', top: -4, left: 0, width: 18, height: 18, borderRadius: '50%', background: isDark ? 'rgba(255,255,255,0.15)' : '#d1d5db' }}>
-        <div style={{ position: 'absolute', top: 3.5, left: 3.5, width: 11, height: 11, borderRadius: '50%', background: isDark ? 'rgba(255,255,255,0.1)' : '#e5e7eb' }} />
+  <div className={cn(
+    'flex flex-col items-center justify-center py-12 px-6 w-full h-full gap-4 rounded-2xl border-[1.5px] border-dashed',
+    isDark ? 'bg-white/[0.01] border-white/[0.06]' : 'bg-black/[0.01] border-black/[0.06]'
+  )}>
+    <div className="relative w-14 h-14 opacity-60">
+      <div className={cn('absolute -top-1 left-0 w-[18px] h-[18px] rounded-full', isDark ? 'bg-white/15' : 'bg-[#d1d5db]')}>
+        <div className={cn('absolute top-[3.5px] left-[3.5px] w-[11px] h-[11px] rounded-full', isDark ? 'bg-white/10' : 'bg-[#e5e7eb]')} />
       </div>
-      <div style={{ position: 'absolute', top: -4, right: 0, width: 18, height: 18, borderRadius: '50%', background: isDark ? 'rgba(255,255,255,0.15)' : '#d1d5db' }}>
-        <div style={{ position: 'absolute', top: 3.5, right: 3.5, width: 11, height: 11, borderRadius: '50%', background: isDark ? 'rgba(255,255,255,0.1)' : '#e5e7eb' }} />
+      <div className={cn('absolute -top-1 right-0 w-[18px] h-[18px] rounded-full', isDark ? 'bg-white/15' : 'bg-[#d1d5db]')}>
+        <div className={cn('absolute top-[3.5px] right-[3.5px] w-[11px] h-[11px] rounded-full', isDark ? 'bg-white/10' : 'bg-[#e5e7eb]')} />
       </div>
-      <div style={{ position: 'absolute', top: 7, left: '50%', transform: 'translateX(-50%)', width: 44, height: 40, borderRadius: '50%', background: isDark ? 'rgba(255,255,255,0.15)' : '#d1d5db', overflow: 'hidden' }}>
+      <div className={cn('absolute top-[7px] left-1/2 -translate-x-1/2 w-11 h-10 rounded-full overflow-hidden', isDark ? 'bg-white/15' : 'bg-[#d1d5db]')}>
         {[0, 1, 2, 3, 4].map(i => (
-          <div key={i} style={{ height: 2, width: '100%', background: isDark ? 'rgba(255,255,255,0.15)' : '#e5e7eb', marginTop: i * 3 + 2 }} />
+          <div key={i} className={cn('h-[2px] w-full', isDark ? 'bg-white/15' : 'bg-[#e5e7eb]')} style={{ marginTop: i * 3 + 2 }} />
         ))}
-        <div style={{ position: 'absolute', top: 11, left: 8, width: 12, height: 12 }}>
-          <div style={{ position: 'absolute', width: 10, height: 2, background: isDark ? 'rgba(255,255,255,0.4)' : '#6b7280', transform: 'rotate(45deg)', top: 5 }} />
-          <div style={{ position: 'absolute', width: 10, height: 2, background: isDark ? 'rgba(255,255,255,0.4)' : '#6b7280', transform: 'rotate(-45deg)', top: 5 }} />
+        <div className="absolute top-[11px] left-2 w-3 h-3">
+          <div className={cn('absolute w-[10px] h-[2px] rotate-45 top-[5px]', isDark ? 'bg-white/40' : 'bg-[#6b7280]')} />
+          <div className={cn('absolute w-[10px] h-[2px] -rotate-45 top-[5px]', isDark ? 'bg-white/40' : 'bg-[#6b7280]')} />
         </div>
-        <div style={{ position: 'absolute', top: 11, right: 8, width: 12, height: 12 }}>
-          <div style={{ position: 'absolute', width: 10, height: 2, background: isDark ? 'rgba(255,255,255,0.4)' : '#6b7280', transform: 'rotate(45deg)', top: 5 }} />
-          <div style={{ position: 'absolute', width: 10, height: 2, background: isDark ? 'rgba(255,255,255,0.4)' : '#6b7280', transform: 'rotate(-45deg)', top: 5 }} />
+        <div className="absolute top-[11px] right-2 w-3 h-3">
+          <div className={cn('absolute w-[10px] h-[2px] rotate-45 top-[5px]', isDark ? 'bg-white/40' : 'bg-[#6b7280]')} />
+          <div className={cn('absolute w-[10px] h-[2px] -rotate-45 top-[5px]', isDark ? 'bg-white/40' : 'bg-[#6b7280]')} />
         </div>
-        <div style={{ position: 'absolute', bottom: 6, left: '50%', transform: 'translateX(-50%)', width: 20, height: 14, borderRadius: '50%', background: isDark ? 'rgba(255,255,255,0.1)' : '#e5e7eb' }}>
-          <div style={{ position: 'absolute', top: 2, left: '50%', transform: 'translateX(-50%)', width: 9, height: 7, borderRadius: '50%', background: isDark ? 'rgba(255,255,255,0.25)' : '#9ca3af' }} />
+        <div className={cn('absolute bottom-[6px] left-1/2 -translate-x-1/2 w-5 h-[14px] rounded-full', isDark ? 'bg-white/10' : 'bg-[#e5e7eb]')}>
+          <div className={cn('absolute top-[2px] left-1/2 -translate-x-1/2 w-[9px] h-[7px] rounded-full', isDark ? 'bg-white/25' : 'bg-[#9ca3af]')} />
         </div>
       </div>
     </div>
-    <div style={{ textAlign: 'center' }}>
-      <div style={{ fontSize: 13, fontWeight: 600, color: isDark ? '#fff' : '#1a1a1a', marginBottom: '4px' }}>
+    <div className="text-center">
+      <div className={cn('text-[13px] font-semibold mb-1', isDark ? 'text-white' : 'text-[#1a1a1a]')}>
         No chart data available
       </div>
-      <div style={{ fontSize: 11, color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>
+      <div className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-black/40')}>
         {message}
       </div>
     </div>
@@ -186,7 +171,8 @@ const BearEmptyState = ({ isDark, message = 'No chart data' }) => (
 );
 
 const PriceChartAdvanced = memo(({ token }) => {
-  const { activeFiatCurrency, themeName } = useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
+  const { activeFiatCurrency } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
 
   // Refs
@@ -247,55 +233,77 @@ const PriceChartAdvanced = memo(({ token }) => {
     return { percentDown: pct, athMcap: token.athMarketcap };
   }, [token?.athMarketcap, token?.marketcap]);
 
-  // Creator events via WebSocket (with session-based auth)
+  // Creator events - HTTP for initial load, WebSocket for live updates
   const [creatorEvents, setCreatorEvents] = useState([]);
   const creatorWsRef = useRef(null);
+  const creatorColorsRef = useRef({ sell: '#ef4444', buy: '#22c55e', withdraw: '#f59e0b', deposit: '#8b5cf6', transfer_out: '#f97316', other_send: '#f97316', check_create: '#ec4899', check_cash: '#ec4899', check_receive: '#ec4899', receive: '#06b6d4', other_receive: '#06b6d4' });
+  const mapCreatorEvent = useCallback((e) => ({
+    time: e.t,
+    type: (e.s || '').toUpperCase().replace('_', ' ').replace('OTHER ', ''),
+    tokenAmount: e.a || 0,
+    xrpAmount: e.x || 0,
+    hash: e.h,
+    color: creatorColorsRef.current[e.s] || '#9ca3af',
+    currency: e.n || e.c || ''
+  }), []);
+
+  // Fetch initial creator events via REST (not affected by WS rate limits)
   useEffect(() => {
     if (!token?.md5) return;
-    const colors = { sell: '#ef4444', buy: '#22c55e', withdraw: '#f59e0b', deposit: '#8b5cf6', transfer_out: '#f97316', other_send: '#f97316', check_create: '#ec4899', check_cash: '#ec4899', check_receive: '#ec4899', receive: '#06b6d4', other_receive: '#06b6d4' };
-    const mapEvent = (e) => ({
-      time: e.t,
-      type: (e.s || '').toUpperCase().replace('_', ' ').replace('OTHER ', ''),
-      tokenAmount: e.a || 0,
-      xrpAmount: e.x || 0,
-      hash: e.h,
-      color: colors[e.s] || '#9ca3af',
-      currency: e.n || e.c || ''
-    });
-
     let mounted = true;
+    api.get(`${BASE_URL}/creator-activity/${token.md5}?stream=true&limit=10`)
+      .then((res) => {
+        if (mounted && res.data?.length) {
+          setCreatorEvents(res.data.map(mapCreatorEvent));
+        }
+      })
+      .catch(() => {});
+    return () => { mounted = false; };
+  }, [token?.md5, mapCreatorEvent]);
+
+  // WebSocket for live creator event updates only
+  useEffect(() => {
+    if (!token?.md5) return;
+    let mounted = true;
+    let retryDelay = 3000;
+
     const connect = async () => {
       if (!mounted) return;
       try {
-        // Get authenticated WS URL from session endpoint
         const res = await fetch(`/api/ws/session?type=creator&id=${token.md5}`);
         const { wsUrl } = await res.json();
         if (!wsUrl || !mounted) return;
 
         const ws = new WebSocket(wsUrl);
         creatorWsRef.current = ws;
-        ws.onopen = () => {};
+        ws.onopen = () => { retryDelay = 3000; };
         ws.onmessage = (e) => {
           if (!mounted) return;
           const msg = JSON.parse(e.data);
           if (msg.type === 'initial' && msg.events?.length) {
-            setCreatorEvents(msg.events.map(mapEvent));
+            // Fallback: use WS initial data only if HTTP fetch didn't populate
+            setCreatorEvents((prev) => prev.length > 0 ? prev : msg.events.map(mapCreatorEvent));
           } else if (msg.type === 'activity') {
-            setCreatorEvents((prev) => [mapEvent(msg), ...prev].slice(0, 10));
+            setCreatorEvents((prev) => [mapCreatorEvent(msg), ...prev].slice(0, 10));
           }
         };
         ws.onerror = () => {};
         ws.onclose = (ev) => {
-          // Reconnect on unexpected close (not 1000=normal, not 4011=limit)
-          mounted && ev.code !== 1000 && ev.code !== 4011 && setTimeout(connect, 5000);
+          if (!mounted || ev.code === 1000) return;
+          // Retry all failures including 4011 (rate limit) with backoff
+          retryDelay = Math.min(retryDelay * 1.5, 30000);
+          setTimeout(connect, retryDelay);
         };
       } catch {
-        mounted && setTimeout(connect, 5000);
+        if (mounted) {
+          retryDelay = Math.min(retryDelay * 1.5, 30000);
+          setTimeout(connect, retryDelay);
+        }
       }
     };
     connect();
     return () => { mounted = false; creatorWsRef.current?.close(); };
-  }, [token?.md5]);
+  }, [token?.md5, mapCreatorEvent]);
 
   // Keep refs in sync
   useEffect(() => {
@@ -436,29 +444,36 @@ const PriceChartAdvanced = memo(({ token }) => {
               volume: +k.v || 0
             };
 
-            const series = seriesRefs.current;
-            if (series.candle && refs.current.chartType === 'candles') {
-              series.candle.update(candle);
-            } else if (series.line && refs.current.chartType === 'line') {
-              series.line.update({ time: candle.time, value: candle.close });
-            }
-            if (series.volume) {
-              series.volume.update({
-                time: candle.time,
-                value: candle.volume,
-                color: candle.close >= candle.open ? 'rgba(34,197,94,0.25)' : 'rgba(239,68,68,0.25)'
-              });
-            }
-
             if (dataRef.current?.length) {
               const last = dataRef.current[dataRef.current.length - 1];
-              if (last.time === candle.time) {
-                dataRef.current[dataRef.current.length - 1] = candle;
-              } else if (candle.time > last.time) {
-                dataRef.current.push(candle);
+              if (candleTime >= last.time) {
+                // Update master ref
+                if (candleTime === last.time) {
+                  dataRef.current[dataRef.current.length - 1] = candle;
+                } else {
+                  dataRef.current.push(candle);
+                }
+
+                // Immediate chart update
+                const series = seriesRefs.current;
+                if (series.candle && refs.current.chartType === 'candles') {
+                  series.candle.update(candle);
+                } else if (series.line && refs.current.chartType === 'line') {
+                  series.line.update({ time: candle.time, value: candle.close });
+                }
+                if (series.volume) {
+                  series.volume.update({
+                    time: candle.time,
+                    value: candle.volume,
+                    color: candle.close >= candle.open ? 'rgba(34,197,94,0.25)' : 'rgba(239,68,68,0.25)'
+                  });
+                }
+
+                // Sync React state to prevent useEffect from overwriting with old data
+                setData([...dataRef.current]);
+                setLastUpdate(new Date());
               }
             }
-            setLastUpdate(new Date());
           }
         };
 
@@ -593,6 +608,7 @@ const PriceChartAdvanced = memo(({ token }) => {
     }
 
     lastChartTypeRef.current = chartType;
+    lastKeyRef.current = null;
 
     const containerHeight = chartContainerRef.current.clientHeight || (isMobile ? 420 : 650);
     const containerWidth = chartContainerRef.current.clientWidth || 600;
@@ -660,7 +676,7 @@ const PriceChartAdvanced = memo(({ token }) => {
             const zeros = str.match(/0\.0*/)?.[0]?.length - 2 || 0;
             if (zeros >= 4) {
               const sig = str.replace(/^0\.0+/, '').replace(/0+$/, '');
-              const sub = '₀₁₂₃₄₅₆₇₈₉';
+              const sub = '\u2080\u2081\u2082\u2083\u2084\u2085\u2086\u2087\u2088\u2089';
               return s + '0.0' + String(zeros).split('').map((d) => sub[+d]).join('') + sig.slice(0, isMobile ? 2 : 4);
             }
             return s + price.toFixed(isMobile ? 4 : 6).replace(/0+$/, '').replace(/\.$/, '');
@@ -766,17 +782,17 @@ const PriceChartAdvanced = memo(({ token }) => {
 
     const toolTip = document.createElement('div');
     toolTip.style = `
-      width: ${isMobile ? '120px' : '150px'}; 
-      position: absolute; 
-      display: none; 
-      padding: 10px; 
-      font-size: ${isMobile ? '10px' : '11px'}; 
-      z-index: 1000; 
-      pointer-events: none; 
-      border-radius: 10px; 
-      background: ${isDark ? 'rgba(12,18,28,0.95)' : 'rgba(255,255,255,0.98)'}; 
-      backdrop-filter: blur(12px); 
-      color: ${isDark ? '#fff' : '#1a1a1a'}; 
+      width: ${isMobile ? '120px' : '150px'};
+      position: absolute;
+      display: none;
+      padding: 10px;
+      font-size: ${isMobile ? '10px' : '11px'};
+      z-index: 1000;
+      pointer-events: none;
+      border-radius: 10px;
+      background: ${isDark ? 'rgba(0,0,0,0.95)' : 'rgba(255,255,255,0.98)'};
+      backdrop-filter: blur(12px);
+      color: ${isDark ? '#fff' : '#1a1a1a'};
       border: 1px solid ${isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)'};
       box-shadow: 0 8px 32px rgba(0,0,0,0.2);
       font-family: var(--font-sans);
@@ -907,12 +923,13 @@ const PriceChartAdvanced = memo(({ token }) => {
           if (candle.apr > 0) html += row('APR', candle.apr.toFixed(2) + '%', '#22c55e');
         }
 
-        const w = chartContainerRef.current.clientWidth;
+        const w = containerWidth;
+        const h = containerHeight;
         toolTip.innerHTML = html;
         toolTip.style.display = 'block';
         toolTip.style.left = Math.max(0, Math.min(w - 150, param.point.x - 60)) + 'px';
         toolTip.style.top =
-          (param.point.y > chartContainerRef.current.clientHeight / 2 ? 8 : param.point.y + 20) +
+          (param.point.y > h / 2 ? 8 : param.point.y + 20) +
           'px';
       });
     });
@@ -924,7 +941,7 @@ const PriceChartAdvanced = memo(({ token }) => {
         if (price < 0.00000001) {
           const str = price.toFixed(20);
           const zeros = str.match(/0\.0*/)?.[0]?.length - 2 || 0;
-          const sub = '₀₁₂₃₄₅₆₇₈₉';
+          const sub = '\u2080\u2081\u2082\u2083\u2084\u2085\u2086\u2087\u2088\u2089';
           const sig = str.replace(/^0\.0+/, '').slice(0, 4);
           return s + '0.0' + String(zeros).split('').map((d) => sub[+d]).join('') + sig;
         }
@@ -1158,22 +1175,22 @@ const PriceChartAdvanced = memo(({ token }) => {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: '12px' }}>
-      <Card isDark={isDark} isMobile={isMobile} isFullscreen={isFullscreen} style={{ flex: 1 }}>
+    <div className="flex flex-col h-full gap-3">
+      <Card isDark={isDark} isMobile={isMobile} isFullscreen={isFullscreen} className="flex-1">
         <ChartHeader>
           <HeaderSection>
-            <span style={{ fontSize: '13px', fontWeight: 600, color: isDark ? '#fff' : '#1a1a1a' }}>
-              {token.name} <span style={{ opacity: 0.5, fontWeight: 400 }}>{chartType === 'holders' ? 'Holders' : chartType === 'liquidity' ? 'TVL' : activeFiatCurrency}</span>
+            <span className={cn('text-[13px] font-semibold', isDark ? 'text-white' : 'text-[#1a1a1a]')}>
+              {token.name} <span className="opacity-50 font-normal">{chartType === 'holders' ? 'Holders' : chartType === 'liquidity' ? 'TVL' : activeFiatCurrency}</span>
             </span>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'nowrap' }}>
+            <div className="flex items-center gap-[6px] flex-nowrap">
               {lastUpdate && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '2px 6px', borderRadius: '10px', background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)', border: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`, height: '22px' }}>
-                  <div style={{ width: '5px', height: '5px', borderRadius: '50%', background: isUserZoomed ? '#f59e0b' : '#22c55e', boxShadow: isUserZoomed ? 'none' : '0 0 6px rgba(34,197,94,0.4)' }} />
-                  <span style={{ fontSize: '9px', fontFamily: 'var(--font-mono)', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', fontWeight: 500 }}>
-                    {lastUpdate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })}
+                <div className="flex items-center gap-[6px] py-1 px-2 rounded-lg h-6 bg-[rgba(34,197,94,0.05)] border border-[rgba(34,197,94,0.2)]">
+                  <div className={cn('w-[6px] h-[6px] rounded-full', isUserZoomed ? 'bg-[#f59e0b]' : 'bg-[#22c55e]')} style={{ boxShadow: isUserZoomed ? 'none' : '0 0 8px rgba(34,197,94,0.6)', animation: isUserZoomed ? 'none' : 'pulse 2s infinite' }} />
+                  <span className={cn('text-[10px] font-mono font-bold tracking-[0.05em]', isUserZoomed ? 'text-[#f59e0b]' : 'text-[#22c55e]')}>
+                    {isUserZoomed ? 'PAUSED' : 'LIVE'}
                   </span>
-                  {isUserZoomed && <span style={{ fontSize: '8px', color: '#f59e0b', fontWeight: 600 }}>PAUSED</span>}
+                  <style>{`@keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }`}</style>
                 </div>
               )}
 
@@ -1181,21 +1198,20 @@ const PriceChartAdvanced = memo(({ token }) => {
                 const pct = Math.max(0, Math.min(100, 100 + parseFloat(athData.percentDown)));
                 const col = pct > 80 ? '#22c55e' : pct < 20 ? '#ef4444' : '#f59e0b';
                 return (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '4px' : '8px', padding: '2px 6px', borderRadius: '10px', background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)', border: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`, height: '22px' }}>
-                    <span style={{ fontSize: '8px', fontWeight: 700, color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)' }}>ATH</span>
-                    <div style={{ position: 'relative', width: isMobile ? '20px' : '30px', height: '3px', borderRadius: '1.5px', background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.1)' }}>
-                      <div style={{ position: 'absolute', left: 0, top: 0, height: '100%', width: `${pct}%`, borderRadius: '1.5px', background: col }} />
+                  <div className={cn('flex items-center gap-2 py-1 px-[10px] rounded-lg h-6 border', isDark ? 'bg-white/[0.03] border-white/[0.08]' : 'bg-black/[0.03] border-black/[0.08]')}>
+                    <span className={cn('text-[9px] font-extrabold', isDark ? 'text-white/40' : 'text-black/40')}>ATH</span>
+                    <div className={cn('relative h-1 rounded-sm overflow-hidden', isMobile ? 'w-[30px]' : 'w-10', isDark ? 'bg-white/[0.06]' : 'bg-black/10')}>
+                      <div className="absolute left-0 top-0 h-full rounded-sm" style={{ width: `${pct}%`, background: col }} />
                     </div>
-                    <span style={{ fontSize: '9px', fontWeight: 700, color: col, fontFamily: 'var(--font-mono)' }}>{athData.percentDown}%</span>
-                    {!isMobile && <><div style={{ width: '1px', height: '10px', background: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' }} /><span style={{ fontSize: '9px', fontWeight: 600, color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.6)', fontFamily: 'var(--font-mono)' }}>{SYMBOLS[activeFiatCurrency] || ''}{formatMcap(athData.athMcap)}</span></>}
+                    <span className="text-[10px] font-bold font-mono" style={{ color: col }}>{athData.percentDown}%</span>
                   </div>
                 );
               })()}
 
               {chartType === 'liquidity' && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '9px', background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)', padding: '2px 6px', borderRadius: '6px' }}>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '3px', color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)' }}><span style={{ width: '6px', height: '2px', borderRadius: '1px', background: '#06b6d4' }} />XRP</span>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '3px', color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)' }}><span style={{ width: '6px', height: '2px', borderRadius: '1px', background: '#f59e0b' }} />Token</span>
+                <div className={cn('flex items-center gap-[6px] text-[9px] py-[2px] px-[6px] rounded-md', isDark ? 'bg-white/[0.03]' : 'bg-black/[0.03]')}>
+                  <span className={cn('flex items-center gap-[3px]', isDark ? 'text-white/60' : 'text-black/60')}><span className="w-[6px] h-[2px] rounded-sm bg-[#06b6d4]" />XRP</span>
+                  <span className={cn('flex items-center gap-[3px]', isDark ? 'text-white/60' : 'text-black/60')}><span className="w-[6px] h-[2px] rounded-sm bg-[#f59e0b]" />Token</span>
                 </div>
               )}
             </div>
@@ -1263,55 +1279,25 @@ const PriceChartAdvanced = memo(({ token }) => {
         </ChartHeader>
 
         <div
-          style={{
-            position: 'relative',
-            flex: 1,
-            minHeight: isMobile ? '400px' : '450px',
-            borderRadius: '12px',
-            overflow: 'hidden',
-            background: isDark ? 'rgba(0,0,0,0.1)' : 'transparent'
-          }}
+          className={cn('relative flex-1 rounded-xl overflow-hidden', isMobile ? 'min-h-[400px]' : 'min-h-[450px]', isDark ? 'bg-black/10' : 'bg-transparent')}
         >
-          <div ref={chartContainerRef} style={{ width: '100%', height: '100%' }} />
+          <div ref={chartContainerRef} className="w-full h-full" />
 
           {loading && !chartRef.current && (
             <div
-              style={{
-                position: 'absolute',
-                inset: 0,
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '12px',
-                background: isDark ? 'rgba(6,9,14,0.4)' : 'rgba(255,255,255,0.4)',
-                backdropFilter: 'blur(4px)'
-              }}
+              className={cn('absolute inset-0 flex flex-col items-center justify-center gap-3 backdrop-blur-[4px]', isDark ? 'bg-[rgba(6,9,14,0.4)]' : 'bg-white/40')}
             >
               <Spinner size={24} color="#3b82f6" />
-              <span style={{ fontSize: '11px', fontWeight: 500, opacity: 0.6 }}>Loading chart data...</span>
+              <span className="text-[11px] font-medium opacity-60">Loading chart data...</span>
             </div>
           )}
 
           {isLoadingMore && (
             <div
-              style={{
-                position: 'absolute',
-                top: '12px',
-                left: '12px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '6px 12px',
-                borderRadius: '8px',
-                background: isDark ? 'rgba(20,25,35,0.95)' : 'rgba(255,255,255,0.95)',
-                border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`,
-                boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                zIndex: 10
-              }}
+              className={cn('absolute top-3 left-3 flex items-center gap-2 py-[6px] px-3 rounded-lg border z-10 shadow-[0_4px_12px_rgba(0,0,0,0.1)]', isDark ? 'bg-[rgba(20,25,35,0.95)] border-white/[0.08]' : 'bg-[rgba(255,255,255,0.95)] border-black/[0.08]')}
             >
               <Spinner size={12} />
-              <span style={{ fontSize: '10px', fontWeight: 600, opacity: 0.8, letterSpacing: '0.02em' }}>Fetching history...</span>
+              <span className="text-[10px] font-semibold opacity-80 tracking-[0.02em]">Fetching history...</span>
             </div>
           )}
 
@@ -1321,16 +1307,7 @@ const PriceChartAdvanced = memo(({ token }) => {
               : chartType === 'liquidity'
                 ? liquidityData?.length
                 : data?.length) && (
-              <div
-                style={{
-                  position: 'absolute',
-                  inset: 0,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  padding: '20px'
-                }}
-              >
+              <div className="absolute inset-0 flex items-center justify-center p-5">
                 <BearEmptyState isDark={isDark} />
               </div>
             )}
@@ -1341,24 +1318,7 @@ const PriceChartAdvanced = memo(({ token }) => {
           createPortal(
             <button
               onClick={handleFullscreen}
-              style={{
-                position: 'fixed',
-                top: 20,
-                right: 20,
-                zIndex: 999999,
-                padding: '10px 20px',
-                background: '#ef4444',
-                color: '#fff',
-                border: 'none',
-                borderRadius: '10px',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                fontSize: '14px',
-                fontWeight: 600,
-                boxShadow: '0 4px 20px rgba(239, 68, 68, 0.3)'
-              }}
+              className="fixed top-5 right-5 z-[999999] py-[10px] px-5 bg-[#ef4444] text-white border-none rounded-[10px] cursor-pointer flex items-center gap-2 text-sm font-semibold shadow-[0_4px_20px_rgba(239,68,68,0.3)]"
             >
               <Minimize size={18} />
               Exit Fullscreen
@@ -1369,23 +1329,13 @@ const PriceChartAdvanced = memo(({ token }) => {
 
       {creatorEvents.length > 0 && chartType !== 'holders' && chartType !== 'liquidity' && (
         <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            padding: '4px 12px',
-            borderRadius: '12px',
-            background: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)',
-            border: `1px solid ${isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'}`,
-            overflow: 'hidden',
-            minHeight: '28px'
-          }}
+          className={cn('flex items-center gap-3 py-2 px-4 rounded-xl min-h-[40px] border', isDark ? 'bg-black/20 border-white/[0.05]' : 'bg-black/[0.02] border-black/[0.05]')}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', paddingRight: '8px', borderRight: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`, flexShrink: 0 }}>
-            <Sparkles size={14} color="#f59e0b" />
-            <span style={{ color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', fontWeight: 600, fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Creator</span>
+          <div className={cn('flex items-center gap-2 pr-3 shrink-0', isDark ? 'border-r border-white/10' : 'border-r border-black/10')}>
+            <Sparkles size={14} color="#f59e0b" fill="#f59e0b" className="opacity-80" />
+            <span className={cn('font-bold text-[10px] uppercase tracking-[0.1em]', isDark ? 'text-white/50' : 'text-black/50')}>Creator</span>
           </div>
-          <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+          <div className="flex gap-2 overflow-x-auto py-[2px]" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
             {creatorEvents.slice(0, 10).map((e, i) => {
               const f = (n) => n >= 9.995e5 ? (n / 1e6).toFixed(1) + 'M' : n >= 1e3 ? (n / 1e3).toFixed(0) + 'K' : n < 1 ? n.toFixed(2) : Math.round(n);
               const t = e.time > 1e12 ? e.time : e.time * 1000;
@@ -1393,40 +1343,21 @@ const PriceChartAdvanced = memo(({ token }) => {
               const ago = d < 60 ? d + 's' : d < 3600 ? Math.floor(d / 60) + 'm' : d < 86400 ? Math.floor(d / 3600) + 'h' : Math.floor(d / 86400) + 'd';
               const isXrp = ['SELL', 'BUY', 'WITHDRAW', 'DEPOSIT', 'SEND', 'RECEIVE'].includes(e.type);
               const amt = isXrp && e.xrpAmount > 0.001 ? f(e.xrpAmount) + ' XRP' : e.tokenAmount > 0 ? f(e.tokenAmount) + (e.currency ? ' ' + e.currency : '') : '';
-              const short = { SELL: 'Sell', BUY: 'Buy', SEND: 'Send', RECEIVE: 'Receive', 'TRANSFER OUT': 'Send', WITHDRAW: 'Withdraw', DEPOSIT: 'Deposit', 'CHECK CREATE': 'Check', 'CHECK CASH': 'Check', 'CHECK RECEIVE': 'Check' }[e.type] || e.type;
+              const short = { SELL: 'Sell', BUY: 'Buy', SEND: 'Send', RECEIVE: 'Recv', 'TRANSFER OUT': 'Send', WITHDRAW: 'Out', DEPOSIT: 'In' }[e.type] || e.type;
               return (
                 <a
                   key={e.hash || i}
                   href={`https://xrpl.to/tx/${e.hash}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  title={`${e.type} - ${ago} ago`}
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '4px',
-                    padding: '4px 8px',
-                    borderRadius: '6px',
-                    background: isDark ? 'rgba(255,255,255,0.03)' : '#fff',
-                    border: `1px solid ${isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'}`,
-                    textDecoration: 'none',
-                    color: isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.8)',
-                    flexShrink: 0,
-                    whiteSpace: 'nowrap',
-                    transition: 'all 0.2s'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'translateY(-1px)';
-                    e.currentTarget.style.borderColor = 'rgba(59,130,246,0.3)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.borderColor = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
-                  }}
+                  className={cn(
+                    'inline-flex items-center gap-[6px] py-1 px-[10px] rounded-md border no-underline shrink-0 transition-all duration-200',
+                    isDark ? 'bg-white/[0.04] border-white/[0.08] text-white hover:-translate-y-px hover:bg-white/[0.08] hover:border-[#3b82f6]' : 'bg-white border-black/[0.08] text-[#1a1a1a] hover:-translate-y-px hover:bg-[#f8fafc] hover:border-[#3b82f6]'
+                  )}
                 >
-                  <span style={{ color: e.color, fontWeight: 700, fontSize: '9px' }}>{short}</span>
-                  {amt && <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', fontWeight: 500 }}>{amt}</span>}
-                  <span style={{ opacity: 0.4, fontSize: '9px', fontWeight: 600 }}>{ago}</span>
+                  <span className="font-extrabold text-[10px] uppercase" style={{ color: e.color }}>{short}</span>
+                  {amt && <span className="font-mono text-[10px] font-semibold opacity-90">{amt}</span>}
+                  <span className="opacity-40 text-[9px] font-semibold">{ago}</span>
                 </a>
               );
             })}

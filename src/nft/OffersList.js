@@ -1,6 +1,6 @@
 import api from 'src/utils/api';
 import { useState, useEffect, useContext } from 'react';
-import { AppContext } from 'src/context/AppContext';
+import { ThemeContext, WalletContext, AppContext } from 'src/context/AppContext';
 import { cn } from 'src/utils/cn';
 import { CheckCircle, X, Repeat, Clock, MessageCircle } from 'lucide-react';
 import { FadeLoader, PuffLoader, PulseLoader } from '../components/Spinners';
@@ -14,7 +14,9 @@ import { normalizeAmount } from 'src/utils/parseUtils';
 import CountdownTimer from './CountDownTimer';
 
 export default function OffersList({ nft, offers, handleAcceptOffer, handleCancelOffer, isSell }) {
-  const { themeName, accountProfile, openSnackbar, sync, setSync } = useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
+  const { accountProfile } = useContext(WalletContext);
+  const { openSnackbar, sync, setSync } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
   const accountLogin = accountProfile?.account;
   const accountToken = accountProfile?.token;

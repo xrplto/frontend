@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useRouter } from 'next/router';
 import api from 'src/utils/api';
 import { throttle, fVolume, fNumber } from 'src/utils/formatters';
-import { AppContext } from 'src/context/AppContext';
+import { ThemeContext, WalletContext, AppContext } from 'src/context/AppContext';
 import Logo from 'src/components/Logo';
 import { addTokenToTabs } from 'src/hooks/useTokenTabs';
 
@@ -236,20 +236,10 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
   const router = useRouter();
   const isProcessing = useSelector(selectProcess);
   const metrics = useSelector(selectMetrics);
-  const {
-    darkMode,
-    setDarkMode,
-    accountProfile,
-    accountLogin,
-    accountBalance,
-    activeFiatCurrency,
-    toggleFiatCurrency,
-    themeName,
-    setTheme,
-    setOpenWalletModal,
-    setPendingWalletAuth,
-    profiles
-  } = useContext(AppContext);
+  const { darkMode, setDarkMode, themeName, setTheme } = useContext(ThemeContext);
+  const { accountProfile, accountBalance, setOpenWalletModal, setPendingWalletAuth, profiles } = useContext(WalletContext);
+  const { activeFiatCurrency, toggleFiatCurrency } = useContext(AppContext);
+  const accountLogin = accountProfile?.account;
   const isDark = themeName === 'XrplToDarkTheme';
   const availableXrp = accountBalance?.curr1?.value;
   const isAccountActivated = parseFloat(accountBalance?.curr2?.value || 0) > 0;
@@ -492,15 +482,8 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
 
     const controller = new AbortController();
     const debounceMs = detectedHexId || detectedAddress ? 0 : 300;
-    console.log('[Search] Start:', {
-      query: trimmedQuery,
-      debounceMs,
-      detectedAddress: !!detectedAddress,
-      time: Date.now()
-    });
     const searchStart = Date.now();
     const runSearch = () => {
-      console.log('[Search] Running after', Date.now() - searchStart, 'ms');
       if (detectedHexId) {
         api
           .post(`${BASE_URL}/search`, { search: detectedHexId }, { signal: controller.signal })
@@ -531,18 +514,10 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
       setSearchLoading(true);
       (async () => {
         try {
-          console.log('[Search] API call start');
           const res = await api.post(
             `${BASE_URL}/search`,
             { search: searchQuery },
             { signal: controller.signal }
-          );
-          console.log(
-            '[Search] API response after',
-            Date.now() - searchStart,
-            'ms',
-            'account:',
-            res.data?.account
           );
           const account = res.data?.account;
           setSearchResults({
@@ -555,9 +530,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
               : null,
             ledger: null
           });
-          console.log('[Search] State updated after', Date.now() - searchStart, 'ms');
         } catch (e) {
-          console.log('[Search] Error:', e.message);
         }
         setSearchLoading(false);
       })();
@@ -1151,6 +1124,8 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                                 ? `https://s1.xrpl.to/token/${item.md5}`
                                 : `https://s1.xrpl.to/nft-collection/${item.logoImage}`
                             }
+                            width={20}
+                            height={20}
                             className={cn(
                               'w-5 h-5 object-cover',
                               item.type === 'token' ? 'rounded-full' : 'rounded-md'
@@ -1210,6 +1185,8 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                                 <div className="relative">
                                   <img
                                     src={`https://s1.xrpl.to/token/${token.md5}`}
+                                    width={32}
+                                    height={32}
                                     className="w-8 h-8 rounded-full object-cover shadow-sm group-hover:scale-105 transition-transform"
                                     alt=""
                                   />
@@ -2167,6 +2144,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
               {/* Watchlist */}
               <a
                 href="/watchlist"
+                aria-label="Watchlist"
                 className={cn(
                   'flex h-8 w-8 items-center justify-center rounded-lg border transition-all duration-200',
                   isDark
@@ -2181,6 +2159,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
               <div ref={settingsRef} className="relative">
                 <button
                   onClick={handleSettingsToggle}
+                  aria-label="Settings"
                   className={cn(
                     'flex h-8 w-8 items-center justify-center rounded-lg border transition-all duration-200',
                     isDark

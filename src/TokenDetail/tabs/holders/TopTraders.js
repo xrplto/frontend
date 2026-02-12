@@ -1,8 +1,8 @@
 import { useState, useEffect, useContext, useMemo } from 'react';
-import api from 'src/utils/api';
+import api, { getWalletAuthHeaders } from 'src/utils/api';
 import Link from 'next/link';
 import { Loader2, Activity, Search, X, ChevronLeft, ChevronRight, MessageCircle, Tag, Trash2 } from 'lucide-react';
-import { AppContext } from 'src/context/AppContext';
+import { ThemeContext, WalletContext } from 'src/context/AppContext';
 import { cn } from 'src/utils/cn';
 import { fNumber, formatDistanceToNowStrict } from 'src/utils/formatters';
 
@@ -33,7 +33,8 @@ const SORT_OPTIONS = [
 
 export default function TopTraders({ token, walletLabels: walletLabelsProp = {}, onLabelsChange }) {
   const BASE_URL = 'https://api.xrpl.to/v1';
-  const { themeName, accountProfile } = useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
+  const { accountProfile } = useContext(WalletContext);
   const isDark = themeName === 'XrplToDarkTheme';
   const accountLogin = accountProfile?.account;
 
@@ -49,10 +50,11 @@ export default function TopTraders({ token, walletLabels: walletLabelsProp = {},
     if (!accountLogin || !labelInput.trim()) return;
     setLabelSaving(true);
     try {
+      const authHeaders = await getWalletAuthHeaders(accountProfile);
       if (walletLabels[wallet]) {
-        await api.delete(`https://api.xrpl.to/api/user/${accountLogin}/labels/${wallet}`);
+        await api.delete(`https://api.xrpl.to/api/user/${accountLogin}/labels/${wallet}`, { headers: authHeaders });
       }
-      const res = await api.post(`https://api.xrpl.to/api/user/${accountLogin}/labels`, { wallet, label: labelInput.trim() });
+      const res = await api.post(`https://api.xrpl.to/api/user/${accountLogin}/labels`, { wallet, label: labelInput.trim() }, { headers: authHeaders });
       const newLabels = { ...walletLabels, [wallet]: res.data?.label || labelInput.trim() };
       setWalletLabels(newLabels);
       onLabelsChange?.(newLabels);
@@ -66,7 +68,8 @@ export default function TopTraders({ token, walletLabels: walletLabelsProp = {},
     if (!accountLogin) return;
     setLabelSaving(true);
     try {
-      await api.delete(`https://api.xrpl.to/api/user/${accountLogin}/labels/${wallet}`);
+      const authHeaders = await getWalletAuthHeaders(accountProfile);
+      await api.delete(`https://api.xrpl.to/api/user/${accountLogin}/labels/${wallet}`, { headers: authHeaders });
       const newLabels = { ...walletLabels };
       delete newLabels[wallet];
       setWalletLabels(newLabels);
@@ -159,7 +162,7 @@ export default function TopTraders({ token, walletLabels: walletLabelsProp = {},
           };
           const sortBy = sortMap[sortType] || 'volume24h';
           response = await api.get(
-            `${BASE_URL}/analytics/cumulative-stats?limit=${fetchLimit}&sortBy=${sortBy}&sortOrder=desc&includeAMM=false`
+            `${BASE_URL}/token/analytics/traders?limit=${fetchLimit}&sortBy=${sortBy}&sortOrder=desc&includeAMM=false`
           );
           if (response.status === 200) {
             const tradersArray = Array.isArray(response.data.data) ? response.data.data : [];
@@ -195,7 +198,6 @@ export default function TopTraders({ token, walletLabels: walletLabelsProp = {},
     isXRPToken,
     sortType,
     timePeriod,
-    isMobile,
     mobileChecked,
     debouncedSearch,
     offset
@@ -639,6 +641,7 @@ export default function TopTraders({ token, walletLabels: walletLabelsProp = {},
               type="button"
               onClick={() => setOffset(Math.max(0, offset - limit))}
               disabled={!hasPrev}
+              aria-label="Previous page"
               className={cn(
                 'p-1.5 rounded-md transition-colors',
                 !hasPrev ? 'opacity-30 cursor-not-allowed' : 'hover:bg-white/10',
@@ -659,6 +662,7 @@ export default function TopTraders({ token, walletLabels: walletLabelsProp = {},
               type="button"
               onClick={() => setOffset(offset + limit)}
               disabled={!hasNext}
+              aria-label="Next page"
               className={cn(
                 'p-1.5 rounded-md transition-colors',
                 !hasNext ? 'opacity-30 cursor-not-allowed' : 'hover:bg-white/10',

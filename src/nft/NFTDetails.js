@@ -28,10 +28,11 @@ import {
 import { ApiButton, registerApiCalls } from 'src/components/ApiEndpointsModal';
 
 // Context
-import { AppContext } from 'src/context/AppContext';
+import { ThemeContext, WalletContext, AppContext } from 'src/context/AppContext';
 
 // Utils
 import { cn } from 'src/utils/cn';
+import { VerificationLabel } from 'src/components/VerificationBadge';
 
 // More Utils
 import { fVolume, fNumber } from 'src/utils/formatters';
@@ -60,7 +61,7 @@ function t(key) {
 
 // Arrow component for carousel navigation
 function Arrow(props) {
-  const { themeName } = useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
   const isDark = themeName === 'XrplToDarkTheme';
 
   return (
@@ -126,7 +127,7 @@ function getProperties(meta) {
 
 // NFT Preview Component (embedded)
 const NFTPreviewComponent = memo(function NFTPreviewComponent({ nft, showDetails = false }) {
-  const { themeName } = useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
   const isDark = themeName === 'XrplToDarkTheme';
   const noImg = '/static/nft_no_image.webp';
 
@@ -405,7 +406,9 @@ const NFTPreviewComponent = memo(function NFTPreviewComponent({ nft, showDetails
 
 // Main NFTDetails Component
 const NFTDetails = memo(function NFTDetails({ nft }) {
-  const { openSnackbar, themeName, accountProfile, setOpenWalletModal } = useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
+  const { accountProfile, setOpenWalletModal } = useContext(WalletContext);
+  const { openSnackbar } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
   const accountLogin = accountProfile?.account;
   const [isSaved, setIsSaved] = useState(false);
@@ -585,19 +588,7 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
                   const v = nft.collectionVerified >= 1 ? nft.collectionVerified
                     : (typeof collection === 'object' && collection?.verified >= 1) ? collection.verified
                     : 0;
-                  if (!v || v < 1 || v > 4) return null;
-                  const styles = {
-                    1: isDark ? 'bg-blue-500/15 text-blue-400 border border-blue-500/20' : 'bg-blue-50 text-blue-600 border border-blue-200',
-                    2: isDark ? 'bg-purple-500/15 text-purple-400 border border-purple-500/20' : 'bg-purple-50 text-purple-600 border border-purple-200',
-                    3: isDark ? 'bg-amber-500/15 text-amber-400 border border-amber-500/20' : 'bg-amber-50 text-amber-600 border border-amber-200',
-                    4: isDark ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20' : 'bg-emerald-50 text-emerald-600 border border-emerald-200',
-                  };
-                  const labels = { 1: 'Official', 2: 'Premium', 3: 'Standard', 4: 'Verified' };
-                  return (
-                    <span className={cn('px-1.5 py-0.5 rounded text-[9px] font-medium uppercase tracking-wide', styles[v])}>
-                      {labels[v]}
-                    </span>
-                  );
+                  return <VerificationLabel verified={v} isDark={isDark} />;
                 })()}
               </div>
             )}

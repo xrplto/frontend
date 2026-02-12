@@ -1,11 +1,11 @@
 import { useEffect, useContext } from 'react';
 import { useRouter } from 'next/router';
-import { AppContext } from 'src/context/AppContext';
+import { WalletContext } from 'src/context/AppContext';
 
 export default function SignupPage() {
   const router = useRouter();
   const { ref } = router.query;
-  const { setOpenWalletModal, accountProfile } = useContext(AppContext);
+  const { setOpenWalletModal, accountProfile } = useContext(WalletContext);
 
   useEffect(() => {
     if (!router.isReady) return;

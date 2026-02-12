@@ -1,10 +1,10 @@
 import api from 'src/utils/api';
 import { performance } from 'perf_hooks';
-import styled from '@emotion/styled';
+import { cn } from 'src/utils/cn';
 
 // Context
 import { useContext } from 'react';
-import { AppContext } from 'src/context/AppContext';
+import { ThemeContext } from 'src/context/AppContext';
 
 // Components
 import Header from 'src/components/Header';
@@ -13,12 +13,12 @@ import Collection from 'src/NFTCollection/CollectionView';
 import ScrollToTop from 'src/components/ScrollToTop';
 import { ApiButton } from 'src/components/ApiEndpointsModal';
 
-const OverviewWrapper = styled.div`
-  min-height: 100vh;
-`;
+const OverviewWrapper = ({ className, ...props }) => (
+  <div className={cn('min-h-screen', className)} {...props} />
+);
 
 export default function Overview({ collection }) {
-  const { darkMode } = useContext(AppContext);
+  const { darkMode } = useContext(ThemeContext);
 
   if (!collection) {
     return <div>Loading...</div>;

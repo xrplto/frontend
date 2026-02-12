@@ -67,14 +67,14 @@ const NFTSparklineChart = memo(
     const fillColor = hexToRgba(color, 0.15);
 
     return (
-      <div ref={containerRef} style={{ width: 120, height: 32 }}>
+      <div ref={containerRef} className="w-[120px] h-8">
         {linePath ? (
           <svg
             width="120"
             height="32"
             viewBox="0 0 120 32"
             preserveAspectRatio="none"
-            style={{ display: 'block' }}
+            className="block"
           >
             <path d={areaPath} fill={fillColor} />
             <path
@@ -87,14 +87,7 @@ const NFTSparklineChart = memo(
             />
           </svg>
         ) : (
-          <div
-            style={{
-              width: 120,
-              height: 32,
-              background: 'rgba(128,128,128,0.04)',
-              borderRadius: 4
-            }}
-          />
+          <div className="w-[120px] h-8 bg-[rgba(128,128,128,0.04)] rounded" />
         )}
       </div>
     );

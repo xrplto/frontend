@@ -1,6 +1,6 @@
-import styled from '@emotion/styled';
 import { useContext, useState, useEffect } from 'react';
-import { AppContext } from 'src/context/AppContext';
+import { ThemeContext, WalletContext, AppContext } from 'src/context/AppContext';
+import { cn } from 'src/utils/cn';
 import { useSelector } from 'react-redux';
 import { selectMetrics } from 'src/redux/statusSlice';
 import api from 'src/utils/api';
@@ -8,49 +8,36 @@ import { Bookmark } from 'lucide-react';
 
 const SYMBOLS = { USD: '$', EUR: '€', JPY: '¥', CNH: '¥', XRP: '✕' };
 
-const Container = styled.div`
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  overflow: hidden;
-  background: ${(props) => (props.isDark ? 'transparent' : '#fff')};
-`;
+const Container = ({ isDark, className, ...props }) => (
+  <div
+    className={cn(
+      'flex flex-col h-full overflow-hidden',
+      isDark ? 'bg-transparent' : 'bg-white',
+      className
+    )}
+    {...props}
+  />
+);
 
-const TokenCard = styled.a`
-  display: grid;
-  grid-template-columns: 24px 28px 1fr 70px 50px;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 16px;
-  text-decoration: none;
-  color: inherit;
-  border-bottom: 1px solid ${(props) => (props.isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)')};
-  transition: all 0.2s ease;
-  position: relative;
-  
-  &:hover {
-    background: ${(props) => (props.isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)')};
-    transform: translateX(2px);
-  }
-
-  ${(props) => props.isWatched && `
-    background: ${props.isDark ? 'rgba(246,184,126,0.04)' : 'rgba(246,184,126,0.06)'};
-    &::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      top: 15%;
-      bottom: 15%;
-      width: 2px;
-      background: #F6B87E;
-      border-radius: 0 2px 2px 0;
-    }
-  `}
-
-  &:last-child {
-    border-bottom: none;
-  }
-`;
+const TokenCard = ({ isDark, isWatched, className, children, ...props }) => (
+  <a
+    className={cn(
+      'grid grid-cols-[24px_28px_1fr_70px_50px] items-center gap-2.5 py-2.5 px-4 no-underline text-inherit transition-all duration-200 ease-in-out relative',
+      isDark
+        ? 'border-b border-white/[0.04] hover:bg-white/[0.03]'
+        : 'border-b border-black/[0.04] hover:bg-black/[0.02]',
+      'hover:translate-x-0.5 last:border-b-0',
+      isWatched && (isDark ? 'bg-[rgba(246,184,126,0.04)]' : 'bg-[rgba(246,184,126,0.06)]'),
+      className
+    )}
+    {...props}
+  >
+    {isWatched && (
+      <span className="absolute left-0 top-[15%] bottom-[15%] w-0.5 bg-[#F6B87E] rounded-r" />
+    )}
+    {children}
+  </a>
+);
 
 const BASE_URL = 'https://api.xrpl.to/v1';
 
@@ -76,7 +63,9 @@ const formatPrice = (price, currency, rate) => {
 };
 
 const TrendingTokens = ({ token = null }) => {
-  const { darkMode, activeFiatCurrency, accountProfile, setOpenWalletModal } = useContext(AppContext);
+  const { darkMode } = useContext(ThemeContext);
+  const { accountProfile, setOpenWalletModal } = useContext(WalletContext);
+  const { activeFiatCurrency } = useContext(AppContext);
   const metrics = useSelector(selectMetrics);
   const rate = metrics[activeFiatCurrency] || (activeFiatCurrency === 'CNH' ? metrics.CNY : 1) || 1;
 
@@ -152,7 +141,7 @@ const TrendingTokens = ({ token = null }) => {
   if (error) {
     return (
       <Container isDark={darkMode}>
-        <div style={{ padding: '16px', color: '#f44336', fontSize: '12px' }}>Failed to load trending tokens</div>
+        <div className="p-4 text-[#f44336] text-xs">Failed to load trending tokens</div>
       </Container>
     );
   }
@@ -160,14 +149,14 @@ const TrendingTokens = ({ token = null }) => {
   if (loading) {
     return (
       <Container isDark={darkMode}>
-        <div style={{ padding: '12px' }}>
+        <div className="p-3">
           {[...Array(10)].map((_, i) => (
-            <div key={i} style={{ display: 'grid', gridTemplateColumns: '14px 28px 1fr 70px 50px', gap: '10px', padding: '10px 16px', alignItems: 'center' }}>
-              <div style={{ width: 12, height: 12, borderRadius: '2px', background: darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)' }} />
-              <div style={{ width: 28, height: 28, borderRadius: '6px', background: darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)' }} />
-              <div style={{ height: 12, borderRadius: '4px', background: darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)', width: '60%' }} />
-              <div style={{ height: 10, borderRadius: '4px', background: darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)', width: '80%' }} />
-              <div style={{ height: 10, borderRadius: '4px', background: darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)', width: '90%' }} />
+            <div key={i} className="grid grid-cols-[14px_28px_1fr_70px_50px] gap-[10px] py-[10px] px-4 items-center">
+              <div className={cn('w-3 h-3 rounded-sm', darkMode ? 'bg-white/[0.06]' : 'bg-black/[0.06]')} />
+              <div className={cn('w-7 h-7 rounded-md', darkMode ? 'bg-white/[0.06]' : 'bg-black/[0.06]')} />
+              <div className={cn('h-3 rounded w-[60%]', darkMode ? 'bg-white/[0.06]' : 'bg-black/[0.06]')} />
+              <div className={cn('h-[10px] rounded w-[80%]', darkMode ? 'bg-white/[0.06]' : 'bg-black/[0.06]')} />
+              <div className={cn('h-[10px] rounded w-[90%]', darkMode ? 'bg-white/[0.06]' : 'bg-black/[0.06]')} />
             </div>
           ))}
         </div>
@@ -177,37 +166,21 @@ const TrendingTokens = ({ token = null }) => {
 
   return (
     <Container isDark={darkMode}>
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: '12px 16px',
-        borderBottom: `1px solid ${darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`,
-        background: darkMode ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)'
-      }}>
-        <div style={{
-          display: 'flex',
-          background: darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
-          borderRadius: '6px',
-          padding: '2px'
-        }}>
+      <div className={cn(
+        'flex items-center justify-between py-3 px-4 border-b',
+        darkMode ? 'border-white/[0.06] bg-white/[0.02]' : 'border-black/[0.06] bg-black/[0.02]'
+      )}>
+        <div className={cn('flex rounded-md p-0.5', darkMode ? 'bg-white/5' : 'bg-black/5')}>
           {['trending', 'new'].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              style={{
-                height: '24px',
-                padding: '0 12px',
-                fontSize: '10px',
-                fontWeight: 600,
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                transition: 'all 0.2s',
-                background: activeTab === tab ? (darkMode ? 'rgba(255,255,255,0.1)' : '#fff') : 'transparent',
-                color: activeTab === tab ? (darkMode ? '#fff' : '#000') : (darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'),
-                boxShadow: activeTab === tab && !darkMode ? '0 1px 3px rgba(0,0,0,0.1)' : 'none'
-              }}
+              className={cn(
+                'h-6 px-3 text-[10px] font-semibold border-none rounded cursor-pointer transition-all duration-200',
+                activeTab === tab
+                  ? cn(darkMode ? 'bg-white/10 text-white' : 'bg-white text-black shadow-[0_1px_3px_rgba(0,0,0,0.1)]')
+                  : cn('bg-transparent', darkMode ? 'text-white/40' : 'text-black/40')
+              )}
             >
               {tab === 'trending' ? 'Trending' : 'New Tokens'}
             </button>
@@ -215,19 +188,13 @@ const TrendingTokens = ({ token = null }) => {
         </div>
         <a
           href={activeTab === 'trending' ? '/trending' : '/new'}
-          style={{
-            fontSize: '11px',
-            color: '#3b82f6',
-            textDecoration: 'none',
-            fontWeight: 600,
-            letterSpacing: '0.3px'
-          }}
+          className="text-[11px] text-blue-500 no-underline font-semibold tracking-[0.3px]"
         >
           View All
         </a>
       </div>
 
-      <div style={{ flex: 1, overflowY: 'auto', scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+      <div className="flex-1 overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none]">
         {(() => {
           const baseList = activeTab === 'trending' ? tokens : newTokens;
           const otherList = activeTab === 'trending' ? newTokens : tokens;
@@ -249,60 +216,51 @@ const TrendingTokens = ({ token = null }) => {
               isDark={darkMode}
               isWatched={isWatched}
             >
-              <div style={{ display: 'flex', alignItems: 'center' }}>
+              <div className="flex items-center">
                 <Bookmark
                   size={14}
                   onClick={(e) => toggleWatch(e, t.md5)}
                   fill={isWatched ? '#F59E0B' : 'none'}
                   strokeWidth={2}
+                  className="cursor-pointer transition-transform duration-200 ease-in-out hover:scale-[1.2]"
                   style={{
-                    cursor: 'pointer',
                     color: isWatched ? '#F59E0B' : darkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)',
-                    transition: 'transform 0.2s ease',
                   }}
-                  onMouseEnter={(e) => e.target.style.transform = 'scale(1.2)'}
-                  onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
                 />
               </div>
-              <div style={{ width: 28, height: 28, borderRadius: '8px', overflow: 'hidden', background: darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div className={cn('w-7 h-7 rounded-lg overflow-hidden flex items-center justify-center', darkMode ? 'bg-white/5' : 'bg-black/5')}>
                 {t.md5 ? (
                   <img
                     src={`https://s1.xrpl.to/token/${t.md5}`}
                     alt=""
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    className="w-full h-full object-cover"
                     loading="lazy"
                     onError={(e) => { e.target.style.display = 'none'; }}
                   />
                 ) : (
-                  <span style={{ fontSize: '10px', fontWeight: 700, opacity: 0.5 }}>{t.currency?.[0]}</span>
+                  <span className="text-[10px] font-bold opacity-50">{t.currency?.[0]}</span>
                 )}
               </div>
-              <div style={{ minWidth: 0, display: 'flex', flexDirection: 'column', gap: '1px' }}>
-                <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: '12px', fontWeight: 600, color: darkMode ? '#fff' : '#1a1f2e' }}>
+              <div className="min-w-0 flex flex-col gap-px">
+                <div className={cn('overflow-hidden text-ellipsis whitespace-nowrap text-xs font-semibold', darkMode ? 'text-white' : 'text-[#1a1f2e]')}>
                   {t.name}
                 </div>
-                <div style={{ fontSize: '10px', fontWeight: 500, opacity: 0.4, fontFamily: 'var(--font-mono)' }}>
+                <div className="text-[10px] font-medium opacity-40 font-mono">
                   {t.currency?.slice(0, 8)}
                 </div>
               </div>
-              <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', gap: '1px' }}>
-                <div style={{ fontSize: '11px', fontWeight: 600, fontFamily: 'var(--font-mono)', color: darkMode ? 'rgba(255,255,255,0.9)' : '#1a1f2e' }}>
+              <div className="text-right flex flex-col gap-px">
+                <div className={cn('text-[11px] font-semibold font-mono', darkMode ? 'text-white/90' : 'text-[#1a1f2e]')}>
                   {formatPrice(t.exch, activeFiatCurrency, rate)}
                 </div>
-                <div style={{ opacity: 0.4, fontSize: '9px', fontWeight: 500 }}>
+                <div className="opacity-40 text-[9px] font-medium">
                   Vol {volStr}
                 </div>
               </div>
-              <div style={{
-                textAlign: 'right',
-                fontSize: '11px',
-                fontWeight: 700,
-                color: isUp ? '#2ecc71' : '#ff4d4f',
-                background: isUp ? 'rgba(46, 204, 113, 0.1)' : 'rgba(255, 77, 79, 0.1)',
-                padding: '2px 6px',
-                borderRadius: '4px',
-                justifySelf: 'end'
-              }}>
+              <div className={cn(
+                'text-right text-[11px] font-bold py-0.5 px-1.5 rounded justify-self-end',
+                isUp ? 'text-[#2ecc71] bg-[rgba(46,204,113,0.1)]' : 'text-[#ff4d4f] bg-[rgba(255,77,79,0.1)]'
+              )}>
                 {isUp ? '+' : ''}{change.toFixed(1)}%
               </div>
             </TokenCard>

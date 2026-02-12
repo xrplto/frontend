@@ -1,10 +1,10 @@
 import Head from 'next/head';
 import { useContext } from 'react';
-import { AppContext } from 'src/context/AppContext';
+import { ThemeContext } from 'src/context/AppContext';
 import { cn } from 'src/utils/cn';
 
 function Status404() {
-  const { themeName } = useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
   const isDark = themeName === 'XrplToDarkTheme';
 
   return (

@@ -1,11 +1,11 @@
 import { useContext } from 'react';
-import { AppContext } from 'src/context/AppContext';
+import { ThemeContext } from 'src/context/AppContext';
 import { cn } from 'src/utils/cn';
 import { ChevronRight } from 'lucide-react';
 import { normalizeCollectionName } from 'src/utils/formatters';
 
 export default function CollectionBreadcrumb({ collection, nftName, nftId }) {
-  const { themeName } = useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
   const isDark = themeName === 'XrplToDarkTheme';
 
   const collectionName = normalizeCollectionName(collection?.collection?.name);

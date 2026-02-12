@@ -2,7 +2,7 @@ import { memo, useContext, useState, useRef, useEffect, useCallback } from 'reac
 import { X, Plus, Search, Trash2, ChevronLeft, Check, Star, Sparkles } from 'lucide-react';
 import api from 'src/utils/api';
 import VerificationBadge from 'src/components/VerificationBadge';
-import { AppContext } from 'src/context/AppContext';
+import { ThemeContext } from 'src/context/AppContext';
 import { useTokenTabs, addTokenToTabs } from 'src/hooks/useTokenTabs';
 import { cn } from 'src/utils/cn';
 import { getHashIcon } from 'src/utils/formatters';
@@ -10,7 +10,7 @@ import { getHashIcon } from 'src/utils/formatters';
 const BASE_URL = 'https://api.xrpl.to/v1';
 
 const TokenTabs = memo(({ currentMd5 }) => {
-  const { themeName } = useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
   const isDark = themeName === 'XrplToDarkTheme';
   const { tabs, removeTab, clearTabs } = useTokenTabs();
 

@@ -1,4 +1,4 @@
-import styled from '@emotion/styled';
+import { cn } from 'src/utils/cn';
 
 // Components
 import Header from 'src/components/Header';
@@ -6,9 +6,9 @@ import Footer from 'src/components/Footer';
 import CreateCollection from 'src/NFTCollection/Create';
 import ScrollToTop from 'src/components/ScrollToTop';
 
-const OverviewWrapper = styled.div`
-  min-height: 100vh;
-`;
+const OverviewWrapper = ({ className, ...props }) => (
+  <div className={cn('min-h-screen', className)} {...props} />
+);
 
 export default function Overview({ data }) {
   const handleCreate = (slug) => {

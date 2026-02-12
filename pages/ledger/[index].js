@@ -1,7 +1,7 @@
 import { useRouter } from 'next/router';
 import api from 'src/utils/api';
 import { useState, useContext } from 'react';
-import { AppContext } from 'src/context/AppContext';
+import { ThemeContext } from 'src/context/AppContext';
 import { cn } from 'src/utils/cn';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import Header from 'src/components/Header';
@@ -26,7 +26,7 @@ const AccountAvatar = ({ account }) => {
 };
 
 const LedgerDetails = ({ ledgerData, transactions, error }) => {
-  const { themeName } = useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
   const isDark = themeName === 'XrplToDarkTheme';
 
   if (error) {
@@ -272,7 +272,7 @@ const LedgerDetails = ({ ledgerData, transactions, error }) => {
 
 const LedgerPage = ({ ledgerData, transactions, error }) => {
   const router = useRouter();
-  const { themeName } = useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
   const isDark = themeName === 'XrplToDarkTheme';
 
   if (router.isFallback) {

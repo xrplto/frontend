@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import { useEffect, useState, useContext } from 'react';
 import { cn } from 'src/utils/cn';
-import { AppContext } from 'src/context/AppContext';
+import { ThemeContext } from 'src/context/AppContext';
 
 ScrollToTop.propTypes = {
   window: PropTypes.func
@@ -9,23 +9,31 @@ ScrollToTop.propTypes = {
 
 export default function ScrollToTop(props) {
   const { window } = props;
-  const { themeName } = useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
   const isDark = themeName === 'XrplToDarkTheme';
   const [scrollProgress, setScrollProgress] = useState(0);
   const [trigger, setTrigger] = useState(false);
 
   useEffect(() => {
+    let rafId = null;
     const handleScroll = () => {
-      const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
-      const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-      const scrolled = height > 0 ? (winScroll / height) * 100 : 0;
-      setScrollProgress(scrolled);
-      setTrigger(winScroll > 100);
+      if (rafId) return;
+      rafId = requestAnimationFrame(() => {
+        const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+        const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+        const scrolled = height > 0 ? (winScroll / height) * 100 : 0;
+        setScrollProgress(scrolled);
+        setTrigger(winScroll > 100);
+        rafId = null;
+      });
     };
 
     if (typeof globalThis.window !== 'undefined') {
-      globalThis.window.addEventListener('scroll', handleScroll);
-      return () => globalThis.window.removeEventListener('scroll', handleScroll);
+      globalThis.window.addEventListener('scroll', handleScroll, { passive: true });
+      return () => {
+        globalThis.window.removeEventListener('scroll', handleScroll);
+        if (rafId) cancelAnimationFrame(rafId);
+      };
     }
   }, []);
 

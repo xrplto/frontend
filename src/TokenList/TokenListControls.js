@@ -1,6 +1,5 @@
 import React, { useContext, memo, useMemo, useCallback, useState, useRef, useEffect } from 'react';
-import styled from '@emotion/styled';
-import { AppContext } from 'src/context/AppContext';
+import { ThemeContext } from 'src/context/AppContext';
 import {
   ChevronsLeft,
   ChevronsRight,
@@ -14,314 +13,167 @@ import { selectFilteredCount } from 'src/redux/statusSlice';
 import { cn } from 'src/utils/cn';
 
 // ============== TokenListHead Styles ==============
-const StyledTableHead = styled.thead`
-  position: sticky;
-  top: ${(props) => props.scrollTopLength || 0}px;
-  z-index: 100;
-  background: ${(props) => (props.darkMode ? 'transparent' : 'rgba(255, 255, 255, 0.95)')};
-  backdrop-filter: blur(12px);
-`;
+const StyledTableHead = ({ scrollTopLength, darkMode, className, children, ...p }) => (
+  <thead
+    className={cn('sticky z-[100] backdrop-blur-[12px]', darkMode ? 'bg-transparent' : 'bg-white/95', className)}
+    style={{ top: scrollTopLength || 0 }}
+    {...p}
+  >{children}</thead>
+);
 
-const StyledTableCell = styled.th`
-  font-weight: 500;
-  font-size: 11px;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.4)' : 'rgba(0, 0, 0, 0.45)')};
-  padding: ${(props) => (props.isMobile ? '12px 6px' : '14px 4px')};
-  border-bottom: 1px solid
-    ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)')};
-  white-space: nowrap;
-  text-align: ${(props) => props.align || 'left'};
-  box-sizing: border-box;
-  cursor: ${(props) => (props.sortable ? 'pointer' : 'default')};
-  position: ${(props) => (props.sticky ? 'sticky' : 'relative')};
-  left: ${(props) => props.left || 'unset'};
-  z-index: ${(props) => (props.sticky ? 101 : 'auto')};
-  background: ${(props) =>
-    props.sticky ? (props.darkMode ? 'transparent' : 'rgba(255, 255, 255, 0.95)') : 'transparent'};
-  font-family: inherit;
-  transition: color 0.15s ease;
-  width: ${(props) => (props.width ? `${props.width}px` : 'auto')};
-  max-width: ${(props) => (props.width ? `${props.width}px` : 'none')};
+const StyledTableCell = ({ darkMode, isMobile, align, sortable, sticky, left, width, className, children, stickyThird, scrollLeft, isTokenColumn, ...p }) => (
+  <th
+    className={cn(
+      'font-medium text-[11px] tracking-[0.04em] uppercase whitespace-nowrap box-border font-[inherit] transition-[color] duration-150',
+      'first-of-type:pl-3 last-of-type:pr-3',
+      darkMode ? 'text-white/40 border-b border-white/[0.08]' : 'text-black/45 border-b border-black/[0.06]',
+      sortable ? 'cursor-pointer' : 'cursor-default',
+      sortable && (darkMode ? 'hover:text-white/70' : 'hover:text-black/70'),
+      sticky ? 'sticky z-[101]' : 'relative',
+      sticky && (darkMode ? 'bg-transparent' : 'bg-white/95'),
+      !sticky && 'bg-transparent',
+      className
+    )}
+    style={{
+      padding: isMobile ? '12px 6px' : '14px 4px',
+      textAlign: align || 'left',
+      left: left || 'unset',
+      width: width ? `${width}px` : 'auto',
+      maxWidth: width ? `${width}px` : 'none'
+    }}
+    {...p}
+  >{children}</th>
+);
 
-  &:first-of-type {
-    padding-left: 12px;
-  }
+const SortIndicator = ({ active, darkMode, direction, className, children, ...p }) => (
+  <span
+    className={cn('inline-block ml-[6px] text-[8px] transition-all duration-150', className)}
+    style={{
+      color: active ? '#4285f4' : (darkMode ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.25)'),
+      transform: direction === 'asc' ? 'rotate(180deg)' : 'rotate(0deg)',
+      opacity: active ? 1 : 0.5
+    }}
+    {...p}
+  >{children}</span>
+);
 
-  &:last-of-type {
-    padding-right: 12px;
-  }
-
-  &:hover {
-    color: ${(props) =>
-      props.sortable
-        ? props.darkMode
-          ? 'rgba(255, 255, 255, 0.7)'
-          : 'rgba(0, 0, 0, 0.7)'
-        : 'inherit'};
-  }
-`;
-
-const SortIndicator = styled.span`
-  display: inline-block;
-  margin-left: 6px;
-  font-size: 8px;
-  color: ${(props) =>
-    props.active
-      ? '#4285f4'
-      : props.darkMode
-        ? 'rgba(255, 255, 255, 0.25)'
-        : 'rgba(0, 0, 0, 0.25)'};
-  transform: ${(props) => (props.direction === 'asc' ? 'rotate(180deg)' : 'rotate(0deg)')};
-  opacity: ${(props) => (props.active ? 1 : 0.5)};
-  transition:
-    transform 0.15s ease,
-    color 0.15s ease;
-`;
-
-const Tooltip = styled.div`
-  position: relative;
-  display: inline-block;
-
-  .tooltip-content {
-    visibility: hidden;
-    opacity: 0;
-    position: fixed !important;
-    background-color: red !important;
-    color: white !important;
-    padding: 8px 12px !important;
-    border-radius: 8px;
-    font-size: 14px !important;
-    white-space: nowrap;
-    z-index: 99999999 !important;
-    transition: none !important;
-    pointer-events: none;
-
-    &:after {
-      content: '';
-      position: absolute;
-      top: 100%;
-      left: 50%;
-      margin-left: -5px;
-      border-width: 5px;
-      border-style: solid;
-      border-color: rgba(0, 0, 0, 0.9) transparent transparent transparent;
-    }
-  }
-`;
+const Tooltip = ({ className, children, ...p }) => (
+  <div className={cn('relative inline-block', className)} {...p}>{children}</div>
+);
 
 // ============== TokenListToolbar Styles ==============
-const StyledToolbar = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 4px 0;
-  gap: 6px;
-  flex-wrap: wrap;
+const StyledToolbar = ({ className, children, ...p }) => (
+  <div
+    className={cn('flex items-center justify-between py-1 gap-[6px] flex-wrap max-[900px]:flex-row max-[900px]:items-stretch max-[900px]:flex-wrap max-[900px]:gap-[2px] max-[900px]:p-[2px]', className)}
+    {...p}
+  >{children}</div>
+);
 
-  @media (max-width: 900px) {
-    flex-direction: row;
-    align-items: stretch;
-    flex-wrap: wrap;
-    gap: 2px;
-    padding: 2px;
-  }
-`;
+const PaginationContainer = ({ isDark, className, children, ...p }) => (
+  <div
+    className={cn(
+      'flex items-center gap-1 py-[6px] px-[10px] min-h-[36px] rounded-lg border',
+      'max-[900px]:w-full max-[900px]:justify-center max-[900px]:py-1 max-[900px]:px-2 max-[900px]:gap-[2px]',
+      isDark ? 'bg-transparent border-white/[0.08]' : 'bg-white border-black/[0.08]',
+      className
+    )}
+    {...p}
+  >{children}</div>
+);
 
-const PaginationContainer = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 6px 10px;
-  min-height: 36px;
-  border-radius: 8px;
-  background: ${({ isDark }) => (isDark ? 'transparent' : '#fff')};
-  border: 1px solid
-    ${({ isDark }) => (isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)')};
+const RowsSelector = ({ isDark, className, children, ...p }) => (
+  <div
+    className={cn(
+      'flex items-center gap-1 py-[6px] px-[10px] min-h-[36px] rounded-lg border',
+      'max-[900px]:flex-1 max-[900px]:min-w-[calc(50%-8px)] max-[900px]:justify-center max-[900px]:py-1 max-[900px]:px-2 max-[900px]:gap-[3px]',
+      isDark ? 'bg-transparent border-white/[0.08]' : 'bg-white border-black/[0.08]',
+      className
+    )}
+    {...p}
+  >{children}</div>
+);
 
-  @media (max-width: 900px) {
-    width: 100%;
-    justify-content: center;
-    padding: 4px 8px;
-    gap: 2px;
-  }
-`;
+const InfoBox = ({ isDark, className, children, ...p }) => (
+  <div
+    className={cn(
+      'flex items-center gap-1 flex-wrap py-[6px] px-[10px] min-h-[36px] border rounded-lg',
+      'max-[900px]:flex-1 max-[900px]:min-w-[calc(50%-8px)] max-[900px]:justify-start max-[900px]:gap-[3px] max-[900px]:py-1 max-[900px]:px-2',
+      isDark ? 'bg-transparent border-white/[0.08]' : 'bg-white border-black/[0.08]',
+      className
+    )}
+    {...p}
+  >{children}</div>
+);
 
-const RowsSelector = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 6px 10px;
-  min-height: 36px;
-  border-radius: 8px;
-  background: ${({ isDark }) => (isDark ? 'transparent' : '#fff')};
-  border: 1px solid
-    ${({ isDark }) => (isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)')};
+const Chip = ({ isDark, className, children, ...p }) => (
+  <span
+    className={cn('text-[11px] font-medium tabular-nums py-[2px] px-[6px] border rounded', isDark ? 'border-white/[0.08] text-white' : 'border-black/[0.08] text-black', className)}
+    {...p}
+  >{children}</span>
+);
 
-  @media (max-width: 900px) {
-    flex: 1;
-    min-width: calc(50% - 8px);
-    justify-content: center;
-    padding: 4px 8px;
-    gap: 3px;
-  }
-`;
+const Text = ({ isDark, fontWeight, className, children, ...p }) => (
+  <span
+    className={cn('text-[11px] tabular-nums font-normal', isDark ? 'text-white/60' : 'text-black/65', className)}
+    style={fontWeight ? { fontWeight } : undefined}
+    {...p}
+  >{children}</span>
+);
 
-const InfoBox = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  flex-wrap: wrap;
-  padding: 6px 10px;
-  min-height: 36px;
-  border: 1px solid
-    ${({ isDark }) => (isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)')};
-  border-radius: 8px;
-  background: ${({ isDark }) => (isDark ? 'transparent' : '#fff')};
+const NavButton = ({ isDark, className, children, ...p }) => (
+  <button
+    className={cn(
+      'w-[26px] h-[26px] rounded-lg border-none bg-transparent cursor-pointer inline-flex items-center justify-center p-0',
+      isDark ? 'text-white/70 hover:enabled:bg-blue-500/10 disabled:text-white/20' : 'text-black/70 hover:enabled:bg-blue-500/[0.08] disabled:text-black/20',
+      'disabled:cursor-not-allowed',
+      className
+    )}
+    {...p}
+  >{children}</button>
+);
 
-  @media (max-width: 900px) {
-    flex: 1;
-    min-width: calc(50% - 8px);
-    justify-content: flex-start;
-    gap: 3px;
-    padding: 4px 8px;
-  }
-`;
+const PageButton = ({ selected, isDark, className, children, ...p }) => (
+  <button
+    className={cn(
+      'min-w-[22px] h-[22px] rounded-lg border-none cursor-pointer inline-flex items-center justify-center px-[5px] m-0 text-[11px] tabular-nums',
+      'disabled:cursor-not-allowed disabled:opacity-30',
+      selected
+        ? 'bg-[#4285f4] text-white font-medium hover:enabled:bg-[#3b7de8]'
+        : cn(isDark ? 'text-white/80' : 'text-black/80', 'bg-transparent font-normal', isDark ? 'hover:enabled:bg-blue-500/10' : 'hover:enabled:bg-blue-500/[0.08]'),
+      className
+    )}
+    {...p}
+  >{children}</button>
+);
 
-const Chip = styled.span`
-  font-size: 11px;
-  font-weight: 500;
-  font-variant-numeric: tabular-nums;
-  padding: 2px 6px;
-  border: 1px solid
-    ${({ isDark }) => (isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)')};
-  border-radius: 4px;
-  color: ${({ isDark }) => (isDark ? '#fff' : '#000')};
-`;
+const Select = ({ className, children, ...p }) => (
+  <div className={cn('relative inline-block', className)} {...p}>{children}</div>
+);
 
-const Text = styled.span`
-  font-size: 11px;
-  font-variant-numeric: tabular-nums;
-  color: ${({ isDark }) => (isDark ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)')};
-  font-weight: ${(props) => props.fontWeight || 400};
-`;
+const SelectButton = ({ className, children, ...p }) => (
+  <button
+    className={cn('bg-transparent border-none text-blue-600 font-medium text-[11px] cursor-pointer p-0 flex items-center gap-px min-w-[36px] hover:opacity-80', className)}
+    {...p}
+  >{children}</button>
+);
 
-const NavButton = styled.button`
-  width: 26px;
-  height: 26px;
-  border-radius: 8px;
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: ${({ isDark }) => (isDark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)')};
-  padding: 0;
+const SelectMenu = ({ isDark, className, children, ...p }) => (
+  <div
+    className={cn('absolute top-full right-0 mt-1 rounded-lg shadow-[0_2px_8px_rgba(0,0,0,0.1)] z-[1000] min-w-[50px] border', isDark ? 'bg-[#1a1a1a] border-white/10' : 'bg-white border-black/10', className)}
+    {...p}
+  >{children}</div>
+);
 
-  &:hover:not(:disabled) {
-    background: ${({ isDark }) =>
-      isDark ? 'rgba(66, 133, 244, 0.1)' : 'rgba(66, 133, 244, 0.08)'};
-  }
+const SelectOption = ({ isDark, className, children, ...p }) => (
+  <button
+    className={cn('block w-full py-[5px] px-[10px] border-none bg-transparent text-left cursor-pointer text-[11px]', isDark ? 'text-white hover:bg-blue-500/10' : 'text-black hover:bg-blue-500/[0.06]', className)}
+    {...p}
+  >{children}</button>
+);
 
-  &:disabled {
-    color: ${({ isDark }) => (isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)')};
-    cursor: not-allowed;
-  }
-`;
-
-const PageButton = styled.button`
-  min-width: 22px;
-  height: 22px;
-  border-radius: 8px;
-  border: none;
-  background: ${(props) => (props.selected ? '#4285f4' : 'transparent')};
-  color: ${(props) =>
-    props.selected ? 'white' : props.isDark ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)'};
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 5px;
-  margin: 0;
-  font-size: 11px;
-  font-weight: ${(props) => (props.selected ? 500 : 400)};
-  font-variant-numeric: tabular-nums;
-
-  &:hover:not(:disabled) {
-    background: ${(props) =>
-      props.selected
-        ? '#3b7de8'
-        : props.isDark
-          ? 'rgba(66, 133, 244, 0.1)'
-          : 'rgba(66, 133, 244, 0.08)'};
-  }
-
-  &:disabled {
-    cursor: not-allowed;
-    opacity: 0.3;
-  }
-`;
-
-const Select = styled.div`
-  position: relative;
-  display: inline-block;
-`;
-
-const SelectButton = styled.button`
-  background: transparent;
-  border: none;
-  color: #4285f4;
-  font-weight: 500;
-  font-size: 11px;
-  cursor: pointer;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  gap: 1px;
-  min-width: 36px;
-
-  &:hover {
-    opacity: 0.8;
-  }
-`;
-
-const SelectMenu = styled.div`
-  position: absolute;
-  top: 100%;
-  right: 0;
-  margin-top: 4px;
-  background: ${({ isDark }) => (isDark ? '#1a1a1a' : '#fff')};
-  border: 1px solid ${({ isDark }) => (isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)')};
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  z-index: 1000;
-  min-width: 50px;
-`;
-
-const SelectOption = styled.button`
-  display: block;
-  width: 100%;
-  padding: 5px 10px;
-  border: none;
-  background: transparent;
-  text-align: left;
-  cursor: pointer;
-  font-size: 11px;
-  color: ${({ isDark }) => (isDark ? '#fff' : '#000')};
-
-  &:hover {
-    background: ${({ isDark }) =>
-      isDark ? 'rgba(66, 133, 244, 0.1)' : 'rgba(66, 133, 244, 0.06)'};
-  }
-`;
-
-const CenterBox = styled.div`
-  flex-grow: 1;
-  display: flex;
-  justify-content: center;
-`;
+const CenterBox = ({ className, children, ...p }) => (
+  <div className={cn('grow flex justify-center', className)} {...p}>{children}</div>
+);
 
 const DESKTOP_TABLE_HEAD = [
   { id: 'star', label: '', align: 'center', order: false, mobileHide: true },
@@ -958,7 +810,7 @@ export const TokenListHead = memo(function TokenListHead({
                   <span>
                     {headCell.id === 'vol24hxrp' ? (
                       <>
-                        Volume <span style={{ opacity: 0.5, fontSize: '10px' }}>24h</span>
+                        Volume <span className="opacity-50 text-[10px]">24h</span>
                       </>
                     ) : (
                       headCell.label
@@ -971,7 +823,7 @@ export const TokenListHead = memo(function TokenListHead({
                   </span>
                 ) : headCell.id === 'sparkline' ? (
                   <span>
-                    Trendline <span style={{ opacity: 0.5, fontSize: '10px' }}>24h</span>
+                    Trendline <span className="opacity-50 text-[10px]">24h</span>
                   </span>
                 ) : (
                   headCell.label
@@ -993,7 +845,7 @@ export const TokenListToolbar = memo(function TokenListToolbar({
   setPage,
   tokens
 }) {
-  const { themeName } = useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
   const isDark = themeName === 'XrplToDarkTheme';
   const filteredCount = useSelector(selectFilteredCount);
   const [selectOpen, setSelectOpen] = useState(false);
@@ -1084,16 +936,17 @@ export const TokenListToolbar = memo(function TokenListToolbar({
 
   return (
     <StyledToolbar>
-      <InfoBox isDark={isDark}>
+      <InfoBox isDark={isDark} role="status" aria-label={`Showing ${start} to ${end} of ${currentFilteredCount.toLocaleString()} tokens`}>
         <Chip isDark={isDark}>{`${start}-${end} of ${currentFilteredCount.toLocaleString()}`}</Chip>
         <Text isDark={isDark}>tokens</Text>
       </InfoBox>
 
-      <div className="flex items-center justify-center gap-1 pt-3">
+      <nav aria-label="Pagination" className="flex items-center justify-center gap-1 pt-3">
         <button
           type="button"
           onClick={() => handleChangePage(page - 1)}
           disabled={page === 0}
+          aria-label="Previous page"
           className={cn(
             'p-1.5 rounded-md transition-colors',
             page === 0 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-white/10',
@@ -1105,7 +958,7 @@ export const TokenListToolbar = memo(function TokenListToolbar({
         <span
           className={cn(
             'text-[11px] px-2 tabular-nums',
-            isDark ? 'text-white/40' : 'text-gray-500'
+            isDark ? 'text-white/60' : 'text-gray-600'
           )}
         >
           {page + 1} / {page_count}
@@ -1114,6 +967,7 @@ export const TokenListToolbar = memo(function TokenListToolbar({
           type="button"
           onClick={() => handleChangePage(page + 1)}
           disabled={page === page_count - 1}
+          aria-label="Next page"
           className={cn(
             'p-1.5 rounded-md transition-colors',
             page === page_count - 1 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-white/10',
@@ -1122,13 +976,13 @@ export const TokenListToolbar = memo(function TokenListToolbar({
         >
           <ChevronRight size={14} />
         </button>
-      </div>
+      </nav>
 
       <RowsSelector isDark={isDark}>
         <List size={12} />
         <Text isDark={isDark}>Rows</Text>
         <Select ref={selectRef}>
-          <SelectButton onClick={() => setSelectOpen(!selectOpen)}>
+          <SelectButton onClick={() => setSelectOpen(!selectOpen)} aria-label={`Rows per page: ${rows}`} aria-expanded={selectOpen}>
             {rows}
             <ChevronDown size={12} />
           </SelectButton>

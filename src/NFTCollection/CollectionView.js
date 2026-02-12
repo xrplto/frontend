@@ -8,6 +8,7 @@ import React, {
   createContext
 } from 'react';
 import api from 'src/utils/api';
+import { alpha } from 'src/utils/color';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -45,9 +46,11 @@ import {
   Copy,
   Check,
   Link2,
-  MessageCircle
+  MessageCircle,
+  Shield
 } from 'lucide-react';
-import VerificationBadge from 'src/components/VerificationBadge';
+import VerificationBadge, { VerificationLabel } from 'src/components/VerificationBadge';
+import VerifyBadgeModal from 'src/components/VerifyBadgeModal';
 
 // Simple Pagination Component
 const Pagination = ({
@@ -82,7 +85,7 @@ const Pagination = ({
 
 // Utils & Context
 import { cn } from 'src/utils/cn';
-import { AppContext } from 'src/context/AppContext';
+import { ThemeContext, WalletContext, AppContext } from 'src/context/AppContext';
 import AccountTransactions from 'src/components/CollectionActivity';
 import { fNumber, fIntNumber, fVolume, formatMonthYear, isEqual } from 'src/utils/formatters';
 import { getNftCoverUrl, getNftFilesUrls, normalizeCurrencyCode } from 'src/utils/parseUtils';
@@ -157,17 +160,6 @@ const GRID_OPTIONS = [
   }
 ];
 
-// Alpha utility for colors
-const alpha = (color, opacity) => {
-  if (!color) return `rgba(0,0,0,${opacity})`;
-  if (color.startsWith('#')) {
-    const r = parseInt(color.slice(1, 3), 16);
-    const g = parseInt(color.slice(3, 5), 16);
-    const b = parseInt(color.slice(5, 7), 16);
-    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
-  }
-  return color;
-};
 
 // Label Component
 function Label({ color = 'default', variant = 'ghost', children, className = '' }) {
@@ -215,7 +207,7 @@ Label.propTypes = {
 
 // AttributeFilter Component - Compact horizontal layout
 function AttributeFilter({ attrs, setFilterAttrs, activeFilters = [] }) {
-  const { themeName } = useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
   const isDark = themeName === 'XrplToDarkTheme';
   const [attrFilter, setAttrFilter] = useState([]);
   const [expandedTrait, setExpandedTrait] = useState(null);
@@ -355,12 +347,10 @@ const NFTSkeleton = React.memo(({ isDark }) => (
     <div className={cn('aspect-square animate-pulse', isDark ? 'bg-white/5' : 'bg-gray-200')} />
     <div className="px-2 py-1.5 space-y-1.5">
       <div
-        className={cn('h-3 rounded animate-pulse', isDark ? 'bg-white/5' : 'bg-gray-200')}
-        style={{ width: '70%' }}
+        className={cn('h-3 rounded animate-pulse w-[70%]', isDark ? 'bg-white/5' : 'bg-gray-200')}
       />
       <div
-        className={cn('h-2.5 rounded animate-pulse', isDark ? 'bg-white/5' : 'bg-gray-200')}
-        style={{ width: '40%' }}
+        className={cn('h-2.5 rounded animate-pulse w-[40%]', isDark ? 'bg-white/5' : 'bg-gray-200')}
       />
     </div>
   </div>
@@ -377,8 +367,7 @@ const NFTCard = React.memo(
     return (
       <a
         href={`/nft/${NFTokenID}`}
-        className="block group"
-        style={{ contain: 'layout style paint' }}
+        className="block group [contain:layout_style_paint]"
       >
         <div
           className={cn(
@@ -389,8 +378,7 @@ const NFTCard = React.memo(
           )}
         >
           <div
-            className="relative aspect-square overflow-hidden"
-            style={{ backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : '#f3f4f6' }}
+            className={cn('relative aspect-square overflow-hidden', isDark ? 'bg-white/5' : 'bg-[#f3f4f6]')}
           >
             {imgUrl ? (
               <Image
@@ -405,8 +393,7 @@ const NFTCard = React.memo(
               />
             ) : (
               <span
-                className="absolute inset-0 flex items-center justify-center text-[11px]"
-                style={{ color: isDark ? 'rgba(255,255,255,0.3)' : '#9ca3af' }}
+                className={cn('absolute inset-0 flex items-center justify-center text-[11px]', isDark ? 'text-white/30' : 'text-[#9ca3af]')}
               >
                 No image
               </span>
@@ -530,7 +517,7 @@ const VirtualGrid = React.memo(({ nfts, loading, hasMore, onLoadMore, gridCols, 
   const topPadding = Math.floor(visibleRange.start / gridCols) * ITEM_HEIGHT;
 
   return (
-    <div ref={containerRef} style={{ minHeight: totalHeight, position: 'relative' }}>
+    <div ref={containerRef} className="relative" style={{ minHeight: totalHeight }}>
       <div style={{ paddingTop: topPadding }}>
         <div className={cn('grid gap-3', gridClass)}>
           {visibleNfts.map((nft, i) => (
@@ -999,7 +986,8 @@ const NFTGrid = React.memo(
 // Collection Card Component
 function CollectionCard({ collectionData, type, account, handleRemove }) {
   const collection = collectionData.collection;
-  const { themeName, accountProfile } = useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
+  const { accountProfile } = useContext(WalletContext);
   const isDark = themeName === 'XrplToDarkTheme';
   const isAdmin = accountProfile?.admin;
   const [loadingImg, setLoadingImg] = useState(true);
@@ -1026,12 +1014,11 @@ function CollectionCard({ collectionData, type, account, handleRemove }) {
     >
       <div
         className={cn(
-          'rounded-lg border-[1.5px] overflow-hidden cursor-pointer transition-all w-full',
+          'rounded-lg border-[1.5px] overflow-hidden cursor-pointer transition-all w-full aspect-[1/1.3]',
           isDark
             ? 'border-white/[0.08] hover:border-primary/30'
             : 'border-gray-200 hover:border-primary/30'
         )}
-        style={{ aspectRatio: '1 / 1.3' }}
       >
         <div className="relative h-[70%]">
           {isAdmin && (
@@ -1087,15 +1074,12 @@ function CollectionCard({ collectionData, type, account, handleRemove }) {
 // Wallet tier SVG icons (consistent with TradingHistory)
 const TierIconBox = ({ children, isDark }) => (
   <span
-    style={{
-      display: 'inline-flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '2px 4px',
-      borderRadius: '4px',
-      border: `1px solid ${isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)'}`,
-      background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)'
-    }}
+    className={cn(
+      'inline-flex items-center justify-center px-1 py-0.5 rounded border',
+      isDark
+        ? 'border-white/15 bg-white/[0.03]'
+        : 'border-black/10 bg-black/[0.02]'
+    )}
   >
     {children}
   </span>
@@ -1108,7 +1092,7 @@ const ShrimpIcon = ({ size = 18, isDark }) => (
       viewBox="0 0 823.528 795.746"
       width={size}
       height={size * 0.97}
-      style={{ display: 'block' }}
+      className="block"
     >
       <g
         transform="translate(-808.445 -84.967)"
@@ -1174,7 +1158,7 @@ const FishIcon2 = ({ size = 18, isDark }) => (
       viewBox="0 0 999.334 735.299"
       width={size}
       height={size * 0.74}
-      style={{ display: 'block' }}
+      className="block"
     >
       <g
         transform="translate(-649.816 -154.867)"
@@ -1248,7 +1232,7 @@ const DolphinIcon = ({ size = 18, isDark }) => (
       viewBox="0 0 1322.431 487.538"
       width={size}
       height={size * 0.37}
-      style={{ display: 'block' }}
+      className="block"
     >
       <g
         transform="translate(-268.911 -233.804)"
@@ -1311,7 +1295,7 @@ const OrcaIcon = ({ size = 18, isDark }) => (
       viewBox="0 0 1185.935 605.365"
       width={size}
       height={size * 0.51}
-      style={{ display: 'block' }}
+      className="block"
     >
       <g
         transform="translate(-431.545 -170.466)"
@@ -1382,7 +1366,7 @@ const WhaleIcon = ({ size = 18, isDark }) => (
       viewBox="0 0 1329.594 627.908"
       width={size}
       height={size * 0.47}
-      style={{ display: 'block' }}
+      className="block"
     >
       <g
         transform="translate(-312.905 -143.901)"
@@ -1440,7 +1424,7 @@ const WhaleIcon = ({ size = 18, isDark }) => (
 // Price Chart Component using lightweight-charts
 const PriceChart = React.memo(({ slug }) => {
   const BASE_URL = 'https://api.xrpl.to/v1';
-  const { themeName } = useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
   const isDark = themeName === 'XrplToDarkTheme';
   const chartContainerRef = useRef(null);
   const chartRef = useRef(null);
@@ -1817,8 +1801,7 @@ const PriceChart = React.memo(({ slug }) => {
                         href={`/nft/${sale.NFTokenID}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="relative w-10 h-10 rounded overflow-hidden flex-shrink-0"
-                        style={{ backgroundColor: isDark ? '#222' : '#eee' }}
+                        className={cn('relative w-10 h-10 rounded overflow-hidden flex-shrink-0', isDark ? 'bg-[#222]' : 'bg-[#eee]')}
                       >
                         {imgUrl && (
                           <Image
@@ -1880,12 +1863,10 @@ const PriceChart = React.memo(({ slug }) => {
               </div>
               {salesData.total > SALES_LIMIT && (
                 <div
-                  className="flex items-center justify-center gap-2 mt-2 pt-2"
-                  style={{
-                    borderTop: isDark
-                      ? '1px solid rgba(255,255,255,0.05)'
-                      : '1px solid rgba(0,0,0,0.05)'
-                  }}
+                  className={cn(
+                    'flex items-center justify-center gap-2 mt-2 pt-2 border-t',
+                    isDark ? 'border-white/5' : 'border-black/5'
+                  )}
                 >
                   <button
                     onClick={() => setSalesOffset(Math.max(0, salesOffset - SALES_LIMIT))}
@@ -1928,7 +1909,7 @@ const PriceChart = React.memo(({ slug }) => {
 // Holders Tab Component
 const HoldersTab = React.memo(({ slug }) => {
   const BASE_URL = 'https://api.xrpl.to/v1';
-  const { themeName } = useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
   const isDark = themeName === 'XrplToDarkTheme';
 
   const [loading, setLoading] = useState(true);
@@ -2732,7 +2713,7 @@ const SORT_OPTIONS_TRADERS = [
 
 const TradersTab = React.memo(({ slug }) => {
   const BASE_URL = 'https://api.xrpl.to/v1';
-  const { themeName } = useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
   const isDark = themeName === 'XrplToDarkTheme';
 
   const [loading, setLoading] = useState(true);
@@ -3092,7 +3073,9 @@ export { AttributeFilter, CollectionCard, NFTCard };
 // Main Collection View Component
 export default function CollectionView({ collection }) {
   const anchorRef = useRef(null);
-  const { themeName, accountProfile, deletingNfts } = useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
+  const { accountProfile } = useContext(WalletContext);
+  const { deletingNfts } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
   const accountLogin = accountProfile?.account;
   const isAdmin = accountProfile?.admin;
@@ -3102,6 +3085,8 @@ export default function CollectionView({ collection }) {
   const [openFees, setOpenFees] = useState(false);
   const [value, setValue] = useState('tab-nfts');
   const [debugInfo, setDebugInfo] = useState(null);
+  const [showVerifyModal, setShowVerifyModal] = useState(false);
+  const [currentVerified, setCurrentVerified] = useState(null);
   const [showChart, setShowChart] = useState(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('nft_show_chart');
@@ -3128,18 +3113,6 @@ export default function CollectionView({ collection }) {
 
   // Add current collection to tabs on mount
   const collectionData = collection?.collection || collection;
-
-  // DEBUG: Log collection data to find object rendering issues
-  useEffect(() => {
-    if (collectionData) {
-      console.log('[CollectionView] Raw collection data:', {
-        name: collectionData.name,
-        nameType: typeof collectionData.name,
-        description: collectionData.description,
-        descType: typeof collectionData.description
-      });
-    }
-  }, [collectionData]);
 
   useEffect(() => {
     if (collectionData?.slug && collectionData?.name) {
@@ -3281,7 +3254,8 @@ export default function CollectionView({ collection }) {
     offers,
     floor30dPercent,
     daily_txs,
-    daily_users
+    daily_users,
+    uuid
   } = collection?.collection || collection || {};
 
   // Royalty fee: API may return as transferFee (basis points 0-50000) or royaltyFee (percentage)
@@ -3303,6 +3277,8 @@ export default function CollectionView({ collection }) {
     typeof rawDescription === 'object' && rawDescription !== null
       ? rawDescription.collection_description || ''
       : rawDescription || '';
+
+  const displayVerified = currentVerified !== null ? currentVerified : (verified || 0);
 
   const shareUrl = `https://xrpl.to/nfts/${slug}`;
   const shareTitle = name;
@@ -3390,8 +3366,7 @@ export default function CollectionView({ collection }) {
 
       {/* Collection Header - OpenSea Style */}
       <div
-        className="rounded-[10px] px-4 py-3 mb-4 mt-3"
-        style={{ border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}` }}
+        className={cn('rounded-[10px] px-4 py-3 mb-4 mt-3 border', isDark ? 'border-white/[0.08]' : 'border-black/[0.08]')}
       >
         {/* Top Row: Logo + Name + Actions */}
         <div className="flex items-center gap-3 mb-3">
@@ -3401,9 +3376,10 @@ export default function CollectionView({ collection }) {
               alt={name}
               width={40}
               height={40}
+              sizes="40px"
               className="rounded-lg"
             />
-            <VerificationBadge verified={verified} size="sm" isDark={isDark} />
+            <VerificationBadge verified={displayVerified} size="sm" isDark={isDark} />
           </div>
           <div className="flex items-center gap-2 flex-wrap">
             <span
@@ -3411,19 +3387,7 @@ export default function CollectionView({ collection }) {
             >
               {name}
             </span>
-            {verified >= 1 && verified <= 4 && (
-              <span
-                className={cn(
-                  'px-2 py-0.5 text-[10px] font-semibold uppercase rounded',
-                  verified === 1 && (isDark ? 'bg-blue-500/10 text-blue-400' : 'bg-blue-50 text-blue-600'),
-                  verified === 2 && (isDark ? 'bg-purple-500/10 text-purple-400' : 'bg-purple-50 text-purple-600'),
-                  verified === 3 && (isDark ? 'bg-amber-500/10 text-amber-400' : 'bg-amber-50 text-amber-600'),
-                  verified === 4 && (isDark ? 'bg-green-500/10 text-green-400' : 'bg-green-50 text-green-600')
-                )}
-              >
-                {verified === 1 ? 'Official' : verified === 2 ? 'Premium' : verified === 3 ? 'Standard' : 'Verified'}
-              </span>
-            )}
+            <VerificationLabel verified={displayVerified} isDark={isDark} />
             {tags?.length > 0 &&
               tags.slice(0, 4).map((tag, i) => (
                 <Link
@@ -3497,23 +3461,24 @@ export default function CollectionView({ collection }) {
                   }}
                 />
                 <span>Related Token</span>
-                {tokenMatchType && (
-                  <span
-                    className={cn(
-                      'px-1 py-0.5 rounded text-[9px]',
-                      isDark ? 'bg-white/10 text-white/60' : 'bg-blue-100 text-blue-500'
-                    )}
-                  >
-                    {tokenMatchType
-                      .split('_')
-                      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-                      .join(' ')}
-                  </span>
-                )}
               </Link>
             )}
           </div>
           <div className="flex items-center gap-2 ml-auto">
+            {displayVerified !== 1 && (
+              <button
+                onClick={() => setShowVerifyModal(true)}
+                className={cn(
+                  'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium transition-colors',
+                  isDark
+                    ? 'bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20'
+                    : 'bg-blue-50 text-blue-600 border border-blue-200 hover:bg-blue-100'
+                )}
+              >
+                <Shield size={13} />
+                Get Verified
+              </button>
+            )}
             <ApiButton />
             {/* Info */}
             <div className="relative" ref={infoDropdownRef}>
@@ -3578,19 +3543,6 @@ export default function CollectionView({ collection }) {
                       <div className="flex justify-between items-center">
                         <span className={isDark ? 'text-white/40' : 'text-gray-500'}>Token</span>
                         <div className="flex items-center gap-1.5">
-                          {tokenMatchType && (
-                            <span
-                              className={cn(
-                                'px-1 py-0.5 rounded text-[9px]',
-                                isDark ? 'bg-white/5 text-white/50' : 'bg-gray-100 text-gray-500'
-                              )}
-                            >
-                              {tokenMatchType
-                                .split('_')
-                                .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-                                .join(' ')}
-                            </span>
-                          )}
                           <Link
                             href={`/token/${linkedToken}`}
                             className="text-primary hover:underline font-medium"
@@ -4083,10 +4035,7 @@ export default function CollectionView({ collection }) {
         </button>
         {showChart && (
           <div
-            className="rounded-[10px] overflow-hidden"
-            style={{
-              border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`
-            }}
+            className={cn('rounded-[10px] overflow-hidden border', isDark ? 'border-white/[0.08]' : 'border-black/[0.08]')}
           >
             <PriceChart slug={slug} />
           </div>
@@ -4095,8 +4044,7 @@ export default function CollectionView({ collection }) {
 
       {/* NFTs and Activity Tabs */}
       <div
-        className="rounded-[10px] overflow-hidden"
-        style={{ border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}` }}
+        className={cn('rounded-[10px] overflow-hidden border', isDark ? 'border-white/[0.08]' : 'border-black/[0.08]')}
       >
         <TabContext value={value}>
           <div className="flex justify-between items-center px-2.5 pt-2 pb-1">
@@ -4131,14 +4079,12 @@ export default function CollectionView({ collection }) {
               <button
                 onClick={handleRemoveAll}
                 disabled={deletingNfts.length === 0}
-                className="px-2 py-1 rounded-[6px] text-[11px] font-normal transition-all"
-                style={{
-                  border: '1.5px solid rgba(244, 67, 54, 0.3)',
-                  background: deletingNfts.length === 0 ? 'transparent' : 'rgba(244, 67, 54, 0.1)',
-                  color: '#f44336',
-                  opacity: deletingNfts.length === 0 ? 0.4 : 1,
-                  cursor: deletingNfts.length === 0 ? 'not-allowed' : 'pointer'
-                }}
+                className={cn(
+                  'px-2 py-1 rounded-[6px] text-[11px] font-normal transition-all border-[1.5px] border-red-500/30 text-[#f44336]',
+                  deletingNfts.length === 0
+                    ? 'bg-transparent opacity-40 cursor-not-allowed'
+                    : 'bg-red-500/10 opacity-100 cursor-pointer'
+                )}
               >
                 Delete All
               </button>
@@ -4159,6 +4105,21 @@ export default function CollectionView({ collection }) {
           </TabPanel>
         </TabContext>
       </div>
+
+      {showVerifyModal && (
+        <VerifyBadgeModal
+          token={{ verified: displayVerified }}
+          itemType="collection"
+          itemId={uuid}
+          itemName={name}
+          itemImage={`https://s1.xrpl.to/nft-collection/${logoImage}`}
+          onClose={() => setShowVerifyModal(false)}
+          onSuccess={(newTier) => {
+            setCurrentVerified(newTier);
+            setShowVerifyModal(false);
+          }}
+        />
+      )}
     </div>
   );
 }

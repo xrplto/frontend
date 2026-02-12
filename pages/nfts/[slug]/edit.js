@@ -1,10 +1,10 @@
 import api from 'src/utils/api';
 import { useState, useEffect } from 'react';
-import styled from '@emotion/styled';
+import { cn } from 'src/utils/cn';
 
 // Context
 import { useContext } from 'react';
-import { AppContext } from 'src/context/AppContext';
+import { ThemeContext, WalletContext, AppContext } from 'src/context/AppContext';
 
 // Components
 import Header from 'src/components/Header';
@@ -12,13 +12,15 @@ import Footer from 'src/components/Footer';
 import EditCollection from 'src/NFTCollection/edit';
 import ScrollToTop from 'src/components/ScrollToTop';
 
-const OverviewWrapper = styled.div`
-  min-height: 100vh;
-`;
+const OverviewWrapper = ({ className, ...props }) => (
+  <div className={cn('min-h-screen', className)} {...props} />
+);
 
 export default function Overview({ data }) {
-  const BASE_URL = 'https://api.xrpnft.com/api';
-  const { darkMode, accountProfile, openSnackbar } = useContext(AppContext);
+  const BASE_URL = 'https://api.xrpl.to/v1';
+  const { darkMode } = useContext(ThemeContext);
+  const { accountProfile } = useContext(WalletContext);
+  const { openSnackbar } = useContext(AppContext);
 
   const accountLogin = accountProfile?.account;
   const accountToken = accountProfile?.token;
@@ -76,7 +78,7 @@ export default function Overview({ data }) {
 }
 
 export async function getServerSideProps(ctx) {
-  const BASE_URL = 'http://65.109.54.46/api';
+  const BASE_URL = 'https://api.xrpl.to/v1';
 
   let data = null;
   try {

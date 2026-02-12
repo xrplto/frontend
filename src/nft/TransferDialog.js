@@ -4,7 +4,7 @@ import Decimal from 'decimal.js-light';
 import { X, Send } from 'lucide-react';
 
 // Context
-import { AppContext } from 'src/context/AppContext';
+import { ThemeContext, WalletContext, AppContext } from 'src/context/AppContext';
 
 // Loader
 import { PulseLoader } from '../components/Spinners';
@@ -18,13 +18,14 @@ import { useDispatch, useSelector } from 'react-redux';
 
 export default function TransferDialog({ open, setOpen, nft, nftImageUrl }) {
   const BASE_URL = 'https://api.xrpl.to/v1';
-  const { themeName } = useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
   const isDark = themeName === 'XrplToDarkTheme';
 
   const dispatch = useDispatch();
   const isProcessing = useSelector(selectProcess);
 
-  const { accountProfile, openSnackbar, sync, setSync } = useContext(AppContext);
+  const { accountProfile } = useContext(WalletContext);
+  const { openSnackbar, sync, setSync } = useContext(AppContext);
   const account = accountProfile?.account;
   const accountToken = accountProfile?.token;
 

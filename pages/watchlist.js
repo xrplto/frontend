@@ -1,6 +1,6 @@
 import api from 'src/utils/api';
 import { useState, useEffect, useRef, useCallback, useContext } from 'react';
-import { AppContext } from 'src/context/AppContext';
+import { ThemeContext, WalletContext, AppContext } from 'src/context/AppContext';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import ScrollToTop from 'src/components/ScrollToTop';
@@ -28,7 +28,9 @@ function Overview({ data }) {
     tMap.set(t.md5, t);
   }
 
-  const { accountProfile, themeName, watchList, setWatchList } = useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
+  const { accountProfile } = useContext(WalletContext);
+  const { watchList, setWatchList } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
   const account = accountProfile?.account;
 

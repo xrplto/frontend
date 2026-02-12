@@ -4,10 +4,10 @@ import Footer from 'src/components/Footer';
 import ScrollToTop from 'src/components/ScrollToTop';
 import { useRouter } from 'next/router';
 import api from 'src/utils/api';
-import styled from '@emotion/styled';
-import { AppContext } from 'src/context/AppContext';
+import { ThemeContext, AppContext } from 'src/context/AppContext';
 import { useSelector } from 'react-redux';
 import { selectMetrics } from 'src/redux/statusSlice';
+import { cn } from 'src/utils/cn';
 // Constants
 const currencySymbols = {
   USD: '$ ',
@@ -19,389 +19,164 @@ const currencySymbols = {
 import { fNumber, fCurrency5 } from 'src/utils/formatters';
 import Decimal from 'decimal.js-light';
 
-const Controls = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  margin-bottom: 16px;
-  padding: 16px 20px;
-  background: ${(p) => (p.darkMode ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)')};
-  border-radius: 12px;
-  border: 1px solid ${(p) => (p.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)')};
-  width: 100%;
-  transition: border-color 0.2s ease;
+const Controls = ({ darkMode, className, children, ...p }) => <div className={cn('flex flex-col gap-[14px] mb-4 py-4 px-5 rounded-xl border w-full transition-[border-color] duration-200', darkMode ? 'bg-white/[0.02] border-white/[0.08] hover:border-white/[0.15]' : 'bg-black/[0.02] border-black/[0.08] hover:border-black/[0.15]', className)} {...p}>{children}</div>;
 
-  &:hover {
-    border-color: ${(p) => (p.darkMode ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)')};
-  }
-`;
+const ControlRow = ({ darkMode, className, children, ...p }) => <div className={cn('flex gap-3 items-center flex-wrap w-full max-md:flex-col max-md:items-stretch max-md:gap-3', className)} {...p}>{children}</div>;
 
-const ControlRow = styled.div`
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  flex-wrap: wrap;
-  width: 100%;
+const MobileSection = ({ className, children, ...p }) => <div className={cn('max-md:w-full max-md:flex max-md:flex-col max-md:gap-2', className)} {...p}>{children}</div>;
 
-  @media (max-width: 768px) {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 12px;
+const MobileButtonGrid = ({ className, children, ...p }) => <div className={cn('contents max-md:!grid max-md:grid-cols-[repeat(auto-fit,minmax(80px,1fr))] max-md:gap-2 max-md:w-full', className)} {...p}>{children}</div>;
 
-    &:not(:last-child) {
-      border-bottom: 1px solid
-        ${(p) => (p.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)')};
-      padding-bottom: 12px;
-    }
-  }
-`;
+const MobileFilterGrid = ({ className, children, ...p }) => <div className={cn('contents max-md:!grid max-md:grid-cols-[repeat(auto-fit,minmax(120px,1fr))] max-md:gap-2 max-md:w-full', className)} {...p}>{children}</div>;
 
-const MobileSection = styled.div`
-  @media (max-width: 768px) {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-`;
+const ActiveFilters = ({ className, children, ...p }) => <div className={cn('flex gap-2 flex-wrap items-center min-h-[24px] max-md:w-full', className)} {...p}>{children}</div>;
 
-const MobileButtonGrid = styled.div`
-  @media (max-width: 768px) {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
-    gap: 8px;
-    width: 100%;
-  }
+const FilterChip = ({ darkMode, className, children, ...p }) => (
+  <div
+    className={cn(
+      'inline-flex items-center gap-1 py-1 px-[10px] text-[#3b82f6] rounded-md text-[11px] font-normal cursor-pointer transition-all duration-150 after:content-["\\00d7"] after:text-xs after:font-medium after:opacity-60 after:ml-[2px] max-md:py-[5px]',
+      darkMode ? 'bg-[rgba(59,130,246,0.1)] hover:bg-[rgba(59,130,246,0.18)]' : 'bg-[rgba(59,130,246,0.08)] hover:bg-[rgba(59,130,246,0.15)]',
+      className
+    )}
+    {...p}
+  >
+    {children}
+  </div>
+);
 
-  @media (min-width: 769px) {
-    display: contents;
-  }
-`;
+const SearchInput = ({ darkMode, className, ...p }) => (
+  <input
+    className={cn(
+      'py-[10px] px-4 border-[1.5px] rounded-xl text-sm min-w-[200px] flex-1 max-w-[300px] focus:outline-none focus:border-[rgba(59,130,246,0.5)]',
+      darkMode ? 'border-white/[0.15] bg-[rgba(17,24,39,0.8)] text-white placeholder:text-white/50' : 'border-[rgba(145,158,171,0.2)] bg-[rgba(255,255,255,0.95)] text-[#333] placeholder:text-black/50',
+      className
+    )}
+    {...p}
+  />
+);
 
-const MobileFilterGrid = styled.div`
-  @media (max-width: 768px) {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 8px;
-    width: 100%;
-  }
+const Button = ({ selected, darkMode, className, children, ...p }) => (
+  <button
+    className={cn(
+      'py-2 px-[14px] border-[1.5px] rounded-lg cursor-pointer text-[13px] font-normal transition-all duration-150',
+      selected
+        ? 'border-[rgba(59,130,246,0.25)] bg-[rgba(59,130,246,0.08)] text-[#3b82f6] hover:border-[rgba(59,130,246,0.35)] hover:bg-[rgba(59,130,246,0.12)]'
+        : darkMode
+          ? 'border-white/10 bg-transparent text-white/80 hover:border-white/20 hover:bg-white/[0.05]'
+          : 'border-black/10 bg-transparent text-black/70 hover:border-black/20 hover:bg-black/[0.03]',
+      className
+    )}
+    {...p}
+  >
+    {children}
+  </button>
+);
 
-  @media (min-width: 769px) {
-    display: contents;
-  }
-`;
+const Select = ({ selected, darkMode, className, children, ...p }) => (
+  <select
+    className={cn(
+      'py-2 pl-[14px] pr-[30px] border-[1.5px] rounded-lg text-[13px] font-normal cursor-pointer appearance-none bg-no-repeat bg-[length:14px] bg-[position:right_8px_center] transition-all duration-150',
+      selected
+        ? 'border-[rgba(59,130,246,0.25)] bg-[rgba(59,130,246,0.08)] text-[#3b82f6] hover:border-[rgba(59,130,246,0.35)]'
+        : darkMode
+          ? 'border-white/10 bg-white/[0.04] text-white/80 hover:border-white/20'
+          : 'border-black/10 bg-[rgba(255,255,255,0.95)] text-black/70 hover:border-black/20',
+      className
+    )}
+    style={{ backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e")` }}
+    {...p}
+  >
+    {children}
+  </select>
+);
 
-const ActiveFilters = styled.div`
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  align-items: center;
-  min-height: 24px;
+const FilterInput = ({ darkMode, className, ...p }) => (
+  <input
+    className={cn(
+      'py-2 px-3 border-[1.5px] rounded-lg text-[13px] w-[100px] transition-all duration-150 focus:outline-none focus:border-[rgba(59,130,246,0.35)]',
+      darkMode ? 'border-white/10 bg-white/[0.04] text-white/90 placeholder:text-white/[0.35]' : 'border-black/10 bg-[rgba(255,255,255,0.95)] text-black/80 placeholder:text-black/[0.35]',
+      className
+    )}
+    {...p}
+  />
+);
 
-  @media (max-width: 768px) {
-    width: 100%;
-  }
-`;
+const Label = ({ darkMode, className, children, ...p }) => <span className={cn('text-[11px] font-medium uppercase tracking-[0.5px] whitespace-nowrap', darkMode ? 'text-white/[0.45]' : 'text-black/[0.45]', className)} {...p}>{children}</span>;
 
-const FilterChip = styled.div`
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px 10px;
-  background: ${(p) => (p.darkMode ? 'rgba(59,130,246,0.1)' : 'rgba(59,130,246,0.08)')};
-  color: #3b82f6;
-  border-radius: 6px;
-  font-size: 11px;
-  font-weight: 400;
-  cursor: pointer;
-  transition: all 0.15s;
+const HeatMap = ({ darkMode, className, children, ...p }) => <div className={cn('w-full h-[320px] rounded-xl border mb-5 relative overflow-hidden transition-[border-color] duration-200', darkMode ? 'bg-white/[0.02] border-white/[0.08] hover:border-white/[0.15]' : 'bg-black/[0.02] border-black/[0.08] hover:border-black/[0.15]', className)} {...p}>{children}</div>;
 
-  &:hover {
-    background: ${(p) => (p.darkMode ? 'rgba(59,130,246,0.18)' : 'rgba(59,130,246,0.15)')};
-  }
+const Canvas = ({ className, ...p }) => <canvas className={cn('w-full h-full cursor-crosshair', className)} {...p} />;
 
-  &::after {
-    content: '×';
-    font-size: 12px;
-    font-weight: 500;
-    opacity: 0.6;
-    margin-left: 2px;
-  }
+const CustomTooltip = ({ darkMode, className, children, ...p }) => <div className={cn('fixed rounded-lg py-[10px] px-[14px] text-xs pointer-events-none z-[1000] backdrop-blur-[8px] whitespace-nowrap translate-x-[12px] -translate-y-1/2', darkMode ? 'bg-black/90 border border-white/[0.15] text-white' : 'bg-white/95 border border-black/10 text-[#333]', className)} {...p}>{children}</div>;
 
-  @media (max-width: 768px) {
-    padding: 5px 10px;
-  }
-`;
+const TableWrapper = ({ darkMode, className, children, ...p }) => <div className={cn('overflow-x-auto rounded-xl border w-full', darkMode ? 'border-white/[0.08] bg-white/[0.02]' : 'border-black/[0.08] bg-black/[0.02]', className)} {...p}>{children}</div>;
 
-const SearchInput = styled.input`
-  padding: 10px 16px;
-  border: 1.5px solid ${(p) => (p.darkMode ? 'rgba(255,255,255,0.15)' : 'rgba(145,158,171,0.2)')};
-  border-radius: 12px;
-  background: ${(p) => (p.darkMode ? 'rgba(17,24,39,0.8)' : 'rgba(255,255,255,0.95)')};
-  color: ${(p) => (p.darkMode ? '#fff' : '#333')};
-  font-size: 14px;
-  min-width: 200px;
-  flex: 1;
-  max-width: 300px;
+const Table = ({ className, children, ...p }) => <table className={cn('w-full border-collapse min-w-full table-auto', className)} {...p}>{children}</table>;
 
-  &::placeholder {
-    color: ${(p) => (p.darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)')};
-  }
+const Th = ({ darkMode, align, sortable, className, children, ...p }) => (
+  <th
+    className={cn(
+      'py-[14px] px-4 font-medium text-[11px] uppercase tracking-[0.5px] whitespace-nowrap',
+      darkMode ? 'text-white/50 bg-white/[0.02] border-b border-white/[0.06]' : 'text-black/50 bg-black/[0.02] border-b border-black/[0.06]',
+      sortable ? 'cursor-pointer' : 'cursor-default',
+      sortable && (darkMode ? 'hover:text-white/80' : 'hover:text-black/80'),
+      className
+    )}
+    style={{ textAlign: align || 'left' }}
+    {...p}
+  >
+    {children}
+  </th>
+);
 
-  &:focus {
-    outline: none;
-    border-color: rgba(59, 130, 246, 0.5);
-  }
-`;
+const Tr = ({ darkMode, className, children, ...p }) => (
+  <tr
+    className={cn(
+      'border-b cursor-pointer transition-all duration-200 last:border-b-0',
+      darkMode ? 'border-white/[0.05] hover:bg-white/[0.04]' : 'border-black/[0.05] hover:bg-black/[0.02]',
+      className
+    )}
+    {...p}
+  >
+    {children}
+  </tr>
+);
 
-const Button = styled.button`
-  padding: 8px 14px;
-  border: 1.5px solid
-    ${(p) =>
-      p.selected
-        ? 'rgba(59,130,246,0.25)'
-        : p.darkMode
-          ? 'rgba(255,255,255,0.1)'
-          : 'rgba(0,0,0,0.1)'};
-  border-radius: 8px;
-  background: ${(p) => (p.selected ? 'rgba(59,130,246,0.08)' : 'transparent')};
-  color: ${(p) =>
-    p.selected ? '#3b82f6' : p.darkMode ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.7)'};
-  cursor: pointer;
-  font-size: 13px;
-  font-weight: 400;
-  transition: all 0.15s;
+const Td = ({ darkMode, align, className, children, ...p }) => (
+  <td
+    className={cn('py-[14px] px-4 text-sm', darkMode ? 'text-white' : 'text-[#333]', className)}
+    style={{ textAlign: align || 'left' }}
+    {...p}
+  >
+    {children}
+  </td>
+);
 
-  &:hover {
-    border-color: ${(p) =>
-      p.selected
-        ? 'rgba(59,130,246,0.35)'
-        : p.darkMode
-          ? 'rgba(255,255,255,0.2)'
-          : 'rgba(0,0,0,0.2)'};
-    background: ${(p) =>
-      p.selected
-        ? 'rgba(59,130,246,0.12)'
-        : p.darkMode
-          ? 'rgba(255,255,255,0.05)'
-          : 'rgba(0,0,0,0.03)'};
-  }
-`;
+const TokenInfo = ({ className, children, ...p }) => <div className={cn('flex items-center gap-3', className)} {...p}>{children}</div>;
 
-const Select = styled.select`
-  padding: 8px 14px;
-  padding-right: 30px;
-  border: 1.5px solid
-    ${(p) =>
-      p.selected
-        ? 'rgba(59,130,246,0.25)'
-        : p.darkMode
-          ? 'rgba(255,255,255,0.1)'
-          : 'rgba(0,0,0,0.1)'};
-  border-radius: 8px;
-  background: ${(p) =>
-    p.selected
-      ? 'rgba(59,130,246,0.08)'
-      : p.darkMode
-        ? 'rgba(255,255,255,0.04)'
-        : 'rgba(255,255,255,0.95)'};
-  color: ${(p) =>
-    p.selected ? '#3b82f6' : p.darkMode ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.7)'};
-  font-size: 13px;
-  font-weight: 400;
-  cursor: pointer;
-  appearance: none;
-  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-  background-repeat: no-repeat;
-  background-position: right 8px center;
-  background-size: 14px;
-  transition: all 0.15s;
+const TokenImage = ({ darkMode, className, ...p }) => <img className={cn('w-8 h-8 rounded-full border-2', darkMode ? 'border-white/10' : 'border-black/10', className)} {...p} />;
 
-  &:hover {
-    border-color: ${(p) =>
-      p.selected
-        ? 'rgba(59,130,246,0.35)'
-        : p.darkMode
-          ? 'rgba(255,255,255,0.2)'
-          : 'rgba(0,0,0,0.2)'};
-  }
-`;
+const TokenDetails = ({ className, children, ...p }) => <div className={cn('flex flex-col', className)} {...p}>{children}</div>;
 
-const FilterInput = styled.input`
-  padding: 8px 12px;
-  border: 1.5px solid ${(p) => (p.darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)')};
-  border-radius: 8px;
-  background: ${(p) => (p.darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.95)')};
-  color: ${(p) => (p.darkMode ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.8)')};
-  font-size: 13px;
-  width: 100px;
-  transition: all 0.15s;
+const TokenName = ({ darkMode, className, children, ...p }) => <div className={cn('font-semibold text-sm', darkMode ? 'text-white' : 'text-black', className)} {...p}>{children}</div>;
 
-  &::placeholder {
-    color: ${(p) => (p.darkMode ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)')};
-  }
+const TokenSymbol = ({ darkMode, className, children, ...p }) => <div className={cn('text-xs uppercase', darkMode ? 'text-[#bbb]' : 'text-[#666]', className)} {...p}>{children}</div>;
 
-  &:focus {
-    outline: none;
-    border-color: rgba(59, 130, 246, 0.35);
-  }
-`;
+const RSIBadge = ({ bg, color, className, children, ...p }) => (
+  <span
+    className={cn('inline-flex items-center justify-center py-[5px] px-[10px] rounded-md font-medium text-[13px] min-w-[48px]', className)}
+    style={{ background: bg, color }}
+    {...p}
+  >
+    {children}
+  </span>
+);
 
-const Label = styled.span`
-  font-size: 11px;
-  color: ${(p) => (p.darkMode ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.45)')};
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  white-space: nowrap;
-`;
-
-const HeatMap = styled.div`
-  width: 100%;
-  height: 320px;
-  background: ${(p) => (p.darkMode ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)')};
-  border-radius: 12px;
-  border: 1px solid ${(p) => (p.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)')};
-  margin-bottom: 20px;
-  position: relative;
-  overflow: hidden;
-  transition: border-color 0.2s ease;
-
-  &:hover {
-    border-color: ${(p) => (p.darkMode ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)')};
-  }
-`;
-
-const Canvas = styled.canvas`
-  width: 100%;
-  height: 100%;
-  cursor: crosshair;
-`;
-
-const CustomTooltip = styled.div`
-  position: fixed;
-  background: ${(p) => (p.darkMode ? 'rgba(0,0,0,0.9)' : 'rgba(255,255,255,0.95)')};
-  border: 1px solid ${(p) => (p.darkMode ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)')};
-  border-radius: 8px;
-  padding: 10px 14px;
-  font-size: 12px;
-  color: ${(p) => (p.darkMode ? '#fff' : '#333')};
-  pointer-events: none;
-  z-index: 1000;
-  backdrop-filter: blur(8px);
-  white-space: nowrap;
-  transform: translate(12px, -50%);
-`;
-
-const TableWrapper = styled.div`
-  overflow-x: auto;
-  border-radius: 12px;
-  border: 1px solid ${(p) => (p.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)')};
-  background: ${(p) => (p.darkMode ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)')};
-  width: 100%;
-`;
-
-const Table = styled.table`
-  width: 100%;
-  border-collapse: collapse;
-  min-width: 100%;
-  table-layout: auto;
-`;
-
-const Th = styled.th`
-  padding: 14px 16px;
-  text-align: ${(p) => p.align || 'left'};
-  font-weight: 500;
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: ${(p) => (p.darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)')};
-  background: ${(p) => (p.darkMode ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)')};
-  border-bottom: 1px solid ${(p) => (p.darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)')};
-  cursor: ${(p) => (p.sortable ? 'pointer' : 'default')};
-  white-space: nowrap;
-
-  &:hover {
-    ${(p) =>
-      p.sortable &&
-      `
-      color: ${p.darkMode ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.8)'};
-    `}
-  }
-`;
-
-const Tr = styled.tr`
-  border-bottom: 1px solid ${(p) => (p.darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)')};
-  cursor: pointer;
-  transition: all 0.2s;
-
-  &:hover {
-    background: ${(p) => (p.darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.02)')};
-  }
-
-  &:last-child {
-    border-bottom: none;
-  }
-`;
-
-const Td = styled.td`
-  padding: 14px 16px;
-  font-size: 14px;
-  color: ${(p) => (p.darkMode ? '#fff' : '#333')};
-  text-align: ${(p) => p.align || 'left'};
-`;
-
-const TokenInfo = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 12px;
-`;
-
-const TokenImage = styled.img`
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border: 2px solid ${(p) => (p.darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)')};
-`;
-
-const TokenDetails = styled.div`
-  display: flex;
-  flex-direction: column;
-`;
-
-const TokenName = styled.div`
-  font-weight: 600;
-  font-size: 14px;
-  color: ${(p) => (p.darkMode ? '#fff' : '#000')};
-`;
-
-const TokenSymbol = styled.div`
-  font-size: 12px;
-  color: ${(p) => (p.darkMode ? '#bbb' : '#666')};
-  text-transform: uppercase;
-`;
-
-const RSIBadge = styled.span`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 5px 10px;
-  border-radius: 6px;
-  font-weight: 500;
-  font-size: 13px;
-  min-width: 48px;
-  background: ${(p) => p.bg};
-  color: ${(p) => p.color};
-`;
-
-const PriceChange = styled.span`
-  color: ${(p) => (p.positive ? '#22c55e' : '#ef4444')};
-  font-weight: 500;
-  font-size: 13px;
-`;
+const PriceChange = ({ positive, className, children, ...p }) => <span className={cn('font-medium text-[13px]', positive ? 'text-[#22c55e]' : 'text-[#ef4444]', className)} {...p}>{children}</span>;
 
 function RSIAnalysisPage({ data }) {
-  const { themeName, activeFiatCurrency } = useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
+  const { activeFiatCurrency } = useContext(AppContext);
   const darkMode = themeName === 'XrplToDarkTheme';
   const metrics = useSelector(selectMetrics);
   const exchRate = metrics[activeFiatCurrency] || 1;
@@ -824,7 +599,7 @@ function RSIAnalysisPage({ data }) {
     }
 
     ctx.fillStyle = darkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)';
-    ctx.font = '12px Arial';
+    ctx.font = '12px -apple-system, system-ui, sans-serif';
     ctx.textAlign = 'right';
     ctx.textBaseline = 'middle';
 
@@ -837,12 +612,12 @@ function RSIAnalysisPage({ data }) {
     ctx.translate(20, height / 2);
     ctx.rotate(-Math.PI / 2);
     ctx.textAlign = 'center';
-    ctx.font = 'bold 14px Arial';
+    ctx.font = 'bold 14px -apple-system, system-ui, sans-serif';
     ctx.fillText(`RSI ${params.timeframe.toUpperCase()}`, 0, 0);
     ctx.restore();
 
     ctx.textAlign = 'center';
-    ctx.font = 'bold 12px Arial';
+    ctx.font = 'bold 12px -apple-system, system-ui, sans-serif';
     ctx.fillText(`Market Cap (${activeFiatCurrency})`, width / 2, height - 20);
   }, [tokens, params.timeframe, darkMode, activeFiatCurrency, getRSIValue]);
 
@@ -866,17 +641,8 @@ function RSIAnalysisPage({ data }) {
     <div className="min-h-screen overflow-hidden m-0 p-0">
       <Header />
       <h1
-        style={{
-          position: 'absolute',
-          width: 1,
-          height: 1,
-          padding: 0,
-          margin: -1,
-          overflow: 'hidden',
-          clip: 'rect(0,0,0,0)',
-          whiteSpace: 'nowrap',
-          border: 0
-        }}
+        className="absolute w-px h-px p-0 -m-px overflow-hidden whitespace-nowrap border-0"
+        style={{ clip: 'rect(0,0,0,0)' }}
       >
         RSI Analysis for XRPL Tokens
       </h1>
@@ -896,7 +662,7 @@ function RSIAnalysisPage({ data }) {
                 </Button>
               ))}
             </MobileButtonGrid>
-            <div style={{ display: 'flex', gap: '8px', marginLeft: 'auto', alignItems: 'center' }}>
+            <div className="flex gap-2 ml-auto items-center">
               {presets.map((preset) => (
                 <Button key={preset.label} darkMode={darkMode} onClick={() => applyPreset(preset)}>
                   {preset.label}
@@ -921,7 +687,7 @@ function RSIAnalysisPage({ data }) {
                 placeholder="Search..."
                 value={params.filter}
                 onChange={(e) => updateParam('filter', e.target.value)}
-                style={{ minWidth: '120px', maxWidth: '160px' }}
+                className="!min-w-[120px] !max-w-[160px]"
               />
               <Select
                 darkMode={darkMode}
@@ -1011,111 +777,45 @@ function RSIAnalysisPage({ data }) {
             onMouseLeave={handleCanvasMouseLeave}
             style={{ opacity: loading ? 0.3 : 1, transition: 'opacity 0.2s' }}
           />
-          <div
-            style={{
-              position: 'absolute',
-              top: '12px',
-              left: '20px',
-              right: '20px',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center'
-            }}
-          >
+          <div className="absolute top-3 left-5 right-5 flex justify-between items-center">
             <span
-              style={{
-                fontSize: '14px',
-                fontWeight: '500',
-                color: darkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)'
-              }}
+              className={cn('text-sm font-medium', darkMode ? 'text-white/70' : 'text-black/70')}
             >
               RSI Heatmap · {params.timeframe.toUpperCase()}
             </span>
-            <div style={{ display: 'flex', gap: '12px', fontSize: '11px' }}>
-              <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <span
-                  style={{
-                    width: '8px',
-                    height: '8px',
-                    borderRadius: '50%',
-                    background: '#ff4444'
-                  }}
-                />
-                <span style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
-                  ≥80
-                </span>
+            <div className="flex gap-3 text-[11px]">
+              <span className="flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-[#ff4444]" />
+                <span className={darkMode ? 'text-white/50' : 'text-black/50'}>≥80</span>
               </span>
-              <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <span
-                  style={{
-                    width: '8px',
-                    height: '8px',
-                    borderRadius: '50%',
-                    background: '#ff8844'
-                  }}
-                />
-                <span style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
-                  ≥70
-                </span>
+              <span className="flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-[#ff8844]" />
+                <span className={darkMode ? 'text-white/50' : 'text-black/50'}>≥70</span>
               </span>
-              <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <span
-                  style={{
-                    width: '8px',
-                    height: '8px',
-                    borderRadius: '50%',
-                    background: '#44ff44'
-                  }}
-                />
-                <span style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
-                  30-70
-                </span>
+              <span className="flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-[#44ff44]" />
+                <span className={darkMode ? 'text-white/50' : 'text-black/50'}>30-70</span>
               </span>
-              <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <span
-                  style={{
-                    width: '8px',
-                    height: '8px',
-                    borderRadius: '50%',
-                    background: '#4488ff'
-                  }}
-                />
-                <span style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
-                  ≤30
-                </span>
+              <span className="flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-[#4488ff]" />
+                <span className={darkMode ? 'text-white/50' : 'text-black/50'}>≤30</span>
               </span>
-              <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <span
-                  style={{
-                    width: '8px',
-                    height: '8px',
-                    borderRadius: '50%',
-                    background: '#8844ff'
-                  }}
-                />
-                <span style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
-                  ≤20
-                </span>
+              <span className="flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-[#8844ff]" />
+                <span className={darkMode ? 'text-white/50' : 'text-black/50'}>≤20</span>
               </span>
             </div>
           </div>
           {loading && (
             <div
-              style={{
-                position: 'absolute',
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%, -50%)',
-                color: darkMode ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.5)',
-                fontSize: '13px'
-              }}
+              className={cn('absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[13px]', darkMode ? 'text-white/60' : 'text-black/50')}
             >
               Loading...
             </div>
           )}
           {tooltip.visible && tooltip.data && (
             <CustomTooltip darkMode={darkMode} style={{ left: tooltip.x, top: tooltip.y }}>
-              <div style={{ fontWeight: '600', marginBottom: '4px' }}>{tooltip.data.name}</div>
+              <div className="font-semibold mb-1">{tooltip.data.name}</div>
               <div>RSI: {getRSIValue(tooltip.data)?.toFixed(1) || 'N/A'}</div>
               <div>MC: ${(tooltip.data.marketcap / 1000000).toFixed(2)}M</div>
               <div>
@@ -1235,7 +935,7 @@ function RSIAnalysisPage({ data }) {
                     </Td>
                     <Td darkMode={darkMode} align="right">
                       <span
-                        style={{ color: darkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)' }}
+                        className={darkMode ? 'text-white/70' : 'text-black/70'}
                       >
                         {token.holders ? fNumber(token.holders) : '-'}
                       </span>
@@ -1251,9 +951,7 @@ function RSIAnalysisPage({ data }) {
         </TableWrapper>
 
         {tokens.length > 0 && (
-          <div
-            style={{ marginTop: '20px', display: 'flex', gap: '10px', justifyContent: 'center' }}
-          >
+          <div className="mt-5 flex gap-[10px] justify-center">
             <Button
               darkMode={darkMode}
               onClick={() => updateParam('start', Math.max(0, params.start - params.limit))}
@@ -1261,7 +959,7 @@ function RSIAnalysisPage({ data }) {
             >
               Previous
             </Button>
-            <span style={{ padding: '10px', color: darkMode ? '#fff' : '#333' }}>
+            <span className={cn('p-[10px]', darkMode ? 'text-white' : 'text-[#333]')}>
               Page {Math.floor(params.start / params.limit) + 1}
             </span>
             <Button

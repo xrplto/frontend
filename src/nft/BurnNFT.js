@@ -1,6 +1,6 @@
 import api from 'src/utils/api';
 import { useState, useEffect, useContext } from 'react';
-import { AppContext } from 'src/context/AppContext';
+import { ThemeContext, WalletContext, AppContext } from 'src/context/AppContext';
 import { cn } from 'src/utils/cn';
 import { Trash2 } from 'lucide-react';
 
@@ -14,12 +14,13 @@ import { useDispatch } from 'react-redux';
 import { configureMemos } from 'src/utils/parseUtils';
 
 export default function BurnNFT({ nft, onHandleBurn }) {
-  const { themeName } = useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
   const isDark = themeName === 'XrplToDarkTheme';
   const BASE_URL = 'https://api.xrpl.to/v1';
 
   const dispatch = useDispatch();
-  const { accountProfile, openSnackbar } = useContext(AppContext);
+  const { accountProfile } = useContext(WalletContext);
+  const { openSnackbar } = useContext(AppContext);
   const accountLogin = accountProfile?.account;
   const accountToken = accountProfile?.token;
 

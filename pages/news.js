@@ -4,7 +4,7 @@ import { useRouter } from 'next/router';
 import dynamic from 'next/dynamic';
 import formatDistanceToNow from 'date-fns/formatDistanceToNow';
 import { cn } from 'src/utils/cn';
-import { AppContext } from 'src/context/AppContext';
+import { ThemeContext } from 'src/context/AppContext';
 import { ApiButton, registerApiCalls } from 'src/components/ApiEndpointsModal';
 
 const Header = dynamic(() => import('../src/components/Header'), { ssr: true });
@@ -411,7 +411,7 @@ function NewsPage({
   initialQuery
 }) {
   const router = useRouter();
-  const { themeName } = useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
   const isDark = themeName === 'XrplToDarkTheme';
   const [isMobile, setIsMobile] = useState(false);
   const [notificationPanelOpen, setNotificationPanelOpen] = useState(false);
@@ -795,13 +795,10 @@ export async function getServerSideProps({ query }) {
     : `https://api.xrpl.to/v1/news?${params}`;
 
   try {
-    console.log('Fetching:', endpoint);
     const [newsRes, chartRes] = await Promise.all([
       fetch(endpoint),
       apiFetch('https://api.xrpl.to/v1/news/sentiment-chart?days=30')
     ]);
-
-    console.log('News response status:', newsRes.status, 'url:', newsRes.url);
 
     if (!newsRes.ok) {
       console.error('News API error:', newsRes.status, newsRes.statusText);
@@ -809,12 +806,8 @@ export async function getServerSideProps({ query }) {
     }
 
     const newsText = await newsRes.text();
-    console.log('News response length:', newsText.length, 'preview:', newsText.slice(0, 200));
-
     const newsData = JSON.parse(newsText);
     const chartData = chartRes.ok ? await chartRes.json() : null;
-
-    console.log('Parsed news - keys:', Object.keys(newsData), 'dataLength:', newsData.data?.length);
 
     const parse = (p) => ({
       bullish: parseFloat(p?.Bullish || 0),

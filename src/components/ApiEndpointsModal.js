@@ -1,7 +1,6 @@
 import { memo, useState, useContext, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { useRouter } from 'next/router';
-import styled from '@emotion/styled';
 import {
   Code2,
   Copy,
@@ -16,22 +15,19 @@ import {
   Terminal,
   Layers
 } from 'lucide-react';
-import { AppContext } from 'src/context/AppContext';
+import { ThemeContext } from 'src/context/AppContext';
 import { cn } from 'src/utils/cn';
 import api from 'src/utils/api';
 
-const StyledApiButton = styled.button`
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  border-radius: 8px;
-  padding: 6px 10px;
-  font-size: 11px;
-  font-weight: 500;
-  transition: all 0.3s;
-  overflow: hidden;
-  position: relative;
-`;
+const StyledApiButton = ({ className, ...props }) => (
+  <button
+    className={cn(
+      'flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11px] font-medium transition-all duration-300 overflow-hidden relative',
+      className
+    )}
+    {...props}
+  />
+);
 
 
 // JSON syntax highlighter
@@ -463,7 +459,7 @@ export const PAGE_ENDPOINTS = {
 };
 
 const ApiEndpointsModal = memo(({ open, onClose, token = null }) => {
-  const { themeName } = useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
   const isDark = themeName === 'XrplToDarkTheme';
   const router = useRouter();
   const [copiedPath, setCopiedPath] = useState(null);
@@ -1150,7 +1146,7 @@ const ApiEndpointsModal = memo(({ open, onClose, token = null }) => {
 
 // Standalone button + modal combo
 export const ApiButton = memo(({ className = '', token = null }) => {
-  const { themeName } = useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
   const isDark = themeName === 'XrplToDarkTheme';
   const [open, setOpen] = useState(false);
 

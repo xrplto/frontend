@@ -1,600 +1,284 @@
 import React, { useState, useMemo, memo, useRef, useEffect, Fragment } from 'react';
 import { useRouter } from 'next/router';
-import styled from '@emotion/styled';
 import { useContext } from 'react';
-import { AppContext } from 'src/context/AppContext';
+import { ThemeContext } from 'src/context/AppContext';
 import Link from 'next/link';
 import { Search, X, Newspaper, Flame, TrendingUp, Sparkles } from 'lucide-react';
 import { ApiButton } from 'src/components/ApiEndpointsModal';
 import { normalizeTag } from 'src/utils/formatters';
+import { cn } from 'src/utils/cn';
 
 // Styled Components
-const Container = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  border-radius: 12px;
-  border: 1.5px solid
-    ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)')};
-  background: transparent;
-  padding: 10px 14px;
-  position: relative;
-  box-sizing: border-box;
-
-  @media (max-width: 600px) {
-    padding: 6px 8px;
-    gap: 6px;
-  }
-`;
-
-const Row = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: ${(props) => (props.spaceBetween ? 'space-between' : 'flex-start')};
-  gap: 6px;
-  flex-wrap: ${(props) => (props.noWrap ? 'nowrap' : 'wrap')};
-  flex-direction: row;
-  overflow-x: ${(props) => (props.noWrap ? 'auto' : 'hidden')};
-  overflow-y: visible;
-  width: 100%;
-  position: relative;
-
-  @media (max-width: 600px) {
-    gap: 5px;
-    overflow-x: auto;
-    flex-wrap: nowrap;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-    padding-bottom: 2px;
-
-    &::-webkit-scrollbar {
-      display: none;
-    }
-  }
-`;
-
-const TagsRow = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  width: 100%;
-
-  @media (max-width: 600px) {
-    gap: 6px;
-  }
-`;
-
-const TagsScrollArea = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  overflow-x: auto;
-  flex: 1 1 auto;
-  min-width: 0;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-
-  &::-webkit-scrollbar {
-    display: none;
-  }
-
-  @media (max-width: 600px) {
-    gap: 6px;
-  }
-`;
-
-const AllButtonWrapper = styled.div`
-  flex-shrink: 0;
-  margin-left: 4px;
-`;
-
-const RowContent = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  flex-wrap: wrap;
-  flex: 1 1 auto;
-
-  @media (max-width: 600px) {
-    gap: 4px;
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    margin-right: 8px;
-
-    &::-webkit-scrollbar {
-      display: none;
-    }
-  }
-`;
-
-const RowsSelector = styled.select`
-  padding: 0 28px 0 12px;
-  border: 1.5px solid ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.08)')};
-  border-radius: 8px;
-  background: ${(props) => (props.darkMode ? 'rgba(0, 0, 0, 0.4)' : 'rgba(255, 255, 255, 0.9)')};
-  color: ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.85)' : 'rgba(0, 0, 0, 0.7)')};
-  font-size: 0.75rem;
-  font-weight: 500;
-  cursor: pointer;
-  height: 32px;
-  min-width: 70px;
-  margin-left: ${(props) => (props.noMargin ? '0' : 'auto')};
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
-  background-image: ${(props) =>
-    props.darkMode
-      ? `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.6)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e")`
-      : `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='rgba(0,0,0,0.5)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e")`};
-  background-repeat: no-repeat;
-  background-position: right 10px center;
-  background-size: 12px;
-  transition: all 0.15s ease;
-
-  &:hover {
-    border-color: ${(props) => (props.darkMode ? 'rgba(59, 130, 246, 0.5)' : 'rgba(59, 130, 246, 0.4)')};
-    background-color: ${(props) => (props.darkMode ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.05)')};
-  }
-
-  &:focus {
-    outline: none;
-    border-color: #3b82f6;
-  }
-
-  option {
-    background: ${(props) => (props.darkMode ? '#0a0a0a' : '#ffffff')};
-    color: ${(props) => (props.darkMode ? '#e5e5e5' : '#1a1a1a')};
-    padding: 12px 16px;
-    font-size: 13px;
-  }
-
-  @media (max-width: 600px) {
-    font-size: 0.62rem;
-    height: 26px;
-    min-width: 48px;
-    padding: 0 20px 0 6px;
-    background-size: 9px;
-    background-position: right 6px center;
-  }
-`;
-
-const Stack = styled.div`
-  display: flex;
-  flex-direction: row;
-  gap: 6px;
-  align-items: center;
-  flex-shrink: 0;
-  position: relative;
-  z-index: 1;
-
-  @media (max-width: 600px) {
-    gap: 3px;
-    touch-action: manipulation;
-  }
-`;
-
-const StyledIconButton = styled.button`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 30px;
-  height: 30px;
-  padding: 0;
-  border: none;
-  border-radius: 8px;
-  background: transparent;
-  color: ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.4)')};
-  cursor: pointer;
-  transition: all 0.15s ease;
-  flex-shrink: 0;
-
-  &:hover {
-    background: rgba(59, 130, 246, 0.1);
-    color: #3b82f6;
-  }
-
-  @media (max-width: 600px) {
-    width: 26px;
-    height: 26px;
-  }
-`;
-
-const ButtonGroup = styled.div`
-  display: flex;
-  gap: 2px;
-  flex-shrink: 0;
-  background: ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.04)' : 'rgba(0, 0, 0, 0.03)')};
-  padding: 3px;
-  border-radius: 8px;
-  border: none;
-
-  & > button {
-    border-radius: 6px;
-    border: none;
-    min-width: 36px;
-    height: 24px;
-    padding: 0 10px;
-    font-size: 0.72rem;
-    font-weight: 400;
-    background: transparent;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
-    color: ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.5)')};
-    touch-action: manipulation;
-    -webkit-tap-highlight-color: transparent;
-    transition: all 0.15s ease;
-
-    &:hover {
-      color: ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.8)')};
-      background: ${(props) =>
-        props.darkMode ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.04)'};
-    }
-  }
-
-  & > button.selected {
-    background: ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.95)' : '#fff')};
-    color: ${(props) => (props.darkMode ? '#111' : '#333')};
-    font-weight: 500;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
-
-    &:hover {
-      background: ${(props) => (props.darkMode ? '#fff' : '#fff')};
-    }
-  }
-
-  @media (max-width: 600px) {
-    display: ${(props) => (props.hideOnMobile ? 'none' : 'flex')};
-    padding: 2px;
-
-    & > button {
-      min-width: 28px;
-      height: 22px;
-      padding: 0 7px;
-      font-size: 0.65rem;
-      gap: 2px;
-    }
-  }
-`;
-
-const LaunchpadGroup = styled.div`
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
-  padding: 3px 6px 3px 8px;
-  border-radius: 6px;
-  background: ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.03)')};
-  border: 1px solid
-    ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)')};
-  margin-left: 8px;
-`;
-
-const LaunchpadLabel = styled.span`
-  font-size: 0.6rem;
-  font-weight: 600;
-  color: ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.35)' : 'rgba(0, 0, 0, 0.35)')};
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-right: 4px;
-`;
-
-const LaunchpadChip = styled.button`
-  display: inline-flex;
-  align-items: center;
-  padding: 0 6px;
-  border: none;
-  border-radius: 4px;
-  background: ${(props) => (props.selected ? 'rgba(59, 130, 246, 0.15)' : 'transparent')};
-  color: ${(props) =>
-    props.selected
-      ? '#3b82f6'
-      : props.darkMode
-        ? 'rgba(255, 255, 255, 0.6)'
-        : 'rgba(33, 43, 54, 0.6)'};
-  font-size: 0.65rem;
-  font-weight: ${(props) => (props.selected ? 500 : 400)};
-  cursor: pointer;
-  white-space: nowrap;
-  height: 20px;
-  flex-shrink: 0;
-  transition: all 0.15s ease;
-
-  &:hover {
-    background: rgba(59, 130, 246, 0.1);
-    color: #3b82f6;
-  }
-`;
-
-const TagChip = styled.button`
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  padding: 0 8px;
-  border: 1px solid
-    ${(props) =>
-      props.selected
-        ? 'rgba(59, 130, 246, 0.3)'
-        : props.darkMode
-          ? 'rgba(255, 255, 255, 0.08)'
-          : 'rgba(0, 0, 0, 0.08)'};
-  border-radius: 6px;
-  background: ${(props) =>
-    props.selected
-      ? 'rgba(59, 130, 246, 0.1)'
-      : props.darkMode
-        ? 'rgba(255, 255, 255, 0.04)'
-        : 'rgba(0, 0, 0, 0.02)'};
-  color: ${(props) =>
-    props.selected
-      ? '#3b82f6'
-      : props.darkMode
-        ? 'rgba(255, 255, 255, 0.7)'
-        : 'rgba(33, 43, 54, 0.7)'};
-  font-size: 0.68rem;
-  font-weight: ${(props) => (props.selected ? 500 : 400)};
-  cursor: pointer;
-  white-space: nowrap;
-  height: 24px;
-  flex-shrink: 0;
-  transition: all 0.15s ease;
-
-  &:hover {
-    background: ${(props) =>
-      props.selected
-        ? 'rgba(59, 130, 246, 0.15)'
-        : props.darkMode
-          ? 'rgba(255, 255, 255, 0.08)'
-          : 'rgba(0, 0, 0, 0.05)'};
-    color: ${(props) =>
-      props.selected
-        ? '#3b82f6'
-        : props.darkMode
-          ? 'rgba(255, 255, 255, 0.9)'
-          : 'rgba(33, 43, 54, 0.9)'};
-  }
-
-  @media (max-width: 600px) {
-    font-size: 0.68rem;
-    height: 24px;
-    padding: 0 8px;
-    gap: 3px;
-  }
-`;
-
-const AllTagsButton = styled.button`
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 0 12px;
-  border: none;
-  border-radius: 16px;
-  background: ${(props) =>
-    props.darkMode ? 'rgba(59, 130, 246, 0.15)' : 'rgba(59, 130, 246, 0.1)'};
-  color: #3b82f6;
-  font-size: 0.7rem;
-  font-weight: 500;
-  cursor: pointer;
-  white-space: nowrap;
-  height: 26px;
-  flex-shrink: 0;
-  margin-left: auto;
-  transition: all 0.15s ease;
-
-  &:hover {
-    background: rgba(59, 130, 246, 0.2);
-  }
-
-  @media (max-width: 600px) {
-    font-size: 0.68rem;
-    height: 24px;
-    padding: 0 8px;
-    gap: 3px;
-  }
-`;
-
-const Drawer = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 1300;
-  display: ${(props) => (props.open ? 'block' : 'none')};
-`;
-
-const DrawerBackdrop = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(4px);
-`;
-
-const DrawerPaper = styled.div`
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  max-height: 70vh;
-  background: ${(props) => (props.isDark ? 'rgba(0,0,0,0.85)' : 'rgba(255,255,255,0.98)')};
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border-top-left-radius: 12px;
-  border-top-right-radius: 12px;
-  border-top: 1px solid
-    ${(props) => (props.isDark ? 'rgba(59,130,246,0.2)' : 'rgba(191,219,254,1)')};
-  box-shadow: ${(props) =>
-    props.isDark
-      ? '0 -25px 50px -12px rgba(59,130,246,0.1)'
-      : '0 -25px 50px -12px rgba(191,219,254,0.5)'};
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  z-index: 1301;
-`;
-
-const DrawerHeader = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px;
-`;
-
-const DrawerTitle = styled.h2`
-  font-weight: 500;
-  font-size: 15px;
-  margin: 0;
-  color: ${(props) => (props.isDark ? '#fff' : '#212B36')};
-`;
-
-const DrawerClose = styled.button`
-  width: 32px;
-  height: 32px;
-  border: 1.5px solid ${(props) => (props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)')};
-  border-radius: 8px;
-  background: transparent;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)')};
-  transition:
-    border-color 0.15s,
-    color 0.15s;
-
-  &:hover {
-    border-color: ${(props) => (props.isDark ? 'rgba(66,133,244,0.5)' : 'rgba(66,133,244,0.5)')};
-    color: #4285f4;
-  }
-`;
-
-const SearchBox = styled.div`
-  padding: 12px 16px;
-`;
-
-const SearchInputWrapper = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  height: 40px;
-  padding: 0 16px;
-  border-radius: 12px;
-  border: 1.5px solid ${(props) => (props.isDark ? 'rgba(59,130,246,0.08)' : 'rgba(0,0,0,0.08)')};
-  background: ${(props) => (props.isDark ? 'rgba(255,255,255,0.02)' : '#fff')};
-  transition: border-color 0.2s ease;
-
-  &:hover {
-    border-color: ${(props) => (props.isDark ? 'rgba(59,130,246,0.2)' : 'rgba(59,130,246,0.3)')};
-  }
-
-  &:focus-within {
-    border-color: ${(props) => (props.isDark ? 'rgba(59,130,246,0.4)' : 'rgba(59,130,246,0.5)')};
-  }
-`;
-
-const SearchIconWrapper = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)')};
-  flex-shrink: 0;
-`;
-
-const SearchInput = styled.input`
-  flex: 1;
-  background: transparent;
-  border: none;
-  outline: none;
-  font-size: 14px;
-  color: ${(props) => (props.isDark ? '#fff' : '#212B36')};
-  font-family: inherit;
-
-  &:focus {
-    outline: none;
-  }
-
-  &::placeholder {
-    color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(33, 43, 54, 0.4)')};
-  }
-`;
-
-const TagsGrid = styled.div`
-  padding: 16px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  flex: 1;
-  overflow-y: auto;
-  align-content: flex-start;
-
-  &::-webkit-scrollbar {
-    width: 6px;
-  }
-
-  &::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background: rgba(59, 130, 246, 0.15);
-    border-radius: 8px;
-  }
-
-  @media (max-width: 600px) {
-    padding: 12px;
-    gap: 8px;
-  }
-`;
-
-const TagButton = styled.button`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 4px 12px;
-  border: 1px solid
-    ${(props) => (props.isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)')};
-  border-radius: 8px;
-  background: transparent;
-  color: ${(props) => (props.isDark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(33, 43, 54, 0.7)')};
-  font-size: 0.75rem;
-  font-weight: 400;
-  cursor: pointer;
-  font-family: inherit;
-  white-space: nowrap;
-  height: 28px;
-  flex-shrink: 0;
-  transition:
-    border-color 0.2s ease,
-    background 0.2s ease;
-
-  &:hover {
-    background: rgba(59, 130, 246, 0.08);
-    border-color: rgba(59, 130, 246, 0.3);
-    color: #3b82f6;
-  }
-
-  @media (max-width: 600px) {
-    height: 32px;
-    padding: 4px 14px;
-    font-size: 0.8rem;
-  }
-`;
-
-const EmptyState = styled.div`
-  width: 100%;
-  text-align: center;
-  padding: 32px 0;
-  color: ${(props) => (props.isDark ? 'rgba(255, 255, 255, 0.5)' : 'rgba(33, 43, 54, 0.5)')};
-  font-size: 14px;
-`;
+const Container = ({ darkMode, className, children, ...p }) => (
+  <div
+    className={cn(
+      'flex flex-col gap-2 rounded-xl border-[1.5px] backdrop-blur-[12px] py-[10px] px-[14px] relative box-border overflow-hidden',
+      'before:content-[""] before:absolute before:-top-[60px] before:-right-[60px] before:w-[180px] before:h-[180px] before:rounded-full before:bg-[radial-gradient(circle,rgba(19,125,254,0.2)_0%,transparent_70%)] before:blur-[40px] before:pointer-events-none before:z-0',
+      '[&>*]:relative [&>*]:z-[1]',
+      'max-sm:py-[6px] max-sm:px-2 max-sm:gap-[6px]',
+      darkMode ? 'border-white/[0.08] bg-[rgba(10,10,10,0.5)]' : 'border-black/[0.06] bg-white/50',
+      className
+    )}
+    {...p}
+  >{children}</div>
+);
+
+const Row = ({ spaceBetween, noWrap, className, children, ...p }) => (
+  <div
+    className={cn(
+      'flex items-center gap-[6px] flex-row w-full relative overflow-y-visible',
+      spaceBetween ? 'justify-between' : 'justify-start',
+      noWrap ? 'flex-nowrap overflow-x-auto' : 'flex-wrap overflow-x-hidden',
+      'max-sm:gap-[5px] max-sm:overflow-x-auto max-sm:flex-nowrap max-sm:pb-[2px] max-sm:[scrollbar-width:none] max-sm:[&::-webkit-scrollbar]:hidden',
+      className
+    )}
+    {...p}
+  >{children}</div>
+);
+
+const TagsRow = ({ className, children, ...p }) => (
+  <div className={cn('flex items-center gap-[6px] w-full', className)} {...p}>{children}</div>
+);
+
+const TagsScrollArea = ({ className, children, ...p }) => (
+  <div
+    className={cn('flex items-center gap-[6px] overflow-x-auto flex-auto min-w-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden', className)}
+    style={{ WebkitOverflowScrolling: 'touch' }}
+    {...p}
+  >{children}</div>
+);
+
+const AllButtonWrapper = ({ className, children, ...p }) => (
+  <div className={cn('shrink-0 ml-1', className)} {...p}>{children}</div>
+);
+
+const RowContent = ({ className, children, ...p }) => (
+  <div
+    className={cn(
+      'flex items-center gap-1 flex-wrap flex-auto',
+      'max-sm:gap-1 max-sm:flex-nowrap max-sm:overflow-x-auto max-sm:mr-2 max-sm:[scrollbar-width:none] max-sm:[&::-webkit-scrollbar]:hidden',
+      className
+    )}
+    style={{ WebkitOverflowScrolling: 'touch' }}
+    {...p}
+  >{children}</div>
+);
+
+const RowsSelector = ({ darkMode, noMargin, className, children, ...p }) => {
+  const bgImage = darkMode
+    ? `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.6)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e")`
+    : `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='rgba(0,0,0,0.5)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e")`;
+  return (
+    <select
+      className={cn(
+        'rounded-lg border-[1.5px] text-xs font-medium cursor-pointer h-8 min-w-[70px] appearance-none transition-all duration-150',
+        'hover:border-blue-500/50 focus:outline-none focus:border-blue-500',
+        'max-sm:text-[0.62rem] max-sm:h-[26px] max-sm:min-w-[48px] max-sm:pl-[6px] max-sm:pr-5',
+        darkMode ? 'border-white/10 bg-black/40 text-white/85 [&_option]:bg-[#0a0a0a] [&_option]:text-[#e5e5e5]' : 'border-black/[0.08] bg-white/90 text-black/70 [&_option]:bg-white [&_option]:text-[#1a1a1a]',
+        darkMode ? 'hover:bg-blue-500/10' : 'hover:bg-blue-500/[0.05]',
+        noMargin ? 'ml-0' : 'ml-auto',
+        className
+      )}
+      style={{
+        padding: '0 28px 0 12px',
+        backgroundImage: bgImage,
+        backgroundRepeat: 'no-repeat',
+        backgroundPosition: 'right 10px center',
+        backgroundSize: '12px'
+      }}
+      {...p}
+    >{children}</select>
+  );
+};
+
+const Stack = ({ className, children, ...p }) => (
+  <div className={cn('flex flex-row gap-[6px] items-center shrink-0 relative z-[1] max-sm:gap-[3px] max-sm:touch-manipulation', className)} {...p}>{children}</div>
+);
+
+const StyledIconButton = ({ darkMode, className, children, ...p }) => (
+  <button
+    className={cn(
+      'inline-flex items-center justify-center w-[30px] h-[30px] p-0 border-none rounded-lg bg-transparent cursor-pointer transition-all duration-150 shrink-0',
+      'hover:bg-blue-500/10 hover:text-blue-500',
+      'max-sm:w-[26px] max-sm:h-[26px]',
+      darkMode ? 'text-white/50' : 'text-black/40',
+      className
+    )}
+    {...p}
+  >{children}</button>
+);
+
+const ButtonGroup = ({ darkMode, hideOnMobile, className, children, ...p }) => (
+  <div
+    className={cn(
+      'flex gap-[2px] shrink-0 p-[3px] rounded-lg border-none',
+      darkMode ? 'bg-white/[0.04]' : 'bg-black/[0.03]',
+      '[&>button]:rounded-[6px] [&>button]:border-none [&>button]:min-w-[36px] [&>button]:h-6 [&>button]:px-[10px] [&>button]:text-[0.72rem] [&>button]:font-normal [&>button]:bg-transparent [&>button]:cursor-pointer [&>button]:inline-flex [&>button]:items-center [&>button]:justify-center [&>button]:gap-1 [&>button]:touch-manipulation [&>button]:transition-all [&>button]:duration-150',
+      darkMode ? '[&>button]:text-white/60 [&>button:hover]:text-white/90 [&>button:hover]:bg-white/[0.06]' : '[&>button]:text-black/50 [&>button:hover]:text-black/80 [&>button:hover]:bg-black/[0.04]',
+      darkMode ? '[&>button.selected]:bg-white/95 [&>button.selected]:text-[#111] [&>button.selected]:font-medium [&>button.selected]:shadow-[0_1px_2px_rgba(0,0,0,0.08)] [&>button.selected:hover]:bg-white' : '[&>button.selected]:bg-white [&>button.selected]:text-[#333] [&>button.selected]:font-medium [&>button.selected]:shadow-[0_1px_2px_rgba(0,0,0,0.08)] [&>button.selected:hover]:bg-white',
+      hideOnMobile && 'max-sm:hidden',
+      !hideOnMobile && 'max-sm:p-[2px] max-sm:[&>button]:min-w-[28px] max-sm:[&>button]:h-[22px] max-sm:[&>button]:px-[7px] max-sm:[&>button]:text-[0.65rem] max-sm:[&>button]:gap-[2px]',
+      className
+    )}
+    {...p}
+  >{children}</div>
+);
+
+const LaunchpadGroup = ({ darkMode, className, children, ...p }) => (
+  <div
+    className={cn('inline-flex items-center gap-[2px] py-[3px] pl-2 pr-[6px] rounded-[6px] border ml-2', darkMode ? 'bg-white/[0.03] border-white/[0.06]' : 'bg-black/[0.03] border-black/[0.06]', className)}
+    {...p}
+  >{children}</div>
+);
+
+const LaunchpadLabel = ({ darkMode, className, children, ...p }) => (
+  <span
+    className={cn('text-[0.6rem] font-semibold uppercase tracking-[0.05em] mr-1', darkMode ? 'text-white/[0.35]' : 'text-black/[0.35]', className)}
+    {...p}
+  >{children}</span>
+);
+
+const LaunchpadChip = ({ selected, darkMode, className, children, ...p }) => (
+  <button
+    className={cn(
+      'inline-flex items-center px-[6px] border-none rounded text-[0.65rem] cursor-pointer whitespace-nowrap h-5 shrink-0 transition-all duration-150',
+      'hover:bg-blue-500/10 hover:text-blue-500',
+      selected ? 'bg-blue-500/[0.15] text-blue-500 font-medium' : cn('bg-transparent', darkMode ? 'text-white/60 font-normal' : 'text-[#212B36]/60 font-normal'),
+      className
+    )}
+    {...p}
+  >{children}</button>
+);
+
+const TagChip = ({ selected, darkMode, className, children, ...p }) => (
+  <button
+    className={cn(
+      'inline-flex items-center gap-[3px] px-2 rounded-[6px] border text-[0.68rem] cursor-pointer whitespace-nowrap h-6 shrink-0 transition-all duration-150',
+      selected
+        ? 'border-blue-500/30 bg-blue-500/10 text-blue-500 font-medium hover:bg-blue-500/[0.15]'
+        : cn(
+            darkMode ? 'border-white/[0.08] bg-white/[0.04] text-white/70 font-normal hover:bg-white/[0.08] hover:text-white/90' : 'border-black/[0.08] bg-black/[0.02] text-[#212B36]/70 font-normal hover:bg-black/[0.05] hover:text-[#212B36]/90'
+          ),
+      className
+    )}
+    {...p}
+  >{children}</button>
+);
+
+const AllTagsButton = ({ darkMode, className, children, ...p }) => (
+  <button
+    className={cn(
+      'inline-flex items-center gap-1 px-3 border-none rounded-2xl text-blue-500 text-[0.7rem] font-medium cursor-pointer whitespace-nowrap h-[26px] shrink-0 ml-auto transition-all duration-150 hover:bg-blue-500/20',
+      'max-sm:text-[0.68rem] max-sm:h-6 max-sm:px-2 max-sm:gap-[3px]',
+      darkMode ? 'bg-blue-500/[0.15]' : 'bg-blue-500/10',
+      className
+    )}
+    {...p}
+  >{children}</button>
+);
+
+const Drawer = ({ open, className, children, ...p }) => (
+  <div className={cn('fixed inset-0 z-[1300]', open ? 'block' : 'hidden', className)} {...p}>{children}</div>
+);
+
+const DrawerBackdrop = ({ className, children, ...p }) => (
+  <div className={cn('fixed inset-0 bg-black/60 backdrop-blur-[4px]', className)} {...p}>{children}</div>
+);
+
+const DrawerPaper = ({ isDark, className, children, ...p }) => (
+  <div
+    className={cn(
+      'fixed bottom-0 left-0 right-0 max-h-[70vh] backdrop-blur-[24px] rounded-t-xl border-t overflow-hidden flex flex-col z-[1301]',
+      isDark ? 'bg-black/85 border-blue-500/20 shadow-[0_-25px_50px_-12px_rgba(59,130,246,0.1)]' : 'bg-white/[0.98] border-blue-200 shadow-[0_-25px_50px_-12px_rgba(191,219,254,0.5)]',
+      className
+    )}
+    {...p}
+  >{children}</div>
+);
+
+const DrawerHeader = ({ className, children, ...p }) => (
+  <div className={cn('flex items-center justify-between p-4', className)} {...p}>{children}</div>
+);
+
+const DrawerTitle = ({ isDark, className, children, ...p }) => (
+  <h2 className={cn('font-medium text-[15px] m-0', isDark ? 'text-white' : 'text-[#212B36]', className)} {...p}>{children}</h2>
+);
+
+const DrawerClose = ({ isDark, className, children, ...p }) => (
+  <button
+    className={cn(
+      'w-8 h-8 border-[1.5px] rounded-lg bg-transparent cursor-pointer flex items-center justify-center transition-all duration-150',
+      'hover:border-blue-400/50 hover:text-[#4285f4]',
+      isDark ? 'border-white/10 text-white/40' : 'border-black/10 text-black/40',
+      className
+    )}
+    {...p}
+  >{children}</button>
+);
+
+const SearchBox = ({ className, children, ...p }) => (
+  <div className={cn('py-3 px-4', className)} {...p}>{children}</div>
+);
+
+const SearchInputWrapper = ({ isDark, className, children, ...p }) => (
+  <div
+    className={cn(
+      'flex items-center gap-3 h-10 px-4 rounded-xl border-[1.5px] transition-[border-color] duration-200',
+      isDark
+        ? 'border-blue-500/[0.08] bg-white/[0.02] hover:border-blue-500/20 focus-within:border-blue-500/40'
+        : 'border-black/[0.08] bg-white hover:border-blue-500/30 focus-within:border-blue-500/50',
+      className
+    )}
+    {...p}
+  >{children}</div>
+);
+
+const SearchIconWrapper = ({ isDark, className, children, ...p }) => (
+  <div className={cn('flex items-center justify-center shrink-0', isDark ? 'text-white/40' : 'text-black/40', className)} {...p}>{children}</div>
+);
+
+const SearchInput = ({ isDark, className, ...p }) => (
+  <input
+    className={cn(
+      'flex-1 bg-transparent border-none outline-none text-sm font-[inherit] focus:outline-none',
+      isDark ? 'text-white placeholder:text-white/50' : 'text-[#212B36] placeholder:text-[#212B36]/40',
+      className
+    )}
+    {...p}
+  />
+);
+
+const TagsGrid = ({ className, children, ...p }) => (
+  <div
+    className={cn(
+      'p-4 flex flex-wrap gap-[10px] flex-1 overflow-y-auto content-start',
+      'max-sm:p-3 max-sm:gap-2',
+      className
+    )}
+    style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(59,130,246,0.15) transparent' }}
+    {...p}
+  >{children}</div>
+);
+
+const TagButton = ({ isDark, className, children, ...p }) => (
+  <button
+    className={cn(
+      'inline-flex items-center justify-center py-1 px-3 border rounded-lg bg-transparent text-xs font-normal cursor-pointer font-[inherit] whitespace-nowrap h-7 shrink-0 transition-all duration-200',
+      'hover:bg-blue-500/[0.08] hover:border-blue-500/30 hover:text-blue-500',
+      'max-sm:h-8 max-sm:py-1 max-sm:px-[14px] max-sm:text-[0.8rem]',
+      isDark ? 'border-white/[0.08] text-white/70' : 'border-black/[0.08] text-[#212B36]/70',
+      className
+    )}
+    {...p}
+  >{children}</button>
+);
+
+const EmptyState = ({ isDark, className, children, ...p }) => (
+  <div
+    className={cn('w-full text-center py-8 text-sm', isDark ? 'text-white/50' : 'text-[#212B36]/50', className)}
+    {...p}
+  >{children}</div>
+);
 
 // Categories Drawer Content Component
 const CategoriesDrawerContent = memo(function CategoriesDrawerContent({ tags, darkMode }) {
@@ -630,7 +314,7 @@ const CategoriesDrawerContent = memo(function CategoriesDrawerContent({ tags, da
       <TagsGrid isDark={darkMode}>
         {filteredTags.length > 0 ? (
           filteredTags.map((tag) => (
-            <Link key={tag} href={`/view/${normalizeTag(tag)}`} style={{ textDecoration: 'none' }}>
+            <Link key={tag} href={`/view/${normalizeTag(tag)}`} className="no-underline">
               <TagButton isDark={darkMode} onClick={() => {}}>
                 {tag}
               </TagButton>
@@ -674,104 +358,45 @@ const SearchToolbar = memo(function SearchToolbar({
   setCustomSettingsOpen
 }) {
   const router = useRouter();
-  const { darkMode } = useContext(AppContext);
+  const { darkMode } = useContext(ThemeContext);
 
   const [categoriesOpen, setCategoriesOpen] = useState(false);
   const containerRef = useRef(null);
   const [visibleTagCount, setVisibleTagCount] = useState(0);
   const [measuredTags, setMeasuredTags] = useState(false);
 
-  // Calculate how many tags can fit dynamically
+  // Calculate how many tags can fit using a width heuristic (no DOM measurement)
   useEffect(() => {
-    const calculateVisibleTags = () => {
-      if (!containerRef.current || !tags || tags.length === 0) return;
+    if (!tags || tags.length === 0) return;
 
-      // Read all DOM properties at once before any DOM modifications
-      const container = containerRef.current;
-      const containerWidth = container.offsetWidth;
+    const calculateVisibleTags = () => {
+      const containerWidth = containerRef.current?.offsetWidth || window.innerWidth;
       const isMobile = window.innerWidth <= 600;
 
-      // Since tags are in their own row, we don't need to account for fixed elements
-      // Reserve space for "All Tags" button (approx 100px on desktop, 60px mobile)
+      // Reserve space for "All Tags" button + padding
       const allTagsWidth = isMobile ? 60 : 100;
+      const availableWidth = containerWidth - allTagsWidth - 20;
 
-      // Available width for tags - use most of the container width for tags
-      const availableWidth = containerWidth - allTagsWidth - 20; // 20px buffer for All Tags button and spacing
+      // Average tag width heuristic: ~90px desktop, ~60px mobile (includes gap)
+      const avgTagWidth = isMobile ? 60 : 90;
+      const count = Math.floor(Math.max(availableWidth, 0) / avgTagWidth);
 
-      if (availableWidth <= 100) {
-        setVisibleTagCount(isMobile ? 3 : 5);
-        return;
-      }
-
-      // Measure actual tag widths
-      let totalTagWidth = 0;
-      let count = 0;
-
-      // Create temporary container for measuring
-      const tempContainer = document.createElement('div');
-      tempContainer.style.cssText = 'position:absolute;visibility:hidden;display:flex;gap:4px';
-      document.body.appendChild(tempContainer);
-
-      for (let i = 0; i < tags.length; i++) {
-        const tag = tags[i];
-
-        // Measure the tag
-        const tempTag = document.createElement('button');
-        tempTag.className = 'measure-tag';
-        tempTag.style.cssText = `
-          padding: ${isMobile ? '0px 4px' : '2px 8px'};
-          font-size: ${isMobile ? '0.55rem' : '0.7rem'};
-          font-weight: 400;
-          white-space: nowrap;
-          border: 1.5px solid transparent;
-        `;
-
-        // Just measure text width without icons since icons have consistent width
-        tempTag.innerHTML = `<span style="width:12px;height:12px;display:inline-block"></span> <span>${tag}</span>`;
-        tempContainer.appendChild(tempTag);
-      }
-
-      // Batch all DOM reads after all modifications are done
-      const tempTags = tempContainer.querySelectorAll('.measure-tag');
-
-      for (let i = 0; i < tags.length; i++) {
-        const tagWidth = tempTags[i].offsetWidth + (isMobile ? 3 : 10); // gap
-
-        if (totalTagWidth + tagWidth <= availableWidth) {
-          totalTagWidth += tagWidth;
-          count++;
-        } else {
-          break;
-        }
-      }
-
-      // Clean up temp container
-      document.body.removeChild(tempContainer);
-
-      // Set the visible count - show more tags by default
       setVisibleTagCount(Math.max(isMobile ? 5 : 8, Math.min(count, tags.length)));
       setMeasuredTags(true);
     };
 
-    // Initial calculation immediately
     calculateVisibleTags();
 
-    // Resize handler
+    let resizeTimer;
     const handleResize = () => {
-      calculateVisibleTags();
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(calculateVisibleTags, 150);
     };
 
     window.addEventListener('resize', handleResize);
-
-    // Also recalculate when container might change
-    const observer = new ResizeObserver(handleResize);
-    if (containerRef.current) {
-      observer.observe(containerRef.current);
-    }
-
     return () => {
       window.removeEventListener('resize', handleResize);
-      observer.disconnect();
+      clearTimeout(resizeTimer);
     };
   }, [tags]);
 
@@ -970,7 +595,7 @@ const SearchToolbar = memo(function SearchToolbar({
           </RowContent>
 
           {/* Sort and rows selectors on the right */}
-          <Stack style={{ marginLeft: 'auto', gap: '6px' }}>
+          <Stack className="ml-auto gap-[6px]">
             {/* Sort By Selector */}
             <RowsSelector
               darkMode={darkMode}
@@ -1026,29 +651,16 @@ const SearchToolbar = memo(function SearchToolbar({
           <DrawerBackdrop onClick={() => setCategoriesOpen(false)} />
           <DrawerPaper isDark={darkMode}>
             <DrawerHeader isDark={darkMode}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: 1 }}>
-                <span
-                  style={{
-                    fontSize: '11px',
-                    fontWeight: 600,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.1em',
-                    color: '#3b82f6',
-                    whiteSpace: 'nowrap'
-                  }}
-                >
+              <div className="flex items-center gap-4 flex-1">
+                <span className="text-[11px] font-semibold uppercase tracking-[0.1em] text-blue-500 whitespace-nowrap">
                   Categories {tags?.length ? `(${tags.length})` : ''}
                 </span>
                 <div
+                  className="flex-1 h-[14px] bg-[length:8px_5px] [mask-image:linear-gradient(90deg,black_0%,transparent_100%)] [-webkit-mask-image:linear-gradient(90deg,black_0%,transparent_100%)]"
                   style={{
-                    flex: 1,
-                    height: '14px',
                     backgroundImage: darkMode
                       ? 'radial-gradient(circle, rgba(96,165,250,0.4) 1px, transparent 1px)'
-                      : 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)',
-                    backgroundSize: '8px 5px',
-                    WebkitMaskImage: 'linear-gradient(90deg, black 0%, transparent 100%)',
-                    maskImage: 'linear-gradient(90deg, black 0%, transparent 100%)'
+                      : 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)'
                   }}
                 />
               </div>

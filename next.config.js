@@ -27,8 +27,8 @@ const config = {
   images: {
     formats: ['image/avif', 'image/webp'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048],
-    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
-    minimumCacheTTL: 86400,
+    imageSizes: [16, 32, 40, 48, 64, 96, 128, 256, 384],
+    minimumCacheTTL: 0,
     dangerouslyAllowSVG: true,
     contentDispositionType: 'attachment',
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
@@ -71,6 +71,7 @@ const config = {
       "img-src 'self' data: blob: https: http://localhost:*",
       "font-src 'self' data:",
       "connect-src 'self' https: wss: ws://localhost:* http://localhost:*",
+      "frame-src 'self'",
       "frame-ancestors 'self'",
       "base-uri 'self'",
       "form-action 'self'"
@@ -80,9 +81,10 @@ const config = {
       "default-src 'self'",
       "script-src 'self' 'unsafe-inline' 'unsafe-eval'", // unsafe-eval needed for some charting libs
       "style-src 'self' 'unsafe-inline'", // emotion/styled-jsx needs inline styles
-      "img-src 'self' data: blob: https://s1.xrpl.to https://xrpl.to https://s1.xrpnft.com https://ipfs.io https://ipfs.filebase.io https://*.googleusercontent.com",
+      "img-src 'self' data: blob: https://s1.xrpl.to https://xrpl.to https://s1.xrpnft.com https://ipfs.io https://ipfs.filebase.io",
       "font-src 'self' data:",
       "connect-src 'self' https://api.xrpl.to https://xrpl.to wss://api.xrpl.to wss://xrplcluster.com wss://s1.ripple.com wss://xrpl.ws",
+      "frame-src 'self'",
       "frame-ancestors 'none'",
       "base-uri 'self'",
       "form-action 'self'",
@@ -146,21 +148,20 @@ const config = {
             value: 'camera=(), microphone=(), geolocation=()'
           },
           {
+            key: 'Strict-Transport-Security',
+            value: 'max-age=63072000; includeSubDomains; preload'
+          },
+          {
+            key: 'Cross-Origin-Opener-Policy',
+            value: 'same-origin'
+          },
+          {
             key: 'Content-Security-Policy',
             value: cspProd
           }
         ]
       },
       // Immutable assets - 1 year cache
-      {
-        source: '/fonts/:path*',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable'
-          }
-        ]
-      },
       {
         source: '/static/:path*',
         headers: [
@@ -286,15 +287,10 @@ const config = {
       '@reduxjs/toolkit',
       'axios',
       'xrpl',
-      'echarts',
       'lightweight-charts',
       '@emotion/react',
       '@emotion/styled',
-      'recharts',
-      'swiper',
-      'react-share',
-      'highcharts',
-      'apexcharts'
+      'swiper'
     ]
   },
   turbopack: {
@@ -355,13 +351,6 @@ const config = {
                 test: /[\\/]node_modules[\\/]lightweight-charts[\\/]/,
                 name: 'lightweight-charts',
                 priority: 42,
-                chunks: 'async',
-                enforce: true
-              },
-              echarts: {
-                test: /[\\/]node_modules[\\/](echarts|echarts-for-react|zrender)[\\/]/,
-                name: 'echarts',
-                priority: 41,
                 chunks: 'async',
                 enforce: true
               },
@@ -431,13 +420,6 @@ const config = {
                 test: /[\\/]node_modules[\\/](axios|follow-redirects)[\\/]/,
                 name: 'http',
                 priority: 23,
-                chunks: 'all'
-              },
-              // Polyfills
-              polyfills: {
-                test: /[\\/]node_modules[\\/](core-js|regenerator-runtime|whatwg-fetch)[\\/]/,
-                name: 'polyfills',
-                priority: 22,
                 chunks: 'all'
               },
               // Other utilities

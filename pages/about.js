@@ -1,339 +1,93 @@
 import React, { useContext, memo, useState, useCallback, useMemo } from 'react';
-import styled from '@emotion/styled';
 import api from 'src/utils/api';
-import { AppContext } from 'src/context/AppContext';
+import { ThemeContext } from 'src/context/AppContext';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import { LineChart, ArrowLeftRight, Palette, TrendingUp, Code, Zap } from 'lucide-react';
+import { cn } from 'src/utils/cn';
 // Constants
 const BASE_URL = 'https://api.xrpl.to/v1';
 
-// Styled components
-const PageWrapper = styled.div`
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-`;
+// Tailwind components
+const PageWrapper = ({ className, children, ...p }) => <div className={cn('min-h-screen flex flex-col', className)} {...p}>{children}</div>;
 
-const Container = styled.div`
-  max-width: 1920px;
-  margin: 0 auto;
-  padding: 0 16px;
-  width: 100%;
-  flex: 1;
+const Container = ({ className, children, ...p }) => <div className={cn('max-w-[1920px] mx-auto px-4 w-full flex-1', className)} {...p}>{children}</div>;
 
-  @media (min-width: 768px) {
-    padding: 0 16px;
-  }
-`;
+const HeroSection = ({ className, children, ...p }) => <div className={cn('text-center pt-10 pb-6 relative', className)} {...p}>{children}</div>;
 
-// Hero Section
-const HeroSection = styled.div`
-  text-align: center;
-  padding: 40px 0 24px;
-  position: relative;
-`;
+const HeroTitle = ({ isDark, className, children, ...p }) => <h1 className={cn('text-[2.5rem] font-semibold mb-3 hidden max-md:text-[2rem]', isDark ? 'text-white' : 'text-black', className)} {...p}>{children}</h1>;
 
-const HeroTitle = styled.h1`
-  font-size: 2.5rem;
-  font-weight: 600;
-  margin-bottom: 12px;
-  color: ${(props) => (props.isDark ? '#fff' : '#000')};
-  display: none;
+const HeroSubtitle = ({ isDark, className, children, ...p }) => <p className={cn('text-sm max-w-[500px] mx-auto mb-8', isDark ? 'text-white/50' : 'text-black/50', className)} {...p}>{children}</p>;
 
-  @media (max-width: 768px) {
-    font-size: 2rem;
-  }
-`;
+const StatsRow = ({ className, children, ...p }) => <div className={cn('grid grid-cols-4 gap-3 mb-8 max-sm:grid-cols-2', className)} {...p}>{children}</div>;
 
-const HeroSubtitle = styled.p`
-  font-size: 14px;
-  color: ${(props) => (props.isDark ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)')};
-  max-width: 500px;
-  margin: 0 auto 32px;
-`;
+const StatCard = ({ isDark, className, children, ...p }) => <div className={cn('text-center py-5 px-4 bg-transparent rounded-lg border', isDark ? 'border-white/[0.08]' : 'border-black/[0.08]', className)} {...p}>{children}</div>;
 
-// Stats Row
-const StatsRow = styled.div`
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
-  margin-bottom: 32px;
+const StatNumber = ({ className, children, ...p }) => <h2 className={cn('text-2xl font-medium text-[#3b82f6] mb-1', className)} {...p}>{children}</h2>;
 
-  @media (max-width: 600px) {
-    grid-template-columns: repeat(2, 1fr);
-  }
-`;
+const StatLabel = ({ isDark, className, children, ...p }) => <p className={cn('text-[10px] uppercase tracking-[0.5px]', isDark ? 'text-white/50' : 'text-black/50', className)} {...p}>{children}</p>;
 
-const StatCard = styled.div`
-  text-align: center;
-  padding: 20px 16px;
-  background: transparent;
-  border-radius: 8px;
-  border: 1px solid
-    ${(props) => (props.isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)')};
-`;
+const FeaturesSection = ({ className, children, ...p }) => <div className={cn('my-8', className)} {...p}>{children}</div>;
 
-const StatNumber = styled.h2`
-  font-size: 1.5rem;
-  font-weight: 500;
-  color: #3b82f6;
-  margin-bottom: 4px;
-`;
+const SectionTitle = ({ isDark, className, children, ...p }) => <h2 className={cn('text-center text-sm font-medium mb-5 tracking-[0.5px]', isDark ? 'text-white/90' : 'text-black', className)} {...p}>{children}</h2>;
 
-const StatLabel = styled.p`
-  font-size: 10px;
-  color: ${(props) => (props.isDark ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)')};
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-`;
+const FeatureGrid = ({ className, children, ...p }) => <div className={cn('grid grid-cols-4 gap-3 max-[800px]:grid-cols-2 max-[500px]:grid-cols-1', className)} {...p}>{children}</div>;
 
-// Features Section
-const FeaturesSection = styled.div`
-  margin: 32px 0;
-`;
+const FeatureCard = ({ isDark, className, children, ...p }) => <div className={cn('relative p-4 bg-transparent rounded-lg border', isDark ? 'border-white/[0.08] hover:border-white/[0.15]' : 'border-black/[0.08] hover:border-black/[0.15]', className)} {...p}>{children}</div>;
 
-const SectionTitle = styled.h2`
-  text-align: center;
-  font-size: 14px;
-  font-weight: 500;
-  margin-bottom: 20px;
-  color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.9)' : '#000')};
-  letter-spacing: 0.5px;
-`;
+const FeatureIcon = ({ isDark, className, children, ...p }) => <div className={cn('w-8 h-8 mb-[10px] flex items-center justify-center bg-transparent rounded-md border text-[#3b82f6] [&_svg]:w-4 [&_svg]:h-4', isDark ? 'border-white/[0.12]' : 'border-black/[0.12]', className)} {...p}>{children}</div>;
 
-const FeatureGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
+const FeatureTitle = ({ isDark, className, children, ...p }) => <h3 className={cn('text-xs font-medium mb-1', isDark ? 'text-white/90' : 'text-black', className)} {...p}>{children}</h3>;
 
-  @media (max-width: 800px) {
-    grid-template-columns: repeat(2, 1fr);
-  }
+const FeatureText = ({ isDark, className, children, ...p }) => <p className={cn('text-[11px] leading-[1.5]', isDark ? 'text-white/50' : 'text-black/50', className)} {...p}>{children}</p>;
 
-  @media (max-width: 500px) {
-    grid-template-columns: 1fr;
-  }
-`;
+const FeesSection = ({ className, children, ...p }) => <div className={cn('my-8', className)} {...p}>{children}</div>;
 
-const FeatureCard = styled.div`
-  position: relative;
-  padding: 16px;
-  background: transparent;
-  border: 1px solid
-    ${(props) => (props.isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)')};
-  border-radius: 8px;
+const FeesGrid = ({ className, children, ...p }) => <div className={cn('grid grid-cols-2 gap-3 max-w-[500px] mx-auto max-[500px]:grid-cols-1', className)} {...p}>{children}</div>;
 
-  &:hover {
-    border-color: ${(props) =>
-      props.isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.15)'};
-  }
-`;
+const FeeCard = ({ isDark, className, children, ...p }) => <div className={cn('text-center py-5 px-4 bg-transparent rounded-lg border', isDark ? 'border-white/[0.08]' : 'border-black/[0.08]', className)} {...p}>{children}</div>;
 
-const FeatureIcon = styled.div`
-  width: 32px;
-  height: 32px;
-  margin-bottom: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: transparent;
-  border: 1px solid
-    ${(props) => (props.isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.12)')};
-  border-radius: 6px;
-  color: #3b82f6;
+const FeeAmount = ({ className, children, ...p }) => <div className={cn('text-2xl font-medium text-[#3b82f6] mb-1', className)} {...p}>{children}</div>;
 
-  svg {
-    width: 16px;
-    height: 16px;
-  }
-`;
+const FeeLabel = ({ isDark, className, children, ...p }) => <div className={cn('text-[11px]', isDark ? 'text-white/50' : 'text-black/50', className)} {...p}>{children}</div>;
 
-const FeatureTitle = styled.h3`
-  font-size: 12px;
-  font-weight: 500;
-  margin-bottom: 4px;
-  color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.9)' : '#000')};
-`;
+const TimelineSection = ({ className, children, ...p }) => <div className={cn('my-8', className)} {...p}>{children}</div>;
 
-const FeatureText = styled.p`
-  font-size: 11px;
-  line-height: 1.5;
-  color: ${(props) => (props.isDark ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)')};
-`;
+const Timeline = ({ className, children, ...p }) => <div className={cn('grid grid-cols-5 gap-3 max-[700px]:grid-cols-3 max-[450px]:grid-cols-2', className)} {...p}>{children}</div>;
 
-// Fees Section
-const FeesSection = styled.div`
-  margin: 32px 0;
-`;
+const TimelineItem = ({ isDark, className, children, ...p }) => <div className={cn('flex flex-col items-center justify-center py-[14px] px-3 bg-transparent rounded-lg border', isDark ? 'border-white/[0.08]' : 'border-black/[0.08]', className)} {...p}>{children}</div>;
 
-const FeesGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-  max-width: 500px;
-  margin: 0 auto;
+const TimelineContent = ({ className, children, ...p }) => <div className={cn('text-center', className)} {...p}>{children}</div>;
 
-  @media (max-width: 500px) {
-    grid-template-columns: 1fr;
-  }
-`;
+const TimelineDate = ({ className, children, ...p }) => <div className={cn('text-[10px] font-medium text-[#3b82f6] mb-[2px]', className)} {...p}>{children}</div>;
 
-const FeeCard = styled.div`
-  text-align: center;
-  padding: 20px 16px;
-  background: transparent;
-  border-radius: 8px;
-  border: 1px solid
-    ${(props) => (props.isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)')};
-`;
+const TimelineText = ({ isDark, className, children, ...p }) => <div className={cn('text-[11px]', isDark ? 'text-white/60' : 'text-black/60', className)} {...p}>{children}</div>;
 
-const FeeAmount = styled.div`
-  font-size: 1.5rem;
-  font-weight: 500;
-  color: #3b82f6;
-  margin-bottom: 4px;
-`;
+const FaqSection = ({ isDark, className, children, ...p }) => <div className={cn('mt-8 pt-8 border-t', isDark ? 'border-white/[0.08]' : 'border-black/[0.08]', className)} {...p}>{children}</div>;
 
-const FeeLabel = styled.div`
-  font-size: 11px;
-  color: ${(props) => (props.isDark ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)')};
-`;
+const FaqHeader = ({ className, children, ...p }) => <div className={cn('text-center mb-5', className)} {...p}>{children}</div>;
 
-// Timeline Section
-const TimelineSection = styled.div`
-  margin: 32px 0;
-`;
+const FaqTitle = ({ isDark, className, children, ...p }) => <h2 className={cn('text-sm font-medium mb-2 hidden', isDark ? 'text-white/90' : 'text-black', className)} {...p}>{children}</h2>;
 
-const Timeline = styled.div`
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 12px;
+const FaqSubtitle = ({ isDark, className, children, ...p }) => <h3 className={cn('text-xs mx-auto font-normal', isDark ? 'text-white/50' : 'text-black/50', className)} {...p}>{children}</h3>;
 
-  @media (max-width: 700px) {
-    grid-template-columns: repeat(3, 1fr);
-  }
+const FaqList = ({ className, children, ...p }) => <div className={cn('flex flex-col gap-2', className)} {...p}>{children}</div>;
 
-  @media (max-width: 450px) {
-    grid-template-columns: repeat(2, 1fr);
-  }
-`;
+const AccordionItem = ({ isDark, className, children, ...p }) => <div className={cn('bg-transparent rounded-lg border overflow-hidden', isDark ? 'border-white/[0.08]' : 'border-black/[0.08]', className)} {...p}>{children}</div>;
 
-const TimelineItem = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 14px 12px;
-  background: transparent;
-  border: 1px solid
-    ${(props) => (props.isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)')};
-  border-radius: 8px;
-`;
+const AccordionHeader = ({ isDark, className, children, ...p }) => (
+  <button className={cn('w-full py-[14px] px-4 bg-transparent border-none text-left cursor-pointer flex justify-between items-center', isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-black/[0.02]', className)} {...p}>{children}</button>
+);
 
-const TimelineContent = styled.div`
-  text-align: center;
-`;
+const QuestionText = ({ isDark, className, children, ...p }) => <span className={cn('text-xs font-medium pr-3 flex-1', isDark ? 'text-white/90' : 'text-[#212B36]', className)} {...p}>{children}</span>;
 
-const TimelineDate = styled.div`
-  font-size: 10px;
-  font-weight: 500;
-  color: #3b82f6;
-  margin-bottom: 2px;
-`;
+const ExpandIcon = ({ expanded, isDark, className, ...p }) => (
+  <svg className={cn('text-[#3b82f6] shrink-0 transition-transform duration-200', expanded && 'rotate-180', className)} {...p} />
+);
 
-const TimelineText = styled.div`
-  font-size: 11px;
-  color: ${(props) => (props.isDark ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)')};
-`;
+const AccordionContent = ({ expanded, className, children, ...p }) => <div className={cn('overflow-hidden transition-[max-height] duration-200', className)} style={{ maxHeight: expanded ? '500px' : '0' }} {...p}>{children}</div>;
 
-// FAQ Components
-const FaqSection = styled.div`
-  margin-top: 32px;
-  border-top: 1px solid
-    ${(props) => (props.isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)')};
-  padding-top: 32px;
-`;
-
-const FaqHeader = styled.div`
-  text-align: center;
-  margin-bottom: 20px;
-`;
-
-const FaqTitle = styled.h2`
-  font-size: 14px;
-  font-weight: 500;
-  color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.9)' : '#000')};
-  margin-bottom: 8px;
-  display: none;
-`;
-
-const FaqSubtitle = styled.h3`
-  font-size: 12px;
-  color: ${(props) => (props.isDark ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)')};
-  margin: 0 auto;
-  font-weight: 400;
-`;
-
-const FaqList = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-`;
-
-const AccordionItem = styled.div`
-  background: transparent;
-  border: 1px solid
-    ${(props) => (props.isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)')};
-  border-radius: 8px;
-  overflow: hidden;
-`;
-
-const AccordionHeader = styled.button`
-  width: 100%;
-  padding: 14px 16px;
-  background: transparent;
-  border: none;
-  text-align: left;
-  cursor: pointer;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-
-  &:hover {
-    background-color: ${(props) =>
-      props.isDark ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)'};
-  }
-`;
-
-const QuestionText = styled.span`
-  font-size: 12px;
-  font-weight: 500;
-  color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.9)' : '#212B36')};
-  padding-right: 12px;
-  flex: 1;
-`;
-
-const ExpandIcon = styled.svg`
-  color: #3b82f6;
-  flex-shrink: 0;
-  transform: ${(props) => (props.expanded ? 'rotate(180deg)' : 'rotate(0deg)')};
-  transition: transform 0.2s ease;
-`;
-
-const AccordionContent = styled.div`
-  max-height: ${(props) => (props.expanded ? '500px' : '0')};
-  overflow: hidden;
-  transition: max-height 0.2s ease;
-`;
-
-const AnswerText = styled.p`
-  padding: 0 16px 14px;
-  margin: 0;
-  line-height: 1.6;
-  font-size: 11px;
-  color: ${(props) => (props.isDark ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)')};
-`;
+const AnswerText = ({ isDark, className, children, ...p }) => <p className={cn('px-4 pb-[14px] m-0 leading-[1.6] text-[11px]', isDark ? 'text-white/60' : 'text-black/60', className)} {...p}>{children}</p>;
 
 // Memoized FAQ Item Component
 const FAQItem = memo(({ faq, index, isExpanded, onToggle, isDark }) => (
@@ -365,7 +119,7 @@ const FAQItem = memo(({ faq, index, isExpanded, onToggle, isDark }) => (
 ));
 
 function AboutPage() {
-  const { themeName } = useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
   const isDark = themeName === 'XrplToDarkTheme';
   const [expandedIndex, setExpandedIndex] = useState(null);
 

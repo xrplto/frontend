@@ -1,8 +1,7 @@
 import { useState, useContext, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import api from 'src/utils/api';
-import styled from '@emotion/styled';
-import { AppContext } from 'src/context/AppContext';
+import { ThemeContext } from 'src/context/AppContext';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import ScrollToTop from 'src/components/ScrollToTop';
@@ -10,259 +9,118 @@ import { ChevronsLeft, ChevronsRight, ChevronLeft, ChevronRight } from 'lucide-r
 import { ApiButton, registerApiCalls } from 'src/components/ApiEndpointsModal';
 import { fNumber, fVolume, formatDistanceToNowStrict } from 'src/utils/formatters';
 import Link from 'next/link';
+import { cn } from 'src/utils/cn';
 
 const BASE_URL = 'https://api.xrpl.to/v1';
 
-const Container = styled.div`
-  max-width: 1920px;
-  margin: 0 auto;
-  padding: 24px 16px;
-`;
+const Container = ({ className, children, ...p }) => <div className={cn('max-w-[1920px] mx-auto px-4 py-6', className)} {...p}>{children}</div>;
 
-const Title = styled.h1`
-  font-size: 22px;
-  font-weight: 400;
-  margin-bottom: 4px;
-  color: ${({ darkMode }) => (darkMode ? '#fff' : '#212B36')};
-`;
+const Title = ({ darkMode, className, children, ...p }) => <h1 className={cn('text-[22px] font-normal mb-1', darkMode ? 'text-white' : 'text-[#212B36]', className)} {...p}>{children}</h1>;
 
-const Subtitle = styled.p`
-  font-size: 13px;
-  margin-bottom: 24px;
-  color: ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.5)' : '#637381')};
-`;
+const Subtitle = ({ darkMode, className, children, ...p }) => <p className={cn('text-[13px] mb-6', darkMode ? 'text-white/50' : 'text-[#637381]', className)} {...p}>{children}</p>;
 
-const TableContainer = styled.div`
-  overflow-x: auto;
-  scrollbar-width: none;
-  background: transparent;
-  border: 1.5px solid
-    ${({ darkMode }) => (darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)')};
-  border-radius: 12px;
-  backdrop-filter: blur(12px);
-  &::-webkit-scrollbar {
-    display: none;
-  }
-`;
+const TableContainer = ({ darkMode, className, children, ...p }) => <div className={cn('overflow-x-auto scrollbar-none bg-transparent rounded-xl backdrop-blur-[12px] border-[1.5px]', darkMode ? 'border-white/10' : 'border-black/[0.06]', className)} style={{ scrollbarWidth: 'none' }} {...p}>{children}</div>;
 
-const StyledTable = styled.table`
-  width: 100%;
-  border-collapse: collapse;
-  table-layout: fixed;
-`;
+const StyledTable = ({ className, children, ...p }) => <table className={cn('w-full border-collapse table-fixed', className)} {...p}>{children}</table>;
 
-const StyledTableHead = styled.thead`
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  background: transparent;
-  backdrop-filter: blur(12px);
-`;
+const StyledTableHead = ({ darkMode, className, children, ...p }) => <thead className={cn('sticky top-0 z-10 bg-transparent backdrop-blur-[12px]', className)} {...p}>{children}</thead>;
 
-const StyledTh = styled.th`
-  font-weight: 500;
-  font-size: 11px;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.45)')};
-  padding: 16px 12px;
-  border-bottom: 1.5px solid
-    ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)')};
-  text-align: ${({ align }) => align || 'left'};
-  width: ${({ width }) => width || 'auto'};
-  cursor: ${({ sortable }) => (sortable ? 'pointer' : 'default')};
-  white-space: nowrap;
-  font-family: inherit;
-  transition: color 0.15s ease;
+const StyledTh = ({ darkMode, align, width, sortable, className, children, ...p }) => (
+  <th
+    className={cn(
+      'font-medium text-[11px] tracking-[0.04em] uppercase py-4 px-3 whitespace-nowrap font-[inherit] transition-colors duration-150',
+      darkMode ? 'text-white/40 border-b-[1.5px] border-white/10' : 'text-black/[0.45] border-b-[1.5px] border-black/[0.06]',
+      sortable ? 'cursor-pointer' : 'cursor-default',
+      sortable && 'hover:text-[#3b82f6]',
+      className
+    )}
+    style={{ textAlign: align || 'left', width: width || 'auto' }}
+    {...p}
+  >
+    {children}
+  </th>
+);
 
-  &:hover {
-    color: ${({ sortable, darkMode }) =>
-      sortable ? '#3b82f6' : darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.45)'};
-  }
-`;
+const StyledTbody = ({ darkMode, className, children, ...p }) => (
+  <tbody className={cn('[&_tr]:border-b-[1.5px] [&_tr]:transition-all [&_tr]:duration-150', darkMode ? '[&_tr]:border-white/10 [&_tr:hover]:bg-white/[0.02]' : '[&_tr]:border-black/[0.06] [&_tr:hover]:bg-black/[0.01]', className)} {...p}>{children}</tbody>
+);
 
-const StyledTbody = styled.tbody`
-  tr {
-    border-bottom: 1.5px solid
-      ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)')};
-    transition: all 0.15s ease;
-    &:hover {
-      background: ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.01)')};
-    }
-  }
-`;
+const StyledTd = ({ darkMode, color, align, className, children, ...p }) => (
+  <td
+    className={cn('py-[18px] px-3 text-[13px] tracking-[0.01em] align-middle whitespace-nowrap', className)}
+    style={{ color: color || (darkMode ? '#fff' : '#212B36'), textAlign: align || 'left' }}
+    {...p}
+  >
+    {children}
+  </td>
+);
 
-const StyledTd = styled.td`
-  padding: 18px 12px;
-  font-size: 13px;
-  letter-spacing: 0.01em;
-  color: ${({ color, darkMode }) => color || (darkMode ? '#fff' : '#212B36')};
-  text-align: ${({ align }) => align || 'left'};
-  vertical-align: middle;
-  white-space: nowrap;
-`;
+const SortIndicator = ({ className, children, ...p }) => <span className={cn('inline-block ml-1 text-[8px] text-[#3b82f6]', className)} {...p}>{children}</span>;
 
-const SortIndicator = styled.span`
-  display: inline-block;
-  margin-left: 4px;
-  font-size: 8px;
-  color: #3b82f6;
-`;
+const TraderLink = ({ className, children, ...p }) => <Link className={cn('text-[#3b82f6] no-underline font-medium transition-colors duration-150 hover:text-[#60a5fa] hover:underline', className)} {...p}>{children}</Link>;
 
-const TraderLink = styled(Link)`
-  color: #3b82f6;
-  text-decoration: none;
-  font-weight: 500;
-  transition: color 0.15s ease;
-  &:hover {
-    color: #60a5fa;
-    text-decoration: underline;
-  }
-`;
+const Badge = ({ type, className, children, ...p }) => (
+  <span
+    className={cn(
+      'py-[3px] px-2 rounded-md text-[10px] uppercase tracking-[0.03em] font-medium',
+      type === 'buyer' && 'bg-[rgba(59,130,246,0.12)] text-[#3b82f6]',
+      type === 'seller' && 'bg-[rgba(239,68,68,0.12)] text-[#ef4444]',
+      type === 'both' && 'bg-[rgba(168,85,247,0.12)] text-[#a855f7]',
+      type !== 'buyer' && type !== 'seller' && type !== 'both' && 'bg-[rgba(234,179,8,0.12)] text-[#eab308]',
+      className
+    )}
+    {...p}
+  >
+    {children}
+  </span>
+);
 
-const Badge = styled.span`
-  padding: 3px 8px;
-  border-radius: 6px;
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  font-weight: 500;
-  background: ${({ type }) =>
-    type === 'buyer'
-      ? 'rgba(59, 130, 246, 0.12)'
-      : type === 'seller'
-        ? 'rgba(239,68,68,0.12)'
-        : type === 'both'
-          ? 'rgba(168,85,247,0.12)'
-          : 'rgba(234,179,8,0.12)'};
-  color: ${({ type }) =>
-    type === 'buyer'
-      ? '#3b82f6'
-      : type === 'seller'
-        ? '#ef4444'
-        : type === 'both'
-          ? '#a855f7'
-          : '#eab308'};
-`;
+const PaginationContainer = ({ darkMode, className, children, ...p }) => <div className={cn('flex items-center justify-center gap-1 mt-4 px-[10px] py-[6px] min-h-[36px] rounded-xl bg-transparent border-[1.5px]', darkMode ? 'border-white/10' : 'border-black/[0.06]', className)} {...p}>{children}</div>;
 
-const PaginationContainer = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  margin-top: 16px;
-  padding: 6px 10px;
-  min-height: 36px;
-  border-radius: 12px;
-  background: transparent;
-  border: 1.5px solid
-    ${({ darkMode }) => (darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)')};
-`;
+const NavButton = ({ darkMode, className, children, ...p }) => (
+  <button
+    className={cn(
+      'w-[26px] h-[26px] rounded-xl border-[1.5px] bg-transparent cursor-pointer flex items-center justify-center transition-all duration-150',
+      darkMode ? 'border-white/10 text-white hover:not-disabled:border-white/[0.15] hover:not-disabled:bg-white/[0.02]' : 'border-black/[0.06] text-[#212B36] hover:not-disabled:border-black/10 hover:not-disabled:bg-black/[0.01]',
+      'disabled:opacity-30 disabled:cursor-not-allowed',
+      className
+    )}
+    {...p}
+  >
+    {children}
+  </button>
+);
 
-const NavButton = styled.button`
-  width: 26px;
-  height: 26px;
-  border-radius: 12px;
-  border: 1.5px solid
-    ${({ darkMode }) => (darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)')};
-  background: transparent;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: ${({ darkMode }) => (darkMode ? '#fff' : '#212B36')};
-  transition: all 0.15s ease;
+const PageButton = ({ selected, darkMode, className, children, ...p }) => (
+  <button
+    className={cn(
+      'min-w-[22px] h-[22px] rounded-xl border-[1.5px] cursor-pointer text-[11px] px-1 transition-all duration-150',
+      selected
+        ? 'border-[#4285f4] bg-[#4285f4] text-white font-medium hover:not-disabled:border-[#1976D2] hover:not-disabled:bg-[#1976D2]'
+        : darkMode
+          ? 'border-white/10 bg-transparent text-white font-normal hover:not-disabled:border-white/[0.15] hover:not-disabled:bg-white/[0.02]'
+          : 'border-black/[0.06] bg-transparent text-[#212B36] font-normal hover:not-disabled:border-black/10 hover:not-disabled:bg-black/[0.01]',
+      className
+    )}
+    {...p}
+  >
+    {children}
+  </button>
+);
 
-  &:hover:not(:disabled) {
-    border-color: ${({ darkMode }) =>
-      darkMode ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)'};
-    background: ${({ darkMode }) =>
-      darkMode ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.01)'};
-  }
-  &:disabled {
-    opacity: 0.3;
-    cursor: not-allowed;
-  }
-`;
+const EmptyState = ({ darkMode, className, children, ...p }) => <div className={cn('text-center py-16 px-4 rounded-xl border-[1.5px] border-dashed', darkMode ? 'border-white/20' : 'border-black/20', className)} {...p}>{children}</div>;
 
-const PageButton = styled.button`
-  min-width: 22px;
-  height: 22px;
-  border-radius: 12px;
-  border: 1.5px solid
-    ${({ selected, darkMode }) =>
-      selected ? '#4285f4' : darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)'};
-  background: ${({ selected }) => (selected ? '#4285f4' : 'transparent')};
-  color: ${({ selected, darkMode }) => (selected ? '#fff' : darkMode ? '#fff' : '#212B36')};
-  cursor: pointer;
-  font-size: 11px;
-  font-weight: ${({ selected }) => (selected ? 500 : 400)};
-  padding: 0 4px;
-  transition: all 0.15s ease;
+const PaginationInfo = ({ darkMode, className, children, ...p }) => <span className={cn('text-[11px] mx-2', darkMode ? 'text-white/40' : 'text-black/40', className)} {...p}>{children}</span>;
 
-  &:hover:not(:disabled) {
-    border-color: ${({ selected, darkMode }) =>
-      selected ? '#1976D2' : darkMode ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)'};
-    background: ${({ selected, darkMode }) =>
-      selected ? '#1976D2' : darkMode ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.01)'};
-  }
-`;
+const StatsGrid = ({ className, children, ...p }) => <div className={cn('grid grid-cols-4 gap-3 mb-6 max-md:grid-cols-2', className)} {...p}>{children}</div>;
 
-const EmptyState = styled.div`
-  text-align: center;
-  padding: 64px 16px;
-  border-radius: 12px;
-  border: 1.5px dashed ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)')};
-`;
+const StatCard = ({ darkMode, className, children, ...p }) => <div className={cn('p-4 rounded-xl bg-transparent border-[1.5px] transition-all duration-150', darkMode ? 'border-white/10 hover:border-white/[0.15] hover:bg-white/[0.02]' : 'border-black/[0.06] hover:border-black/10 hover:bg-black/[0.01]', className)} {...p}>{children}</div>;
 
-const PaginationInfo = styled.span`
-  font-size: 11px;
-  color: ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)')};
-  margin: 0 8px;
-`;
+const StatLabel = ({ darkMode, className, children, ...p }) => <div className={cn('text-[10px] uppercase tracking-[0.05em] mb-[6px]', darkMode ? 'text-white/40' : 'text-black/[0.45]', className)} {...p}>{children}</div>;
 
-const StatsGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
-  margin-bottom: 24px;
-  @media (max-width: 768px) {
-    grid-template-columns: repeat(2, 1fr);
-  }
-`;
+const StatValue = ({ darkMode, className, children, ...p }) => <div className={cn('text-lg font-semibold', darkMode ? 'text-white' : 'text-[#212B36]', className)} {...p}>{children}</div>;
 
-const StatCard = styled.div`
-  padding: 16px;
-  border-radius: 12px;
-  background: transparent;
-  border: 1.5px solid ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)')};
-  transition: all 0.15s ease;
-
-  &:hover {
-    border-color: ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)')};
-    background: ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.01)')};
-  }
-`;
-
-const StatLabel = styled.div`
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.45)')};
-  margin-bottom: 6px;
-`;
-
-const StatValue = styled.div`
-  font-size: 18px;
-  font-weight: 600;
-  color: ${({ darkMode }) => (darkMode ? '#fff' : '#212B36')};
-`;
-
-const StatSub = styled.div`
-  font-size: 11px;
-  color: ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.4)')};
-  margin-top: 4px;
-`;
+const StatSub = ({ darkMode, className, children, ...p }) => <div className={cn('text-[11px] mt-1', darkMode ? 'text-white/[0.35]' : 'text-black/40', className)} {...p}>{children}</div>;
 
 const TABLE_HEAD = [
   { id: 'rank', label: '#', align: 'center', width: '32px' },
@@ -285,7 +143,7 @@ const ROWS_PER_PAGE = 20;
 
 export default function NFTTradersPage({ traders = [], pagination = {}, traderBalances = {} }) {
   const router = useRouter();
-  const { themeName } = useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
   const darkMode = themeName === 'XrplToDarkTheme';
   const [notificationPanelOpen, setNotificationPanelOpen] = useState(false);
 
@@ -350,23 +208,16 @@ export default function NFTTradersPage({ traders = [], pagination = {}, traderBa
   };
 
   return (
-    <div style={{ minHeight: '100vh', overflow: 'hidden' }}>
-      <div id="back-to-top-anchor" style={{ height: 24 }} />
+    <div className="min-h-screen overflow-hidden">
+      <div id="back-to-top-anchor" className="h-6" />
       <Header
         notificationPanelOpen={notificationPanelOpen}
         onNotificationPanelToggle={setNotificationPanelOpen}
       />
 
       <Container>
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            marginBottom: 4
-          }}
-        >
-          <Title darkMode={darkMode} style={{ marginBottom: 0 }}>
+        <div className="flex items-center justify-between mb-1">
+          <Title darkMode={darkMode} className="!mb-0">
             NFT Traders Leaderboard
           </Title>
           <ApiButton />
@@ -420,167 +271,56 @@ export default function NFTTradersPage({ traders = [], pagination = {}, traderBa
 
         {traders.length === 0 ? (
           <EmptyState darkMode={darkMode}>
-            <div style={{ position: 'relative', width: 64, height: 64, margin: '0 auto 16px' }}>
+            <div className="relative w-[64px] h-[64px] mx-auto mb-4">
               <div
-                style={{
-                  position: 'absolute',
-                  top: -4,
-                  left: 4,
-                  width: 20,
-                  height: 20,
-                  borderRadius: '50%',
-                  background: darkMode ? '#4285f4' : '#60a5fa'
-                }}
+                className={cn('absolute -top-1 left-1 w-5 h-5 rounded-full', darkMode ? 'bg-[#4285f4]' : 'bg-[#60a5fa]')}
               />
               <div
-                style={{
-                  position: 'absolute',
-                  top: -4,
-                  right: 4,
-                  width: 20,
-                  height: 20,
-                  borderRadius: '50%',
-                  background: darkMode ? '#4285f4' : '#60a5fa'
-                }}
+                className={cn('absolute -top-1 right-1 w-5 h-5 rounded-full', darkMode ? 'bg-[#4285f4]' : 'bg-[#60a5fa]')}
               />
               <div
-                style={{
-                  position: 'absolute',
-                  top: 2,
-                  left: 8,
-                  width: 10,
-                  height: 10,
-                  borderRadius: '50%',
-                  background: darkMode ? '#3b78e7' : '#3b82f6'
-                }}
+                className={cn('absolute top-[2px] left-2 w-[10px] h-[10px] rounded-full', darkMode ? 'bg-[#3b78e7]' : 'bg-[#3b82f6]')}
               />
               <div
-                style={{
-                  position: 'absolute',
-                  top: 2,
-                  right: 8,
-                  width: 10,
-                  height: 10,
-                  borderRadius: '50%',
-                  background: darkMode ? '#3b78e7' : '#3b82f6'
-                }}
+                className={cn('absolute top-[2px] right-2 w-[10px] h-[10px] rounded-full', darkMode ? 'bg-[#3b78e7]' : 'bg-[#3b82f6]')}
               />
               <div
-                style={{
-                  position: 'absolute',
-                  top: 10,
-                  left: '50%',
-                  transform: 'translateX(-50%)',
-                  width: 48,
-                  height: 48,
-                  borderRadius: '50%',
-                  background: darkMode ? '#4285f4' : '#60a5fa'
-                }}
+                className={cn('absolute top-[10px] left-1/2 -translate-x-1/2 w-12 h-12 rounded-full', darkMode ? 'bg-[#4285f4]' : 'bg-[#60a5fa]')}
               >
                 <div
-                  style={{
-                    position: 'absolute',
-                    top: 16,
-                    left: 10,
-                    width: 8,
-                    height: 6,
-                    borderRadius: '50%',
-                    background: '#0a0a0a',
-                    transform: 'rotate(-10deg)'
-                  }}
+                  className="absolute top-4 left-[10px] w-2 h-[6px] rounded-full bg-[#0a0a0a] -rotate-[10deg]"
                 />
                 <div
-                  style={{
-                    position: 'absolute',
-                    top: 16,
-                    right: 10,
-                    width: 8,
-                    height: 6,
-                    borderRadius: '50%',
-                    background: '#0a0a0a',
-                    transform: 'rotate(10deg)'
-                  }}
+                  className="absolute top-4 right-[10px] w-2 h-[6px] rounded-full bg-[#0a0a0a] rotate-[10deg]"
                 />
                 <div
-                  style={{
-                    position: 'absolute',
-                    bottom: 10,
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                    width: 16,
-                    height: 10,
-                    borderRadius: '50%',
-                    background: darkMode ? '#5a9fff' : '#93c5fd'
-                  }}
+                  className={cn('absolute bottom-[10px] left-1/2 -translate-x-1/2 w-4 h-[10px] rounded-full', darkMode ? 'bg-[#5a9fff]' : 'bg-[#93c5fd]')}
                 >
                   <div
-                    style={{
-                      position: 'absolute',
-                      top: 4,
-                      left: '50%',
-                      transform: 'translateX(-50%)',
-                      width: 6,
-                      height: 4,
-                      borderRadius: '50%',
-                      background: '#0a0a0a'
-                    }}
+                    className="absolute top-1 left-1/2 -translate-x-1/2 w-[6px] h-1 rounded-full bg-[#0a0a0a]"
                   />
                 </div>
                 <div
-                  style={{
-                    position: 'absolute',
-                    bottom: 6,
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                    width: 10,
-                    height: 5,
-                    borderRadius: '8px 8px 0 0',
-                    borderTop: '2px solid #0a0a0a',
-                    borderLeft: '2px solid #0a0a0a',
-                    borderRight: '2px solid #0a0a0a'
-                  }}
+                  className="absolute bottom-[6px] left-1/2 -translate-x-1/2 w-[10px] h-[5px] rounded-t-lg border-t-2 border-l-2 border-r-2 border-[#0a0a0a]"
                 />
               </div>
               <div
-                style={{
-                  position: 'absolute',
-                  top: 10,
-                  left: '50%',
-                  transform: 'translateX(-50%)',
-                  width: 48,
-                  height: 48,
-                  borderRadius: '50%',
-                  overflow: 'hidden',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 2,
-                  pointerEvents: 'none'
-                }}
+                className="absolute top-[10px] left-1/2 -translate-x-1/2 w-12 h-12 rounded-full overflow-hidden flex flex-col gap-[2px] pointer-events-none"
               >
                 {[...Array(10)].map((_, i) => (
                   <div
                     key={i}
-                    style={{
-                      height: 2,
-                      width: '100%',
-                      background: darkMode ? 'rgba(10,10,10,0.4)' : 'rgba(255,255,255,0.4)'
-                    }}
+                    className={cn('h-[2px] w-full', darkMode ? 'bg-[rgba(10,10,10,0.4)]' : 'bg-[rgba(255,255,255,0.4)]')}
                   />
                 ))}
               </div>
             </div>
             <div
-              style={{
-                fontSize: 12,
-                fontWeight: 500,
-                letterSpacing: '0.1em',
-                marginBottom: 4,
-                color: darkMode ? 'rgba(255,255,255,0.8)' : '#4b5563'
-              }}
+              className={cn('text-xs font-medium tracking-[0.1em] mb-1', darkMode ? 'text-white/80' : 'text-[#4b5563]')}
             >
               NO TRADERS DATA
             </div>
-            <div style={{ fontSize: 11, color: darkMode ? 'rgba(255,255,255,0.3)' : '#9ca3af' }}>
+            <div className={cn('text-[11px]', darkMode ? 'text-white/30' : 'text-[#9ca3af]')}>
               Trader data will appear here when available
             </div>
           </EmptyState>
@@ -598,7 +338,7 @@ export default function NFTTradersPage({ traders = [], pagination = {}, traderBa
                         width={col.width}
                         sortable={col.sortable}
                         onClick={() => col.sortable && handleSortChange(col.id)}
-                        style={sortBy === col.id ? { color: '#3b82f6' } : {}}
+                        className={sortBy === col.id ? 'text-[#3b82f6]' : ''}
                       >
                         {col.label}
                         {sortBy === col.id && <SortIndicator>▼</SortIndicator>}
@@ -625,7 +365,7 @@ export default function NFTTradersPage({ traders = [], pagination = {}, traderBa
                           {rank}
                         </StyledTd>
                         <StyledTd darkMode={darkMode}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                          <div className="flex items-center gap-[5px]">
                             <TraderLink href={`/address/${addr}`}>
                               {addr ? `${addr.slice(0, 6)}...${addr.slice(-4)}` : '-'}
                             </TraderLink>
@@ -637,54 +377,52 @@ export default function NFTTradersPage({ traders = [], pagination = {}, traderBa
                         <StyledTd
                           align="right"
                           darkMode={darkMode}
-                          style={{ fontWeight: 500, fontSize: 12 }}
+                          className="font-medium text-xs"
                         >
                           {fVolume(trader.xrpBalance || 0)}
                         </StyledTd>
                         <StyledTd
                           align="right"
                           darkMode={darkMode}
-                          style={{ fontWeight: 500, fontSize: 12 }}
+                          className="font-medium text-xs"
                         >
                           {fVolume(trader.totalVolume || 0)}
                         </StyledTd>
-                        <StyledTd align="right" darkMode={darkMode} style={{ fontSize: 11 }}>
+                        <StyledTd align="right" darkMode={darkMode} className="text-[11px]">
                           {fNumber(trader.totalTrades || 0)}
                         </StyledTd>
-                        <StyledTd align="right" darkMode={darkMode} style={{ fontSize: 11 }}>
+                        <StyledTd align="right" darkMode={darkMode} className="text-[11px]">
                           {trader.flips > 0 ? fNumber(trader.flips) : '-'}
                         </StyledTd>
-                        <StyledTd align="right" style={{ color: '#10b981', fontSize: 12 }}>
+                        <StyledTd align="right" color="#10b981" className="text-xs">
                           {fVolume(bought)}
                         </StyledTd>
-                        <StyledTd align="right" style={{ color: '#ef4444', fontSize: 12 }}>
+                        <StyledTd align="right" color="#ef4444" className="text-xs">
                           {fVolume(sold)}
                         </StyledTd>
                         <StyledTd
                           align="right"
-                          style={{
-                            color: cp >= 0 ? '#10b981' : '#ef4444',
-                            fontWeight: 600,
-                            fontSize: 12
-                          }}
+                          color={cp >= 0 ? '#10b981' : '#ef4444'}
+                          className="font-semibold text-xs"
                         >
                           {cp >= 0 ? '+' : ''}
                           {fVolume(cp)}
                         </StyledTd>
                         <StyledTd
                           align="right"
-                          style={{ color: roi >= 0 ? '#10b981' : '#ef4444', fontSize: 11 }}
+                          color={roi >= 0 ? '#10b981' : '#ef4444'}
+                          className="text-[11px]"
                         >
                           {roi >= 0 ? '+' : ''}
                           {roi.toFixed(1)}%
                         </StyledTd>
-                        <StyledTd align="right" darkMode={darkMode} style={{ fontSize: 11 }}>
+                        <StyledTd align="right" darkMode={darkMode} className="text-[11px]">
                           {(trader.winRate || 0).toFixed(0)}%
                         </StyledTd>
-                        <StyledTd align="right" darkMode={darkMode} style={{ fontSize: 11 }}>
+                        <StyledTd align="right" darkMode={darkMode} className="text-[11px]">
                           {fNumber(trader.holdingsCount || 0)}
                         </StyledTd>
-                        <StyledTd align="center" darkMode={darkMode} style={{ fontSize: 10 }}>
+                        <StyledTd align="center" darkMode={darkMode} className="text-[10px]">
                           {(() => {
                             const markets = Object.keys(trader.marketplaceBreakdown || {}).filter(
                               (m) => m !== 'XRPL'
@@ -696,7 +434,7 @@ export default function NFTTradersPage({ traders = [], pagination = {}, traderBa
                           align="right"
                           darkMode={darkMode}
                           color={darkMode ? 'rgba(255,255,255,0.5)' : '#637381'}
-                          style={{ fontSize: 11 }}
+                          className="text-[11px]"
                         >
                           {getLastActive(trader)}
                         </StyledTd>
@@ -727,11 +465,7 @@ export default function NFTTradersPage({ traders = [], pagination = {}, traderBa
                   p === '...' ? (
                     <span
                       key={`e${i}`}
-                      style={{
-                        padding: '0 2px',
-                        fontSize: 11,
-                        color: darkMode ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'
-                      }}
+                      className={cn('px-[2px] text-[11px]', darkMode ? 'text-white/30' : 'text-black/30')}
                     >
                       ...
                     </span>

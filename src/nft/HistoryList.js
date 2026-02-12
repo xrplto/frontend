@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import { fNumber } from 'src/utils/formatters';
 import { cn } from 'src/utils/cn';
-import { AppContext } from 'src/context/AppContext';
+import { ThemeContext } from 'src/context/AppContext';
 
 const TYPE_CONFIG = {
   SALE: { label: 'Sale', color: '#e5e5e5', Icon: DollarSign },
@@ -59,7 +59,7 @@ const formatRelativeTime = (ts) => {
 };
 
 export default function HistoryList({ nft }) {
-  const { themeName } = useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
   const isDark = themeName === 'XrplToDarkTheme';
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -474,6 +474,10 @@ export default function HistoryList({ nft }) {
                       const price = item.costXRP || item.amountXRP;
                       const isCancelled =
                         item.type === 'CANCEL_BUY_OFFER' || item.type === 'CANCEL_SELL_OFFER';
+                      const isSpend =
+                        item.type === 'SALE' || item.type === 'CREATE_BUY_OFFER';
+                      const isReceive =
+                        item.type === 'CREATE_SELL_OFFER';
                       const isOwnershipChange =
                         item.type === 'SALE' || item.type === 'TRANSFER' || item.type === 'MINT';
 
@@ -520,16 +524,34 @@ export default function HistoryList({ nft }) {
                                 {price > 0 && (
                                   <span
                                     className={cn(
-                                      'text-[12px] font-medium tabular-nums',
+                                      'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold tabular-nums border',
                                       isCancelled
                                         ? isDark
-                                          ? 'text-neutral-600 line-through'
-                                          : 'text-gray-400 line-through'
-                                        : isDark
-                                          ? 'text-white'
-                                          : 'text-gray-900'
+                                          ? 'bg-neutral-800/60 text-neutral-600 border-neutral-800 line-through'
+                                          : 'bg-gray-100 text-gray-400 border-gray-200 line-through'
+                                        : isSpend
+                                          ? isDark
+                                            ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                                            : 'bg-emerald-50 text-emerald-600 border-emerald-200'
+                                          : isReceive
+                                            ? isDark
+                                              ? 'bg-blue-500/10 text-blue-400 border-blue-500/20'
+                                              : 'bg-blue-50 text-blue-600 border-blue-200'
+                                            : isDark
+                                              ? 'bg-white/[0.06] text-white/80 border-white/10'
+                                              : 'bg-gray-100 text-gray-800 border-gray-200'
                                     )}
                                   >
+                                    {!isCancelled && isSpend && (
+                                      <span className={cn('text-[9px]', isDark ? 'text-emerald-500/60' : 'text-emerald-400')}>
+                                        &#x25B2;
+                                      </span>
+                                    )}
+                                    {!isCancelled && isReceive && (
+                                      <span className={cn('text-[9px]', isDark ? 'text-blue-500/60' : 'text-blue-400')}>
+                                        &#x25CF;
+                                      </span>
+                                    )}
                                     {fNumber(price)} XRP
                                   </span>
                                 )}

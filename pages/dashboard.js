@@ -31,7 +31,7 @@ import {
   Mail,
   ExternalLink
 } from 'lucide-react';
-import { AppContext } from 'src/context/AppContext';
+import { ThemeContext, WalletContext } from 'src/context/AppContext';
 import { cn } from 'src/utils/cn';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
@@ -40,7 +40,8 @@ import PaymentModal from 'src/components/PaymentModal';
 const BASE_URL = 'https://api.xrpl.to/v1';
 
 const DashboardPage = () => {
-  const { themeName, accountProfile, setOpenWalletModal } = useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
+  const { accountProfile, setOpenWalletModal } = useContext(WalletContext);
   const isDark = themeName === 'XrplToDarkTheme';
 
   const [apiKeys, setApiKeys] = useState([]);

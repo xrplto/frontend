@@ -8,9 +8,9 @@ import {
   useDeferredValue,
   useTransition
 } from 'react';
-import styled from '@emotion/styled';
+import { cn } from 'src/utils/cn';
 import { useContext } from 'react';
-import { AppContext } from 'src/context/AppContext';
+import { ThemeContext, WalletContext, AppContext } from 'src/context/AppContext';
 import { useDispatch, useSelector } from 'react-redux';
 import { update_metrics, update_filteredCount, selectMetrics } from 'src/redux/statusSlice';
 import { TokenListHead } from './TokenListControls';
@@ -30,131 +30,133 @@ const LazySearchToolbar = lazy(
   () => import(/* webpackChunkName: "search-toolbar" */ './SearchToolbar')
 );
 
-const Container = styled.div`
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  padding: 0;
-  margin: 0;
-  contain: layout style;
-  overflow: visible;
-`;
+const Container = ({ className, children, ...p }) => (
+  <div
+    className={cn('flex flex-col w-full p-0 m-0 overflow-visible [contain:layout_style]', className)}
+    {...p}
+  >
+    {children}
+  </div>
+);
 
-const TableWrapper = styled.div`
-  border-radius: 12px;
-  background: transparent;
-  border: 1.5px solid
-    ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)')};
-  overflow: hidden;
-`;
+const TableWrapper = ({ className, children, darkMode, ...p }) => (
+  <div
+    className={cn(
+      'rounded-xl bg-transparent overflow-hidden border-[1.5px]',
+      darkMode ? 'border-white/10' : 'border-black/[0.06]',
+      className
+    )}
+    style={{ ...p.style }}
+    {...(({ style, ...rest }) => rest)(p)}
+  >
+    {children}
+  </div>
+);
 
-const TableContainer = styled.div`
-  display: flex;
-  justify-content: flex-start;
-  gap: 0;
-  padding-top: 2px;
-  padding-bottom: 2px;
-  padding-left: ${(props) => (props.isMobile ? '0' : '0')}; /* No left padding */
-  padding-right: ${(props) => (props.isMobile ? '0' : '0')}; /* No right padding */
-  overflow-x: auto;
-  overflow-y: visible;
-  width: 100%;
-  min-width: 0;
-  scrollbar-width: none;
-  box-sizing: border-box;
+const TableContainer = React.forwardRef(({ className, children, isMobile, ...p }, ref) => (
+  <div
+    ref={ref}
+    className={cn('flex justify-start gap-0 py-0.5 px-0 overflow-x-auto overflow-y-visible w-full min-w-0 box-border', className)}
+    style={{ scrollbarWidth: 'none' }}
+    {...p}
+  >
+    <style>{`
+      .table-container-hide-scrollbar::-webkit-scrollbar { display: none; }
+      .table-container-hide-scrollbar > * { scroll-snap-align: center; }
+    `}</style>
+    {children}
+  </div>
+));
 
-  &::-webkit-scrollbar {
-    display: none;
-  }
+const StyledTable = React.forwardRef(({ className, children, isMobile, ...p }, ref) => (
+  <table
+    ref={ref}
+    className={cn('m-0 p-0 table-auto w-auto min-w-full border-collapse', className)}
+    {...p}
+  >
+    {children}
+  </table>
+));
 
-  & > * {
-    scroll-snap-align: center;
-  }
-`;
+const StyledTableBody = ({ className, children, isMobile, darkMode, ...p }) => (
+  <tbody className={cn('m-0 p-0', className)} {...p}>
+    <style>{`
+      .token-tbody tr { margin: 0; padding: 0; }
+      .token-tbody tr:hover { background: ${darkMode ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.015)'}; }
+      .token-tbody td { padding: ${isMobile ? '16px 8px' : '2px 6px'}; height: ${isMobile ? 'auto' : '32px'}; }
+    `}</style>
+    {children}
+  </tbody>
+);
 
-const StyledTable = styled.table`
-  table-layout: auto;
-  width: auto;
-  min-width: 100%;
-  border-collapse: collapse;
-  margin: 0;
-  padding: 0;
-`;
+const ToolbarContainer = ({ className, children, isMobile, ...p }) => (
+  <div
+    className={cn(
+      'mt-1 w-full',
+      isMobile ? 'block justify-start' : 'flex justify-center',
+      className
+    )}
+    {...p}
+  >
+    {children}
+  </div>
+);
 
-const StyledTableBody = styled.tbody`
-  margin: 0;
-  padding: 0;
+const SearchContainer = ({ className, children, ...p }) => (
+  <div className={cn('mb-2 overflow-visible', className)} {...p}>
+    {children}
+  </div>
+);
 
-  tr {
-    margin: 0;
-    padding: 0;
+const CustomColumnsPanel = ({ className, children, darkMode, ...p }) => (
+  <div
+    className={cn(
+      'w-full rounded-xl p-6 my-5 backdrop-blur-[16px] border-[1.5px]',
+      darkMode ? 'bg-black/50 border-white/10' : 'bg-white/80 border-black/[0.06]',
+      className
+    )}
+    style={{ ...p.style }}
+    {...(({ style, ...rest }) => rest)(p)}
+  >
+    {children}
+  </div>
+);
 
-    &:hover {
-      background: ${(props) =>
-        props.darkMode ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.015)'};
-    }
-  }
+const ColumnsGrid = ({ className, children, ...p }) => (
+  <div
+    className={cn('grid gap-2.5 my-5 grid-cols-[repeat(auto-fill,minmax(200px,1fr))]', className)}
+    {...p}
+  >
+    {children}
+  </div>
+);
 
-  td {
-    padding: ${(props) => (props.isMobile ? '16px 8px' : '2px 6px')};
-    height: ${(props) => (props.isMobile ? 'auto' : '32px')};
-  }
-`;
+const ColumnItem = ({ className, children, darkMode, ...p }) => (
+  <label
+    className={cn(
+      'flex items-center gap-2.5 p-3 bg-transparent rounded-lg cursor-pointer border-[1.5px]',
+      darkMode ? 'border-white/10' : 'border-black/10',
+      className
+    )}
+    onMouseEnter={(e) => {
+      e.currentTarget.style.background = darkMode ? 'rgba(66, 133, 244, 0.04)' : 'rgba(66, 133, 244, 0.02)';
+      e.currentTarget.style.borderColor = '#4285f4';
+    }}
+    onMouseLeave={(e) => {
+      e.currentTarget.style.background = 'transparent';
+      e.currentTarget.style.borderColor = darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+    }}
+    {...p}
+  >
+    {children}
+  </label>
+);
 
-const ToolbarContainer = styled.div`
-  margin-top: 0.25rem;
-  display: ${(props) => (props.isMobile ? 'block' : 'flex')};
-  justify-content: ${(props) => (props.isMobile ? 'flex-start' : 'center')};
-  width: 100%;
-`;
-
-const SearchContainer = styled.div`
-  margin-bottom: 0.5rem;
-  overflow: visible;
-`;
-
-const CustomColumnsPanel = styled.div`
-  width: 100%;
-  background: ${(props) => (props.darkMode ? 'rgba(0, 0, 0, 0.5)' : 'rgba(255, 255, 255, 0.8)')};
-  backdrop-filter: blur(16px);
-  border: 1.5px solid
-    ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)')};
-  border-radius: 12px;
-  padding: 24px;
-  margin: 20px 0;
-`;
-
-const ColumnsGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 10px;
-  margin: 20px 0;
-`;
-
-const ColumnItem = styled.label`
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 12px;
-  background: transparent;
-  border-radius: 8px;
-  cursor: pointer;
-  border: 1.5px solid
-    ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)')};
-
-  &:hover {
-    background: ${(props) =>
-      props.darkMode ? 'rgba(66, 133, 244, 0.04)' : 'rgba(66, 133, 244, 0.02)'};
-    border-color: #4285f4;
-  }
-`;
-
-const ButtonRow = styled.div`
-  display: flex;
-  gap: 10px;
-  justify-content: flex-end;
-  margin-top: 20px;
-`;
+const ButtonRow = ({ className, children, ...p }) => (
+  <div className={cn('flex gap-2.5 justify-end mt-5', className)} {...p}>
+    {children}
+  </div>
+);
 
 function TokenListComponent({
   showWatchList,
@@ -169,11 +171,11 @@ function TokenListComponent({
   autoAddNewTokens = false,
   tokenType = ''
 }) {
+  const { darkMode } = useContext(ThemeContext);
+  const { accountProfile } = useContext(WalletContext);
   const {
-    accountProfile,
     openSnackbar,
     setLoading,
-    darkMode,
     activeFiatCurrency,
     watchList,
     updateWatchList
@@ -637,7 +639,7 @@ function TokenListComponent({
 
       {!hideFilters && (
         <SearchContainer>
-          <Suspense fallback={<div style={{ height: '56px' }} />}>
+          <Suspense fallback={<div className="h-[56px]" />}>
             <LazySearchToolbar
               tags={liveTags || tags}
               tagName={tagName}
@@ -674,21 +676,13 @@ function TokenListComponent({
           darkMode={darkMode}
           style={isMobile ? { padding: '16px', margin: '8px 0', borderRadius: '8px' } : {}}
         >
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              marginBottom: '16px'
-            }}
-          >
+          <div className="flex items-center justify-between mb-4">
             <h3
-              style={{
-                margin: 0,
-                color: darkMode ? '#fff' : '#000',
-                fontSize: isMobile ? '15px' : '18px',
-                fontWeight: 500
-              }}
+              className={cn(
+                'm-0 font-medium',
+                isMobile ? 'text-[15px]' : 'text-[18px]',
+                darkMode ? 'text-white' : 'text-black'
+              )}
             >
               {isMobile ? 'Custom Columns' : 'Customize Table Columns'}
             </h3>
@@ -698,34 +692,25 @@ function TokenListComponent({
                   setTempCustomColumns(customColumns);
                   setCustomSettingsOpen(false);
                 }}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)',
-                  fontSize: '20px',
-                  cursor: 'pointer',
-                  padding: '4px'
-                }}
+                className={cn(
+                  'bg-transparent border-none text-xl cursor-pointer p-1',
+                  darkMode ? 'text-white/50' : 'text-black/50'
+                )}
               >
-                ×
+                {'\u00D7'}
               </button>
             )}
           </div>
 
           {isMobile ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div className="flex flex-col gap-3">
               <div>
                 <label
                   htmlFor="column-2-select"
-                  style={{
-                    display: 'block',
-                    marginBottom: '6px',
-                    fontSize: '11px',
-                    fontWeight: 500,
-                    color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.5px'
-                  }}
+                  className={cn(
+                    'block mb-[6px] text-[11px] font-medium uppercase tracking-[0.5px]',
+                    darkMode ? 'text-white/40' : 'text-black/40'
+                  )}
                 >
                   Middle Column
                 </label>
@@ -735,152 +720,36 @@ function TokenListComponent({
                   onChange={(e) =>
                     setTempCustomColumns([e.target.value, tempCustomColumns[1] || 'pro24h'])
                   }
+                  className={cn(
+                    'w-full p-3 rounded-lg border-[1.5px] text-[13px] cursor-pointer appearance-none bg-no-repeat bg-[position:right_12px_center]',
+                    darkMode ? 'border-[#f59e0b] bg-[#1a1a1a] text-white' : 'border-black/10 bg-white text-black'
+                  )}
                   style={{
-                    width: '100%',
-                    padding: '12px',
-                    borderRadius: '8px',
-                    border: `1.5px solid ${darkMode ? '#f59e0b' : 'rgba(0,0,0,0.1)'}`,
-                    background: darkMode ? '#1a1a1a' : '#fff',
-                    color: darkMode ? '#fff' : '#000',
-                    fontSize: '13px',
-                    cursor: 'pointer',
-                    appearance: 'none',
-                    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='${darkMode ? '%23fff' : '%23000'}' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`,
-                    backgroundRepeat: 'no-repeat',
-                    backgroundPosition: 'right 12px center'
+                    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='${darkMode ? '%23fff' : '%23000'}' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`
                   }}
                 >
-                  <option
-                    value="price"
-                    style={{
-                      background: darkMode ? '#1a1a1a' : '#fff',
-                      color: darkMode ? '#fff' : '#000'
-                    }}
-                  >
-                    Price
-                  </option>
-                  <option
-                    value="volume24h"
-                    style={{
-                      background: darkMode ? '#1a1a1a' : '#fff',
-                      color: darkMode ? '#fff' : '#000'
-                    }}
-                  >
-                    Volume 24h
-                  </option>
-                  <option
-                    value="volume7d"
-                    style={{
-                      background: darkMode ? '#1a1a1a' : '#fff',
-                      color: darkMode ? '#fff' : '#000'
-                    }}
-                  >
-                    Volume 7d
-                  </option>
-                  <option
-                    value="marketCap"
-                    style={{
-                      background: darkMode ? '#1a1a1a' : '#fff',
-                      color: darkMode ? '#fff' : '#000'
-                    }}
-                  >
-                    Market Cap
-                  </option>
-                  <option
-                    value="tvl"
-                    style={{
-                      background: darkMode ? '#1a1a1a' : '#fff',
-                      color: darkMode ? '#fff' : '#000'
-                    }}
-                  >
-                    TVL
-                  </option>
-                  <option
-                    value="holders"
-                    style={{
-                      background: darkMode ? '#1a1a1a' : '#fff',
-                      color: darkMode ? '#fff' : '#000'
-                    }}
-                  >
-                    Holders
-                  </option>
-                  <option
-                    value="trades"
-                    style={{
-                      background: darkMode ? '#1a1a1a' : '#fff',
-                      color: darkMode ? '#fff' : '#000'
-                    }}
-                  >
-                    Trades
-                  </option>
-                  <option
-                    value="created"
-                    style={{
-                      background: darkMode ? '#1a1a1a' : '#fff',
-                      color: darkMode ? '#fff' : '#000'
-                    }}
-                  >
-                    Age
-                  </option>
-                  <option
-                    value="supply"
-                    style={{
-                      background: darkMode ? '#1a1a1a' : '#fff',
-                      color: darkMode ? '#fff' : '#000'
-                    }}
-                  >
-                    Supply
-                  </option>
-                  <option
-                    value="pro5m"
-                    style={{
-                      background: darkMode ? '#1a1a1a' : '#fff',
-                      color: darkMode ? '#fff' : '#000'
-                    }}
-                  >
-                    5m %
-                  </option>
-                  <option
-                    value="pro1h"
-                    style={{
-                      background: darkMode ? '#1a1a1a' : '#fff',
-                      color: darkMode ? '#fff' : '#000'
-                    }}
-                  >
-                    1h %
-                  </option>
-                  <option
-                    value="pro24h"
-                    style={{
-                      background: darkMode ? '#1a1a1a' : '#fff',
-                      color: darkMode ? '#fff' : '#000'
-                    }}
-                  >
-                    24h %
-                  </option>
-                  <option
-                    value="pro7d"
-                    style={{
-                      background: darkMode ? '#1a1a1a' : '#fff',
-                      color: darkMode ? '#fff' : '#000'
-                    }}
-                  >
-                    7d %
-                  </option>
+                  <option value="price" className={cn(darkMode ? 'bg-[#1a1a1a] text-white' : 'bg-white text-black')}>Price</option>
+                  <option value="volume24h" className={cn(darkMode ? 'bg-[#1a1a1a] text-white' : 'bg-white text-black')}>Volume 24h</option>
+                  <option value="volume7d" className={cn(darkMode ? 'bg-[#1a1a1a] text-white' : 'bg-white text-black')}>Volume 7d</option>
+                  <option value="marketCap" className={cn(darkMode ? 'bg-[#1a1a1a] text-white' : 'bg-white text-black')}>Market Cap</option>
+                  <option value="tvl" className={cn(darkMode ? 'bg-[#1a1a1a] text-white' : 'bg-white text-black')}>TVL</option>
+                  <option value="holders" className={cn(darkMode ? 'bg-[#1a1a1a] text-white' : 'bg-white text-black')}>Holders</option>
+                  <option value="trades" className={cn(darkMode ? 'bg-[#1a1a1a] text-white' : 'bg-white text-black')}>Trades</option>
+                  <option value="created" className={cn(darkMode ? 'bg-[#1a1a1a] text-white' : 'bg-white text-black')}>Age</option>
+                  <option value="supply" className={cn(darkMode ? 'bg-[#1a1a1a] text-white' : 'bg-white text-black')}>Supply</option>
+                  <option value="pro5m" className={cn(darkMode ? 'bg-[#1a1a1a] text-white' : 'bg-white text-black')}>5m %</option>
+                  <option value="pro1h" className={cn(darkMode ? 'bg-[#1a1a1a] text-white' : 'bg-white text-black')}>1h %</option>
+                  <option value="pro24h" className={cn(darkMode ? 'bg-[#1a1a1a] text-white' : 'bg-white text-black')}>24h %</option>
+                  <option value="pro7d" className={cn(darkMode ? 'bg-[#1a1a1a] text-white' : 'bg-white text-black')}>7d %</option>
                 </select>
               </div>
               <div>
                 <label
                   htmlFor="column-3-select"
-                  style={{
-                    display: 'block',
-                    marginBottom: '6px',
-                    fontSize: '11px',
-                    fontWeight: 500,
-                    color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.5px'
-                  }}
+                  className={cn(
+                    'block mb-[6px] text-[11px] font-medium uppercase tracking-[0.5px]',
+                    darkMode ? 'text-white/40' : 'text-black/40'
+                  )}
                 >
                   Right Column
                 </label>
@@ -890,141 +759,30 @@ function TokenListComponent({
                   onChange={(e) =>
                     setTempCustomColumns([tempCustomColumns[0] || 'price', e.target.value])
                   }
+                  className={cn(
+                    'w-full p-3 rounded-lg border-[1.5px] text-[13px] cursor-pointer appearance-none bg-no-repeat bg-[position:right_12px_center]',
+                    darkMode ? 'border-[#f59e0b] bg-[#1a1a1a] text-white' : 'border-black/10 bg-white text-black'
+                  )}
                   style={{
-                    width: '100%',
-                    padding: '12px',
-                    borderRadius: '8px',
-                    border: `1.5px solid ${darkMode ? '#f59e0b' : 'rgba(0,0,0,0.1)'}`,
-                    background: darkMode ? '#1a1a1a' : '#fff',
-                    color: darkMode ? '#fff' : '#000',
-                    fontSize: '13px',
-                    cursor: 'pointer',
-                    appearance: 'none',
-                    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='${darkMode ? '%23fff' : '%23000'}' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`,
-                    backgroundRepeat: 'no-repeat',
-                    backgroundPosition: 'right 12px center'
+                    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='${darkMode ? '%23fff' : '%23000'}' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`
                   }}
                 >
-                  <option
-                    value="pro5m"
-                    style={{
-                      background: darkMode ? '#1a1a1a' : '#fff',
-                      color: darkMode ? '#fff' : '#000'
-                    }}
-                  >
-                    5m %
-                  </option>
-                  <option
-                    value="pro1h"
-                    style={{
-                      background: darkMode ? '#1a1a1a' : '#fff',
-                      color: darkMode ? '#fff' : '#000'
-                    }}
-                  >
-                    1h %
-                  </option>
-                  <option
-                    value="pro24h"
-                    style={{
-                      background: darkMode ? '#1a1a1a' : '#fff',
-                      color: darkMode ? '#fff' : '#000'
-                    }}
-                  >
-                    24h %
-                  </option>
-                  <option
-                    value="pro7d"
-                    style={{
-                      background: darkMode ? '#1a1a1a' : '#fff',
-                      color: darkMode ? '#fff' : '#000'
-                    }}
-                  >
-                    7d %
-                  </option>
-                  <option
-                    value="price"
-                    style={{
-                      background: darkMode ? '#1a1a1a' : '#fff',
-                      color: darkMode ? '#fff' : '#000'
-                    }}
-                  >
-                    Price
-                  </option>
-                  <option
-                    value="volume24h"
-                    style={{
-                      background: darkMode ? '#1a1a1a' : '#fff',
-                      color: darkMode ? '#fff' : '#000'
-                    }}
-                  >
-                    Volume 24h
-                  </option>
-                  <option
-                    value="volume7d"
-                    style={{
-                      background: darkMode ? '#1a1a1a' : '#fff',
-                      color: darkMode ? '#fff' : '#000'
-                    }}
-                  >
-                    Volume 7d
-                  </option>
-                  <option
-                    value="marketCap"
-                    style={{
-                      background: darkMode ? '#1a1a1a' : '#fff',
-                      color: darkMode ? '#fff' : '#000'
-                    }}
-                  >
-                    Market Cap
-                  </option>
-                  <option
-                    value="tvl"
-                    style={{
-                      background: darkMode ? '#1a1a1a' : '#fff',
-                      color: darkMode ? '#fff' : '#000'
-                    }}
-                  >
-                    TVL
-                  </option>
-                  <option
-                    value="holders"
-                    style={{
-                      background: darkMode ? '#1a1a1a' : '#fff',
-                      color: darkMode ? '#fff' : '#000'
-                    }}
-                  >
-                    Holders
-                  </option>
-                  <option
-                    value="trades"
-                    style={{
-                      background: darkMode ? '#1a1a1a' : '#fff',
-                      color: darkMode ? '#fff' : '#000'
-                    }}
-                  >
-                    Trades
-                  </option>
-                  <option
-                    value="created"
-                    style={{
-                      background: darkMode ? '#1a1a1a' : '#fff',
-                      color: darkMode ? '#fff' : '#000'
-                    }}
-                  >
-                    Age
-                  </option>
-                  <option
-                    value="supply"
-                    style={{
-                      background: darkMode ? '#1a1a1a' : '#fff',
-                      color: darkMode ? '#fff' : '#000'
-                    }}
-                  >
-                    Supply
-                  </option>
+                  <option value="pro5m" className={cn(darkMode ? 'bg-[#1a1a1a] text-white' : 'bg-white text-black')}>5m %</option>
+                  <option value="pro1h" className={cn(darkMode ? 'bg-[#1a1a1a] text-white' : 'bg-white text-black')}>1h %</option>
+                  <option value="pro24h" className={cn(darkMode ? 'bg-[#1a1a1a] text-white' : 'bg-white text-black')}>24h %</option>
+                  <option value="pro7d" className={cn(darkMode ? 'bg-[#1a1a1a] text-white' : 'bg-white text-black')}>7d %</option>
+                  <option value="price" className={cn(darkMode ? 'bg-[#1a1a1a] text-white' : 'bg-white text-black')}>Price</option>
+                  <option value="volume24h" className={cn(darkMode ? 'bg-[#1a1a1a] text-white' : 'bg-white text-black')}>Volume 24h</option>
+                  <option value="volume7d" className={cn(darkMode ? 'bg-[#1a1a1a] text-white' : 'bg-white text-black')}>Volume 7d</option>
+                  <option value="marketCap" className={cn(darkMode ? 'bg-[#1a1a1a] text-white' : 'bg-white text-black')}>Market Cap</option>
+                  <option value="tvl" className={cn(darkMode ? 'bg-[#1a1a1a] text-white' : 'bg-white text-black')}>TVL</option>
+                  <option value="holders" className={cn(darkMode ? 'bg-[#1a1a1a] text-white' : 'bg-white text-black')}>Holders</option>
+                  <option value="trades" className={cn(darkMode ? 'bg-[#1a1a1a] text-white' : 'bg-white text-black')}>Trades</option>
+                  <option value="created" className={cn(darkMode ? 'bg-[#1a1a1a] text-white' : 'bg-white text-black')}>Age</option>
+                  <option value="supply" className={cn(darkMode ? 'bg-[#1a1a1a] text-white' : 'bg-white text-black')}>Supply</option>
                 </select>
               </div>
-              <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
+              <div className="flex gap-2 mt-1">
                 <button
                   onClick={() => {
                     setTempCustomColumns([]);
@@ -1032,17 +790,10 @@ function TokenListComponent({
                     localStorage.removeItem('customTokenColumns');
                     setCustomSettingsOpen(false);
                   }}
-                  style={{
-                    flex: 1,
-                    padding: '10px',
-                    borderRadius: '8px',
-                    border: `1.5px solid ${darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
-                    background: 'transparent',
-                    color: darkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)',
-                    fontSize: '12px',
-                    fontWeight: 500,
-                    cursor: 'pointer'
-                  }}
+                  className={cn(
+                    'flex-1 p-[10px] rounded-lg border-[1.5px] bg-transparent text-xs font-medium cursor-pointer',
+                    darkMode ? 'border-white/10 text-white/70' : 'border-black/10 text-black/70'
+                  )}
                 >
                   Reset
                 </button>
@@ -1052,17 +803,7 @@ function TokenListComponent({
                     localStorage.setItem('customTokenColumns', JSON.stringify(tempCustomColumns));
                     setCustomSettingsOpen(false);
                   }}
-                  style={{
-                    flex: 2,
-                    padding: '10px',
-                    borderRadius: '8px',
-                    border: 'none',
-                    background: '#2196f3',
-                    color: '#fff',
-                    fontSize: '12px',
-                    fontWeight: 500,
-                    cursor: 'pointer'
-                  }}
+                  className="flex-[2] p-[10px] rounded-lg border-none bg-[#2196f3] text-white text-xs font-medium cursor-pointer"
                 >
                   Apply
                 </button>
@@ -1071,11 +812,10 @@ function TokenListComponent({
           ) : (
             <>
               <p
-                style={{
-                  color: darkMode ? '#999' : '#666',
-                  fontSize: '14px',
-                  margin: '0 0 20px 0'
-                }}
+                className={cn(
+                  'text-sm mb-5 mt-0 mx-0',
+                  darkMode ? 'text-[#999]' : 'text-[#666]'
+                )}
               >
                 Select the columns you want to display in the token list
               </p>
@@ -1092,19 +832,15 @@ function TokenListComponent({
                           setTempCustomColumns(tempCustomColumns.filter((id) => id !== column.id));
                         }
                       }}
-                      style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+                      className="w-4 h-4 cursor-pointer"
                     />
-                    <div style={{ flex: 1 }}>
+                    <div className="flex-1">
                       <div
-                        style={{
-                          color: darkMode ? '#fff' : '#000',
-                          fontSize: '14px',
-                          fontWeight: 400
-                        }}
+                        className={cn('text-sm font-normal', darkMode ? 'text-white' : 'text-black')}
                       >
                         {column.label}
                       </div>
-                      <div style={{ color: darkMode ? '#999' : '#666', fontSize: '12px' }}>
+                      <div className={cn('text-xs', darkMode ? 'text-[#999]' : 'text-[#666]')}>
                         {column.description}
                       </div>
                     </div>
@@ -1119,16 +855,10 @@ function TokenListComponent({
                     localStorage.removeItem('customTokenColumns');
                     setCustomSettingsOpen(false);
                   }}
-                  style={{
-                    padding: '10px 20px',
-                    borderRadius: '8px',
-                    border: `1.5px solid ${darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
-                    background: 'transparent',
-                    color: darkMode ? '#fff' : '#000',
-                    cursor: 'pointer',
-                    fontSize: '13px',
-                    fontWeight: 500
-                  }}
+                  className={cn(
+                    'py-[10px] px-5 rounded-lg border-[1.5px] bg-transparent cursor-pointer text-[13px] font-medium',
+                    darkMode ? 'border-white/10 text-white' : 'border-black/10 text-black'
+                  )}
                 >
                   Reset
                 </button>
@@ -1138,16 +868,7 @@ function TokenListComponent({
                     localStorage.setItem('customTokenColumns', JSON.stringify(tempCustomColumns));
                     setCustomSettingsOpen(false);
                   }}
-                  style={{
-                    padding: '10px 20px',
-                    borderRadius: '8px',
-                    border: 'none',
-                    background: '#2196f3',
-                    color: '#fff',
-                    cursor: 'pointer',
-                    fontSize: '13px',
-                    fontWeight: 500
-                  }}
+                  className="py-[10px] px-5 rounded-lg border-none bg-[#2196f3] text-white cursor-pointer text-[13px] font-medium"
                 >
                   Apply
                 </button>
@@ -1156,16 +877,7 @@ function TokenListComponent({
                     setTempCustomColumns(customColumns);
                     setCustomSettingsOpen(false);
                   }}
-                  style={{
-                    padding: '10px 20px',
-                    borderRadius: '8px',
-                    border: `1.5px solid rgba(239,68,68,0.2)`,
-                    background: 'rgba(239,68,68,0.1)',
-                    color: '#ef4444',
-                    cursor: 'pointer',
-                    fontSize: '13px',
-                    fontWeight: 500
-                  }}
+                  className="py-[10px] px-5 rounded-lg border-[1.5px] border-[rgba(239,68,68,0.2)] bg-[rgba(239,68,68,0.1)] text-[#ef4444] cursor-pointer text-[13px] font-medium"
                 >
                   Cancel
                 </button>
@@ -1322,7 +1034,7 @@ function TokenListComponent({
         </TableWrapper>
       ) : (
         <TableWrapper darkMode={darkMode}>
-          <TableContainer ref={tableContainerRef} isMobile={isMobile}>
+          <TableContainer ref={tableContainerRef} isMobile={isMobile} className="table-container-hide-scrollbar">
             <StyledTable ref={tableRef} isMobile={isMobile}>
               <TokenListHead
                 order={order}
@@ -1337,7 +1049,7 @@ function TokenListComponent({
                 viewMode={viewMode}
                 customColumns={customColumns}
               />
-              <StyledTableBody isMobile={isMobile} darkMode={darkMode}>
+              <StyledTableBody isMobile={isMobile} darkMode={darkMode} className="token-tbody">
                 {deferredTokens.map((row, idx) => (
                   <MemoizedTokenRow
                     key={row.md5}

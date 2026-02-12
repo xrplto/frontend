@@ -1,8 +1,8 @@
-import styled from '@emotion/styled';
+import { cn } from 'src/utils/cn';
 
 // Context
 import { useContext } from 'react';
-import { AppContext } from 'src/context/AppContext';
+import { ThemeContext, WalletContext, AppContext } from 'src/context/AppContext';
 
 // Components
 import Header from 'src/components/Header';
@@ -10,12 +10,14 @@ import Footer from 'src/components/Footer';
 import ImportCollection from 'src/NFTCollection/Import';
 import ScrollToTop from 'src/components/ScrollToTop';
 
-const OverviewWrapper = styled.div`
-  min-height: 100vh;
-`;
+const OverviewWrapper = ({ className, ...props }) => (
+  <div className={cn('min-h-screen', className)} {...props} />
+);
 
 export default function Overview({ data }) {
-  const { darkMode, accountProfile, openSnackbar } = useContext(AppContext);
+  const { darkMode } = useContext(ThemeContext);
+  const { accountProfile } = useContext(WalletContext);
+  const { openSnackbar } = useContext(AppContext);
 
   const isAdmin = accountProfile?.admin;
 

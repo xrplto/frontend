@@ -1,5 +1,5 @@
 import { useState, useContext } from 'react';
-import { AppContext } from 'src/context/AppContext';
+import { ThemeContext } from 'src/context/AppContext';
 import { cn } from 'src/utils/cn';
 import { X, PlusCircle } from 'lucide-react';
 import { getDecimalNum as GetNum } from 'src/utils/formatters';
@@ -8,7 +8,7 @@ import { getDecimalNum as GetNum } from 'src/utils/formatters';
 const XRP_TOKEN = { currency: 'XRP', issuer: 'XRPL' };
 
 export default function AddCostDialog({ open, setOpen, openSnackbar, onAddCost }) {
-  const { themeName } = useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
   const isDark = themeName === 'XrplToDarkTheme';
 
   const [token, setToken] = useState(XRP_TOKEN);

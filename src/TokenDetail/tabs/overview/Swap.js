@@ -1,8 +1,7 @@
 import React, { useContext, useEffect, useMemo, useState, useRef } from 'react';
-import styled from '@emotion/styled';
 import { keyframes, css } from '@emotion/react';
 import { ArrowUpDown, RefreshCw, EyeOff, X, ChevronDown, ChevronUp, Settings, CheckCircle, AlertTriangle } from 'lucide-react';
-import { AppContext } from 'src/context/AppContext';
+import { AppContext, WalletContext, ThemeContext } from 'src/context/AppContext';
 import { cn } from 'src/utils/cn';
 import { useDispatch, useSelector } from 'react-redux';
 import api, { submitTransaction, simulateTransaction } from 'src/utils/api';
@@ -13,11 +12,11 @@ import { selectProcess, updateProcess, updateTxHash } from 'src/redux/transactio
 
 // Constants
 const currencySymbols = {
-  USD: '$ ',
-  EUR: '€ ',
-  JPY: '¥ ',
-  CNH: '¥ ',
-  XRP: '✕ '
+  USD: '$',
+  EUR: '€',
+  JPY: '¥',
+  CNH: '¥',
+  XRP: '✕'
 };
 const XRP_TOKEN = {
   currency: 'XRP',
@@ -39,7 +38,7 @@ const formatCompactPrice = (price) => {
       const significant = str.replace(/^0\.0+/, '').replace(/0+$/, '');
       return (
         <>
-          0.0<sub style={{ fontSize: '0.6em' }}>{zeros}</sub>
+          0.0<sub className="text-[0.6em]">{zeros}</sub>
           {significant.slice(0, 4)}
         </>
       );
@@ -53,16 +52,7 @@ const formatCompactPrice = (price) => {
 import { configureMemos } from 'src/utils/parseUtils';
 import Image from 'next/image';
 import { PuffLoader } from '../../../components/Spinners';
-
-const alpha = (color, opacity) => {
-  if (color.startsWith('#')) {
-    const r = parseInt(color.slice(1, 3), 16);
-    const g = parseInt(color.slice(3, 5), 16);
-    const b = parseInt(color.slice(5, 7), 16);
-    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
-  }
-  return color.replace(')', `, ${opacity})`);
-};
+import { alpha } from 'src/utils/color';
 
 const pulse = keyframes`
   0% {
@@ -79,591 +69,98 @@ const pulse = keyframes`
   }
 `;
 
-const Stack = styled.div`
-  display: flex;
-  flex-direction: ${(props) => props.direction || 'column'};
-  align-items: ${(props) => props.alignItems || 'stretch'};
-  justify-content: ${(props) => props.justifyContent || 'flex-start'};
-  gap: ${(props) => {
-    if (typeof props.spacing === 'number') return `${props.spacing * 8}px`;
-    return props.gap || '0';
-  }};
-  width: ${(props) => props.width || 'auto'};
-  flex-wrap: ${(props) => props.flexWrap || 'nowrap'};
-  ${(props) =>
-    props.sx &&
-    Object.entries(props.sx)
-      .map(([key, value]) => {
-        if (key === 'mb')
-          return `margin-bottom: ${typeof value === 'number' ? value * 8 : value}px;`;
-        if (key === 'mt') return `margin-top: ${typeof value === 'number' ? value * 8 : value}px;`;
-        if (key === 'px')
-          return `padding-left: ${typeof value === 'number' ? value * 8 : value}px; padding-right: ${typeof value === 'number' ? value * 8 : value}px;`;
-        if (key === 'py')
-          return `padding-top: ${typeof value === 'number' ? value * 8 : value}px; padding-bottom: ${typeof value === 'number' ? value * 8 : value}px;`;
-        return '';
-      })
-      .join(' ')}
-`;
 
-const Box = styled.div`
-  display: ${(props) => props.display || 'block'};
-  flex-direction: ${(props) => props.flexDirection || 'row'};
-  flex: ${(props) => props.flex || 'initial'};
-  gap: ${(props) => props.gap || '0'};
-  width: ${(props) => props.width || 'auto'};
-  justify-content: ${(props) => props.justifyContent || 'flex-start'};
-  align-items: ${(props) => props.alignItems || 'stretch'};
-  ${(props) =>
-    props.sx &&
-    Object.entries(props.sx)
-      .map(([key, value]) => {
-        if (key === 'mb')
-          return `margin-bottom: ${typeof value === 'number' ? value * 8 : value}px;`;
-        if (key === 'mt') return `margin-top: ${typeof value === 'number' ? value * 8 : value}px;`;
-        if (key === 'px') {
-          if (typeof value === 'object') {
-            return `
-          padding-left: ${value.xs * 8}px;
-          padding-right: ${value.xs * 8}px;
-          @media (min-width: 600px) {
-            padding-left: ${value.sm * 8}px;
-            padding-right: ${value.sm * 8}px;
-          }
-        `;
-          }
-          return `padding-left: ${typeof value === 'number' ? value * 8 : value}px; padding-right: ${typeof value === 'number' ? value * 8 : value}px;`;
-        }
-        if (key === 'py')
-          return `padding-top: ${typeof value === 'number' ? value * 8 : value}px; padding-bottom: ${typeof value === 'number' ? value * 8 : value}px;`;
-        return '';
-      })
-      .join(' ')}
-`;
+const CurrencyContent = ({ isDark, className, children, ...p }) => (
+  <div
+    className={cn(
+      'box-border my-[3px] flex flex-row py-[10px] px-3 rounded-[10px] items-center w-full justify-between border transition-all duration-150',
+      'max-sm:py-3 max-sm:px-[14px] max-sm:my-1',
+      'focus-within:border-blue-500/40 focus-within:bg-blue-500/[0.03]',
+      isDark
+        ? 'bg-white/[0.025] border-white/[0.06] focus-within:border-blue-500/40 focus-within:bg-blue-500/[0.05]'
+        : 'bg-black/[0.02] border-black/[0.06] focus-within:border-blue-500/50 focus-within:bg-blue-500/[0.03]',
+      className
+    )}
+    {...p}
+  >{children}</div>
+);
 
-const Typography = styled.span`
-  font-size: ${(props) => {
-    if (props.variant === 'h6') return '13px';
-    if (props.variant === 'subtitle1') return '14px';
-    if (props.variant === 'body2') return '12px';
-    if (props.variant === 'caption') return '11px';
-    return '12px';
-  }};
-  font-weight: ${(props) => props.fontWeight || 400};
-  line-height: ${(props) => props.lineHeight || 'normal'};
-  color: ${(props) => {
-    if (props.color === 'textSecondary')
-      return props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)';
-    if (props.color === 'primary') return '#3b82f6';
-    if (props.color === 'error') return '#ef4444';
-    if (props.color === 'warning.main') return '#f59e0b';
-    if (props.color === 'text.secondary')
-      return props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)';
-    return props.isDark ? 'rgba(255,255,255,0.9)' : '#212B36';
-  }};
-  ${(props) =>
-    props.sx &&
-    Object.entries(props.sx)
-      .map(([key, value]) => {
-        if (key === 'fontSize') {
-          if (typeof value === 'object') {
-            return `
-          font-size: ${value.xs};
-          @media (min-width: 600px) {
-            font-size: ${value.sm};
-          }
-        `;
-          }
-          return `font-size: ${value};`;
-        }
-        if (key === 'color') return `color: ${value};`;
-        if (key === 'display') return `display: ${value};`;
-        if (key === 'mt') return `margin-top: ${typeof value === 'number' ? value * 8 : value}px;`;
-        return '';
-      })
-      .join(' ')}
-`;
+const InputContent = ({ isDark, className, children, ...p }) => (
+  <div
+    className={cn('box-border m-0 flex flex-col items-end justify-end', isDark ? 'text-white' : 'text-[#212B36]', className)}
+    {...p}
+  >{children}</div>
+);
 
-const Button = styled.button`
-  padding: ${(props) => {
-    if (props.size === 'small') return '3px 6px';
-    if (props.sx?.px || props.sx?.py) {
-      const px = props.sx.px;
-      const py = props.sx.py;
-      if (typeof px === 'object' && typeof py === 'object') {
-        return `${py.xs * 8}px ${px.xs * 8}px`;
-      }
-      return `${(py || 1) * 8}px ${(px || 2) * 8}px`;
-    }
-    return '6px 12px';
-  }};
-  font-size: ${(props) => {
-    if (props.sx?.fontSize) {
-      if (typeof props.sx.fontSize === 'object') {
-        return props.sx.fontSize.xs;
-      }
-      return props.sx.fontSize;
-    }
-    if (props.size === 'small') return '11px';
-    return '12px';
-  }};
-  min-width: ${(props) => props.sx?.minWidth || 'auto'};
-  height: ${(props) => {
-    if (props.sx?.height) {
-      if (typeof props.sx.height === 'object') {
-        return props.sx.height.xs;
-      }
-      return props.sx.height;
-    }
-    return 'auto';
-  }};
-  border-radius: 6px;
-  text-transform: ${(props) => props.sx?.textTransform || 'none'};
-  font-weight: 400;
-  border: 1px solid
-    ${(props) => {
-    if (props.variant === 'outlined')
-      return (
-        props.sx?.borderColor || (props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)')
-      );
-    return 'transparent';
-  }};
-  background: ${(props) => {
-    if (props.variant === 'outlined') return props.sx?.backgroundColor || 'transparent';
-    if (props.variant === 'text') return 'transparent';
-    return '#3b82f6';
-  }};
-  color: ${(props) => {
-    if (props.variant === 'outlined' || props.variant === 'text') {
-      if (props.sx?.color === 'text.secondary')
-        return props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)';
-      return props.sx?.color || '#3b82f6';
-    }
-    return '#FFFFFF';
-  }};
-  cursor: ${(props) => (props.disabled ? 'not-allowed' : 'pointer')};
-  opacity: ${(props) => (props.disabled ? 0.4 : 1)};
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.15s ease;
-  &:hover {
-    background: ${(props) => {
-    if (props.disabled) return props.variant === 'outlined' ? 'transparent' : '#3b82f6';
-    if (props.variant === 'outlined' || props.variant === 'text') return 'rgba(59,130,246,0.05)';
-    return '#2563eb';
-  }};
-    border-color: ${(props) => {
-    if (props.disabled)
-      return props.variant === 'outlined'
-        ? props.isDark
-          ? 'rgba(255,255,255,0.1)'
-          : 'rgba(0,0,0,0.1)'
-        : 'transparent';
-    if (props.variant === 'outlined' || props.variant === 'text') return 'rgba(59,130,246,0.4)';
-    return 'transparent';
-  }};
-  }
-  @media (min-width: 600px) {
-    font-size: ${(props) => {
-    if (props.sx?.fontSize && typeof props.sx.fontSize === 'object') {
-      return props.sx.fontSize.sm;
-    }
-    return null;
-  }};
-    height: ${(props) => {
-    if (props.sx?.height && typeof props.sx.height === 'object') {
-      return props.sx.height.sm;
-    }
-    return null;
-  }};
-    padding: ${(props) => {
-    if (props.sx?.px && props.sx?.py && typeof props.sx.px === 'object') {
-      return `${props.sx.py.sm * 8}px ${props.sx.px.sm * 8}px`;
-    }
-    return null;
-  }};
-  }
-`;
+const OverviewWrapper = ({ isDark, className, children, ...p }) => (
+  <div
+    className={cn(
+      'flex flex-col overflow-hidden box-border relative rounded-2xl p-3 w-full min-w-0 border transition-all duration-200',
+      'max-sm:rounded-2xl max-sm:p-[10px]',
+      isDark ? 'bg-transparent border-white/[0.08]' : 'bg-transparent border-black/[0.06]',
+      className
+    )}
+    {...p}
+  >{children}</div>
+);
 
-const Input = styled.input`
-  width: ${(props) => (props.fullWidth ? '100%' : props.sx?.width || '100%')};
-  padding: ${(props) => props.sx?.input?.padding || '8px'};
-  border: ${(props) => props.sx?.input?.border || 'none'};
-  font-size: ${(props) => {
-    if (props.sx?.input?.fontSize) {
-      if (typeof props.sx.input.fontSize === 'object') {
-        return props.sx.input.fontSize.xs;
-      }
-      return props.sx.input.fontSize;
-    }
-    return '14px';
-  }};
-  text-align: ${(props) => props.sx?.input?.textAlign || 'left'};
-  appearance: ${(props) => props.sx?.input?.appearance || 'auto'};
-  font-weight: ${(props) => props.sx?.input?.fontWeight || 400};
-  background: ${(props) => props.sx?.backgroundColor || 'transparent'};
-  border-radius: ${(props) => props.sx?.borderRadius || '0'};
-  color: ${(props) => (props.isDark ? '#FFFFFF' : '#212B36')};
-  outline: none;
-  &::placeholder {
-    color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)')};
-  }
-  @media (max-width: 600px) {
-    font-size: 16px;
-    padding: 10px;
-  }
-  @media (min-width: 600px) {
-    font-size: ${(props) => {
-    if (props.sx?.input?.fontSize && typeof props.sx.input.fontSize === 'object') {
-      return props.sx.input.fontSize.sm;
-    }
-    return null;
-  }};
-  }
-`;
+const ConverterFrame = ({ className, children, ...p }) => (
+  <div className={cn('flex flex-col overflow-hidden relative w-full', className)} {...p}>{children}</div>
+);
 
-const IconButton = styled.button`
-  padding: ${(props) => {
-    if (props.size === 'small') return '6px';
-    if (props.sx?.padding) {
-      if (typeof props.sx.padding === 'object') {
-        return `${props.sx.padding.xs}`;
-      }
-      return props.sx.padding;
-    }
-    return '8px';
-  }};
-  width: ${(props) => {
-    if (props.sx?.width && typeof props.sx.width === 'object') {
-      return props.sx.width.xs;
-    }
-    return props.sx?.width || 'auto';
-  }};
-  height: ${(props) => {
-    if (props.sx?.height && typeof props.sx.height === 'object') {
-      return props.sx.height.xs;
-    }
-    return props.sx?.height || 'auto';
-  }};
-  border: none;
-  border-radius: 50%;
-  background: ${(props) => props.sx?.backgroundColor || 'transparent'};
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)')};
-  transition: all 0.15s ease;
-  &:hover {
-    background: ${(props) =>
-    props.sx?.['&:hover']?.backgroundColor ||
-    (props.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)')};
-    color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.7)')};
-  }
-  @media (min-width: 600px) {
-    padding: ${(props) => {
-    if (props.sx?.padding && typeof props.sx.padding === 'object') {
-      return props.sx.padding.sm;
-    }
-    return null;
-  }};
-    width: ${(props) => {
-    if (props.sx?.width && typeof props.sx.width === 'object') {
-      return props.sx.width.sm;
-    }
-    return null;
-  }};
-    height: ${(props) => {
-    if (props.sx?.height && typeof props.sx.height === 'object') {
-      return props.sx.height.sm;
-    }
-    return null;
-  }};
-  }
-`;
+const AmountRows = ({ className, children, ...p }) => (
+  <div className={cn('relative flex flex-col gap-1', className)} {...p}>{children}</div>
+);
 
-const Alert = styled.div`
-  padding: ${(props) => (props.sx?.py ? `${props.sx.py * 8}px 10px` : '6px 10px')};
-  border-radius: 8px;
-  border: 1px solid
-    ${(props) => {
-    if (props.severity === 'error') return 'rgba(239, 68, 68, 0.15)';
-    if (props.severity === 'warning') return 'rgba(245, 158, 11, 0.15)';
-    return props.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
-  }};
-  background: ${(props) => {
-    if (props.severity === 'error') return 'rgba(239, 68, 68, 0.04)';
-    if (props.severity === 'warning') return 'rgba(245, 158, 11, 0.04)';
-    return props.isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)';
-  }};
-  margin-top: ${(props) => (props.sx?.mt ? `${props.sx.mt * 8}px` : '0')};
-`;
+const ToggleContent = ({ isDark, className, children, ...p }) => (
+  <div
+    className={cn(
+      'cursor-pointer absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-[10px] p-0 z-[2] border-[1.5px] overflow-hidden',
+      'transition-all duration-[250ms] ease-[cubic-bezier(0.4,0,0.2,1)]',
+      'hover:scale-105 hover:border-blue-500/50 active:scale-95',
+      '[&:hover_svg]:text-blue-500 [&:hover_svg]:rotate-180',
+      isDark
+        ? 'bg-[rgba(20,20,25,0.95)] border-white/10 hover:bg-blue-500/[0.12]'
+        : 'bg-white border-black/[0.08] hover:bg-blue-500/[0.06]',
+      className
+    )}
+    {...p}
+  >{children}</div>
+);
 
-const Tabs = styled.div`
-  display: flex;
-  gap: 4px;
-  @media (min-width: 600px) {
-    gap: 8px;
-  }
-`;
+const ExchangeButton = ({ isDark, disabled, className, children, ...p }) => (
+  <button
+    className={cn(
+      'w-full relative overflow-hidden rounded-xl bg-blue-500 text-white font-bold border-none py-[14px] px-4 text-sm uppercase tracking-[0.05em] mt-2 transition-all duration-200 shadow-[0_4px_12px_rgba(59,130,246,0.25)]',
+      'hover:bg-blue-600 hover:-translate-y-px hover:shadow-[0_6px_16px_rgba(59,130,246,0.35)]',
+      'active:translate-y-0',
+      disabled && (isDark ? 'bg-white/[0.04] text-white/20 shadow-none hover:bg-white/[0.04] hover:translate-y-0 hover:shadow-none' : 'bg-black/[0.04] text-black/20 shadow-none hover:bg-black/[0.04] hover:translate-y-0 hover:shadow-none'),
+      disabled && 'cursor-not-allowed',
+      className
+    )}
+    disabled={disabled}
+    {...p}
+  >{children}</button>
+);
 
-const Tab = styled.button`
-  padding: 6px 12px;
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  background: transparent;
-  border: 1px solid
-    ${(props) =>
-    props.isActive
-      ? props.isDark
-        ? 'rgba(255,255,255,0.2)'
-        : 'rgba(0,0,0,0.2)'
-      : props.isDark
-        ? 'rgba(255,255,255,0.1)'
-        : 'rgba(0,0,0,0.1)'};
-  border-radius: 6px;
-  color: ${(props) =>
-    props.isActive
-      ? props.isDark
-        ? 'rgba(255,255,255,0.9)'
-        : 'rgba(0,0,0,0.8)'
-      : props.isDark
-        ? 'rgba(255,255,255,0.4)'
-        : 'rgba(0,0,0,0.4)'};
-  cursor: pointer;
-  transition: all 0.15s ease;
-  &:hover {
-    border-color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)')};
-    color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)')};
-  }
-  @media (min-width: 600px) {
-    padding: 10px 16px;
-    font-size: 12px;
-  }
-`;
+const TokenImage = ({ className, ...p }) => (
+  <Image
+    className={cn('w-7 h-7 rounded-full object-cover', className)}
+    {...p}
+  />
+);
 
-const Select = styled.select`
-  padding: ${(props) => {
-    if (props.sx?.['& .MuiSelect-select']?.py === 0) return '2px 6px';
-    return '4px 8px';
-  }};
-  font-size: ${(props) =>
-    props.sx?.fontSize || props.sx?.['& .MuiSelect-select']?.fontSize || '11px'};
-  height: ${(props) => props.sx?.height || 'auto'};
-  border: 1px solid ${(props) => (props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)')};
-  border-radius: 6px;
-  background: ${(props) => (props.isDark ? 'rgba(255,255,255,0.03)' : '#fff')};
-  color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.8)' : '#212B36')};
-  cursor: pointer;
-  outline: none;
-  transition: border-color 0.15s ease;
-  &:hover {
-    border-color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)')};
-  }
-  &:focus {
-    border-color: rgba(59, 130, 246, 0.4);
-  }
-`;
-
-const MenuItem = styled.option`
-  padding: 4px 8px;
-  font-size: 11px;
-`;
-
-const Tooltip = ({ title, children }) => {
-  const [show, setShow] = useState(false);
-  return (
-    <div
-      style={{ position: 'relative', display: 'inline-block' }}
-      onMouseEnter={() => setShow(true)}
-      onMouseLeave={() => setShow(false)}
-    >
-      {children}
-      {show && (
-        <div
-          style={{
-            position: 'absolute',
-            bottom: '100%',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            padding: '4px 8px',
-            background: 'rgba(0,0,0,0.9)',
-            color: '#fff',
-            borderRadius: '4px',
-            fontSize: '12px',
-            whiteSpace: 'nowrap',
-            zIndex: 1000,
-            marginBottom: '4px'
-          }}
-        >
-          {title}
-        </div>
-      )}
-    </div>
-  );
-};
-
-const CurrencyContent = styled.div`
-  box-sizing: border-box;
-  margin: 3px 0;
-  display: flex;
-  flex-direction: row;
-  padding: 10px 12px;
-  border-radius: 10px;
-  align-items: center;
-  background: ${(props) => (props.isDark ? 'rgba(255,255,255,0.025)' : 'rgba(0,0,0,0.02)')};
-  width: 100%;
-  justify-content: space-between;
-  border: 1px solid ${(props) => (props.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)')};
-  transition: all 0.15s ease;
-  &:focus-within {
-    border-color: ${(props) => (props.isDark ? 'rgba(59,130,246,0.4)' : 'rgba(59,130,246,0.5)')};
-    background: ${(props) => (props.isDark ? 'rgba(59,130,246,0.05)' : 'rgba(59,130,246,0.03)')};
-  }
-  @media (max-width: 600px) {
-    padding: 12px 14px;
-    margin: 4px 0;
-    border-radius: 10px;
-  }
-`;
-
-const InputContent = styled.div`
-  box-sizing: border-box;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  justify-content: flex-end;
-  color: ${(props) => (props.isDark ? '#FFFFFF' : '#212B36')};
-`;
-
-const OverviewWrapper = styled.div`
-  flex-direction: column;
-  overflow: hidden;
-  box-sizing: border-box;
-  position: relative;
-  border-radius: 16px;
-  display: flex;
-  padding: 12px;
-  width: 100%;
-  min-width: 0;
-  background: ${(props) => (props.isDark ? 'rgba(10, 10, 10, 0.5)' : 'rgba(255, 255, 255, 0.5)')};
-  backdrop-filter: blur(8px);
-  border: 1px solid ${(props) => (props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)')};
-  transition: all 0.2s ease;
-  @media (max-width: 600px) {
-    border-radius: 16px;
-    padding: 10px;
-  }
-`;
-
-const ConverterFrame = styled.div`
-  flex-direction: column;
-  overflow: hidden;
-  position: relative;
-  display: flex;
-  width: 100%;
-`;
-
-const AmountRows = styled.div`
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-`;
-
-const ToggleContent = styled.div`
-  cursor: pointer;
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  background: ${(props) => (props.isDark ? 'rgba(20,20,25,0.95)' : '#fff')};
-  border-radius: 10px;
-  padding: 0;
-  z-index: 2;
-  border: 1.5px solid ${(props) => (props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)')};
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  overflow: hidden;
-
-  &:hover {
-    border-color: ${(props) => (props.isDark ? 'rgba(59,130,246,0.5)' : 'rgba(59,130,246,0.4)')};
-    background: ${(props) => (props.isDark ? 'rgba(59,130,246,0.12)' : 'rgba(59,130,246,0.06)')};
-    transform: translate(-50%, -50%) scale(1.05);
-
-    svg {
-      color: #3b82f6 !important;
-      transform: rotate(180deg);
-    }
-  }
-
-  &:active {
-    transform: translate(-50%, -50%) scale(0.95);
-  }
-`;
-
-const ExchangeButton = styled(Button)`
-  width: 100%;
-  position: relative;
-  overflow: hidden;
-  border-radius: 12px;
-  background: #3b82f6;
-  color: #ffffff;
-  font-weight: 700;
-  border: none;
-  padding: 14px 16px;
-  font-size: 14px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-top: 8px;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
-
-  &:hover {
-    background: #2563eb;
-    transform: translateY(-1px);
-    box-shadow: 0 6px 16px rgba(59, 130, 246, 0.35);
-  }
-
-  &:active {
-    transform: translateY(0);
-  }
-
-  &:disabled {
-    background: ${(props) => (props.isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)')};
-    color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)')};
-    border: none;
-    box-shadow: none;
-  }
-`;
-
-const TokenImage = styled(Image)`
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  object-fit: cover;
-  @media (max-width: 600px) {
-    width: 28px;
-    height: 28px;
-  }
-`;
-
-const SummaryBox = styled.div`
-  padding: 8px 10px;
-  background: ${(props) => (props.isDark ? 'rgba(255,255,255,0.025)' : 'rgba(0,0,0,0.015)')};
-  border-radius: 8px;
-  border: 1px solid ${(props) => (props.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)')};
-  margin-top: 6px;
-  margin-bottom: 2px;
-  @media (max-width: 600px) {
-    padding: 10px 12px;
-    border-radius: 10px;
-    margin-top: 8px;
-  }
-`;
+const SummaryBox = ({ isDark, className, children, ...p }) => (
+  <div
+    className={cn(
+      'py-2 px-[10px] rounded-lg border mt-[6px] mb-[2px]',
+      'max-sm:py-[10px] max-sm:px-3 max-sm:rounded-[10px] max-sm:mt-2',
+      isDark ? 'bg-white/[0.025] border-white/[0.06]' : 'bg-black/[0.015] border-black/[0.06]',
+      className
+    )}
+    {...p}
+  >{children}</div>
+);
 
 // RLUSD token for XRP orderbook display (Ripple's official stablecoin)
 const RLUSD_TOKEN = {
@@ -673,7 +170,7 @@ const RLUSD_TOKEN = {
   md5: '0dd550278b74cb6690fdae351e8e0df3'
 };
 
-const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData, onLimitPriceChange, onOrderTypeChange }) => {
+const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
   const [sellAmount, setSellAmount] = useState('');
   const [buyAmount, setBuyAmount] = useState('');
 
@@ -700,8 +197,10 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData, onLimi
   const metrics = useSelector(selectMetrics);
   const isProcessing = useSelector(selectProcess);
 
-  const { accountProfile, themeName, setLoading, sync, setSync, activeFiatCurrency, trustlineUpdate, setTrustlineUpdate } =
+  const { accountProfile } = useContext(WalletContext);
+  const { setLoading, sync, setSync, activeFiatCurrency, trustlineUpdate, setTrustlineUpdate } =
     useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
   const isDark = themeName === 'XrplToDarkTheme';
 
   const [uuid, setUuid] = useState(null);
@@ -796,13 +295,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData, onLimi
     return '12';
   });
 
-  const [showOrderbook, setShowOrderbook] = useState(false);
-  const [orderBookPos, setOrderBookPos] = useState({ x: 100, y: 100 });
-  const [isDragging, setIsDragging] = useState(false);
-  const dragOffset = useRef({ x: 0, y: 0 });
-  const asksContainerRef = useRef(null);
-  const [debugInfo, setDebugInfo] = useState(null);
-
   // Swap quote state
   const [swapQuoteApi, setSwapQuoteApi] = useState(null);
   const [quoteRequiresTrustline, setQuoteRequiresTrustline] = useState(null); // null or { currency, issuer, limit }
@@ -828,102 +320,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData, onLimi
   useEffect(() => {
     onOrderTypeChange?.(orderType);
   }, [orderType, onOrderTypeChange]);
-
-  // Floating orderbook drag handlers
-  const handleDragStart = (e) => {
-    setIsDragging(true);
-    dragOffset.current = {
-      x: e.clientX - orderBookPos.x,
-      y: e.clientY - orderBookPos.y
-    };
-  };
-
-  useEffect(() => {
-    if (!isDragging) return;
-    const handleMove = (e) => {
-      setOrderBookPos({
-        x: e.clientX - dragOffset.current.x,
-        y: e.clientY - dragOffset.current.y
-      });
-    };
-    const handleUp = () => setIsDragging(false);
-    window.addEventListener('mousemove', handleMove);
-    window.addEventListener('mouseup', handleUp);
-    return () => {
-      window.removeEventListener('mousemove', handleMove);
-      window.removeEventListener('mouseup', handleUp);
-    };
-  }, [isDragging]);
-
-  // Debug info loader
-  useEffect(() => {
-    const loadDebugInfo = async () => {
-      if (!accountProfile) {
-        setDebugInfo(null);
-        return;
-      }
-      let walletKeyId =
-        accountProfile.walletKeyId ||
-        (accountProfile.provider && accountProfile.provider_id
-          ? `${accountProfile.provider}_${accountProfile.provider_id}`
-          : null);
-      let seed = accountProfile.seed || null;
-
-      // Handle oauth/social wallets
-      if (
-        !seed &&
-        (accountProfile.wallet_type === 'oauth' || accountProfile.wallet_type === 'social')
-      ) {
-        try {
-          const { EncryptedWalletStorage } = await import('src/utils/encryptedWalletStorage');
-          const walletStorage = new EncryptedWalletStorage();
-          const walletId = `${accountProfile.provider}_${accountProfile.provider_id}`;
-          const storedPassword = await walletStorage.getSecureItem(`wallet_pwd_${walletId}`);
-          if (storedPassword) {
-            const walletData = await walletStorage.getWallet(
-              accountProfile.account,
-              storedPassword
-            );
-            seed = walletData?.seed || 'encrypted';
-          }
-        } catch (e) {
-          seed = 'error: ' + e.message;
-        }
-      }
-
-      // Handle device wallets
-      if (!seed && accountProfile.wallet_type === 'device') {
-        try {
-          const { EncryptedWalletStorage, deviceFingerprint } =
-            await import('src/utils/encryptedWalletStorage');
-          const walletStorage = new EncryptedWalletStorage();
-          // Use device fingerprint (survives storage clearing)
-          const deviceKeyId = await deviceFingerprint.getDeviceId();
-          walletKeyId = deviceKeyId; // Set for debug display
-          if (deviceKeyId) {
-            const storedPassword = await walletStorage.getWalletCredential(deviceKeyId);
-            if (storedPassword) {
-              const walletData = await walletStorage.getWallet(
-                accountProfile.account,
-                storedPassword
-              );
-              seed = walletData?.seed || 'encrypted';
-            }
-          }
-        } catch (e) {
-          seed = 'error: ' + e.message;
-        }
-      }
-
-      setDebugInfo({
-        wallet_type: accountProfile.wallet_type,
-        account: accountProfile.account,
-        walletKeyId,
-        seed: seed && seed.length > 10 ? `${seed.substring(0, 4)}...(${seed.length} chars)` : (seed || 'N/A')
-      });
-    };
-    loadDebugInfo();
-  }, [accountProfile]);
 
   const amount = revert ? amount2 : amount1;
   const value = revert ? amount1 : amount2;
@@ -1045,8 +441,11 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData, onLimi
     } catch (e) {
       errMsg = 'Insufficient wallet balance';
     }
-  } else {
+  } else if (!accountProfile?.account) {
     errMsg = 'Connect your wallet!';
+    isSufficientBalance = false;
+  } else {
+    errMsg = '';
     isSufficientBalance = false;
   }
 
@@ -1054,13 +453,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData, onLimi
 
   const [bids, setBids] = useState([]);
   const [asks, setAsks] = useState([]);
-
-  // Scroll asks to bottom when orderbook opens or limit price changes
-  useEffect(() => {
-    if (showOrderbook && asksContainerRef.current) {
-      asksContainerRef.current.scrollTop = asksContainerRef.current.scrollHeight;
-    }
-  }, [showOrderbook, asks, limitPrice]);
 
   // Fetch swap quote from API (works with or without login)
   // Uses curr1/curr2 which respect the revert state (actual swap direction)
@@ -1272,36 +664,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData, onLimi
     };
   }, [token1Md5, token2Md5, shouldFetchOrderbook]);
 
-  useEffect(() => {
-    if (!onOrderBookData) return;
-    const data = {
-      pair: {
-        curr1: { ...curr1, name: curr1.name || curr1.currency },
-        curr2: { ...curr2, name: curr2.name || curr2.currency }
-      },
-      asks,
-      bids,
-      limitPrice: orderType === 'limit' && limitPrice ? parseFloat(limitPrice) : null,
-      isBuyOrder: !!revert,
-      onAskClick: (e, idx) => {
-        if (asks && asks[idx]) {
-          setLimitPrice(asks[idx].price.toString());
-          setOrderType('limit');
-        }
-      },
-      onBidClick: (e, idx) => {
-        if (bids && bids[idx]) {
-          setLimitPrice(bids[idx].price.toString());
-          setOrderType('limit');
-        }
-      }
-    };
-    onOrderBookData(data);
-  }, [onOrderBookData, curr1, curr2, asks, bids, orderType, limitPrice, revert]);
-
-  const isPanelOpen =
-    (onOrderBookToggle ? !!orderBookOpen : !!showOrderbook) && orderType === 'limit';
-
   const { bestBid, bestAsk, midPrice, spreadPct } = useMemo(() => {
     const bb = bids && bids.length ? Number(bids[0]?.price) : null;
     const ba = asks && asks.length ? Number(asks[0]?.price) : null;
@@ -1327,45 +689,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData, onLimi
     }
     return null;
   }, [limitPrice, bestAsk, bestBid, revert]);
-
-  useEffect(() => {
-    if (onOrderBookToggle) return;
-    const root = typeof document !== 'undefined' ? document.getElementById('__next') : null;
-    if (!root) return;
-
-    const calcPanelWidth = () => {
-      if (typeof window === 'undefined') return 0;
-      const w = window.innerWidth || 0;
-      if (w >= 1536) return 320;
-      if (w >= 1200) return 300;
-      if (w >= 900) return 280;
-      return 0;
-    };
-
-    const applyShift = () => {
-      const width = calcPanelWidth();
-      if (width <= 0) return removeShift();
-      const prev = root.style.paddingRight;
-      if (!root.hasAttribute('data-prev-pr-ob') && (!prev || prev === '')) {
-        root.setAttribute('data-prev-pr-ob', prev);
-        root.style.paddingRight = `${width}px`;
-      }
-      root.classList.add('orderbook-shift');
-    };
-
-    const removeShift = () => {
-      const prev = root.getAttribute('data-prev-pr-ob');
-      if (prev !== null) root.style.paddingRight = prev;
-      else root.style.removeProperty('padding-right');
-      root.removeAttribute('data-prev-pr-ob');
-      root.classList.remove('orderbook-shift');
-    };
-
-    if (isPanelOpen) applyShift();
-    else removeShift();
-
-    return removeShift;
-  }, [orderType, orderBookOpen, onOrderBookToggle, showOrderbook]);
 
   // WebSocket-based real-time pair balance updates
   useEffect(() => {
@@ -1399,8 +722,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData, onLimi
             const data = JSON.parse(event.data);
             if (data.type === 'initial' || data.e === 'pair') {
               const pair = data.pair;
-              console.log('[Swap WS] Balance update:', JSON.stringify(pair, null, 2));
-              console.log('[Swap WS] curr1 value:', pair?.curr1?.value, 'type:', typeof pair?.curr1?.value);
               setAccountPairBalance(pair);
               // Trustline status is checked via API useEffect (more reliable for accounts with many trustlines)
             }
@@ -1478,7 +799,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData, onLimi
   const calcQuantity = (amount, active) => {
     try {
       const amt = new Decimal(amount || 0).toNumber();
-      console.log('[Swap calcQuantity] input amount:', amount, 'active:', active, 'parsed amt:', amt);
       if (amt === 0) return '';
 
       const token1IsXRP = token1?.currency === 'XRP';
@@ -1531,7 +851,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData, onLimi
         }
 
         const finalResult = new Decimal(result).toFixed(6, Decimal.ROUND_DOWN);
-        console.log('[Swap calcQuantity] XRP pair result:', result, 'final (6dp):', finalResult);
         return finalResult;
       } else {
         if (rate1.eq(0) || rate2.eq(0)) {
@@ -1546,7 +865,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData, onLimi
         }
 
         const finalResult = new Decimal(result).toFixed(6, Decimal.ROUND_DOWN);
-        console.log('[Swap calcQuantity] token pair result:', result, 'final (6dp):', finalResult);
         return finalResult;
       }
     } catch (e) {
@@ -1565,16 +883,8 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData, onLimi
     const currentLimitPrice = limitPrice;
     const currentRevert = revert;
 
-    console.log('[Swap handlePlaceOrder] START');
-    console.log('[Swap handlePlaceOrder] orderType:', currentOrderType, 'limitPrice:', currentLimitPrice, 'revert:', currentRevert);
-    console.log('[Swap handlePlaceOrder] amount1 (input state):', amount1, 'type:', typeof amount1);
-    console.log('[Swap handlePlaceOrder] amount2 (output state):', amount2, 'type:', typeof amount2);
-    console.log('[Swap handlePlaceOrder] curr1:', curr1?.currency, 'curr2:', curr2?.currency);
-    console.log('[Swap handlePlaceOrder] accountPairBalance:', JSON.stringify(accountPairBalance, null, 2));
-
     const fAmount = Number(amount1);
     const fValue = Number(amount2);
-    console.log('[Swap handlePlaceOrder] fAmount (parsed):', fAmount, 'fValue (parsed):', fValue);
 
     if (!(fAmount > 0 && fValue > 0)) {
       toast.error('Invalid values');
@@ -1597,12 +907,8 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData, onLimi
       const { EncryptedWalletStorage, deviceFingerprint } = await import('src/utils/encryptedWalletStorage');
 
       const walletStorage = new EncryptedWalletStorage();
-      console.log('[Swap] wallet_type:', accountProfile.wallet_type, 'account:', accountProfile.account);
-      console.log('[Swap] Getting deviceKeyId...');
       const deviceKeyId = await deviceFingerprint.getDeviceId();
-      console.log('[Swap] deviceKeyId:', deviceKeyId ? `${deviceKeyId.substring(0, 8)}...` : null);
       const storedPassword = await walletStorage.getWalletCredential(deviceKeyId);
-      console.log('[Swap] storedPassword found:', !!storedPassword);
 
       if (!storedPassword) {
         toast.error('Wallet locked', { id: toastId, description: 'Please unlock your wallet first' });
@@ -1610,34 +916,22 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData, onLimi
       }
 
       const walletData = await walletStorage.getWallet(accountProfile.account, storedPassword);
-      console.log('[Swap] walletData found:', !!walletData, 'has seed:', !!walletData?.seed);
       if (!walletData?.seed) {
         toast.error('Wallet error', { id: toastId, description: 'Could not retrieve credentials' });
         return;
       }
 
       const seed = walletData.seed.trim();
-      console.log(`[Swap] Seed: length=${seed.length}, algo=${seed.startsWith('sEd') ? 'ed25519' : 'secp256k1'}`);
       if (seed !== walletData.seed) console.warn('[Swap] Seed had whitespace! original:', walletData.seed.length, 'trimmed:', seed.length);
       const algorithm = seed.startsWith('sEd') ? 'ed25519' : 'secp256k1';
-      console.log('[Swap] Using algorithm:', algorithm);
       const deviceWallet = Wallet.fromSeed(seed, { algorithm });
 
       // Track if we need to create trustlines (before we create them)
-      console.log('[Swap] Trustline state check:', {
-        hasTrustline1,
-        hasTrustline2,
-        curr1Currency: curr1.currency,
-        curr2Currency: curr2.currency
-      });
-
       const needsTrustline1 = !hasTrustline1 && curr1.currency !== 'XRP';
       const needsTrustline2 = !hasTrustline2 && curr2.currency !== 'XRP';
-      console.log('[Swap] needsTrustline1:', needsTrustline1, 'needsTrustline2:', needsTrustline2);
 
       // Auto-create trustlines if needed
       if (needsTrustline1) {
-        console.log('[Swap] Creating trustline for curr1:', curr1);
         toast.loading('Processing swap...', { id: toastId, description: `Setting trustline for ${curr1.name}` });
         const success = await onCreateTrustline(curr1, true);
         if (!success) {
@@ -1648,7 +942,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData, onLimi
         setSync((s) => s + 1); // Trigger TokenSummary to refresh trustline state
       }
       if (needsTrustline2) {
-        console.log('[Swap] Creating trustline for curr2:', curr2);
         toast.loading('Processing swap...', { id: toastId, description: `Setting trustline for ${curr2.name}` });
         const success = await onCreateTrustline(curr2, true);
         if (!success) {
@@ -1677,8 +970,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData, onLimi
           const trustlinesCreated = (needsTrustline1 ? 1 : 0) + (needsTrustline2 ? 1 : 0);
           newXrpAvailable = Math.max(0, newXrpAvailable - (trustlinesCreated * 0.2));
 
-          console.log('[Swap] Balance after trustline:', balRes.data, 'adjusted available:', newXrpAvailable, 'trustlines created:', trustlinesCreated);
-
           if (newXrpAvailable < fAmount) {
             // Recalculate based on new available balance
             adjustedAmount1 = Math.max(0, newXrpAvailable - 0.000015); // Leave tiny buffer for tx fee (~12 drops)
@@ -1702,20 +993,15 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData, onLimi
       const fAmount1Final = adjustedAmount1;
       const fValue1Final = adjustedAmount2;
 
-      console.log('[Swap handlePlaceOrder] fAmount1Final:', fAmount1Final, 'fValue1Final:', fValue1Final);
-      console.log('[Swap handlePlaceOrder] Original balance:', accountPairBalance?.curr1?.value);
-
       toast.loading('Processing swap...', { id: toastId, description: 'Submitting to XRPL' });
 
       // Helper to format token value with safe precision (max 15 significant digits)
       const formatTokenValue = (val) => {
         const n = parseFloat(val);
         const result = n >= 1 ? n.toPrecision(15).replace(/\.?0+$/, '') : n.toFixed(Math.min(15, Math.max(6, -Math.floor(Math.log10(n)) + 6)));
-        console.log('[Swap formatTokenValue] input:', val, 'output:', result);
         return result;
       };
 
-      console.log('[Swap] BRANCH CHECK - orderType:', currentOrderType, 'type:', typeof currentOrderType, 'isMarket:', currentOrderType === 'market', 'isLimit:', currentOrderType === 'limit');
       if (currentOrderType === 'market') {
         // Use Payment with xrpl client for AMM swap (handles path finding)
         const slippageFactor = slippage / 100;
@@ -1736,15 +1022,9 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData, onLimi
           };
         } else if (curr2.currency === 'XRP') {
           // Paying tokens to receive XRP
-          console.log('[Swap] TOKEN -> XRP swap detected');
-          console.log('[Swap] Token amount to send (fAmount1Final):', fAmount1Final);
-          console.log('[Swap] XRP amount to receive (fValue1Final):', fValue1Final);
-          console.log('[Swap] slippageFactor:', slippageFactor);
-
           // Check if user is selling ALL their tokens (within tiny tolerance for float precision)
           const userBalance = parseFloat(accountPairBalance?.curr1?.value || 0);
           const isSellingAll = Math.abs(userBalance - fAmount1Final) < 0.000001;
-          console.log('[Swap] isSellingAll:', isSellingAll, 'userBalance:', userBalance);
 
           const targetXrpDrops = Math.floor(fValue1Final * 1000000);
           const minXrpDrops = Math.max(Math.floor(fValue1Final * (1 - slippageFactor) * 1000000), 1);
@@ -1752,7 +1032,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData, onLimi
           // If selling all, use exact balance as SendMax (no buffer) to avoid dust
           // Otherwise use 0.5% buffer for partial sells
           const sendMaxValue = isSellingAll ? userBalance : fAmount1Final * 1.005;
-          console.log('[Swap] SendMax calculation:', isSellingAll ? 'exact balance (sell all)' : 'fAmount1Final * 1.005', '=', sendMaxValue);
 
           tx = {
             TransactionType: 'Payment',
@@ -1778,21 +1057,14 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData, onLimi
           };
         }
 
-        console.log('[Swap] Market order tx:', tx);
-
         // Check trustline limit for receiving token via API
         if (curr2.currency !== 'XRP') {
-          console.log('[Swap] Checking trustline limit via API for curr2:', curr2.currency);
           const trustlineRes = await api.get(`https://api.xrpl.to/v1/account/trustline/${accountProfile.account}/${curr2.issuer}/${curr2.currency}`).then(r => r.data);
-          console.log('[Swap] Trustline API response:', trustlineRes);
 
           const currentBalance = parseFloat(trustlineRes.balance) || 0;
           const currentLimit = parseFloat(trustlineRes.limit) || 0;
           const needed = currentBalance + fValue;
-          console.log('[Swap] Trustline limit check:', { currentLimit, currentBalance, receiving: fValue, needed, hasTrustline: trustlineRes.hasTrustline });
-
           if (!trustlineRes.hasTrustline || currentLimit < needed) {
-            console.log('[Swap] Trustline insufficient - WILL CREATE:', { currentLimit, currentBalance, receiving: fValue, needed });
             toast.loading('Processing swap...', { id: toastId, description: 'Setting trustline...' });
 
             const success = await onCreateTrustline(curr2, true);
@@ -1801,16 +1073,14 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData, onLimi
               return;
             }
           } else {
-            console.log('[Swap] Trustline OK - no need to create');
+            // Trustline OK
           }
         }
 
         // Simulate transaction first to check liquidity and show preview (XLS-69)
         toast.loading('Simulating swap...', { id: toastId });
         try {
-          console.log('[Swap] Simulating tx:', JSON.stringify(tx, null, 2));
           const simResult = await simulateTransaction(tx);
-          console.log('[Swap] Simulation result:', JSON.stringify(simResult, null, 2));
 
           const engineResult = simResult.engine_result;
           const expectedOutput = fValue1Final;
@@ -1956,8 +1226,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData, onLimi
         const txHash = submitResult.hash || submitResult.tx_json?.hash;
         const engineResult = submitResult.engine_result;
 
-        console.log('[Swap] Submit result:', { engineResult, txHash });
-
         if (engineResult !== 'tesSUCCESS') {
           toast.error('Rejected', { id: toastId, description: engineResult });
           return;
@@ -2018,7 +1286,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData, onLimi
         // Use OfferCreate for limit orders (manual submission)
         // CRITICAL: Use limit price to calculate amounts, not market rate!
         const lp = Number(currentLimitPrice);
-        console.log('[Swap] Limit order calculation - limitPrice:', lp, 'revert:', currentRevert);
 
         let takerGets, takerPays;
 
@@ -2027,7 +1294,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData, onLimi
           // TakerGets = token amount, TakerPays = token amount × limitPrice (XRP)
           const tokenAmount = fAmount1Final;
           const xrpAmount = tokenAmount * lp;
-          console.log('[Swap] SELL: tokenAmount:', tokenAmount, 'xrpAmount:', xrpAmount, '(token × limitPrice)');
 
           takerGets = { currency: curr1.currency, issuer: curr1.issuer, value: String(tokenAmount) };
           takerPays = String(Math.floor(xrpAmount * 1000000));
@@ -2036,7 +1302,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData, onLimi
           // TakerGets = token amount × limitPrice (XRP), TakerPays = token amount
           const tokenAmount = fValue1Final; // amount2 is the token amount user wants
           const xrpAmount = tokenAmount * lp;
-          console.log('[Swap] BUY: tokenAmount:', tokenAmount, 'xrpAmount:', xrpAmount, '(token × limitPrice)');
 
           takerGets = String(Math.floor(xrpAmount * 1000000));
           takerPays = { currency: curr2.currency, issuer: curr2.issuer, value: String(tokenAmount) };
@@ -2051,6 +1316,12 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData, onLimi
           SourceTag: 161803
         };
 
+        // Add Expiration if user selected a time limit (XRPL uses Ripple epoch seconds)
+        if (orderExpiry !== 'never' && expiryHours > 0) {
+          const RIPPLE_EPOCH = 946684800;
+          tx.Expiration = Math.floor(Date.now() / 1000) + (expiryHours * 3600) - RIPPLE_EPOCH;
+        }
+
         const [seqRes, feeRes] = await Promise.all([
           api.get(`https://api.xrpl.to/v1/submit/account/${accountProfile.account}/sequence`),
           api.get('https://api.xrpl.to/v1/submit/fee')
@@ -2063,12 +1334,8 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData, onLimi
           LastLedgerSequence: seqRes.data.ledger_index + 20
         };
 
-        console.log('[Swap] Limit order tx:', prepared);
-
         const signed = deviceWallet.sign(prepared);
         const result = await api.post('https://api.xrpl.to/v1/submit', { tx_blob: signed.tx_blob });
-
-        console.log('[Swap] Submit result:', result.data);
 
         if (result.data.engine_result === 'tesSUCCESS') {
           toast.loading('Order submitted', { id: toastId, description: 'Waiting for validation...' });
@@ -2240,11 +1507,8 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData, onLimi
   };
 
   const onFillMax = () => {
-    console.log('[Swap onFillMax] accountPairBalance:', JSON.stringify(accountPairBalance, null, 2));
-    console.log('[Swap onFillMax] curr1:', curr1?.currency, 'curr2:', curr2?.currency);
     if (accountPairBalance?.curr1.value > 0) {
       const val = accountPairBalance.curr1.value;
-      console.log('[Swap onFillMax] Setting amount1 to:', val, 'type:', typeof val);
       setAmount1(val);
       const hasValidRates =
         curr1?.currency === 'XRP' || curr2?.currency === 'XRP'
@@ -2252,7 +1516,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData, onLimi
           : tokenExch1 > 0 && tokenExch2 > 0;
       if (hasValidRates) {
         const calculatedValue = calcQuantity(val, 'AMOUNT');
-        console.log('[Swap onFillMax] Calculated amount2:', calculatedValue);
         if (calculatedValue && calculatedValue !== '0') setAmount2(calculatedValue);
       }
     }
@@ -2275,7 +1538,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData, onLimi
   };
 
   const onCreateTrustline = async (currency, silent = false) => {
-    console.log('[Swap onCreateTrustline] CALLED with currency:', currency, 'silent:', silent);
     if (!accountProfile?.account) return false;
 
     if (!silent) dispatch(updateProcess(1));
@@ -2367,7 +1629,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData, onLimi
   };
 
   const onRemoveTrustline = async (tokenToRemove) => {
-    console.log('[Swap] onRemoveTrustline called:', tokenToRemove);
     if (!accountProfile?.account) return;
     if (!tokenToRemove?.issuer || !tokenToRemove?.currency) {
       toast.error('Invalid token data');
@@ -2409,8 +1670,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData, onLimi
         SourceTag: 161803
       };
 
-      console.log('[Swap] Remove trustline tx:', tx);
-
       const [seqRes, feeRes] = await Promise.all([
         api.get(`${BASE_URL}/submit/account/${accountProfile.account}/sequence`),
         api.get(`${BASE_URL}/submit/fee`)
@@ -2439,79 +1698,48 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData, onLimi
   };
 
   return (
-    <Stack alignItems="stretch" width="100%" sx={{ px: { xs: 0, sm: 0 } }}>
+    <div className="flex flex-col items-stretch w-full">
       {/* Transaction Preview Modal */}
       {txPreview && (
         <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            zIndex: 9999,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            background: 'rgba(0,0,0,0.85)',
-            backdropFilter: 'blur(8px)'
-          }}
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/85 backdrop-blur-lg"
           onClick={handleCancelPreview}
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            style={{
-              background: isDark ? '#0d0d0f' : '#ffffff',
-              borderRadius: '20px',
-              padding: '20px',
-              maxWidth: '360px',
-              width: '92%',
-              border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`,
-              boxShadow: '0 24px 80px rgba(0,0,0,0.6)'
-            }}
+            className={cn(
+              'rounded-[20px] p-5 max-w-[360px] w-[92%] border shadow-[0_24px_80px_rgba(0,0,0,0.6)]',
+              isDark ? 'bg-[#0d0d0f] border-white/[0.08]' : 'bg-white border-black/[0.08]'
+            )}
           >
             {/* Header */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-[10px]">
                 {txPreview.status === 'error' && (
-                  <div style={{
-                    width: '36px', height: '36px', borderRadius: '10px',
-                    background: 'rgba(239,68,68,0.15)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center'
-                  }}>
-                    <X size={20} style={{ color: '#ef4444' }} />
+                  <div className="w-9 h-9 rounded-[10px] bg-[rgba(239,68,68,0.15)] flex items-center justify-center">
+                    <X size={20} className="text-[#ef4444]" />
                   </div>
                 )}
                 {txPreview.status === 'warning' && (
-                  <div style={{
-                    width: '36px', height: '36px', borderRadius: '10px',
-                    background: 'rgba(245,158,11,0.15)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center'
-                  }}>
-                    <AlertTriangle size={20} style={{ color: '#f59e0b' }} />
+                  <div className="w-9 h-9 rounded-[10px] bg-[rgba(245,158,11,0.15)] flex items-center justify-center">
+                    <AlertTriangle size={20} className="text-[#f59e0b]" />
                   </div>
                 )}
                 {txPreview.status === 'success' && (
-                  <div style={{
-                    width: '36px', height: '36px', borderRadius: '10px',
-                    background: 'rgba(34,197,94,0.15)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center'
-                  }}>
-                    <CheckCircle size={20} style={{ color: '#22c55e' }} />
+                  <div className="w-9 h-9 rounded-[10px] bg-[rgba(34,197,94,0.15)] flex items-center justify-center">
+                    <CheckCircle size={20} className="text-[#22c55e]" />
                   </div>
                 )}
-                <span style={{ fontSize: '16px', fontWeight: 600, color: isDark ? '#fff' : '#000' }}>
+                <span className={cn('text-base font-semibold', isDark ? 'text-white' : 'text-black')}>
                   {txPreview.status === 'error' ? 'Swap Will Fail' : txPreview.status === 'warning' ? 'Review Swap' : 'Confirm Swap'}
                 </span>
               </div>
               <button
                 onClick={handleCancelPreview}
-                style={{
-                  background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
-                  border: 'none',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                  padding: '6px',
-                  color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center'
-                }}
+                className={cn(
+                  'border-none rounded-lg cursor-pointer p-[6px] flex items-center justify-center',
+                  isDark ? 'bg-white/[0.05] text-white/40' : 'bg-black/[0.05] text-black/40'
+                )}
               >
                 <X size={16} />
               </button>
@@ -2519,13 +1747,8 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData, onLimi
 
             {/* Error/Warning Message */}
             {(txPreview.errorMessage || txPreview.warningMessage) && (
-              <div style={{
-                padding: '10px 12px',
-                borderRadius: '10px',
-                marginBottom: '12px',
-                background: txPreview.errorMessage ? 'rgba(239,68,68,0.08)' : 'rgba(245,158,11,0.08)'
-              }}>
-                <span style={{ fontSize: '12px', color: txPreview.errorMessage ? '#ef4444' : '#f59e0b' }}>
+              <div className={cn('py-[10px] px-3 rounded-[10px] mb-3', txPreview.errorMessage ? 'bg-[rgba(239,68,68,0.08)]' : 'bg-[rgba(245,158,11,0.08)]')}>
+                <span className={cn('text-xs', txPreview.errorMessage ? 'text-[#ef4444]' : 'text-[#f59e0b]')}>
                   {txPreview.errorMessage || txPreview.warningMessage}
                 </span>
               </div>
@@ -2533,26 +1756,20 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData, onLimi
 
             {/* Available Liquidity - Compact */}
             {(txPreview.maxAvailable || txPreview.workingAmount) && (
-              <div style={{
-                padding: '12px',
-                borderRadius: '10px',
-                marginBottom: '12px',
-                background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
-                border: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`
-              }}>
+              <div className={cn('p-3 rounded-[10px] mb-3 border', isDark ? 'bg-white/[0.03] border-white/[0.06]' : 'bg-black/[0.02] border-black/[0.06]')}>
                 {/* Option 1: Increase slippage to get max */}
                 {txPreview.maxAvailable && txPreview.actualSlippage && (
-                  <div style={{ marginBottom: txPreview.workingAmount ? '12px' : '0', paddingBottom: txPreview.workingAmount ? '12px' : '0', borderBottom: txPreview.workingAmount ? `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}` : 'none' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
-                      <span style={{ fontSize: '10px', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  <div className={cn(txPreview.workingAmount ? 'mb-3 pb-3' : '')} style={{ borderBottom: txPreview.workingAmount ? `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}` : 'none' }}>
+                    <div className="flex items-center justify-between mb-[6px]">
+                      <span className={cn('text-[10px] uppercase tracking-[0.5px]', isDark ? 'text-white/40' : 'text-black/40')}>
                         Option 1: Higher slippage
                       </span>
-                      <span style={{ fontSize: '10px', padding: '2px 5px', borderRadius: '4px', background: 'rgba(245,158,11,0.12)', color: '#f59e0b' }}>
+                      <span className="text-[10px] py-[2px] px-[5px] rounded bg-[rgba(245,158,11,0.12)] text-[#f59e0b]">
                         {txPreview.actualSlippage}% impact
                       </span>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <span style={{ fontSize: '14px', fontWeight: 600, color: isDark ? '#fff' : '#000' }}>
+                    <div className="flex items-center justify-between">
+                      <span className={cn('text-sm font-semibold', isDark ? 'text-white' : 'text-black')}>
                         ~{fNumber(txPreview.maxAvailable)} {txPreview.receiving?.name}
                       </span>
                       {parseFloat(txPreview.actualSlippage) <= 50 && (
@@ -2564,16 +1781,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData, onLimi
                             setPendingTx(null);
                             toast.success(`Slippage set to ${newSlippage}%`, { duration: 5000 });
                           }}
-                          style={{
-                            padding: '6px 10px',
-                            borderRadius: '6px',
-                            border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
-                            background: 'transparent',
-                            color: isDark ? '#fff' : '#000',
-                            fontWeight: 500,
-                            cursor: 'pointer',
-                            fontSize: '10px'
-                          }}
+                          className={cn('py-[6px] px-[10px] rounded-md border bg-transparent font-medium cursor-pointer text-[10px]', isDark ? 'border-white/10 text-white' : 'border-black/10 text-black')}
                         >
                           Set {Math.ceil(parseFloat(txPreview.actualSlippage) + 1)}%
                         </button>
@@ -2585,20 +1793,20 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData, onLimi
                 {/* Option 2: Reduce amount to fit slippage */}
                 {txPreview.workingAmount && (
                   <div>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
-                      <span style={{ fontSize: '10px', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                    <div className="flex items-center justify-between mb-[6px]">
+                      <span className={cn('text-[10px] uppercase tracking-[0.5px]', isDark ? 'text-white/40' : 'text-black/40')}>
                         Option 2: Keep {slippage}% slippage
                       </span>
-                      <span style={{ fontSize: '10px', padding: '2px 5px', borderRadius: '4px', background: 'rgba(34,197,94,0.12)', color: '#22c55e' }}>
+                      <span className="text-[10px] py-[2px] px-[5px] rounded bg-[rgba(34,197,94,0.12)] text-[#22c55e]">
                         Guaranteed
                       </span>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div className="flex items-center justify-between">
                       <div>
-                        <div style={{ fontSize: '14px', fontWeight: 600, color: '#22c55e' }}>
+                        <div className="text-sm font-semibold text-[#22c55e]">
                           ~{fNumber(txPreview.workingOutput || 0)} {txPreview.receiving?.name}
                         </div>
-                        <div style={{ fontSize: '10px', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>
+                        <div className={cn('text-[10px]', isDark ? 'text-white/40' : 'text-black/40')}>
                           for {fNumber(txPreview.workingAmount)} {txPreview.sending?.name}
                         </div>
                       </div>
@@ -2619,16 +1827,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData, onLimi
                             duration: 6000
                           });
                         }}
-                        style={{
-                          padding: '6px 12px',
-                          borderRadius: '6px',
-                          border: 'none',
-                          background: '#22c55e',
-                          color: '#fff',
-                          fontWeight: 600,
-                          cursor: 'pointer',
-                          fontSize: '10px'
-                        }}
+                        className="py-[6px] px-3 rounded-md border-none bg-[#22c55e] text-white font-semibold cursor-pointer text-[10px]"
                       >
                         Use this
                       </button>
@@ -2639,34 +1838,29 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData, onLimi
             )}
 
             {/* Transaction Details */}
-            <div style={{
-              background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
-              borderRadius: '10px',
-              padding: '12px',
-              marginBottom: '12px'
-            }}>
+            <div className={cn('rounded-[10px] p-3 mb-3', isDark ? 'bg-white/[0.03]' : 'bg-black/[0.02]')}>
               {/* Sending */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                <span style={{ color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Send</span>
-                <span style={{ color: isDark ? '#fff' : '#000', fontWeight: 500, fontSize: '13px' }}>
+              <div className="flex justify-between items-center mb-2">
+                <span className={cn('text-[11px] uppercase tracking-[0.5px]', isDark ? 'text-white/40' : 'text-black/40')}>Send</span>
+                <span className={cn('font-medium text-[13px]', isDark ? 'text-white' : 'text-black')}>
                   {fNumber(txPreview.sending?.amount)} {txPreview.sending?.name}
                 </span>
               </div>
 
               {/* Receiving */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Receive</span>
-                <div style={{ textAlign: 'right' }}>
+              <div className="flex justify-between items-center">
+                <span className={cn('text-[11px] uppercase tracking-[0.5px]', isDark ? 'text-white/40' : 'text-black/40')}>Receive</span>
+                <div className="text-right">
                   {txPreview.receiving?.actual > 0 ? (
-                    <span style={{ color: '#22c55e', fontWeight: 600, fontSize: '13px' }}>
+                    <span className="text-[#22c55e] font-semibold text-[13px]">
                       {fNumber(txPreview.receiving.actual)} {txPreview.receiving?.name}
                     </span>
                   ) : (
                     <div>
-                      <span style={{ color: '#ef4444', fontWeight: 500, fontSize: '12px', fontStyle: 'italic' }}>
+                      <span className="text-[#ef4444] font-medium text-xs italic">
                         Failed
                       </span>
-                      <div style={{ color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)', fontSize: '9px', marginTop: '2px' }}>
+                      <div className={cn('text-[9px] mt-[2px]', isDark ? 'text-white/30' : 'text-black/30')}>
                         Would lose tx fee
                       </div>
                     </div>
@@ -2676,24 +1870,24 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData, onLimi
 
               {/* Divider + Details */}
               {(txPreview.priceImpact !== null && txPreview.priceImpact > 0.01) || txPreview.receiving?.actual > 0 ? (
-                <div style={{ borderTop: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`, marginTop: '10px', paddingTop: '10px' }}>
+                <div className={cn('mt-[10px] pt-[10px] border-t', isDark ? 'border-white/[0.06]' : 'border-black/[0.06]')}>
                   {/* Price Impact */}
                   {txPreview.priceImpact !== null && txPreview.priceImpact > 0.01 && (
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                      <span style={{ color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', fontSize: '11px' }}>Impact</span>
-                      <span style={{
-                        color: txPreview.priceImpact > 5 ? '#ef4444' : txPreview.priceImpact > 2 ? '#f59e0b' : '#22c55e',
-                        fontWeight: 500, fontSize: '11px'
-                      }}>
+                    <div className="flex justify-between mb-1">
+                      <span className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-black/40')}>Impact</span>
+                      <span className={cn(
+                        'font-medium text-[11px]',
+                        txPreview.priceImpact > 5 ? 'text-[#ef4444]' : txPreview.priceImpact > 2 ? 'text-[#f59e0b]' : 'text-[#22c55e]'
+                      )}>
                         -{txPreview.priceImpact.toFixed(2)}%
                       </span>
                     </div>
                   )}
                   {/* Rate */}
                   {txPreview.receiving?.actual > 0 && txPreview.sending?.amount > 0 && (
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span style={{ color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', fontSize: '11px' }}>Rate</span>
-                      <span style={{ color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)', fontSize: '11px' }}>
+                    <div className="flex justify-between">
+                      <span className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-black/40')}>Rate</span>
+                      <span className={cn('text-[11px]', isDark ? 'text-white/60' : 'text-black/60')}>
                         1 {txPreview.receiving?.name} = {fNumber(txPreview.sending.amount / txPreview.receiving.actual)} {txPreview.sending?.name}
                       </span>
                     </div>
@@ -2703,42 +1897,30 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData, onLimi
             </div>
 
             {/* Preview Badge */}
-            <div style={{
-              textAlign: 'center',
-              marginBottom: '12px',
-              padding: '6px',
-              background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
-              borderRadius: '6px'
-            }}>
-              <span style={{ fontSize: '10px', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>
+            <div className={cn('text-center mb-3 p-1.5 rounded-md', isDark ? 'bg-white/[0.03]' : 'bg-black/[0.02]')}>
+              <span className={cn('text-[10px]', isDark ? 'text-white/40' : 'text-black/40')}>
                 Preview · No funds sent yet
               </span>
             </div>
 
             {/* Buttons */}
-            <div style={{ display: 'flex', gap: '8px' }}>
+            <div className="flex gap-2">
               <button
                 onClick={handleCancelPreview}
-                style={{
-                  flex: 1, padding: '12px', borderRadius: '10px',
-                  border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
-                  background: 'transparent',
-                  color: isDark ? '#fff' : '#000',
-                  fontWeight: 500, cursor: 'pointer', fontSize: '13px'
-                }}
+                className={cn(
+                  'flex-1 p-3 rounded-[10px] bg-transparent font-medium cursor-pointer text-[13px] border',
+                  isDark ? 'border-white/10 text-white' : 'border-black/10 text-black'
+                )}
               >
                 Cancel
               </button>
               {txPreview.status !== 'error' && pendingTx && (
                 <button
                   onClick={handleConfirmSwap}
-                  style={{
-                    flex: 1, padding: '12px', borderRadius: '10px',
-                    border: 'none',
-                    background: txPreview.status === 'warning' ? '#f59e0b' : '#22c55e',
-                    color: '#fff',
-                    fontWeight: 600, cursor: 'pointer', fontSize: '13px'
-                  }}
+                  className={cn(
+                    'flex-1 p-3 rounded-[10px] border-none text-white font-semibold cursor-pointer text-[13px]',
+                    txPreview.status === 'warning' ? 'bg-[#f59e0b]' : 'bg-[#22c55e]'
+                  )}
                 >
                   {txPreview.status === 'warning' ? 'Swap Anyway' : 'Confirm'}
                 </button>
@@ -2751,99 +1933,92 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData, onLimi
       <OverviewWrapper isDark={isDark}>
         {/* XRP page notice - show that we're displaying RLUSD/XRP orderbook */}
         {isXRPTokenPage && (
-          <Box
-            sx={{
-              mb: 1.5,
-              p: 1,
-              borderRadius: '8px',
+          <div
+            className="mb-3 p-2 rounded-lg"
+            style={{
               background: isDark ? 'rgba(66,133,244,0.1)' : 'rgba(66,133,244,0.05)',
               border: `1px solid ${isDark ? 'rgba(66,133,244,0.2)' : 'rgba(66,133,244,0.15)'}`
             }}
           >
-            <Typography variant="caption" isDark={isDark} sx={{ fontSize: '11px', opacity: 0.8 }}>
-              Showing <span style={{ fontWeight: 500, color: '#4285f4' }}>RLUSD/XRP</span>{' '}
+            <span style={{ fontSize: '11px', opacity: 0.8, color: isDark ? 'rgba(255,255,255,0.9)' : '#212B36' }}>
+              Showing <span className="font-medium text-[#4285f4]">RLUSD/XRP</span>{' '}
               orderbook. XRP is the native asset and cannot have an orderbook against itself.
-            </Typography>
-          </Box>
+            </span>
+          </div>
         )}
         {/* MPT token notice */}
         {isMPT && (
-          <Box
-            sx={{
-              mb: 1.5,
-              p: 1.5,
-              borderRadius: '8px',
+          <div
+            className="mb-3 p-3 rounded-lg"
+            style={{
               background: isDark ? 'rgba(245,158,11,0.1)' : 'rgba(245,158,11,0.05)',
               border: `1px solid ${isDark ? 'rgba(245,158,11,0.2)' : 'rgba(245,158,11,0.15)'}`
             }}
           >
-            <Typography variant="caption" isDark={isDark} sx={{ fontSize: '11px', opacity: 0.9 }}>
-              <span style={{ fontWeight: 500, color: '#f59e0b' }}>Multi-Purpose Token (MPT)</span> - DEX trading is not yet available for MPT tokens. MPT is a new token standard on the XRP Ledger.
-            </Typography>
-          </Box>
+            <span style={{ fontSize: '11px', opacity: 0.9, color: isDark ? 'rgba(255,255,255,0.9)' : '#212B36' }}>
+              <span className="font-medium text-[#f59e0b]">Multi-Purpose Token (MPT)</span> - DEX trading is not yet available for MPT tokens. MPT is a new token standard on the XRP Ledger.
+            </span>
+          </div>
         )}
-        <Box sx={{ mb: 0.5 }}>
-          <Tabs isDark={isDark}>
-            <Tab
-              isActive={orderType === 'market'}
-              onClick={() => {
-                setOrderType('market');
-                setShowOrderbook(false);
-              }}
-              isDark={isDark}
+        <div className="mb-1">
+          <div className="flex gap-1 sm:gap-2">
+            <button
+              className={cn(
+                'py-[6px] px-3 text-[11px] font-medium tracking-[0.05em] uppercase bg-transparent rounded-md border cursor-pointer transition-all duration-150 sm:py-[10px] sm:px-4 sm:text-xs',
+                orderType === 'market'
+                  ? isDark ? 'border-white/20 text-white/90' : 'border-black/20 text-black/80'
+                  : isDark ? 'border-white/10 text-white/40' : 'border-black/10 text-black/40',
+                isDark ? 'hover:border-white/[0.15] hover:text-white/70' : 'hover:border-black/[0.15] hover:text-black/60'
+              )}
+              onClick={() => setOrderType('market')}
             >
               Market
-            </Tab>
-            <Tab
-              isActive={orderType === 'limit'}
+            </button>
+            <button
+              className={cn(
+                'py-[6px] px-3 text-[11px] font-medium tracking-[0.05em] uppercase bg-transparent rounded-md border cursor-pointer transition-all duration-150 sm:py-[10px] sm:px-4 sm:text-xs',
+                orderType === 'limit'
+                  ? isDark ? 'border-white/20 text-white/90' : 'border-black/20 text-black/80'
+                  : isDark ? 'border-white/10 text-white/40' : 'border-black/10 text-black/40',
+                isDark ? 'hover:border-white/[0.15] hover:text-white/70' : 'hover:border-black/[0.15] hover:text-black/60'
+              )}
               onClick={() => setOrderType('limit')}
-              isDark={isDark}
             >
               Limit
-            </Tab>
-          </Tabs>
-        </Box>
+            </button>
+          </div>
+        </div>
 
         <ConverterFrame>
           <AmountRows>
             {/* You Pay Section */}
             <CurrencyContent isDark={isDark}>
-              <Box display="flex" flexDirection="column" flex="1" gap="4px">
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <span style={{
-                    fontSize: '10px',
-                    fontWeight: 600,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.5px',
-                    color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'
-                  }}>
+              <div className="flex flex-col flex-1 gap-1">
+                <div className="flex items-center justify-between">
+                  <span className={cn(
+                    'text-[10px] font-semibold uppercase tracking-[0.5px]',
+                    isDark ? 'text-white/40' : 'text-black/40'
+                  )}>
                     You pay
                   </span>
                   {isLoggedIn && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <span style={{ fontSize: '10px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
+                    <div className="flex items-center gap-1.5">
+                      <span className={cn('text-[10px]', isDark ? 'text-white/50' : 'text-black/50')}>
                         {accountPairBalance?.curr1.value
                           ? new Decimal(accountPairBalance.curr1.value).toFixed(4).replace(/\.?0+$/, '')
                           : '0'} {curr1.name}
                       </span>
-                      <div style={{ display: 'flex', gap: '2px' }}>
+                      <div className="flex gap-0.5">
                         {[0.5, 1].map((p) => (
                           <button
                             key={p}
                             disabled={!accountPairBalance?.curr1?.value}
                             onClick={() => (p === 1 ? onFillMax() : onFillPercent(p))}
-                            style={{
-                              padding: '2px 6px',
-                              fontSize: '9px',
-                              fontWeight: 600,
-                              borderRadius: '4px',
-                              border: 'none',
-                              cursor: accountPairBalance?.curr1?.value ? 'pointer' : 'not-allowed',
-                              opacity: accountPairBalance?.curr1?.value ? 1 : 0.3,
-                              background: isDark ? 'rgba(59,130,246,0.15)' : 'rgba(59,130,246,0.1)',
-                              color: '#3b82f6',
-                              transition: 'all 0.15s'
-                            }}
+                            className={cn(
+                              'py-0.5 px-1.5 text-[9px] font-semibold rounded border-none text-[#3b82f6] transition-all duration-150',
+                              isDark ? 'bg-[rgba(59,130,246,0.15)]' : 'bg-[rgba(59,130,246,0.1)]',
+                              accountPairBalance?.curr1?.value ? 'cursor-pointer opacity-100' : 'cursor-not-allowed opacity-30'
+                            )}
                           >
                             {p === 1 ? 'MAX' : '50%'}
                           </button>
@@ -2852,16 +2027,11 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData, onLimi
                     </div>
                   )}
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '4px' }}>
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    padding: '6px 10px',
-                    borderRadius: '8px',
-                    background: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)',
-                    cursor: 'pointer'
-                  }}>
+                <div className="flex items-center gap-2.5 mt-1">
+                  <div className={cn(
+                    'flex items-center gap-2 py-1.5 px-2.5 rounded-lg cursor-pointer',
+                    isDark ? 'bg-white/[0.04]' : 'bg-black/[0.03]'
+                  )}>
                     <TokenImage
                       src={`https://s1.xrpl.to/token/${curr1.md5}`}
                       width={24}
@@ -2870,69 +2040,50 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData, onLimi
                       unoptimized={true}
                       onError={(event) => (event.target.src = '/static/alt.webp')}
                     />
-                    <span style={{ fontSize: '14px', fontWeight: 600, color: isDark ? '#fff' : '#000' }}>
+                    <span className={cn('text-sm font-semibold', isDark ? 'text-white' : 'text-black')}>
                       {curr1.name}
                     </span>
                   </div>
-                  <div style={{ flex: 1, textAlign: 'right' }}>
-                    <Input
+                  <div className="flex-1 text-right">
+                    <input
                       placeholder="0.00"
                       autoComplete="new-password"
-                      isDark={isDark}
+                      className={cn('outline-none max-sm:text-base max-sm:p-[10px]', isDark ? 'text-white placeholder:text-white/40' : 'text-[#212B36] placeholder:text-black/40')}
+                      style={{ width: '100%', padding: '0px', border: 'none', fontSize: '20px', textAlign: 'end', appearance: 'none', fontWeight: 500, background: 'transparent' }}
                       value={amount1}
                       onChange={handleChangeAmount1}
-                      sx={{
-                        width: '100%',
-                        input: {
-                          autoComplete: 'off',
-                          padding: '0px',
-                          border: 'none',
-                          fontSize: '20px',
-                          textAlign: 'end',
-                          appearance: 'none',
-                          fontWeight: 500
-                        }
-                      }}
                     />
-                    <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>
+                    <span className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-black/40')}>
                       {curr1IsXRP ? `≈ ${fNumber(tokenPrice1)} XRP` : `≈ ${currencySymbols[activeFiatCurrency]}${fNumber(tokenPrice1)}`}
                     </span>
                   </div>
                 </div>
-              </Box>
+              </div>
             </CurrencyContent>
 
             {/* You Receive Section */}
             <CurrencyContent isDark={isDark}>
-              <Box display="flex" flexDirection="column" flex="1" gap="4px">
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <span style={{
-                    fontSize: '10px',
-                    fontWeight: 600,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.5px',
-                    color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'
-                  }}>
+              <div className="flex flex-col flex-1 gap-1">
+                <div className="flex items-center justify-between">
+                  <span className={cn(
+                    'text-[10px] font-semibold uppercase tracking-[0.5px]',
+                    isDark ? 'text-white/40' : 'text-black/40'
+                  )}>
                     You receive
                   </span>
                   {isLoggedIn && (
-                    <span style={{ fontSize: '10px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
+                    <span className={cn('text-[10px]', isDark ? 'text-white/50' : 'text-black/50')}>
                       {accountPairBalance?.curr2.value
                         ? new Decimal(accountPairBalance.curr2.value).toFixed(4).replace(/\.?0+$/, '')
                         : '0'} {curr2.name}
                     </span>
                   )}
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '4px' }}>
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    padding: '6px 10px',
-                    borderRadius: '8px',
-                    background: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)',
-                    cursor: 'pointer'
-                  }}>
+                <div className="flex items-center gap-2.5 mt-1">
+                  <div className={cn(
+                    'flex items-center gap-2 py-1.5 px-2.5 rounded-lg cursor-pointer',
+                    isDark ? 'bg-white/[0.04]' : 'bg-black/[0.03]'
+                  )}>
                     <TokenImage
                       src={`https://s1.xrpl.to/token/${curr2.md5}`}
                       width={24}
@@ -2941,55 +2092,34 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData, onLimi
                       unoptimized={true}
                       onError={(event) => (event.target.src = '/static/alt.webp')}
                     />
-                    <span style={{ fontSize: '14px', fontWeight: 600, color: isDark ? '#fff' : '#000' }}>
+                    <span className={cn('text-sm font-semibold', isDark ? 'text-white' : 'text-black')}>
                       {curr2.name}
                     </span>
                   </div>
-                  <div style={{ flex: 1, textAlign: 'right' }}>
-                    <Input
+                  <div className="flex-1 text-right">
+                    <input
                       placeholder="0.00"
                       autoComplete="new-password"
-                      isDark={isDark}
-                      value={amount2}
-                      onChange={handleChangeAmount2}
-                      sx={{
-                        width: '100%',
-                        input: {
-                          autoComplete: 'off',
-                          padding: '0px',
-                          border: 'none',
-                          fontSize: '20px',
-                          textAlign: 'end',
-                          appearance: 'none',
-                          fontWeight: 500
-                        }
-                      }}
+                      className={cn('outline-none max-sm:text-base max-sm:p-[10px]', isDark ? 'text-white placeholder:text-white/40' : 'text-[#212B36] placeholder:text-black/40')}
+                      style={{ width: '100%', padding: '0px', border: 'none', fontSize: '20px', textAlign: 'end', appearance: 'none', fontWeight: 500, background: 'transparent' }}
                     />
-                    <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>
+                    <span className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-black/40')}>
                       {curr2IsXRP ? `≈ ${fNumber(tokenPrice2)} XRP` : `≈ ${currencySymbols[activeFiatCurrency]}${fNumber(tokenPrice2)}`}
                     </span>
                   </div>
                 </div>
-              </Box>
+              </div>
             </CurrencyContent>
 
             <ToggleContent isDark={isDark} onClick={onRevertExchange}>
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  width: '36px',
-                  height: '36px'
-                }}
-              >
+              <div className="flex items-center justify-center w-9 h-9">
                 <ArrowUpDown
                   size={16}
                   strokeWidth={2.5}
-                  style={{
-                    color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.5)',
-                    transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)'
-                  }}
+                  className={cn(
+                    'transition-all duration-250 ease-[cubic-bezier(0.4,0,0.2,1)]',
+                    isDark ? 'text-white/70' : 'text-black/50'
+                  )}
                 />
               </div>
             </ToggleContent>
@@ -3177,8 +2307,8 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData, onLimi
 
           {/* Slippage control - Only for market orders */}
           {orderType === 'market' && (
-            <Box sx={{ px: 0.5, py: 0.75 }}>
-              <Stack direction="row" alignItems="center" justifyContent="space-between">
+            <div className="px-1 py-1.5">
+              <div className="flex flex-row items-center justify-between">
                 <button
                   onClick={() => setShowSettingsModal(true)}
                   className={cn(
@@ -3198,39 +2328,28 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData, onLimi
                     : '—'}
                   %
                 </span>
-              </Stack>
+              </div>
 
               {/* Quote Summary */}
               {swapQuoteCalc && (
-                <Box
-                  sx={{
-                    mt: 1,
-                    p: 1,
-                    borderRadius: '6px',
+                <div
+                  className="mt-2 p-2 rounded-md"
+                  style={{
                     background: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)',
                     border: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`
                   }}
                 >
-                  <Stack spacing={0.25}>
+                  <div className="flex flex-col gap-0.5">
                     {/* Rate */}
-                    <Stack direction="row" alignItems="center" justifyContent="space-between">
-                      <Typography
-                        variant="caption"
-                        color="textSecondary"
-                        isDark={isDark}
-                        sx={{ fontSize: '10px' }}
-                      >
+                    <div className="flex flex-row items-center justify-between">
+                      <span style={{ fontSize: '10px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
                         Rate
                         {swapQuoteCalc.ammFallback && (
-                          <span style={{ color: '#f59e0b' }}> ~est</span>
+                          <span className="text-[#f59e0b]"> ~est</span>
                         )}
-                        {quoteLoading && <span style={{ opacity: 0.5 }}> •••</span>}
-                      </Typography>
-                      <Typography
-                        variant="caption"
-                        isDark={isDark}
-                        sx={{ fontSize: '10px', fontFamily: 'var(--font-mono)' }}
-                      >
+                        {quoteLoading && <span className="opacity-50"> •••</span>}
+                      </span>
+                      <span className="font-mono" style={{ fontSize: '10px', color: isDark ? 'rgba(255,255,255,0.9)' : '#212B36' }}>
                         1 {token2?.name || token2?.currency} ={' '}
                         {(() => {
                           const srcVal = parseFloat(swapQuoteCalc.source_amount?.value || amount1);
@@ -3242,26 +2361,17 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData, onLimi
                           return formatCompactPrice(rate);
                         })()}{' '}
                         {token1?.name || token1?.currency}
-                      </Typography>
-                    </Stack>
+                      </span>
+                    </div>
                     {/* Min Received */}
-                    <Stack direction="row" alignItems="center" justifyContent="space-between">
-                      <Typography
-                        variant="caption"
-                        color="textSecondary"
-                        isDark={isDark}
-                        sx={{ fontSize: '10px' }}
-                      >
+                    <div className="flex flex-row items-center justify-between">
+                      <span style={{ fontSize: '10px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
                         Min received
-                      </Typography>
-                      <Typography
-                        variant="caption"
-                        isDark={isDark}
-                        sx={{ fontSize: '10px', fontFamily: 'var(--font-mono)' }}
-                      >
+                      </span>
+                      <span className="font-mono" style={{ fontSize: '10px', color: isDark ? 'rgba(255,255,255,0.9)' : '#212B36' }}>
                         {fNumber(swapQuoteCalc.minimum_received)} {token2?.name || token2?.currency}
-                      </Typography>
-                    </Stack>
+                      </span>
+                    </div>
                     {/* Route & Fee combined */}
                     {(() => {
                       const obVal = parseFloat(swapQuoteCalc.from_orderbook) || 0;
@@ -3273,55 +2383,48 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData, onLimi
                       if (obVal === 0 && ammVal === 0 && !feeStr) return null;
 
                       return (
-                        <Stack direction="row" alignItems="center" justifyContent="space-between">
-                          <Typography
-                            variant="caption"
-                            color="textSecondary"
-                            isDark={isDark}
-                            sx={{ fontSize: '10px' }}
-                          >
+                        <div className="flex flex-row items-center justify-between">
+                          <span style={{ fontSize: '10px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
                             Route
-                          </Typography>
-                          <Typography
-                            variant="caption"
-                            isDark={isDark}
-                            sx={{ fontSize: '10px', fontFamily: 'var(--font-mono)' }}
+                          </span>
+                          <span className="font-mono" style={{ fontSize: '10px', color: isDark ? 'rgba(255,255,255,0.9)' : '#212B36' }}
                           >
                             {obVal > 0 && ammVal > 0 ? (
-                              <span style={{ color: '#22c55e' }}>DEX+AMM</span>
+                              <span className="text-[#22c55e]">DEX+AMM</span>
                             ) : obVal > 0 ? (
-                              <span style={{ color: '#22c55e' }}>DEX</span>
+                              <span className="text-[#22c55e]">DEX</span>
                             ) : ammVal > 0 ? (
-                              <span style={{ color: '#3b82f6' }}>AMM</span>
+                              <span className="text-[#3b82f6]">AMM</span>
                             ) : null}
-                            {feeStr && <span style={{ opacity: 0.6 }}> · {feePct}% fee</span>}
-                          </Typography>
-                        </Stack>
+                            {feeStr && <span className="opacity-60"> · {feePct}% fee</span>}
+                          </span>
+                        </div>
                       );
                     })()}
-                  </Stack>
-                </Box>
+                  </div>
+                </div>
               )}
-            </Box>
+            </div>
           )}
 
           {/* Limit Order Settings */}
           {orderType === 'limit' && (
-            <Box sx={{ px: 0.5, py: 0.25 }}>
-              <Stack spacing={0.25}>
-                <Stack direction="row" alignItems="center" justifyContent="space-between">
-                  <Typography
-                    variant="caption"
-                    color="textSecondary"
-                    isDark={isDark}
-                    sx={{ fontSize: '10px' }}
+            <div className="px-1 py-1">
+              <div className="flex flex-col gap-2">
+                <div className="flex flex-row items-center justify-between">
+                  <span style={{ fontSize: '11px', fontWeight: 600, color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', textTransform: 'uppercase', letterSpacing: '0.3px' }}>
+                    Limit Price
+                  </span>
+                  <div
+                    className="flex flex-row items-center rounded-md p-[2px]"
+                    style={{
+                      background: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)',
+                      border: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`
+                    }}
                   >
-                    Limit Price ({curr2.name} per {curr1.name})
-                  </Typography>
-                  <Stack direction="row" spacing={0.25} alignItems="center">
-                    <Button
-                      size="small"
-                      variant="text"
+                    <button
+                      className={cn('rounded font-semibold inline-flex items-center justify-center cursor-pointer transition-all duration-150', !limitPrice && !(bestBid != null && bestAsk != null) && 'cursor-not-allowed opacity-40', isDark ? 'hover:bg-white/[0.05] hover:text-white' : 'hover:bg-black/[0.05] hover:text-black')}
+                      style={{ padding: '0 8px', fontSize: '9px', minHeight: '18px', border: 'none', background: 'transparent', color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)' }}
                       disabled={!limitPrice && !(bestBid != null && bestAsk != null)}
                       onClick={() => {
                         const mid =
@@ -3332,20 +2435,12 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData, onLimi
                         if (!base) return;
                         setLimitPrice(new Decimal(base).mul(0.99).toFixed(6));
                       }}
-                      isDark={isDark}
-                      sx={{
-                        textTransform: 'none',
-                        fontSize: '10px',
-                        minHeight: '16px',
-                        px: 0.5,
-                        py: 0
-                      }}
                     >
                       -1%
-                    </Button>
-                    <Button
-                      size="small"
-                      variant="text"
+                    </button>
+                    <button
+                      className={cn('rounded font-semibold inline-flex items-center justify-center cursor-pointer transition-all duration-150 mx-0.5', !(bestBid != null && bestAsk != null) && 'cursor-not-allowed opacity-40', isDark ? 'hover:bg-white/[0.05] hover:text-white' : 'hover:bg-black/[0.05] hover:text-black')}
+                      style={{ padding: '0 8px', fontSize: '9px', minHeight: '18px', border: 'none', background: 'transparent', color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)' }}
                       disabled={!(bestBid != null && bestAsk != null)}
                       onClick={() => {
                         const mid =
@@ -3355,20 +2450,12 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData, onLimi
                         if (mid == null) return;
                         setLimitPrice(String(new Decimal(mid).toFixed(6)));
                       }}
-                      isDark={isDark}
-                      sx={{
-                        textTransform: 'none',
-                        fontSize: '10px',
-                        minHeight: '16px',
-                        px: 0.5,
-                        py: 0
-                      }}
                     >
                       Mid
-                    </Button>
-                    <Button
-                      size="small"
-                      variant="text"
+                    </button>
+                    <button
+                      className={cn('rounded font-semibold inline-flex items-center justify-center cursor-pointer transition-all duration-150', !limitPrice && !(bestBid != null && bestAsk != null) && 'cursor-not-allowed opacity-40', isDark ? 'hover:bg-white/[0.05] hover:text-white' : 'hover:bg-black/[0.05] hover:text-black')}
+                      style={{ padding: '0 8px', fontSize: '9px', minHeight: '18px', border: 'none', background: 'transparent', color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)' }}
                       disabled={!limitPrice && !(bestBid != null && bestAsk != null)}
                       onClick={() => {
                         const mid =
@@ -3379,157 +2466,109 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData, onLimi
                         if (!base) return;
                         setLimitPrice(new Decimal(base).mul(1.01).toFixed(6));
                       }}
-                      isDark={isDark}
-                      sx={{
-                        textTransform: 'none',
-                        fontSize: '10px',
-                        minHeight: '16px',
-                        px: 0.5,
-                        py: 0
-                      }}
                     >
                       +1%
-                    </Button>
-                  </Stack>
-                </Stack>
-                <Input
-                  placeholder="0.00"
-                  fullWidth
-                  isDark={isDark}
-                  value={limitPrice}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    if (val === '.') {
-                      setLimitPrice('0.');
-                      return;
-                    }
-                    if (!isNaN(Number(val)) || val === '') {
-                      setLimitPrice(val);
-                    }
-                  }}
-                  sx={{
-                    backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)',
-                    borderRadius: '6px',
-                    padding: '6px 10px',
-                    input: {
-                      fontSize: '13px',
-                      fontWeight: 400
-                    }
-                  }}
-                />
-                {/* Live Market Prices - More Prominent Display */}
-                {bestBid != null && bestAsk != null && (
-                  <Box
-                    sx={{
-                      mt: 0.5,
-                      p: 0.75,
-                      borderRadius: '6px',
-                      border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`,
-                      background: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)'
+                    </button>
+                  </div>
+                </div>
+                
+                <div className="relative">
+                  <input
+                    placeholder="0.00"
+                    className={cn('outline-none w-full max-sm:text-base max-sm:p-[10px] font-mono', isDark ? 'text-white placeholder:text-white/40' : 'text-[#212B36] placeholder:text-black/40')}
+                    style={{ padding: '10px 12px', border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`, fontSize: '14px', fontWeight: 600, background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)', borderRadius: '10px' }}
+                    value={limitPrice}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (val === '.') {
+                        setLimitPrice('0.');
+                        return;
+                      }
+                      if (!isNaN(Number(val)) || val === '') {
+                        setLimitPrice(val);
+                      }
+                    }}
+                  />
+                  <span
+                    style={{
+                      position: 'absolute',
+                      right: '12px',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      fontSize: '10px',
+                      fontWeight: 500,
+                      opacity: 0.5,
+                      color: isDark ? 'rgba(255,255,255,0.9)' : '#212B36'
                     }}
                   >
-                    <Stack
-                      direction="row"
-                      alignItems="center"
-                      justifyContent="space-between"
-                      spacing={1}
-                    >
+                    {curr2.name}/{curr1.name}
+                  </span>
+                </div>
+
+                {/* Live Market Prices */}
+                {bestBid != null && bestAsk != null && (
+                  <div
+                    className="p-2 rounded-[10px]"
+                    style={{
+                      background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
+                      border: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`
+                    }}
+                  >
+                    <div className="flex flex-row items-center justify-between">
                       {/* Bid Price */}
-                      <Stack
-                        direction="column"
-                        alignItems="center"
-                        spacing={0}
-                        sx={{ cursor: 'pointer', flex: 1 }}
+                      <div
+                        className="flex flex-col gap-0.5 cursor-pointer flex-1"
                         onClick={() => bids && bids[0] && setLimitPrice(String(bids[0].price))}
                       >
-                        <Typography
-                          variant="caption"
-                          isDark={isDark}
-                          sx={{ fontSize: '9px', opacity: 0.6, textTransform: 'uppercase' }}
-                        >
-                          Best Bid
-                        </Typography>
-                        <Typography
-                          variant="caption"
-                          isDark={isDark}
-                          sx={{
-                            fontSize: '12px',
-                            fontWeight: 500,
-                            color: '#22c55e',
-                            fontFamily: 'var(--font-mono)'
-                          }}
-                        >
+                        <span style={{ fontSize: '9px', opacity: 0.5, fontWeight: 700, textTransform: 'uppercase', color: isDark ? 'rgba(255,255,255,0.9)' : '#212B36' }}>
+                          Bid
+                        </span>
+                        <span className="font-mono" style={{ fontSize: '12px', fontWeight: 700, color: '#22c55e' }}>
                           {formatCompactPrice(bestBid)}
-                        </Typography>
-                      </Stack>
+                        </span>
+                      </div>
 
                       {/* Spread */}
-                      <Stack direction="column" alignItems="center" spacing={0} sx={{ flex: 1 }}>
-                        <Typography
-                          variant="caption"
-                          isDark={isDark}
-                          sx={{ fontSize: '9px', opacity: 0.6, textTransform: 'uppercase' }}
-                        >
+                      <div
+                        className="flex flex-col gap-0.5 items-center flex-1"
+                        style={{ borderLeft: '1px solid rgba(128,128,128,0.1)', borderRight: '1px solid rgba(128,128,128,0.1)' }}
+                      >
+                        <span style={{ fontSize: '9px', opacity: 0.5, fontWeight: 700, textTransform: 'uppercase', color: isDark ? 'rgba(255,255,255,0.9)' : '#212B36' }}>
                           Spread
-                        </Typography>
-                        <Typography
-                          variant="caption"
-                          isDark={isDark}
-                          sx={{
+                        </span>
+                        <span style={{
                             fontSize: '11px',
-                            fontWeight: 500,
+                            fontWeight: 600,
                             color:
                               spreadPct != null && spreadPct > 2
                                 ? '#f59e0b'
                                 : isDark
                                   ? 'rgba(255,255,255,0.8)'
                                   : 'rgba(0,0,0,0.8)'
-                          }}
-                        >
+                          }}>
                           {spreadPct != null ? `${spreadPct.toFixed(2)}%` : '—'}
-                        </Typography>
-                      </Stack>
+                        </span>
+                      </div>
 
                       {/* Ask Price */}
-                      <Stack
-                        direction="column"
-                        alignItems="center"
-                        spacing={0}
-                        sx={{ cursor: 'pointer', flex: 1 }}
+                      <div
+                        className="flex flex-col gap-0.5 items-end cursor-pointer flex-1"
                         onClick={() => asks && asks[0] && setLimitPrice(String(asks[0].price))}
                       >
-                        <Typography
-                          variant="caption"
-                          isDark={isDark}
-                          sx={{ fontSize: '9px', opacity: 0.6, textTransform: 'uppercase' }}
-                        >
-                          Best Ask
-                        </Typography>
-                        <Typography
-                          variant="caption"
-                          isDark={isDark}
-                          sx={{
-                            fontSize: '12px',
-                            fontWeight: 500,
-                            color: '#ef4444',
-                            fontFamily: 'var(--font-mono)'
-                          }}
-                        >
+                        <span style={{ fontSize: '9px', opacity: 0.5, fontWeight: 700, textTransform: 'uppercase', color: isDark ? 'rgba(255,255,255,0.9)' : '#212B36' }}>
+                          Ask
+                        </span>
+                        <span className="font-mono" style={{ fontSize: '12px', fontWeight: 700, color: '#ef4444' }}>
                           {formatCompactPrice(bestAsk)}
-                        </Typography>
-                      </Stack>
-                    </Stack>
-                  </Box>
+                        </span>
+                      </div>
+                    </div>
+                  </div>
                 )}
                 {orderType === 'limit' && limitPrice && Number(limitPrice) <= 0 && (
-                  <Typography
-                    variant="caption"
-                    color="error"
-                    isDark={isDark}
-                    sx={{ fontSize: '10px' }}
-                  >
+                  <span style={{ fontSize: '10px', color: '#ef4444' }}>
                     Enter a valid limit price greater than 0
-                  </Typography>
+                  </span>
                 )}
                 {orderType === 'limit' &&
                   limitPrice &&
@@ -3547,18 +2586,14 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData, onLimi
                         ? ((lp - Number(bestAsk)) / Number(bestAsk)) * 100  // BUY above ask
                         : ((Number(bestBid) - lp) / Number(bestBid)) * 100; // SELL below bid
                       return (
-                        <Alert severity="error" sx={{ mt: 0.25, py: 0.25 }}>
-                          <Typography
-                            variant="caption"
-                            isDark={isDark}
-                            sx={{ fontSize: '10px', fontWeight: 400, color: '#ef4444' }}
-                          >
+                        <div className="rounded-lg" style={{ padding: '2px 10px', border: '1px solid rgba(239,68,68,0.15)', background: 'rgba(239,68,68,0.04)', marginTop: '2px' }}>
+                          <span style={{ fontSize: '10px', fontWeight: 400, color: '#ef4444' }}>
                             Instant fill!{' '}
                             {pct > 0
                               ? `${pct.toFixed(1)}% ${willFillBuy ? 'above ask' : 'below bid'}`
                               : 'At market price'}
-                          </Typography>
-                        </Alert>
+                          </span>
+                        </div>
                       );
                     }
 
@@ -3573,13 +2608,9 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData, onLimi
                         const color =
                           pctDiff > 50 ? '#ef4444' : pctDiff > 10 ? '#f59e0b' : '#3b82f6';
                         return (
-                          <Typography
-                            variant="caption"
-                            isDark={isDark}
-                            sx={{ fontSize: '10px', color }}
-                          >
+                          <span style={{ fontSize: '10px', color }}>
                             {Math.abs(pctDiff).toFixed(1)}% {direction} market
-                          </Typography>
+                          </span>
                         );
                       }
                     }
@@ -3587,16 +2618,10 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData, onLimi
                   })()}
 
                 {/* Order Expiration - Segmented Control */}
-                <div
-                  style={{
-                    marginTop: '12px',
-                    display: 'flex',
-                    borderRadius: '8px',
-                    overflow: 'hidden',
-                    background: isDark ? 'rgba(255,255,255,0.03)' : '#f3f4f6',
-                    border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`
-                  }}
-                >
+                <div className={cn(
+                  'mt-3 flex rounded-lg overflow-hidden border',
+                  isDark ? 'bg-white/[0.03] border-white/[0.08]' : 'bg-gray-100 border-black/[0.08]'
+                )}>
                   {[
                     { value: 'never', label: 'GTC', title: 'Good Til Cancelled' },
                     { value: '1h', label: '1H', title: '1 Hour' },
@@ -3612,92 +2637,45 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData, onLimi
                         else if (exp.value === '24h') setExpiryHours(24);
                         else if (exp.value === '7d') setExpiryHours(168);
                       }}
-                      style={{
-                        flex: 1,
-                        padding: '8px 0',
-                        border: 'none',
-                        background: 'transparent',
-                        color:
-                          orderExpiry === exp.value
-                            ? '#4285f4'
-                            : isDark
-                              ? 'rgba(255,255,255,0.4)'
-                              : 'rgba(0,0,0,0.4)',
-                        cursor: 'pointer',
-                        fontSize: '11px',
-                        fontWeight: 500,
-                        position: 'relative',
-                        transition: 'color 0.15s'
-                      }}
+                      className={cn(
+                        'flex-1 py-2 border-none bg-transparent cursor-pointer text-[11px] font-medium relative transition-colors duration-150',
+                        orderExpiry === exp.value
+                          ? 'text-[#4285f4]'
+                          : isDark
+                            ? 'text-white/40'
+                            : 'text-black/40'
+                      )}
                     >
                       {exp.label}
                       {orderExpiry === exp.value && (
-                        <span
-                          style={{
-                            position: 'absolute',
-                            bottom: 0,
-                            left: '50%',
-                            transform: 'translateX(-50%)',
-                            width: '16px',
-                            height: '2px',
-                            borderRadius: '1px',
-                            background: '#4285f4'
-                          }}
-                        />
+                        <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4 h-0.5 rounded-sm bg-[#4285f4]" />
                       )}
                     </button>
                   ))}
                 </div>
 
-                {/* Show Order Book Toggle */}
-                <button
-                  onClick={() => setShowOrderbook(!showOrderbook)}
-                  style={{
-                    marginTop: '12px',
-                    width: '100%',
-                    padding: '8px 12px',
-                    borderRadius: '8px',
-                    border: `1px solid ${showOrderbook ? '#4285f4' : isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`,
-                    background: showOrderbook ? 'rgba(66,133,244,0.1)' : 'transparent',
-                    color: showOrderbook
-                      ? '#4285f4'
-                      : isDark
-                        ? 'rgba(255,255,255,0.4)'
-                        : 'rgba(0,0,0,0.4)',
-                    cursor: 'pointer',
-                    fontSize: '11px',
-                    fontWeight: 400,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '5px',
-                    transition: 'all 0.15s'
-                  }}
-                >
-                  {showOrderbook ? 'Hide' : 'Show'} Order Book
-                </button>
-              </Stack>
-            </Box>
+              </div>
+            </div>
           )}
 
           {/* Order Summary */}
           {orderType === 'limit' && amount1 && amount2 && limitPrice && (
             <SummaryBox isDark={isDark}>
-              <Typography variant="caption" isDark={isDark} sx={{ fontSize: '10px' }}>
-                <span style={{ fontWeight: 500 }}>Sell</span> {amount1}{' '}
+              <span style={{ fontSize: '10px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
+                <span className="font-medium">Sell</span> {amount1}{' '}
                 {curr1.name} @ {limitPrice} ={' '}
                 {revert
                   ? new Decimal(amount1 || 0).mul(limitPrice || 0).toFixed(6)
                   : new Decimal(amount1 || 0).div(limitPrice || 1).toFixed(6)
                 } {curr2.name}
-                {orderExpiry !== 'never' && <span style={{ opacity: 0.6 }}> · {expiryHours}h</span>}
-              </Typography>
+                {orderExpiry !== 'never' && <span className="opacity-60"> · {expiryHours}h</span>}
+              </span>
             </SummaryBox>
           )}
 
           {/* Connect Wallet - inside the swap card when not connected */}
           {!accountProfile?.account && (
-            <Box sx={{ mt: 1 }}>
+            <div className="mt-2">
               <ConnectWallet
                 text="Connect Wallet"
                 py={{ xs: 1, sm: 0.75 }}
@@ -3708,53 +2686,12 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData, onLimi
                   width: '100%'
                 }}
               />
-            </Box>
-          )}
-
-          {/* Debug Panel */}
-          {debugInfo && (
-            <div
-              style={{
-                marginBottom: 8,
-                padding: 8,
-                borderRadius: 8,
-                border: `1px solid ${isDark ? 'rgba(234,179,8,0.3)' : '#fef3c7'}`,
-                background: isDark ? 'rgba(234,179,8,0.1)' : '#fefce8',
-                fontFamily: 'var(--font-mono)',
-                fontSize: 9
-              }}
-            >
-              <div style={{ fontWeight: 500, marginBottom: 4, color: '#ca8a04', fontSize: 10 }}>
-                Debug:
-              </div>
-              <div>
-                wallet_type:{' '}
-                <span style={{ color: '#3b82f6' }}>{debugInfo.wallet_type || 'undefined'}</span>
-              </div>
-              <div>
-                account: <span style={{ opacity: 0.7 }}>{debugInfo.account || 'undefined'}</span>
-              </div>
-              <div>
-                walletKeyId:{' '}
-                <span style={{ color: debugInfo.walletKeyId ? '#22c55e' : '#ef4444' }}>
-                  {debugInfo.walletKeyId || 'undefined'}
-                </span>
-              </div>
-              <div>
-                seed:{' '}
-                <span style={{ color: '#22c55e', wordBreak: 'break-all' }}>{debugInfo.seed}</span>
-              </div>
-              <div style={{ marginTop: 6, borderTop: '1px solid rgba(234,179,8,0.3)', paddingTop: 6 }}>
-                <div style={{ fontWeight: 500, color: '#ca8a04' }}>Token Data:</div>
-                <div>curr1: {curr1?.name || curr1?.currency}{curr1?.currency !== 'XRP' && <> | trustline: <span style={{ color: hasTrustline1 ? '#22c55e' : '#ef4444' }}>{hasTrustline1 ? 'YES' : 'NO'}</span></>}</div>
-                <div>curr2: {curr2?.name || curr2?.currency}{curr2?.currency !== 'XRP' && <> | trustline: <span style={{ color: hasTrustline2 ? '#22c55e' : '#ef4444' }}>{hasTrustline2 ? 'YES' : 'NO'}</span></>}</div>
-              </div>
             </div>
           )}
 
           {/* Exchange/Trustline Button - inside the swap card when connected */}
           {accountProfile?.account && (
-            <Box sx={{ mt: 1 }}>
+            <div className="mt-2">
               <ExchangeButton
                 variant="outlined"
                 onClick={handlePlaceOrder}
@@ -3768,13 +2705,13 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData, onLimi
                 {handleMsg()}
               </ExchangeButton>
               {isLoggedIn && errMsg && !errMsg.toLowerCase().includes('trustline') && (
-                <Alert severity="error" sx={{ mt: 0.5 }}>
-                  <Typography variant="caption" isDark={isDark} sx={{ fontSize: '10px' }}>
+                <div className="rounded-lg" style={{ padding: '6px 10px', border: '1px solid rgba(239,68,68,0.15)', background: 'rgba(239,68,68,0.04)', marginTop: '4px' }}>
+                  <span style={{ fontSize: '10px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
                     {errMsg}
-                  </Typography>
-                </Alert>
+                  </span>
+                </div>
               )}
-            </Box>
+            </div>
           )}
         </ConverterFrame>
       </OverviewWrapper>
@@ -3816,337 +2753,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData, onLimi
         </span>
       </div>
 
-      {/* Floating Order Book Panel */}
-      {showOrderbook && (
-        <div
-          style={{
-            position: 'fixed',
-            left: orderBookPos.x,
-            top: orderBookPos.y,
-            zIndex: 9999,
-            width: 320,
-            borderRadius: 8,
-            border: `1px solid ${isDark ? 'rgba(255,255,255,0.12)' : '#e5e7eb'}`,
-            background: isDark ? 'rgba(0,0,0,0.95)' : 'rgba(255,255,255,0.98)',
-            boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
-            overflow: 'hidden',
-            userSelect: 'none'
-          }}
-        >
-          {/* Drag Handle */}
-          <div
-            onMouseDown={handleDragStart}
-            className={cn(
-              'px-3 py-2 border-b text-[12px] font-mono flex items-center justify-between cursor-move',
-              isDark ? 'border-primary/20 bg-white/[0.03]' : 'border-primary/15 bg-gray-50'
-            )}
-          >
-            <span
-              className={cn(
-                'uppercase tracking-wide',
-                isDark ? 'text-primary/70' : 'text-primary/70'
-              )}
-            >
-              Order Book
-            </span>
-            <button
-              onClick={() => setShowOrderbook(false)}
-              className={cn(
-                'w-5 h-5 flex items-center justify-center rounded hover:bg-white/10',
-                isDark ? 'text-white/50 hover:text-white' : 'text-gray-500 hover:text-gray-700'
-              )}
-            >
-              <X size={14} />
-            </button>
-          </div>
-          {asks.length === 0 && bids.length === 0 ? (
-            <div
-              className={cn(
-                'p-8 text-center text-[12px] font-mono',
-                isDark ? 'text-primary/40' : 'text-primary/40'
-              )}
-            >
-              No orderbook data available
-            </div>
-          ) : (
-            <>
-              <div
-                className="flex text-[10px] font-mono px-2 py-1.5 border-b"
-                style={{ borderColor: isDark ? 'rgba(66,133,244,0.1)' : 'rgba(66,133,244,0.08)' }}
-              >
-                <span className={cn('flex-1', isDark ? 'text-primary/40' : 'text-primary/40')}>
-                  Price
-                </span>
-                <span
-                  className={cn(
-                    'flex-1 text-right',
-                    isDark ? 'text-primary/40' : 'text-primary/40'
-                  )}
-                >
-                  {curr1?.name || 'Token'}
-                </span>
-                <span
-                  className={cn(
-                    'flex-1 text-right',
-                    isDark ? 'text-primary/40' : 'text-primary/40'
-                  )}
-                >
-                  Total
-                </span>
-              </div>
-              {/* Asks */}
-              <div
-                ref={asksContainerRef}
-                className="max-h-[280px] overflow-y-auto scrollbar-none"
-                style={{ scrollbarWidth: 'none' }}
-              >
-                {(() => {
-                  const visibleAsks = asks.slice(0, 30);
-                  const maxAmount = Math.max(...visibleAsks.map((a) => a.amount || 0), 1);
-                  const userPrice = parseFloat(limitPrice) || 0;
-                  const reversedAsks = [...visibleAsks].reverse();
-                  const bestAsk = asks[0]?.price || Infinity;
-
-                  const rows = [];
-
-                  reversedAsks.forEach((ask, idx) => {
-                    rows.push(
-                      <div
-                        key={`ask-${idx}`}
-                        onClick={() => setLimitPrice(ask.price.toString())}
-                        className={cn(
-                          'flex px-2 py-1 text-[11px] font-mono cursor-pointer hover:bg-red-500/15 relative',
-                          isDark ? 'text-white/80' : 'text-gray-700'
-                        )}
-                      >
-                        <div
-                          className="absolute inset-y-0 right-0 bg-red-500/15 pointer-events-none"
-                          style={{ width: `${(ask.amount / maxAmount) * 100}%` }}
-                        />
-                        <span className="flex-1 text-red-400 relative z-[1]">
-                          {ask.price?.toFixed(6)}
-                        </span>
-                        <span className="flex-1 text-right relative z-[1]">
-                          {fNumber(ask.amount)}
-                        </span>
-                        <span
-                          className={cn(
-                            'flex-1 text-right relative z-[1]',
-                            isDark ? 'text-white/40' : 'text-gray-400'
-                          )}
-                        >
-                          {fNumber(ask.total)}
-                        </span>
-                      </div>
-                    );
-                  });
-
-                  // Add user order at bottom of asks if price is above best ask
-                  if (userPrice > 0 && userPrice >= bestAsk) {
-                    const willFill = userPrice >= bestAsk;
-                    rows.push(
-                      <div
-                        key="user-order-ask"
-                        className={cn(
-                          'flex px-2 py-1 text-[11px] font-mono relative border-y',
-                          willFill
-                            ? 'bg-red-500/30 border-red-500/50'
-                            : 'bg-primary/20 border-primary/50'
-                        )}
-                      >
-                        <span
-                          className={cn(
-                            'flex-1 relative z-[1]',
-                            willFill ? 'text-red-400' : 'text-primary'
-                          )}
-                        >
-                          {userPrice.toFixed(6)}
-                        </span>
-                        <span
-                          className={cn(
-                            'flex-1 text-right relative z-[1]',
-                            willFill ? 'text-red-400' : 'text-primary'
-                          )}
-                        >
-                          {willFill ? 'INSTANT FILL' : 'Your Order'}
-                        </span>
-                        <span
-                          className={cn(
-                            'flex-1 text-right relative z-[1]',
-                            willFill ? 'text-red-400' : 'text-primary'
-                          )}
-                        >
-                          {revert ? 'SELL' : 'BUY'}
-                        </span>
-                      </div>
-                    );
-                  }
-                  return rows;
-                })()}
-              </div>
-              {/* Spread + User Order if in spread */}
-              {(() => {
-                const userPrice = parseFloat(limitPrice) || 0;
-                const bestBid = bids[0]?.price || 0;
-                const bestAsk = asks[0]?.price || Infinity;
-                const inSpread = userPrice > 0 && userPrice > bestBid && userPrice < bestAsk;
-                return (
-                  <>
-                    {inSpread && (
-                      <div className="flex px-2 py-1 text-[11px] font-mono bg-primary/20 border-y border-primary/50">
-                        <span className="flex-1 text-primary">{userPrice.toFixed(6)}</span>
-                        <span className="flex-1 text-right text-primary">Your Order</span>
-                        <span className="flex-1 text-right text-primary">
-                          {revert ? 'SELL' : 'BUY'}
-                        </span>
-                      </div>
-                    )}
-                    <div
-                      className={cn(
-                        'px-2 py-2 text-[11px] font-mono border-y flex justify-between items-center',
-                        isDark ? 'border-white/10 bg-white/[0.03]' : 'border-gray-200 bg-gray-50'
-                      )}
-                    >
-                      <span className="text-green-400">{bids[0]?.price?.toFixed(6) || '—'}</span>
-                      <span
-                        className={cn(
-                          'px-2 py-0.5 rounded text-[10px]',
-                          isDark ? 'bg-white/10' : 'bg-gray-200'
-                        )}
-                      >
-                        {asks[0] && bids[0]
-                          ? (((asks[0].price - bids[0].price) / asks[0].price) * 100).toFixed(2)
-                          : '0.00'}
-                        %
-                      </span>
-                      <span className="text-red-400">{asks[0]?.price?.toFixed(6) || '—'}</span>
-                    </div>
-                  </>
-                );
-              })()}
-              {/* Bids */}
-              <div
-                className="max-h-[280px] overflow-y-auto scrollbar-none"
-                style={{ scrollbarWidth: 'none' }}
-              >
-                {(() => {
-                  const visibleBids = bids.slice(0, 30);
-                  const maxAmount = Math.max(...visibleBids.map((b) => b.amount || 0), 1);
-                  const userPrice = parseFloat(limitPrice) || 0;
-
-                  // Find where user's order would land in bids (for sell orders)
-                  let userOrderInserted = false;
-                  const rows = [];
-
-                  const bestBidPrice = bids[0]?.price || 0;
-
-                  visibleBids.forEach((bid, idx) => {
-                    // Insert user order row if price is between this bid and previous
-                    if (!userOrderInserted && userPrice > 0 && userPrice <= bid.price) {
-                      const willFill = userPrice <= bestBidPrice;
-                      rows.push(
-                        <div
-                          key="user-order-bid"
-                          className={cn(
-                            'flex px-2 py-1 text-[11px] font-mono relative border-y',
-                            willFill
-                              ? 'bg-red-500/30 border-red-500/50'
-                              : 'bg-primary/20 border-primary/50'
-                          )}
-                        >
-                          <span
-                            className={cn(
-                              'flex-1 relative z-[1]',
-                              willFill ? 'text-red-400' : 'text-primary'
-                            )}
-                          >
-                            {userPrice.toFixed(6)}
-                          </span>
-                          <span
-                            className={cn(
-                              'flex-1 text-right relative z-[1]',
-                              willFill ? 'text-red-400' : 'text-primary'
-                            )}
-                          >
-                            {willFill ? 'INSTANT FILL' : 'Your Order'}
-                          </span>
-                          <span
-                            className={cn(
-                              'flex-1 text-right relative z-[1]',
-                              willFill ? 'text-red-400' : 'text-primary'
-                            )}
-                          >
-                            {revert ? 'SELL' : 'BUY'}
-                          </span>
-                        </div>
-                      );
-                      userOrderInserted = true;
-                    }
-                    rows.push(
-                      <div
-                        key={`bid-${idx}`}
-                        onClick={() => setLimitPrice(bid.price.toString())}
-                        className={cn(
-                          'flex px-2 py-1 text-[11px] font-mono cursor-pointer hover:bg-green-500/15 relative',
-                          isDark ? 'text-white/80' : 'text-gray-700'
-                        )}
-                      >
-                        <div
-                          className="absolute inset-y-0 left-0 bg-green-500/15 pointer-events-none"
-                          style={{ width: `${(bid.amount / maxAmount) * 100}%` }}
-                        />
-                        <span className="flex-1 text-green-400 relative z-[1]">
-                          {bid.price?.toFixed(6)}
-                        </span>
-                        <span className="flex-1 text-right relative z-[1]">
-                          {fNumber(bid.amount)}
-                        </span>
-                        <span
-                          className={cn(
-                            'flex-1 text-right relative z-[1]',
-                            isDark ? 'text-white/40' : 'text-gray-400'
-                          )}
-                        >
-                          {fNumber(bid.total)}
-                        </span>
-                      </div>
-                    );
-                  });
-
-                  // If user price is below all bids, add at end
-                  if (
-                    !userOrderInserted &&
-                    userPrice > 0 &&
-                    userPrice < (visibleBids[visibleBids.length - 1]?.price || Infinity)
-                  ) {
-                    rows.push(
-                      <div
-                        key="user-order-bid"
-                        className={cn(
-                          'flex px-2 py-1 text-[11px] font-mono relative',
-                          'bg-primary/20 border-y border-primary/50'
-                        )}
-                      >
-                        <span className="flex-1 text-primary relative z-[1]">
-                          {userPrice.toFixed(6)}
-                        </span>
-                        <span className="flex-1 text-right text-primary relative z-[1]">
-                          Your Order
-                        </span>
-                        <span className="flex-1 text-right text-primary relative z-[1]">
-                          {revert ? 'SELL' : 'BUY'}
-                        </span>
-                      </div>
-                    );
-                  }
-                  return rows;
-                })()}
-              </div>
-            </>
-          )}
-        </div>
-      )}
-    </Stack>
+    </div>
   );
 };
 

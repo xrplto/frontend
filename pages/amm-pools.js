@@ -4,12 +4,12 @@ import Footer from 'src/components/Footer';
 import ScrollToTop from 'src/components/ScrollToTop';
 import { useRouter } from 'next/router';
 import api from 'src/utils/api';
-import styled from '@emotion/styled';
-import { AppContext } from 'src/context/AppContext';
+import { ThemeContext, AppContext } from 'src/context/AppContext';
 import { useSelector } from 'react-redux';
 import { selectMetrics } from 'src/redux/statusSlice';
 import { fNumber } from 'src/utils/formatters';
 import Decimal from 'decimal.js-light';
+import { cn } from 'src/utils/cn';
 
 const currencySymbols = {
   USD: '$ ',
@@ -19,300 +19,137 @@ const currencySymbols = {
   XRP: '✕ '
 };
 
-const Wrapper = styled.div`
-  overflow: hidden;
-  min-height: 100vh;
-  margin: 0;
-  padding: 0;
+const Wrapper = ({ className, children, ...p }) => <div className={cn('overflow-hidden min-h-screen', className)} {...p}>{children}</div>;
 
-  @media (max-width: 768px) {
-    margin: 0;
-    padding: 0;
-  }
-`;
+const Controls = ({ darkMode, className, children, ...p }) => <div className={cn('flex flex-col gap-3 mb-4 p-[14px] rounded-xl border w-full transition-[border-color] duration-150', darkMode ? 'bg-white/[0.015] border-white/[0.06] hover:border-white/10' : 'bg-black/[0.01] border-black/[0.06] hover:border-black/10', className)} {...p}>{children}</div>;
 
-const Controls = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-bottom: 16px;
-  padding: 14px;
-  background: ${(p) => (p.darkMode ? 'rgba(255,255,255,0.015)' : 'rgba(0,0,0,0.01)')};
-  border-radius: 12px;
-  border: 1px solid ${(p) => (p.darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)')};
-  width: 100%;
-  transition: border-color 0.15s ease;
+const ControlRow = ({ darkMode, className, children, ...p }) => <div className={cn('flex gap-4 items-center flex-wrap w-full max-md:flex-col max-md:items-stretch max-md:gap-3', className)} {...p}>{children}</div>;
 
-  &:hover {
-    border-color: ${(p) => (p.darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)')};
-  }
-`;
+const MobileSection = ({ className, children, ...p }) => <div className={cn('max-md:w-full max-md:flex max-md:flex-col max-md:gap-2', className)} {...p}>{children}</div>;
 
-const ControlRow = styled.div`
-  display: flex;
-  gap: 16px;
-  align-items: center;
-  flex-wrap: wrap;
-  width: 100%;
+const MobileButtonGrid = ({ className, children, ...p }) => <div className={cn('flex gap-4 max-md:grid max-md:grid-cols-[repeat(auto-fit,minmax(80px,1fr))] max-md:gap-2 max-md:w-full', className)} {...p}>{children}</div>;
 
-  @media (max-width: 768px) {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 12px;
+const Button = ({ darkMode, className, children, ...p }) => (
+  <button
+    className={cn(
+      'py-2 px-4 border-none rounded-lg cursor-pointer text-[13px] font-normal transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed',
+      darkMode ? 'bg-white/[0.06] text-white/70 hover:not-disabled:bg-white/10 hover:not-disabled:text-white' : 'bg-black/[0.04] text-black/60 hover:not-disabled:bg-black/[0.08] hover:not-disabled:text-[#333]',
+      className
+    )}
+    {...p}
+  >
+    {children}
+  </button>
+);
 
-    &:not(:last-child) {
-      border-bottom: 1px solid
-        ${(p) => (p.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)')};
-      padding-bottom: 12px;
-    }
-  }
-`;
+const Select = ({ darkMode, className, children, ...p }) => (
+  <select
+    className={cn(
+      'py-2 pl-[14px] pr-[30px] rounded-lg border text-[13px] font-normal cursor-pointer appearance-none bg-no-repeat bg-[length:14px] bg-[position:right_8px_center] transition-all duration-150 focus:outline-none focus:border-[#3b82f6]',
+      darkMode ? 'border-white/[0.08] bg-white/[0.03] text-white/80 hover:border-white/[0.15]' : 'border-black/[0.08] bg-black/[0.02] text-black/70 hover:border-black/[0.15]',
+      className
+    )}
+    style={{ backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e")` }}
+    {...p}
+  >
+    {children}
+  </select>
+);
 
-const MobileSection = styled.div`
-  @media (max-width: 768px) {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-`;
+const Label = ({ darkMode, className, children, ...p }) => <span className={cn('text-[13px] font-normal whitespace-nowrap', darkMode ? 'text-white/70' : 'text-black/70', className)} {...p}>{children}</span>;
 
-const MobileButtonGrid = styled.div`
-  display: flex;
-  gap: 16px;
+const SummaryGrid = ({ className, children, ...p }) => <div className={cn('grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4 mt-5 mb-5 max-md:mt-4', className)} {...p}>{children}</div>;
 
-  @media (max-width: 768px) {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
-    gap: 8px;
-    width: 100%;
-  }
-`;
+const SummaryCard = ({ darkMode, className, children, ...p }) => <div className={cn('p-4 rounded-xl border transition-all duration-200', darkMode ? 'bg-white/[0.02] border-white/[0.08] hover:border-white/[0.15] hover:bg-white/[0.04]' : 'bg-black/[0.02] border-black/[0.08] hover:border-black/[0.15] hover:bg-black/[0.04]', className)} {...p}>{children}</div>;
 
-const Button = styled.button`
-  padding: 8px 16px;
-  border: none;
-  border-radius: 8px;
-  background: ${(p) => (p.darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)')};
-  color: ${(p) => (p.darkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)')};
-  cursor: pointer;
-  font-size: 13px;
-  font-weight: 400;
-  transition: all 0.15s ease;
+const SummaryLabel = ({ darkMode, className, children, ...p }) => <div className={cn('text-xs mb-2 uppercase tracking-[0.5px]', darkMode ? 'text-white/60' : 'text-black/60', className)} {...p}>{children}</div>;
 
-  &:hover:not(:disabled) {
-    background: ${(p) => (p.darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)')};
-    color: ${(p) => (p.darkMode ? '#fff' : '#333')};
-  }
+const SummaryValue = ({ darkMode, className, children, ...p }) => <div className={cn('text-xl font-semibold', darkMode ? 'text-white' : 'text-black', className)} {...p}>{children}</div>;
 
-  &:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-  }
-`;
+const TableWrapper = ({ darkMode, className, children, ...p }) => <div className={cn('overflow-x-auto rounded-xl border w-full', darkMode ? 'border-white/[0.08] bg-white/[0.02]' : 'border-black/[0.08] bg-black/[0.02]', className)} {...p}>{children}</div>;
 
-const Select = styled.select`
-  padding: 8px 14px;
-  padding-right: 30px;
-  border: 1px solid ${(p) => (p.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)')};
-  border-radius: 8px;
-  background: ${(p) => (p.darkMode ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)')};
-  color: ${(p) => (p.darkMode ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.7)')};
-  font-size: 13px;
-  font-weight: 400;
-  cursor: pointer;
-  appearance: none;
-  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-  background-repeat: no-repeat;
-  background-position: right 8px center;
-  background-size: 14px;
-  transition: all 0.15s ease;
+const Table = ({ className, children, ...p }) => <table className={cn('w-full border-collapse min-w-full table-auto', className)} {...p}>{children}</table>;
 
-  &:hover {
-    border-color: ${(p) => (p.darkMode ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)')};
-  }
+const Th = ({ darkMode, align, sortable, className, children, ...p }) => (
+  <th
+    className={cn(
+      'py-[10px] px-2 font-medium text-[0.65rem] uppercase tracking-[0.03em] whitespace-nowrap font-[inherit]',
+      darkMode ? 'text-white/[0.45] bg-white/[0.02] border-b border-white/[0.05]' : 'text-black/40 bg-black/[0.01] border-b border-black/[0.05]',
+      sortable ? 'cursor-pointer' : 'cursor-default',
+      sortable && (darkMode ? 'hover:text-white/70' : 'hover:text-black/60'),
+      className
+    )}
+    style={{ textAlign: align || 'left' }}
+    {...p}
+  >
+    {children}
+  </th>
+);
 
-  &:focus {
-    outline: none;
-    border-color: #3b82f6;
-  }
-`;
+const Tr = ({ darkMode, className, children, ...p }) => (
+  <tr
+    className={cn(
+      'border-b cursor-pointer transition-all duration-200 last:border-b-0',
+      darkMode ? 'border-white/[0.05] hover:bg-white/[0.04]' : 'border-black/[0.05] hover:bg-black/[0.02]',
+      className
+    )}
+    {...p}
+  >
+    {children}
+  </tr>
+);
 
-const Label = styled.span`
-  font-size: 13px;
-  color: ${(p) => (p.darkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)')};
-  font-weight: 400;
-  white-space: nowrap;
-`;
+const Td = ({ darkMode, align, className, children, ...p }) => (
+  <td
+    className={cn('py-[14px] px-4 text-sm', darkMode ? 'text-white' : 'text-[#333]', className)}
+    style={{ textAlign: align || 'left' }}
+    {...p}
+  >
+    {children}
+  </td>
+);
 
-const SummaryGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 16px;
-  margin-top: 20px;
-  margin-bottom: 20px;
+const PoolInfo = ({ className, children, ...p }) => <div className={cn('flex flex-col gap-1', className)} {...p}>{children}</div>;
 
-  @media (max-width: 768px) {
-    margin-top: 16px;
-  }
-`;
+const PoolPair = ({ darkMode, className, children, ...p }) => <div className={cn('flex items-center gap-2 font-semibold text-sm', darkMode ? 'text-white' : 'text-black', className)} {...p}>{children}</div>;
 
-const SummaryCard = styled.div`
-  padding: 16px;
-  background: ${(p) => (p.darkMode ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)')};
-  border-radius: 12px;
-  border: 1px solid ${(p) => (p.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)')};
-  transition:
-    border-color 0.2s ease,
-    background 0.2s ease;
+const TokenIconPair = ({ className, children, ...p }) => <div className={cn('flex mr-2', className)} {...p}>{children}</div>;
 
-  &:hover {
-    border-color: ${(p) => (p.darkMode ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)')};
-    background: ${(p) => (p.darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)')};
-  }
-`;
+const TokenImage = ({ darkMode, className, ...p }) => (
+  <img
+    className={cn('w-6 h-6 rounded-full object-cover border-2 last:-ml-2', darkMode ? 'border-[#1a1a1a]' : 'border-white', className)}
+    {...p}
+  />
+);
 
-const SummaryLabel = styled.div`
-  font-size: 12px;
-  color: ${(p) => (p.darkMode ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)')};
-  margin-bottom: 8px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-`;
+const PoolAccount = ({ darkMode, className, children, ...p }) => <div className={cn('text-[11px] font-mono', darkMode ? 'text-[#bbb]' : 'text-[#666]', className)} {...p}>{children}</div>;
 
-const SummaryValue = styled.div`
-  font-size: 20px;
-  font-weight: 600;
-  color: ${(p) => (p.darkMode ? '#fff' : '#000')};
-`;
+const APYBadge = ({ bg, color, border, className, children, ...p }) => (
+  <span
+    className={cn('inline-flex items-center justify-center py-[6px] px-3 rounded-lg font-semibold text-[13px] min-w-[50px] border-[1.5px]', className)}
+    style={{ background: bg, color, borderColor: border }}
+    {...p}
+  >
+    {children}
+  </span>
+);
 
-const TableWrapper = styled.div`
-  overflow-x: auto;
-  border-radius: 12px;
-  border: 1px solid ${(p) => (p.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)')};
-  background: ${(p) => (p.darkMode ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)')};
-  width: 100%;
-`;
-
-const Table = styled.table`
-  width: 100%;
-  border-collapse: collapse;
-  min-width: 100%;
-  table-layout: auto;
-`;
-
-const Th = styled.th`
-  padding: 10px 8px;
-  text-align: ${(p) => p.align || 'left'};
-  font-weight: 500;
-  font-size: 0.65rem;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  color: ${(p) => (p.darkMode ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.4)')};
-  background: ${(p) => (p.darkMode ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.01)')};
-  border-bottom: 1px solid ${(p) => (p.darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)')};
-  cursor: ${(p) => (p.sortable ? 'pointer' : 'default')};
-  white-space: nowrap;
-  font-family: inherit;
-
-  &:hover {
-    ${(p) =>
-      p.sortable &&
-      `
-      color: ${p.darkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)'};
-    `}
-  }
-`;
-
-const Tr = styled.tr`
-  border-bottom: 1px solid ${(p) => (p.darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)')};
-  cursor: pointer;
-  transition: all 0.2s;
-
-  &:hover {
-    background: ${(p) => (p.darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.02)')};
-  }
-
-  &:last-child {
-    border-bottom: none;
-  }
-`;
-
-const Td = styled.td`
-  padding: 14px 16px;
-  font-size: 14px;
-  color: ${(p) => (p.darkMode ? '#fff' : '#333')};
-  text-align: ${(p) => p.align || 'left'};
-`;
-
-const PoolInfo = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-`;
-
-const PoolPair = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-weight: 600;
-  font-size: 14px;
-  color: ${(p) => (p.darkMode ? '#fff' : '#000')};
-`;
-
-const TokenIconPair = styled.div`
-  display: flex;
-  margin-right: 8px;
-`;
-
-const TokenImage = styled.img`
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid ${(p) => (p.darkMode ? '#1a1a1a' : '#fff')};
-
-  &:last-child {
-    margin-left: -8px;
-  }
-`;
-
-const PoolAccount = styled.div`
-  font-size: 11px;
-  color: ${(p) => (p.darkMode ? '#bbb' : '#666')};
-  font-family: var(--font-mono);
-`;
-
-const APYBadge = styled.span`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 6px 12px;
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 13px;
-  min-width: 50px;
-  background: ${(p) => p.bg};
-  color: ${(p) => p.color};
-  border: 1.5px solid ${(p) => p.border};
-`;
-
-const StatusBadge = styled.span`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 4px 10px;
-  border-radius: 6px;
-  font-weight: 400;
-  font-size: 12px;
-  text-transform: uppercase;
-  background: ${(p) => (p.active ? 'rgba(76,175,80,0.1)' : 'rgba(158,158,158,0.1)')};
-  color: ${(p) => (p.active ? '#4caf50' : '#9e9e9e')};
-  border: 1.5px solid ${(p) => (p.active ? 'rgba(76,175,80,0.3)' : 'rgba(158,158,158,0.3)')};
-`;
+const StatusBadge = ({ active, className, children, ...p }) => (
+  <span
+    className={cn(
+      'inline-flex items-center justify-center py-1 px-[10px] rounded-md font-normal text-xs uppercase border-[1.5px]',
+      active ? 'bg-[rgba(76,175,80,0.1)] text-[#4caf50] border-[rgba(76,175,80,0.3)]' : 'bg-[rgba(158,158,158,0.1)] text-[#9e9e9e] border-[rgba(158,158,158,0.3)]',
+      className
+    )}
+    {...p}
+  >
+    {children}
+  </span>
+);
 
 function AMMPoolsPage({ data, initialQuery }) {
-  const { darkMode, activeFiatCurrency } = useContext(AppContext);
+  const { darkMode } = useContext(ThemeContext);
+  const { activeFiatCurrency } = useContext(AppContext);
   const metrics = useSelector(selectMetrics);
   const exchRate = metrics[activeFiatCurrency] || 1;
   const router = useRouter();
@@ -467,19 +304,7 @@ function AMMPoolsPage({ data, initialQuery }) {
   return (
     <Wrapper>
       <Header />
-      <h1
-        style={{
-          position: 'absolute',
-          width: 1,
-          height: 1,
-          padding: 0,
-          margin: -1,
-          overflow: 'hidden',
-          clip: 'rect(0,0,0,0)',
-          whiteSpace: 'nowrap',
-          border: 0
-        }}
-      >
+      <h1 className="sr-only">
         AMM Pools - XRPL Automated Market Maker Analytics
       </h1>
 
@@ -492,13 +317,7 @@ function AMMPoolsPage({ data, initialQuery }) {
                 {formatCurrency(summary.totalLiquidity)} XRP
               </SummaryValue>
               {(summary.xrpTokenLiquidity || summary.tokenTokenLiquidity) && (
-                <div
-                  style={{
-                    fontSize: 11,
-                    color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)',
-                    marginTop: 4
-                  }}
-                >
+                <div className={cn('text-[11px] mt-1', darkMode ? 'text-white/50' : 'text-black/50')}>
                   {summary.xrpTokenLiquidity && (
                     <span>XRP Pools: {formatCurrency(summary.xrpTokenLiquidity)}</span>
                   )}
@@ -540,31 +359,18 @@ function AMMPoolsPage({ data, initialQuery }) {
           </SummaryGrid>
         )}
 
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: 12,
-            marginBottom: 16,
-            flexWrap: 'wrap'
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+        <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
+          <div className="flex items-center gap-2 flex-wrap">
             {sortOptions.map((opt) => (
               <button
                 key={opt.value}
                 onClick={() => updateParam('sortBy', opt.value)}
-                style={{
-                  padding: '8px 14px',
-                  borderRadius: 8,
-                  border: `1.5px solid ${params.sortBy === opt.value ? 'rgba(59,130,246,0.4)' : darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
-                  background: params.sortBy === opt.value ? 'rgba(59,130,246,0.1)' : 'transparent',
-                  color: params.sortBy === opt.value ? '#3b82f6' : darkMode ? '#fff' : '#333',
-                  fontSize: 13,
-                  fontWeight: params.sortBy === opt.value ? 500 : 400,
-                  cursor: 'pointer'
-                }}
+                className={cn(
+                  'py-2 px-[14px] rounded-lg border-[1.5px] text-[13px] cursor-pointer',
+                  params.sortBy === opt.value
+                    ? 'border-blue-500/40 bg-blue-500/10 text-blue-500 font-medium'
+                    : cn('bg-transparent font-normal', darkMode ? 'border-white/10 text-white' : 'border-black/10 text-[#333]')
+                )}
               >
                 {opt.label}
               </button>
@@ -573,20 +379,11 @@ function AMMPoolsPage({ data, initialQuery }) {
           <select
             value={params.limit}
             onChange={(e) => updateParam('limit', e.target.value)}
-            style={{
-              padding: '8px 32px 8px 12px',
-              borderRadius: 8,
-              border: `1.5px solid ${darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
-              background: darkMode ? 'rgba(255,255,255,0.05)' : '#fff',
-              color: darkMode ? '#fff' : '#333',
-              fontSize: 13,
-              cursor: 'pointer',
-              appearance: 'none',
-              backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='${darkMode ? '%23fff' : '%23333'}' stroke-width='2'%3e%3cpolyline points='6 9 12 15 18 9'/%3e%3c/svg%3e")`,
-              backgroundRepeat: 'no-repeat',
-              backgroundPosition: 'right 8px center',
-              backgroundSize: 14
-            }}
+            className={cn(
+              'py-2 pl-3 pr-8 rounded-lg border-[1.5px] text-[13px] cursor-pointer appearance-none bg-no-repeat bg-[length:14px] bg-[position:right_8px_center]',
+              darkMode ? 'border-white/10 bg-white/5 text-white' : 'border-black/10 bg-white text-[#333]'
+            )}
+            style={{ backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='${darkMode ? '%23fff' : '%23333'}' stroke-width='2'%3e%3cpolyline points='6 9 12 15 18 9'/%3e%3c/svg%3e")` }}
           >
             <option value="25">25 rows</option>
             <option value="50">50 rows</option>
@@ -716,7 +513,7 @@ function AMMPoolsPage({ data, initialQuery }) {
             >
               Previous
             </Button>
-            <span style={{ padding: '10px 18px', color: darkMode ? '#fff' : '#333' }}>
+            <span className={cn('py-[10px] px-[18px]', darkMode ? 'text-white' : 'text-[#333]')}>
               Page {currentPage + 1} of {totalPages}
             </span>
             <Button

@@ -1,4 +1,5 @@
-import api from 'src/utils/api';
+import api, { submitTransaction, simulateTransaction } from 'src/utils/api';
+import { toast } from 'sonner';
 import { useState, useEffect, useCallback, useMemo, useRef, memo } from 'react';
 import Decimal from 'decimal.js-light';
 import Image from 'next/image';
@@ -15,6 +16,7 @@ import {
   ChevronDown,
   CheckCircle,
   X,
+  AlertTriangle,
   ArrowLeftRight,
   Info as InfoIcon,
   Share2,
@@ -34,87 +36,7 @@ import { cn } from 'src/utils/cn';
 
 // Context
 import { useContext } from 'react';
-import { AppContext } from 'src/context/AppContext';
-
-// ============================================
-// MUI Replacement Utilities
-// ============================================
-const alpha = (color, opacity) => {
-  if (!color) return `rgba(0,0,0,${opacity})`;
-  if (color.startsWith('#')) {
-    const r = parseInt(color.slice(1, 3), 16);
-    const g = parseInt(color.slice(3, 5), 16);
-    const b = parseInt(color.slice(5, 7), 16);
-    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
-  }
-  if (color.startsWith('rgb(')) {
-    return color.replace('rgb(', 'rgba(').replace(')', `, ${opacity})`);
-  }
-  if (color.startsWith('rgba(')) {
-    return color.replace(/,\s*[\d.]+\)$/, `, ${opacity})`);
-  }
-  return color;
-};
-
-// Simple styled replacement - returns a functional component
-const styled = (Component) => (styleFn) => {
-  const StyledComponent = ({ className, style, ...props }) => {
-    const { themeName } = useContext(AppContext);
-    const isDark = themeName === 'XrplToDarkTheme';
-    const theme = createTheme(isDark);
-    const styles = typeof styleFn === 'function' ? styleFn({ theme }) : styleFn;
-    // Filter out pseudo-selectors for inline styles
-    const inlineStyles = {};
-    Object.entries(styles).forEach(([key, value]) => {
-      if (!key.startsWith('&') && !key.startsWith('.')) {
-        inlineStyles[key] = value;
-      }
-    });
-    if (Component === 'div' || Component === Box) {
-      return <div style={{ ...inlineStyles, ...style }} className={className} {...props} />;
-    }
-    if (Component === Image) {
-      return <Image style={{ ...inlineStyles, ...style }} className={className} {...props} />;
-    }
-    if (Component === Stack) {
-      return <Stack style={{ ...inlineStyles, ...style }} className={className} {...props} />;
-    }
-    if (Component === Typography) {
-      return <span style={{ ...inlineStyles, ...style }} className={className} {...props} />;
-    }
-    if (Component === Chip) {
-      return <Chip style={{ ...inlineStyles, ...style }} className={className} {...props} />;
-    }
-    return <Component style={{ ...inlineStyles, ...style }} className={className} {...props} />;
-  };
-  StyledComponent.displayName = `Styled(${Component?.displayName || Component?.name || 'Component'})`;
-  return StyledComponent;
-};
-
-// Theme creator
-const createTheme = (isDark) => ({
-  palette: {
-    mode: isDark ? 'dark' : 'light',
-    divider: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)',
-    primary: { main: '#3b82f6' },
-    text: {
-      primary: isDark ? '#fff' : '#000',
-      secondary: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)'
-    },
-    background: { default: isDark ? '#010815' : '#fff', paper: isDark ? '#020a1a' : '#fff' },
-    success: { main: '#4caf50' },
-    error: { main: '#f44336' },
-    warning: { main: '#ff9800' }
-  },
-  spacing: (...args) => (args.length === 1 ? args[0] * 8 : args.map((v) => v * 8 + 'px').join(' '))
-});
-
-// useTheme hook replacement
-const useTheme = () => {
-  const { themeName } = useContext(AppContext);
-  const isDark = themeName === 'XrplToDarkTheme';
-  return createTheme(isDark);
-};
+import { ThemeContext, WalletContext, AppContext } from 'src/context/AppContext';
 
 // Basic MUI component replacements
 const Box = ({ children, sx, style, className, component, onClick, ...props }) => {
@@ -137,15 +59,8 @@ const Stack = ({
   ...props
 }) => (
   <div
-    style={{
-      display: 'flex',
-      flexDirection: direction === 'row' ? 'row' : 'column',
-      gap: spacing * 8,
-      alignItems,
-      justifyContent,
-      ...style
-    }}
-    className={className}
+    className={cn('flex', direction === 'row' ? 'flex-row' : 'flex-col', className)}
+    style={{ gap: spacing * 8, alignItems, justifyContent, ...style }}
     {...props}
   >
     {children}
@@ -161,16 +76,12 @@ const Typography = ({ children, variant, sx, style, className, ...props }) => (
 const Chip = ({ label, onClick, style, className, ...props }) => (
   <span
     onClick={onClick}
-    style={{
-      display: 'inline-flex',
-      alignItems: 'center',
-      padding: '4px 12px',
-      borderRadius: 12,
-      fontSize: 10,
-      cursor: onClick ? 'pointer' : 'default',
-      ...style
-    }}
-    className={className}
+    className={cn(
+      'inline-flex items-center px-3 py-1 rounded-[12px] text-[10px]',
+      onClick ? 'cursor-pointer' : 'cursor-default',
+      className
+    )}
+    style={style}
     {...props}
   >
     {label}
@@ -190,29 +101,21 @@ const Button = ({
   className,
   ...props
 }) => {
-  const baseStyle = {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    padding: size === 'small' ? '4px 10px' : '8px 16px',
-    borderRadius: 8,
-    fontSize: 14,
-    fontWeight: 400,
-    cursor: disabled ? 'not-allowed' : 'pointer',
-    opacity: disabled ? 0.5 : 1,
-    width: fullWidth ? '100%' : 'auto',
-    border: variant === 'outlined' ? '1px solid rgba(255,255,255,0.2)' : 'none',
-    background: variant === 'contained' ? '#4285f4' : 'transparent',
-    color: variant === 'contained' ? '#fff' : '#4285f4',
-    ...style
-  };
   return (
     <button
-      style={baseStyle}
+      className={cn(
+        'inline-flex items-center justify-center gap-2 rounded-lg text-[14px] font-normal',
+        size === 'small' ? 'px-2.5 py-1' : 'px-4 py-2',
+        disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer opacity-100',
+        fullWidth ? 'w-full' : 'w-auto',
+        variant === 'outlined' && 'border border-white/20',
+        variant !== 'outlined' && 'border-none',
+        variant === 'contained' ? 'bg-[#4285f4] text-white' : 'bg-transparent text-[#4285f4]',
+        className
+      )}
+      style={style}
       disabled={disabled}
       onClick={onClick}
-      className={className}
       {...props}
     >
       {startIcon}
@@ -225,19 +128,13 @@ const IconButton = ({ children, onClick, size, disabled, style, className, ...pr
   <button
     onClick={onClick}
     disabled={disabled}
-    style={{
-      background: 'transparent',
-      border: 'none',
-      cursor: disabled ? 'not-allowed' : 'pointer',
-      padding: size === 'small' ? 4 : 8,
-      borderRadius: '50%',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      opacity: disabled ? 0.5 : 1,
-      ...style
-    }}
-    className={className}
+    className={cn(
+      'bg-transparent border-none rounded-full flex items-center justify-center',
+      size === 'small' ? 'p-1' : 'p-2',
+      disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer opacity-100',
+      className
+    )}
+    style={style}
     {...props}
   >
     {children}
@@ -272,16 +169,8 @@ const Input = ({
     onChange={onChange}
     onFocus={onFocus}
     onBlur={onBlur}
-    style={{
-      border: 'none',
-      outline: 'none',
-      background: 'transparent',
-      width: '100%',
-      fontSize: 'inherit',
-      color: 'inherit',
-      fontFamily: 'inherit',
-      ...sx
-    }}
+    className="border-none outline-none bg-transparent w-full text-[inherit] font-[inherit]"
+    style={{ color: 'inherit', ...sx }}
     {...inputProps}
     {...props}
   />
@@ -438,80 +327,70 @@ const StatusIndicator = () => (
 // Token Selector Components
 const MAX_RECENT_SEARCHES = 6;
 
-const TokenImage = styled(Image)(({ theme }) => ({
-  borderRadius: '50%',
-  overflow: 'hidden',
-  border: `1px solid ${theme.palette.mode === 'dark'
-    ? alpha(theme.palette.divider, 0.08)
-    : alpha(theme.palette.divider, 0.08)
-    }`
-}));
+const TokenImage = ({ className, ...props }) => (
+  <Image className={cn('rounded-full overflow-hidden border border-white/10', className)} {...props} />
+);
 
-const SelectTokenButton = styled(Stack)(({ theme }) => ({
-  padding: '6px 10px',
-  borderRadius: '12px',
-  cursor: 'pointer',
-  backgroundColor: alpha(theme.palette.background.paper, 0.4),
-  border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-  backdropFilter: 'blur(10px)',
-  '&:hover': {
-    backgroundColor: alpha(theme.palette.background.paper, 0.6),
-    borderColor: alpha(theme.palette.primary.main, 0.2),
-    transform: 'scale(1.02)',
-    '& .arrow-icon': {
-      color: theme.palette.primary.main
-    }
-  },
-  '&:active': {
-    transform: 'scale(0.98)'
-  }
-}));
+const SelectTokenButton = ({ className, children, ...props }) => (
+  <Stack
+    className={cn(
+      'px-2.5 py-1.5 rounded-xl cursor-pointer backdrop-blur-[10px] border transition-all',
+      'dark:bg-[#020a1a]/40 dark:border-white/[0.08] dark:hover:bg-[#020a1a]/60',
+      'bg-white/40 border-black/[0.08] hover:bg-white/60',
+      'hover:border-blue-500/20 hover:scale-[1.02] active:scale-[0.98]',
+      '[&:hover_.arrow-icon]:text-blue-500',
+      className
+    )}
+    {...props}
+  >
+    {children}
+  </Stack>
+);
 
-const PanelContainer = styled(Box)(({ theme }) => ({
-  width: '100%',
-  maxWidth: '540px',
-  margin: '0 auto',
-  maxHeight: '80vh',
-  height: '600px',
-  backgroundColor: theme.palette.background.paper,
-  borderRadius: '12px',
-  display: 'flex',
-  flexDirection: 'column',
-  overflow: 'hidden',
-  border: `1.5px solid ${alpha(theme.palette.divider, 0.12)}`,
-  boxShadow: 'none'
-}));
+const PanelContainer = ({ className, children, ...props }) => (
+  <div
+    className={cn(
+      'w-full max-w-[540px] mx-auto max-h-[80vh] h-[600px] rounded-xl flex flex-col overflow-hidden border-[1.5px] shadow-none',
+      'dark:bg-[#020a1a] dark:border-white/[0.12]',
+      'bg-white border-black/[0.12]',
+      className
+    )}
+    {...props}
+  >
+    {children}
+  </div>
+);
 
-const PanelHeader = styled(Box)(({ theme }) => ({
-  padding: theme.spacing(1.5),
-  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`
-}));
+const PanelHeader = ({ className, children, ...props }) => (
+  <div className={cn('p-3 border-b dark:border-white/[0.08] border-black/[0.08]', className)} {...props}>
+    {children}
+  </div>
+);
 
-const SearchContainer = styled(Box)(({ theme }) => ({
-  padding: theme.spacing(1.5),
-  paddingBottom: theme.spacing(1),
-  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`
-}));
+const SearchContainer = ({ className, children, ...props }) => (
+  <div className={cn('px-3 pt-3 pb-2 border-b dark:border-white/[0.08] border-black/[0.08]', className)} {...props}>
+    {children}
+  </div>
+);
 
-const ScrollableContent = styled(Box)(({ theme }) => ({
-  flex: 1,
-  overflow: 'hidden',
-  display: 'flex',
-  flexDirection: 'column',
-  padding: theme.spacing(1),
-  paddingBottom: theme.spacing(2)
-}));
+const ScrollableContent = ({ className, children, ...props }) => (
+  <div className={cn('flex-1 overflow-hidden flex flex-col p-2 pb-4', className)} {...props}>
+    {children}
+  </div>
+);
 
-const TokenCard = styled(Box)(({ theme }) => ({
-  padding: '12px',
-  borderRadius: '12px',
-  cursor: 'pointer',
-  border: `1px solid transparent`,
-  '&:hover': {
-    backgroundColor: alpha(theme.palette.primary.main, 0.04),
-    borderColor: alpha(theme.palette.primary.main, 0.12)
-  }
-}));
+const TokenCard = ({ className, children, ...props }) => (
+  <div
+    className={cn(
+      'p-3 rounded-xl cursor-pointer border border-transparent',
+      'hover:bg-blue-500/[0.04] hover:border-blue-500/[0.12]',
+      className
+    )}
+    {...props}
+  >
+    {children}
+  </div>
+);
 
 function truncate(str, n) {
   if (!str) return '';
@@ -519,7 +398,6 @@ function truncate(str, n) {
 }
 
 function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAsks }) {
-  const theme = useTheme();
   const router = useRouter();
 
   const dispatch = useDispatch();
@@ -529,8 +407,11 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
   const curr1 = pair?.curr1;
   const curr2 = pair?.curr2;
 
-  const { accountProfile, darkMode, setLoading, sync, setSync, openSnackbar, activeFiatCurrency } =
+  const { darkMode } = useContext(ThemeContext);
+  const { accountProfile } = useContext(WalletContext);
+  const { setLoading, sync, setSync, openSnackbar, activeFiatCurrency, trustlineUpdate, setTrustlineUpdate } =
     useContext(AppContext);
+  const isDark = darkMode;
 
   const [token1, setToken1] = useState(curr1);
   const [token2, setToken2] = useState(curr2);
@@ -582,8 +463,14 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
   const asksContainerRef = useRef(null);
   const [showOrderSummary, setShowOrderSummary] = useState(false);
   const [showDepthPanel, setShowDepthPanel] = useState(false);
-  const [debugInfo, setDebugInfo] = useState(null);
   const amount1Ref = useRef(null);
+
+  // Transaction preview state (simulation results)
+  const [txPreview, setTxPreview] = useState(null);
+  const [pendingTx, setPendingTx] = useState(null);
+
+  // Track recent trustline update to skip stale API responses
+  const trustlineUpdateRef = useRef(null);
 
   // Persist slippage & txFee
   useEffect(() => {
@@ -622,73 +509,6 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
       window.removeEventListener('mouseup', handleUp);
     };
   }, [isDraggingOB]);
-
-  // Debug info for wallet
-  useEffect(() => {
-    const loadDebugInfo = async () => {
-      if (!accountProfile) {
-        setDebugInfo(null);
-        return;
-      }
-      let walletKeyId =
-        accountProfile.walletKeyId ||
-        (accountProfile.wallet_type === 'device' ? accountProfile.deviceKeyId : null) ||
-        (accountProfile.provider && accountProfile.provider_id
-          ? `${accountProfile.provider}_${accountProfile.provider_id}`
-          : null);
-      let seed = accountProfile.seed || null;
-      if (
-        !seed &&
-        (accountProfile.wallet_type === 'oauth' || accountProfile.wallet_type === 'social')
-      ) {
-        try {
-          const { EncryptedWalletStorage } = await import('src/utils/encryptedWalletStorage');
-          const walletStorage = new EncryptedWalletStorage();
-          const walletId = `${accountProfile.provider}_${accountProfile.provider_id}`;
-          const storedPassword = await walletStorage.getSecureItem(`wallet_pwd_${walletId}`);
-          if (storedPassword) {
-            const walletData = await walletStorage.getWallet(
-              accountProfile.account,
-              storedPassword
-            );
-            seed = walletData?.seed || 'encrypted';
-          }
-        } catch (e) {
-          seed = 'error: ' + e.message;
-        }
-      }
-      // Handle device wallets
-      if (!seed && accountProfile.wallet_type === 'device') {
-        try {
-          const { EncryptedWalletStorage, deviceFingerprint } =
-            await import('src/utils/encryptedWalletStorage');
-          const walletStorage = new EncryptedWalletStorage();
-          const deviceKeyId = await deviceFingerprint.getDeviceId();
-          walletKeyId = deviceKeyId;
-          if (deviceKeyId) {
-            const storedPassword = await walletStorage.getWalletCredential(deviceKeyId);
-            if (storedPassword) {
-              const walletData = await walletStorage.getWallet(
-                accountProfile.account,
-                storedPassword
-              );
-              seed = walletData?.seed || 'encrypted';
-            }
-          }
-        } catch (e) {
-          seed = 'error: ' + e.message;
-        }
-      }
-      setDebugInfo({
-        wallet_type: accountProfile.wallet_type,
-        account: accountProfile.account,
-        walletKeyId,
-        accountIndex: accountProfile.accountIndex,
-        seed: seed && seed.length > 10 ? `${seed.substring(0, 4)}...(${seed.length} chars)` : (seed || 'N/A')
-      });
-    };
-    loadDebugInfo();
-  }, [accountProfile]);
 
   // Orderbook state
   const [bids, setBids] = useState(propsBids || []);
@@ -940,156 +760,117 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
 
   const canPlaceOrder = isLoggedIn && isSufficientBalance;
 
+  // Handle trustline updates from context (e.g. after creating a trustline elsewhere)
   useEffect(() => {
-    function getAccountInfo() {
-      if (!accountProfile || !accountProfile.account) return;
-      if (!curr1 || !curr2) return;
+    if (!trustlineUpdate) return;
+    const { issuer, currency, hasTrustline } = trustlineUpdate;
+    trustlineUpdateRef.current = { issuer, currency, hasTrustline, ts: Date.now() };
+    if (curr1?.issuer === issuer && curr1?.currency === currency) setHasTrustline1(hasTrustline);
+    if (curr2?.issuer === issuer && curr2?.currency === currency) setHasTrustline2(hasTrustline);
+    setTrustlineUpdate(null);
+  }, [trustlineUpdate, curr1, curr2, setTrustlineUpdate]);
 
-      const account = accountProfile.account;
+  // Check trustlines via API (more reliable than fetching all trustlines)
+  useEffect(() => {
+    if (!accountProfile?.account) return;
 
-      // Get account balance info
-      api
-        .get(
-          `${BASE_URL}/account/info/${account}?curr1=${curr1.currency}&issuer1=${curr1.issuer}&curr2=${curr2.currency}&issuer2=${curr2.issuer}`
-        )
-        .then((res) => {
-          let ret = res.status === 200 ? res.data : undefined;
-          if (ret) {
-            setAccountPairBalance(ret.pair);
+    const recentUpdate = trustlineUpdateRef.current;
+    const isRecent = recentUpdate && (Date.now() - recentUpdate.ts < 5000);
+
+    if (curr1 && curr1.currency !== 'XRP' && curr1.issuer) {
+      api.get(`${BASE_URL}/account/trustline/${accountProfile.account}/${curr1.issuer}/${encodeURIComponent(curr1.currency)}`)
+        .then(res => {
+          if (res.data?.success) {
+            if (isRecent && recentUpdate.issuer === curr1.issuer && recentUpdate.currency === curr1.currency) return;
+            setHasTrustline1(res.data.hasTrustline === true);
           }
         })
-        .catch((err) => { });
-
-      // Check trustlines
-      api
-        .get(`${BASE_URL}/account/trustlines/${account}`)
-        .then((res) => res.status === 200 ? res.data.lines || [] : [])
-        .catch(() => [])
-        .then((allTrustlines) => {
-          setTrustlines(allTrustlines);
-
-          // Helper function to normalize currency codes for comparison
-          const normalizeCurrency = (currency) => {
-            if (!currency) return '';
-            // Remove trailing zeros from hex currency codes
-            if (currency.length === 40 && /^[0-9A-Fa-f]+$/.test(currency)) {
-              return currency.replace(/00+$/, '').toUpperCase();
-            }
-            return currency.toUpperCase();
-          };
-
-          // Helper function to check if two currency codes match
-          const currenciesMatch = (curr1, curr2) => {
-            if (!curr1 || !curr2) return false;
-
-            // Direct match
-            if (curr1 === curr2) return true;
-
-            // Normalized match (for hex codes)
-            const norm1 = normalizeCurrency(curr1);
-            const norm2 = normalizeCurrency(curr2);
-            if (norm1 === norm2) return true;
-
-            // Try converting hex to ASCII and compare
-            try {
-              const convertHexToAscii = (hex) => {
-                if (hex.length === 40 && /^[0-9A-Fa-f]+$/.test(hex)) {
-                  const cleanHex = hex.replace(/00+$/, '');
-                  let ascii = '';
-                  for (let i = 0; i < cleanHex.length; i += 2) {
-                    const byte = parseInt(cleanHex.substr(i, 2), 16);
-                    if (byte > 0) ascii += String.fromCharCode(byte);
-                  }
-                  return ascii.toLowerCase();
-                }
-                return hex.toLowerCase();
-              };
-
-              const ascii1 = convertHexToAscii(curr1);
-              const ascii2 = convertHexToAscii(curr2);
-              if (ascii1 === ascii2) return true;
-            } catch (e) {
-              // Ignore conversion errors
-            }
-
-            return false;
-          };
-
-          // Helper function to check if issuers match
-          const issuersMatch = (line, expectedIssuer) => {
-            const lineIssuers = [
-              line.account,
-              line.issuer,
-              line._token1,
-              line._token2,
-              line.Balance?.issuer,
-              line.HighLimit?.issuer,
-              line.LowLimit?.issuer
-            ].filter(Boolean);
-
-            return lineIssuers.some((issuer) => issuer === expectedIssuer);
-          };
-
-          // Check if trustlines exist for curr1 and curr2
-          const hasCurr1Trustline =
-            curr1.currency === 'XRP' ||
-            allTrustlines.some((line) => {
-              // Check multiple currency fields
-              const lineCurrencies = [
-                line.Balance?.currency,
-                line.currency,
-                line._currency,
-                line.HighLimit?.currency,
-                line.LowLimit?.currency
-              ].filter(Boolean);
-
-              const currencyMatch = lineCurrencies.some((lineCurrency) =>
-                currenciesMatch(lineCurrency, curr1.currency)
-              );
-
-              if (!currencyMatch) return false;
-
-              // For currency matches, check if we have a valid trustline
-              // For standard currencies like USD, accept any valid trustline
-              // For specific tokens, require exact issuer match
-              const issuerMatch = issuersMatch(line, curr1.issuer);
-              const isStandardCurrency = ['USD', 'EUR', 'BTC', 'ETH'].includes(curr1.currency);
-
-              return currencyMatch && (issuerMatch || isStandardCurrency);
-            });
-
-          const hasCurr2Trustline =
-            curr2.currency === 'XRP' ||
-            allTrustlines.some((line) => {
-              // Check multiple currency fields
-              const lineCurrencies = [
-                line.Balance?.currency,
-                line.currency,
-                line._currency,
-                line.HighLimit?.currency,
-                line.LowLimit?.currency
-              ].filter(Boolean);
-
-              const currencyMatch = lineCurrencies.some((lineCurrency) =>
-                currenciesMatch(lineCurrency, curr2.currency)
-              );
-
-              if (!currencyMatch) return false;
-
-              const issuerMatch = issuersMatch(line, curr2.issuer);
-              const isStandardCurrency = ['USD', 'EUR', 'BTC', 'ETH'].includes(curr2.currency);
-
-              return currencyMatch && (issuerMatch || isStandardCurrency);
-            });
-
-          setHasTrustline1(hasCurr1Trustline);
-          setHasTrustline2(hasCurr2Trustline);
-        })
-        .catch((err) => { });
+        .catch(() => {});
+    } else if (curr1?.currency === 'XRP') {
+      setHasTrustline1(true);
     }
 
-    getAccountInfo();
-  }, [accountProfile, curr1, curr2, sync, isSwapped]);
+    if (curr2 && curr2.currency !== 'XRP' && curr2.issuer) {
+      api.get(`${BASE_URL}/account/trustline/${accountProfile.account}/${curr2.issuer}/${encodeURIComponent(curr2.currency)}`)
+        .then(res => {
+          if (res.data?.success) {
+            if (isRecent && recentUpdate.issuer === curr2.issuer && recentUpdate.currency === curr2.currency) return;
+            setHasTrustline2(res.data.hasTrustline === true);
+          }
+        })
+        .catch(() => {});
+    } else if (curr2?.currency === 'XRP') {
+      setHasTrustline2(true);
+    }
+  }, [accountProfile?.account, curr1?.currency, curr1?.issuer, curr2?.currency, curr2?.issuer, sync]);
+
+  // WebSocket-based real-time pair balance updates
+  useEffect(() => {
+    if (!accountProfile?.account || !curr1?.currency || !curr2?.currency) {
+      setAccountPairBalance(null);
+      return;
+    }
+    if (curr1.currency !== 'XRP' && !curr1.issuer) return;
+    if (curr2.currency !== 'XRP' && !curr2.issuer) return;
+
+    const account = accountProfile.account;
+    const params = new URLSearchParams({
+      curr1: curr1.currency,
+      issuer1: curr1.currency === 'XRP' ? 'XRPL' : curr1.issuer,
+      curr2: curr2.currency,
+      issuer2: curr2.currency === 'XRP' ? 'XRPL' : curr2.issuer
+    });
+
+    let ws = null;
+    let reconnectTimeout = null;
+    let attempts = 0;
+    const MAX_RECONNECT = 5;
+
+    const connect = async () => {
+      try {
+        const res = await fetch(`/api/ws/session?type=balancePair&id=${account}&${params}`);
+        const { wsUrl } = await res.json();
+        ws = new WebSocket(wsUrl);
+
+        ws.onopen = () => { attempts = 0; };
+
+        ws.onmessage = (event) => {
+          try {
+            const data = JSON.parse(event.data);
+            if (data.type === 'initial' || data.e === 'pair') {
+              setAccountPairBalance(data.pair);
+            }
+          } catch (err) {
+            console.error('[Swap WS] Parse error:', err);
+          }
+        };
+
+        ws.onclose = () => {
+          if (attempts < MAX_RECONNECT) {
+            const delay = Math.min(3000 * Math.pow(2, attempts), 60000);
+            attempts++;
+            reconnectTimeout = setTimeout(connect, delay);
+          }
+        };
+      } catch (e) {
+        if (attempts < MAX_RECONNECT) {
+          const delay = Math.min(3000 * Math.pow(2, attempts), 60000);
+          attempts++;
+          reconnectTimeout = setTimeout(connect, delay);
+        }
+      }
+    };
+
+    connect();
+
+    return () => {
+      if (reconnectTimeout) clearTimeout(reconnectTimeout);
+      if (ws) {
+        ws.onclose = null;
+        ws.close();
+      }
+    };
+  }, [accountProfile?.account, curr1?.currency, curr1?.issuer, curr2?.currency, curr2?.issuer, sync, isSwapped]);
 
   useEffect(() => {
     function getTokenPrice() {
@@ -1148,11 +929,12 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
   }, [tokenExch1, tokenExch2, revert, active]);
 
   useEffect(() => {
-    const pair = {
-      curr1: revert ? token2 : token1,
-      curr2: revert ? token1 : token2
-    };
-    setPair(pair);
+    const newCurr1 = revert ? token2 : token1;
+    const newCurr2 = revert ? token1 : token2;
+    // Skip when pair hasn't actually changed (e.g. revert toggle double-swaps to same pair)
+    if (newCurr1?.md5 !== curr1?.md5 || newCurr2?.md5 !== curr2?.md5) {
+      setPair({ curr1: newCurr1, curr2: newCurr2 });
+    }
   }, [revert, token1, token2]);
 
   // Swap quote from API
@@ -1260,227 +1042,453 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
   const swapQuoteCalc = swapQuoteApi || swapQuoteFallback;
 
   const onSwap = async () => {
+    const currentOrderType = orderType;
+    const currentLimitPrice = limitPrice;
+    const currentRevert = revert;
+
+    const fAmount = Number(amount1);
+    const fValue = Number(amount2);
+
+    if (!(fAmount > 0 && fValue > 0)) {
+      toast.error('Invalid values');
+      return;
+    }
+    if (currentOrderType === 'limit' && !currentLimitPrice) {
+      toast.error('Please enter a limit price');
+      return;
+    }
+    if (!accountProfile?.account) {
+      toast.error('Please connect wallet');
+      return;
+    }
+
+    const toastId = toast.loading('Processing swap...', { description: 'Preparing transaction' });
+
     try {
-      // IMPORTANT FIX: The UI always shows:
-      // - Top field (amount1): What you pay
-      // - Bottom field (amount2): What you receive
-      // But when revert=false, the displayed tokens are token1/token2
-      // When revert=true, the displayed tokens are actually swapped internally
+      const { Wallet } = await import('xrpl');
+      const { EncryptedWalletStorage, deviceFingerprint } = await import('src/utils/encryptedWalletStorage');
 
-      // We should always use what the user sees in the UI
-      const swapCurr1 = token1; // Top field token ("You pay")
-      const swapCurr2 = token2; // Bottom field token ("You receive")
-      const Account = accountProfile.account;
-      const user_token = accountProfile.user_token;
-      const wallet_type = accountProfile.wallet_type;
+      const walletStorage = new EncryptedWalletStorage();
+      const deviceKeyId = await deviceFingerprint.getDeviceId();
+      const storedPassword = await walletStorage.getWalletCredential(deviceKeyId);
 
-      let transactionData;
-
-      if (orderType === 'limit') {
-        // Use OfferCreate for limit orders
-        const OfferFlags = {
-          tfSell: 524288,
-          tfImmediateOrCancel: 262144,
-          tfFillOrKill: 131072,
-          tfPassive: 65536
-        };
-
-        let TakerGets, TakerPays;
-
-        // For limit orders, recalculate amount2 based on the limit price
-        let limitAmount2;
-        if (limitPrice && amount1) {
-          const limitPriceDecimal = new Decimal(limitPrice);
-          const amount1Decimal = new Decimal(amount1);
-
-          // Determine which direction to calculate based on currencies
-          if (swapCurr1.currency === 'XRP' && swapCurr2.currency !== 'XRP') {
-            // XRP -> Token: multiply XRP amount by limit price (Token per XRP)
-            // If limit price is "3.06 RLUSD per XRP", then 1 XRP * 3.06 = 3.06 RLUSD
-            limitAmount2 = amount1Decimal.mul(limitPriceDecimal).toFixed(6);
-          } else if (swapCurr1.currency !== 'XRP' && swapCurr2.currency === 'XRP') {
-            // Token -> XRP: divide token amount by limit price (Token per XRP)
-            // If limit price is "3.06 RLUSD per XRP", then to get XRP: RLUSD amount / 3.06
-            limitAmount2 = amount1Decimal.div(limitPriceDecimal).toFixed(6);
-          } else {
-            // Non-XRP pair: use limit price as direct exchange rate
-            limitAmount2 = amount1Decimal.mul(limitPriceDecimal).toFixed(6);
-          }
-        } else {
-          // Fallback to calculated amount2 if no limit price
-          limitAmount2 = amount2;
-        }
-
-        if (revert) {
-          // Selling curr2 to get curr1
-          TakerGets = {
-            currency: swapCurr1.currency,
-            issuer: swapCurr1.issuer,
-            value: amount1.toString()
-          };
-          TakerPays = {
-            currency: swapCurr2.currency,
-            issuer: swapCurr2.issuer,
-            value: limitAmount2.toString()
-          };
-        } else {
-          // Selling curr1 to get curr2
-          TakerGets = {
-            currency: swapCurr2.currency,
-            issuer: swapCurr2.issuer,
-            value: limitAmount2.toString()
-          };
-          TakerPays = {
-            currency: swapCurr1.currency,
-            issuer: swapCurr1.issuer,
-            value: amount1.toString()
-          };
-        }
-
-        // Convert XRP amounts to drops
-        if (TakerGets.currency === 'XRP') {
-          TakerGets = new Decimal(TakerGets.value).mul(1000000).toString();
-        }
-        if (TakerPays.currency === 'XRP') {
-          TakerPays = new Decimal(TakerPays.value).mul(1000000).toString();
-        }
-
-        // Calculate expiration if not "never"
-        let expiration = null;
-        if (orderExpiry !== 'never') {
-          // XRPL uses Ripple Epoch (Jan 1, 2000 00:00 UTC)
-          const RIPPLE_EPOCH = 946684800;
-          const now = Math.floor(Date.now() / 1000) - RIPPLE_EPOCH;
-
-          let expiryHours = 0;
-          switch (orderExpiry) {
-            case '1h':
-              expiryHours = 1;
-              break;
-            case '24h':
-              expiryHours = 24;
-              break;
-            case '7d':
-              expiryHours = 24 * 7;
-              break;
-            case '30d':
-              expiryHours = 24 * 30;
-              break;
-            case 'custom':
-              expiryHours = customExpiry;
-              break;
-          }
-
-          if (expiryHours > 0) {
-            expiration = now + expiryHours * 60 * 60;
-          }
-        }
-
-        transactionData = {
-          TransactionType: 'OfferCreate',
-          Account,
-          TakerGets,
-          TakerPays,
-          Flags: 0,
-          Fee: '12',
-          SourceTag: 161803
-        };
-
-        // Add expiration if set
-        if (expiration) {
-          transactionData.Expiration = expiration;
-        }
-      } else {
-        // Use Payment transaction for market orders
-        const PaymentFlags = {
-          tfPartialPayment: 131072,
-          tfLimitQuality: 65536,
-          tfNoDirectRipple: 1048576
-        };
-
-        const Flags = PaymentFlags.tfPartialPayment;
-
-        let Amount, SendMax, DeliverMin;
-
-        // IMPORTANT: In XRPL Payment transactions:
-        // - SendMax = what you're willing to spend (input)
-        // - Amount = what you want to receive (output)
-        //
-        // The UI shows: Top field (amount1) -> Bottom field (amount2)
-        // This means: Spend amount1 of curr1 to get amount2 of curr2
-
-        // Always: Send from top field (curr1/amount1), Receive in bottom field (curr2/amount2)
-        const sendCurrency = swapCurr1;
-        const receiveCurrency = swapCurr2;
-        const sendAmount = amount1;
-        const receiveAmount = amount2;
-
-        // Check if we're selling 100% of the balance
-        const accountBalance = revert
-          ? accountPairBalance?.curr2?.value
-          : accountPairBalance?.curr1?.value;
-        const isSelling100Percent = accountBalance && sendAmount === accountBalance.toString();
-
-        // Build SendMax (what we're spending) - handle XRP special case
-        if (sendCurrency.currency === 'XRP') {
-          SendMax = new Decimal(sendAmount).mul(1000000).toFixed(0, 1); // Convert to drops
-        } else {
-          SendMax = {
-            currency: sendCurrency.currency,
-            issuer: sendCurrency.issuer,
-            // For 100% sells, use more precision to ensure all tokens are sold
-            value: isSelling100Percent
-              ? sendAmount // Use exact balance string
-              : new Decimal(sendAmount).toFixed(6, 1) // Use safe precision for XRPL
-          };
-        }
-
-        // Build Amount (what we want to receive) - handle XRP special case
-        if (receiveCurrency.currency === 'XRP') {
-          Amount = new Decimal(receiveAmount).mul(1000000).toFixed(0, 1); // Convert to drops
-        } else {
-          Amount = {
-            currency: receiveCurrency.currency,
-            issuer: receiveCurrency.issuer,
-            value: new Decimal(receiveAmount).toFixed(6, 1) // Use safe precision for XRPL
-          };
-        }
-
-        // XRP conversion already handled above
-
-        // Calculate slippage amounts
-        const slippageDecimal = new Decimal(slippage).div(100);
-
-        // DeliverMin is Amount minus slippage tolerance
-        if (typeof Amount === 'object') {
-          DeliverMin = {
-            currency: Amount.currency,
-            issuer: Amount.issuer,
-            value: new Decimal(receiveAmount).mul(new Decimal(1).sub(slippageDecimal)).toFixed(6, 1) // Safe precision for XRPL
-          };
-        } else {
-          // For XRP amounts (strings) - Amount is already in drops
-          DeliverMin = new Decimal(Amount).mul(new Decimal(1).sub(slippageDecimal)).toFixed(0, 1);
-        }
-
-        transactionData = {
-          TransactionType: 'Payment',
-          Account,
-          Destination: Account,
-          Amount,
-          DeliverMin,
-          SendMax,
-          Flags,
-          Fee: '12',
-          SourceTag: 161803
-        };
+      if (!storedPassword) {
+        toast.error('Wallet locked', { id: toastId, description: 'Please unlock your wallet first' });
+        return;
       }
 
-      let memoData = `${orderType === 'limit' ? 'Limit' : 'Swap'} via https://xrpl.to`;
-      transactionData.Memos = configureMemos('', '', memoData);
+      const walletData = await walletStorage.getWallet(accountProfile.account, storedPassword);
+      if (!walletData?.seed) {
+        toast.error('Wallet error', { id: toastId, description: 'Could not retrieve credentials' });
+        return;
+      }
 
-      // TODO: Implement wallet-specific transaction signing here
+      const seed = walletData.seed.trim();
+      const algorithm = seed.startsWith('sEd') ? 'ed25519' : 'secp256k1';
+      const deviceWallet = Wallet.fromSeed(seed, { algorithm });
+
+      // Auto-create trustlines if needed
+      const needsTrustline1 = !hasTrustline1 && curr1.currency !== 'XRP';
+      const needsTrustline2 = !hasTrustline2 && curr2.currency !== 'XRP';
+
+      if (needsTrustline1) {
+        toast.loading('Processing swap...', { id: toastId, description: `Setting trustline for ${curr1.name || curr1.currency}` });
+        const success = await onCreateTrustline(curr1, true);
+        if (!success) {
+          toast.error('Trustline failed', { id: toastId });
+          return;
+        }
+        setHasTrustline1(true);
+        setSync((s) => s + 1);
+      }
+      if (needsTrustline2) {
+        toast.loading('Processing swap...', { id: toastId, description: `Setting trustline for ${curr2.name || curr2.currency}` });
+        const success = await onCreateTrustline(curr2, true);
+        if (!success) {
+          toast.error('Trustline failed', { id: toastId });
+          return;
+        }
+        setHasTrustline2(true);
+        setSync((s) => s + 1);
+      }
+
+      const createdTrustline = needsTrustline1 || needsTrustline2;
+
+      // Recalculate amounts if we created a trustline and are paying XRP
+      let fAmount1Final = fAmount;
+      let fValue1Final = fValue;
+
+      if (curr1.currency === 'XRP' && createdTrustline) {
+        try {
+          const balRes = await api.get(`${BASE_URL}/account/balance/${accountProfile.account}`);
+          let newXrpAvailable = parseFloat(balRes.data?.spendableDrops || 0) / 1000000;
+          const trustlinesCreated = (needsTrustline1 ? 1 : 0) + (needsTrustline2 ? 1 : 0);
+          newXrpAvailable = Math.max(0, newXrpAvailable - (trustlinesCreated * 0.2));
+
+          if (newXrpAvailable < fAmount) {
+            fAmount1Final = Math.max(0, newXrpAvailable - 0.000015);
+            if (fAmount1Final <= 0) {
+              toast.error('Insufficient balance', { id: toastId, description: 'Not enough XRP after trustline reserve' });
+              return;
+            }
+            const ratio = fAmount1Final / fAmount;
+            fValue1Final = fValue * ratio;
+            toast.loading('Processing swap...', { id: toastId, description: `Adjusted to ${fAmount1Final.toFixed(4)} XRP` });
+          }
+        } catch (e) {
+          console.warn('[Swap] Could not refetch balance after trustline:', e);
+        }
+      }
+
+      toast.loading('Processing swap...', { id: toastId, description: 'Submitting to XRPL' });
+
+      const formatTokenValue = (val) => {
+        const n = parseFloat(val);
+        return n >= 1 ? n.toPrecision(15).replace(/\.?0+$/, '') : n.toFixed(Math.min(15, Math.max(6, -Math.floor(Math.log10(n)) + 6)));
+      };
+
+      if (currentOrderType === 'market') {
+        const slippageFactor = slippage / 100;
+        let tx;
+
+        if (curr1.currency === 'XRP') {
+          const maxXrpDrops = Math.floor(fAmount1Final * (1 + 0.005) * 1000000);
+          tx = {
+            TransactionType: 'Payment',
+            Account: accountProfile.account,
+            SourceTag: 161803,
+            Destination: accountProfile.account,
+            Amount: { currency: curr2.currency, issuer: curr2.issuer, value: formatTokenValue(fValue1Final) },
+            DeliverMin: { currency: curr2.currency, issuer: curr2.issuer, value: formatTokenValue(fValue1Final * (1 - slippageFactor)) },
+            SendMax: String(maxXrpDrops),
+            Flags: 131072
+          };
+        } else if (curr2.currency === 'XRP') {
+          const userBalance = parseFloat(accountPairBalance?.curr1?.value || 0);
+          const isSellingAll = Math.abs(userBalance - fAmount1Final) < 0.000001;
+          const targetXrpDrops = Math.floor(fValue1Final * 1000000);
+          const minXrpDrops = Math.max(Math.floor(fValue1Final * (1 - slippageFactor) * 1000000), 1);
+          const sendMaxValue = isSellingAll ? userBalance : fAmount1Final * 1.005;
+
+          tx = {
+            TransactionType: 'Payment',
+            Account: accountProfile.account,
+            SourceTag: 161803,
+            Destination: accountProfile.account,
+            Amount: String(targetXrpDrops),
+            DeliverMin: String(minXrpDrops),
+            SendMax: { currency: curr1.currency, issuer: curr1.issuer, value: formatTokenValue(sendMaxValue) },
+            Flags: 131072
+          };
+        } else {
+          tx = {
+            TransactionType: 'Payment',
+            Account: accountProfile.account,
+            SourceTag: 161803,
+            Destination: accountProfile.account,
+            Amount: { currency: curr2.currency, issuer: curr2.issuer, value: formatTokenValue(fValue1Final) },
+            DeliverMin: { currency: curr2.currency, issuer: curr2.issuer, value: formatTokenValue(fValue1Final * (1 - slippageFactor)) },
+            SendMax: { currency: curr1.currency, issuer: curr1.issuer, value: formatTokenValue(fAmount1Final * 1.005) },
+            Flags: 131072
+          };
+        }
+
+        // Check trustline limit for receiving token
+        if (curr2.currency !== 'XRP') {
+          const trustlineRes = await api.get(`${BASE_URL}/account/trustline/${accountProfile.account}/${curr2.issuer}/${curr2.currency}`).then(r => r.data);
+          const currentBalance = parseFloat(trustlineRes.balance) || 0;
+          const currentLimit = parseFloat(trustlineRes.limit) || 0;
+          const needed = currentBalance + fValue;
+
+          if (!trustlineRes.hasTrustline || currentLimit < needed) {
+            toast.loading('Processing swap...', { id: toastId, description: 'Setting trustline...' });
+            const success = await onCreateTrustline(curr2, true);
+            if (!success) {
+              toast.error('Trustline failed', { id: toastId, description: 'Could not set trustline' });
+              return;
+            }
+          }
+        }
+
+        // Simulate transaction first (XLS-69)
+        toast.loading('Simulating swap...', { id: toastId });
+        try {
+          const simResult = await simulateTransaction(tx);
+          const engineResult = simResult.engine_result;
+          const expectedOutput = fValue1Final;
+          const actualOutput = simResult.delivered_amount || 0;
+          const priceImpactSim = expectedOutput > 0 && actualOutput > 0
+            ? ((expectedOutput - actualOutput) / expectedOutput) * 100
+            : null;
+
+          const preview = {
+            sending: { amount: fAmount1Final, currency: curr1.currency, name: curr1.name || curr1.currency },
+            receiving: { expected: expectedOutput, actual: actualOutput, currency: curr2.currency, name: curr2.name || curr2.currency },
+            priceImpact: priceImpactSim,
+            engineResult,
+            status: engineResult === 'tesSUCCESS' ? 'success' : engineResult?.startsWith('tec') ? 'warning' : 'error'
+          };
+
+          if (engineResult === 'tecPATH_PARTIAL' || engineResult === 'tecPATH_DRY') {
+            toast.loading('Finding available liquidity...', { id: toastId });
+            let maxAvailable = null;
+            let workingAmount = null;
+            let workingOutput = null;
+
+            try {
+              const noMinTx = { ...tx };
+              delete noMinTx.DeliverMin;
+              const availableResult = await simulateTransaction(noMinTx);
+
+              if (availableResult.engine_result === 'tesSUCCESS' && availableResult.delivered_amount > 0) {
+                maxAvailable = availableResult.delivered_amount;
+
+                toast.loading('Calculating optimal amount...', { id: toastId });
+                let low = 0;
+                let high = fAmount1Final;
+                let bestAmount = null;
+                let bestOutput = null;
+
+                for (let i = 0; i < 6; i++) {
+                  const mid = (low + high) / 2;
+                  const testTx = { ...tx };
+                  const testOutput = mid * (expectedOutput / fAmount1Final);
+                  const testMin = testOutput * (1 - slippage / 100);
+
+                  if (curr2.currency === 'XRP') {
+                    testTx.Amount = String(Math.floor(testOutput * 1000000));
+                    testTx.DeliverMin = String(Math.floor(testMin * 1000000));
+                  } else {
+                    testTx.Amount = { ...testTx.Amount, value: String(testOutput) };
+                    testTx.DeliverMin = { ...testTx.DeliverMin, value: String(testMin) };
+                  }
+
+                  if (curr1.currency === 'XRP') {
+                    testTx.SendMax = String(Math.floor(mid * 1.005 * 1000000));
+                  } else {
+                    testTx.SendMax = { ...testTx.SendMax, value: String(mid * 1.005) };
+                  }
+
+                  try {
+                    const testResult = await simulateTransaction(testTx);
+                    if (testResult.engine_result === 'tesSUCCESS') {
+                      bestAmount = mid;
+                      bestOutput = testResult.delivered_amount;
+                      low = mid;
+                    } else {
+                      high = mid;
+                    }
+                  } catch (e) {
+                    high = mid;
+                  }
+                }
+
+                workingAmount = bestAmount;
+                workingOutput = bestOutput;
+              }
+            } catch (e) {
+              console.warn('[Swap] Could not determine available liquidity:', e.message);
+            }
+
+            const actualSlippagePct = maxAvailable && expectedOutput > 0
+              ? ((expectedOutput - maxAvailable) / expectedOutput * 100).toFixed(1)
+              : null;
+
+            toast.dismiss(toastId);
+            setTxPreview({
+              ...preview,
+              status: 'error',
+              errorMessage: `Insufficient liquidity at ${slippage}% slippage`,
+              maxAvailable,
+              workingAmount,
+              workingOutput,
+              actualSlippage: actualSlippagePct,
+              suggestedAction: maxAvailable
+                ? `Without slippage protection: ~${fNumber(maxAvailable)} ${curr2.name || curr2.currency} (${actualSlippagePct}% slippage)`
+                : 'Try a smaller amount or increase slippage tolerance'
+            });
+            return;
+          }
+
+          if (engineResult !== 'tesSUCCESS') {
+            toast.dismiss(toastId);
+            setTxPreview({
+              ...preview,
+              status: 'error',
+              errorMessage: simResult.engine_result_message || engineResult
+            });
+            return;
+          }
+
+          if (priceImpactSim !== null && priceImpactSim > slippage) {
+            toast.dismiss(toastId);
+            setTxPreview({
+              ...preview,
+              status: 'warning',
+              warningMessage: `Price impact (${priceImpactSim.toFixed(2)}%) exceeds your ${slippage}% slippage tolerance`
+            });
+            setPendingTx({ tx, deviceWallet, toastId: null });
+            return;
+          }
+
+          toast.dismiss(toastId);
+          setTxPreview(preview);
+          setPendingTx({ tx, deviceWallet, toastId: null });
+          return;
+
+        } catch (simErr) {
+          console.warn('[Swap] Simulation failed, proceeding without preview:', simErr.message);
+        }
+
+        // Fallback: submit directly if simulation unavailable
+        toast.loading('Submitting...', { id: toastId });
+        const submitResult = await submitTransaction(deviceWallet, tx);
+        const txHash = submitResult.hash || submitResult.tx_json?.hash;
+        const engineResult = submitResult.engine_result;
+
+        if (engineResult !== 'tesSUCCESS') {
+          toast.error('Rejected', { id: toastId, description: engineResult });
+          return;
+        }
+
+        toast.loading('Submitted', { id: toastId, description: 'Waiting for confirmation...' });
+        let validated = false;
+        let txResult = null;
+        for (let i = 0; i < 15; i++) {
+          await new Promise(r => setTimeout(r, 500));
+          try {
+            const txRes = await api.get(`${BASE_URL}/tx/${txHash}`);
+            if (txRes.data?.validated) {
+              validated = true;
+              txResult = txRes.data?.meta?.TransactionResult || txRes.data?.engine_result;
+              break;
+            }
+          } catch (e) { /* continue */ }
+        }
+
+        if (!validated) {
+          toast.success('Swap submitted', { id: toastId, description: 'Validation pending...' });
+          setAmount1(''); setAmount2(''); setLimitPrice('');
+          setSync((s) => s + 1); setIsSwapped((v) => !v);
+          return;
+        }
+
+        if (txResult === 'tesSUCCESS') {
+          const balanceValue = parseFloat(accountPairBalance?.curr1?.value || 0);
+          const soldAllTokens = curr1.currency !== 'XRP' &&
+            accountPairBalance?.curr1?.value &&
+            Math.abs(balanceValue - fAmount1Final) < 0.000001;
+
+          if (soldAllTokens) {
+            const tokenData = { issuer: curr1.issuer, currency: curr1.currency, name: curr1.name };
+            toast.success('Swap complete!', {
+              id: toastId,
+              description: 'Remove trustline to free 0.2 XRP?',
+              action: { label: 'Remove', onClick: () => onRemoveTrustline(tokenData) },
+              duration: 10000
+            });
+          } else {
+            toast.success('Swap complete!', { id: toastId, description: `TX: ${txHash.slice(0, 8)}...` });
+          }
+          setAmount1(''); setAmount2(''); setLimitPrice('');
+          setSync((s) => s + 1); setIsSwapped((v) => !v);
+        } else if (txResult === 'tecKILLED') {
+          toast.error('No liquidity', { id: toastId, description: 'Order couldn\'t be filled at this price' });
+        } else if (txResult === 'tecPATH_PARTIAL' || txResult === 'tecPATH_DRY') {
+          toast.error('No liquidity path', { id: toastId, description: 'Try a smaller amount or increase slippage' });
+        } else if (txResult === 'tecUNFUNDED_PAYMENT') {
+          toast.error('Insufficient funds', { id: toastId, description: 'Not enough balance for this swap' });
+        } else {
+          toast.error('Swap failed', { id: toastId, description: txResult });
+        }
+      } else {
+        // Limit order via OfferCreate
+        const lp = Number(currentLimitPrice);
+        let takerGets, takerPays;
+
+        if (currentRevert) {
+          const tokenAmount = fAmount1Final;
+          const xrpAmount = tokenAmount * lp;
+          takerGets = { currency: curr1.currency, issuer: curr1.issuer, value: String(tokenAmount) };
+          takerPays = String(Math.floor(xrpAmount * 1000000));
+        } else {
+          const tokenAmount = fValue1Final;
+          const xrpAmount = tokenAmount * lp;
+          takerGets = String(Math.floor(xrpAmount * 1000000));
+          takerPays = { currency: curr2.currency, issuer: curr2.issuer, value: String(tokenAmount) };
+        }
+
+        const tx = {
+          Account: accountProfile.account,
+          TransactionType: 'OfferCreate',
+          TakerGets: takerGets,
+          TakerPays: takerPays,
+          Flags: 0,
+          SourceTag: 161803
+        };
+
+        // Calculate expiration if not "never"
+        if (orderExpiry !== 'never') {
+          const RIPPLE_EPOCH = 946684800;
+          const now = Math.floor(Date.now() / 1000) - RIPPLE_EPOCH;
+          let expiryHours = 0;
+          switch (orderExpiry) {
+            case '1h': expiryHours = 1; break;
+            case '24h': expiryHours = 24; break;
+            case '7d': expiryHours = 24 * 7; break;
+            case '30d': expiryHours = 24 * 30; break;
+            case 'custom': expiryHours = customExpiry; break;
+          }
+          if (expiryHours > 0) {
+            tx.Expiration = now + expiryHours * 60 * 60;
+          }
+        }
+
+        const [seqRes, feeRes] = await Promise.all([
+          api.get(`${BASE_URL}/submit/account/${accountProfile.account}/sequence`),
+          api.get(`${BASE_URL}/submit/fee`)
+        ]);
+
+        const prepared = {
+          ...tx,
+          Sequence: seqRes.data.sequence,
+          Fee: txFee || feeRes.data.base_fee,
+          LastLedgerSequence: seqRes.data.ledger_index + 20
+        };
+
+        const signed = deviceWallet.sign(prepared);
+        const result = await api.post(`${BASE_URL}/submit`, { tx_blob: signed.tx_blob });
+
+        if (result.data.engine_result === 'tesSUCCESS') {
+          toast.loading('Order submitted', { id: toastId, description: 'Waiting for validation...' });
+          const txHash = signed.hash;
+          let validated = false;
+          for (let i = 0; i < 15; i++) {
+            await new Promise(r => setTimeout(r, 500));
+            try {
+              const txRes = await api.get(`${BASE_URL}/tx/${txHash}`);
+              if (txRes.data?.validated === true || txRes.data?.meta?.TransactionResult === 'tesSUCCESS') {
+                validated = true;
+                break;
+              }
+            } catch (e) { /* continue */ }
+          }
+
+          if (validated) {
+            toast.success('Order placed!', { id: toastId, description: `TX: ${txHash.slice(0, 8)}...` });
+          } else {
+            toast.success('Order submitted!', { id: toastId, description: 'Validation pending...' });
+          }
+
+          setAmount1(''); setAmount2(''); setLimitPrice('');
+          setSync((s) => s + 1); setIsSwapped((v) => !v);
+        } else {
+          toast.error('Order failed', { id: toastId, description: result.data.engine_result });
+        }
+      }
     } catch (err) {
+      console.error('Swap error:', err);
+      toast.error('Swap failed', { description: err.message?.slice(0, 50) });
       dispatch(updateProcess(0));
     }
     setLoading(false);
@@ -1543,14 +1551,211 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
     }
   };
 
-  // Create trustline for missing currency
-  const onCreateTrustline = async (currency) => {
+  const onCreateTrustline = async (currency, silent = false) => {
+    if (!accountProfile?.account) return false;
+
+    if (!silent) dispatch(updateProcess(1));
     try {
-      // TODO: Implement trustline creation
-      openSnackbar(`Creating trustline for ${currency.currency}...`, 'info');
-    } catch (error) {
-      openSnackbar('Failed to create trustline', 'error');
+      const { Wallet } = await import('xrpl');
+      const { EncryptedWalletStorage, deviceFingerprint } = await import('src/utils/encryptedWalletStorage');
+
+      const walletStorage = new EncryptedWalletStorage();
+      const deviceKeyId = await deviceFingerprint.getDeviceId();
+      const storedPassword = await walletStorage.getWalletCredential(deviceKeyId);
+
+      if (!storedPassword) {
+        if (!silent) toast.error('Wallet locked', { description: 'Please unlock first' });
+        if (!silent) dispatch(updateProcess(0));
+        return false;
+      }
+
+      const walletData = await walletStorage.getWallet(accountProfile.account, storedPassword);
+      if (!walletData?.seed) {
+        if (!silent) toast.error('Wallet error', { description: 'Could not retrieve credentials' });
+        if (!silent) dispatch(updateProcess(0));
+        return false;
+      }
+
+      const algorithm = walletData.seed.startsWith('sEd') ? 'ed25519' : 'secp256k1';
+      const deviceWallet = Wallet.fromSeed(walletData.seed, { algorithm });
+
+      const tx = {
+        Account: accountProfile.account,
+        TransactionType: 'TrustSet',
+        LimitAmount: {
+          issuer: currency.issuer,
+          currency: currency.currency,
+          value: currency.supply ? new Decimal(currency.supply).toFixed(0) : '1000000000000000'
+        },
+        Flags: 0x00020000,
+        SourceTag: 161803
+      };
+
+      const [seqRes, feeRes] = await Promise.all([
+        api.get(`${BASE_URL}/submit/account/${accountProfile.account}/sequence`),
+        api.get(`${BASE_URL}/submit/fee`)
+      ]);
+
+      const prepared = {
+        ...tx,
+        Sequence: seqRes.data.sequence,
+        Fee: feeRes.data.base_fee,
+        LastLedgerSequence: seqRes.data.ledger_index + 20
+      };
+
+      const signed = deviceWallet.sign(prepared);
+      const result = await api.post(`${BASE_URL}/submit`, { tx_blob: signed.tx_blob });
+
+      if (result.data.engine_result === 'tesSUCCESS') {
+        const txHash = signed.hash;
+        for (let i = 0; i < 10; i++) {
+          await new Promise(r => setTimeout(r, 400));
+          try {
+            const txRes = await api.get(`${BASE_URL}/tx/${txHash}`);
+            if (txRes.data?.validated === true || txRes.data?.meta?.TransactionResult === 'tesSUCCESS') break;
+          } catch (e) { /* continue */ }
+        }
+
+        if (!silent) {
+          toast.success('Trustline set!', { description: `TX: ${txHash.slice(0, 8)}...` });
+          setSync((s) => s + 1);
+          setIsSwapped((v) => !v);
+        }
+        if (!silent) dispatch(updateProcess(0));
+        return true;
+      } else {
+        if (!silent) toast.error('Trustline failed', { description: result.data.engine_result });
+        if (!silent) dispatch(updateProcess(0));
+        return false;
+      }
+    } catch (err) {
+      console.error('Trustline error:', err);
+      if (!silent) toast.error('Trustline failed', { description: err.message?.slice(0, 50) });
+      if (!silent) dispatch(updateProcess(0));
+      return false;
     }
+  };
+
+  const onRemoveTrustline = async (tokenToRemove) => {
+    if (!accountProfile?.account) return;
+    if (!tokenToRemove?.issuer || !tokenToRemove?.currency) {
+      toast.error('Invalid token data');
+      return;
+    }
+
+    const toastId = toast.loading('Removing trustline...');
+    try {
+      const { Wallet } = await import('xrpl');
+      const { EncryptedWalletStorage, deviceFingerprint } = await import('src/utils/encryptedWalletStorage');
+
+      const walletStorage = new EncryptedWalletStorage();
+      const deviceKeyId = await deviceFingerprint.getDeviceId();
+      const storedPassword = await walletStorage.getWalletCredential(deviceKeyId);
+
+      if (!storedPassword) {
+        toast.error('Wallet locked', { id: toastId });
+        return;
+      }
+
+      const walletData = await walletStorage.getWallet(accountProfile.account, storedPassword);
+      if (!walletData?.seed) {
+        toast.error('Wallet error', { id: toastId });
+        return;
+      }
+
+      const algorithm = walletData.seed.startsWith('sEd') ? 'ed25519' : 'secp256k1';
+      const deviceWallet = Wallet.fromSeed(walletData.seed, { algorithm });
+
+      const tx = {
+        Account: accountProfile.account,
+        TransactionType: 'TrustSet',
+        LimitAmount: {
+          issuer: tokenToRemove.issuer,
+          currency: tokenToRemove.currency,
+          value: '0'
+        },
+        Flags: 0x00020000,
+        SourceTag: 161803
+      };
+
+      const [seqRes, feeRes] = await Promise.all([
+        api.get(`${BASE_URL}/submit/account/${accountProfile.account}/sequence`),
+        api.get(`${BASE_URL}/submit/fee`)
+      ]);
+
+      const prepared = {
+        ...tx,
+        Sequence: seqRes.data.sequence,
+        Fee: feeRes.data.base_fee,
+        LastLedgerSequence: seqRes.data.ledger_index + 20
+      };
+
+      const signed = deviceWallet.sign(prepared);
+      const result = await api.post(`${BASE_URL}/submit`, { tx_blob: signed.tx_blob });
+
+      if (result.data.engine_result === 'tesSUCCESS') {
+        toast.success('Trustline removed!', { id: toastId, description: '0.2 XRP freed' });
+        setSync((s) => s + 1);
+      } else {
+        toast.error('Remove failed', { id: toastId, description: result.data.engine_result });
+      }
+    } catch (err) {
+      console.error('Remove trustline error:', err);
+      toast.error('Remove failed', { id: toastId, description: err.message?.slice(0, 50) });
+    }
+  };
+
+  const handleConfirmSwap = async () => {
+    if (!pendingTx) return;
+    const { tx, deviceWallet } = pendingTx;
+    const toastId = toast.loading('Executing swap...');
+
+    setTxPreview(null);
+    setPendingTx(null);
+
+    try {
+      const submitResult = await submitTransaction(deviceWallet, tx);
+      const txHash = submitResult.hash || submitResult.tx_json?.hash;
+      const engineResult = submitResult.engine_result;
+
+      if (engineResult !== 'tesSUCCESS') {
+        toast.error('Rejected', { id: toastId, description: engineResult });
+        return;
+      }
+
+      toast.loading('Confirming...', { id: toastId });
+      let validated = false;
+      let txResult = null;
+      for (let i = 0; i < 15; i++) {
+        await new Promise(r => setTimeout(r, 500));
+        try {
+          const txRes = await api.get(`${BASE_URL}/tx/${txHash}`);
+          if (txRes.data?.validated) {
+            validated = true;
+            txResult = txRes.data?.meta?.TransactionResult || txRes.data?.engine_result;
+            break;
+          }
+        } catch (e) { /* continue */ }
+      }
+
+      if (validated && txResult === 'tesSUCCESS') {
+        toast.success('Swap complete!', { id: toastId, description: `TX: ${txHash.slice(0, 8)}...` });
+      } else if (validated) {
+        toast.error('Swap failed', { id: toastId, description: txResult });
+      } else {
+        toast.success('Swap submitted', { id: toastId, description: 'Confirming...' });
+      }
+
+      setAmount1(''); setAmount2(''); setLimitPrice('');
+      setSync((s) => s + 1); setIsSwapped((v) => !v);
+    } catch (err) {
+      toast.error('Swap failed', { id: toastId, description: err.message?.slice(0, 50) });
+    }
+  };
+
+  const handleCancelPreview = () => {
+    setTxPreview(null);
+    setPendingTx(null);
   };
 
   const handlePlaceOrder = (e) => {
@@ -1569,12 +1774,12 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
 
     if (fAmount1 > 0 && fAmount2 > 0) {
       if (orderType === 'limit' && !limitPrice) {
-        openSnackbar('Please enter a limit price!', 'error');
+        toast.error('Please enter a limit price!');
         return;
       }
       onSwap();
     } else {
-      openSnackbar('Invalid values! Please enter amounts for both currencies.', 'error');
+      toast.error('Invalid values! Please enter amounts for both currencies.');
     }
   };
 
@@ -1675,11 +1880,8 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
     setToken2(tempToken1);
     setRevert(!revert);
 
-    // Update the pair with switched tokens
-    setPair({
-      curr1: tempToken2,
-      curr2: tempToken1
-    });
+    // Note: setPair is handled by the useEffect([revert, token1, token2]) to keep
+    // curr1/curr2 stable and avoid flipping the WS balance subscription params.
 
     // Update URL with switched tokens - only if we're not loading from URL
     if (urlParsed && !isLoadingFromUrl && typeof window !== 'undefined') {
@@ -2222,9 +2424,11 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
           >
             {token.user || token.name || token.currency}
           </span>
-          <span className={cn('text-[12px]', darkMode ? 'text-white/30' : 'text-gray-400')}>•</span>
+          {(token.kyc || token.isOMCF === 'yes') && (
+            <CheckCircle size={14} className="text-primary flex-shrink-0" />
+          )}
           <span className={cn('text-[12px]', darkMode ? 'text-white/40' : 'text-gray-500')}>
-            ({token.name || token.currency})
+            {token.name || token.currency}
           </span>
         </div>
         <p
@@ -2236,43 +2440,29 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
           {token.issuer || 'XRPL'}
         </p>
       </div>
-      <div className="flex items-center gap-2">
-        <span
-          className={cn(
-            'px-2 py-1 text-[10px] font-semibold uppercase rounded',
-            darkMode ? 'bg-white/10 text-white/60' : 'bg-gray-100 text-gray-500'
-          )}
-        >
-          Token
-        </span>
-        {(token.kyc || token.isOMCF === 'yes') && (
-          <span
-            className={cn(
-              'flex items-center gap-1 px-2 py-1 text-[10px] font-semibold uppercase rounded',
-              darkMode ? 'bg-blue-500/20 text-blue-400' : 'bg-blue-100 text-blue-600'
-            )}
-          >
-            ✓ Verified
-          </span>
-        )}
-        <div className="text-right min-w-[50px]">
+      <div className="text-right min-w-[60px]">
+        {token.pro24h !== undefined && token.pro24h !== null ? (
           <span
             className={cn(
               'text-[13px] font-medium tabular-nums',
-              darkMode ? 'text-white/70' : 'text-gray-600'
+              token.pro24h > 0 ? 'text-green-500' : token.pro24h < 0 ? 'text-red-500' : darkMode ? 'text-white/70' : 'text-gray-600'
             )}
           >
+            {token.pro24h > 0 ? '+' : ''}{token.pro24h.toFixed(1)}%
+          </span>
+        ) : (
+          <span className={cn('text-[13px] font-medium tabular-nums', darkMode ? 'text-white/70' : 'text-gray-600')}>
             {token.holders?.toLocaleString() || '-'}
           </span>
-          <p
-            className={cn(
-              'text-[9px] uppercase tracking-wide',
-              darkMode ? 'text-white/30' : 'text-gray-400'
-            )}
-          >
-            Holders
-          </p>
-        </div>
+        )}
+        <p
+          className={cn(
+            'text-[9px] uppercase tracking-wide',
+            darkMode ? 'text-white/30' : 'text-gray-400'
+          )}
+        >
+          {token.pro24h !== undefined && token.pro24h !== null ? '24h' : 'Holders'}
+        </p>
       </div>
     </div>
   );
@@ -2293,7 +2483,6 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
             ? 'border-white/[0.08] hover:border-primary/30 hover:bg-white/[0.02]'
             : 'border-gray-200 hover:border-primary/30 hover:bg-gray-50'
         )}
-        style={{ background: 'transparent' }}
       >
         <div className="relative flex-shrink-0">
           <img
@@ -2518,6 +2707,210 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
 
   return (
     <div className="w-full">
+      {/* Transaction Preview Modal */}
+      {txPreview && (
+        <div
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/85 backdrop-blur-[8px]"
+          onClick={handleCancelPreview}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className={cn(
+              'rounded-[20px] p-5 max-w-[360px] w-[92%] shadow-[0_24px_80px_rgba(0,0,0,0.6)]',
+              darkMode
+                ? 'bg-[#0d0d0f] border border-white/[0.08]'
+                : 'bg-white border border-black/[0.08]'
+            )}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-[10px]">
+                {txPreview.status === 'error' && (
+                  <div className="w-9 h-9 rounded-[10px] bg-red-500/15 flex items-center justify-center">
+                    <X size={20} className="text-[#ef4444]" />
+                  </div>
+                )}
+                {txPreview.status === 'warning' && (
+                  <div className="w-9 h-9 rounded-[10px] bg-amber-500/15 flex items-center justify-center">
+                    <AlertTriangle size={20} className="text-[#f59e0b]" />
+                  </div>
+                )}
+                {txPreview.status === 'success' && (
+                  <div className="w-9 h-9 rounded-[10px] bg-green-500/15 flex items-center justify-center">
+                    <CheckCircle size={20} className="text-[#22c55e]" />
+                  </div>
+                )}
+                <span className={cn('text-[16px] font-semibold', isDark ? 'text-white' : 'text-black')}>
+                  {txPreview.status === 'error' ? 'Swap Will Fail' : txPreview.status === 'warning' ? 'Review Swap' : 'Confirm Swap'}
+                </span>
+              </div>
+              <button
+                onClick={handleCancelPreview}
+                className={cn(
+                  'border-none rounded-lg cursor-pointer p-1.5 flex items-center justify-center',
+                  isDark ? 'bg-white/5 text-white/40' : 'bg-black/5 text-black/40'
+                )}
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* Error/Warning Message */}
+            {(txPreview.errorMessage || txPreview.warningMessage) && (
+              <div className={cn(
+                'px-3 py-2.5 rounded-[10px] mb-3',
+                txPreview.errorMessage ? 'bg-red-500/[0.08]' : 'bg-amber-500/[0.08]'
+              )}>
+                <span className={cn('text-[12px]', txPreview.errorMessage ? 'text-[#ef4444]' : 'text-[#f59e0b]')}>
+                  {txPreview.errorMessage || txPreview.warningMessage}
+                </span>
+              </div>
+            )}
+
+            {/* Available Liquidity Options */}
+            {(txPreview.maxAvailable || txPreview.workingAmount) && (
+              <div className={cn(
+                'p-3 rounded-[10px] mb-3 border',
+                isDark ? 'bg-white/[0.03] border-white/[0.06]' : 'bg-black/[0.02] border-black/[0.06]'
+              )}>
+                {txPreview.maxAvailable && txPreview.actualSlippage && (
+                  <div className={cn(
+                    txPreview.workingAmount && 'mb-3 pb-3 border-b',
+                    txPreview.workingAmount && (isDark ? 'border-white/[0.06]' : 'border-black/[0.06]')
+                  )}>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className={cn('text-[10px] uppercase tracking-[0.5px]', isDark ? 'text-white/40' : 'text-black/40')}>Option 1: Higher slippage</span>
+                      <span className="text-[10px] px-[5px] py-0.5 rounded bg-amber-500/[0.12] text-[#f59e0b]">{txPreview.actualSlippage}% impact</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className={cn('text-[14px] font-semibold', isDark ? 'text-white' : 'text-black')}>~{fNumber(txPreview.maxAvailable)} {txPreview.receiving?.name}</span>
+                      {parseFloat(txPreview.actualSlippage) <= 50 && (
+                        <button
+                          onClick={() => {
+                            const newSlippage = Math.ceil(parseFloat(txPreview.actualSlippage) + 1);
+                            setSlippage(newSlippage);
+                            setTxPreview(null);
+                            setPendingTx(null);
+                            toast.success(`Slippage set to ${newSlippage}%`, { duration: 5000 });
+                          }}
+                          className={cn(
+                            'px-2.5 py-1.5 rounded-md bg-transparent font-medium cursor-pointer text-[10px] border',
+                            isDark ? 'border-white/10 text-white' : 'border-black/10 text-black'
+                          )}
+                        >
+                          Set {Math.ceil(parseFloat(txPreview.actualSlippage) + 1)}%
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
+                {txPreview.workingAmount && (
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className={cn('text-[10px] uppercase tracking-[0.5px]', isDark ? 'text-white/40' : 'text-black/40')}>Option 2: Keep {slippage}% slippage</span>
+                      <span className="text-[10px] px-[5px] py-0.5 rounded bg-green-500/[0.12] text-[#22c55e]">Guaranteed</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="text-[14px] font-semibold text-[#22c55e]">~{fNumber(txPreview.workingOutput || 0)} {txPreview.receiving?.name}</div>
+                        <div className={cn('text-[10px]', isDark ? 'text-white/40' : 'text-black/40')}>for {fNumber(txPreview.workingAmount)} {txPreview.sending?.name}</div>
+                      </div>
+                      <button
+                        onClick={() => {
+                          const newAmount = txPreview.workingAmount.toFixed(6);
+                          setAmount1(newAmount);
+                          if (txPreview.workingOutput) {
+                            setAmount2(txPreview.workingOutput.toFixed(6));
+                          } else {
+                            const calculated = calcQuantity(newAmount, 'AMOUNT');
+                            if (calculated) setAmount2(calculated);
+                          }
+                          setTxPreview(null);
+                          setPendingTx(null);
+                          toast.success('Amount adjusted', {
+                            description: `${fNumber(txPreview.workingAmount)} ${txPreview.sending?.name} → ~${fNumber(txPreview.workingOutput || 0)} ${txPreview.receiving?.name}`,
+                            duration: 6000
+                          });
+                        }}
+                        className="px-3 py-1.5 rounded-md border-none bg-[#22c55e] text-white font-semibold cursor-pointer text-[10px]"
+                      >
+                        Use this
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Transaction Details */}
+            <div className={cn('rounded-[10px] p-3 mb-3', isDark ? 'bg-white/[0.03]' : 'bg-black/[0.02]')}>
+              <div className="flex justify-between items-center mb-2">
+                <span className={cn('text-[11px] uppercase tracking-[0.5px]', isDark ? 'text-white/40' : 'text-black/40')}>Send</span>
+                <span className={cn('font-medium text-[13px]', isDark ? 'text-white' : 'text-black')}>{fNumber(txPreview.sending?.amount)} {txPreview.sending?.name}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className={cn('text-[11px] uppercase tracking-[0.5px]', isDark ? 'text-white/40' : 'text-black/40')}>Receive</span>
+                <div className="text-right">
+                  {txPreview.receiving?.actual > 0 ? (
+                    <span className="text-[#22c55e] font-semibold text-[13px]">{fNumber(txPreview.receiving.actual)} {txPreview.receiving?.name}</span>
+                  ) : (
+                    <div>
+                      <span className="text-[#ef4444] font-medium text-[12px] italic">Failed</span>
+                      <div className={cn('text-[9px] mt-0.5', isDark ? 'text-white/30' : 'text-black/30')}>Would lose tx fee</div>
+                    </div>
+                  )}
+                </div>
+              </div>
+              {(txPreview.priceImpact !== null && txPreview.priceImpact > 0.01) || txPreview.receiving?.actual > 0 ? (
+                <div className={cn('mt-2.5 pt-2.5 border-t', isDark ? 'border-white/[0.06]' : 'border-black/[0.06]')}>
+                  {txPreview.priceImpact !== null && txPreview.priceImpact > 0.01 && (
+                    <div className="flex justify-between mb-1">
+                      <span className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-black/40')}>Impact</span>
+                      <span className={cn('font-medium text-[11px]', txPreview.priceImpact > 5 ? 'text-[#ef4444]' : txPreview.priceImpact > 2 ? 'text-[#f59e0b]' : 'text-[#22c55e]')}>-{txPreview.priceImpact.toFixed(2)}%</span>
+                    </div>
+                  )}
+                  {txPreview.receiving?.actual > 0 && txPreview.sending?.amount > 0 && (
+                    <div className="flex justify-between">
+                      <span className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-black/40')}>Rate</span>
+                      <span className={cn('text-[11px]', isDark ? 'text-white/60' : 'text-black/60')}>1 {txPreview.receiving?.name} = {fNumber(txPreview.sending.amount / txPreview.receiving.actual)} {txPreview.sending?.name}</span>
+                    </div>
+                  )}
+                </div>
+              ) : null}
+            </div>
+
+            {/* Preview Badge */}
+            <div className={cn('text-center mb-3 p-1.5 rounded-md', isDark ? 'bg-white/[0.03]' : 'bg-black/[0.02]')}>
+              <span className={cn('text-[10px]', isDark ? 'text-white/40' : 'text-black/40')}>Preview · No funds sent yet</span>
+            </div>
+
+            {/* Buttons */}
+            <div className="flex gap-2">
+              <button
+                onClick={handleCancelPreview}
+                className={cn(
+                  'flex-1 p-3 rounded-[10px] bg-transparent font-medium cursor-pointer text-[13px] border',
+                  isDark ? 'border-white/10 text-white' : 'border-black/10 text-black'
+                )}
+              >
+                Cancel
+              </button>
+              {txPreview.status !== 'error' && pendingTx && (
+                <button
+                  onClick={handleConfirmSwap}
+                  className={cn(
+                    'flex-1 p-3 rounded-[10px] border-none text-white font-semibold cursor-pointer text-[13px]',
+                    txPreview.status === 'warning' ? 'bg-[#f59e0b]' : 'bg-[#22c55e]'
+                  )}
+                >
+                  {txPreview.status === 'warning' ? 'Swap Anyway' : 'Confirm'}
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Token Selector Modal */}
       {(panel1Open || panel2Open) &&
         renderTokenSelectorPanel(currentSelectorToken, selectorTitle, isToken1Selector, () => {
@@ -2568,32 +2961,35 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                 Limit
               </button>
             </div>
-            <div className="flex items-center gap-2">
+            <div className={cn(
+              'flex items-center p-1 rounded-xl backdrop-blur-md border-[1.5px] gap-1',
+              darkMode ? 'bg-white/5 border-white/[0.06]' : 'bg-gray-100 border-gray-200'
+            )}>
               <button
                 onClick={() => setShowSettingsModal(true)}
                 className={cn(
-                  'flex items-center gap-2 px-4 py-2.5 rounded-xl text-[12px] font-bold transition-all border-[1.5px]',
+                  'flex items-center gap-1.5 px-3 py-2 rounded-lg text-[13px] font-bold transition-all duration-300',
                   darkMode
-                    ? 'bg-white/5 border-white/5 text-white/50 hover:text-primary hover:border-primary/30 hover:bg-primary/5'
-                    : 'bg-gray-50 border-gray-200 text-gray-500 hover:text-primary hover:border-primary/30'
+                    ? 'text-white/40 hover:text-white/70'
+                    : 'text-gray-500 hover:text-gray-900'
                 )}
               >
-                <Settings size={14} className="opacity-70" />
+                <Settings size={14} />
                 <span>{slippage}%</span>
               </button>
               <button
                 onClick={handleShareUrl}
                 aria-label="Share swap URL"
                 className={cn(
-                  'p-2.5 rounded-xl transition-all border-[1.5px]',
+                  'flex items-center px-3 py-2 rounded-lg transition-all duration-300',
                   darkMode
-                    ? 'bg-white/5 border-white/5 text-white/50 hover:text-primary hover:border-primary/30 hover:bg-primary/5'
-                    : 'bg-gray-50 border-gray-200 text-gray-500 hover:text-primary hover:border-primary/30'
+                    ? 'text-white/40 hover:text-white/70'
+                    : 'text-gray-500 hover:text-gray-900'
                 )}
               >
-                <Share2 size={14} className="opacity-70" />
+                <Share2 size={14} />
               </button>
-              <ApiButton />
+              <ApiButton className="!rounded-lg !border-0 !py-2 !px-3 !text-[13px] !font-bold !bg-transparent" />
             </div>
           </div>
 
@@ -3214,10 +3610,10 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                   <div className="space-y-3 mb-4">
                     {/* Limit Price Section */}
                     <div
-                      className={cn('rounded-xl p-3', darkMode ? 'bg-white/[0.03]' : 'bg-gray-50')}
-                      style={{
-                        border: `1px solid ${darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`
-                      }}
+                      className={cn(
+                        'rounded-xl p-3 border',
+                        darkMode ? 'bg-white/[0.03] border-white/[0.08]' : 'bg-gray-50 border-black/[0.08]'
+                      )}
                     >
                       <div className="flex items-center justify-between mb-2">
                         <span
@@ -3274,14 +3670,11 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                           if (!isNaN(Number(val)) || val === '') setLimitPrice(val);
                         }}
                         className={cn(
-                          'w-full px-3 py-2.5 rounded-lg text-[18px] font-mono bg-transparent outline-none transition-colors text-center',
+                          'w-full px-3 py-2.5 rounded-lg text-[18px] font-mono bg-transparent outline-none transition-colors text-center border',
                           darkMode
-                            ? 'text-white placeholder:text-white/20'
-                            : 'text-gray-900 placeholder:text-gray-400'
+                            ? 'text-white placeholder:text-white/20 border-white/10'
+                            : 'text-gray-900 placeholder:text-gray-400 border-black/10'
                         )}
-                        style={{
-                          border: `1px solid ${darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`
-                        }}
                       />
 
                       {/* Best Bid / Spread / Best Ask - Compact Row */}
@@ -3371,12 +3764,9 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                     {/* Order Expiration - Segmented Control */}
                     <div
                       className={cn(
-                        'flex rounded-lg overflow-hidden',
-                        darkMode ? 'bg-white/[0.03]' : 'bg-gray-100'
+                        'flex rounded-lg overflow-hidden border',
+                        darkMode ? 'bg-white/[0.03] border-white/[0.08]' : 'bg-gray-100 border-black/[0.08]'
                       )}
-                      style={{
-                        border: `1px solid ${darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`
-                      }}
                     >
                       {[
                         { value: 'never', label: 'GTC', title: 'Good Til Cancelled' },
@@ -3416,9 +3806,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                             ? 'text-white/40 hover:text-white/60 hover:bg-white/5'
                             : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
                       )}
-                      style={{
-                        border: `1px solid ${showOrderbook ? 'var(--primary)' : darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`
-                      }}
+                      style={{ border: `1px solid ${showOrderbook ? 'var(--primary)' : darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}` }}
                     >
                       <List size={12} />
                       {showOrderbook ? 'Hide' : 'Show'} Order Book
@@ -3430,12 +3818,9 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                 {orderType === 'limit' && amount1 && amount2 && Math.abs(priceImpact) > 0.01 && (
                   <div
                     className={cn(
-                      'flex items-center justify-between mb-4 px-3 py-2 rounded-lg',
-                      darkMode ? 'bg-white/5' : 'bg-gray-100'
+                      'flex items-center justify-between mb-4 px-3 py-2 rounded-lg border',
+                      darkMode ? 'bg-white/5 border-[rgba(66,133,244,0.15)]' : 'bg-gray-100 border-[rgba(66,133,244,0.1)]'
                     )}
-                    style={{
-                      border: `1px solid ${darkMode ? 'rgba(66,133,244,0.15)' : 'rgba(66,133,244,0.1)'}`
-                    }}
                   >
                     <span
                       className={cn(
@@ -3452,41 +3837,6 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                       {priceImpact > 0 ? '+' : ''}
                       {priceImpact}%
                     </span>
-                  </div>
-                )}
-
-                {/* Debug Panel - Hidden on mobile */}
-                {debugInfo && (
-                  <div
-                    className={cn(
-                      'mb-4 p-2 rounded-lg border font-mono text-[9px] hidden sm:block',
-                      darkMode
-                        ? 'border-yellow-500/30 bg-yellow-500/10'
-                        : 'border-yellow-200 bg-yellow-50'
-                    )}
-                  >
-                    <div className="font-medium mb-1 text-yellow-600 text-[10px]">Debug:</div>
-                    <div className="space-y-0.5">
-                      <div>
-                        wallet_type:{' '}
-                        <span className="text-blue-400">
-                          {debugInfo.wallet_type || 'undefined'}
-                        </span>
-                      </div>
-                      <div>
-                        account:{' '}
-                        <span className="opacity-70">{debugInfo.account || 'undefined'}</span>
-                      </div>
-                      <div>
-                        walletKeyId:{' '}
-                        <span className={debugInfo.walletKeyId ? 'text-green-400' : 'text-red-400'}>
-                          {debugInfo.walletKeyId || 'undefined'}
-                        </span>
-                      </div>
-                      <div>
-                        seed: <span className="text-green-400 break-all">{debugInfo.seed}</span>
-                      </div>
-                    </div>
                   </div>
                 )}
 
@@ -3536,19 +3886,13 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
       {/* Floating Order Book Panel */}
       {showOrderbook && (
         <div
-          style={{
-            position: 'fixed',
-            left: orderBookPos.x,
-            top: orderBookPos.y,
-            zIndex: 9999,
-            width: 320,
-            borderRadius: 8,
-            border: `1px solid ${darkMode ? 'rgba(255,255,255,0.12)' : '#e5e7eb'}`,
-            background: darkMode ? 'rgba(0,0,0,0.95)' : 'rgba(255,255,255,0.98)',
-            boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
-            overflow: 'hidden',
-            userSelect: 'none'
-          }}
+          className={cn(
+            'fixed z-[9999] w-[320px] rounded-lg overflow-hidden select-none shadow-[0_8px_32px_rgba(0,0,0,0.3)]',
+            darkMode
+              ? 'border border-white/[0.12] bg-black/95'
+              : 'border border-gray-200 bg-white/[0.98]'
+          )}
+          style={{ left: orderBookPos.x, top: orderBookPos.y }}
         >
           {/* Drag Handle */}
           <div
@@ -3588,8 +3932,10 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
           ) : (
             <>
               <div
-                className="flex text-[10px] font-mono px-2 py-1.5 border-b"
-                style={{ borderColor: darkMode ? 'rgba(66,133,244,0.1)' : 'rgba(66,133,244,0.08)' }}
+                className={cn(
+                  'flex text-[10px] font-mono px-2 py-1.5 border-b',
+                  darkMode ? 'border-[rgba(66,133,244,0.1)]' : 'border-[rgba(66,133,244,0.08)]'
+                )}
               >
                 <span className={cn('flex-1', darkMode ? 'text-primary/40' : 'text-primary/40')}>
                   Price

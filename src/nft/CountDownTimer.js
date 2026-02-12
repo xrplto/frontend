@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { AppContext } from 'src/context/AppContext';
+import { ThemeContext } from 'src/context/AppContext';
 import { cn } from 'src/utils/cn';
 
 const DateTimeDisplay = ({ value, type, isDanger, isDark }) => {
@@ -26,7 +26,7 @@ const getReturnValues = (countDown) => {
 };
 
 export default function CountdownTimer({ targetDate }) {
-  const { themeName } = useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
   const isDark = themeName === 'XrplToDarkTheme';
 
   const countDownDate = new Date(targetDate).getTime();

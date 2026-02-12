@@ -1,10 +1,10 @@
 import { useState, useContext } from 'react';
-import { AppContext } from 'src/context/AppContext';
+import { ThemeContext } from 'src/context/AppContext';
 import { cn } from 'src/utils/cn';
 import { ChevronDown } from 'lucide-react';
 
 export default function TimePeriods() {
-  const { themeName } = useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
   const isDark = themeName === 'XrplToDarkTheme';
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);

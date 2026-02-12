@@ -25,7 +25,7 @@ import { ApiButton } from 'src/components/ApiEndpointsModal';
 
 // Utils & Context
 import { cn } from 'src/utils/cn';
-import { AppContext } from 'src/context/AppContext';
+import { ThemeContext, WalletContext, AppContext } from 'src/context/AppContext';
 import { normalizeAmount } from 'src/utils/parseUtils';
 import { fNumber, fIntNumber, getHashIcon } from 'src/utils/formatters';
 
@@ -129,7 +129,9 @@ export default function NFTActions({ nft }) {
   const anchorRef = useRef(null);
   const shareDropdownRef = useRef(null);
   const BASE_URL = 'https://api.xrpl.to/v1';
-  const { themeName, accountProfile, openSnackbar, setOpenWalletModal } = useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
+  const { accountProfile, setOpenWalletModal } = useContext(WalletContext);
+  const { openSnackbar } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
   const accountLogin = accountProfile?.account;
   const accountToken = accountProfile?.token;
@@ -311,7 +313,6 @@ export default function NFTActions({ nft }) {
   // Simulate transaction and show preview
   const simulateAndPreview = async (type, tx, onConfirm, description) => {
     setSimulating(true);
-    console.log('[NFTActions] simulateAndPreview:', type, JSON.stringify(tx, null, 2));
     try {
       // For buy offers, validate available balance first
       const isBuyOffer = tx.TransactionType === 'NFTokenCreateOffer' && tx.Flags === 0;
@@ -335,7 +336,6 @@ export default function NFTActions({ nft }) {
       }
 
       const result = await simulateTransaction(tx);
-      console.log('[NFTActions] Simulation result:', JSON.stringify(result, null, 2));
       const willSucceed = result.engine_result === 'tesSUCCESS';
       setTxPreview({
         type,
@@ -785,7 +785,6 @@ export default function NFTActions({ nft }) {
       tx.Owner = account; // NFT owner from nft prop
     }
 
-    console.log('[NFTActions] handleSubmitOffer tx:', JSON.stringify(tx, null, 2));
     const desc = isSell ? `List for ${offerAmount} XRP` : `Offer ${offerAmount} XRP`;
     await simulateAndPreview('offer', tx, executeOffer, desc);
   };

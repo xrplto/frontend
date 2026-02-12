@@ -1,7 +1,7 @@
 import { useState, useEffect, useContext } from 'react';
 import { createPortal } from 'react-dom';
 import api from 'src/utils/api';
-import { AppContext } from 'src/context/AppContext';
+import { ThemeContext } from 'src/context/AppContext';
 import { cn } from 'src/utils/cn';
 import { getNftCoverUrl, parseTransaction } from 'src/utils/parseUtils';
 import Link from 'next/link';
@@ -27,7 +27,7 @@ const BASE_URL = 'https://api.xrpl.to';
 
 // NFT Image component with lazy loading and tooltip
 const NftImage = ({ nftTokenId, className, fallback }) => {
-  const { themeName } = useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
   const isDark = themeName === 'XrplToDarkTheme';
   const [nftData, setNftData] = useState(null);
   const [imageUrl, setImageUrl] = useState(null);
@@ -214,7 +214,7 @@ const timeAgo = (ts) => {
 };
 
 const AccountHistory = ({ account, compact = false }) => {
-  const { themeName } = useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
   const isDark = themeName === 'XrplToDarkTheme';
 
   // View toggle

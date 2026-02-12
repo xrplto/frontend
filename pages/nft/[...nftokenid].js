@@ -13,10 +13,10 @@ import TokenTabs from 'src/TokenDetail/components/TokenTabs';
 import { addTokenToTabs } from 'src/hooks/useTokenTabs';
 const NFTDetail = lazy(() => import('src/nft'));
 
-import { AppContext } from 'src/context/AppContext';
+import { ThemeContext } from 'src/context/AppContext';
 
 export default function Overview({ nft }) {
-  const { themeName } = useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
   const isDark = themeName === 'XrplToDarkTheme';
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 960;
 

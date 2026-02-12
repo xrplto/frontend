@@ -78,6 +78,12 @@ const isDark = themeName === 'XrplToDarkTheme';
 3. Always decrypt from IndexedDB if localStorage is empty
 4. Clear OAuth session data immediately after wallet creation
 
+### IndexedDB Rules
+1. **Never hardcode a DB version number.** Always open without a version first (`indexedDB.open(name)`), then bump `db.version + 1` only if stores are missing.
+2. **Always close DB connections** after one-off reads. An unclosed connection blocks all version upgrades, causing timeouts across the entire app.
+3. **Never do two-phase open** (detect then reopen). Open once, check stores, return if they exist, otherwise close and reopen with version bump.
+4. The `_getHmacKey()` in `deviceFingerprint` opens its own connection — it must call `db.close()` when done.
+
 ### Key Files
 - `src/utils/encryptedWalletStorage.js` - Wallet encryption/storage
 - `src/components/Wallet.js` - Auth UI & OAuth handlers

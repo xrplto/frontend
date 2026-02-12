@@ -6,7 +6,7 @@ import { useState, useEffect, useContext } from 'react';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import ScrollToTop from 'src/components/ScrollToTop';
-import { AppContext } from 'src/context/AppContext';
+import { ThemeContext } from 'src/context/AppContext';
 
 import TokenList from 'src/TokenList';
 import { SummaryTag } from 'src/TokenList/Summary';
@@ -17,7 +17,7 @@ function getInitialTokens(data) {
 }
 
 function Overview({ data }) {
-  const { themeName } = useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
   const isDark = themeName === 'XrplToDarkTheme';
   const [tokens, setTokens] = useState(() => getInitialTokens(data));
 

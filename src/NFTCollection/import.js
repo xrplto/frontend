@@ -1,55 +1,29 @@
 import React from 'react';
 import api from 'src/utils/api';
-import { useState, useEffect, useRef } from 'react';
-
-// Emotion styled
-import styled from '@emotion/styled';
-
-// Simple styled replacements for MUI components
-const Stack = styled('div')`
-  display: flex;
-  flex-direction: ${(props) => (props.direction === 'row' ? 'row' : 'column')};
-  gap: ${(props) => (props.spacing ? `${props.spacing * 8}px` : '0')};
-  align-items: ${(props) => props.alignItems || 'stretch'};
-  justify-content: ${(props) => props.justifyContent || 'flex-start'};
-  margin-bottom: ${(props) => (props.mb ? `${props.mb * 8}px` : '0')};
-  margin-top: ${(props) => (props.mt ? `${props.mt * 8}px` : '0')};
-`;
-
-const Typography = styled('span')`
-  display: block;
-  font-size: ${(props) => {
-    const v = props.variant;
-    if (v === 'p3' || v === 'p4') return '13px';
-    if (v === 'd4') return '14px';
-    if (v === 's2') return '12px';
-    if (v === 'h4') return '20px';
-    return '14px';
-  }};
-  color: ${(props) => (props.color === 'error' ? '#f44336' : 'inherit')};
-`;
-
-// Lucide Icons
+import { useState, useEffect, useRef, useContext } from 'react';
 import {
   Image as ImageIcon,
-  Send as SendIcon,
-  X as CloseIcon,
+  Send,
+  X,
   XCircle as CancelIcon,
   PlusCircle as AddCircleIcon,
   XOctagon as HighlightOffOutlinedIcon,
   User as PermIdentityIcon,
-  ArrowDownUp as ImportExportIcon
+  ArrowDownUp as ImportExportIcon,
+  AlertCircle,
+  CheckCircle
 } from 'lucide-react';
 
 // Loader
 import { ClipLoader } from '../components/Spinners';
 
 // Context
-import { useContext } from 'react';
-import { AppContext } from 'src/context/AppContext';
+import { ThemeContext, WalletContext, AppContext } from 'src/context/AppContext';
 
 // Utils
 import { fNumber } from 'src/utils/formatters';
+import AddCostDialog from './AddCostDialog';
+import { cn } from 'src/utils/cn';
 
 // LoadingTextField component (inlined)
 const LoadingTextField = ({ type, value, uuid, setValid, startText, ...props }) => {
@@ -61,7 +35,9 @@ const LoadingTextField = ({ type, value, uuid, setValid, startText, ...props }) 
   const BASE_URL = 'https://api.xrpl.to/v1';
   const [status, setStatus] = useState(TEXT_EMPTY);
 
-  const { accountProfile } = useContext(AppContext);
+  const { accountProfile } = useContext(WalletContext);
+  const { themeName } = useContext(ThemeContext);
+  const isDark = themeName === 'XrplToDarkTheme';
 
   const checkValidation = (text, uuid) => {
     const account = accountProfile?.account;
@@ -116,33 +92,37 @@ const LoadingTextField = ({ type, value, uuid, setValid, startText, ...props }) 
   }, [status, setValid]);
 
   return (
-    <FormControl sx={{ m: 1 }} variant="outlined">
-      <OutlinedInput
-        {...props}
-        value={value}
-        autoComplete="new-password"
-        inputProps={{ autoComplete: 'off' }}
-        margin="dense"
-        endAdornment={
-          <InputAdornment position="end">
-            {status === 1 && <ClipLoader color="#ff0000" size={15} />}
-            {status === 2 && <CheckCircleIcon color="success" />}
-            {status === 3 && <ErrorIcon color="error" />}
-          </InputAdornment>
-        }
-        startAdornment={
-          <InputAdornment position="start" sx={{ mr: 0.1 }}>
+    <div className="mx-2 my-1">
+      <div className="relative">
+        {startText && (
+          <span
+            className={cn(
+              'absolute left-3 top-1/2 -translate-y-1/2 text-[13px]',
+              isDark ? 'text-white/60' : 'text-gray-600'
+            )}
+          >
             {startText}
-          </InputAdornment>
-        }
-        sx={{
-          '&.MuiTextField-root': {
-            marginTop: 1
-          }
-        }}
-      />
-      <FormHelperText id="outlined-helper-text"></FormHelperText>
-    </FormControl>
+          </span>
+        )}
+        <input
+          {...props}
+          value={value}
+          autoComplete="new-password"
+          className={cn(
+            'w-full rounded-lg border-[1.5px] px-3 py-2 text-[13px] font-normal outline-none transition-colors',
+            startText && 'pl-[200px]',
+            isDark
+              ? 'border-white/15 bg-transparent text-white placeholder:text-white/40 focus:border-[#137DFE]'
+              : 'border-gray-300 bg-white text-gray-900 placeholder:text-gray-400 focus:border-[#137DFE]'
+          )}
+        />
+        <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
+          {status === TEXT_CHECKING && <ClipLoader color="#ff0000" size={15} />}
+          {status === TEXT_VALID && <CheckCircle size={18} className="text-green-500" />}
+          {status === TEXT_INVALID && <AlertCircle size={18} className="text-red-500" />}
+        </div>
+      </div>
+    </div>
   );
 };
 
@@ -154,35 +134,52 @@ const LoadingButton = ({
   disabled,
   startIcon,
   endIcon,
-  ...props
+  onClick,
+  className
 }) => {
   const isDisabled = disabled || loading;
+  const { themeName } = useContext(ThemeContext);
+  const isDark = themeName === 'XrplToDarkTheme';
 
   const getStartIcon = () => {
     if (loading && loadingPosition === 'start') {
-      return <CircularProgress size={20} color="inherit" />;
+      return <ClipLoader color="inherit" size={18} />;
     }
     return startIcon;
   };
 
   const getEndIcon = () => {
     if (loading && loadingPosition === 'end') {
-      return <CircularProgress size={20} color="inherit" />;
+      return <ClipLoader color="inherit" size={18} />;
     }
     return endIcon;
   };
 
   const getChildren = () => {
     if (loading && loadingPosition === 'center' && !startIcon && !endIcon) {
-      return <CircularProgress size={20} color="inherit" />;
+      return <ClipLoader color="inherit" size={18} />;
     }
     return children;
   };
 
   return (
-    <Button {...props} disabled={isDisabled} startIcon={getStartIcon()} endIcon={getEndIcon()}>
+    <button
+      onClick={onClick}
+      disabled={isDisabled}
+      className={cn(
+        'flex items-center gap-2 rounded-lg border-[1.5px] px-4 py-2 text-[13px] font-normal transition-colors',
+        isDisabled
+          ? 'cursor-not-allowed opacity-40'
+          : isDark
+            ? 'border-[#137DFE] bg-[#137DFE]/10 text-[#137DFE] hover:bg-[#137DFE]/20'
+            : 'border-[#137DFE] bg-[#137DFE] text-white hover:bg-[#137DFE]/90',
+        className
+      )}
+    >
+      {getStartIcon()}
       {getChildren()}
-    </Button>
+      {getEndIcon()}
+    </button>
   );
 };
 
@@ -198,101 +195,6 @@ const CATEGORIES = [
   { title: 'Metaverse', icon: '🌐' }
 ];
 
-// Lucide Icons continued
-import { AlertCircle as ErrorIcon, CheckCircle as CheckCircleIcon } from 'lucide-react';
-import AddCostDialog from './AddCostDialog';
-
-// Import cn utility
-import { cn } from 'src/utils/cn';
-
-const CardWrapper = styled('div')(
-  ({ theme }) => `
-    border: dashed 3px;
-    border-radius: 6px;
-    padding: 5px;
-    width: fit-content;
-    &:hover {
-        cursor: pointer;
-    }
-`
-);
-
-const CardWrapperCircle = styled('div')(
-  ({ theme }) => `
-    border: dashed 3px;
-    border-radius: 50%;
-    padding: 5px;
-    width: fit-content;
-    overflow: hidden;
-    &:hover {
-        cursor: pointer;
-    }
-`
-);
-
-const CardWrapper3 = styled('div')(
-  ({ theme }) => `
-    border: dashed 3px;
-    border-radius: 6px;
-    padding: 5px;
-    // width: fit-content;
-    &:hover {
-        cursor: pointer;
-    }
-`
-);
-
-const CardOverlay = styled('div')(
-  ({ theme }) => `
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    position: absolute;
-    background: black;
-    inset: 0;
-    opacity: 0;
-    z-index: 1;
-    transition: opacity 0.5s;
-    &:hover {
-        opacity: 0.6;
-    }
-`
-);
-
-const CardOverlayCircle = styled('div')(
-  ({ theme }) => `
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    position: absolute;
-    background: black;
-    inset: 0;
-    opacity: 0;
-    z-index: 1;
-    transition: opacity 0.5s;
-    &:hover {
-        opacity: 0.6;
-    }
-`
-);
-
-const CustomSelect = styled('select')`
-  width: 100%;
-  padding: 12px 16px;
-  border: 1.5px solid rgba(255, 255, 255, 0.15);
-  border-radius: 8px;
-  background: transparent;
-  color: inherit;
-  font-size: 14px;
-  cursor: pointer;
-  &:focus {
-    outline: none;
-    border-color: #4285f4;
-  }
-`;
-
 export default function ImportCollection() {
   const BASE_URL = 'https://api.xrpl.to/v1';
 
@@ -301,7 +203,11 @@ export default function ImportCollection() {
   const fileRef3 = useRef();
   const fileRef4 = useRef();
 
-  const { accountProfile, openSnackbar } = useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
+  const { accountProfile } = useContext(WalletContext);
+  const { openSnackbar } = useContext(AppContext);
+  const isDark = themeName === 'XrplToDarkTheme';
+
   const accountAdmin = accountProfile?.account;
   const accountToken = accountProfile?.token;
 
@@ -316,7 +222,7 @@ export default function ImportCollection() {
   const [type, setType] = useState('normal');
   const [privateCollection, setPrivateCollection] = useState('no');
 
-  const [issuer, setIssuer] = useState(''); // rJeBz69krYh8sXb8uKsEE22ADzbi1Z4yF2
+  const [issuer, setIssuer] = useState('');
   const [taxons, setTaxons] = useState([]);
 
   const [selectedTaxons, setSelectedTaxons] = useState([]);
@@ -348,7 +254,6 @@ export default function ImportCollection() {
 
     setLoadingTaxons(true);
 
-    // https://api.xrpl.to/v1/taxon/issuer/rJeBz69krYh8sXb8uKsEE22ADzbi1Z4yF2
     api
       .get(`${BASE_URL}/taxon/issuer/${issuer}`, {
         headers: {
@@ -433,24 +338,9 @@ export default function ImportCollection() {
         const ret = res.data;
         if (ret.status) {
           const data = ret.data;
-          /*{
-                        "name": "FRACTAL-BBB",
-                        "externalLink": "",
-                        "description": "",
-                        "collection": "",
-                        "Flags": 13,
-                        "Issuer": "rEBKhngY8izMvRrgGg3Yh5zdiQgHH9cExg",
-                        "minter": "xrpl.to",
-                        "image": "QmbUaafMaftkUTt44DVdTaSwgKzf51UWMD4NNNc7Jt4fCf",
-                        "URI": "516D656A506E6E6775635A5664723637583937324C313842726A366F317241503842794754796137645259763234",
-                        "uuid": "d1dcfe3cac80409793629707de2aafbf",
-                        "minted": false,
-                        "_id": "6308bc3d7a1dec795f21fc33"
-                    } */
           openSnackbar('Import collection successful!', 'success');
           window.location.href = `/congrats/importcollection/${data.slug}`;
         } else {
-          // { status: false, data: null, err: 'ERR_URL_SLUG' }
           const err = ret.err;
           openSnackbar(err, 'error');
         }
@@ -471,17 +361,15 @@ export default function ImportCollection() {
     if (ext === 'jpg' || ext === 'png' || ext === 'gif') {
       const size = pickedFile.size;
       if (size < 10240000) {
-        // setImgExt(ext);
         if (idx === 1) setFile1(pickedFile);
         else if (idx === 2) setFile2(pickedFile);
         else if (idx === 3) setFile3(pickedFile);
 
-        // This is used as src of image
         const reader = new FileReader();
         reader.readAsDataURL(pickedFile);
         reader.onloadend = function (e) {
           if (idx === 1)
-            setFileUrl1(reader.result); // data:image/jpeg;base64
+            setFileUrl1(reader.result);
           else if (idx === 2) setFileUrl2(reader.result);
           else if (idx === 3) setFileUrl3(reader.result);
         };
@@ -532,16 +420,15 @@ export default function ImportCollection() {
     fileRef3.current.value = null;
   };
 
-  const handleChangeType = (event, newType) => {
+  const handleChangeType = (newType) => {
     // setType(newType);
   };
 
-  const handleChangePrivate = (event, newValue) => {
+  const handleChangePrivate = (newValue) => {
     setPrivateCollection(newValue);
   };
 
-  const handleChangeCategory = (event) => {
-    const value = event.target.value;
+  const handleChangeCategory = (value) => {
     setCategory(value);
   };
 
@@ -563,8 +450,7 @@ export default function ImportCollection() {
     setIssuer(e.target.value);
   };
 
-  const handleChangeRarity = (event) => {
-    const value = event.target.value;
+  const handleChangeRarity = (value) => {
     setRarity(value);
   };
 
@@ -574,339 +460,316 @@ export default function ImportCollection() {
 
   return (
     <>
-      <Stack spacing={1} sx={{ mt: 4, mb: 3 }}>
-        <Typography variant="h1a">Import a Collection</Typography>
-        <Typography variant="p2">
-          <Typography variant="s2">*</Typography> Required fields
-        </Typography>
-      </Stack>
-      <Stack spacing={2} mb={3}>
-        <Typography variant="p4">
-          Issuer <Typography variant="s2">*</Typography>
-        </Typography>
-        <Typography variant="p3">
+      <div className="mt-8 mb-6 space-y-2">
+        <h1 className="text-2xl font-normal">Import a Collection</h1>
+        <p className="text-[13px]">
+          <span className="text-red-500">*</span> Required fields
+        </p>
+      </div>
+
+      <div className="mb-6 space-y-4">
+        <p className="text-[15px] font-normal">
+          Issuer <span className="text-red-500">*</span>
+        </p>
+        <p className="text-[13px]">
           Input Issuer address that you want to import collection.
-        </Typography>
-        <Typography variant="p3">ex. rJeBz69krYh8sXb8uKsEE22ADzbi1Z4yF2</Typography>
-        <TextField
-          id="textIssuer"
-          // autoFocus
-          fullWidth
-          variant="outlined"
-          placeholder="Issuer Address"
-          margin="dense"
-          onChange={handleChangeIssuer}
-          autoComplete="new-password"
-          inputProps={{ autoComplete: 'off' }}
-          value={issuer}
-          onFocus={(event) => {
-            event.target.select();
-          }}
-          onKeyDown={(e) => e.stopPropagation()}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start" sx={{ mr: 0.7 }}>
-                <PermIdentityIcon />
-              </InputAdornment>
-            ),
-            endAdornment: (
-              <InputAdornment position="start">
-                {loadingTaxons && <ClipLoader color="#ff0000" size={15} />}
-              </InputAdornment>
-            )
-          }}
-        />
-      </Stack>
-      <Stack spacing={2} mb={3}>
-        <Stack
-          display="flex"
-          justifyContent="space-between"
-          alignItems="center"
-          flexDirection="row"
-        >
-          <Typography variant="p4">
-            Taxons <Typography variant="s2">*</Typography>
-          </Typography>
-          <Button
-            variant="outlined"
-            sx={{ py: 0.5, px: 1.5 }}
+        </p>
+        <p className="text-[13px]">ex. rJeBz69krYh8sXb8uKsEE22ADzbi1Z4yF2</p>
+
+        <div className="relative">
+          <span
+            className={cn(
+              'absolute left-3 top-1/2 -translate-y-1/2 flex items-center',
+              isDark ? 'text-white/60' : 'text-gray-600'
+            )}
+          >
+            <PermIdentityIcon size={20} />
+          </span>
+          <input
+            id="textIssuer"
+            className={cn(
+              'w-full rounded-lg border-[1.5px] pl-10 pr-10 py-2 text-[13px] font-normal outline-none transition-colors',
+              isDark
+                ? 'border-white/15 bg-transparent text-white placeholder:text-white/40 focus:border-[#137DFE]'
+                : 'border-gray-300 bg-white text-gray-900 placeholder:text-gray-400 focus:border-[#137DFE]'
+            )}
+            placeholder="Issuer Address"
+            onChange={handleChangeIssuer}
+            autoComplete="off"
+            value={issuer}
+            onFocus={(event) => {
+              event.target.select();
+            }}
+            onKeyDown={(e) => e.stopPropagation()}
+          />
+          <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center">
+            {loadingTaxons && <ClipLoader color="#ff0000" size={15} />}
+          </div>
+        </div>
+      </div>
+
+      <div className="mb-6 space-y-4">
+        <div className="flex justify-between items-center">
+          <p className="text-[15px] font-normal">
+            Taxons <span className="text-red-500">*</span>
+          </p>
+          <button
             disabled={!taxons || taxons.length === 0}
             onClick={() => handleClickSelectAllTaxons(taxons.length !== selectedTaxons.length)}
+            className={cn(
+              'rounded-lg border-[1.5px] px-3 py-1 text-[13px] font-normal transition-colors',
+              !taxons || taxons.length === 0
+                ? 'cursor-not-allowed opacity-40'
+                : isDark
+                  ? 'border-white/15 text-white hover:border-[#137DFE]'
+                  : 'border-gray-300 text-gray-900 hover:border-[#137DFE]'
+            )}
           >
             {taxons.length > 0 && taxons.length === selectedTaxons.length
               ? 'Unselect All'
               : 'Select All'}
-          </Button>
-        </Stack>
-        <Typography variant="p3">Select taxon that you want to import.</Typography>
+          </button>
+        </div>
+        <p className="text-[13px]">Select taxon that you want to import.</p>
 
-        {!taxons ||
-          (taxons.length === 0 && (
-            <Stack alignItems="center">
-              <Typography variant="s2">[ Input issuer address to get Taxons list ]</Typography>
-            </Stack>
-          ))}
+        {(!taxons || taxons.length === 0) && (
+          <div className="flex justify-center">
+            <span className="text-xs">[ Input issuer address to get Taxons list ]</span>
+          </div>
+        )}
 
         {taxons?.map((tx, idx) => {
           return (
-            <Stack key={tx.taxon}>
-              {idx > 0 && <Divider sx={{ mt: 1, mb: 1 }} />}
-              <ListItemButton
-                // selected={taxon === tx.taxon}
-                selected={selectedTaxons.includes(tx.taxon)}
+            <div key={tx.taxon}>
+              {idx > 0 && (
+                <div className={cn('h-px my-2', isDark ? 'bg-white/10' : 'bg-gray-200')} />
+              )}
+              <button
+                className={cn(
+                  'w-full text-left py-4 px-3 rounded-lg transition-colors',
+                  selectedTaxons.includes(tx.taxon)
+                    ? isDark
+                      ? 'bg-[#137DFE]/10'
+                      : 'bg-[#137DFE]/5'
+                    : isDark
+                      ? 'hover:bg-white/5'
+                      : 'hover:bg-gray-100'
+                )}
                 onClick={(event) => handleListItemClick(event, tx.taxon)}
-                sx={{ pt: 2, pb: 2 }}
               >
-                <Stack direction="row" spacing={2} alignItems="center">
-                  <Typography variant="s3">{idx + 1}. </Typography>
-                  <Typography variant="s4">Taxon:</Typography>
-                  <Typography variant="s3" color="#33C2FF" noWrap>
+                <div className="flex flex-row gap-4 items-center">
+                  <span className="text-[13px]">{idx + 1}. </span>
+                  <span className="text-sm">Taxon:</span>
+                  <span className="text-[13px] text-[#33C2FF] truncate">
                     {tx.taxon}{' '}
-                  </Typography>
-                  <Typography variant="s4">NFTs:</Typography>
-                  <Typography variant="s3" color="#33C2FF" noWrap>
+                  </span>
+                  <span className="text-sm">NFTs:</span>
+                  <span className="text-[13px] text-[#33C2FF] truncate">
                     {tx.count}{' '}
-                  </Typography>
-                </Stack>
-              </ListItemButton>
-            </Stack>
+                  </span>
+                </div>
+              </button>
+            </div>
           );
         })}
-      </Stack>
-      <Stack spacing={2} mb={3}>
-        <Typography variant="p4" sx={{ pt: 2, pb: 1 }}>
-          Logo image <Typography variant="s2">*</Typography>
-        </Typography>
-        <Typography variant="p3">
-          This image will also be used for navigation. 350 x 350 recommended.(Max: 10MB)
-        </Typography>
-        <CardWrapperCircle>
-          <input
-            ref={fileRef1}
-            style={{ display: 'none' }}
-            // accept='image/*,video/*,audio/*,webgl/*,.glb,.gltf'
-            // accept='image/*'
-            accept=".png, .jpg, .gif"
-            id="contained-button-file1"
-            // multiple
-            type="file"
-            onChange={handleFileSelect1}
-          />
-          <Card
-            sx={{
-              display: 'flex',
-              width: 140,
-              height: 140,
-              justifyContent: 'center',
-              alignItems: 'center',
-              borderRadius: '50%',
-              position: 'relative'
-            }}
-          >
-            <CardOverlayCircle onClick={() => fileRef1.current.click()}>
-              <IconButton
-                aria-label="close"
-                onClick={(e) => handleResetFile1(e)}
-                sx={
-                  fileUrl1
-                    ? { position: 'absolute', right: '1vw', top: '1vh' }
-                    : { display: 'none' }
-                }
-              >
-                <CloseIcon color="white" />
-              </IconButton>
-            </CardOverlayCircle>
-            <img
-              src={fileUrl1}
-              alt=""
-              style={
-                fileUrl1
-                  ? {
-                      objectFit: 'cover',
-                      width: '100%',
-                      height: '100%',
-                      overflow: 'hidden'
-                    }
-                  : { display: 'none' }
-              }
-            />
-            <ImageIcon
-              fontSize="large"
-              sx={fileUrl1 ? { display: 'none' } : { width: 64, height: 64 }}
-            />
-          </Card>
-        </CardWrapperCircle>
-        <Typography variant="p4" sx={{ pt: 2, pb: 1 }}>
-          Featured image
-        </Typography>
-        <Typography variant="p3">
-          This image will be used for featuring your collection on the homepage, category pages, or
-          other promotional areas of XRPNFT.COM. 600 x 400 recommended.(Max: 10MB)
-        </Typography>
-        <CardWrapper>
-          <input
-            ref={fileRef2}
-            style={{ display: 'none' }}
-            // accept='image/*,video/*,audio/*,webgl/*,.glb,.gltf'
-            // accept='image/*'
-            accept=".png, .jpg, .gif"
-            id="contained-button-file2"
-            // multiple
-            type="file"
-            onChange={handleFileSelect2}
-          />
-          <Card
-            sx={{
-              display: 'flex',
-              width: 320,
-              height: 240,
-              justifyContent: 'center',
-              alignItems: 'center',
-              overflow: 'auto',
-              position: 'relative'
-            }}
-          >
-            <CardOverlay onClick={() => fileRef2.current.click()}>
-              <IconButton
-                aria-label="close"
-                onClick={(e) => handleResetFile2(e)}
-                sx={
-                  fileUrl2
-                    ? { position: 'absolute', right: '1vw', top: '1vh' }
-                    : { display: 'none' }
-                }
-              >
-                <CloseIcon color="white" />
-              </IconButton>
-            </CardOverlay>
-            <img
-              src={fileUrl2}
-              alt=""
-              style={
-                fileUrl2
-                  ? {
-                      objectFit: 'cover',
-                      width: '100%',
-                      height: '100%',
-                      overflow: 'hidden'
-                    }
-                  : { display: 'none' }
-              }
-            />
-            <ImageIcon
-              fontSize="large"
-              sx={fileUrl2 ? { display: 'none' } : { width: 100, height: 100 }}
-            />
-          </Card>
-        </CardWrapper>
+      </div>
 
-        <Typography variant="p4" sx={{ pt: 2, pb: 1 }}>
-          Banner image
-        </Typography>
-        <Typography variant="p3">
-          This image will appear at the top of your collection page. Avoid including too much text
-          in this banner image, as the dimensions change on different devices. 1400 x 350
-          recommended.(Max: 10MB)
-        </Typography>
-        <CardWrapper3>
-          <input
-            ref={fileRef3}
-            style={{ display: 'none' }}
-            // accept='image/*,video/*,audio/*,webgl/*,.glb,.gltf'
-            // accept='image/*'
-            accept=".png, .jpg, .gif"
-            id="contained-button-file3"
-            // multiple
-            type="file"
-            onChange={handleFileSelect3}
-          />
-          <Card
-            sx={{
-              display: 'flex',
-              // maxWidth: 700,
-              height: 200,
-              justifyContent: 'center',
-              alignItems: 'center',
-              overflow: 'auto',
-              position: 'relative'
-            }}
+      <div className="mb-6 space-y-4">
+        <div className="pt-4 pb-2">
+          <p className="text-[15px] font-normal mb-2">
+            Logo image <span className="text-red-500">*</span>
+          </p>
+          <p className="text-[13px] mb-4">
+            This image will also be used for navigation. 350 x 350 recommended.(Max: 10MB)
+          </p>
+
+          <div
+            className={cn(
+              'border-[3px] border-dashed rounded-full p-1 w-fit cursor-pointer',
+              isDark ? 'border-white/20' : 'border-gray-300'
+            )}
           >
-            <CardOverlay onClick={() => fileRef3.current.click()}>
-              <IconButton
-                aria-label="close"
-                onClick={(e) => handleResetFile3(e)}
-                sx={
-                  fileUrl3
-                    ? { position: 'absolute', right: '1vw', top: '1vh' }
-                    : { display: 'none' }
-                }
+            <input
+              ref={fileRef1}
+              className="hidden"
+              accept=".png, .jpg, .gif"
+              id="contained-button-file1"
+              type="file"
+              onChange={handleFileSelect1}
+            />
+            <div
+              className={cn(
+                'relative flex items-center justify-center w-[140px] h-[140px] rounded-full overflow-hidden cursor-pointer border',
+                isDark ? 'border-white/10' : 'border-black/10'
+              )}
+            >
+              <div
+                className="absolute inset-0 flex flex-col items-center justify-center bg-black opacity-0 hover:opacity-60 transition-opacity z-10"
+                onClick={() => fileRef1.current.click()}
               >
-                <CloseIcon color="white" />
-              </IconButton>
-            </CardOverlay>
-            <img
-              src={fileUrl3}
-              alt=""
-              style={
-                fileUrl3
-                  ? {
-                      objectFit: 'cover',
-                      width: '100%',
-                      height: '100%',
-                      overflow: 'hidden'
-                    }
-                  : { display: 'none' }
-              }
-            />
-            <ImageIcon
-              fontSize="large"
-              sx={fileUrl3 ? { display: 'none' } : { width: 100, height: 100 }}
-            />
-          </Card>
-        </CardWrapper3>
+                <button
+                  onClick={(e) => handleResetFile1(e)}
+                  className={cn('absolute right-2 top-2', fileUrl1 ? 'block' : 'hidden')}
+                >
+                  <X size={20} className="text-white" />
+                </button>
+              </div>
+              {fileUrl1 ? (
+                <img src={fileUrl1} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <ImageIcon size={64} className={isDark ? 'text-white/20' : 'text-gray-300'} />
+              )}
+            </div>
+          </div>
+        </div>
 
-        <Typography variant="p4" sx={{ pt: 2, pb: 1 }}>
-          Name <Typography variant="s2">*</Typography>
-        </Typography>
+        <div className="pt-4 pb-2">
+          <p className="text-[15px] font-normal mb-2">Featured image</p>
+          <p className="text-[13px] mb-4">
+            This image will be used for featuring your collection on the homepage, category pages, or
+            other promotional areas of XRPNFT.COM. 600 x 400 recommended.(Max: 10MB)
+          </p>
 
-        <LoadingTextField
-          id="id_collection_name"
-          placeholder="Example: My XRPL NFTs"
-          type="COLLECTION_NAME"
-          startText=""
-          value={name}
-          setValid={setValid1}
-          onChange={(e) => {
-            setName(e.target.value);
-          }}
-        />
-      </Stack>
-      <Stack spacing={2} mb={3}>
-        <Typography variant="p4">Category</Typography>
-        <Typography variant="p3">
+          <div
+            className={cn(
+              'border-[3px] border-dashed rounded-xl p-1 w-fit cursor-pointer',
+              isDark ? 'border-white/20' : 'border-gray-300'
+            )}
+          >
+            <input
+              ref={fileRef2}
+              className="hidden"
+              accept=".png, .jpg, .gif"
+              id="contained-button-file2"
+              type="file"
+              onChange={handleFileSelect2}
+            />
+            <div
+              className={cn(
+                'relative flex items-center justify-center w-[320px] h-[240px] rounded-lg overflow-hidden cursor-pointer border',
+                isDark ? 'border-white/10' : 'border-black/10'
+              )}
+            >
+              <div
+                className="absolute inset-0 flex flex-col items-center justify-center bg-black opacity-0 hover:opacity-60 transition-opacity z-10"
+                onClick={() => fileRef2.current.click()}
+              >
+                <button
+                  onClick={(e) => handleResetFile2(e)}
+                  className={cn('absolute right-2 top-2', fileUrl2 ? 'block' : 'hidden')}
+                >
+                  <X size={20} className="text-white" />
+                </button>
+              </div>
+              {fileUrl2 ? (
+                <img src={fileUrl2} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <ImageIcon size={100} className={isDark ? 'text-white/20' : 'text-gray-300'} />
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="pt-4 pb-2">
+          <p className="text-[15px] font-normal mb-2">Banner image</p>
+          <p className="text-[13px] mb-4">
+            This image will appear at the top of your collection page. Avoid including too much text
+            in this banner image, as the dimensions change on different devices. 1400 x 350
+            recommended.(Max: 10MB)
+          </p>
+
+          <div
+            className={cn(
+              'border-[3px] border-dashed rounded-xl p-1 cursor-pointer',
+              isDark ? 'border-white/20' : 'border-gray-300'
+            )}
+          >
+            <input
+              ref={fileRef3}
+              className="hidden"
+              accept=".png, .jpg, .gif"
+              id="contained-button-file3"
+              type="file"
+              onChange={handleFileSelect3}
+            />
+            <div
+              className={cn(
+                'relative flex items-center justify-center h-[200px] rounded-lg overflow-hidden cursor-pointer border',
+                isDark ? 'border-white/10' : 'border-black/10'
+              )}
+            >
+              <div
+                className="absolute inset-0 flex flex-col items-center justify-center bg-black opacity-0 hover:opacity-60 transition-opacity z-10"
+                onClick={() => fileRef3.current.click()}
+              >
+                <button
+                  onClick={(e) => handleResetFile3(e)}
+                  className={cn('absolute right-2 top-2', fileUrl3 ? 'block' : 'hidden')}
+                >
+                  <X size={20} className="text-white" />
+                </button>
+              </div>
+              {fileUrl3 ? (
+                <img src={fileUrl3} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <ImageIcon size={100} className={isDark ? 'text-white/20' : 'text-gray-300'} />
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="pt-4">
+          <p className="text-[15px] font-normal mb-2">
+            Name <span className="text-red-500">*</span>
+          </p>
+
+          <LoadingTextField
+            id="id_collection_name"
+            placeholder="Example: My XRPL NFTs"
+            type="COLLECTION_NAME"
+            startText=""
+            value={name}
+            setValid={setValid1}
+            onChange={(e) => {
+              setName(e.target.value);
+            }}
+          />
+        </div>
+      </div>
+
+      <div className="mb-6 space-y-4">
+        <p className="text-[15px] font-normal">Category</p>
+        <p className="text-[13px]">
           This helps your NFT to be found when people search by Category. Once you set, you can not
           change Category when you edit your collection.
-        </Typography>
-        <CustomSelect
+        </p>
+        <select
           id="select_category"
           value={category}
-          onChange={(e) => handleChangeCategory({ target: { value: e.target.value } })}
+          onChange={(e) => handleChangeCategory(e.target.value)}
+          className={cn(
+            'w-full rounded-lg border-[1.5px] px-3 py-2 text-[13px] font-normal outline-none',
+            isDark
+              ? 'border-white/15 bg-transparent text-white'
+              : 'border-gray-300 bg-white text-gray-900'
+          )}
         >
           {CATEGORIES.map((cat) => (
             <option key={cat.title} value={cat.title}>
               {cat.title}
             </option>
           ))}
-        </CustomSelect>
-      </Stack>
-      <Stack spacing={2} mb={3}>
-        <Typography variant="p4">
-          URL <Typography variant="s2">*</Typography>
-        </Typography>
-        <Typography variant="p3">
+        </select>
+      </div>
+
+      <div className="mb-6 space-y-4">
+        <p className="text-[15px] font-normal">
+          URL <span className="text-red-500">*</span>
+        </p>
+        <p className="text-[13px]">
           Customize your URL on XRPNFT.COM. Must only contain lowercase letters, numbers, and
           hyphens.
-        </Typography>
+        </p>
 
         <LoadingTextField
           id="id_collection_slug"
@@ -921,182 +784,202 @@ export default function ImportCollection() {
             setSlug(newSlug);
           }}
         />
-      </Stack>
-      <Stack spacing={2} mb={3}>
-        <Typography variant="p4">
-          Type <Typography variant="s2">*</Typography>
-        </Typography>
-        <Typography variant="p3">Select your collection type.</Typography>
+      </div>
 
-        <Stack spacing={1} pl={0}>
-          <Typography variant="p3">
-            <Typography variant="s2">Normal:</Typography> Imported collections will have Normal
+      <div className="mb-6 space-y-4">
+        <p className="text-[15px] font-normal">
+          Type <span className="text-red-500">*</span>
+        </p>
+        <p className="text-[13px]">Select your collection type.</p>
+
+        <div className="space-y-2 pl-0">
+          <p className="text-[13px]">
+            <span className="text-red-500 font-medium">Normal:</span> Imported collections will have Normal
             type.
-          </Typography>
-        </Stack>
+          </p>
+        </div>
 
-        <ToggleButtonGroup
-          color="primary"
-          value={type}
-          exclusive
-          size="small"
-          onChange={handleChangeType}
-        >
-          <ToggleButton value="normal" sx={{ pl: 2, pr: 2 }}>
-            Normal
-          </ToggleButton>
-          <ToggleButton disabled value="bulk" sx={{ pl: 3, pr: 3 }}>
-            Bulk
-          </ToggleButton>
-          <ToggleButton disabled value="random" sx={{ pl: 3, pr: 3 }}>
-            Random
-          </ToggleButton>
-          <ToggleButton disabled value="sequence" sx={{ pl: 3, pr: 3 }}>
-            Sequence
-          </ToggleButton>
-        </ToggleButtonGroup>
-      </Stack>
-      <Stack spacing={2} mb={3}>
-        <Typography variant="p4">Description</Typography>
-        <Typography variant="p3">
-          <Link href="https://www.markdownguide.org/cheat-sheet/">Markdown</Link> syntax is
-          supported. 0 of 1000 characters used.
-        </Typography>
-        <TextField
+        <div className="flex gap-2">
+          {[
+            { value: 'normal', disabled: false },
+            { value: 'bulk', disabled: true },
+            { value: 'random', disabled: true },
+            { value: 'sequence', disabled: true }
+          ].map((t) => (
+            <button
+              key={t.value}
+              disabled={t.disabled}
+              onClick={() => handleChangeType(t.value)}
+              className={cn(
+                'rounded-lg border-[1.5px] px-4 py-1 text-[13px] font-normal capitalize transition-colors',
+                t.disabled && 'cursor-not-allowed opacity-40',
+                type === t.value
+                  ? 'border-[#137DFE] bg-[#137DFE]/10 text-[#137DFE]'
+                  : isDark
+                    ? 'border-white/15 text-white hover:border-[#137DFE]'
+                    : 'border-gray-300 text-gray-900 hover:border-[#137DFE]'
+              )}
+            >
+              {t.value}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="mb-6 space-y-4">
+        <p className="text-[15px] font-normal">Description</p>
+        <p className="text-[13px]">
+          <a
+            href="https://www.markdownguide.org/cheat-sheet/"
+            className="text-[#137DFE] hover:underline"
+          >
+            Markdown
+          </a>{' '}
+          syntax is supported. 0 of 1000 characters used.
+        </p>
+        <textarea
           placeholder=""
-          margin="dense"
-          multiline
-          maxRows={4}
+          rows={4}
           value={description}
           onChange={(e) => {
             setDescription(e.target.value);
           }}
-          sx={{
-            '&.MuiTextField-root': {
-              marginTop: 1,
-              minHeight: 10
-            },
-            '& .MuiOutlinedInput-root': {
-              height: 100,
-              alignItems: 'start'
-            }
-          }}
+          className={cn(
+            'w-full rounded-lg border-[1.5px] px-3 py-2 text-[13px] font-normal outline-none resize-none',
+            isDark
+              ? 'border-white/15 bg-transparent text-white placeholder:text-white/40'
+              : 'border-gray-300 bg-white text-gray-900 placeholder:text-gray-400'
+          )}
         />
-      </Stack>
-      <Stack spacing={2} mb={3}>
-        <Typography variant="p4">
-          Rarity <Typography variant="s2">*</Typography>
-        </Typography>
-        <Typography variant="p3">
+      </div>
+
+      <div className="mb-6 space-y-4">
+        <p className="text-[15px] font-normal">
+          Rarity <span className="text-red-500">*</span>
+        </p>
+        <p className="text-[13px]">
           Select your collection's rarity calculation method.&nbsp;
-          <Link
+          <a
             target="_blank"
             href={`https://raritytools.medium.com/ranking-rarity-understanding-rarity-calculation-methods-86ceaeb9b98c`}
             rel="noreferrer noopener nofollow"
+            className="text-[#137DFE] hover:underline"
           >
             Read More
-          </Link>
-        </Typography>
+          </a>
+        </p>
 
-        <Stack spacing={1} pl={0}>
-          <Typography variant="p3">
-            <Typography variant="s2">Standard:</Typography> Simply compare the rarest trait of each
+        <div className="space-y-2 pl-0">
+          <p className="text-[13px]">
+            <span className="text-red-500 font-medium">Standard:</span> Simply compare the rarest trait of each
             NFT(%).
-          </Typography>
-          <Typography variant="p3">
-            <Typography variant="s2">Average:</Typography> Average the rarity of traits that exist
+          </p>
+          <p className="text-[13px]">
+            <span className="text-red-500 font-medium">Average:</span> Average the rarity of traits that exist
             on the NFT(%).
-          </Typography>
-          <Typography variant="p3">
-            <Typography variant="s2">Statistical:</Typography> Multiply all of its trait rarities
+          </p>
+          <p className="text-[13px]">
+            <span className="text-red-500 font-medium">Statistical:</span> Multiply all of its trait rarities
             together(%).
-          </Typography>
-          <Typography variant="p3">
-            <Typography variant="s2">Score:</Typography> Sum of the Rarity Score of all of its trait
+          </p>
+          <p className="text-[13px]">
+            <span className="text-red-500 font-medium">Score:</span> Sum of the Rarity Score of all of its trait
             values(not %, just a value).
-          </Typography>
-          <Typography variant="p3">
-            <Typography variant="s2">Self:</Typography> Rarity and Rank are included in each NFT
+          </p>
+          <p className="text-[13px]">
+            <span className="text-red-500 font-medium">Self:</span> Rarity and Rank are included in each NFT
             metadata.
-          </Typography>
-        </Stack>
+          </p>
+        </div>
 
-        <FormControl sx={{ ml: 5 }}>
-          {/* <FormLabel id="on-sale-sub-filter">On Sale sub</FormLabel> */}
-          <RadioGroup
-            aria-labelledby="demo-controlled-radio-buttons-group"
-            name="controlled-radio-buttons-group"
-            value={rarity}
-            onChange={handleChangeRarity}
-          >
-            <FormControlLabel value="standard" control={<Radio />} label="Standard" />
-            <FormControlLabel value="average" control={<Radio />} label="Average" />
-            <FormControlLabel value="statistical" control={<Radio />} label="Statistical" />
-            <FormControlLabel value="score" control={<Radio />} label="Score" />
-            <FormControlLabel value="self" control={<Radio />} label="Self" />
-          </RadioGroup>
-        </FormControl>
-      </Stack>
-      {/* <Stack spacing={2} mb={3}>
-                <Typography variant='p4'>Private <Typography variant='s2'>*</Typography></Typography>
-                <Typography variant='p3'>
-                    Make your collection private when you need to upload NFTs or do something private.
-                    You can make collection public again after you've done all things.
-                </Typography>
+        <div className="ml-10 space-y-2">
+          {['standard', 'average', 'statistical', 'score', 'self'].map((r) => (
+            <label key={r} className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="radio"
+                value={r}
+                checked={rarity === r}
+                onChange={(e) => handleChangeRarity(e.target.value)}
+                className="w-4 h-4"
+              />
+              <span className="text-[13px] capitalize">{r}</span>
+            </label>
+          ))}
+        </div>
+      </div>
 
-                <ToggleButtonGroup
-                    color="primary"
-                    value={privateCollection}
-                    exclusive
-                    size="small"
-                    onChange={handleChangePrivate}
-                >
-                    <ToggleButton value="no" sx={{pl:2, pr:2, pt: 0.3, pb: 0.3}}>No</ToggleButton>
-                    <ToggleButton value="yes" sx={{pl:2, pr:2, pt: 0.3, pb: 0.3}}>Yes</ToggleButton>
-                </ToggleButtonGroup>
-            </Stack>
+      {/* <div className="mb-6 space-y-4">
+        <p className="text-[15px] font-normal">
+          Private <span className="text-red-500">*</span>
+        </p>
+        <p className="text-[13px]">
+          Make your collection private when you need to upload NFTs or do something private.
+          You can make collection public again after you've done all things.
+        </p>
 
-            <Stack spacing={2} mb={3}>
-                <Typography variant='p4'>Passphrase <Typography variant='s2'>*</Typography></Typography>
-                <Typography variant='p3'>
-                    Contact support to get your own passphrase for your account. Once you get your passphrase, you can use it for 10 times only, if you want more, contact support again to get the new passphrase.
-                </Typography>
+        <div className="flex gap-2">
+          {['no', 'yes'].map((p) => (
+            <button
+              key={p}
+              onClick={() => handleChangePrivate(p)}
+              className={cn(
+                'rounded-lg border-[1.5px] px-4 py-1 text-[13px] font-normal capitalize transition-colors',
+                privateCollection === p
+                  ? 'border-[#137DFE] bg-[#137DFE]/10 text-[#137DFE]'
+                  : isDark
+                    ? 'border-white/15 text-white hover:border-[#137DFE]'
+                    : 'border-gray-300 text-gray-900 hover:border-[#137DFE]'
+              )}
+            >
+              {p}
+            </button>
+          ))}
+        </div>
+      </div>
 
-                <Link
-                    href="https://xrpnft.com/discord"
-                    sx={{ mt: 1.5, display: 'inline-flex' }}
-                    underline="none"
-                    target="_blank"
-                    rel="noreferrer noopener nofollow"
-                >
-                    <Typography variant='s2' color="#33C2FF">Contact us on Discord</Typography>
-                </Link>
+      <div className="mb-6 space-y-4">
+        <p className="text-[15px] font-normal">
+          Passphrase <span className="text-red-500">*</span>
+        </p>
+        <p className="text-[13px]">
+          Contact support to get your own passphrase for your account. Once you get your passphrase,
+          you can use it for 10 times only, if you want more, contact support again to get the new
+          passphrase.
+        </p>
 
-                <LoadingTextField
-                    id='id_create_collection_passphrase'
-                    type='PASSPHRASE_CREATE_COLLECTION'
-                    placeholder='Passphrase'
-                    startText=''
-                    value={passphrase}
-                    setValid={setValidPassword}
-                    onChange={(e) => {
-                        setPassphrase(e.target.value)
-                    }}
-                />
-            </Stack> */}
-      <Stack alignItems="right">
+        <a
+          href="https://xrpnft.com/discord"
+          className="inline-block text-[#137DFE] hover:underline text-xs mt-3"
+          target="_blank"
+          rel="noreferrer noopener nofollow"
+        >
+          Contact us on Discord
+        </a>
+
+        <LoadingTextField
+          id="id_create_collection_passphrase"
+          type="PASSPHRASE_CREATE_COLLECTION"
+          placeholder="Passphrase"
+          startText=""
+          value={passphrase}
+          setValid={setValidPassword}
+          onChange={(e) => {
+            setPassphrase(e.target.value);
+          }}
+        />
+      </div> */}
+
+      <div className="flex justify-end mt-10 mb-12">
         <LoadingButton
           disabled={!canImport}
-          variant="contained"
           loading={loading}
           loadingPosition="start"
-          startIcon={<SendIcon />}
+          startIcon={<Send size={18} />}
           onClick={onImportCollection}
-          sx={{ mt: 5, mb: 6 }}
         >
           Import
         </LoadingButton>
-      </Stack>
+      </div>
     </>
   );
 }

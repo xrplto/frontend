@@ -2,7 +2,7 @@ import api from 'src/utils/api';
 import { useState, useContext } from 'react';
 import Decimal from 'decimal.js-light';
 import { X, CheckCircle, ArrowRight } from 'lucide-react';
-import { AppContext } from 'src/context/AppContext';
+import { ThemeContext, WalletContext, AppContext } from 'src/context/AppContext';
 import { normalizeAmount } from 'src/utils/parseUtils';
 import { formatDateTime, checkExpiration } from 'src/utils/formatters';
 import { cn } from 'src/utils/cn';
@@ -17,9 +17,10 @@ function GetNum(amount) {
 }
 
 export default function SelectPriceDialog({ open, setOpen, offers, handleAccept }) {
-  const { themeName } = useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
   const isDark = themeName === 'XrplToDarkTheme';
-  const { accountProfile, openSnackbar } = useContext(AppContext);
+  const { accountProfile } = useContext(WalletContext);
+  const { openSnackbar } = useContext(AppContext);
 
   const [offer, setOffer] = useState(null);
   const [selectedIndex, setSelectedIndex] = useState(-1);

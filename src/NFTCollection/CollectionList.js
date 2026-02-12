@@ -1,474 +1,273 @@
 import api from 'src/utils/api';
 import React, { useState, useEffect, useContext, useCallback, memo, useRef } from 'react';
-import styled from '@emotion/styled';
-import { AppContext } from 'src/context/AppContext';
+import { ThemeContext } from 'src/context/AppContext';
 import { formatMonthYearDate, fNumber, fIntNumber, fVolume, normalizeCollectionName } from 'src/utils/formatters';
 import { ChevronLeft, ChevronRight, ChevronDown, List } from 'lucide-react';
 import { cn } from 'src/utils/cn';
 import NFTSparklineChart from './NFTSparklineChart';
 
 // Styled Components
-const Container = styled.div`
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  padding: 0;
-  margin: 0;
-  contain: layout style;
-  overflow: visible;
-`;
+const Container = ({ className, children, ...p }) => (
+  <div className={cn('flex flex-col w-full p-0 m-0 overflow-visible', className)} style={{ contain: 'layout style' }} {...p}>{children}</div>
+);
 
-const TableContainer = styled.div`
-  display: flex;
-  justify-content: flex-start;
-  gap: 0;
-  padding: 0;
-  overflow-x: auto;
-  overflow-y: visible;
-  width: 100%;
-  min-width: 0;
-  scrollbar-width: none;
-  box-sizing: border-box;
-  background: transparent;
-  border: 1.5px solid
-    ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)')};
-  border-radius: 12px;
-  backdrop-filter: blur(12px);
+const TableContainer = ({ darkMode, className, children, ...p }) => (
+  <div
+    className={cn(
+      'flex justify-start gap-0 p-0 overflow-x-auto overflow-y-visible w-full min-w-0 box-border bg-transparent rounded-xl backdrop-blur-[12px] border-[1.5px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
+      darkMode ? 'border-white/10' : 'border-black/[0.06]',
+      className
+    )}
+    {...p}
+  >{children}</div>
+);
 
-  &::-webkit-scrollbar {
-    display: none;
-  }
-`;
+const StyledTable = ({ className, children, ...p }) => (
+  <table className={cn('w-full border-collapse m-0 p-0', className)} style={{ tableLayout: 'fixed', contain: 'layout style' }} {...p}>{children}</table>
+);
 
-const StyledTable = styled.table`
-  table-layout: fixed;
-  width: 100%;
-  border-collapse: collapse;
-  contain: layout style;
-  margin: 0;
-  padding: 0;
-`;
+const StyledTableBody = ({ darkMode, className, children, ...p }) => (
+  <tbody
+    className={cn('m-0 p-0', darkMode ? '[&_tr:hover]:bg-white/[0.02]' : '[&_tr:hover]:bg-black/[0.01]', className)}
+    {...p}
+  >{children}</tbody>
+);
 
-const StyledTableBody = styled.tbody`
-  margin: 0;
-  padding: 0;
+const StyledRow = ({ darkMode, className, children, ...p }) => (
+  <tr
+    className={cn(
+      'border-b-[1.5px] cursor-pointer transition-all duration-150',
+      darkMode ? 'border-white/10 hover:bg-white/[0.02]' : 'border-black/[0.06] hover:bg-black/[0.01]',
+      className
+    )}
+    {...p}
+  >{children}</tr>
+);
 
-  tr {
-    margin: 0;
-    padding: 0;
-
-    &:hover {
-      background: ${(props) =>
-        props.darkMode ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.01)'};
-    }
-  }
-`;
-
-const StyledRow = styled.tr`
-  border-bottom: 1.5px solid
-    ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)')};
-  cursor: pointer;
-  transition: all 0.15s ease;
-
-  &:hover {
-    background: ${(props) =>
-      props.darkMode ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.01)'};
-  }
-`;
-
-const StyledCell = styled.td`
-  padding: 14px 8px;
-  white-space: ${(props) => (props.isCollectionColumn ? 'normal' : 'nowrap')};
-  text-align: ${(props) => props.align || 'left'};
-  font-size: 14px;
-  font-weight: ${(props) => props.fontWeight || 400};
-  color: ${(props) => props.color || (props.darkMode ? 'rgba(255, 255, 255, 0.9)' : '#1a1a1a')};
-  vertical-align: middle;
-  width: ${(props) => props.width || 'auto'};
-  min-width: ${(props) => (props.isCollectionColumn ? '200px' : 'auto')};
-  font-family: var(--font-mono);
-  font-variant-numeric: tabular-nums;
-
-  &:first-of-type {
-    padding-left: 12px;
-  }
-
-  &:last-of-type {
-    padding-right: 4px;
-  }
-`;
+const StyledCell = ({ isCollectionColumn, align, fontWeight, color, darkMode, width, className, children, ...p }) => (
+  <td
+    className={cn(
+      'py-[14px] px-2 text-sm align-middle font-mono tabular-nums first-of-type:pl-3 last-of-type:pr-1',
+      isCollectionColumn ? 'whitespace-normal min-w-[200px]' : 'whitespace-nowrap',
+      className
+    )}
+    style={{
+      textAlign: align || 'left',
+      fontWeight: fontWeight || 400,
+      color: color || (darkMode ? 'rgba(255,255,255,0.9)' : '#1a1a1a'),
+      width: width || 'auto'
+    }}
+    {...p}
+  >{children}</td>
+);
 
 // Mobile components
-const MobileCollectionCard = styled.div`
-  display: flex;
-  width: 100%;
-  padding: 10px 12px;
-  border-bottom: 1.5px solid
-    ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)')};
-  cursor: pointer;
-  box-sizing: border-box;
-  align-items: center;
-  transition: all 0.15s ease;
+const MobileCollectionCard = ({ darkMode, className, children, ...p }) => (
+  <div
+    className={cn(
+      'flex w-full py-[10px] px-3 border-b-[1.5px] cursor-pointer box-border items-center transition-all duration-150',
+      darkMode ? 'border-white/10 hover:bg-white/[0.02]' : 'border-black/[0.06] hover:bg-black/[0.01]',
+      className
+    )}
+    {...p}
+  >{children}</div>
+);
 
-  &:hover {
-    background: ${(props) =>
-      props.darkMode ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.01)'};
-  }
-`;
+const MobileCollectionInfo = ({ className, children, ...p }) => (
+  <div className={cn('flex-[2] flex items-center gap-[10px] px-1 min-w-0', className)} {...p}>{children}</div>
+);
 
-const MobileCollectionInfo = styled.div`
-  flex: 2;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 0 4px;
-  min-width: 0;
-`;
+const MobileCell = ({ flex, align, fontWeight, color, darkMode, minWidth, wordBreak, lineHeight, className, children, ...p }) => (
+  <div
+    className={cn('px-[6px] text-sm font-mono tabular-nums', className)}
+    style={{ flex: flex || 1, textAlign: align || 'right', fontWeight: fontWeight || 400, color: color || (darkMode ? 'rgba(255,255,255,0.9)' : '#1a1a1a'), minWidth: minWidth || 'auto', wordBreak: wordBreak || 'normal', lineHeight: lineHeight || 'normal' }}
+    {...p}
+  >{children}</div>
+);
 
-const MobileCell = styled.div`
-  flex: ${(props) => props.flex || 1};
-  text-align: ${(props) => props.align || 'right'};
-  padding: 0 6px;
-  font-weight: ${(props) => props.fontWeight || 400};
-  font-size: 14px;
-  color: ${(props) => props.color || (props.darkMode ? 'rgba(255, 255, 255, 0.9)' : '#1a1a1a')};
-  min-width: ${(props) => props.minWidth || 'auto'};
-  font-family: var(--font-mono);
-  font-variant-numeric: tabular-nums;
-  ${(props) => props.wordBreak && `word-break: ${props.wordBreak};`}
-  ${(props) => props.lineHeight && `line-height: ${props.lineHeight};`}
-`;
+const CollectionImage = ({ isMobile, darkMode, className, children, ...p }) => (
+  <div
+    className={cn('rounded-lg overflow-hidden shrink-0', darkMode ? 'bg-white/[0.05]' : 'bg-black/[0.03]', className)}
+    style={{ width: isMobile ? '28px' : '36px', height: isMobile ? '28px' : '36px' }}
+    {...p}
+  >{children}</div>
+);
 
-const CollectionImage = styled.div`
-  width: ${(props) => (props.isMobile ? '28px' : '36px')};
-  height: ${(props) => (props.isMobile ? '28px' : '36px')};
-  border-radius: 8px;
-  overflow: hidden;
-  flex-shrink: 0;
-  background: ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.03)')};
-`;
+const CollectionDetails = ({ className, children, ...p }) => (
+  <div className={cn('flex-1 min-w-0 flex flex-col gap-[2px]', className)} {...p}>{children}</div>
+);
 
-const CollectionDetails = styled.div`
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-`;
+const CollectionName = ({ isMobile, darkMode, className, children, ...p }) => (
+  <span
+    className={cn('font-medium overflow-hidden text-ellipsis whitespace-nowrap block leading-[1.4] font-sans', darkMode ? 'text-white' : 'text-[#1a1a1a]', className)}
+    style={{ fontSize: isMobile ? '14px' : '15px', maxWidth: isMobile ? '120px' : '180px' }}
+    {...p}
+  >{children}</span>
+);
 
-const CollectionName = styled.span`
-  font-weight: 500;
-  font-size: ${(props) => (props.isMobile ? '14px' : '15px')};
-  color: ${(props) => (props.darkMode ? '#FFFFFF' : '#1a1a1a')};
-  max-width: ${(props) => (props.isMobile ? '120px' : '180px')};
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  display: block;
-  line-height: 1.4;
-  font-family: var(--font-sans);
-`;
-
-const CollectionSubtext = styled.span`
-  font-size: ${(props) => (props.isMobile ? '12px' : '13px')};
-  color: ${(props) => (props.darkMode ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.5)')};
-  font-weight: 400;
-  display: block;
-  max-width: ${(props) => (props.isMobile ? '120px' : '180px')};
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  line-height: 1.3;
-  text-transform: uppercase;
-  font-family: var(--font-sans);
-`;
+const CollectionSubtext = ({ isMobile, darkMode, className, children, ...p }) => (
+  <span
+    className={cn('font-normal block overflow-hidden text-ellipsis whitespace-nowrap leading-[1.3] uppercase font-sans', darkMode ? 'text-white/45' : 'text-black/50', className)}
+    style={{ fontSize: isMobile ? '12px' : '13px', maxWidth: isMobile ? '120px' : '180px' }}
+    {...p}
+  >{children}</span>
+);
 
 // Toolbar styled components
-const StyledToolbar = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 16px;
-  gap: 8px;
-  flex-wrap: wrap;
-  border-top: 1.5px solid
-    ${({ darkMode }) => (darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)')};
-  background: transparent;
+const StyledToolbar = ({ darkMode, className, children, ...p }) => (
+  <div
+    className={cn(
+      'flex items-center justify-between py-3 px-4 gap-2 flex-wrap border-t-[1.5px] bg-transparent',
+      'max-[900px]:flex-row max-[900px]:items-stretch max-[900px]:flex-wrap max-[900px]:gap-1 max-[900px]:py-[10px] max-[900px]:px-3',
+      darkMode ? 'border-white/10' : 'border-black/[0.06]',
+      className
+    )}
+    {...p}
+  >{children}</div>
+);
 
-  @media (max-width: 900px) {
-    flex-direction: row;
-    align-items: stretch;
-    flex-wrap: wrap;
-    gap: 4px;
-    padding: 10px 12px;
-  }
-`;
+const RowsSelector = ({ className, children, ...p }) => (
+  <div
+    className={cn('flex items-center gap-[6px] p-0 min-h-[32px] bg-transparent border-none max-[900px]:flex-1 max-[900px]:min-w-[calc(50%-8px)] max-[900px]:justify-center max-[900px]:gap-1', className)}
+    {...p}
+  >{children}</div>
+);
 
-const RowsSelector = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 0;
-  min-height: 32px;
-  background: transparent;
-  border: none;
+const Text = ({ darkMode, fontWeight, className, children, ...p }) => (
+  <span
+    className={cn('text-[11px] tabular-nums', darkMode ? 'text-white/60' : 'text-[#212B36]/60', className)}
+    style={{ fontWeight: fontWeight || 400 }}
+    {...p}
+  >{children}</span>
+);
 
-  @media (max-width: 900px) {
-    flex: 1;
-    min-width: calc(50% - 8px);
-    justify-content: center;
-    gap: 4px;
-  }
-`;
+const NavButton = ({ darkMode, className, children, ...p }) => (
+  <button
+    className={cn(
+      'w-[26px] h-[26px] rounded-xl border-[1.5px] bg-transparent cursor-pointer inline-flex items-center justify-center p-0 transition-all duration-150',
+      'disabled:cursor-not-allowed',
+      darkMode
+        ? 'border-white/10 text-white hover:enabled:border-white/[0.15] hover:enabled:bg-white/[0.02] disabled:text-white/30'
+        : 'border-black/[0.06] text-[#212B36] hover:enabled:border-black/10 hover:enabled:bg-black/[0.01] disabled:text-[#212B36]/30',
+      className
+    )}
+    {...p}
+  >{children}</button>
+);
 
-const Text = styled.span`
-  font-size: 11px;
-  font-variant-numeric: tabular-nums;
-  color: ${({ darkMode }) => (darkMode ? 'rgba(255, 255, 255, 0.6)' : 'rgba(33, 43, 54, 0.6)')};
-  font-weight: ${(props) => props.fontWeight || 400};
-`;
+const PageButton = ({ selected, darkMode, className, children, ...p }) => (
+  <button
+    className={cn(
+      'min-w-[22px] h-[22px] rounded-xl border-[1.5px] cursor-pointer inline-flex items-center justify-center px-1 m-0 text-[11px] tabular-nums transition-all duration-150',
+      'disabled:cursor-not-allowed disabled:opacity-30',
+      selected
+        ? 'border-[#4285f4] bg-[#4285f4] text-white font-medium hover:enabled:border-[#1976D2] hover:enabled:bg-[#1976D2]'
+        : cn(
+            darkMode
+              ? 'border-white/10 bg-transparent text-white font-normal hover:enabled:border-white/[0.15] hover:enabled:bg-white/[0.02]'
+              : 'border-black/[0.06] bg-transparent text-[#212B36] font-normal hover:enabled:border-black/10 hover:enabled:bg-black/[0.01]'
+          ),
+      className
+    )}
+    {...p}
+  >{children}</button>
+);
 
-const NavButton = styled.button`
-  width: 26px;
-  height: 26px;
-  border-radius: 12px;
-  border: 1.5px solid
-    ${({ darkMode }) => (darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)')};
-  background: transparent;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: ${({ darkMode }) => (darkMode ? '#ffffff' : '#212B36')};
-  padding: 0;
-  transition: all 0.15s ease;
+const Select = ({ className, children, ...p }) => (
+  <div className={cn('relative inline-block', className)} {...p}>{children}</div>
+);
 
-  &:hover:not(:disabled) {
-    border-color: ${({ darkMode }) =>
-      darkMode ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)'};
-    background: ${({ darkMode }) =>
-      darkMode ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.01)'};
-  }
+const SelectButton = ({ className, children, ...p }) => (
+  <button
+    className={cn('bg-transparent border-none text-[#4285f4] font-medium text-[11px] cursor-pointer p-0 flex items-center gap-[2px] min-w-[36px] hover:bg-blue-400/[0.04] hover:rounded hover:py-[2px] hover:px-1 hover:-my-[2px] hover:-mx-1', className)}
+    {...p}
+  >{children}</button>
+);
 
-  &:disabled {
-    color: ${({ darkMode }) => (darkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(33, 43, 54, 0.3)')};
-    cursor: not-allowed;
-  }
-`;
+const SelectMenu = ({ darkMode, className, children, ...p }) => (
+  <div
+    className={cn('absolute top-full right-0 mt-1 bg-transparent border-[1.5px] rounded-xl z-[1000] min-w-[50px] backdrop-blur-[12px]', darkMode ? 'border-white/10' : 'border-black/[0.06]', className)}
+    {...p}
+  >{children}</div>
+);
 
-const PageButton = styled.button`
-  min-width: 22px;
-  height: 22px;
-  border-radius: 12px;
-  border: 1.5px solid
-    ${(props) =>
-      props.selected
-        ? '#4285f4'
-        : props.darkMode
-          ? 'rgba(255, 255, 255, 0.1)'
-          : 'rgba(0, 0, 0, 0.06)'};
-  background: ${(props) => (props.selected ? '#4285f4' : 'transparent')};
-  color: ${(props) => (props.selected ? 'white' : props.darkMode ? '#ffffff' : '#212B36')};
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 4px;
-  margin: 0;
-  font-size: 11px;
-  font-weight: ${(props) => (props.selected ? 500 : 400)};
-  font-variant-numeric: tabular-nums;
-  transition: all 0.15s ease;
+const SelectOption = ({ darkMode, className, children, ...p }) => (
+  <button
+    className={cn('block w-full py-1 px-[10px] border-none bg-transparent text-left cursor-pointer text-[11px] hover:bg-blue-400/[0.04]', darkMode ? 'text-white' : 'text-[#212B36]', className)}
+    {...p}
+  >{children}</button>
+);
 
-  &:hover:not(:disabled) {
-    border-color: ${(props) =>
-      props.selected
-        ? '#1976D2'
-        : props.darkMode
-          ? 'rgba(255, 255, 255, 0.15)'
-          : 'rgba(0, 0, 0, 0.1)'};
-    background: ${(props) =>
-      props.selected
-        ? '#1976D2'
-        : props.darkMode
-          ? 'rgba(255, 255, 255, 0.02)'
-          : 'rgba(0, 0, 0, 0.01)'};
-  }
+const CenterBox = ({ className, children, ...p }) => (
+  <div className={cn('grow flex justify-center', className)} {...p}>{children}</div>
+);
 
-  &:disabled {
-    cursor: not-allowed;
-    opacity: 0.3;
-  }
-`;
+const StyledTableHead = ({ scrollTopLength, className, children, ...p }) => (
+  <thead
+    className={cn('sticky z-[100] bg-transparent backdrop-blur-[12px]', className)}
+    style={{ top: scrollTopLength || 0 }}
+    {...p}
+  >{children}</thead>
+);
 
-const Select = styled.div`
-  position: relative;
-  display: inline-block;
-`;
+const StyledTableCell = ({ darkMode, isCollectionColumn, align, width, sortable, className, children, ...p }) => (
+  <th
+    className={cn(
+      'font-medium text-[11px] tracking-[0.05em] uppercase py-[14px] px-2 border-b-[1.5px] box-border font-[inherit] transition-all duration-150',
+      'first-of-type:pl-3 last-of-type:pr-3',
+      isCollectionColumn ? 'whitespace-normal' : 'whitespace-nowrap',
+      sortable ? 'cursor-pointer' : 'cursor-default',
+      darkMode ? 'text-white/50 border-white/10' : 'text-black/55 border-black/[0.06]',
+      sortable && (darkMode ? 'hover:text-white/80' : 'hover:text-black/80'),
+      className
+    )}
+    style={{ textAlign: align || 'left', width: width || 'auto', minWidth: isCollectionColumn ? '200px' : (width || 'auto') }}
+    {...p}
+  >{children}</th>
+);
 
-const SelectButton = styled.button`
-  background: transparent;
-  border: none;
-  color: #4285f4;
-  font-weight: 500;
-  font-size: 11px;
-  cursor: pointer;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  min-width: 36px;
+const SortIndicator = ({ active, darkMode, direction, className, children, ...p }) => (
+  <span
+    className={cn('inline-block ml-[6px] text-[8px] transition-all duration-150', className)}
+    style={{
+      color: active ? '#4285f4' : (darkMode ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.25)'),
+      transform: direction === 'asc' ? 'rotate(180deg)' : 'rotate(0deg)',
+      opacity: active ? 1 : 0.5
+    }}
+    {...p}
+  >{children}</span>
+);
 
-  &:hover {
-    background: rgba(66, 133, 244, 0.04);
-    border-radius: 4px;
-    padding: 2px 4px;
-    margin: -2px -4px;
-  }
-`;
+const MobileContainer = ({ darkMode, className, children, ...p }) => (
+  <div
+    className={cn('w-full flex flex-col gap-0 p-0 m-0 bg-transparent rounded-xl backdrop-blur-[12px] border-[1.5px]', darkMode ? 'border-white/10' : 'border-black/[0.06]', className)}
+    {...p}
+  >{children}</div>
+);
 
-const SelectMenu = styled.div`
-  position: absolute;
-  top: 100%;
-  right: 0;
-  margin-top: 4px;
-  background: transparent;
-  border: 1.5px solid
-    ${({ darkMode }) => (darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)')};
-  border-radius: 12px;
-  z-index: 1000;
-  min-width: 50px;
-  backdrop-filter: blur(12px);
-`;
+const StyledMobileHeader = ({ isDark, className, children, ...p }) => (
+  <div
+    className={cn(
+      'flex w-full py-3 px-4 bg-transparent backdrop-blur-[12px] border-b-[1.5px] text-[11px] font-medium uppercase tracking-[0.05em] sticky top-0 z-10 box-border',
+      isDark ? 'border-white/10 text-white/50' : 'border-black/[0.06] text-black/55',
+      className
+    )}
+    {...p}
+  >{children}</div>
+);
 
-const SelectOption = styled.button`
-  display: block;
-  width: 100%;
-  padding: 4px 10px;
-  border: none;
-  background: transparent;
-  text-align: left;
-  cursor: pointer;
-  font-size: 11px;
-  color: ${({ darkMode }) => (darkMode ? '#ffffff' : '#212B36')};
-
-  &:hover {
-    background: rgba(66, 133, 244, 0.04);
-  }
-`;
-
-const CenterBox = styled.div`
-  flex-grow: 1;
-  display: flex;
-  justify-content: center;
-`;
-
-const StyledTableHead = styled.thead`
-  position: sticky;
-  top: ${(props) => props.scrollTopLength || 0}px;
-  z-index: 100;
-  background: transparent;
-  backdrop-filter: blur(12px);
-`;
-
-const StyledTableCell = styled.th`
-  font-weight: 500;
-  font-size: 11px;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.55)')};
-  padding: 14px 8px;
-  border-bottom: 1.5px solid
-    ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)')};
-  white-space: ${(props) => (props.isCollectionColumn ? 'normal' : 'nowrap')};
-  text-align: ${(props) => props.align || 'left'};
-  width: ${(props) => props.width || 'auto'};
-  min-width: ${(props) => (props.isCollectionColumn ? '200px' : props.width || 'auto')};
-  box-sizing: border-box;
-  cursor: ${(props) => (props.sortable ? 'pointer' : 'default')};
-  font-family: inherit;
-  transition: all 0.15s ease;
-
-  &:first-of-type {
-    padding-left: 12px;
-  }
-
-  &:last-of-type {
-    padding-right: 12px;
-  }
-
-  &:hover {
-    color: ${(props) =>
-      props.sortable
-        ? props.darkMode
-          ? 'rgba(255, 255, 255, 0.8)'
-          : 'rgba(0, 0, 0, 0.8)'
-        : 'inherit'};
-  }
-`;
-
-const SortIndicator = styled.span`
-  display: inline-block;
-  margin-left: 6px;
-  font-size: 8px;
-  color: ${(props) =>
-    props.active
-      ? '#4285f4'
-      : props.darkMode
-        ? 'rgba(255, 255, 255, 0.25)'
-        : 'rgba(0, 0, 0, 0.25)'};
-  transform: ${(props) => (props.direction === 'asc' ? 'rotate(180deg)' : 'rotate(0deg)')};
-  opacity: ${(props) => (props.active ? 1 : 0.5)};
-  transition:
-    transform 0.15s ease,
-    color 0.15s ease;
-`;
-
-const MobileContainer = styled.div`
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  padding: 0;
-  margin: 0;
-  background: transparent;
-  border: 1.5px solid
-    ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)')};
-  border-radius: 12px;
-  backdrop-filter: blur(12px);
-`;
-
-const StyledMobileHeader = styled.div`
-  display: flex;
-  width: 100%;
-  padding: 12px 16px;
-  background: transparent;
-  backdrop-filter: blur(12px);
-  border-bottom: 1.5px solid
-    ${(props) => (props.isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)')};
-  font-size: 11px;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.55)')};
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  box-sizing: border-box;
-`;
-
-const StyledHeaderCell = styled.div`
-  flex: ${(props) => props.flex || 1};
-  text-align: ${(props) => props.align || 'left'};
-  padding: 0 6px;
-  cursor: ${(props) => (props.sortable ? 'pointer' : 'default')};
-  transition: color 0.15s ease;
-
-  &:hover {
-    color: ${(props) =>
-      props.sortable && (props.isDark ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)')};
-  }
-`;
+const StyledHeaderCell = ({ flex, align, sortable, isDark, className, children, ...p }) => (
+  <div
+    className={cn(
+      'px-[6px] transition-[color] duration-150',
+      sortable ? 'cursor-pointer' : 'cursor-default',
+      sortable && (isDark ? 'hover:text-white/80' : 'hover:text-black/80'),
+      className
+    )}
+    style={{ flex: flex || 1, textAlign: align || 'left' }}
+    {...p}
+  >{children}</div>
+);
 
 // Table Head Configuration
 const TABLE_HEAD_MOBILE = [
@@ -622,43 +421,43 @@ const ListHead = memo(
 
     // Render label with badge style for time periods
     const renderLabel = (headCell) => {
-      const badgeStyle = { opacity: 0.5, fontSize: '10px' };
+      const badgeClass = 'opacity-50 text-[10px]';
 
       switch (headCell.id) {
         case 'totalVol24h':
           return (
             <>
-              Volume <span style={badgeStyle}>24h</span>
+              Volume <span className={badgeClass}>24h</span>
             </>
           );
         case 'totalVolume':
           return (
             <>
-              Volume <span style={badgeStyle}>All</span>
+              Volume <span className={badgeClass}>All</span>
             </>
           );
         case 'sales24h':
           return (
             <>
-              Sales <span style={badgeStyle}>24h</span>
+              Sales <span className={badgeClass}>24h</span>
             </>
           );
         case 'totalSales':
           return (
             <>
-              Sales <span style={badgeStyle}>All</span>
+              Sales <span className={badgeClass}>All</span>
             </>
           );
         case 'sparkline':
           return (
             <>
-              Trendline <span style={badgeStyle}>7d</span>
+              Trendline <span className={badgeClass}>7d</span>
             </>
           );
         case 'floor1dPercent':
           return (
             <>
-              Change <span style={badgeStyle}>24h</span>
+              Change <span className={badgeClass}>24h</span>
             </>
           );
         default:
@@ -710,17 +509,12 @@ const OptimizedImage = memo(
     }, []);
 
     return (
-      <div style={{ width: size, height: size, borderRadius: '4px', overflow: 'hidden' }}>
+      <div className="rounded overflow-hidden" style={{ width: size, height: size }}>
         <img
           src={imgSrc}
           alt={alt}
           onError={handleError}
-          style={{
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-            display: 'block'
-          }}
+          className="w-full h-full object-cover block"
         />
       </div>
     );
@@ -839,15 +633,9 @@ const DesktopCollectionRow = ({ collection, idx, darkMode, handleRowClick }) => 
       <StyledCell
         align="center"
         darkMode={darkMode}
-        style={{ width: '40px', minWidth: '40px', maxWidth: '40px' }}
+        className="w-10 min-w-[40px] max-w-[40px]"
       >
-        <span
-          style={{
-            fontWeight: '400',
-            fontSize: '13px',
-            color: darkMode ? 'rgba(255, 255, 255, 0.4)' : 'rgba(0, 0, 0, 0.4)'
-          }}
-        >
+        <span className={cn('font-normal text-[13px]', darkMode ? 'text-white/40' : 'text-black/40')}>
           {idx + 1}
         </span>
       </StyledCell>
@@ -856,13 +644,13 @@ const DesktopCollectionRow = ({ collection, idx, darkMode, handleRowClick }) => 
         align="left"
         darkMode={darkMode}
         isCollectionColumn={true}
-        style={{ width: '220px', minWidth: '220px', maxWidth: '220px' }}
+        className="w-[220px] min-w-[220px] max-w-[220px]"
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <div className="flex items-center gap-3">
           <CollectionImage darkMode={darkMode}>
             <OptimizedImage src={logoImageUrl} alt={collectionName} size={36} />
           </CollectionImage>
-          <div style={{ minWidth: 0, flex: 1 }}>
+          <div className="min-w-0 flex-1">
             <CollectionName title={collectionName} darkMode={darkMode}>
               {collectionName}
             </CollectionName>
@@ -877,15 +665,9 @@ const DesktopCollectionRow = ({ collection, idx, darkMode, handleRowClick }) => 
       <StyledCell
         align="center"
         darkMode={darkMode}
-        style={{
-          minWidth: '140px',
-          width: '140px',
-          overflow: 'visible',
-          position: 'relative',
-          zIndex: 101
-        }}
+        className="min-w-[140px] w-[140px] overflow-visible relative z-[101]"
       >
-        <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+        <div className="w-full flex justify-center">
           <NFTSparklineChart slug={slug} period="7d" />
         </div>
       </StyledCell>
@@ -908,12 +690,7 @@ const DesktopCollectionRow = ({ collection, idx, darkMode, handleRowClick }) => 
       </StyledCell>
 
       <StyledCell align="right" darkMode={darkMode} fontWeight={400}>
-        <span
-          style={{
-            fontSize: '13px',
-            color: darkMode ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)'
-          }}
-        >
+        <span className={cn('text-[13px]', darkMode ? 'text-white/60' : 'text-black/60')}>
           {strDateTime}
         </span>
       </StyledCell>
@@ -942,13 +719,8 @@ const DesktopCollectionRow = ({ collection, idx, darkMode, handleRowClick }) => 
         {fIntNumber(items)}
       </StyledCell>
 
-      <StyledCell align="right" darkMode={darkMode} fontWeight={400} style={{ paddingRight: '16px' }}>
-        <span
-          style={{
-            fontFamily: 'var(--font-sans)',
-            color: darkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)'
-          }}
-        >
+      <StyledCell align="right" darkMode={darkMode} fontWeight={400} className="pr-4">
+        <span className={cn('font-sans', darkMode ? 'text-white/70' : 'text-black/70')}>
           {origin || 'XRPL'}
         </span>
       </StyledCell>
@@ -1085,6 +857,7 @@ const ListToolbar = memo(function ListToolbar({ rows, setRows, page, setPage, to
           type="button"
           onClick={onPrevHandler}
           disabled={!hasPrev}
+          aria-label="Previous page"
           className={cn(
             'p-1.5 rounded-xl border-[1.5px] transition-all',
             !hasPrev ? 'opacity-30 cursor-not-allowed' : '',
@@ -1107,6 +880,7 @@ const ListToolbar = memo(function ListToolbar({ rows, setRows, page, setPage, to
           type="button"
           onClick={onNextHandler}
           disabled={!hasNext}
+          aria-label="Next page"
           className={cn(
             'p-1.5 rounded-xl border-[1.5px] transition-all',
             !hasNext ? 'opacity-30 cursor-not-allowed' : '',
@@ -1132,7 +906,7 @@ export default function CollectionList({
   initialTotal = 0
 }) {
   const BASE_URL = 'https://api.xrpl.to/v1';
-  const { themeName } = useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
   const darkMode = themeName === 'XrplToDarkTheme';
 
   const [page, setPage] = useState(0);
@@ -1235,7 +1009,7 @@ export default function CollectionList({
   if (error) {
     return (
       <Container>
-        <div style={{ padding: '40px', textAlign: 'center', color: '#f44336' }}>{error}</div>
+        <div className="p-10 text-center text-[#f44336]">{error}</div>
       </Container>
     );
   }
@@ -1243,7 +1017,7 @@ export default function CollectionList({
   if (collections.length === 0) {
     return (
       <Container>
-        <div style={{ padding: '40px', textAlign: 'center', color: darkMode ? '#fff' : '#000' }}>
+        <div className={cn('p-10 text-center', darkMode ? 'text-white' : 'text-black')}>
           No collections found.
         </div>
       </Container>

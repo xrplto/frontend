@@ -3,7 +3,7 @@ import Decimal from 'decimal.js-light';
 import PropTypes from 'prop-types';
 import { useState, useEffect, useContext, useRef, useMemo, useCallback, memo } from 'react';
 import { createPortal } from 'react-dom';
-import styled from '@emotion/styled';
+import { useRouter } from 'next/router';
 import {
   AlertTriangle,
   Copy,
@@ -38,203 +38,8 @@ import { useSelector } from 'react-redux';
 import { selectMetrics } from 'src/redux/statusSlice';
 import { fNumber, fDate } from 'src/utils/formatters';
 import { cn } from 'src/utils/cn';
-import { AppContext } from 'src/context/AppContext';
-
-// Helper
-const alpha = (color, opacity) => color.replace(')', `, ${opacity})`);
-
-// Custom components
-const Box = styled.div``;
-const Stack = styled.div`
-  display: flex;
-  flex-direction: ${(props) => props.direction || 'column'};
-  align-items: ${(props) => props.alignItems || 'stretch'};
-  gap: ${(props) => (props.spacing ? `${props.spacing * 8}px` : '0')};
-  flex-wrap: ${(props) => props.flexWrap || 'nowrap'};
-`;
-const Typography = styled.div`
-  font-size: ${(props) =>
-    props.variant === 'h6'
-      ? '1.25rem'
-      : props.variant === 'body2'
-        ? '0.875rem'
-        : props.variant === 'caption'
-          ? '0.75rem'
-          : '1rem'};
-  font-weight: ${(props) => props.fontWeight || 400};
-  color: ${(props) => props.color || (props.isDark ? '#FFFFFF' : '#212B36')};
-  white-space: ${(props) => (props.noWrap ? 'nowrap' : 'normal')};
-`;
-const Table = styled.table`
-  width: 100%;
-  background: transparent;
-`;
-const TableBody = styled.tbody``;
-const TableRow = styled.tr``;
-const TableCell = styled.td`
-  padding: ${(props) => props.padding || '4px 6px'};
-  border-bottom: none;
-  text-align: ${(props) => props.align || 'left'};
-`;
-const Chip = styled.div`
-  display: inline-flex;
-  align-items: center;
-  padding: ${(props) => (props.size === 'small' ? '2px 8px' : '4px 12px')};
-  border-radius: 8px;
-  font-size: ${(props) => props.fontSize || '11px'};
-  font-weight: 400;
-  cursor: ${(props) => (props.onClick ? 'pointer' : 'default')};
-`;
-const IconButton = styled.button`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: ${(props) => (props.size === 'small' ? '4px' : '8px')};
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  border-radius: 8px;
-`;
-const Link = styled.a`
-  text-decoration: none;
-  color: inherit;
-  &:hover {
-    text-decoration: underline;
-  }
-`;
-const Tooltip = ({ title, children }) => {
-  const [show, setShow] = useState(false);
-  return (
-    <div
-      style={{ position: 'relative', display: 'inline-block' }}
-      onMouseEnter={() => setShow(true)}
-      onMouseLeave={() => setShow(false)}
-    >
-      {children}
-      {show && (
-        <div
-          style={{
-            position: 'absolute',
-            bottom: '100%',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            padding: '4px 8px',
-            background: 'rgba(0,0,0,0.9)',
-            color: '#fff',
-            borderRadius: '4px',
-            fontSize: '12px',
-            whiteSpace: 'pre-line',
-            zIndex: 1000,
-            marginBottom: '4px',
-            minWidth: 'max-content'
-          }}
-        >
-          {title}
-        </div>
-      )}
-    </div>
-  );
-};
-const Dialog = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(4px);
-  display: ${(props) => (props.open ? 'flex' : 'none')};
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-`;
-const DialogPaper = styled.div`
-  background: ${(props) => (props.isDark ? '#0a0a0a' : '#ffffff')};
-  border-radius: 14px;
-  border: 1px solid ${(props) => (props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)')};
-  padding: 0;
-  max-width: 400px;
-  width: 90%;
-  margin: 0 auto;
-`;
-const DialogContent = styled.div`
-  padding: 16px;
-  text-align: ${(props) => props.textAlign || 'left'};
-`;
-const Button = styled.button`
-  padding: 10px 24px;
-  font-size: 13px;
-  font-weight: 500;
-  border-radius: 10px;
-  border: 1px solid rgba(239, 68, 68, 0.2);
-  cursor: pointer;
-  background: rgba(239, 68, 68, 0.08);
-  color: #ef4444;
-  transition: all 0.15s ease;
-  &:hover {
-    background: rgba(239, 68, 68, 0.12);
-    border-color: rgba(239, 68, 68, 0.3);
-  }
-`;
-
-const StyledTable = styled(Table)`
-  margin-top: 0;
-  table-layout: fixed;
-`;
-
-const ModernTableCell = styled(TableCell)`
-  padding: 6px 10px;
-  border-bottom: none;
-  vertical-align: middle;
-  &:first-of-type {
-    width: 45%;
-  }
-  &:last-of-type {
-    width: 55%;
-    text-align: right;
-  }
-`;
-
-const TableRowStyled = styled(TableRow)`
-  transition: background 0.15s ease;
-  &:hover {
-    background: ${(props) => (props.isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.015)')};
-  }
-`;
-
-const SectionHeader = styled.div`
-  padding: 6px 10px 2px;
-  margin-top: 0;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-`;
-
-const SectionLabel = styled.span`
-  font-size: 10px;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)')};
-`;
-
-const ScrollableBox = styled.div`
-  flex: 1;
-  overflow-y: auto;
-  overflow-x: hidden;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(128,128,128,0.3) transparent;
-  &::-webkit-scrollbar {
-    width: 4px;
-  }
-  &::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  &::-webkit-scrollbar-thumb {
-    background: rgba(128,128,128,0.3);
-    border-radius: 4px;
-  }
-`;
+import { WalletContext, AppContext } from 'src/context/AppContext';
+import VerificationBadge, { VerificationLabel } from 'src/components/VerificationBadge';
 
 // Shared mobile hook to avoid duplicate listeners
 const useIsMobile = (breakpoint = 600) => {
@@ -250,11 +55,11 @@ const useIsMobile = (breakpoint = 600) => {
 
 // Constants
 const currencySymbols = {
-  USD: '$ ',
-  EUR: '€ ',
-  JPY: '¥ ',
-  CNH: '¥ ',
-  XRP: '✕ '
+  USD: '$',
+  EUR: '€',
+  JPY: '¥',
+  CNH: '¥',
+  XRP: '✕'
 };
 
 // Price formatter - returns object for compact notation or string
@@ -304,8 +109,10 @@ const PriceDisplay = ({ price, symbol = '' }) => {
 // ----------------------------------------------------------------------
 
 export default function PriceStatistics({ token, isDark = false, linkedCollections = [] }) {
+  const router = useRouter();
   const metrics = useSelector(selectMetrics);
-  const { activeFiatCurrency, openSnackbar, accountProfile } = useContext(AppContext);
+  const { accountProfile } = useContext(WalletContext);
+  const { activeFiatCurrency, openSnackbar } = useContext(AppContext);
   const accountLogin = accountProfile?.account;
   const isMobile = useIsMobile();
   const [openScamWarning, setOpenScamWarning] = useState(false);
@@ -456,12 +263,9 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
 
     setAiLoading(true);
     const aiUrl = `https://api.xrpl.to/v1/token/review/${token.md5}`;
-    const t0 = performance.now();
-    console.log('[PriceStats] Fetching AI review:', aiUrl);
     apiFetch(aiUrl, { signal: aiAbortRef.current.signal })
       .then((res) => res.json())
       .then((data) => {
-        console.log(`[PriceStats] AI review done in ${(performance.now() - t0).toFixed(0)}ms`);
         if (data?.score !== undefined) {
           setAiReview(data);
         }
@@ -485,12 +289,9 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
     flowAbortRef.current = new AbortController();
 
     const flowUrl = `https://api.xrpl.to/v1/token/flow/${token.md5}`;
-    const t1 = performance.now();
-    console.log('[PriceStats] Fetching token flow:', flowUrl);
     apiFetch(flowUrl, { signal: flowAbortRef.current.signal })
       .then((res) => res.json())
       .then((data) => {
-        console.log(`[PriceStats] Token flow done in ${(performance.now() - t1).toFixed(0)}ms`);
         if (data?.success && data?.summary) {
           const edges = data.graph?.edges || [];
           const edgeMap = new Map(edges.map((e) => [e.to, e]));
@@ -541,8 +342,6 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
         url += '&side=check_incoming,check_create,check_receive,check_send,check_cancel';
       else if (filter === 'lp') url += '&side=deposit,withdraw,amm_create';
 
-      const t0 = performance.now();
-      console.log('[PriceStats] Fetching creator activity:', url);
       // Parallel fetch for 'all' filter (creators + tx fallback)
       const fetches = [fetch(url, { signal }).then((r) => r.json())];
       if (filter === 'all') {
@@ -552,7 +351,6 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
       }
 
       const [data, txData] = await Promise.all(fetches);
-      console.log(`[PriceStats] Creator activity done in ${(performance.now() - t0).toFixed(0)}ms`);
       if (signal?.aborted) return;
 
       if (data?.events?.length > 0) {
@@ -673,70 +471,51 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
 
   return (
     <>
-      <Box
+      <div
         className={cn(
-          'rounded-2xl border transition-all duration-200 overflow-hidden',
+          'rounded-2xl border transition-all duration-200 overflow-hidden w-full mb-[4px]',
           isDark
             ? 'border-white/[0.08] bg-[#0a0a0a]/50 backdrop-blur-sm'
             : 'border-black/[0.06] bg-white/50 backdrop-blur-sm shadow-sm'
         )}
-        style={{
-          width: '100%',
-          marginBottom: '4px',
-        }}
       >
         {/* Scam Warning Dialog */}
         {openScamWarning && (
-          <Dialog open>
-            <DialogPaper isDark={isDark} onClick={(e) => e.stopPropagation()}>
-              <DialogContent style={{ textAlign: 'center', padding: '24px' }}>
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-[4px] flex items-center justify-center z-[1000]">
+            <div className={cn('rounded-[14px] border p-0 max-w-[400px] w-[90%] mx-auto', isDark ? 'bg-[#0a0a0a] border-white/10' : 'bg-white border-black/10')} onClick={(e) => e.stopPropagation()}>
+              <div className="text-center p-[24px]">
                 <AlertTriangle
                   size={28}
                   color="#ef4444"
                   strokeWidth={1.5}
-                  style={{ marginBottom: '12px' }}
+                  className="mb-[12px]"
                 />
-                <Typography
-                  variant="h6"
-                  style={{
-                    color: '#ef4444',
-                    fontWeight: 700,
-                    marginBottom: '10px',
-                    fontSize: '16px',
-                    letterSpacing: '-0.01em',
-                    textTransform: 'uppercase'
-                  }}
+                <span
+                  className="text-[#ef4444] font-bold mb-[10px] text-[16px] tracking-[-0.01em] uppercase"
                 >
                   Scam Warning
-                </Typography>
-                <Typography
-                  isDark={isDark}
-                  variant="body2"
-                  style={{
-                    color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)',
-                    marginBottom: '20px',
-                    fontSize: '13px',
-                    lineHeight: '1.5'
-                  }}
+                </span>
+                <span
+                  className={cn('mb-[20px] text-[13px] leading-[1.5]', isDark ? 'text-white/60' : 'text-black/60')}
                 >
                   This token has been flagged as a potential scam. Please exercise extreme caution.
-                </Typography>
-                <Button isDark={isDark} onClick={() => setOpenScamWarning(false)}>
+                </span>
+                <button className="py-[10px] px-6 text-[13px] font-medium rounded-[10px] border border-red-500/20 cursor-pointer bg-red-500/[0.08] text-red-500 transition-all duration-150 hover:bg-red-500/[0.12] hover:border-red-500/30" onClick={() => setOpenScamWarning(false)}>
                   I Understand
-                </Button>
-              </DialogContent>
-            </DialogPaper>
-          </Dialog>
+                </button>
+              </div>
+            </div>
+          </div>
         )}
 
         {/* Header */}
-        <Box
+        <div
           className={cn(
             'px-[14px] py-[12px] border-b transition-colors',
             isDark ? 'bg-white/[0.02] border-white/[0.06]' : 'bg-black/[0.01] border-black/[0.04]'
           )}
         >
-          <Stack direction="row" alignItems="center" style={{ gap: '8px' }}>
+          <div className="flex flex-row items-center gap-[8px]">
             <div
               className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]"
             />
@@ -748,12 +527,12 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
             >
               Token Statistics
             </span>
-          </Stack>
-        </Box>
+          </div>
+        </div>
 
         {/* Safety Score */}
         {(aiReview || aiLoading) && (
-          <Box
+          <div
             className={cn(
               'm-2 p-4 rounded-xl border transition-all duration-300 relative overflow-hidden',
               isDark 
@@ -762,15 +541,15 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
             )}
           >
             {aiLoading ? (
-              <Stack direction="row" alignItems="center" style={{ gap: '12px', padding: '4px 0' }}>
+              <div className="flex flex-row items-center gap-[12px] py-[4px]">
                 <div className="relative">
                   <div className="w-5 h-5 border-2 border-violet-500/20 border-t-violet-500 rounded-full animate-spin" />
                   <div className="absolute inset-0 bg-violet-500/10 blur-sm rounded-full" />
                 </div>
-                <Typography className="text-[11px] font-bold uppercase tracking-[0.15em] text-violet-500/80">
+                <span className="text-[11px] font-bold uppercase tracking-[0.15em] text-violet-500/80">
                   AI Security Audit in progress...
-                </Typography>
-              </Stack>
+                </span>
+              </div>
             ) : (
               aiReview &&
               (() => {
@@ -852,38 +631,25 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                 );
               })()
             )}
-          </Box>
+          </div>
         )}
 
-        <StyledTable size="small">
-          <TableBody>
+        <table className="w-full" size="small">
+          <tbody>
             {/* ========== MARKET METRICS GROUP ========== */}
-            <TableRowStyled isDark={isDark}>
-              <ModernTableCell>
-                <Typography
-                  style={{
-                    fontWeight: 400,
-                    color: isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.5)',
-                    fontSize: '13px'
-                  }}
-                  noWrap
+            <tr className={cn('transition-[background] duration-150', isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-black/[0.015]')}>
+              <td className="border-b-0 align-middle first-of-type:w-[45%] last-of-type:w-[55%] last-of-type:text-right p-[6px_10px]">
+                <span
+                  className={cn('font-normal text-[13px] whitespace-nowrap', isDark ? 'text-white/[0.45]' : 'text-black/50')}
                 >
                   FDV Market Cap
-                </Typography>
-              </ModernTableCell>
-              <ModernTableCell>
-                <Stack
-                  direction="row"
-                  alignItems="center"
-                  style={{ justifyContent: 'flex-end', gap: '6px' }}
-                >
-                  <Typography
-                    style={{
-                      fontWeight: 500,
-                      color: isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.85)',
-                      fontSize: '13px',
-                      fontVariantNumeric: 'tabular-nums'
-                    }}
+                </span>
+              </td>
+              <td className="border-b-0 align-middle first-of-type:w-[45%] last-of-type:w-[55%] last-of-type:text-right p-[6px_10px]">
+                <div className="flex flex-row items-center justify-end gap-[6px]">
+                  <span
+                    className={cn('font-medium text-[13px]', isDark ? 'text-white/90' : 'text-black/[0.85]')}
+                    style={{ fontVariantNumeric: 'tabular-nums' }}
                   >
                     {currencySymbols[activeFiatCurrency]}
                     {fNumber(
@@ -893,142 +659,98 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                           (activeFiatCurrency === 'CNH' ? metrics.CNY : null) ||
                           1))
                     )}
-                  </Typography>
-                </Stack>
-              </ModernTableCell>
-            </TableRowStyled>
+                  </span>
+                </div>
+              </td>
+            </tr>
 
-            <TableRowStyled isDark={isDark}>
-              <ModernTableCell>
-                <Typography
-                  style={{
-                    fontWeight: 400,
-                    color: isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.5)',
-                    fontSize: '13px'
-                  }}
-                  noWrap
+            <tr className={cn('transition-[background] duration-150', isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-black/[0.015]')}>
+              <td className="border-b-0 align-middle first-of-type:w-[45%] last-of-type:w-[55%] last-of-type:text-right p-[6px_10px]">
+                <span
+                  className={cn('font-normal text-[13px] whitespace-nowrap', isDark ? 'text-white/[0.45]' : 'text-black/50')}
                 >
                   Volume Dominance
-                </Typography>
-              </ModernTableCell>
-              <ModernTableCell>
-                <Typography
-                  style={{
-                    fontWeight: 500,
-                    color: isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.85)',
-                    fontSize: '13px'
-                  }}
+                </span>
+              </td>
+              <td className="border-b-0 align-middle first-of-type:w-[45%] last-of-type:w-[55%] last-of-type:text-right p-[6px_10px]">
+                <span
+                  className={cn('font-medium text-[13px]', isDark ? 'text-white/90' : 'text-black/[0.85]')}
+                  style={{ fontVariantNumeric: 'tabular-nums' }}
                 >
                   {(dom || 0).toFixed(4)}%
-                </Typography>
-              </ModernTableCell>
-            </TableRowStyled>
+                </span>
+              </td>
+            </tr>
 
             {amount > 0 && (
-              <TableRowStyled isDark={isDark}>
-                <ModernTableCell>
-                  <Typography
-                    style={{
-                      fontWeight: 400,
-                      color: isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.5)',
-                      fontSize: '13px'
-                    }}
-                    noWrap
+              <tr className={cn('transition-[background] duration-150', isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-black/[0.015]')}>
+                <td className="border-b-0 align-middle first-of-type:w-[45%] last-of-type:w-[55%] last-of-type:text-right p-[6px_10px]">
+                  <span
+                    className={cn('font-normal text-[13px] whitespace-nowrap', isDark ? 'text-white/[0.45]' : 'text-black/50')}
                   >
                     Supply
-                  </Typography>
-                </ModernTableCell>
-                <ModernTableCell>
-                  <Typography
-                    style={{
-                      fontWeight: 500,
-                      color: isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.85)',
-                      fontSize: '13px',
-                      fontVariantNumeric: 'tabular-nums'
-                    }}
+                  </span>
+                </td>
+                <td className="border-b-0 align-middle first-of-type:w-[45%] last-of-type:w-[55%] last-of-type:text-right p-[6px_10px]">
+                  <span
+                    className={cn('font-medium text-[13px]', isDark ? 'text-white/90' : 'text-black/[0.85]')}
+                    style={{ fontVariantNumeric: 'tabular-nums' }}
                   >
                     {fNumber(amount)}
-                  </Typography>
-                </ModernTableCell>
-              </TableRowStyled>
+                  </span>
+                </td>
+              </tr>
             )}
 
             {(txns24h > 0 || vol24htx > 0) && (
-              <TableRowStyled isDark={isDark}>
-                <ModernTableCell>
-                  <Typography
-                    style={{
-                      fontWeight: 400,
-                      color: isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.5)',
-                      fontSize: '13px'
-                    }}
-                    noWrap
+              <tr className={cn('transition-[background] duration-150', isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-black/[0.015]')}>
+                <td className="border-b-0 align-middle first-of-type:w-[45%] last-of-type:w-[55%] last-of-type:text-right p-[6px_10px]">
+                  <span
+                    className={cn('font-normal text-[13px] whitespace-nowrap', isDark ? 'text-white/[0.45]' : 'text-black/50')}
                   >
                     Trades (24h)
-                  </Typography>
-                </ModernTableCell>
-                <ModernTableCell>
-                  <Typography
-                    style={{
-                      fontWeight: 500,
-                      color: isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.85)',
-                      fontSize: '13px',
-                      fontVariantNumeric: 'tabular-nums'
-                    }}
+                  </span>
+                </td>
+                <td className="border-b-0 align-middle first-of-type:w-[45%] last-of-type:w-[55%] last-of-type:text-right p-[6px_10px]">
+                  <span
+                    className={cn('font-medium text-[13px]', isDark ? 'text-white/90' : 'text-black/[0.85]')}
+                    style={{ fontVariantNumeric: 'tabular-nums' }}
                   >
                     {fNumber(txns24h || vol24htx)}
-                  </Typography>
-                </ModernTableCell>
-              </TableRowStyled>
+                  </span>
+                </td>
+              </tr>
             )}
 
             {uniqueTraders24h > 0 && (
-              <TableRowStyled isDark={isDark}>
-                <ModernTableCell>
-                  <Typography
-                    style={{
-                      fontWeight: 400,
-                      color: isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.5)',
-                      fontSize: '13px'
-                    }}
-                    noWrap
+              <tr className={cn('transition-[background] duration-150', isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-black/[0.015]')}>
+                <td className="border-b-0 align-middle first-of-type:w-[45%] last-of-type:w-[55%] last-of-type:text-right p-[6px_10px]">
+                  <span
+                    className={cn('font-normal text-[13px] whitespace-nowrap', isDark ? 'text-white/[0.45]' : 'text-black/50')}
                   >
                     Unique Traders (24h)
-                  </Typography>
-                </ModernTableCell>
-                <ModernTableCell>
-                  <Typography
-                    style={{
-                      fontWeight: 500,
-                      color: isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.85)',
-                      fontSize: '13px',
-                      fontVariantNumeric: 'tabular-nums'
-                    }}
+                  </span>
+                </td>
+                <td className="border-b-0 align-middle first-of-type:w-[45%] last-of-type:w-[55%] last-of-type:text-right p-[6px_10px]">
+                  <span
+                    className={cn('font-medium text-[13px]', isDark ? 'text-white/90' : 'text-black/[0.85]')}
+                    style={{ fontVariantNumeric: 'tabular-nums' }}
                   >
                     {fNumber(uniqueTraders24h)}
-                  </Typography>
-                </ModernTableCell>
-              </TableRowStyled>
+                  </span>
+                </td>
+              </tr>
             )}
 
             {/* ========== BUY/SELL METRICS GROUP ========== */}
             {(buy24hxrp > 0 || sell24hxrp > 0) && (
               <tr>
-                <td colSpan={2} style={{ padding: '12px 10px 6px' }}>
-                  <Stack direction="row" alignItems="center" style={{ gap: '6px' }}>
-                    <div style={{ width: '3px', height: '10px', borderRadius: '2px', background: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.12)' }} />
-                    <Typography
-                      style={{
-                        fontSize: '10px',
-                        fontWeight: 600,
-                        color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.5px'
-                      }}
-                    >
-                      24h Trading
-                    </Typography>
-                  </Stack>
+                <td colSpan={2} className="p-[16px_12px_8px]">
+                  <span
+                    className={cn('text-[10px] font-[800] uppercase tracking-[0.1em]', isDark ? 'text-white/40' : 'text-black/50')}
+                  >
+                    24h Trading
+                  </span>
                 </td>
               </tr>
             )}
@@ -1043,154 +765,91 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                 const sellPct = sell24hxrp > 0 ? Math.max(sellRaw, 2) : 0;
                 const formatPct = (val) => (val > 0 && val < 1 ? '<1' : val.toFixed(0));
                 return (
-                  <TableRowStyled isDark={isDark}>
-                    <ModernTableCell colSpan={2} style={{ padding: '8px 12px 10px' }}>
-                      <Stack direction="row" alignItems="center" style={{ gap: '10px' }}>
+                  <tr className={cn('transition-[background] duration-150', isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-black/[0.015]')}>
+                    <td colSpan={2} className="border-b-0 align-middle p-[8px_12px_10px]">
+                      <div className="flex flex-row items-center gap-[10px]">
                         <div className="flex flex-col min-w-[40px]">
                           <span className="text-[10px] font-black text-emerald-500 leading-none">{formatPct(buyRaw)}%</span>
                           <span className="text-[8px] font-bold opacity-40 uppercase tracking-tighter">Buy</span>
                         </div>
                         <div className="flex-1 relative">
-                          <Box style={{ height: '6px', borderRadius: '4px', overflow: 'hidden', background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)', display: 'flex' }}>
-                            <div style={{ width: `${buyPct}%`, background: 'linear-gradient(90deg, #059669, #10b981)', transition: 'width 1s ease-out' }} />
-                            <div style={{ width: `${sellPct}%`, background: 'linear-gradient(90deg, #f43f5e, #e11d48)', transition: 'width 1s ease-out' }} />
-                          </Box>
+                          <div className={cn('h-[6px] rounded-[4px] overflow-hidden flex', isDark ? 'bg-white/[0.06]' : 'bg-black/[0.04]')}>
+                            <div className="transition-[width] duration-1000 ease-out" style={{ width: `${buyPct}%`, background: 'linear-gradient(90deg, #059669, #10b981)' }} />
+                            <div className="transition-[width] duration-1000 ease-out" style={{ width: `${sellPct}%`, background: 'linear-gradient(90deg, #f43f5e, #e11d48)' }} />
+                          </div>
                           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[2px] h-full bg-white/20 dark:bg-black/20" />
                         </div>
                         <div className="flex flex-col min-w-[40px] text-right">
                           <span className="text-[10px] font-black text-rose-500 leading-none">{formatPct(sellRaw)}%</span>
                           <span className="text-[8px] font-bold opacity-40 uppercase tracking-tighter">Sell</span>
                         </div>
-                      </Stack>
-                    </ModernTableCell>
-                  </TableRowStyled>
+                      </div>
+                    </td>
+                  </tr>
                 );
               })()}
 
-            {/* Buys (24h) Row - Compact with unique buyers inline */}
-            <TableRowStyled isDark={isDark}>
-              <ModernTableCell>
-                <Typography
-                  style={{
-                    fontWeight: 400,
-                    color: isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.5)',
-                    fontSize: '13px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px'
-                  }}
-                  noWrap
+            {/* Buys (24h) Row */}
+            <tr className={cn('transition-[background] duration-150', isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-black/[0.015]')}>
+              <td className="border-b-0 align-middle first-of-type:w-[45%] last-of-type:w-[55%] last-of-type:text-right p-[6px_10px]">
+                <span
+                  className={cn('font-normal text-[13px] whitespace-nowrap', isDark ? 'text-white/[0.45]' : 'text-black/50')}
                 >
-                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500/50" />
                   Buys (24h)
-                </Typography>
-              </ModernTableCell>
-              <ModernTableCell>
-                <Stack
-                  direction="row"
-                  alignItems="center"
-                  style={{ justifyContent: 'flex-end', gap: '8px' }}
-                >
-                  <Typography style={{ fontWeight: 700, color: '#10b981', fontSize: '13px', fontFamily: 'var(--font-mono)' }}>
+                </span>
+              </td>
+              <td className="border-b-0 align-middle first-of-type:w-[45%] last-of-type:w-[55%] last-of-type:text-right p-[6px_10px]">
+                <div className="flex flex-col items-end gap-[4px]">
+                  <span className="font-bold text-[#10b981] text-[13px] font-mono">
                     {fNumber(buy24hxrp || 0)} <span className="text-[10px] opacity-60">XRP</span>
-                  </Typography>
-                  <div className="h-4 w-[1px] bg-black/5 dark:bg-white/5" />
-                  <Stack direction="row" alignItems="center" style={{ gap: '4px' }}>
-                    <Typography
-                      style={{
-                        color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)',
-                        fontSize: '11px',
-                        fontWeight: 600
-                      }}
-                    >
-                      {fNumber(uniqueBuyers24h || 0)} <span className="text-[9px] font-bold opacity-40 uppercase">u</span>
-                    </Typography>
-                    <Typography
-                      style={{
-                        color: isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.25)',
-                        fontSize: '10px',
-                        fontWeight: 500
-                      }}
-                    >
-                      {fNumber(buyTxns24h || buy24htx || 0)} <span className="text-[8px] opacity-60 uppercase">tx</span>
-                    </Typography>
-                  </Stack>
-                </Stack>
-              </ModernTableCell>
-            </TableRowStyled>
+                  </span>
+                  <div className="flex items-center gap-[12px]">
+                    <span className={cn('text-[11px] font-semibold', isDark ? 'text-white/60' : 'text-black/60')}>
+                      {fNumber(uniqueBuyers24h || 0)} <span className="text-[9px] font-bold opacity-40 uppercase">users</span>
+                    </span>
+                    <span className={cn('text-[10px] font-medium', isDark ? 'text-white/30' : 'text-black/30')}>
+                      {fNumber(buyTxns24h || buy24htx || 0)} <span className="text-[8px] opacity-60 uppercase">txns</span>
+                    </span>
+                  </div>
+                </div>
+              </td>
+            </tr>
 
-            {/* Sells (24h) Row - Compact with unique sellers inline */}
-            <TableRowStyled isDark={isDark}>
-              <ModernTableCell>
-                <Typography
-                  style={{
-                    fontWeight: 400,
-                    color: isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.5)',
-                    fontSize: '13px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px'
-                  }}
-                  noWrap
+            {/* Sells (24h) Row */}
+            <tr className={cn('transition-[background] duration-150', isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-black/[0.015]')}>
+              <td className="border-b-0 align-middle first-of-type:w-[45%] last-of-type:w-[55%] last-of-type:text-right p-[6px_10px]">
+                <span
+                  className={cn('font-normal text-[13px] whitespace-nowrap', isDark ? 'text-white/[0.45]' : 'text-black/50')}
                 >
-                  <div className="w-1.5 h-1.5 rounded-full bg-rose-500/50" />
                   Sells (24h)
-                </Typography>
-              </ModernTableCell>
-              <ModernTableCell>
-                <Stack
-                  direction="row"
-                  alignItems="center"
-                  style={{ justifyContent: 'flex-end', gap: '8px' }}
-                >
-                  <Typography style={{ fontWeight: 700, color: '#f43f5e', fontSize: '13px', fontFamily: 'var(--font-mono)' }}>
+                </span>
+              </td>
+              <td className="border-b-0 align-middle first-of-type:w-[45%] last-of-type:w-[55%] last-of-type:text-right p-[6px_10px]">
+                <div className="flex flex-col items-end gap-[4px]">
+                  <span className="font-bold text-[#f43f5e] text-[13px] font-mono">
                     {fNumber(sell24hxrp || 0)} <span className="text-[10px] opacity-60">XRP</span>
-                  </Typography>
-                  <div className="h-4 w-[1px] bg-black/5 dark:bg-white/5" />
-                  <Stack direction="row" alignItems="center" style={{ gap: '4px' }}>
-                    <Typography
-                      style={{
-                        color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)',
-                        fontSize: '11px',
-                        fontWeight: 600
-                      }}
-                    >
-                      {fNumber(uniqueSellers24h || 0)} <span className="text-[9px] font-bold opacity-40 uppercase">u</span>
-                    </Typography>
-                    <Typography
-                      style={{
-                        color: isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.25)',
-                        fontSize: '10px',
-                        fontWeight: 500
-                      }}
-                    >
-                      {fNumber(sellTxns24h || sell24htx || 0)} <span className="text-[8px] opacity-60 uppercase">tx</span>
-                    </Typography>
-                  </Stack>
-                </Stack>
-              </ModernTableCell>
-            </TableRowStyled>
+                  </span>
+                  <div className="flex items-center gap-[12px]">
+                    <span className={cn('text-[11px] font-semibold', isDark ? 'text-white/60' : 'text-black/60')}>
+                      {fNumber(uniqueSellers24h || 0)} <span className="text-[9px] font-bold opacity-40 uppercase">users</span>
+                    </span>
+                    <span className={cn('text-[10px] font-medium', isDark ? 'text-white/30' : 'text-black/30')}>
+                      {fNumber(sellTxns24h || sell24htx || 0)} <span className="text-[8px] opacity-60 uppercase">txns</span>
+                    </span>
+                  </div>
+                </div>
+              </td>
+            </tr>
 
             {/* ========== AMM LIQUIDITY GROUP ========== */}
             {(deposit24hxrp > 0 || withdraw24hxrp > 0) && (
               <tr>
-                <td colSpan={2} style={{ padding: '16px 12px 8px' }}>
-                  <Stack direction="row" alignItems="center" style={{ gap: '8px' }}>
-                    <div className="p-1 rounded-md bg-amber-500/10 border border-amber-500/20">
-                      <Droplet size={10} className="text-amber-500" />
-                    </div>
-                    <Typography
-                      style={{
-                        fontSize: '10px',
-                        fontWeight: 800,
-                        color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.5)',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.1em'
-                      }}
-                    >
-                      AMM Liquidity Flow
-                    </Typography>
-                  </Stack>
+                <td colSpan={2} className="p-[16px_12px_8px]">
+                  <span
+                    className={cn('text-[10px] font-[800] uppercase tracking-[0.1em]', isDark ? 'text-white/40' : 'text-black/50')}
+                  >
+                    AMM Liquidity Flow
+                  </span>
                 </td>
               </tr>
             )}
@@ -1207,388 +866,238 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                 const outPct = withdrawAbs > 0 ? Math.max(outRaw, 2) : 0;
                 const formatPct = (val) => (val > 0 && val < 1 ? '<1' : val.toFixed(0));
                 return (
-                  <TableRowStyled isDark={isDark}>
-                    <ModernTableCell colSpan={2} style={{ padding: '8px 12px 10px' }}>
-                      <Stack direction="row" alignItems="center" style={{ gap: '10px' }}>
+                  <tr className={cn('transition-[background] duration-150', isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-black/[0.015]')}>
+                    <td colSpan={2} className="border-b-0 align-middle p-[8px_12px_10px]">
+                      <div className="flex flex-row items-center gap-[10px]">
                         <div className="flex flex-col min-w-[40px]">
                           <span className="text-[10px] font-black text-emerald-500 leading-none">{formatPct(inRaw)}%</span>
                           <span className="text-[8px] font-bold opacity-40 uppercase tracking-tighter">In</span>
                         </div>
-                        <Box style={{ flex: 1, height: '6px', borderRadius: '4px', overflow: 'hidden', background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)', display: 'flex' }}>
-                          <div style={{ width: `${inPct}%`, background: 'linear-gradient(90deg, #10b981, #34d399)', transition: 'width 1s ease-out' }} />
-                          <div style={{ width: `${outPct}%`, background: 'linear-gradient(90deg, #f59e0b, #fbbf24)', transition: 'width 1s ease-out' }} />
-                        </Box>
+                        <div className={cn('flex-1 h-[6px] rounded-[4px] overflow-hidden flex', isDark ? 'bg-white/[0.06]' : 'bg-black/[0.04]')}>
+                          <div className="transition-[width] duration-1000 ease-out" style={{ width: `${inPct}%`, background: 'linear-gradient(90deg, #10b981, #34d399)' }} />
+                          <div className="transition-[width] duration-1000 ease-out" style={{ width: `${outPct}%`, background: 'linear-gradient(90deg, #f59e0b, #fbbf24)' }} />
+                        </div>
                         <div className="flex flex-col min-w-[40px] text-right">
                           <span className="text-[10px] font-black text-amber-500 leading-none">{formatPct(outRaw)}%</span>
                           <span className="text-[8px] font-bold opacity-40 uppercase tracking-tighter">Out</span>
                         </div>
-                      </Stack>
-                    </ModernTableCell>
-                  </TableRowStyled>
+                      </div>
+                    </td>
+                  </tr>
                 );
               })()}
 
             {/* AMM Deposits (24h) Row */}
             {deposit24hxrp ? (
-              <TableRowStyled isDark={isDark}>
-                <ModernTableCell>
-                  <Typography
-                    style={{
-                      fontWeight: 400,
-                      color: isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.5)',
-                      fontSize: '13px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '6px'
-                    }}
-                    noWrap
+              <tr className={cn('transition-[background] duration-150', isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-black/[0.015]')}>
+                <td className="border-b-0 align-middle first-of-type:w-[45%] last-of-type:w-[55%] last-of-type:text-right p-[6px_10px]">
+                  <span
+                    className={cn('font-normal text-[13px] whitespace-nowrap', isDark ? 'text-white/[0.45]' : 'text-black/50')}
                   >
-                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500/50" />
                     AMM Deposits
-                  </Typography>
-                </ModernTableCell>
-                <ModernTableCell>
-                  <Stack
-                    direction="row"
-                    alignItems="center"
-                    style={{ justifyContent: 'flex-end', gap: '8px' }}
-                  >
-                    <Typography style={{ fontWeight: 700, color: '#10b981', fontSize: '13px', fontFamily: 'var(--font-mono)' }}>
+                  </span>
+                </td>
+                <td className="border-b-0 align-middle first-of-type:w-[45%] last-of-type:w-[55%] last-of-type:text-right p-[6px_10px]">
+                  <div className="flex flex-col items-end gap-[4px]">
+                    <span className="font-bold text-[#10b981] text-[13px] font-mono">
                       {fNumber(deposit24hxrp)} <span className="text-[10px] opacity-60">XRP</span>
-                    </Typography>
+                    </span>
                     {deposit24htx ? (
-                      <Typography
-                        style={{
-                          color: isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.25)',
-                          fontSize: '10px',
-                          fontWeight: 500
-                        }}
-                      >
-                        {fNumber(deposit24htx)} <span className="text-[8px] opacity-60 uppercase">tx</span>
-                      </Typography>
+                      <span className={cn('text-[10px] font-medium', isDark ? 'text-white/30' : 'text-black/30')}>
+                        {fNumber(deposit24htx)} <span className="text-[8px] opacity-60 uppercase">txns</span>
+                      </span>
                     ) : null}
-                  </Stack>
-                </ModernTableCell>
-              </TableRowStyled>
+                  </div>
+                </td>
+              </tr>
             ) : null}
 
             {/* AMM Withdrawals (24h) Row */}
             {withdraw24hxrp ? (
-              <TableRowStyled isDark={isDark}>
-                <ModernTableCell>
-                  <Typography
-                    style={{
-                      fontWeight: 400,
-                      color: isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.5)',
-                      fontSize: '13px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '6px'
-                    }}
-                    noWrap
+              <tr className={cn('transition-[background] duration-150', isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-black/[0.015]')}>
+                <td className="border-b-0 align-middle first-of-type:w-[45%] last-of-type:w-[55%] last-of-type:text-right p-[6px_10px]">
+                  <span
+                    className={cn('font-normal text-[13px] whitespace-nowrap', isDark ? 'text-white/[0.45]' : 'text-black/50')}
                   >
-                    <div className="w-1.5 h-1.5 rounded-full bg-amber-500/50" />
                     AMM Withdrawals
-                  </Typography>
-                </ModernTableCell>
-                <ModernTableCell>
-                  <Stack
-                    direction="row"
-                    alignItems="center"
-                    style={{ justifyContent: 'flex-end', gap: '8px' }}
-                  >
-                    <Typography style={{ fontWeight: 700, color: '#f59e0b', fontSize: '13px', fontFamily: 'var(--font-mono)' }}>
+                  </span>
+                </td>
+                <td className="border-b-0 align-middle first-of-type:w-[45%] last-of-type:w-[55%] last-of-type:text-right p-[6px_10px]">
+                  <div className="flex flex-col items-end gap-[4px]">
+                    <span className="font-bold text-[#f59e0b] text-[13px] font-mono">
                       {fNumber(Math.abs(withdraw24hxrp))} <span className="text-[10px] opacity-60">XRP</span>
-                    </Typography>
+                    </span>
                     {withdraw24htx ? (
-                      <Typography
-                        style={{
-                          color: isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.25)',
-                          fontSize: '10px',
-                          fontWeight: 500
-                        }}
-                      >
-                        {fNumber(withdraw24htx)} <span className="text-[8px] opacity-60 uppercase">tx</span>
-                      </Typography>
+                      <span className={cn('text-[10px] font-medium', isDark ? 'text-white/30' : 'text-black/30')}>
+                        {fNumber(withdraw24htx)} <span className="text-[8px] opacity-60 uppercase">txns</span>
+                      </span>
                     ) : null}
-                  </Stack>
-                </ModernTableCell>
-              </TableRowStyled>
+                  </div>
+                </td>
+              </tr>
             ) : null}
 
             {/* LP Burned Row - Compact */}
             {(lpBurnedPercent != null || lpHolderCount > 0) && (
-              <TableRowStyled isDark={isDark}>
-                <ModernTableCell>
-                  <Typography
-                    style={{
-                      fontWeight: 400,
-                      color: isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.5)',
-                      fontSize: '13px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '6px'
-                    }}
-                    noWrap
+              <tr className={cn('transition-[background] duration-150', isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-black/[0.015]')}>
+                <td className="border-b-0 align-middle first-of-type:w-[45%] last-of-type:w-[55%] last-of-type:text-right p-[6px_10px]">
+                  <span
+                    className={cn('font-normal text-[13px] whitespace-nowrap', isDark ? 'text-white/[0.45]' : 'text-black/50')}
                   >
-                    <Flame size={12} className={cn((lpBurnedPercent || 0) >= 50 ? 'text-emerald-500' : 'text-amber-500')} />
                     LP Status
-                  </Typography>
-                </ModernTableCell>
-                <ModernTableCell>
-                  <Stack
-                    direction="row"
-                    alignItems="center"
-                    style={{ justifyContent: 'flex-end', gap: '8px' }}
-                  >
-                    <Typography
-                      style={{
-                        fontSize: '13px',
-                        fontWeight: 700,
-                        fontFamily: 'var(--font-mono)',
-                        color:
-                          (lpBurnedPercent || 0) >= 80
-                            ? '#10b981'
-                            : (lpBurnedPercent || 0) >= 20
-                              ? '#f59e0b'
-                              : '#f43f5e'
-                      }}
-                    >
-                      {(lpBurnedPercent || 0).toFixed(2)}% <span className="text-[10px] opacity-40 font-bold uppercase tracking-tighter">Burned</span>
-                    </Typography>
-                    <Box
-                      style={{
-                        width: '40px',
-                        height: '6px',
-                        borderRadius: '3px',
-                        background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)',
-                        overflow: 'hidden',
-                        display: 'flex'
-                      }}
-                    >
-                      <div
+                  </span>
+                </td>
+                <td className="border-b-0 align-middle first-of-type:w-[45%] last-of-type:w-[55%] last-of-type:text-right p-[6px_10px]">
+                  <div className="flex flex-col items-end gap-[6px]">
+                    <div className="flex items-center gap-[10px]">
+                      <span
+                        className="text-[13px] font-bold font-mono"
                         style={{
-                          width: `${Math.min(lpBurnedPercent || 0, 100)}%`,
-                          height: '100%',
-                          background:
+                          color:
                             (lpBurnedPercent || 0) >= 80
-                              ? 'linear-gradient(90deg, #059669, #10b981)'
+                              ? '#10b981'
                               : (lpBurnedPercent || 0) >= 20
-                                ? 'linear-gradient(90deg, #d97706, #f59e0b)'
-                                : 'linear-gradient(90deg, #e11d48, #f43f5e)'
-                        }}
-                      />
-                    </Box>
-                    <div className="flex items-center gap-1 bg-black/5 dark:bg-white/5 px-1.5 py-0.5 rounded-md border border-black/5 dark:border-white/5">
-                      <Typography
-                        style={{
-                          fontSize: '10px',
-                          fontWeight: 700,
-                          color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)',
-                          fontFamily: 'var(--font-mono)'
+                                ? '#f59e0b'
+                                : '#f43f5e'
                         }}
                       >
-                        {lpBurnedHolders || 0}
-                      </Typography>
-                      <Typography
-                        style={{
-                          fontSize: '8px',
-                          fontWeight: 800,
-                          color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)',
-                          textTransform: 'uppercase'
-                        }}
-                      >
-                        / {lpHolderCount || 0}
-                      </Typography>
+                        {(lpBurnedPercent || 0).toFixed(2)}%
+                      </span>
+                      <span className={cn('text-[10px] font-bold uppercase', isDark ? 'text-white/30' : 'text-black/30')}>
+                        Burned
+                      </span>
                     </div>
-                  </Stack>
-                </ModernTableCell>
-              </TableRowStyled>
+                    <div className="w-full flex items-center gap-[10px]">
+                      <div
+                        className={cn('flex-1 h-[5px] rounded-full overflow-hidden', isDark ? 'bg-white/[0.08]' : 'bg-black/[0.06]')}
+                      >
+                        <div
+                          className="h-full rounded-full"
+                          style={{
+                            width: `${Math.min(lpBurnedPercent || 0, 100)}%`,
+                            background:
+                              (lpBurnedPercent || 0) >= 80
+                                ? 'linear-gradient(90deg, #059669, #10b981)'
+                                : (lpBurnedPercent || 0) >= 20
+                                  ? 'linear-gradient(90deg, #d97706, #f59e0b)'
+                                  : 'linear-gradient(90deg, #e11d48, #f43f5e)'
+                          }}
+                        />
+                      </div>
+                      <span className={cn('text-[10px] font-semibold whitespace-nowrap font-mono', isDark ? 'text-white/50' : 'text-black/50')}>
+                        {lpBurnedHolders || 0} <span className={cn('text-[9px] font-normal', isDark ? 'text-white/25' : 'text-black/25')}>of {lpHolderCount || 0} holders</span>
+                      </span>
+                    </div>
+                  </div>
+                </td>
+              </tr>
             )}
 
             {/* ========== TOKEN INFO GROUP ========== */}
             {(date || dateon || creator) && (
               <tr>
-                <td colSpan={2} style={{ padding: '16px 12px 8px' }}>
-                  <Stack direction="row" alignItems="center" style={{ gap: '8px' }}>
-                    <div className="p-1 rounded-md bg-blue-500/10 border border-blue-500/20">
-                      <Link2 size={10} className="text-blue-500" />
-                    </div>
-                    <Typography
-                      style={{
-                        fontSize: '10px',
-                        fontWeight: 800,
-                        color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.5)',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.1em'
-                      }}
-                    >
-                      Transparency & Origin
-                    </Typography>
-                  </Stack>
+                <td colSpan={2} className="p-[16px_12px_8px]">
+                  <span
+                    className={cn('text-[10px] font-[800] uppercase tracking-[0.1em]', isDark ? 'text-white/40' : 'text-black/50')}
+                  >
+                    Transparency & Origin
+                  </span>
                 </td>
               </tr>
             )}
 
             {/* Created Date Row */}
             {date || dateon ? (
-              <TableRowStyled isDark={isDark}>
-                <ModernTableCell>
-                  <Typography
-                    style={{
-                      fontWeight: 400,
-                      color: isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.5)',
-                      fontSize: '13px'
-                    }}
-                    noWrap
+              <tr className={cn('transition-[background] duration-150', isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-black/[0.015]')}>
+                <td className="border-b-0 align-middle first-of-type:w-[45%] last-of-type:w-[55%] last-of-type:text-right p-[6px_10px]">
+                  <span
+                    className={cn('font-normal text-[13px] whitespace-nowrap', isDark ? 'text-white/[0.45]' : 'text-black/50')}
                   >
                     Created
-                  </Typography>
-                </ModernTableCell>
-                <ModernTableCell>
-                  <Typography
-                    style={{
-                      fontWeight: 500,
-                      color: isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.85)',
-                      fontSize: '13px'
-                    }}
+                  </span>
+                </td>
+                <td className="border-b-0 align-middle first-of-type:w-[45%] last-of-type:w-[55%] last-of-type:text-right p-[6px_10px]">
+                  <span
+                    className={cn('font-medium text-[13px]', isDark ? 'text-white/90' : 'text-black/[0.85]')}
                   >
                     {fDate(date || dateon)}
-                  </Typography>
-                </ModernTableCell>
-              </TableRowStyled>
+                  </span>
+                </td>
+              </tr>
             ) : null}
 
             {/* Creator Row */}
             {creator && (
-              <TableRowStyled isDark={isDark}>
-                <ModernTableCell>
-                  <Typography
-                    style={{
-                      fontWeight: 400,
-                      color: isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.5)',
-                      fontSize: '13px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '6px'
-                    }}
-                    noWrap
+              <tr className={cn('transition-[background] duration-150', isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-black/[0.015]')}>
+                <td className="border-b-0 align-middle first-of-type:w-[45%] last-of-type:w-[55%] last-of-type:text-right p-[6px_10px]">
+                  <span
+                    className={cn('font-normal text-[13px] whitespace-nowrap', isDark ? 'text-white/[0.45]' : 'text-black/50')}
                   >
-                    <Settings size={12} className="opacity-40" />
                     Creator
-                  </Typography>
-                </ModernTableCell>
-                <ModernTableCell>
-                  <Stack
-                    direction="row"
-                    alignItems="center"
-                    style={{ justifyContent: 'flex-end', gap: '6px' }}
-                  >
-                    <Tooltip title="Click to view activity">
-                      <Chip
-                        size="small"
+                  </span>
+                </td>
+                <td className="border-b-0 align-middle first-of-type:w-[45%] last-of-type:w-[55%] last-of-type:text-right p-[6px_10px]">
+                  <div className="flex flex-row items-center justify-end gap-[6px]">
+                    <div
+                        title="Click to view activity"
                         onClick={toggleActivity}
+                        className="inline-flex items-center rounded-lg font-normal cursor-pointer px-[10px] h-[28px] overflow-hidden transition-all duration-200"
                         style={{
-                          paddingLeft: '10px',
-                          paddingRight: '10px',
-                          borderRadius: '8px',
-                          height: '28px',
+                          padding: '2px 10px',
+                          fontSize: '11px',
                           background: activityOpen ? (isDark ? 'rgba(99,102,241,0.15)' : 'rgba(99,102,241,0.1)') : (isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)'),
                           border: `1px solid ${activityOpen ? (isDark ? 'rgba(99,102,241,0.4)' : 'rgba(99,102,241,0.3)') : isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'}`,
-                          maxWidth: isMobile ? '110px' : '180px',
-                          overflow: 'hidden',
-                          cursor: 'pointer',
-                          transition: 'all 0.2s ease'
+                          maxWidth: isMobile ? '110px' : '180px'
                         }}
                       >
                         {creatorLabel ? (
-                          <Typography
-                            variant="caption"
-                            style={{
-                              fontWeight: 700,
-                              fontSize: '11px',
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                              whiteSpace: 'nowrap',
-                              color: '#6366f1',
-                              letterSpacing: '-0.01em'
-                            }}
+                          <span
+                            className="font-bold text-[11px] overflow-hidden text-ellipsis whitespace-nowrap text-[#6366f1] tracking-[-0.01em]"
                           >
                             {creatorLabel}
-                          </Typography>
+                          </span>
                         ) : (
-                          <Typography
-                            variant="caption"
-                            style={{
-                              fontWeight: 500,
-                              fontSize: '11px',
-                              fontFamily: 'var(--font-mono)',
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                              whiteSpace: 'nowrap',
-                              color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.65)'
-                            }}
+                          <span
+                            className={cn('font-medium text-[11px] overflow-hidden text-ellipsis whitespace-nowrap font-mono', isDark ? 'text-white/70' : 'text-black/[0.65]')}
                           >
                             {creator.slice(0, 12)}...
-                          </Typography>
+                          </span>
                         )}
-                      </Chip>
-                    </Tooltip>
+                      </div>
                     
                     <div className="flex items-center bg-black/[0.03] dark:bg-white/[0.04] p-0.5 rounded-lg border border-black/[0.05] dark:border-white/[0.08]">
-                      <Tooltip title="Copy address">
-                        <IconButton
+                      <button
+                          title="Copy address"
                           onClick={handleCopyCreator}
-                          size="small"
-                          style={{
-                            padding: '4px',
-                            width: '26px',
-                            height: '26px',
-                            borderRadius: '6px',
-                          }}
+                          className="inline-flex items-center justify-center border-none bg-transparent cursor-pointer p-[4px] w-[26px] h-[26px] rounded-[6px]"
                         >
                           <Copy
                             size={13}
                             color={isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'}
                           />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title="Message creator">
-                        <IconButton
+                        </button>
+                      <button
+                          title="Message creator"
                           onClick={() => window.dispatchEvent(new CustomEvent('openDm', { detail: { user: creator, tokenMd5: token.md5 } }))}
-                          size="small"
-                          style={{
-                            padding: '4px',
-                            width: '26px',
-                            height: '26px',
-                            borderRadius: '6px',
-                          }}
+                          className="inline-flex items-center justify-center border-none bg-transparent cursor-pointer p-[4px] w-[26px] h-[26px] rounded-[6px]"
                         >
                           <MessageCircle
                             size={13}
                             color={isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'}
                           />
-                        </IconButton>
-                      </Tooltip>
+                        </button>
                       {accountLogin && !editingLabel && (
-                        <Tooltip title={creatorLabel ? 'Edit label' : 'Add label'}>
-                          <IconButton
+                          <button
+                            title={creatorLabel ? 'Edit label' : 'Add label'}
                             onClick={() => {
                               setEditingLabel(true);
                               setLabelInput(creatorLabel || '');
                             }}
-                            size="small"
-                            style={{
-                              padding: '4px',
-                              width: '26px',
-                              height: '26px',
-                              borderRadius: '6px',
-                              background: creatorLabel ? 'rgba(99,102,241,0.1)' : 'transparent',
-                            }}
+                            className="inline-flex items-center justify-center border-none bg-transparent cursor-pointer p-[4px] w-[26px] h-[26px] rounded-[6px]"
+                            style={{ background: creatorLabel ? 'rgba(99,102,241,0.1)' : 'transparent' }}
                           >
                             <Tag size={13} color={creatorLabel ? '#6366f1' : isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'} />
-                          </IconButton>
-                        </Tooltip>
+                          </button>
                       )}
                     </div>
 
@@ -1609,116 +1118,81 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                           }}
                           autoFocus
                         />
-                        <IconButton
+                        <button
                           onClick={handleSaveCreatorLabel}
                           disabled={labelSaving || !labelInput.trim()}
-                          size="small"
-                          className="bg-emerald-500/10 border border-emerald-500/20"
+                          className="inline-flex items-center justify-center border-none bg-transparent cursor-pointer rounded-lg p-[4px] bg-emerald-500/10 border border-emerald-500/20"
                         >
                           <CheckCircle size={12} color="#10b981" />
-                        </IconButton>
-                        <IconButton
+                        </button>
+                        <button
                           onClick={() => {
                             setEditingLabel(false);
                             setLabelInput('');
                           }}
-                          size="small"
-                          className="bg-black/5 dark:bg-white/5"
+                          className="inline-flex items-center justify-center border-none bg-transparent cursor-pointer rounded-lg p-[4px] bg-black/5 dark:bg-white/5"
                         >
                           <X size={12} color={isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'} />
-                        </IconButton>
+                        </button>
                       </div>
                     )}
-                  </Stack>
-                </ModernTableCell>
-              </TableRowStyled>
+                  </div>
+                </td>
+              </tr>
             )}
 
             {/* Creator Label Row */}
             {creator && creatorLabel && !editingLabel && (
-              <TableRowStyled isDark={isDark}>
-                <ModernTableCell>
-                  <Typography
-                    style={{
-                      fontWeight: 400,
-                      color: isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.5)',
-                      fontSize: '13px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '6px'
-                    }}
-                    noWrap
+              <tr className={cn('transition-[background] duration-150', isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-black/[0.015]')}>
+                <td className="border-b-0 align-middle first-of-type:w-[45%] last-of-type:w-[55%] last-of-type:text-right p-[6px_10px]">
+                  <span
+                    className={cn('font-normal text-[13px] whitespace-nowrap', isDark ? 'text-white/[0.45]' : 'text-black/50')}
                   >
-                    <Tag size={12} className="opacity-40" />
                     Your Label
-                  </Typography>
-                </ModernTableCell>
-                <ModernTableCell>
-                  <Chip
-                    size="small"
-                    style={{
-                      paddingLeft: '10px',
-                      paddingRight: '10px',
-                      borderRadius: '8px',
-                      height: '26px',
-                      background: 'rgba(99,102,241,0.1)',
-                      border: '1px solid rgba(99,102,241,0.2)'
-                    }}
+                  </span>
+                </td>
+                <td className="border-b-0 align-middle first-of-type:w-[45%] last-of-type:w-[55%] last-of-type:text-right p-[6px_10px]">
+                  <div
+                    className="inline-flex items-center rounded-lg font-normal px-[10px] rounded-[8px] h-[26px] bg-[rgba(99,102,241,0.1)] border border-[rgba(99,102,241,0.2)]"
+                    style={{ padding: '2px 10px', fontSize: '11px' }}
                   >
-                    <Typography
-                      variant="caption"
-                      style={{
-                        fontWeight: 700,
-                        fontSize: '11px',
-                        color: '#6366f1'
-                      }}
+                    <span
+                      className="font-bold text-[11px] text-[#6366f1]"
                     >
                       {creatorLabel}
-                    </Typography>
-                  </Chip>
-                </ModernTableCell>
-              </TableRowStyled>
+                    </span>
+                  </div>
+                </td>
+              </tr>
             )}
 
             {/* Creator Last Action */}
             {creator && creatorLastAction && (
               <>
-                <TableRowStyled isDark={isDark}>
-                  <ModernTableCell>
-                    <Typography
-                      style={{
-                        fontWeight: 400,
-                        color: isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.5)',
-                        fontSize: isMobile ? '11px' : '13px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '6px'
-                      }}
-                      noWrap
+                <tr className={cn('transition-[background] duration-150', isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-black/[0.015]')}>
+                  <td className="border-b-0 align-middle first-of-type:w-[45%] last-of-type:w-[55%] last-of-type:text-right p-[6px_10px]">
+                    <span
+                      className={cn('font-normal whitespace-nowrap', isDark ? 'text-white/[0.45]' : 'text-black/50')}
+                      style={{ fontSize: isMobile ? '11px' : '13px' }}
                     >
-                      <BarChart2 size={12} className="opacity-40" />
                       {isMobile ? 'Last Act' : 'Creator Last Act'}
-                    </Typography>
-                  </ModernTableCell>
-                  <ModernTableCell>
-                    <Tooltip
-                      title={`${creatorLastAction.type} - ${creatorLastAction.result}\nClick to view tx`}
-                    >
-                      <Link
+                    </span>
+                  </td>
+                  <td className="border-b-0 align-middle first-of-type:w-[45%] last-of-type:w-[55%] last-of-type:text-right p-[6px_10px]">
+                      <a
                         href={`/tx/${creatorLastAction.hash}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        style={{ textDecoration: 'none' }}
+                        className="no-underline"
+                        title={`${creatorLastAction.type} - ${creatorLastAction.result}\nClick to view tx`}
                       >
-                        <Stack
-                          direction="row"
-                          alignItems="center"
-                          style={{ justifyContent: 'flex-end', gap: isMobile ? '4px' : '8px' }}
+                        <div
+                          className="flex flex-row items-center justify-end"
+                          style={{ gap: isMobile ? '4px' : '8px' }}
                         >
-                          <Typography
-                            variant="body2"
+                          <span
+                            className="font-bold uppercase tracking-[0.02em]"
                             style={{
-                              fontWeight: 700,
                               color:
                                 creatorLastAction.side === 'buy'
                                   ? '#10b981'
@@ -1727,9 +1201,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                                     : creatorLastAction.side === 'transfer_out'
                                       ? '#f59e0b'
                                       : '#8b5cf6',
-                              fontSize: isMobile ? '10px' : '11px',
-                              textTransform: 'uppercase',
-                              letterSpacing: '0.02em'
+                              fontSize: isMobile ? '10px' : '11px'
                             }}
                           >
                             {(() => {
@@ -1747,14 +1219,11 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                               };
                               return labels[side] || side.replace(/^other_/, '').replace(/_/g, ' ');
                             })()}
-                          </Typography>
-                          <Typography
-                            variant="caption"
+                          </span>
+                          <span
+                            className={cn('font-semibold font-mono', isDark ? 'text-white/80' : 'text-black/80')}
                             style={{
-                              color: isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.8)',
-                              fontSize: isMobile ? '10px' : '12px',
-                              fontFamily: 'var(--font-mono)',
-                              fontWeight: 600
+                              fontSize: isMobile ? '10px' : '12px'
                             }}
                           >
                             {creatorLastAction.amountType === 'token' && creatorLastAction.token > 0
@@ -1762,32 +1231,27 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                               : creatorLastAction.xrp > 0
                                 ? `${fNumber(creatorLastAction.xrp)} XRP`
                                 : null}
-                          </Typography>
+                          </span>
                           <div className="text-[10px] font-bold opacity-30 tracking-tighter uppercase ml-1">
                             {formatLastActionTime(creatorLastAction.time)}
                           </div>
-                        </Stack>
-                      </Link>
-                    </Tooltip>
-                  </ModernTableCell>
-                </TableRowStyled>
+                        </div>
+                      </a>
+                  </td>
+                </tr>
                 {/* Creator Sell Warning */}
                 {creatorLastAction.side === 'sell' && (
-                  <TableRowStyled isDark={isDark}>
-                    <ModernTableCell colSpan={2} style={{ padding: isMobile ? '2px 8px 6px' : '4px 12px 8px' }}>
-                      <Stack
-                        direction="row"
-                        alignItems="center"
+                  <tr className={cn('transition-[background] duration-150', isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-black/[0.015]')}>
+                    <td colSpan={2} className="border-b-0 align-middle" style={{ padding: isMobile ? '2px 8px 6px' : '4px 12px 8px' }}>
+                      <div
+                        className="flex flex-row items-center bg-red-500/[0.08] rounded-[8px] border border-red-500/[0.15]"
                         style={{
                           gap: isMobile ? '5px' : '8px',
-                          padding: isMobile ? '5px 8px' : '8px 12px',
-                          background: 'rgba(239,68,68,0.08)',
-                          borderRadius: '8px',
-                          border: '1px solid rgba(239,68,68,0.15)'
+                          padding: isMobile ? '5px 8px' : '8px 12px'
                         }}
                       >
                         <AlertTriangle size={isMobile ? 12 : 14} color="#ef4444" strokeWidth={1.5} />
-                        <Typography style={{ color: '#ef4444', fontSize: isMobile ? '9px' : '11px', fontWeight: 500 }}>
+                        <span className="text-[#ef4444] font-medium" style={{ fontSize: isMobile ? '9px' : '11px' }}>
                           {isMobile ? 'Sold' : 'Creator sold'}{' '}
                           {creatorLastAction.xrp != null && creatorLastAction.xrp > 0
                             ? `${fNumber(creatorLastAction.xrp)} XRP`
@@ -1795,37 +1259,21 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                               ? `${fNumber(creatorLastAction.token)} ${name}`
                               : 'tokens'}{' '}
                           {formatLastActionTime(creatorLastAction.time)}
-                        </Typography>
-                      </Stack>
-                    </ModernTableCell>
-                  </TableRowStyled>
+                        </span>
+                      </div>
+                    </td>
+                  </tr>
                 )}
               </>
             )}
 
             {/* Creator Token Count - Compact Row */}
             {creator && creatorTokens > 0 && (
-              <TableRowStyled isDark={isDark}>
-                <ModernTableCell>
-                  <Stack direction="row" alignItems="center" style={{ gap: '6px' }}>
-                    {creatorTokens >= 5 ? (
-                      <AlertTriangle
-                        size={13}
-                        color={creatorTokens >= 10 ? '#ef4444' : '#f59e0b'}
-                        strokeWidth={1.5}
-                      />
-                    ) : creatorTokens >= 2 ? (
-                      <Layers size={12} color="#3b82f6" strokeWidth={1.5} />
-                    ) : (
-                      <CheckCircle size={12} color="#10b981" strokeWidth={1.5} />
-                    )}
-                    <Typography
-                      style={{
-                        fontWeight: 400,
-                        color: isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.5)',
-                        fontSize: '13px'
-                      }}
-                      noWrap
+              <tr className={cn('transition-[background] duration-150', isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-black/[0.015]')}>
+                <td className="border-b-0 align-middle first-of-type:w-[45%] last-of-type:w-[55%] last-of-type:text-right p-[6px_10px]">
+                  <div>
+                    <span
+                      className={cn('font-normal text-[13px] whitespace-nowrap', isDark ? 'text-white/[0.45]' : 'text-black/50')}
                     >
                       {creatorTokens >= 10
                         ? 'Serial launcher'
@@ -1834,19 +1282,14 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                           : creatorTokens >= 2
                             ? 'Other tokens'
                             : 'First token'}
-                    </Typography>
-                  </Stack>
-                </ModernTableCell>
-                <ModernTableCell>
-                  <Stack
-                    direction="row"
-                    alignItems="center"
-                    style={{ justifyContent: 'flex-end', gap: '6px' }}
-                  >
-                    <Typography
+                    </span>
+                  </div>
+                </td>
+                <td className="border-b-0 align-middle first-of-type:w-[45%] last-of-type:w-[55%] last-of-type:text-right p-[6px_10px]">
+                  <div className="flex flex-row items-center justify-end gap-[6px]">
+                    <span
+                      className="text-[13px] font-semibold"
                       style={{
-                        fontSize: '13px',
-                        fontWeight: 600,
                         color:
                           creatorTokens >= 10
                             ? '#ef4444'
@@ -1858,13 +1301,12 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                       }}
                     >
                       {creatorTokens}
-                    </Typography>
+                    </span>
                     {creatorTokens >= 2 && (
-                      <Chip
-                        size="small"
+                      <div
+                        className="inline-flex items-center rounded-lg font-normal h-[18px] rounded-[4px] text-[8px] font-semibold px-[5px] uppercase"
                         style={{
-                          height: '18px',
-                          borderRadius: '4px',
+                          padding: '2px 5px', fontSize: '8px',
                           background:
                             creatorTokens >= 10
                               ? 'rgba(239,68,68,0.1)'
@@ -1877,12 +1319,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                               ? '#ef4444'
                               : creatorTokens >= 5
                                 ? '#f59e0b'
-                                : '#3b82f6',
-                          fontSize: '8px',
-                          fontWeight: 600,
-                          paddingLeft: '5px',
-                          paddingRight: '5px',
-                          textTransform: 'uppercase'
+                                : '#3b82f6'
                         }}
                       >
                         {creatorTokens >= 10
@@ -1890,48 +1327,35 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                           : creatorTokens >= 5
                             ? 'CAUTION'
                             : `${creatorTokens} MORE`}
-                      </Chip>
+                      </div>
                     )}
                     {creatorExchange && (
-                      <Chip
-                        size="small"
-                        style={{
-                          height: '18px',
-                          borderRadius: '4px',
-                          background: 'rgba(34,197,94,0.06)',
-                          border: '1px solid rgba(34,197,94,0.12)',
-                          color: '#10b981',
-                          fontSize: '8px',
-                          fontWeight: 600,
-                          paddingLeft: '5px',
-                          paddingRight: '5px'
-                        }}
+                      <div
+                        className="inline-flex items-center rounded-lg font-normal h-[18px] rounded-[4px] bg-[rgba(34,197,94,0.06)] border border-[rgba(34,197,94,0.12)] text-[#10b981] text-[8px] font-semibold px-[5px]"
+                        style={{ padding: '2px 5px', fontSize: '8px' }}
                       >
                         {creatorExchange}
-                      </Chip>
+                      </div>
                     )}
-                  </Stack>
-                </ModernTableCell>
-              </TableRowStyled>
+                  </div>
+                </td>
+              </tr>
             )}
 
             {/* Creator Activity - Inline */}
             {creator && activityOpen && (
-              <TableRowStyled isDark={isDark}>
-                <ModernTableCell colSpan={2} style={{ padding: '4px 10px 8px' }}>
-                  <Box
-                    style={{
-                      background: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)',
-                      borderRadius: '8px',
-                      padding: '10px',
-                      border: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)'}`
-                    }}
+              <tr className={cn('transition-[background] duration-150', isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-black/[0.015]')}>
+                <td colSpan={2} className="border-b-0 align-middle" style={{ padding: '4px 10px 8px' }}>
+                  <div
+                    className={cn(
+                      'rounded-[8px] p-[10px]',
+                      isDark
+                        ? 'bg-white/[0.02] border border-white/[0.06]'
+                        : 'bg-black/[0.02] border border-black/[0.05]'
+                    )}
                   >
                     {/* Filter Tabs */}
-                    <Stack
-                      direction="row"
-                      style={{ gap: '4px', marginBottom: '8px', flexWrap: 'wrap' }}
-                    >
+                    <div className="flex flex-row gap-[4px] mb-[8px] flex-wrap">
                       {[
                         { key: 'all', label: 'All' },
                         { key: 'swaps', label: 'Swaps', color: '#3b82f6' },
@@ -1939,16 +1363,12 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                         { key: 'checks', label: 'Checks', color: '#f59e0b' },
                         { key: 'lp', label: 'LP', color: '#22c55e' }
                       ].map((f) => (
-                        <Typography
+                        <span
                           key={f.key}
-                          variant="caption"
                           onClick={() => setActivityFilter(f.key)}
+                          className="px-[12px] py-[5px] text-[11px] rounded-[6px] cursor-pointer transition-all duration-150 ease-out"
                           style={{
-                            padding: '5px 12px',
-                            fontSize: '11px',
                             fontWeight: activityFilter === f.key ? 500 : 400,
-                            borderRadius: '6px',
-                            cursor: 'pointer',
                             background:
                               activityFilter === f.key
                                 ? f.color
@@ -1963,130 +1383,89 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                                 : isDark
                                   ? 'rgba(255,255,255,0.45)'
                                   : 'rgba(0,0,0,0.45)',
-                            border: `1px solid ${activityFilter === f.key ? (f.color ? `${f.color}25` : isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.1)') : 'transparent'}`,
-                            transition: 'all 0.15s ease'
+                            border: `1px solid ${activityFilter === f.key ? (f.color ? `${f.color}25` : isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.1)') : 'transparent'}`
                           }}
                         >
                           {f.label}
-                        </Typography>
+                        </span>
                       ))}
-                    </Stack>
+                    </div>
 
                     {/* Stats Summary */}
                     {creatorStats && (
-                      <Stack
-                        direction="row"
-                        style={{ gap: '10px', marginBottom: '8px', flexWrap: 'wrap' }}
-                      >
+                      <div className="flex flex-row gap-[10px] mb-[8px] flex-wrap">
                         {creatorStats.buy?.count > 0 && (
-                          <Typography
-                            variant="caption"
-                            style={{ fontSize: '10px', color: '#22c55e' }}
+                          <span
+                            className="text-[10px] text-[#22c55e]"
                           >
                             {creatorStats.buy.count} buys · {fNumber(creatorStats.buy.xrp)} XRP
-                          </Typography>
+                          </span>
                         )}
                         {creatorStats.sell?.count > 0 && (
-                          <Typography
-                            variant="caption"
-                            style={{ fontSize: '10px', color: '#ef4444' }}
+                          <span
+                            className="text-[10px] text-[#ef4444]"
                           >
                             {creatorStats.sell.count} sells · {fNumber(creatorStats.sell.xrp)} XRP
-                          </Typography>
+                          </span>
                         )}
                         {creatorStats.transfer_out?.count > 0 && (
-                          <Typography
-                            variant="caption"
-                            style={{ fontSize: '10px', color: '#9C27B0' }}
+                          <span
+                            className="text-[10px] text-[#9C27B0]"
                           >
                             {creatorStats.transfer_out.count} transfers
-                          </Typography>
+                          </span>
                         )}
                         {creatorStats.sellBuyRatio !== undefined && creatorStats.sellBuyRatio > 0 && (
-                          <Typography
-                            variant="caption"
-                            style={{
-                              fontSize: '10px',
-                              color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)'
-                            }}
+                          <span
+                            className={cn('text-[10px]', isDark ? 'text-white/50' : 'text-black/50')}
                           >
                             Sell ratio: {(creatorStats.sellBuyRatio * 100).toFixed(0)}%
-                          </Typography>
+                          </span>
                         )}
-                      </Stack>
+                      </div>
                     )}
 
                     {/* Warning Banner */}
                     {hasWarning && signals.length > 0 && (
-                      <Stack
-                        direction="row"
-                        alignItems="center"
-                        style={{
-                          gap: '6px',
-                          marginBottom: '8px',
-                          padding: '6px 10px',
-                          background: 'rgba(239,68,68,0.08)',
-                          borderRadius: '6px',
-                          border: '1px solid rgba(239,68,68,0.15)'
-                        }}
-                      >
+                      <div className="flex flex-row items-center gap-[6px] mb-[8px] px-[10px] py-[6px] bg-red-500/[0.08] rounded-[6px] border border-red-500/[0.15]">
                         <AlertTriangle size={14} color="#ef4444" strokeWidth={1.5} />
-                        <Stack style={{ flex: 1 }}>
-                          <Typography
-                            variant="caption"
-                            style={{ color: '#ef4444', fontSize: '11px', fontWeight: 500 }}
+                        <div className="flex flex-col flex-1">
+                          <span
+                            className="text-[#ef4444] text-[11px] font-medium"
                           >
                             {signals.map((s) => s.msg).join(' · ')}
-                          </Typography>
-                        </Stack>
-                      </Stack>
+                          </span>
+                        </div>
+                      </div>
                     )}
 
                     {/* No token activity notice */}
                     {noTokenActivity && transactions.length > 0 && (
-                      <Stack
-                        direction="row"
-                        alignItems="center"
-                        style={{
-                          gap: '6px',
-                          marginBottom: '6px',
-                          padding: '5px 8px',
-                          background: isDark ? 'rgba(59,130,246,0.08)' : 'rgba(59,130,246,0.04)',
-                          borderRadius: '6px',
-                          border: '1px solid rgba(59,130,246,0.12)'
-                        }}
+                      <div
+                        style={{ gap: '6px' }}
+                        className={cn('flex flex-row items-center mb-[6px] px-[8px] py-[5px] rounded-[6px] border border-blue-500/[0.12]', isDark ? 'bg-blue-500/[0.08]' : 'bg-blue-500/[0.04]')}
                       >
-                        <Typography variant="caption" style={{ color: '#3b82f6', fontSize: '10px' }}>
+                        <span className="text-[#3b82f6] text-[10px]">
                           No token trades found — showing general account activity
-                        </Typography>
-                      </Stack>
+                        </span>
+                      </div>
                     )}
 
                     {/* Loading / Empty / List */}
                     {loadingTx || filterLoading ? (
-                      <Typography
-                        variant="caption"
-                        style={{
-                          color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
-                          fontSize: '11px',
-                          padding: '8px 0'
-                        }}
+                      <span
+                        className={cn('text-[11px] py-[8px]', isDark ? 'text-white/40' : 'text-black/40')}
                       >
                         Loading...
-                      </Typography>
+                      </span>
                     ) : transactions.length === 0 ? (
-                      <Typography
-                        variant="caption"
-                        style={{
-                          color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
-                          fontSize: '11px',
-                          padding: '8px 0'
-                        }}
+                      <span
+                        className={cn('text-[11px] py-[8px]', isDark ? 'text-white/40' : 'text-black/40')}
                       >
                         No activity found
-                      </Typography>
+                      </span>
                     ) : (
-                      <Stack spacing={0}>
+                      <div className="flex flex-col">
                         {transactions.map((event, i) => {
                           const {
                             side,
@@ -2151,56 +1530,39 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                           const displayCurrency = tokenName || currency || '';
 
                           return (
-                            <Link
+                            <a
                               key={hash || i}
                               href={`/tx/${hash}`}
                               target="_blank"
                               onClick={(e) => e.stopPropagation()}
-                              style={{ textDecoration: 'none' }}
+                              className="no-underline"
                             >
-                              <Stack
-                                direction="row"
-                                alignItems="center"
+                              <div
+                                className="flex flex-row items-center py-[5px] cursor-pointer gap-[8px]"
                                 style={{
-                                  padding: '5px 0',
                                   borderBottom:
                                     i < transactions.length - 1
                                       ? `1px solid ${isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'}`
                                       : 'none',
-                                  opacity: isFailed ? 0.5 : 1,
-                                  cursor: 'pointer',
-                                  gap: '8px'
+                                  opacity: isFailed ? 0.5 : 1
                                 }}
                               >
                                 {cfg.Icon && (
-                                  <cfg.Icon size={13} style={{ color: displayColor, flexShrink: 0 }} />
+                                  <cfg.Icon size={13} className="shrink-0" style={{ color: displayColor }} />
                                 )}
-                                <Typography
-                                  variant="caption"
-                                  style={{
-                                    color: displayColor,
-                                    fontSize: '10px',
-                                    fontWeight: 600,
-                                    width: '65px',
-                                    flexShrink: 0
-                                  }}
+                                <span
+                                  className="text-[10px] font-semibold w-[65px] shrink-0"
+                                  style={{ color: displayColor }}
                                 >
                                   {cfg.label}
                                   {isFailed && ' ✕'}
-                                </Typography>
-                                <Typography
-                                  variant="caption"
+                                </span>
+                                <span
+                                  className="flex-1 text-[11px] font-medium overflow-hidden text-ellipsis whitespace-nowrap font-mono"
                                   style={{
-                                    flex: 1,
                                     color: hasToken
                                       ? isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.85)'
-                                      : isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)',
-                                    fontSize: '11px',
-                                    fontWeight: 500,
-                                    fontFamily: 'var(--font-mono)',
-                                    overflow: 'hidden',
-                                    textOverflow: 'ellipsis',
-                                    whiteSpace: 'nowrap'
+                                      : isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'
                                   }}
                                 >
                                   {hasToken ? (
@@ -2210,12 +1572,8 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                                         amount > 0 &&
                                         tokenAmount > 0 && (
                                           <span
+                                            className="ml-[6px] px-[5px] py-[1px] rounded-[4px] text-[9px] font-semibold"
                                             style={{
-                                              marginLeft: '6px',
-                                              padding: '1px 5px',
-                                              borderRadius: '4px',
-                                              fontSize: '9px',
-                                              fontWeight: 600,
                                               background:
                                                 (tokenAmount / amount) * 100 >= 6
                                                   ? 'rgba(239,68,68,0.15)'
@@ -2234,70 +1592,49 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                                   ) : (
                                     '—'
                                   )}
-                                </Typography>
-                                <Typography
-                                  variant="caption"
+                                </span>
+                                <span
+                                  className="w-[80px] text-right text-[11px] shrink-0 font-mono"
                                   style={{
-                                    width: '80px',
-                                    textAlign: 'right',
                                     color: hasXrp
                                       ? '#22c55e'
                                       : isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.12)',
-                                    fontSize: '11px',
-                                    fontWeight: hasXrp ? 500 : 400,
-                                    fontFamily: 'var(--font-mono)',
-                                    flexShrink: 0
+                                    fontWeight: hasXrp ? 500 : 400
                                   }}
                                 >
                                   {hasXrp ? `${fNumber(xrpAmount)} XRP` : '—'}
-                                </Typography>
-                                <Typography
-                                  variant="caption"
-                                  style={{
-                                    width: '70px',
-                                    textAlign: 'right',
-                                    color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)',
-                                    fontSize: '9px',
-                                    fontFamily: 'var(--font-mono)',
-                                    flexShrink: 0
-                                  }}
+                                </span>
+                                <span
+                                  className={cn('w-[70px] text-right text-[9px] shrink-0 font-mono', isDark ? 'text-white/30' : 'text-black/30')}
                                 >
                                   {hash?.slice(0, 6)} · {timeAgo}
-                                </Typography>
-                              </Stack>
-                            </Link>
+                                </span>
+                              </div>
+                            </a>
                           );
                         })}
-                      </Stack>
+                      </div>
                     )}
-                  </Box>
-                </ModernTableCell>
-              </TableRowStyled>
+                  </div>
+                </td>
+              </tr>
             )}
 
             {/* Creator Token Flow - Compact Row */}
             {creator && tokenFlow && (tokenFlow.totalTransferred || tokenFlow.totalSoldXrp > 0) && (
-              <TableRowStyled 
-                isDark={isDark} 
-                onClick={() => setFlowModalOpen(true)} 
-                style={{ 
-                  cursor: 'pointer',
-                  background: isDark ? 'linear-gradient(90deg, rgba(139,92,246,0.06), transparent)' : 'linear-gradient(90deg, rgba(139,92,246,0.04), transparent)',
-                  borderLeft: '3px solid #8b5cf6'
+              <tr
+                onClick={() => setFlowModalOpen(true)}
+                className={cn('transition-[background] duration-150 cursor-pointer border-l-[3px] border-l-[#8b5cf6]', isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-black/[0.015]')}
+                style={{
+                  background: isDark ? 'linear-gradient(90deg, rgba(139,92,246,0.06), transparent)' : 'linear-gradient(90deg, rgba(139,92,246,0.04), transparent)'
                 }}
               >
-                <ModernTableCell>
-                  <div className="flex items-center gap-2.5">
-                    <div className="relative flex items-center justify-center w-6 h-6 rounded-lg bg-violet-500/10 border border-violet-500/20">
-                      <ArrowLeftRight size={14} color="#8b5cf6" strokeWidth={2.5} />
-                      <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-violet-400 rounded-full blur-[1px] animate-pulse" />
-                    </div>
-                    <span className="font-bold text-[13px] text-violet-500 tracking-tight">
-                      Flow Analysis
-                    </span>
-                  </div>
-                </ModernTableCell>
-                <ModernTableCell>
+                <td className="border-b-0 align-middle first-of-type:w-[45%] last-of-type:w-[55%] last-of-type:text-right p-[6px_10px]">
+                  <span className="font-bold text-[13px] text-violet-500 tracking-tight">
+                    Flow Analysis
+                  </span>
+                </td>
+                <td className="border-b-0 align-middle first-of-type:w-[45%] last-of-type:w-[55%] last-of-type:text-right p-[6px_10px]">
                   <div className="flex items-center justify-end gap-2">
                     <div className="flex items-center gap-1.5">
                       <span className="text-[10px] px-2 py-0.5 rounded-full bg-violet-500/10 text-violet-500 font-bold border border-violet-500/20">
@@ -2316,65 +1653,56 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                     </div>
                     <ChevronDown size={14} className="opacity-30 -rotate-90" />
                   </div>
-                </ModernTableCell>
-              </TableRowStyled>
+                </td>
+              </tr>
             )}
 
             {/* Token Flow Modal */}
             {flowModalOpen && tokenFlow && createPortal(
-              <Dialog open onClick={() => setFlowModalOpen(false)}>
-                <DialogPaper isDark={isDark} onClick={(e) => e.stopPropagation()} style={{ maxWidth: '720px', width: '95%', maxHeight: '85vh', display: 'flex', flexDirection: 'column', borderRadius: '16px', overflow: 'hidden' }}>
+              <div className="fixed inset-0 bg-black/50 backdrop-blur-[4px] flex items-center justify-center z-[1000]" onClick={() => setFlowModalOpen(false)}>
+                <div className={cn('rounded-[14px] border p-0 mx-auto max-w-[720px] w-[95%] max-h-[85vh] flex flex-col rounded-[16px] overflow-hidden', isDark ? 'bg-[#0a0a0a] border-white/10' : 'bg-white border-black/10')} onClick={(e) => e.stopPropagation()}>
                   {/* Modal Header */}
-                  <div style={{
-                    padding: '14px 20px',
-                    borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    flexShrink: 0
-                  }}>
-                    <Stack direction="row" alignItems="center" style={{ gap: '10px' }}>
+                  <div className={cn(
+                    'px-[20px] py-[14px] flex items-center justify-between shrink-0',
+                    isDark ? 'border-b border-white/[0.06]' : 'border-b border-black/[0.06]'
+                  )}>
+                    <div className="flex flex-row items-center gap-[10px]">
                       <ArrowLeftRight size={18} color="#8b5cf6" strokeWidth={2} />
-                      <Typography style={{ fontSize: '15px', fontWeight: 600, color: isDark ? '#fff' : '#1a1a1a', letterSpacing: '-0.01em' }}>
+                      <span className={cn('text-[15px] font-semibold tracking-[-0.01em]', isDark ? 'text-white' : 'text-[#1a1a1a]')}>
                         Token Flow
-                      </Typography>
-                    </Stack>
-                    <IconButton onClick={() => setFlowModalOpen(false)} size="small" style={{ padding: '6px', borderRadius: '8px', border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'}` }}>
+                      </span>
+                    </div>
+                    <button onClick={() => setFlowModalOpen(false)} className={cn('inline-flex items-center justify-center border-none bg-transparent cursor-pointer p-[6px] rounded-[8px] border', isDark ? 'border-white/[0.08]' : 'border-black/[0.06]')}>
                       <X size={16} color={isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.4)'} />
-                    </IconButton>
+                    </button>
                   </div>
 
                   {/* Scrollable Content */}
-                  <ScrollableBox style={{ flex: 1, minHeight: 0 }}>
+                  <div className="flex-1 overflow-y-auto overflow-x-hidden min-h-0" style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(128,128,128,0.3) transparent' }}>
 
                   {/* Summary Stats Grid */}
-                  <div style={{ 
-                    display: 'grid', 
-                    gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', 
-                    gap: '10px', 
-                    padding: '16px' 
-                  }}>
+                  <div
+                    className="gap-[10px] p-[16px] grid"
+                    style={{ gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)' }}
+                  >
                     {[
                       { label: 'Distribution', value: `${tokenFlow.recipientCount || 0} Wallets`, sub: 'Total Recipients', color: '#8b5cf6', icon: <Layers size={14}/> },
                       { label: 'CEX Outflow', value: `${fNumber(tokenFlow.totalToExchanges || 0)} XRP`, sub: 'Sent to Exchanges', color: '#f59e0b', icon: <ArrowUpRight size={14}/> },
                       { label: 'Net Flow', value: `${fNumber(Math.abs(tokenFlow.netFlowXrp || 0))} XRP`, sub: tokenFlow.netFlowXrp > 0 ? 'Total Profit' : 'Total Loss', color: tokenFlow.netFlowXrp > 0 ? '#22c55e' : '#ef4444', icon: <BarChart2 size={14}/> },
                       { label: 'Current Hold', value: `${tokenFlow.holdingCount || 0} Wallets`, sub: 'Still holding tokens', color: '#3b82f6', icon: <Droplet size={14}/> }
                     ].map((s, i) => (
-                      <div key={i} style={{
-                        padding: '12px',
-                        borderRadius: '12px',
-                        background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
-                        border: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)'}`,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '2px'
-                      }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
-                          <span style={{ color: s.color, display: 'flex' }}>{s.icon}</span>
-                          <span style={{ fontSize: '9px', fontWeight: 600, color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{s.label}</span>
+                      <div key={i} className={cn(
+                        'p-[12px] rounded-[12px] flex flex-col gap-[2px]',
+                        isDark
+                          ? 'bg-white/[0.03] border border-white/[0.06]'
+                          : 'bg-black/[0.02] border border-black/[0.04]'
+                      )}>
+                        <div className="flex items-center gap-[6px] mb-[4px]">
+                          <span className="flex" style={{ color: s.color }}>{s.icon}</span>
+                          <span className={cn('text-[9px] font-semibold uppercase tracking-[0.05em]', isDark ? 'text-white/40' : 'text-black/40')}>{s.label}</span>
                         </div>
-                        <span style={{ fontSize: '15px', fontWeight: 700, color: isDark ? '#fff' : '#1a1a1a', fontFamily: 'var(--font-mono)' }}>{s.value}</span>
-                        <span style={{ fontSize: '9px', color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.35)' }}>{s.sub}</span>
+                        <span className={cn('text-[15px] font-bold font-mono', isDark ? 'text-white' : 'text-[#1a1a1a]')}>{s.value}</span>
+                        <span className={cn('text-[9px]', isDark ? 'text-white/30' : 'text-black/[0.35]')}>{s.sub}</span>
                       </div>
                     ))}
                   </div>
@@ -2394,54 +1722,41 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                     const displayedExchanges = showAllExchanges ? exchanges : exchanges.slice(0, 5);
                     
                     return (
-                      <div style={{ margin: '0 16px 16px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <div className="mx-[16px] mb-[16px]">
+                        <div className="flex items-center justify-between mb-[8px]">
+                          <div className="flex items-center gap-[6px]">
                             <ArrowUpRight size={14} color="#f59e0b" strokeWidth={2} />
-                            <span style={{ fontSize: '11px', fontWeight: 600, color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.5)', textTransform: 'uppercase', letterSpacing: '0.02em' }}>CEX Deposits Breakdown</span>
+                            <span className={cn('text-[11px] font-semibold uppercase tracking-[0.02em]', isDark ? 'text-white/60' : 'text-black/50')}>CEX Deposits Breakdown</span>
                           </div>
                           {exchanges.length > 5 && (
-                            <button 
+                            <button
                               onClick={() => setShowAllExchanges(!showAllExchanges)}
-                              style={{ 
-                                background: 'transparent', 
-                                border: 'none', 
-                                color: '#3b82f6', 
-                                fontSize: '10px', 
-                                fontWeight: 600, 
-                                cursor: 'pointer',
-                                padding: '2px 4px'
-                              }}
+                              className="bg-transparent border-none text-[#3b82f6] text-[10px] font-semibold cursor-pointer px-[4px] py-[2px]"
                             >
                               {showAllExchanges ? 'Show Less' : `+${exchanges.length - 5} More`}
                             </button>
                           )}
                         </div>
-                        <div style={{ borderRadius: '12px', overflow: 'hidden', border: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)'}`, background: isDark ? 'rgba(255,255,255,0.01)' : 'rgba(0,0,0,0.01)' }}>
+                        <div className={cn('rounded-[12px] overflow-hidden', isDark ? 'border border-white/[0.06] bg-white/[0.01]' : 'border border-black/[0.04] bg-black/[0.01]')}>
                           {displayedExchanges.map((ex, i) => {
                             const pct = tokenFlow.totalToExchanges > 0 ? (ex.xrp / tokenFlow.totalToExchanges) * 100 : 0;
                             return (
-                              <div key={ex.address} style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '10px',
-                                padding: '8px 12px',
+                              <div key={ex.address} className="flex items-center gap-[10px] px-[12px] py-[8px]" style={{
                                 borderTop: i > 0 ? `1px solid ${isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)'}` : 'none'
                               }}>
-                                <Link href={`/address/${ex.address}`} target="_blank" style={{
-                                  fontFamily: 'var(--font-mono)', fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.7)',
-                                  textDecoration: 'none', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100px'
-                                }}>
+                                <a href={`/address/${ex.address}`} target="_blank"
+                                  className={cn('text-[11px] no-underline overflow-hidden text-ellipsis whitespace-nowrap w-[100px] font-mono', isDark ? 'text-white/80' : 'text-black/70')}
+                                >
                                   {ex.name || ex.address.slice(0, 10)}
-                                </Link>
-                                <div style={{ flex: 1, height: '6px', borderRadius: '3px', background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)', overflow: 'hidden' }}>
-                                  <div style={{ width: `${Math.max(pct, 2)}%`, height: '100%', background: '#f59e0b', borderRadius: '3px' }} />
+                                </a>
+                                <div className={cn('flex-1 h-[6px] rounded-[3px] overflow-hidden', isDark ? 'bg-white/[0.05]' : 'bg-black/[0.04]')}>
+                                  <div className="h-full bg-[#f59e0b] rounded-[3px]" style={{ width: `${Math.max(pct, 2)}%` }} />
                                 </div>
-                                <div style={{ textAlign: 'right', minWidth: '80px' }}>
-                                  <span style={{ fontSize: '11px', fontWeight: 700, color: '#f59e0b', fontFamily: 'var(--font-mono)' }}>
+                                <div className="text-right min-w-[80px]">
+                                  <span className="text-[11px] font-bold text-[#f59e0b] font-mono">
                                     {fNumber(ex.xrp)} XRP
                                   </span>
-                                  <div style={{ fontSize: '9px', color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.35)' }}>
+                                  <div className={cn('text-[9px]', isDark ? 'text-white/30' : 'text-black/[0.35]')}>
                                     {ex.depositors.size} wallets
                                   </div>
                                 </div>
@@ -2457,41 +1772,35 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                   {tokenFlow.linkedAddresses?.length > 0 && (() => {
                     const linkedColors = ['#f97316', '#ec4899', '#8b5cf6', '#14b8a6', '#eab308', '#06b6d4'];
                     return (
-                      <div style={{ margin: '0 16px 20px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+                      <div className="mx-[16px] mb-[20px]">
+                        <div className="flex items-center gap-[6px] mb-[8px]">
                           <Link2 size={14} color="#ef4444" strokeWidth={2} />
-                          <span style={{ fontSize: '11px', fontWeight: 600, color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.5)', textTransform: 'uppercase', letterSpacing: '0.02em' }}>Linked Wallets (Same CEX Tag)</span>
+                          <span className={cn('text-[11px] font-semibold uppercase tracking-[0.02em]', isDark ? 'text-white/60' : 'text-black/50')}>Linked Wallets (Same CEX Tag)</span>
                         </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <div className="flex flex-col gap-[8px]">
                           {tokenFlow.linkedAddresses.map((group, i) => {
                             const color = linkedColors[i % linkedColors.length];
                             const keyParts = (group.exchangeKey || '').split(':');
                             const exAddr = keyParts[0] || '';
                             const exTag = keyParts[1] || '';
                             return (
-                              <div key={i} style={{
-                                padding: '12px',
-                                borderRadius: '12px',
+                              <div key={i} className="p-[12px] rounded-[12px] flex items-center gap-[12px]" style={{
                                 border: `1px solid ${color}25`,
-                                background: `${color}08`,
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '12px'
+                                background: `${color}08`
                               }}>
-                                <div style={{ width: '4px', height: '32px', borderRadius: '2px', background: color, flexShrink: 0 }} />
-                                <div style={{ flex: 1 }}>
-                                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginBottom: '6px' }}>
+                                <div className="w-[4px] h-[32px] rounded-[2px] shrink-0" style={{ background: color }} />
+                                <div className="flex-1">
+                                  <div className="flex flex-wrap gap-[4px] mb-[6px]">
                                     {(group.addresses || []).map(addr => (
-                                      <Link key={addr} href={`/address/${addr}`} target="_blank" style={{
-                                        fontFamily: 'var(--font-mono)', fontSize: '10px', color, textDecoration: 'none',
-                                        padding: '2px 8px', borderRadius: '4px', background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
-                                        border: `1px solid ${color}20`
-                                      }}>
+                                      <a key={addr} href={`/address/${addr}`} target="_blank"
+                                        className={cn('text-[10px] no-underline px-[8px] py-[2px] rounded-[4px] font-mono', isDark ? 'bg-white/[0.05]' : 'bg-black/[0.03]')}
+                                        style={{ color, border: `1px solid ${color}20` }}
+                                      >
                                         {addr.slice(0, 10)}
-                                      </Link>
+                                      </a>
                                     ))}
                                   </div>
-                                  <div style={{ fontSize: '9px', color: isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.45)', fontFamily: 'var(--font-mono)', fontWeight: 500 }}>
+                                  <div className={cn('text-[9px] font-medium font-mono', isDark ? 'text-white/[0.45]' : 'text-black/[0.45]')}>
                                     Tag: {exTag} · CEX: {exAddr.slice(0, 8)}
                                   </div>
                                 </div>
@@ -2507,27 +1816,20 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                     {tokenFlow.recipients?.length > 0 && (
                       <>
                         {/* Enhanced Table Header */}
-                        <div style={{
-                          display: 'grid',
-                          gridTemplateColumns: isMobile ? 'minmax(0,1fr) 60px 80px' : 'minmax(0,1fr) 70px 100px 100px 100px 100px',
-                          padding: '10px 16px',
-                          background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
-                          borderTop: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'}`,
-                          borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'}`,
-                          position: 'sticky',
-                          top: 0,
-                          zIndex: 1
-                        }}>
-                          <span style={{ fontSize: '9px', fontWeight: 700, color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Recipient Wallet</span>
-                          <span style={{ fontSize: '9px', fontWeight: 700, color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>Source</span>
+                        <div
+                          className={cn('grid px-[16px] py-[10px] sticky top-0 z-[1]', isDark ? 'bg-white/[0.03] border-y border-white/[0.08]' : 'bg-black/[0.02] border-y border-black/[0.06]')}
+                          style={{ gridTemplateColumns: isMobile ? 'minmax(0,1fr) 60px 80px' : 'minmax(0,1fr) 70px 100px 100px 100px 100px' }}
+                        >
+                          <span className={cn('text-[9px] font-bold uppercase tracking-[0.05em]', isDark ? 'text-white/40' : 'text-black/40')}>Recipient Wallet</span>
+                          <span className={cn('text-[9px] font-bold uppercase tracking-[0.05em] text-center', isDark ? 'text-white/40' : 'text-black/40')}>Source</span>
                           {!isMobile && (
                             <>
-                              <span style={{ fontSize: '9px', fontWeight: 700, color: '#8b5cf6', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'right' }}>Allocated</span>
-                              <span style={{ fontSize: '9px', fontWeight: 700, color: '#22c55e', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'right' }}>Bought</span>
-                              <span style={{ fontSize: '9px', fontWeight: 700, color: '#ef4444', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'right' }}>Sold</span>
+                              <span className="text-[9px] font-bold text-[#8b5cf6] uppercase tracking-[0.05em] text-right">Allocated</span>
+                              <span className="text-[9px] font-bold text-[#22c55e] uppercase tracking-[0.05em] text-right">Bought</span>
+                              <span className="text-[9px] font-bold text-[#ef4444] uppercase tracking-[0.05em] text-right">Sold</span>
                             </>
                           )}
-                          <span style={{ fontSize: '9px', fontWeight: 700, color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'right' }}>Realized PnL</span>
+                          <span className={cn('text-[9px] font-bold uppercase tracking-[0.05em] text-right', isDark ? 'text-white/40' : 'text-black/40')}>Realized PnL</span>
                         </div>
                         {/* Enhanced Table Rows */}
                         {(() => {
@@ -2549,65 +1851,54 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                             return (
                               <div
                                 key={r.address}
+                                className="grid items-center transition-[background] duration-100 ease-out"
                                 style={{
-                                  display: 'grid',
                                   gridTemplateColumns: isMobile ? 'minmax(0,1fr) 60px 80px' : 'minmax(0,1fr) 70px 100px 100px 100px 100px',
                                   padding: isMobile ? '8px 16px' : '6px 16px',
-                                  alignItems: 'center',
                                   borderBottom: idx < arr.length - 1 ? `1px solid ${isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)'}` : 'none',
                                   background: isIndirect
                                     ? (isDark ? 'rgba(245,158,11,0.04)' : 'rgba(245,158,11,0.02)')
-                                    : 'transparent',
-                                  transition: 'background 0.1s ease'
+                                    : 'transparent'
                                 }}
                               >
                                 {/* Wallet cell */}
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
-                                  <div style={{ position: 'relative', flexShrink: 0 }}>
-                                    <div style={{ 
-                                      width: '24px', 
-                                      height: '24px', 
-                                      borderRadius: '6px', 
-                                      background: linkedColor ? `${linkedColor}15` : (isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)'),
-                                      display: 'flex',
-                                      alignItems: 'center',
-                                      justifyContent: 'center',
-                                      border: `1px solid ${linkedColor ? `${linkedColor}30` : 'transparent'}`
-                                    }}>
-                                      <span style={{ fontSize: '10px', color: linkedColor || (isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'), fontWeight: 700 }}>{idx + 1}</span>
+                                <div className="flex items-center gap-[8px] min-w-0">
+                                  <div className="relative shrink-0">
+                                    <div
+                                      className="w-[24px] h-[24px] rounded-[6px] flex items-center justify-center"
+                                      style={{
+                                        background: linkedColor ? `${linkedColor}15` : (isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)'),
+                                        border: `1px solid ${linkedColor ? `${linkedColor}30` : 'transparent'}`
+                                      }}
+                                    >
+                                      <span className="text-[10px] font-bold" style={{ color: linkedColor || (isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)') }}>{idx + 1}</span>
                                     </div>
-                                    {linkedColor && <div style={{ position: 'absolute', top: '-2px', right: '-2px', width: '8px', height: '8px', borderRadius: '50%', background: linkedColor, border: `2px solid ${isDark ? '#0a0a0a' : '#fff'}` }} />}
+                                    {linkedColor && <div className="absolute -top-[2px] -right-[2px] w-[8px] h-[8px] rounded-full" style={{ background: linkedColor, border: `2px solid ${isDark ? '#0a0a0a' : '#fff'}` }} />}
                                   </div>
-                                  <div style={{ minWidth: 0, flex: 1 }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '2px' }}>
-                                      <Link
+                                  <div className="min-w-0 flex-1">
+                                    <div className="flex items-center gap-[5px] mb-[2px]">
+                                      <a
                                         href={`/address/${r.address}`}
                                         target="_blank"
-                                        style={{
-                                          fontFamily: 'var(--font-mono)',
-                                          fontSize: '11px',
-                                          fontWeight: 600,
-                                          color: isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.85)',
-                                          textDecoration: 'none'
-                                        }}
+                                        className={cn('text-[11px] font-semibold no-underline font-mono', isDark ? 'text-white/90' : 'text-black/[0.85]')}
                                       >
                                         {isMobile ? r.address.slice(0, 8) : r.address.slice(0, 12)}
-                                      </Link>
+                                      </a>
                                       {r.address === creator && (
-                                        <span style={{ fontSize: '8px', padding: '1px 4px', borderRadius: '4px', background: 'rgba(139,92,246,0.15)', color: '#8b5cf6', fontWeight: 700, textTransform: 'uppercase' }}>DEV</span>
+                                        <span className="text-[8px] px-[4px] py-[1px] rounded-[4px] bg-[rgba(139,92,246,0.15)] text-[#8b5cf6] font-bold uppercase">DEV</span>
                                       )}
                                       {r.exchangeDeposits > 0 && (
                                         <ArrowUpRight size={10} color="#f59e0b" strokeWidth={3} />
                                       )}
                                     </div>
-                                    <div style={{ display: 'flex', gap: '6px' }}>
+                                    <div className="flex gap-[6px]">
                                       {r.action && (
-                                        <span style={{ fontSize: '8px', color: actionColor, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.02em' }}>
+                                        <span className="text-[8px] font-bold uppercase tracking-[0.02em]" style={{ color: actionColor }}>
                                           {actionLabels[r.action] || r.action}
                                         </span>
                                       )}
                                       {isMobile && (
-                                        <span style={{ fontSize: '8px', color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.4)', fontFamily: 'var(--font-mono)' }}>
+                                        <span className={cn('text-[8px] font-mono', isDark ? 'text-white/30' : 'text-black/40')}>
                                           Rec: {fNumber(r.received)}
                                         </span>
                                       )}
@@ -2615,48 +1906,48 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                                   </div>
                                 </div>
                                 {/* Source */}
-                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                <div className="flex flex-col items-center">
                                   {isDirect ? (
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
-                                      <div style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#8b5cf6' }} />
-                                      <span style={{ fontSize: '9px', fontWeight: 700, color: '#8b5cf6', textTransform: 'uppercase' }}>Direct</span>
+                                    <div className="flex items-center gap-[3px]">
+                                      <div className="w-[4px] h-[4px] rounded-full bg-[#8b5cf6]" />
+                                      <span className="text-[9px] font-bold text-[#8b5cf6] uppercase">Direct</span>
                                     </div>
                                   ) : (
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+                                    <div className="flex items-center gap-[3px]">
                                       <ArrowLeftRight size={10} color="#f59e0b" />
-                                      <span style={{ fontSize: '9px', fontWeight: 600, color: '#f59e0b', fontFamily: 'var(--font-mono)' }}>{fromAddr.slice(0, 4)}</span>
+                                      <span className="text-[9px] font-semibold text-[#f59e0b] font-mono">{fromAddr.slice(0, 4)}</span>
                                     </div>
                                   )}
                                 </div>
                                 {/* Allocated (desktop) */}
                                 {!isMobile && (
-                                  <span style={{ fontSize: '11px', color: '#8b5cf6', fontWeight: 600, textAlign: 'right', fontFamily: 'var(--font-mono)' }}>
+                                  <span className="text-[11px] text-[#8b5cf6] font-semibold text-right font-mono">
                                     {r.received > 0 ? fNumber(r.received) : '—'}
                                   </span>
                                 )}
                                 {/* Bought (desktop) */}
                                 {!isMobile && (
-                                  <span style={{ fontSize: '11px', textAlign: 'right', fontFamily: 'var(--font-mono)', color: r.boughtXrp > 0 ? '#22c55e' : (isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)') }}>
+                                  <span className="text-[11px] text-right font-mono" style={{ color: r.boughtXrp > 0 ? '#22c55e' : (isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)') }}>
                                     {r.boughtXrp > 0 ? fNumber(r.boughtXrp) : '—'}
                                   </span>
                                 )}
                                 {/* Sold (desktop) */}
                                 {!isMobile && (
-                                  <span style={{ fontSize: '11px', textAlign: 'right', fontFamily: 'var(--font-mono)', color: r.soldXrp > 0 ? '#ef4444' : (isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)') }}>
+                                  <span className="text-[11px] text-right font-mono" style={{ color: r.soldXrp > 0 ? '#ef4444' : (isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)') }}>
                                     {r.soldXrp > 0 ? fNumber(r.soldXrp) : '—'}
                                   </span>
                                 )}
                                 {/* Realized PnL */}
-                                <div style={{ textAlign: 'right' }}>
-                                  <span style={{
-                                    fontSize: '11px',
-                                    color: netPnl > 0 ? '#22c55e' : netPnl < 0 ? '#ef4444' : (isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'),
-                                    fontWeight: 700,
-                                    fontFamily: 'var(--font-mono)'
-                                  }}>
+                                <div className="text-right">
+                                  <span
+                                    className="text-[11px] font-bold font-mono"
+                                    style={{
+                                      color: netPnl > 0 ? '#22c55e' : netPnl < 0 ? '#ef4444' : (isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)')
+                                    }}
+                                  >
                                     {netPnl !== 0 ? `${netPnl > 0 ? '+' : '-'}${fNumber(Math.abs(netPnl))}` : '0'}
                                   </span>
-                                  <div style={{ fontSize: '8px', color: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.25)', textTransform: 'uppercase', fontWeight: 600 }}>XRP</div>
+                                  <div className={cn('text-[8px] uppercase font-semibold', isDark ? 'text-white/20' : 'text-black/25')}>XRP</div>
                                 </div>
                               </div>
                             );
@@ -2666,152 +1957,122 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                     )}
                     {/* Empty state */}
                     {(!tokenFlow.recipients || tokenFlow.recipients.length === 0) && (
-                      <div style={{
-                        padding: '32px 20px',
-                        textAlign: 'center',
-                        color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.25)',
-                        fontSize: '12px'
-                      }}>
+                      <div className={cn('px-[20px] py-[32px] text-center text-[12px]', isDark ? 'text-white/30' : 'text-black/25')}>
                         No recipient data available
                       </div>
                     )}
-                  </ScrollableBox>
-                </DialogPaper>
-              </Dialog>,
+                  </div>
+                </div>
+              </div>,
               document.body
             )}
-          </TableBody>
-        </StyledTable>
-      </Box>
+          </tbody>
+        </table>
+      </div>
 
-      {/* Linked NFT Collections - Separate Section */}
+      {/* Linked NFT Collections */}
       {linkedCollections?.length > 0 && (
-        <Box
-          style={{
-            borderRadius: '12px',
-            background: 'transparent',
-            border: `1.5px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)'}`,
-            width: '100%',
-            marginBottom: '4px',
-            overflow: 'hidden'
-          }}
+        <div
+          className={cn(
+            'rounded-[12px] bg-transparent w-full mb-[4px] overflow-hidden border-[1.5px]',
+            isDark ? 'border-white/10' : 'border-black/[0.06]'
+          )}
         >
-          <Box
-            style={{
-              padding: '8px 10px 6px',
-              background: isDark ? 'rgba(255,255,255,0.015)' : 'rgba(0,0,0,0.01)'
-            }}
+          <div
+            className={cn(
+              'p-[8px_10px_6px]',
+              isDark ? 'bg-white/[0.015]' : 'bg-black/[0.01]'
+            )}
           >
-            <Stack direction="row" alignItems="center" style={{ gap: '8px' }}>
+            <div className="flex flex-row items-center gap-[8px]">
               <Layers size={12} color={isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.4)'} />
-              <Typography
-                variant="h6"
-                isDark={isDark}
-                style={{
-                  fontSize: '12px',
-                  fontWeight: 600,
-                  color: isDark ? 'rgba(255,255,255,0.85)' : 'rgba(33,43,54,0.85)',
-                  letterSpacing: '-0.01em'
-                }}
+              <span
+                className={cn('text-[12px] font-semibold tracking-[-0.01em]', isDark ? 'text-white/[0.85]' : 'text-[rgba(33,43,54,0.85)]')}
               >
                 NFT Collections
-              </Typography>
-            </Stack>
-          </Box>
-          <StyledTable size="small">
-            <TableBody>
-              {linkedCollections.map((col) => (
-                <TableRowStyled
+              </span>
+            </div>
+          </div>
+          <div className="flex flex-col">
+            {linkedCollections.map((col, idx) => {
+              const v = typeof col.verified === 'number' ? col.verified : (col.verified === true || col.verified === 'yes' ? 4 : 0);
+              const colName = typeof col.name === 'object' ? col.name?.collection_name || '' : col.name || '';
+
+              return (
+                <div
                   key={col.id}
-                  isDark={isDark}
-                  onClick={() => window.location.href = `/nfts/${col.slug}`}
-                  style={{ cursor: 'pointer' }}
+                  onClick={() => router.push(`/nfts/${col.slug}`)}
+                  className={cn(
+                    'flex items-center gap-[10px] px-[10px] py-[8px] cursor-pointer transition-colors duration-150 group',
+                    isDark ? 'hover:bg-white/[0.04]' : 'hover:bg-black/[0.02]',
+                    idx < linkedCollections.length - 1 && (isDark ? 'border-b border-white/[0.05]' : 'border-b border-black/[0.04]')
+                  )}
                 >
-                  <ModernTableCell style={{ width: '40%', padding: '6px 8px' }}>
-                    <Stack direction="row" alignItems="center" style={{ gap: '8px' }}>
-                      <img
-                        src={`https://s1.xrpl.to/nft-collection/${col.logoImage || col.id}`}
-                        alt=""
-                        style={{
-                          width: 24,
-                          height: 24,
-                          borderRadius: 4,
-                          objectFit: 'cover',
-                          border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)'}`
-                        }}
-                        onError={(e) => (e.target.src = '/static/alt.webp')}
-                      />
-                      <Stack style={{ minWidth: 0, flex: 1 }}>
-                        <Stack direction="row" alignItems="center" style={{ gap: '4px' }}>
-                          <Typography
-                            style={{
-                              fontSize: '11px',
-                              fontWeight: 600,
-                              color: isDark ? '#fff' : '#1a1a1a',
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                              whiteSpace: 'nowrap'
-                            }}
-                          >
-                            {typeof col.name === 'object' ? col.name?.collection_name || '' : col.name || ''}
-                          </Typography>
-                          {(() => {
-                            const v = col.verified === true || col.verified === 'yes' ? 4 : col.verified;
-                            if (!v || v < 1 || v > 4) return null;
-                            const colors = {
-                              1: { bg: isDark ? 'rgba(59,130,246,0.1)' : 'rgba(239,246,255,1)', fg: isDark ? '#60a5fa' : '#2563eb' },
-                              2: { bg: isDark ? 'rgba(168,85,247,0.1)' : 'rgba(250,245,255,1)', fg: isDark ? '#c084fc' : '#9333ea' },
-                              3: { bg: isDark ? 'rgba(245,158,11,0.1)' : 'rgba(255,251,235,1)', fg: isDark ? '#fbbf24' : '#d97706' },
-                              4: { bg: isDark ? 'rgba(34,197,94,0.1)' : 'rgba(240,253,244,1)', fg: isDark ? '#4ade80' : '#16a34a' },
-                            };
-                            const labels = { 1: 'Official', 2: 'Premium', 3: 'Standard', 4: 'Verified' };
-                            return (
-                              <span style={{ padding: '1px 5px', borderRadius: '3px', fontSize: '8px', fontWeight: 500, background: colors[v].bg, color: colors[v].fg, flexShrink: 0 }}>
-                                {labels[v]}
-                              </span>
-                            );
-                          })()}
-                        </Stack>
-                        <Typography
-                          style={{
-                            fontSize: '9px',
-                            color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)'
-                          }}
-                        >
-                          {fNumber(col.items || 0)} items
-                        </Typography>
-                      </Stack>
-                    </Stack>
-                  </ModernTableCell>
-                  <ModernTableCell style={{ width: '20%', padding: '6px 4px', textAlign: 'center' }}>
-                    <Typography style={{ fontSize: '8px', color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)', textTransform: 'uppercase' }}>
-                      Floor
-                    </Typography>
-                    <Typography style={{ fontSize: '10px', fontWeight: 600, color: '#22c55e', whiteSpace: 'nowrap' }}>
-                      ✕{fNumber(col.floor?.amount || col.floor || 0)}
-                    </Typography>
-                  </ModernTableCell>
-                  <ModernTableCell style={{ width: '20%', padding: '6px 4px', textAlign: 'center' }}>
-                    <Typography style={{ fontSize: '8px', color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)', textTransform: 'uppercase' }}>
-                      Total Vol
-                    </Typography>
-                    <Typography style={{ fontSize: '10px', fontWeight: 600, color: isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.85)', whiteSpace: 'nowrap' }}>
-                      ✕{fNumber(col.volume || col.totalVol24h || 0)}
-                    </Typography>
-                  </ModernTableCell>
-                  <ModernTableCell style={{ width: '20%', padding: '6px 8px 6px 4px', textAlign: 'right' }}>
-                    <Typography style={{ fontSize: '8px', color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)', textTransform: 'uppercase' }}>
-                      MCap
-                    </Typography>
-                    <Typography style={{ fontSize: '10px', fontWeight: 600, color: isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.85)', whiteSpace: 'nowrap' }}>
-                      ✕{fNumber(col.marketcap || 0)}
-                    </Typography>
-                  </ModernTableCell>
-                </TableRowStyled>
-              ))}
-            </TableBody>
-          </StyledTable>
-        </Box>
+                  {/* Collection Image */}
+                  <div className="relative shrink-0">
+                    <img
+                      src={`https://s1.xrpl.to/nft-collection/${col.logoImage || col.id}`}
+                      alt={colName}
+                      className={cn(
+                        'w-[36px] h-[36px] rounded-[6px] object-cover border',
+                        isDark ? 'border-white/10' : 'border-black/[0.08]'
+                      )}
+                      onError={(e) => (e.target.src = '/static/alt.webp')}
+                    />
+                    <VerificationBadge verified={v} size="sm" isDark={isDark} />
+                  </div>
+
+                  {/* Name + Badge + Item Count */}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-[5px]">
+                      <span
+                        className={cn(
+                          'text-[12px] font-semibold truncate',
+                          isDark ? 'text-white' : 'text-[#1a1a1a]'
+                        )}
+                      >
+                        {colName}
+                      </span>
+                      <VerificationLabel verified={v} isDark={isDark} />
+                    </div>
+                    <span className={cn('text-[10px]', isDark ? 'text-white/[0.35]' : 'text-black/[0.35]')}>
+                      {fNumber(col.items || 0)} items
+                    </span>
+                  </div>
+
+                  {/* Stats */}
+                  <div className="flex items-center gap-[12px] shrink-0">
+                    <div className="text-right">
+                      <div className={cn('text-[9px] uppercase leading-none mb-[2px]', isDark ? 'text-white/[0.3]' : 'text-black/[0.3]')}>
+                        Floor
+                      </div>
+                      <div className="text-[11px] font-semibold text-[#22c55e] whitespace-nowrap leading-tight">
+                        ✕{fNumber(col.floor?.amount || col.floor || 0)}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className={cn('text-[9px] uppercase leading-none mb-[2px]', isDark ? 'text-white/[0.3]' : 'text-black/[0.3]')}>
+                        Vol
+                      </div>
+                      <div className={cn('text-[11px] font-semibold whitespace-nowrap leading-tight', isDark ? 'text-white/90' : 'text-black/[0.85]')}>
+                        ✕{fNumber(col.volume || col.totalVol24h || 0)}
+                      </div>
+                    </div>
+                    <ArrowUpRight
+                      size={14}
+                      className={cn(
+                        'transition-all duration-150 shrink-0',
+                        isDark
+                          ? 'text-white/20 group-hover:text-white/60 group-hover:translate-x-[1px] group-hover:-translate-y-[1px]'
+                          : 'text-black/15 group-hover:text-black/50 group-hover:translate-x-[1px] group-hover:-translate-y-[1px]'
+                      )}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
       )}
     </>
   );
@@ -2941,65 +2202,47 @@ export const CompactSocialLinks = memo(
     // Compact mode with text labels - horizontal row that wraps
     if (fullWidth) {
       return (
-        <Stack direction="row" style={{ flexWrap: 'wrap', gap: '6px' }}>
+        <div className="flex flex-row gap-2 flex-wrap">
           {socialEntries.map(([platform, url]) => (
-            <Link
+            <a
               key={platform}
               href={getFullUrl(platform, url)}
               target="_blank"
               rel="noopener noreferrer"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                padding: '6px 10px',
-                borderRadius: '8px',
-                background: alpha('rgba(66,133,244,1)', 0.08),
-                border: `1.5px solid ${alpha('rgba(66,133,244,1)', 0.15)}`,
-                textDecoration: 'none'
-              }}
+              className="inline-flex items-center gap-[6px] px-[10px] py-[6px] rounded-[8px] no-underline bg-[rgba(66,133,244,0.08)] border-[1.5px] border-[rgba(66,133,244,0.15)]"
             >
               {getIcon(platform)}
-              <Typography
-                style={{
-                  fontSize: '11px',
-                  fontWeight: 500,
-                  color: '#4285f4'
-                }}
+              <span
+                className="text-[11px] font-medium text-[#4285f4]"
               >
                 {getPlatformLabel(platform)}
-              </Typography>
-            </Link>
+              </span>
+            </a>
           ))}
-        </Stack>
+        </div>
       );
     }
 
     return (
-      <Stack direction="row" alignItems="center" style={{ gap: '6px' }}>
+      <div className="flex flex-row items-center gap-[6px]">
         {socialEntries.map(([platform, url]) => (
-          <Tooltip key={platform} title={getPlatformLabel(platform)}>
-            <Link
+            <a
+              key={platform}
+              title={getPlatformLabel(platform)}
               href={getFullUrl(platform, url)}
               target="_blank"
               rel="noopener noreferrer"
-              style={{
-                width: '28px',
-                height: '28px',
-                borderRadius: '6px',
-                background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.025)',
-                border: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)'}`,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                textDecoration: 'none'
-              }}
+              className={cn(
+                'w-[28px] h-[28px] rounded-[6px] flex items-center justify-center no-underline border',
+                isDark
+                  ? 'bg-white/[0.03] border-white/[0.06]'
+                  : 'bg-black/[0.025] border-black/[0.05]'
+              )}
             >
               {getIcon(platform)}
-            </Link>
-          </Tooltip>
+            </a>
         ))}
-      </Stack>
+      </div>
     );
   }
 );
@@ -3010,52 +2253,40 @@ export const CompactTags = memo(
     if (!enhancedTags || enhancedTags.length === 0) return null;
 
     return (
-      <Stack direction="row" alignItems="center" style={{ flexWrap: 'wrap', gap: '4px' }}>
+      <div className="flex flex-row items-center gap-2 flex-wrap">
         {enhancedTags.slice(0, maxTags).map((tag) => (
-          <Link
+          <a
             key={tag}
             href={`/view/${normalizeTag(tag)}`}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '4px',
-              padding: '3px 6px',
-              borderRadius: '4px',
-              background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.025)',
-              border: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)'}`,
-              textDecoration: 'none',
-              fontSize: '10px',
-              fontWeight: 500,
-              color: isDark ? 'rgba(255,255,255,0.55)' : 'rgba(0,0,0,0.5)',
-              textTransform: 'uppercase',
-              letterSpacing: '0.2px'
-            }}
+            className={cn(
+              'inline-flex items-center gap-[4px] px-[6px] py-[3px] rounded-[4px] no-underline text-[10px] font-medium uppercase tracking-[0.2px] border',
+              isDark
+                ? 'bg-white/[0.03] border-white/[0.06] text-white/[0.55]'
+                : 'bg-black/[0.025] border-black/[0.05] text-black/50'
+            )}
             rel="noreferrer noopener nofollow"
           >
             {tag === 'aigent.run' && (
-              <img src="/static/aigentrun.gif" alt="" style={{ width: '10px', height: '10px' }} />
+              <img src="/static/aigentrun.gif" alt="" className="w-[10px] h-[10px]" />
             )}
             {tag}
-          </Link>
+          </a>
         ))}
         {enhancedTags.length > maxTags && (
-          <Typography
-            style={{
-              padding: '3px 6px',
-              borderRadius: '4px',
-              background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.025)',
-              border: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)'}`,
-              fontSize: '10px',
-              fontWeight: 500,
-              color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.35)',
-              cursor: toggleTagsDrawer ? 'pointer' : 'default'
-            }}
+          <span
+            className={cn(
+              'px-[6px] py-[3px] rounded-[4px] text-[10px] font-medium border',
+              isDark
+                ? 'bg-white/[0.03] border-white/[0.06] text-white/40'
+                : 'bg-black/[0.025] border-black/[0.05] text-black/[0.35]',
+              toggleTagsDrawer ? 'cursor-pointer' : 'cursor-default'
+            )}
             onClick={() => toggleTagsDrawer && toggleTagsDrawer(true)}
           >
             +{enhancedTags.length - maxTags}
-          </Typography>
+          </span>
         )}
-      </Stack>
+      </div>
     );
   }
 );
@@ -3071,7 +2302,7 @@ export const CompactSocialAndTags = memo(
     socialSize = 'small',
     isDark = false
   }) => (
-    <Stack direction="row" alignItems="center" spacing={1} style={{ flexWrap: 'wrap', gap: '8px' }}>
+    <div className="flex flex-row items-center gap-[8px] flex-wrap">
       <CompactTags
         enhancedTags={enhancedTags}
         toggleTagsDrawer={toggleTagsDrawer}
@@ -3084,6 +2315,6 @@ export const CompactSocialAndTags = memo(
         size={socialSize}
         isDark={isDark}
       />
-    </Stack>
+    </div>
   )
 );

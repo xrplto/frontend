@@ -1,14 +1,14 @@
 import { useContext, useState, useEffect, useCallback, memo } from 'react';
 
 // Components
-import { AppContext } from 'src/context/AppContext';
+import { ThemeContext } from 'src/context/AppContext';
 import Overview from './tabs/overview';
 import TokenTabs from './components/TokenTabs';
 import { addTokenToTabs } from 'src/hooks/useTokenTabs';
 
 const TokenDetail = memo(
-  ({ token, onTransactionPanelToggle, transactionPanelOpen, onOrderBookToggle, orderBookOpen }) => {
-    const { themeName } = useContext(AppContext);
+  ({ token, onTransactionPanelToggle, transactionPanelOpen }) => {
+    const { themeName } = useContext(ThemeContext);
     const isDark = themeName === 'XrplToDarkTheme';
     const isMobile = typeof window !== 'undefined' && window.innerWidth < 960;
 
@@ -22,27 +22,11 @@ const TokenDetail = memo(
     const [selectedTradeAccount, setSelectedTradeAccount] = useState(null);
     const [txDetailsOpen, setTxDetailsOpen] = useState(transactionPanelOpen || false);
     const [panelMode, setPanelMode] = useState('transaction');
-    const [orderBookData, setOrderBookData] = useState({
-      pair: { curr1: { currency: 'XRP' }, curr2: token },
-      asks: [],
-      bids: [],
-      limitPrice: null,
-      isBuyOrder: true,
-      onAskClick: () => {},
-      onBidClick: () => {}
-    });
 
     // Sync internal state with parent
     useEffect(() => {
       setTxDetailsOpen(transactionPanelOpen || false);
     }, [transactionPanelOpen]);
-
-    useEffect(() => {
-      if (orderBookOpen !== undefined) {
-        setPanelMode(orderBookOpen ? 'orderbook' : 'transaction');
-        setTxDetailsOpen(!!orderBookOpen);
-      }
-    }, [orderBookOpen]);
 
     // Handle transaction selection
     const handleSelectTransaction = useCallback(
@@ -55,12 +39,9 @@ const TokenDetail = memo(
           if (onTransactionPanelToggle) {
             onTransactionPanelToggle(true);
           }
-          if (onOrderBookToggle) {
-            onOrderBookToggle(false);
-          }
         });
       },
-      [onTransactionPanelToggle, onOrderBookToggle]
+      [onTransactionPanelToggle]
     );
 
     // Handle transaction details close - batched updates
@@ -74,25 +55,6 @@ const TokenDetail = memo(
       });
     }, [onTransactionPanelToggle]);
 
-    // Handle orderbook data updates from Swap component
-    const handleOrderBookData = useCallback((data) => {
-      setOrderBookData((prev) => ({ ...prev, ...data }));
-    }, []);
-
-    // Handle orderbook panel toggle - batched updates
-    const handleOrderBookToggle = useCallback(() => {
-      const isOpen = txDetailsOpen && panelMode === 'orderbook';
-      const newState = !isOpen;
-
-      // Batch state updates to prevent multiple renders
-      requestAnimationFrame(() => {
-        setPanelMode('orderbook');
-        setTxDetailsOpen(newState);
-        if (onOrderBookToggle) onOrderBookToggle(newState);
-        if (onTransactionPanelToggle) onTransactionPanelToggle(newState);
-      });
-    }, [txDetailsOpen, panelMode, onOrderBookToggle, onTransactionPanelToggle]);
-
     return (
       <div className="relative">
         {/* Token Tabs - Full Width */}
@@ -103,9 +65,6 @@ const TokenDetail = memo(
         <Overview
           token={token}
           onTransactionClick={handleSelectTransaction}
-          onOrderBookToggle={handleOrderBookToggle}
-          orderBookOpen={txDetailsOpen && panelMode === 'orderbook'}
-          onOrderBookData={handleOrderBookData}
         />
       </div>
     );

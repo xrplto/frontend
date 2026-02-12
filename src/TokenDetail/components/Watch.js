@@ -1,13 +1,14 @@
 import api from 'src/utils/api';
 import { useState, useEffect, useContext } from 'react';
-import { AppContext } from 'src/context/AppContext';
+import { ThemeContext, WalletContext, AppContext } from 'src/context/AppContext';
 import { Bookmark } from 'lucide-react';
 import { cn } from 'src/utils/cn';
 
 export default function Watch({ token, className }) {
   const BASE_URL = 'https://api.xrpl.to/v1';
-  const { accountProfile, openSnackbar, setLoading, themeName, setOpenWalletModal } =
-    useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
+  const { accountProfile, setOpenWalletModal } = useContext(WalletContext);
+  const { openSnackbar, setLoading } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
 
   const [watchList, setWatchList] = useState([]);

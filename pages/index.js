@@ -1,5 +1,4 @@
 import { useState, useMemo, useEffect } from 'react';
-import styled from '@emotion/styled';
 import { useRouter } from 'next/router';
 import { getTokens } from 'src/utils/formatters';
 import { cn } from 'src/utils/cn';
@@ -12,19 +11,11 @@ import ScrollToTop from 'src/components/ScrollToTop';
 import Summary from 'src/TokenList/Summary';
 import Logo from 'src/components/Logo';
 import { useContext } from 'react';
-import { AppContext } from 'src/context/AppContext';
+import { ThemeContext } from 'src/context/AppContext';
 
-const OverviewWrapper = styled.div`
-  overflow: hidden;
-  min-height: 100vh;
-  margin: 0;
-  padding: 0;
-
-  @media (max-width: 768px) {
-    margin: 0;
-    padding: 0;
-  }
-`;
+const OverviewWrapper = ({ className, ...props }) => (
+  <div className={cn('overflow-hidden min-h-screen m-0 p-0', className)} {...props} />
+);
 
 function getInitialTokens(data) {
   if (data) return data.tokens;
@@ -66,7 +57,7 @@ function Overview({ data }) {
   }, [tokens]);
   const [isMobile, setIsMobile] = useState(false);
   const router = useRouter();
-  const { themeName } = useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
   const isDark = themeName === 'XrplToDarkTheme';
 
   useEffect(() => {
@@ -113,9 +104,7 @@ function Overview({ data }) {
 
       <div
         id="back-to-top-anchor"
-        className={
-          notificationPanelOpen ? 'mx-auto px-4 mt-4' : 'mx-auto max-w-[1920px] px-4 mt-4'
-        }
+        className="mx-auto max-w-[1920px] px-4 mt-4"
       >
         <Summary />
       </div>

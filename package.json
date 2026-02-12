@@ -78,5 +78,11 @@
   "overrides": {
     "send": "^0.19.0",
     "cookie": "^0.7.0"
-  }
+  },
+  "browserslist": [
+    "Chrome >= 111",
+    "Edge >= 111",
+    "Firefox >= 111",
+    "Safari >= 16.4"
+  ]
 }

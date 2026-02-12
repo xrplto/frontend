@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 
 // Context
 import { useContext } from 'react';
-import { AppContext } from 'src/context/AppContext';
+import { ThemeContext, WalletContext, AppContext } from 'src/context/AppContext';
 
 // Loader
 import { ClipLoader } from 'src/components/Spinners';
@@ -26,7 +26,8 @@ const LoadingTextField = ({ type, value, uuid, setValid, startText, ...props }) 
   const BASE_URL = 'https://api.xrpl.to/v1';
   const [status, setStatus] = useState(TEXT_EMPTY);
 
-  const { accountProfile, themeName } = useContext(AppContext);
+  const { accountProfile } = useContext(WalletContext);
+  const { themeName } = useContext(ThemeContext);
   const isDark = themeName === 'XrplToDarkTheme';
 
   const checkValidation = (text, uuid) => {
@@ -128,7 +129,7 @@ const LoadingButton = ({
   className,
   ...props
 }) => {
-  const { themeName } = useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
   const isDark = themeName === 'XrplToDarkTheme';
   const isDisabled = disabled || loading;
 
@@ -219,7 +220,9 @@ export default function EditCollection({ collection }) {
   const fileRef3 = useRef();
   const fileRef4 = useRef();
 
-  const { accountProfile, openSnackbar, themeName } = useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
+  const { accountProfile } = useContext(WalletContext);
+  const { openSnackbar } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
   const account = accountProfile?.account;
   const accountToken = accountProfile?.token;
@@ -542,7 +545,7 @@ export default function EditCollection({ collection }) {
         >
           <input
             ref={fileRef1}
-            style={{ display: 'none' }}
+            className="hidden"
             accept=".png, .jpg, .gif"
             id="contained-button-file"
             type="file"
@@ -593,7 +596,7 @@ export default function EditCollection({ collection }) {
         >
           <input
             ref={fileRef2}
-            style={{ display: 'none' }}
+            className="hidden"
             accept=".png, .jpg, .gif"
             id="contained-button-file2"
             type="file"
@@ -645,7 +648,7 @@ export default function EditCollection({ collection }) {
         >
           <input
             ref={fileRef3}
-            style={{ display: 'none' }}
+            className="hidden"
             accept=".png, .jpg, .gif"
             id="contained-button-file3"
             type="file"
@@ -945,7 +948,7 @@ export default function EditCollection({ collection }) {
                 >
                   <input
                     ref={fileRef4}
-                    style={{ display: 'none' }}
+                    className="hidden"
                     accept=".png, .jpg, .gif"
                     id="contained-button-file4"
                     type="file"

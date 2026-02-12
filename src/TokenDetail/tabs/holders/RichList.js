@@ -1,40 +1,40 @@
 import React, { useState, useEffect, useContext, useRef } from 'react';
-import { AppContext } from 'src/context/AppContext';
+import { ThemeContext, WalletContext } from 'src/context/AppContext';
 import { cn } from 'src/utils/cn';
 import { Loader2, ChevronLeft, ChevronRight, Search, X, Wifi, WifiOff, MessageCircle, Tag, Trash2 } from 'lucide-react';
-import api from 'src/utils/api';
+import api, { getWalletAuthHeaders } from 'src/utils/api';
 import Link from 'next/link';
 import { MD5 } from 'crypto-js';
 
 const BearEmptyState = ({ isDark, title, subtitle }) => (
-  <div style={{ border: isDark ? '1.5px dashed rgba(255,255,255,0.1)' : '1.5px dashed rgba(0,0,0,0.1)', borderRadius: 12, background: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)' }}>
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
-      <div style={{ position: 'relative', width: 48, height: 48, marginBottom: 12 }}>
-      <div style={{ position: 'absolute', top: -3, left: 0, width: 16, height: 16, borderRadius: '50%', background: isDark ? 'rgba(255,255,255,0.15)' : '#d1d5db' }}>
-        <div style={{ position: 'absolute', top: 3, left: 3, width: 10, height: 10, borderRadius: '50%', background: isDark ? 'rgba(255,255,255,0.1)' : '#e5e7eb' }} />
+  <div className={cn('rounded-xl', isDark ? 'border-[1.5px] border-dashed border-white/10 bg-white/[0.02]' : 'border-[1.5px] border-dashed border-black/10 bg-black/[0.02]')}>
+    <div className="flex flex-col items-center justify-center p-6">
+      <div className="relative w-12 h-12 mb-3">
+      <div className={cn('absolute -top-[3px] left-0 w-4 h-4 rounded-full', isDark ? 'bg-white/[0.15]' : 'bg-gray-300')}>
+        <div className={cn('absolute top-[3px] left-[3px] w-[10px] h-[10px] rounded-full', isDark ? 'bg-white/10' : 'bg-gray-200')} />
       </div>
-      <div style={{ position: 'absolute', top: -3, right: 0, width: 16, height: 16, borderRadius: '50%', background: isDark ? 'rgba(255,255,255,0.15)' : '#d1d5db' }}>
-        <div style={{ position: 'absolute', top: 3, right: 3, width: 10, height: 10, borderRadius: '50%', background: isDark ? 'rgba(255,255,255,0.1)' : '#e5e7eb' }} />
+      <div className={cn('absolute -top-[3px] right-0 w-4 h-4 rounded-full', isDark ? 'bg-white/[0.15]' : 'bg-gray-300')}>
+        <div className={cn('absolute top-[3px] right-[3px] w-[10px] h-[10px] rounded-full', isDark ? 'bg-white/10' : 'bg-gray-200')} />
       </div>
-      <div style={{ position: 'absolute', top: 6, left: '50%', transform: 'translateX(-50%)', width: 40, height: 36, borderRadius: '50%', background: isDark ? 'rgba(255,255,255,0.15)' : '#d1d5db', overflow: 'hidden' }}>
+      <div className={cn('absolute top-1.5 left-1/2 -translate-x-1/2 w-10 h-9 rounded-full overflow-hidden', isDark ? 'bg-white/[0.15]' : 'bg-gray-300')}>
         {[0,1,2,3,4].map(i => (
-          <div key={i} style={{ height: 2, width: '100%', background: isDark ? 'rgba(255,255,255,0.15)' : '#e5e7eb', marginTop: i * 2.5 + 2 }} />
+          <div key={i} className={cn('h-0.5 w-full', isDark ? 'bg-white/[0.15]' : 'bg-gray-200')} style={{ marginTop: i * 2.5 + 2 }} />
         ))}
-        <div style={{ position: 'absolute', top: 10, left: 6, width: 10, height: 10 }}>
-          <div style={{ position: 'absolute', width: 8, height: 2, background: isDark ? 'rgba(255,255,255,0.4)' : '#6b7280', transform: 'rotate(45deg)', top: 4 }} />
-          <div style={{ position: 'absolute', width: 8, height: 2, background: isDark ? 'rgba(255,255,255,0.4)' : '#6b7280', transform: 'rotate(-45deg)', top: 4 }} />
+        <div className="absolute top-[10px] left-1.5 w-[10px] h-[10px]">
+          <div className={cn('absolute w-2 h-0.5 rotate-45 top-1', isDark ? 'bg-white/40' : 'bg-gray-500')} />
+          <div className={cn('absolute w-2 h-0.5 -rotate-45 top-1', isDark ? 'bg-white/40' : 'bg-gray-500')} />
         </div>
-        <div style={{ position: 'absolute', top: 10, right: 6, width: 10, height: 10 }}>
-          <div style={{ position: 'absolute', width: 8, height: 2, background: isDark ? 'rgba(255,255,255,0.4)' : '#6b7280', transform: 'rotate(45deg)', top: 4 }} />
-          <div style={{ position: 'absolute', width: 8, height: 2, background: isDark ? 'rgba(255,255,255,0.4)' : '#6b7280', transform: 'rotate(-45deg)', top: 4 }} />
+        <div className="absolute top-[10px] right-1.5 w-[10px] h-[10px]">
+          <div className={cn('absolute w-2 h-0.5 rotate-45 top-1', isDark ? 'bg-white/40' : 'bg-gray-500')} />
+          <div className={cn('absolute w-2 h-0.5 -rotate-45 top-1', isDark ? 'bg-white/40' : 'bg-gray-500')} />
         </div>
-        <div style={{ position: 'absolute', bottom: 5, left: '50%', transform: 'translateX(-50%)', width: 18, height: 12, borderRadius: '50%', background: isDark ? 'rgba(255,255,255,0.1)' : '#e5e7eb' }}>
-          <div style={{ position: 'absolute', top: 2, left: '50%', transform: 'translateX(-50%)', width: 8, height: 6, borderRadius: '50%', background: isDark ? 'rgba(255,255,255,0.25)' : '#9ca3af' }} />
+        <div className={cn('absolute bottom-[5px] left-1/2 -translate-x-1/2 w-[18px] h-3 rounded-full', isDark ? 'bg-white/10' : 'bg-gray-200')}>
+          <div className={cn('absolute top-0.5 left-1/2 -translate-x-1/2 w-2 h-1.5 rounded-full', isDark ? 'bg-white/25' : 'bg-gray-400')} />
         </div>
       </div>
     </div>
-      <span style={{ fontSize: 11, fontWeight: 500, letterSpacing: '0.05em', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', textTransform: 'uppercase', marginBottom: 4 }}>{title}</span>
-      <span style={{ fontSize: 10, color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)' }}>{subtitle}</span>
+      <span className={cn('text-[11px] font-medium tracking-[0.05em] uppercase mb-1', isDark ? 'text-white/50' : 'text-black/50')}>{title}</span>
+      <span className={cn('text-[10px]', isDark ? 'text-white/30' : 'text-black/30')}>{subtitle}</span>
     </div>
   </div>
 );
@@ -68,7 +68,8 @@ const formatNumber = (num) => {
 };
 
 const RichList = ({ token, walletLabels: walletLabelsProp = {}, onLabelsChange }) => {
-  const { themeName, accountProfile } = useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
+  const { accountProfile } = useContext(WalletContext);
   const accountLogin = accountProfile?.account;
   const isDark = themeName === 'XrplToDarkTheme';
   const [isMobile, setIsMobile] = useState(false);
@@ -87,13 +88,14 @@ const RichList = ({ token, walletLabels: walletLabelsProp = {}, onLabelsChange }
     if (!accountLogin || !labelInput.trim()) return;
     setLabelSaving(true);
     try {
+      const authHeaders = await getWalletAuthHeaders(accountProfile);
       if (walletLabels[wallet]) {
-        await api.delete(`https://api.xrpl.to/api/user/${accountLogin}/labels/${wallet}`);
+        await api.delete(`https://api.xrpl.to/api/user/${accountLogin}/labels/${wallet}`, { headers: authHeaders });
       }
       const res = await api.post(`https://api.xrpl.to/api/user/${accountLogin}/labels`, {
         wallet,
         label: labelInput.trim()
-      });
+      }, { headers: authHeaders });
       const newLabels = { ...walletLabels, [wallet]: res.data?.label || labelInput.trim() };
       setWalletLabels(newLabels);
       onLabelsChange?.(newLabels);
@@ -107,7 +109,8 @@ const RichList = ({ token, walletLabels: walletLabelsProp = {}, onLabelsChange }
     if (!accountLogin) return;
     setLabelSaving(true);
     try {
-      await api.delete(`https://api.xrpl.to/api/user/${accountLogin}/labels/${wallet}`);
+      const authHeaders = await getWalletAuthHeaders(accountProfile);
+      await api.delete(`https://api.xrpl.to/api/user/${accountLogin}/labels/${wallet}`, { headers: authHeaders });
       const newLabels = { ...walletLabels };
       delete newLabels[wallet];
       setWalletLabels(newLabels);
@@ -279,7 +282,7 @@ const RichList = ({ token, walletLabels: walletLabelsProp = {}, onLabelsChange }
       {page === 1 && !searchTerm && (
         <div
           className={cn(
-            'flex items-center gap-1 rounded-md px-2 py-1 text-[10px]',
+            'flex items-center justify-center gap-1 rounded-md px-2 py-1 text-[10px] min-w-[54px]',
             wsConnected ? 'bg-green-500/10 text-green-500' : 'bg-white/5 text-white/30'
           )}
         >
@@ -461,7 +464,7 @@ const RichList = ({ token, walletLabels: walletLabelsProp = {}, onLabelsChange }
               {!isMobile && (
                 <th
                   className={cn(
-                    'py-2 px-2 text-center text-[10px] font-medium uppercase tracking-wider',
+                    'py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider',
                     isDark ? 'text-white/40' : 'text-gray-400'
                   )}
                 >
@@ -623,10 +626,10 @@ const RichList = ({ token, walletLabels: walletLabelsProp = {}, onLabelsChange }
                   {!isMobile && (
                     <td className="py-2.5 px-2">
                       {holder.acquisition ? (
-                        <div className="flex items-center justify-center gap-1">
+                        <div className="flex items-center justify-end gap-2">
                           <div
                             className={cn(
-                              'flex h-1.5 w-16 overflow-hidden rounded-full',
+                              'flex h-1.5 w-12 overflow-hidden rounded-full',
                               isDark ? 'bg-white/10' : 'bg-gray-200'
                             )}
                           >
@@ -659,23 +662,27 @@ const RichList = ({ token, walletLabels: walletLabelsProp = {}, onLabelsChange }
                               />
                             )}
                           </div>
-                          <div className="flex items-center gap-1 text-[9px] tabular-nums">
-                            {holder.acquisition.dexPct > 0 && (
-                              <span className="text-emerald-500">{holder.acquisition.dexPct}% DEX</span>
-                            )}
-                            {holder.acquisition.ammPct > 0 && (
-                              <span className="text-primary">{holder.acquisition.ammPct}% AMM</span>
-                            )}
-                            {holder.acquisition.lpPct > 0 && (
-                              <span className="text-purple-400">{holder.acquisition.lpPct}% LP</span>
-                            )}
-                            {holder.tradedPct === 0 && (
-                              <span className={isDark ? 'text-white/25' : 'text-gray-400'}>Transfer</span>
-                            )}
+                          <div className="flex items-center justify-end gap-1 text-[10px] font-medium tabular-nums min-w-[75px]">
+                            {(() => {
+                              const sources = [
+                                { label: 'DEX', pct: holder.acquisition.dexPct, color: 'text-emerald-500' },
+                                { label: 'AMM', pct: holder.acquisition.ammPct, color: 'text-primary' },
+                                { label: 'LP', pct: holder.acquisition.lpPct, color: 'text-purple-400' },
+                                { label: 'Transfer', pct: holder.acquisition.transferPct, color: isDark ? 'text-white/25' : 'text-gray-400' }
+                              ].filter(s => s.pct > 0).sort((a, b) => b.pct - a.pct);
+
+                              if (sources.length === 0) return null;
+                              const top = sources[0];
+                              return (
+                                <span className={top.color}>
+                                  {top.pct}% {top.label}{sources.length > 1 ? '+' : ''}
+                                </span>
+                              );
+                            })()}
                           </div>
                         </div>
                       ) : (
-                        <div className="flex justify-center">
+                        <div className="flex justify-end">
                           <span
                             className={cn('text-[9px]', isDark ? 'text-white/20' : 'text-gray-300')}
                           >
@@ -748,6 +755,7 @@ const RichList = ({ token, walletLabels: walletLabelsProp = {}, onLabelsChange }
             type="button"
             onClick={() => handlePageChange(page - 1)}
             disabled={page === 1}
+            aria-label="Previous page"
             className={cn(
               'p-1.5 rounded-md transition-colors',
               page === 1 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-white/10',
@@ -768,6 +776,7 @@ const RichList = ({ token, walletLabels: walletLabelsProp = {}, onLabelsChange }
             type="button"
             onClick={() => handlePageChange(page + 1)}
             disabled={page === totalPages}
+            aria-label="Next page"
             className={cn(
               'p-1.5 rounded-md transition-colors',
               page === totalPages ? 'opacity-30 cursor-not-allowed' : 'hover:bg-white/10',

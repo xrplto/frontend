@@ -1,10 +1,10 @@
 import { useState, useContext } from 'react';
-import { AppContext } from 'src/context/AppContext';
+import { ThemeContext } from 'src/context/AppContext';
 import Header from 'src/components/Header';
 import { cn } from 'src/utils/cn';
 
 export default function ChartEmbedTest() {
-  const { themeName } = useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
   const isDark = themeName === 'XrplToDarkTheme';
 
   const [params, setParams] = useState({

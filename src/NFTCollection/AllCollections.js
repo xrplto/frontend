@@ -2,10 +2,10 @@ import React, { useState, useContext, useMemo, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { format } from 'date-fns';
 import { useRouter } from 'next/router';
-import styled from '@emotion/styled';
 import CollectionList from './CollectionList';
+import { cn } from 'src/utils/cn';
 import { fVolume, fIntNumber, normalizeTag } from 'src/utils/formatters';
-import { AppContext } from 'src/context/AppContext';
+import { ThemeContext } from 'src/context/AppContext';
 import { X, Search } from 'lucide-react';
 import { ApiButton } from 'src/components/ApiEndpointsModal';
 
@@ -17,153 +17,66 @@ const CollectionListType = {
 };
 
 // Styled Components - matching Summary.js
-const Container = styled.div`
-  position: relative;
-  z-index: 2;
-  margin-bottom: 12px;
-  width: 100%;
-  max-width: 100%;
-  background: transparent;
-  overflow: visible;
+const Container = ({ className, children, ...p }) => (
+  <div className={cn('relative z-[2] mb-3 w-full max-w-full bg-transparent overflow-visible max-sm:my-2 max-sm:p-0', className)} {...p}>{children}</div>
+);
 
-  @media (max-width: 600px) {
-    margin: 8px 0;
-    padding: 0;
-  }
-`;
+const Grid = ({ className, children, ...p }) => (
+  <div
+    className={cn(
+      'grid grid-cols-[repeat(5,1fr)_1.5fr] gap-[10px] w-full',
+      'max-[1400px]:grid-cols-3',
+      'max-[900px]:grid-cols-3',
+      'max-sm:flex max-sm:overflow-x-auto max-sm:gap-2 max-sm:pb-1 max-sm:[scrollbar-width:none] max-sm:[&::-webkit-scrollbar]:hidden',
+      className
+    )}
+    style={{ WebkitOverflowScrolling: 'touch' }}
+    {...p}
+  >{children}</div>
+);
 
-const Grid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(5, 1fr) 1.5fr;
-  gap: 10px;
-  width: 100%;
+const MetricBox = ({ isDark, className, children, ...p }) => (
+  <div
+    className={cn(
+      'py-3 px-[14px] h-[82px] flex flex-col justify-between items-start rounded-xl bg-transparent border-[1.5px] transition-all duration-150',
+      'max-sm:py-[10px] max-sm:px-3 max-sm:h-[68px] max-sm:flex-none max-sm:min-w-[95px]',
+      isDark ? 'border-white/10 hover:border-white/[0.15] hover:bg-white/[0.02]' : 'border-black/[0.06] hover:border-black/10 hover:bg-black/[0.01]',
+      className
+    )}
+    {...p}
+  >{children}</div>
+);
 
-  @media (max-width: 1400px) {
-    grid-template-columns: repeat(3, 1fr);
-  }
+const MetricTitle = ({ isDark, className, children, ...p }) => (
+  <span className={cn('text-[0.68rem] font-normal tracking-[0.02em] max-sm:text-[0.58rem]', isDark ? 'text-white/50' : 'text-[#212B36]/50', className)} {...p}>{children}</span>
+);
 
-  @media (max-width: 900px) {
-    grid-template-columns: repeat(3, 1fr);
-  }
+const MetricValue = ({ isDark, className, children, ...p }) => (
+  <span className={cn('text-xl font-semibold leading-none tracking-[-0.02em] whitespace-nowrap max-sm:text-[0.92rem]', isDark ? 'text-white' : 'text-[#212B36]', className)} {...p}>{children}</span>
+);
 
-  @media (max-width: 600px) {
-    display: flex;
-    overflow-x: auto;
-    gap: 8px;
-    padding-bottom: 4px;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    &::-webkit-scrollbar {
-      display: none;
-    }
-  }
-`;
+const PercentageChange = ({ isPositive, className, children, ...p }) => (
+  <span
+    className={cn(
+      'text-[0.68rem] inline-flex items-center gap-[2px] font-medium tracking-[-0.01em] px-1 py-px rounded max-sm:text-[0.58rem] max-sm:px-[3px]',
+      isPositive ? 'text-emerald-500 bg-emerald-500/10' : 'text-red-500 bg-red-500/10',
+      className
+    )}
+    {...p}
+  >{children}</span>
+);
 
-const MetricBox = styled.div`
-  padding: 12px 14px;
-  height: 82px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  align-items: flex-start;
-  border-radius: 12px;
-  background: transparent;
-  border: 1.5px solid
-    ${(props) => (props.isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)')};
-  transition: all 0.15s ease;
+const VolumePercentage = ({ isDark, className, children, ...p }) => (
+  <span className={cn('text-[0.58rem] font-normal max-sm:text-[0.5rem]', isDark ? 'text-white/45' : 'text-[#212B36]/45', className)} {...p}>{children}</span>
+);
 
-  &:hover {
-    border-color: ${(props) => (props.isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)')};
-    background: ${(props) => (props.isDark ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.01)')};
-  }
+const ChartMetricBox = ({ isDark, className, children, ...p }) => (
+  <MetricBox isDark={isDark} className={cn('col-span-1 overflow-visible max-[1400px]:col-span-3 max-[900px]:col-span-3 max-sm:!hidden', className)} {...p}>{children}</MetricBox>
+);
 
-  @media (max-width: 600px) {
-    padding: 10px 12px;
-    height: 68px;
-    flex: 0 0 auto;
-    min-width: 95px;
-    border-radius: 12px;
-  }
-`;
-
-const MetricTitle = styled.span`
-  font-size: 0.68rem;
-  font-weight: 400;
-  color: ${(props) => (props.isDark ? 'rgba(255, 255, 255, 0.5)' : 'rgba(33, 43, 54, 0.5)')};
-  letter-spacing: 0.02em;
-
-  @media (max-width: 600px) {
-    font-size: 0.58rem;
-  }
-`;
-
-const MetricValue = styled.span`
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: ${(props) => (props.isDark ? '#FFFFFF' : '#212B36')};
-  line-height: 1;
-  letter-spacing: -0.02em;
-  white-space: nowrap;
-
-  @media (max-width: 600px) {
-    font-size: 0.92rem;
-  }
-`;
-
-const PercentageChange = styled.span`
-  font-size: 0.68rem;
-  color: ${(props) => (props.isPositive ? '#10b981' : '#ef4444')};
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
-  font-weight: 500;
-  letter-spacing: -0.01em;
-  padding: 1px 4px;
-  border-radius: 4px;
-  background: ${(props) =>
-    props.isPositive ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)'};
-
-  @media (max-width: 600px) {
-    font-size: 0.58rem;
-    padding: 1px 3px;
-  }
-`;
-
-const VolumePercentage = styled.span`
-  font-size: 0.58rem;
-  color: ${(props) => (props.isDark ? 'rgba(255, 255, 255, 0.45)' : 'rgba(33, 43, 54, 0.45)')};
-  font-weight: 400;
-
-  @media (max-width: 600px) {
-    font-size: 0.5rem;
-  }
-`;
-
-const ChartMetricBox = styled(MetricBox)`
-  grid-column: span 1;
-  overflow: visible;
-
-  @media (max-width: 1400px) {
-    grid-column: span 3;
-  }
-
-  @media (max-width: 900px) {
-    grid-column: span 3;
-  }
-
-  @media (max-width: 600px) {
-    display: none;
-  }
-`;
-
-const MobileChartBox = styled(MetricBox)`
-  display: none;
-
-  @media (max-width: 600px) {
-    display: flex;
-    margin-top: 4px;
-  }
-`;
+const MobileChartBox = ({ isDark, className, children, ...p }) => (
+  <MetricBox isDark={isDark} className={cn('hidden max-sm:!flex max-sm:mt-1', className)} {...p}>{children}</MetricBox>
+);
 
 // Volume Chart Component
 const VolumeChart = ({ data, isDark }) => {
@@ -288,54 +201,35 @@ const VolumeChart = ({ data, isDark }) => {
 
     return createPortal(
       <div
-        style={{
-          position: 'fixed',
-          left: tooltip.x + 15,
-          top: tooltip.y - 80,
-          background: isDark ? 'rgba(18, 18, 18, 0.98)' : 'rgba(255, 255, 255, 0.98)',
-          backdropFilter: 'blur(16px)',
-          color: isDark ? '#fff' : '#000',
-          border: isDark ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid rgba(0, 0, 0, 0.08)',
-          borderRadius: '10px',
-          padding: '10px 12px',
-          boxShadow: isDark ? '0 8px 32px rgba(0, 0, 0, 0.4)' : '0 8px 32px rgba(0, 0, 0, 0.12)',
-          minWidth: '160px',
-          zIndex: 999999,
-          pointerEvents: 'none',
-          fontSize: '11px'
-        }}
+        className={cn(
+          'fixed rounded-[10px] py-[10px] px-3 min-w-[160px] z-[999999] pointer-events-none text-[11px] backdrop-blur-[16px]',
+          isDark ? 'bg-[rgba(18,18,18,0.98)] text-white border border-white/[0.08] shadow-[0_8px_32px_rgba(0,0,0,0.4)]' : 'bg-[rgba(255,255,255,0.98)] text-black border border-black/[0.08] shadow-[0_8px_32px_rgba(0,0,0,0.12)]'
+        )}
+        style={{ left: tooltip.x + 15, top: tooltip.y - 80 }}
       >
         <div
-          style={{
-            fontSize: '12px',
-            fontWeight: 500,
-            marginBottom: '8px',
-            paddingBottom: '6px',
-            borderBottom: isDark
-              ? '1px solid rgba(255, 255, 255, 0.08)'
-              : '1px solid rgba(0, 0, 0, 0.06)'
-          }}
+          className={cn('text-xs font-medium mb-2 pb-1.5', isDark ? 'border-b border-white/[0.08]' : 'border-b border-black/[0.06]')}
         >
           {format(new Date(tooltip.data.date), 'MMM dd, yyyy')}
         </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', margin: '3px 0' }}>
-          <span style={{ opacity: 0.6 }}>Volume</span>
-          <span style={{ fontWeight: 500 }}>
+        <div className="flex justify-between my-[3px]">
+          <span className="opacity-60">Volume</span>
+          <span className="font-medium">
             ✕{formatNumberWithDecimals(tooltip.data.volume || 0)}
           </span>
         </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', margin: '3px 0' }}>
-          <span style={{ opacity: 0.6 }}>Sales</span>
-          <span style={{ fontWeight: 500 }}>{tooltip.data.sales || 0}</span>
+        <div className="flex justify-between my-[3px]">
+          <span className="opacity-60">Sales</span>
+          <span className="font-medium">{tooltip.data.sales || 0}</span>
         </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', margin: '3px 0' }}>
-          <span style={{ opacity: 0.6 }}>Avg Price</span>
-          <span style={{ fontWeight: 500 }}>✕{(tooltip.data.avgPrice || 0).toFixed(2)}</span>
+        <div className="flex justify-between my-[3px]">
+          <span className="opacity-60">Avg Price</span>
+          <span className="font-medium">✕{(tooltip.data.avgPrice || 0).toFixed(2)}</span>
         </div>
         {tooltip.data.uniqueBuyers && (
-          <div style={{ display: 'flex', justifyContent: 'space-between', margin: '3px 0' }}>
-            <span style={{ opacity: 0.6 }}>Traders</span>
-            <span style={{ fontWeight: 500 }}>
+          <div className="flex justify-between my-[3px]">
+            <span className="opacity-60">Traders</span>
+            <span className="font-medium">
               {tooltip.data.uniqueBuyers} / {tooltip.data.uniqueSellers}
             </span>
           </div>
@@ -349,13 +243,13 @@ const VolumeChart = ({ data, isDark }) => {
     <>
       <div
         ref={containerRef}
-        style={{ width: '100%', height: '42px', marginTop: '-2px', position: 'relative' }}
+        className="w-full h-[42px] -mt-[2px] relative"
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
       >
         <canvas
           ref={canvasRef}
-          style={{ width: '100%', height: '100%', display: 'block', cursor: 'pointer' }}
+          className="w-full h-full block cursor-pointer"
         />
       </div>
       <TooltipPortal />
@@ -505,124 +399,69 @@ const CollectionCreationChart = ({ data, isDark }) => {
 
     return createPortal(
       <div
-        style={{
-          position: 'fixed',
-          left: tooltip.x + 15,
-          top: tooltip.y - 100,
-          background: isDark ? 'rgba(18, 18, 18, 0.98)' : 'rgba(255, 255, 255, 0.98)',
-          backdropFilter: 'blur(16px)',
-          color: isDark ? '#fff' : '#000',
-          border: isDark ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid rgba(0, 0, 0, 0.08)',
-          borderRadius: '10px',
-          padding: '10px 12px',
-          boxShadow: isDark ? '0 8px 32px rgba(0, 0, 0, 0.4)' : '0 8px 32px rgba(0, 0, 0, 0.12)',
-          minWidth: '180px',
-          zIndex: 999999,
-          pointerEvents: 'none',
-          fontSize: '11px'
-        }}
+        className={cn(
+          'fixed rounded-[10px] py-[10px] px-3 min-w-[180px] z-[999999] pointer-events-none text-[11px] backdrop-blur-[16px]',
+          isDark ? 'bg-[rgba(18,18,18,0.98)] text-white border border-white/[0.08] shadow-[0_8px_32px_rgba(0,0,0,0.4)]' : 'bg-[rgba(255,255,255,0.98)] text-black border border-black/[0.08] shadow-[0_8px_32px_rgba(0,0,0,0.12)]'
+        )}
+        style={{ left: tooltip.x + 15, top: tooltip.y - 100 }}
       >
         <div
-          style={{
-            fontSize: '12px',
-            fontWeight: 500,
-            marginBottom: '8px',
-            paddingBottom: '6px',
-            borderBottom: isDark
-              ? '1px solid rgba(255, 255, 255, 0.08)'
-              : '1px solid rgba(0, 0, 0, 0.06)'
-          }}
+          className={cn('text-xs font-medium mb-2 pb-1.5', isDark ? 'border-b border-white/[0.08]' : 'border-b border-black/[0.06]')}
         >
           {format(new Date(d.date), 'MMM dd, yyyy')}
         </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', margin: '3px 0' }}>
-          <span style={{ opacity: 0.6 }}>New Collections</span>
-          <span style={{ fontWeight: 500 }}>{formatNumberWithDecimals(mintCount)}</span>
+        <div className="flex justify-between my-[3px]">
+          <span className="opacity-60">New Collections</span>
+          <span className="font-medium">{formatNumberWithDecimals(mintCount)}</span>
         </div>
         {d.volume !== undefined && (
-          <div style={{ display: 'flex', justifyContent: 'space-between', margin: '3px 0' }}>
-            <span style={{ opacity: 0.6 }}>Volume</span>
-            <span style={{ fontWeight: 500 }}>✕{formatNumberWithDecimals(d.volume || 0)}</span>
+          <div className="flex justify-between my-[3px]">
+            <span className="opacity-60">Volume</span>
+            <span className="font-medium">✕{formatNumberWithDecimals(d.volume || 0)}</span>
           </div>
         )}
-        <div style={{ display: 'flex', justifyContent: 'space-between', margin: '3px 0' }}>
-          <span style={{ opacity: 0.6 }}>{d.totalItems !== undefined ? 'Items' : 'Sales'}</span>
-          <span style={{ fontWeight: 500 }}>{itemCount}</span>
+        <div className="flex justify-between my-[3px]">
+          <span className="opacity-60">{d.totalItems !== undefined ? 'Items' : 'Sales'}</span>
+          <span className="font-medium">{itemCount}</span>
         </div>
         {d.uniqueCollections !== undefined && (
-          <div style={{ display: 'flex', justifyContent: 'space-between', margin: '3px 0' }}>
-            <span style={{ opacity: 0.6 }}>Collections</span>
-            <span style={{ fontWeight: 500 }}>{d.uniqueCollections}</span>
+          <div className="flex justify-between my-[3px]">
+            <span className="opacity-60">Collections</span>
+            <span className="font-medium">{d.uniqueCollections}</span>
           </div>
         )}
         {collections.length > 0 && (
           <>
             <div
-              style={{
-                borderTop: isDark
-                  ? '1px solid rgba(255, 255, 255, 0.08)'
-                  : '1px solid rgba(0, 0, 0, 0.06)',
-                margin: '6px 0 4px',
-                paddingTop: '6px'
-              }}
+              className={cn('my-[6px_0_4px] pt-1.5', isDark ? 'border-t border-white/[0.08]' : 'border-t border-black/[0.06]')}
             >
-              <span
-                style={{
-                  fontSize: '10px',
-                  fontWeight: 500,
-                  opacity: 0.5,
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.03em'
-                }}
-              >
+              <span className="text-[10px] font-medium opacity-50 uppercase tracking-[0.03em]">
                 {d.collectionsInvolved ? 'New Collections' : 'Top Collections'}
               </span>
             </div>
             {collections.slice(0, 3).map((col, i) => (
               <div
                 key={`tooltip-col-${i}-${col.cid || col.slug}`}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  margin: '3px 0',
-                  fontSize: '10px'
-                }}
+                className="flex items-center justify-between my-[3px] text-[10px]"
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                <div className="flex items-center gap-[5px]">
                   <div
-                    style={{
-                      width: '14px',
-                      height: '14px',
-                      minWidth: '14px',
-                      minHeight: '14px',
-                      borderRadius: '3px',
-                      overflow: 'hidden',
-                      background: isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.04)'
-                    }}
+                    className={cn('w-[14px] h-[14px] min-w-[14px] min-h-[14px] rounded-[3px] overflow-hidden', isDark ? 'bg-white/5' : 'bg-black/[0.04]')}
                   >
                     <img
                       src={`https://s1.xrpl.to/collection/${col.logo || col.logoImage}`}
                       alt={col.name}
-                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      className="w-full h-full object-cover"
                       onError={(e) => {
                         e.target.parentElement.style.display = 'none';
                       }}
                     />
                   </div>
-                  <span
-                    style={{
-                      opacity: 0.8,
-                      maxWidth: '80px',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap'
-                    }}
-                  >
+                  <span className="opacity-80 max-w-[80px] overflow-hidden text-ellipsis whitespace-nowrap">
                     {col.name}
                   </span>
                 </div>
-                <span style={{ fontWeight: 500 }}>
+                <span className="font-medium">
                   {col.volume
                     ? `✕${formatNumberWithDecimals(col.volume)}`
                     : `${col.items || 0} items`}
@@ -640,13 +479,13 @@ const CollectionCreationChart = ({ data, isDark }) => {
     <>
       <div
         ref={containerRef}
-        style={{ width: '100%', height: '42px', marginTop: '-2px', position: 'relative' }}
+        className="w-full h-[42px] -mt-[2px] relative"
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
       >
         <canvas
           ref={canvasRef}
-          style={{ width: '100%', height: '100%', display: 'block', cursor: 'pointer' }}
+          className="w-full h-full block cursor-pointer"
         />
       </div>
       <TooltipPortal />
@@ -655,355 +494,161 @@ const CollectionCreationChart = ({ data, isDark }) => {
 };
 
 // Tags Bar Components
-const TagsContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  border-radius: 12px;
-  border: 1.5px solid
-    ${(props) => (props.isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)')};
-  background: transparent;
-  padding: 10px 14px;
-  position: relative;
+const TagsContainer = ({ isDark, className, children, ...p }) => (
+  <div
+    className={cn(
+      'flex flex-col gap-2 rounded-xl border-[1.5px] backdrop-blur-[12px] py-[10px] px-[14px] relative box-border overflow-hidden',
+      'before:content-[""] before:absolute before:-top-[60px] before:-right-[60px] before:w-[180px] before:h-[180px] before:rounded-full before:bg-[radial-gradient(circle,rgba(19,125,254,0.2)_0%,transparent_70%)] before:blur-[40px] before:pointer-events-none before:z-0',
+      '[&>*]:relative [&>*]:z-[1]',
+      'max-sm:py-[6px] max-sm:px-2 max-sm:gap-[6px]',
+      isDark ? 'border-white/[0.08] bg-[rgba(10,10,10,0.5)]' : 'border-black/[0.06] bg-white/50',
+      className
+    )}
+    {...p}
+  >{children}</div>
+);
 
-  @media (max-width: 600px) {
-    padding: 8px 10px;
-    gap: 8px;
-  }
-`;
+const TagsRow = ({ className, children, ...p }) => (
+  <div className={cn('flex items-center gap-[6px] w-full', className)} {...p}>{children}</div>
+);
 
-const TagsRow = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  width: 100%;
+const TagsScrollArea = ({ className, children, ...p }) => (
+  <div
+    className={cn('flex items-center gap-[6px] overflow-x-auto flex-1 min-w-0 pr-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden', className)}
+    style={{ WebkitOverflowScrolling: 'touch' }}
+    {...p}
+  >{children}</div>
+);
 
-  @media (max-width: 600px) {
-    gap: 6px;
-  }
-`;
+const AllButtonWrapper = ({ className, children, ...p }) => (
+  <div className={cn('shrink-0 ml-1', className)} {...p}>{children}</div>
+);
 
-const TagsScrollArea = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  overflow-x: auto;
-  flex: 1;
-  min-width: 0;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-  padding-right: 4px;
+const TagChip = ({ selected, isDark, className, children, ...p }) => (
+  <button
+    className={cn(
+      'inline-flex items-center gap-[3px] px-2 rounded-[6px] border text-[0.68rem] cursor-pointer whitespace-nowrap h-6 shrink-0 transition-all duration-150',
+      selected
+        ? 'border-blue-500/30 bg-blue-500/10 text-blue-500 font-medium hover:bg-blue-500/[0.15]'
+        : cn(
+            isDark ? 'border-white/[0.08] bg-white/[0.04] text-white/70 font-normal hover:bg-white/[0.08] hover:text-white/90' : 'border-black/[0.08] bg-black/[0.02] text-[#212B36]/70 font-normal hover:bg-black/[0.05] hover:text-[#212B36]/90'
+          ),
+      className
+    )}
+    {...p}
+  >{children}</button>
+);
 
-  &::-webkit-scrollbar {
-    display: none;
-  }
+const AllTagsButton = ({ isDark, className, children, ...p }) => (
+  <button
+    className={cn(
+      'inline-flex items-center gap-1 px-3 border-none rounded-2xl text-blue-500 text-[0.7rem] font-medium cursor-pointer whitespace-nowrap h-[26px] shrink-0 ml-auto transition-all duration-150 hover:bg-blue-500/20',
+      'max-sm:text-[0.68rem] max-sm:h-6 max-sm:px-2 max-sm:gap-[3px]',
+      isDark ? 'bg-blue-500/[0.15]' : 'bg-blue-500/10',
+      className
+    )}
+    {...p}
+  >{children}</button>
+);
 
-  @media (max-width: 600px) {
-    gap: 6px;
-  }
-`;
+const Drawer = ({ open, className, children, ...p }) => (
+  <div className={cn('fixed inset-0 z-[1300]', open ? 'block' : 'hidden', className)} {...p}>{children}</div>
+);
 
-const AllButtonWrapper = styled.div`
-  flex-shrink: 0;
-  margin-left: 4px;
-`;
+const DrawerBackdrop = ({ className, children, ...p }) => (
+  <div className={cn('fixed inset-0 bg-black/60 backdrop-blur-[4px]', className)} {...p}>{children}</div>
+);
 
-const TagChip = styled.button`
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 0 10px;
-  border: 1px solid
-    ${(props) =>
-      props.selected
-        ? 'rgba(59, 130, 246, 0.3)'
-        : props.isDark
-          ? 'rgba(255, 255, 255, 0.06)'
-          : 'rgba(0, 0, 0, 0.06)'};
-  border-radius: 6px;
-  background: ${(props) =>
-    props.selected
-      ? 'rgba(59, 130, 246, 0.1)'
-      : props.isDark
-        ? 'rgba(255, 255, 255, 0.03)'
-        : 'rgba(0, 0, 0, 0.02)'};
-  color: ${(props) =>
-    props.selected
-      ? '#3b82f6'
-      : props.isDark
-        ? 'rgba(255, 255, 255, 0.7)'
-        : 'rgba(33, 43, 54, 0.7)'};
-  font-size: 0.7rem;
-  font-weight: ${(props) => (props.selected ? 500 : 400)};
-  cursor: pointer;
-  white-space: nowrap;
-  height: 26px;
-  flex-shrink: 0;
-  position: relative;
-  overflow: hidden;
-  z-index: 1;
-  transition:
-    color 0.3s ease,
-    border-color 0.3s ease;
+const DrawerPaper = ({ isDark, className, children, ...p }) => (
+  <div
+    className={cn(
+      'fixed bottom-0 left-0 right-0 max-h-[70vh] backdrop-blur-[24px] rounded-t-xl border-t overflow-hidden flex flex-col z-[1301]',
+      isDark ? 'bg-black/85 border-blue-500/20 shadow-[0_-25px_50px_-12px_rgba(59,130,246,0.1)]' : 'bg-white/[0.98] border-blue-200 shadow-[0_-25px_50px_-12px_rgba(191,219,254,0.5)]',
+      className
+    )}
+    {...p}
+  >{children}</div>
+);
 
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, #3b82f6 0%, #60a5fa 50%, #3b82f6 100%);
-    transform: translateX(-100%);
-    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    z-index: -1;
-    border-radius: 6px;
-  }
+const DrawerHeader = ({ className, children, ...p }) => (
+  <div className={cn('flex items-center justify-between p-4', className)} {...p}>{children}</div>
+);
 
-  &:hover {
-    color: #fff;
-    border-color: #3b82f6;
-  }
+const DrawerTitle = ({ isDark, className, children, ...p }) => (
+  <h2 className={cn('font-medium text-[15px] m-0', isDark ? 'text-white' : 'text-[#212B36]', className)} {...p}>{children}</h2>
+);
 
-  &:hover::before {
-    transform: translateX(0);
-  }
+const DrawerClose = ({ isDark, className, children, ...p }) => (
+  <button
+    className={cn(
+      'w-8 h-8 border-[1.5px] rounded-lg bg-transparent cursor-pointer flex items-center justify-center transition-all duration-150',
+      'hover:border-blue-400/50 hover:text-[#4285f4]',
+      isDark ? 'border-white/10 text-white/40' : 'border-black/10 text-black/40',
+      className
+    )}
+    {...p}
+  >{children}</button>
+);
 
-  @media (max-width: 600px) {
-    font-size: 0.68rem;
-    height: 26px;
-    padding: 0 10px;
-    gap: 3px;
-  }
-`;
+const SearchBox = ({ className, children, ...p }) => (
+  <div className={cn('py-3 px-4', className)} {...p}>{children}</div>
+);
 
-const AllTagsButton = styled.button`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 0 12px;
-  border: 1px solid ${(props) => (props.isDark ? 'rgba(59, 130, 246, 0.3)' : 'rgba(191, 219, 254, 1)')};
-  border-radius: 8px;
-  background: ${(props) => (props.isDark ? '#0d0d1a' : 'linear-gradient(to right, #eff6ff, #ecfeff)')};
-  color: ${(props) => (props.isDark ? '#93c5fd' : '#2563eb')};
-  font-size: 11px;
-  font-weight: 500;
-  cursor: pointer;
-  white-space: nowrap;
-  height: 32px;
-  min-height: 32px;
-  max-height: 32px;
-  box-sizing: border-box;
-  flex-shrink: 0;
-  margin-left: 0;
-  transition: all 0.3s ease;
+const SearchInputWrapper = ({ isDark, className, children, ...p }) => (
+  <div
+    className={cn(
+      'flex items-center gap-3 h-10 px-4 rounded-xl border-[1.5px] transition-[border-color] duration-200',
+      isDark
+        ? 'border-blue-500/[0.08] bg-white/[0.02] hover:border-blue-500/20 focus-within:border-blue-500/40'
+        : 'border-black/[0.08] bg-white hover:border-blue-500/30 focus-within:border-blue-500/50',
+      className
+    )}
+    {...p}
+  >{children}</div>
+);
 
-  &:hover {
-    border-color: ${(props) => (props.isDark ? 'rgba(96, 165, 250, 0.5)' : 'rgba(147, 197, 253, 1)')};
-    color: ${(props) => (props.isDark ? '#fff' : '#2563eb')};
-  }
+const SearchIconWrapper = ({ isDark, className, children, ...p }) => (
+  <div className={cn('flex items-center justify-center shrink-0', isDark ? 'text-white/40' : 'text-black/40', className)} {...p}>{children}</div>
+);
 
-  @media (max-width: 600px) {
-    font-size: 11px;
-    height: 32px;
-    min-height: 32px;
-    max-height: 32px;
-    padding: 0 10px;
-    gap: 4px;
-  }
-`;
+const SearchInput = ({ isDark, className, ...p }) => (
+  <input
+    className={cn(
+      'flex-1 bg-transparent border-none outline-none text-sm font-[inherit] focus:outline-none',
+      isDark ? 'text-white placeholder:text-white/50' : 'text-[#212B36] placeholder:text-[#212B36]/40',
+      className
+    )}
+    {...p}
+  />
+);
 
-const Drawer = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 1300;
-  display: ${(props) => (props.open ? 'block' : 'none')};
-`;
+const TagsGrid = ({ className, children, ...p }) => (
+  <div
+    className={cn('p-4 flex flex-wrap gap-[10px] flex-1 overflow-y-auto content-start max-sm:p-3 max-sm:gap-2', className)}
+    style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(59,130,246,0.15) transparent' }}
+    {...p}
+  >{children}</div>
+);
 
-const DrawerBackdrop = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(4px);
-`;
+const TagButton = ({ isDark, className, children, ...p }) => (
+  <button
+    className={cn(
+      'inline-flex items-center justify-center py-1 px-3 border rounded-lg bg-transparent text-xs font-normal cursor-pointer font-[inherit] whitespace-nowrap h-7 shrink-0 transition-all duration-200',
+      'hover:bg-blue-500/[0.08] hover:border-blue-500/30 hover:text-blue-500',
+      'max-sm:h-8 max-sm:py-1 max-sm:px-[14px] max-sm:text-[0.8rem]',
+      isDark ? 'border-white/[0.08] text-white/70' : 'border-black/[0.08] text-[#212B36]/70',
+      className
+    )}
+    {...p}
+  >{children}</button>
+);
 
-const DrawerPaper = styled.div`
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  max-height: 70vh;
-  background: ${(props) => (props.isDark ? 'rgba(0,0,0,0.85)' : 'rgba(255,255,255,0.98)')};
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border-top-left-radius: 12px;
-  border-top-right-radius: 12px;
-  border-top: 1px solid
-    ${(props) => (props.isDark ? 'rgba(59,130,246,0.2)' : 'rgba(191,219,254,1)')};
-  box-shadow: ${(props) =>
-    props.isDark
-      ? '0 -25px 50px -12px rgba(59,130,246,0.1)'
-      : '0 -25px 50px -12px rgba(191,219,254,0.5)'};
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  z-index: 1301;
-`;
-
-const DrawerHeader = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px;
-`;
-
-const DrawerTitle = styled.h2`
-  font-weight: 500;
-  font-size: 15px;
-  margin: 0;
-  color: ${(props) => (props.isDark ? '#fff' : '#212B36')};
-`;
-
-const DrawerClose = styled.button`
-  width: 32px;
-  height: 32px;
-  border: 1.5px solid ${(props) => (props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)')};
-  border-radius: 8px;
-  background: transparent;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)')};
-  transition:
-    border-color 0.15s,
-    color 0.15s;
-
-  &:hover {
-    border-color: ${(props) => (props.isDark ? 'rgba(66,133,244,0.5)' : 'rgba(66,133,244,0.5)')};
-    color: #4285f4;
-  }
-`;
-
-const SearchBox = styled.div`
-  padding: 12px 16px;
-`;
-
-const SearchInputWrapper = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  height: 40px;
-  padding: 0 16px;
-  border-radius: 12px;
-  border: 1.5px solid ${(props) => (props.isDark ? 'rgba(59,130,246,0.08)' : 'rgba(0,0,0,0.08)')};
-  background: ${(props) => (props.isDark ? 'rgba(255,255,255,0.02)' : '#fff')};
-  transition: border-color 0.2s ease;
-
-  &:hover {
-    border-color: ${(props) => (props.isDark ? 'rgba(59,130,246,0.2)' : 'rgba(59,130,246,0.3)')};
-  }
-
-  &:focus-within {
-    border-color: ${(props) => (props.isDark ? 'rgba(59,130,246,0.4)' : 'rgba(59,130,246,0.5)')};
-  }
-`;
-
-const SearchIconWrapper = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)')};
-  flex-shrink: 0;
-`;
-
-const SearchInput = styled.input`
-  flex: 1;
-  background: transparent;
-  border: none;
-  outline: none;
-  font-size: 14px;
-  color: ${(props) => (props.isDark ? '#fff' : '#212B36')};
-  font-family: inherit;
-
-  &:focus {
-    outline: none;
-  }
-
-  &::placeholder {
-    color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(33, 43, 54, 0.4)')};
-  }
-`;
-
-const TagsGrid = styled.div`
-  padding: 16px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  flex: 1;
-  overflow-y: auto;
-  align-content: flex-start;
-  &::-webkit-scrollbar {
-    width: 6px;
-  }
-  &::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  &::-webkit-scrollbar-thumb {
-    background: rgba(128, 128, 128, 0.2);
-    border-radius: 3px;
-  }
-`;
-
-const TagButton = styled.button`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 4px 12px;
-  border: 1px solid
-    ${(props) => (props.isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)')};
-  border-radius: 8px;
-  background: transparent;
-  color: ${(props) => (props.isDark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(33, 43, 54, 0.7)')};
-  font-size: 0.75rem;
-  font-weight: 400;
-  cursor: pointer;
-  font-family: inherit;
-  white-space: nowrap;
-  height: 28px;
-  flex-shrink: 0;
-  transition:
-    border-color 0.2s ease,
-    background 0.2s ease;
-
-  &:hover {
-    background: rgba(59, 130, 246, 0.08);
-    border-color: rgba(59, 130, 246, 0.3);
-    color: #3b82f6;
-  }
-
-  @media (max-width: 600px) {
-    height: 32px;
-    padding: 4px 14px;
-    font-size: 0.8rem;
-  }
-`;
-
-const EmptyState = styled.div`
-  width: 100%;
-  text-align: center;
-  padding: 32px 0;
-  color: ${(props) => (props.isDark ? 'rgba(255, 255, 255, 0.5)' : 'rgba(33, 43, 54, 0.5)')};
-  font-size: 14px;
-`;
+const EmptyState = ({ isDark, className, children, ...p }) => (
+  <div
+    className={cn('w-full text-center py-8 text-sm', isDark ? 'text-white/50' : 'text-[#212B36]/50', className)}
+    {...p}
+  >{children}</div>
+);
 
 const formatNumberWithDecimals = (num) => {
   if (num >= 1e9) return `${(num / 1e9).toFixed(1)}B`;
@@ -1020,7 +665,7 @@ function Collections({
   tags
 }) {
   const router = useRouter();
-  const { themeName } = useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
   const isDark = themeName === 'XrplToDarkTheme';
   const [globalMetrics, setGlobalMetrics] = useState(initialGlobalMetrics);
   const [tagsDrawerOpen, setTagsDrawerOpen] = useState(false);
@@ -1069,14 +714,10 @@ function Collections({
 
   return (
     <div
-      style={{
-        flex: 1,
-        paddingTop: isMobile ? '8px' : '16px',
-        paddingBottom: isMobile ? '16px' : '32px',
-        backgroundColor: 'transparent',
-        minHeight: '100vh',
-        position: 'relative'
-      }}
+      className={cn(
+        'flex-1 bg-transparent min-h-screen relative',
+        isMobile ? 'pt-2 pb-4' : 'pt-4 pb-8'
+      )}
     >
       {/* Tags Drawer */}
       {tagsDrawerOpen && (
@@ -1085,29 +726,22 @@ function Collections({
           <DrawerPaper isDark={isDark}>
             <DrawerHeader>
               <div className="flex items-center gap-4 flex-1">
-                <span
-                  style={{
-                    fontSize: '11px',
-                    fontWeight: 500,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.05em',
-                    color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)',
-                    whiteSpace: 'nowrap'
-                  }}
-                >
+                <span className="text-[11px] font-semibold uppercase tracking-[0.1em] text-blue-500 whitespace-nowrap">
                   Categories {tags?.length ? `(${tags.length})` : ''}
                 </span>
                 <div
                   className="flex-1 h-[14px]"
                   style={{
                     backgroundImage: isDark
-                      ? 'radial-gradient(circle, rgba(255,255,255,0.15) 1px, transparent 1px)'
-                      : 'radial-gradient(circle, rgba(0,0,0,0.15) 1px, transparent 1px)',
-                    backgroundSize: '8px 5px'
+                      ? 'radial-gradient(circle, rgba(96,165,250,0.4) 1px, transparent 1px)'
+                      : 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)',
+                    backgroundSize: '8px 5px',
+                    WebkitMaskImage: 'linear-gradient(90deg, black 0%, transparent 100%)',
+                    maskImage: 'linear-gradient(90deg, black 0%, transparent 100%)'
                   }}
                 />
               </div>
-              <div style={{ display: 'flex', gap: '8px' }}>
+              <div className="flex gap-2">
                 <DrawerClose isDark={isDark} onClick={copyTags} title="Copy all tags">
                   {copied ? <Check size={18} color="#10b981" /> : <Copy size={18} />}
                 </DrawerClose>
@@ -1168,7 +802,7 @@ function Collections({
       {/* Global Metrics Section */}
       <Container>
         {globalMetrics && (
-          <div style={{ width: '100%' }}>
+          <div className="w-full">
             <Grid>
               <MetricBox isDark={isDark}>
                 <MetricTitle isDark={isDark}>24h Volume</MetricTitle>
@@ -1232,146 +866,66 @@ function Collections({
                   const rsiColor = getRsiColor(rsi);
 
                   return (
-                    <div
-                      style={{
-                        display: 'flex',
-                        gap: isMobile ? '16px' : '24px',
-                        alignItems: 'flex-end'
-                      }}
-                    >
+                    <div className={cn('flex items-end', isMobile ? 'gap-4' : 'gap-6')}>
                       {/* Sentiment gauge */}
-                      <div
-                        style={{
-                          display: 'flex',
-                          flexDirection: 'column',
-                          alignItems: 'center',
-                          gap: '4px'
-                        }}
-                      >
-                        <div style={{ position: 'relative', width: '36px', height: '20px' }}>
+                      <div className="flex flex-col items-center gap-1">
+                        <div className="relative w-9 h-5">
                           <div
-                            style={{
-                              position: 'absolute',
-                              width: '36px',
-                              height: '18px',
-                              borderRadius: '18px 18px 0 0',
-                              background:
-                                'conic-gradient(from 180deg, #ef4444 0deg, #fbbf24 90deg, #10b981 180deg)',
-                              opacity: 0.2
-                            }}
+                            className="absolute w-9 h-[18px] rounded-t-[18px] opacity-20"
+                            style={{ background: 'conic-gradient(from 180deg, #ef4444 0deg, #fbbf24 90deg, #10b981 180deg)' }}
                           />
                           <div
+                            className="absolute bottom-0 left-1/2 w-0.5 h-[14px] rounded-[1px] origin-bottom"
                             style={{
-                              position: 'absolute',
-                              bottom: '0',
-                              left: '50%',
-                              width: '2px',
-                              height: '14px',
                               background: sentColor,
-                              transformOrigin: 'bottom center',
-                              transform: `translateX(-50%) rotate(${(sentiment - 50) * 1.8}deg)`,
-                              borderRadius: '1px'
+                              transform: `translateX(-50%) rotate(${(sentiment - 50) * 1.8}deg)`
                             }}
                           />
                           <div
-                            style={{
-                              position: 'absolute',
-                              bottom: '-2px',
-                              left: '50%',
-                              transform: 'translateX(-50%)',
-                              width: '6px',
-                              height: '6px',
-                              borderRadius: '50%',
-                              background: sentColor
-                            }}
+                            className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full"
+                            style={{ background: sentColor }}
                           />
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '2px' }}>
+                        <div className="flex items-baseline gap-0.5">
                           <span
-                            style={{
-                              fontSize: '1rem',
-                              fontWeight: 600,
-                              color: sentColor,
-                              lineHeight: 1
-                            }}
+                            className="text-base font-semibold leading-none"
+                            style={{ color: sentColor }}
                           >
                             {sentiment}
                           </span>
-                          <span
-                            style={{
-                              fontSize: '0.5rem',
-                              color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'
-                            }}
-                          >
+                          <span className={cn('text-[0.5rem]', isDark ? 'text-white/40' : 'text-black/40')}>
                             Sentiment
                           </span>
                         </div>
                       </div>
 
                       {/* RSI gauge */}
-                      <div
-                        style={{
-                          display: 'flex',
-                          flexDirection: 'column',
-                          alignItems: 'center',
-                          gap: '4px'
-                        }}
-                      >
-                        <div style={{ position: 'relative', width: '36px', height: '20px' }}>
+                      <div className="flex flex-col items-center gap-1">
+                        <div className="relative w-9 h-5">
                           <div
-                            style={{
-                              position: 'absolute',
-                              width: '36px',
-                              height: '18px',
-                              borderRadius: '18px 18px 0 0',
-                              background:
-                                'conic-gradient(from 180deg, #8b5cf6 0deg, #10b981 90deg, #ef4444 180deg)',
-                              opacity: 0.2
-                            }}
+                            className="absolute w-9 h-[18px] rounded-t-[18px] opacity-20"
+                            style={{ background: 'conic-gradient(from 180deg, #8b5cf6 0deg, #10b981 90deg, #ef4444 180deg)' }}
                           />
                           <div
+                            className="absolute bottom-0 left-1/2 w-0.5 h-[14px] rounded-[1px] origin-bottom"
                             style={{
-                              position: 'absolute',
-                              bottom: '0',
-                              left: '50%',
-                              width: '2px',
-                              height: '14px',
                               background: rsiColor,
-                              transformOrigin: 'bottom center',
-                              transform: `translateX(-50%) rotate(${(rsi - 50) * 1.8}deg)`,
-                              borderRadius: '1px'
+                              transform: `translateX(-50%) rotate(${(rsi - 50) * 1.8}deg)`
                             }}
                           />
                           <div
-                            style={{
-                              position: 'absolute',
-                              bottom: '-2px',
-                              left: '50%',
-                              transform: 'translateX(-50%)',
-                              width: '6px',
-                              height: '6px',
-                              borderRadius: '50%',
-                              background: rsiColor
-                            }}
+                            className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full"
+                            style={{ background: rsiColor }}
                           />
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '2px' }}>
+                        <div className="flex items-baseline gap-0.5">
                           <span
-                            style={{
-                              fontSize: '1rem',
-                              fontWeight: 600,
-                              color: rsiColor,
-                              lineHeight: 1
-                            }}
+                            className="text-base font-semibold leading-none"
+                            style={{ color: rsiColor }}
                           >
                             {rsi}
                           </span>
-                          <span
-                            style={{
-                              fontSize: '0.5rem',
-                              color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'
-                            }}
-                          >
+                          <span className={cn('text-[0.5rem]', isDark ? 'text-white/40' : 'text-black/40')}>
                             RSI
                           </span>
                         </div>
@@ -1400,63 +954,32 @@ function Collections({
                     [])[0];
                   return (
                     <>
-                      <div
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                          marginBottom: '2px'
-                        }}
-                      >
+                      <div className="flex items-center justify-between mb-0.5">
                         <MetricTitle isDark={isDark}>New Collections</MetricTitle>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <div className="flex items-center gap-1.5">
                           <span
-                            style={{
-                              fontSize: '0.85rem',
-                              fontWeight: 600,
-                              color: isDark ? '#fff' : '#212B36'
-                            }}
+                            className={cn('text-[0.85rem] font-semibold', isDark ? 'text-white' : 'text-[#212B36]')}
                           >
                             {formatNumberWithDecimals(today)}
                           </span>
-                          <span
-                            style={{
-                              fontSize: '0.5rem',
-                              color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'
-                            }}
-                          >
+                          <span className={cn('text-[0.5rem]', isDark ? 'text-white/40' : 'text-black/40')}>
                             today
                           </span>
                           <span
-                            style={{ fontSize: '0.65rem', color: isUp ? '#10b981' : '#ef4444' }}
+                            className="text-[0.65rem]"
+                            style={{ color: isUp ? '#10b981' : '#ef4444' }}
                           >
                             {isUp ? '↑' : '↓'}
                           </span>
                           {latestCollection && (
                             <a
                               href={`/nft/collection/${latestCollection.slug}`}
-                              style={{
-                                fontSize: '0.55rem',
-                                color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)',
-                                textDecoration: 'none',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '4px',
-                                borderLeft: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
-                                paddingLeft: '6px'
-                              }}
+                              className={cn('text-[0.55rem] no-underline flex items-center gap-1 pl-1.5', isDark ? 'text-white/50 border-l border-white/10' : 'text-black/50 border-l border-black/10')}
                             >
-                              <span
-                                style={{
-                                  maxWidth: '55px',
-                                  overflow: 'hidden',
-                                  textOverflow: 'ellipsis',
-                                  whiteSpace: 'nowrap'
-                                }}
-                              >
+                              <span className="max-w-[55px] overflow-hidden text-ellipsis whitespace-nowrap">
                                 {latestCollection.name}
                               </span>
-                              <span style={{ color: '#10b981', fontWeight: 500 }}>
+                              <span className="text-emerald-500 font-medium">
                                 ✕
                                 {formatNumberWithDecimals(
                                   latestCollection.volume || latestCollection.items || 0
@@ -1489,60 +1012,27 @@ function Collections({
                   [])[0];
                 return (
                   <>
-                    <div
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between'
-                      }}
-                    >
+                    <div className="flex items-center justify-between">
                       <MetricTitle isDark={isDark}>New Collections</MetricTitle>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        <span
-                          style={{
-                            fontSize: '0.75rem',
-                            fontWeight: 600,
-                            color: isDark ? '#fff' : '#212B36'
-                          }}
-                        >
+                      <div className="flex items-center gap-1">
+                        <span className={cn('text-[0.75rem] font-semibold', isDark ? 'text-white' : 'text-[#212B36]')}>
                           {formatNumberWithDecimals(today)}
                         </span>
-                        <span
-                          style={{
-                            fontSize: '0.45rem',
-                            color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'
-                          }}
-                        >
+                        <span className={cn('text-[0.45rem]', isDark ? 'text-white/40' : 'text-black/40')}>
                           today
                         </span>
-                        <span style={{ fontSize: '0.6rem', color: isUp ? '#10b981' : '#ef4444' }}>
+                        <span className="text-[0.6rem]" style={{ color: isUp ? '#10b981' : '#ef4444' }}>
                           {isUp ? '↑' : '↓'}
                         </span>
                         {latestCollection && (
                           <a
                             href={`/nft/collection/${latestCollection.slug}`}
-                            style={{
-                              fontSize: '0.45rem',
-                              color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)',
-                              textDecoration: 'none',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '3px',
-                              borderLeft: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
-                              paddingLeft: '4px'
-                            }}
+                            className={cn('text-[0.45rem] no-underline flex items-center gap-[3px] pl-1', isDark ? 'text-white/50 border-l border-white/10' : 'text-black/50 border-l border-black/10')}
                           >
-                            <span
-                              style={{
-                                maxWidth: '40px',
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                                whiteSpace: 'nowrap'
-                              }}
-                            >
+                            <span className="max-w-[40px] overflow-hidden text-ellipsis whitespace-nowrap">
                               {latestCollection.name}
                             </span>
-                            <span style={{ color: '#10b981', fontWeight: 500 }}>
+                            <span className="text-emerald-500 font-medium">
                               ✕
                               {formatNumberWithDecimals(
                                 latestCollection.volume || latestCollection.items || 0
@@ -1597,7 +1087,7 @@ function Collections({
                   })}
               </TagsScrollArea>
               <AllButtonWrapper>
-                <div style={{ display: 'flex', gap: '6px' }}>
+                <div className="flex gap-1.5">
                   <ApiButton />
                   <AllTagsButton isDark={isDark} onClick={() => setTagsDrawerOpen(true)}>
                     <span>All {tags.length > visibleTagCount ? `(${tags.length})` : ''}</span>
@@ -1611,13 +1101,7 @@ function Collections({
 
       {/* Table Section - aligned with metric boxes */}
       <Container>
-        <div
-          style={{
-            minHeight: '50vh',
-            position: 'relative',
-            zIndex: 1
-          }}
-        >
+        <div className="min-h-[50vh] relative z-[1]">
           <CollectionList
             type={CollectionListType.ALL}
             tag={selectedTag}

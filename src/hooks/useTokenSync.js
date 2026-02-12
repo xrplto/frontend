@@ -67,7 +67,7 @@ export function useTokenSync({ onTokensUpdate, onMetricsUpdate, onTagsUpdate, en
       } catch {}
     },
     shouldReconnect: () => true,
-    reconnectAttempts: 10,
+    reconnectAttempts: 5,
     reconnectInterval: (n) => Math.min(3000 * Math.pow(2, n), 60000)
   });
 

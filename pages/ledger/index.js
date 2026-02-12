@@ -1,7 +1,7 @@
 import { apiFetch } from 'src/utils/api';
 import { useState, useEffect, useContext, useRef, useCallback } from 'react';
 import { useRouter } from 'next/router';
-import { AppContext } from 'src/context/AppContext';
+import { ThemeContext } from 'src/context/AppContext';
 import { cn } from 'src/utils/cn';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
@@ -721,7 +721,7 @@ const ConnectionStatus = ({ status, isDark }) => {
 
 export default function LedgerStreamPage() {
   const router = useRouter();
-  const { themeName } = useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
   const isDark = themeName === 'XrplToDarkTheme';
 
   const [ledgers, setLedgers] = useState([]);

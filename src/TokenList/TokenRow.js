@@ -1,12 +1,12 @@
 import Decimal from 'decimal.js-light';
 import { useState, useEffect, useContext, memo, useMemo, useCallback, useRef } from 'react';
 import React from 'react';
-import styled from '@emotion/styled';
 import Image from 'next/image';
 import { Bookmark } from 'lucide-react';
 import api from 'src/utils/api';
+import { cn } from 'src/utils/cn';
 
-import { AppContext } from 'src/context/AppContext';
+import { WalletContext } from 'src/context/AppContext';
 import { addTokenToTabs } from 'src/hooks/useTokenTabs';
 
 // Constants
@@ -18,6 +18,54 @@ const currencySymbols = {
   XRP: ''
 };
 
+// Sparkline API request queue with concurrency limit
+const SPARKLINE_MAX_CONCURRENT = 6;
+let sparklineActiveCount = 0;
+const sparklineQueue = [];
+
+function enqueueSparklineRequest(fn) {
+  return new Promise((resolve, reject) => {
+    sparklineQueue.push(() => fn().then(resolve, reject));
+    drainSparklineQueue();
+  });
+}
+
+function drainSparklineQueue() {
+  while (sparklineActiveCount < SPARKLINE_MAX_CONCURRENT && sparklineQueue.length > 0) {
+    const task = sparklineQueue.shift();
+    sparklineActiveCount++;
+    task().finally(() => {
+      sparklineActiveCount--;
+      drainSparklineQueue();
+    });
+  }
+}
+
+// Shared IntersectionObserver singleton for sparkline visibility
+const sparklineObserverCallbacks = new Map();
+let sparklineObserver = null;
+
+function getSparklineObserver() {
+  if (sparklineObserver) return sparklineObserver;
+  if (typeof IntersectionObserver === 'undefined') return null;
+  sparklineObserver = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const cb = sparklineObserverCallbacks.get(entry.target);
+          if (cb) {
+            cb();
+            sparklineObserverCallbacks.delete(entry.target);
+            sparklineObserver.unobserve(entry.target);
+          }
+        }
+      });
+    },
+    { rootMargin: '100px' }
+  );
+  return sparklineObserver;
+}
+
 // Inline Sparkline - SVG based with filled area like Orb design
 const SparklineChart = memo(
   ({ url }) => {
@@ -28,47 +76,46 @@ const SparklineChart = memo(
     const [visible, setVisible] = useState(false);
 
     useEffect(() => {
-      if (!containerRef.current) return;
       const el = containerRef.current;
-      const obs = new IntersectionObserver(
-        ([e]) => {
-          if (e.isIntersecting) {
-            setVisible(true);
-            obs.disconnect();
-          }
-        },
-        { rootMargin: '100px' }
-      );
+      if (!el) return;
+      const obs = getSparklineObserver();
+      if (!obs) { setVisible(true); return; }
+      sparklineObserverCallbacks.set(el, () => setVisible(true));
       obs.observe(el);
-      return () => obs.disconnect();
+      return () => {
+        sparklineObserverCallbacks.delete(el);
+        obs.unobserve(el);
+      };
     }, []);
 
     useEffect(() => {
       if (!visible || !url) return;
       let cancelled = false;
-      api
-        .get(url)
-        .then((res) => {
-          if (cancelled) return;
-          const prices = res.data?.data?.prices?.map(Number) || [];
-          if (prices.length < 2) return;
-          const w = 120,
-            h = 32;
-          const min = Math.min(...prices),
-            max = Math.max(...prices),
-            range = max - min || 1;
-          const pts = prices.map((p, i) => [
-            (i / (prices.length - 1)) * w,
-            h - ((p - min) / range) * (h - 4) - 2
-          ]);
-          const line = 'M' + pts.map((p) => p.join(',')).join('L');
-          const area = line + `L${w},${h}L0,${h}Z`;
-          const c = prices[prices.length - 1] >= prices[0] ? '#22c55e' : '#ef4444';
-          setLinePath(line);
-          setAreaPath(area);
-          setColor(c);
-        })
-        .catch(() => {});
+      enqueueSparklineRequest(() =>
+        api
+          .get(url)
+          .then((res) => {
+            if (cancelled) return;
+            const prices = res.data?.data?.prices?.map(Number) || [];
+            if (prices.length < 2) return;
+            const w = 120,
+              h = 32;
+            const min = Math.min(...prices),
+              max = Math.max(...prices),
+              range = max - min || 1;
+            const pts = prices.map((p, i) => [
+              (i / (prices.length - 1)) * w,
+              h - ((p - min) / range) * (h - 4) - 2
+            ]);
+            const line = 'M' + pts.map((p) => p.join(',')).join('L');
+            const area = line + `L${w},${h}L0,${h}Z`;
+            const c = prices[prices.length - 1] >= prices[0] ? '#22c55e' : '#ef4444';
+            setLinePath(line);
+            setAreaPath(area);
+            setColor(c);
+          })
+          .catch(() => {})
+      );
       return () => {
         cancelled = true;
       };
@@ -77,14 +124,14 @@ const SparklineChart = memo(
     const fillColor = color === '#22c55e' ? 'rgba(34, 197, 94, 0.15)' : 'rgba(239, 68, 68, 0.15)';
 
     return (
-      <div ref={containerRef} style={{ width: 120, height: 32 }}>
+      <div ref={containerRef} className="w-[120px] h-[32px]">
         {linePath ? (
           <svg
             width="120"
             height="32"
             viewBox="0 0 120 32"
             preserveAspectRatio="none"
-            style={{ display: 'block' }}
+            className="block"
           >
             <path d={areaPath} fill={fillColor} />
             <path
@@ -97,14 +144,7 @@ const SparklineChart = memo(
             />
           </svg>
         ) : (
-          <div
-            style={{
-              width: 120,
-              height: 32,
-              background: 'rgba(128,128,128,0.04)',
-              borderRadius: 4
-            }}
-          />
+          <div className="w-[120px] h-[32px] bg-[rgba(128,128,128,0.04)] rounded" />
         )}
       </div>
     );
@@ -114,156 +154,190 @@ const SparklineChart = memo(
 
 SparklineChart.displayName = 'SparklineChart';
 
-const StyledRow = styled.tr`
-  border-bottom: 1px solid
-    ${(props) => (props.isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)')};
-  cursor: pointer;
-  transition: background 0.15s ease;
-  ${(props) =>
-    props.isNew &&
-    `
-    background: ${props.isDark ? 'rgba(34, 197, 94, 0.08)' : 'rgba(34, 197, 94, 0.06)'};
-  `}
+const StyledRow = ({ className, children, isDark, isNew, ...p }) => (
+  <tr
+    className={cn('cursor-pointer transition-all duration-150', className)}
+    style={{
+      borderBottom: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)'}`,
+      ...(isNew
+        ? {
+            background: isDark ? 'rgba(34, 197, 94, 0.08)' : 'rgba(34, 197, 94, 0.06)',
+            boxShadow: 'inset 3px 0 8px -4px rgba(34, 197, 94, 0.4)'
+          }
+        : {})
+    }}
+    onMouseEnter={(e) => {
+      e.currentTarget.style.background = isDark
+        ? 'linear-gradient(90deg, rgba(19, 125, 254, 0.06) 0%, rgba(255, 255, 255, 0.03) 100%)'
+        : 'linear-gradient(90deg, rgba(19, 125, 254, 0.04) 0%, rgba(0, 0, 0, 0.01) 100%)';
+    }}
+    onMouseLeave={(e) => {
+      e.currentTarget.style.background = isNew
+        ? (isDark ? 'rgba(34, 197, 94, 0.08)' : 'rgba(34, 197, 94, 0.06)')
+        : 'transparent';
+    }}
+    {...p}
+  >
+    {children}
+  </tr>
+);
 
-  &:hover {
-    background: ${(props) => (props.isDark ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.02)')};
-  }
-`;
-
-const StyledCell = styled.td`
-  padding: 14px 4px;
-  white-space: ${(props) => (props.isTokenColumn ? 'normal' : 'nowrap')};
-  text-align: ${(props) => props.align || 'left'};
-  font-size: 14px;
-  font-weight: ${(props) => props.fontWeight || 400};
-  color: ${(props) => props.color || (props.isDark ? 'rgba(255, 255, 255, 0.9)' : '#1a1a1a')};
-  vertical-align: middle;
-
-  &:first-of-type {
-    padding-left: 12px;
-  }
-
-  &:last-of-type {
-    padding-right: 12px;
-  }
-`;
+const StyledCell = ({ className, children, isDark, isTokenColumn, align, fontWeight, color, ...p }) => (
+  <td
+    className={cn(
+      'text-sm align-middle first:pl-3 last:pr-3 py-[14px] px-1 font-normal',
+      isTokenColumn ? 'whitespace-normal' : 'whitespace-nowrap',
+      className
+    )}
+    style={{
+      textAlign: align || 'left',
+      fontWeight: fontWeight || undefined,
+      color: color || (isDark ? 'rgba(255, 255, 255, 0.9)' : '#1a1a1a'),
+      ...p.style
+    }}
+    {...(({ style, ...rest }) => rest)(p)}
+  >
+    {children}
+  </td>
+);
 
 // Mobile-specific flexbox components
-const MobileTokenCard = styled.div`
-  display: flex;
-  width: 100%;
-  padding: 10px 12px;
-  border-bottom: 1.5px solid
-    ${(props) => (props.isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)')};
-  cursor: pointer;
-  box-sizing: border-box;
-  align-items: center;
-  transition: all 0.15s ease;
-  background: transparent;
-  ${(props) =>
-    props.isNew &&
-    `
-    background: ${props.isDark ? 'rgba(34, 197, 94, 0.08)' : 'rgba(34, 197, 94, 0.06)'};
-    border-left: 2px solid #22c55e;
-  `}
+const MobileTokenCard = ({ className, children, isDark, isNew, ...p }) => (
+  <div
+    className={cn(
+      'flex w-full items-center cursor-pointer box-border transition-all duration-150',
+      'py-[10px] px-3 border-b-[1.5px] bg-transparent',
+      isDark ? 'border-white/10' : 'border-black/[0.06]',
+      className
+    )}
+    style={{
+      ...(isNew
+        ? {
+            background: isDark ? 'rgba(34, 197, 94, 0.08)' : 'rgba(34, 197, 94, 0.06)',
+            borderLeft: '2px solid #22c55e',
+            boxShadow: 'inset 3px 0 8px -4px rgba(34, 197, 94, 0.4)'
+          }
+        : {})
+    }}
+    onMouseEnter={(e) => {
+      e.currentTarget.style.background = isDark
+        ? 'linear-gradient(90deg, rgba(19, 125, 254, 0.06) 0%, rgba(255, 255, 255, 0.03) 100%)'
+        : 'linear-gradient(90deg, rgba(19, 125, 254, 0.04) 0%, rgba(0, 0, 0, 0.01) 100%)';
+    }}
+    onMouseLeave={(e) => {
+      e.currentTarget.style.background = isNew
+        ? (isDark ? 'rgba(34, 197, 94, 0.08)' : 'rgba(34, 197, 94, 0.06)')
+        : 'transparent';
+    }}
+    {...p}
+  >
+    {children}
+  </div>
+);
 
-  &:hover {
-    background: ${(props) => (props.isDark ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.02)')};
-  }
-`;
+const MobileTokenInfo = ({ className, children, ...p }) => (
+  <div
+    className={cn('flex items-center gap-2.5 min-w-0 flex-[2] px-1', className)}
+    {...p}
+  >
+    {children}
+  </div>
+);
 
-const MobileTokenInfo = styled.div`
-  flex: 2;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 0 4px;
-  min-width: 0;
-`;
+const MobilePriceCell = ({ className, children, isDark, ...p }) => (
+  <div
+    className={cn(
+      'text-right text-[13px] font-medium min-w-0 flex-[1.2] px-[6px] tracking-[0.01em]',
+      isDark ? 'text-white/90' : 'text-black',
+      className
+    )}
+    {...p}
+  >
+    {children}
+  </div>
+);
 
-const MobilePriceCell = styled.div`
-  flex: 1.2;
-  text-align: right;
-  padding: 0 6px;
-  font-weight: 500;
-  font-size: 13px;
-  color: ${(props) => (props.isDark ? 'rgba(255, 255, 255, 0.9)' : '#000000')};
-  min-width: 0;
-  letter-spacing: 0.01em;
-`;
-
-const MobilePercentCell = styled.div`
-  flex: 0.8;
-  text-align: right;
-  padding: 0 6px;
-  font-weight: 500;
-  font-size: 13px;
-  min-width: 0;
-  letter-spacing: 0.01em;
-`;
+const MobilePercentCell = ({ className, children, isDark, ...p }) => (
+  <div
+    className={cn('text-right text-[13px] font-medium min-w-0 flex-[0.8] px-[6px] tracking-[0.01em]', className)}
+    {...p}
+  >
+    {children}
+  </div>
+);
 
 // Shared components with mobile/desktop variations
-const TokenImage = styled.div`
-  width: ${(props) => (props.isMobile ? '32px' : '40px')};
-  height: ${(props) => (props.isMobile ? '32px' : '40px')};
-  border-radius: 50%;
-  overflow: hidden;
-  flex-shrink: 0;
-  background: ${(props) => (props.isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.05)')};
-`;
+const TokenImage = ({ className, children, isDark, isMobile, ...p }) => (
+  <div
+    className={cn(
+      'rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center',
+      isMobile ? 'w-8 h-8' : 'w-10 h-10',
+      isDark ? 'bg-white/[0.08]' : 'bg-black/[0.05]',
+      className
+    )}
+    {...p}
+  >
+    {children}
+  </div>
+);
 
-const TokenDetails = styled.div`
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-`;
+const TokenDetails = ({ className, children, ...p }) => (
+  <div className={cn('flex-1 min-w-0 flex flex-col gap-0.5', className)} {...p}>
+    {children}
+  </div>
+);
 
-const TokenName = styled.span`
-  font-weight: 500;
-  font-size: ${(props) => (props.isMobile ? '14px' : '15px')};
-  color: ${(props) => (props.isDark ? '#FFFFFF' : '#1a1a1a')};
-  max-width: ${(props) => (props.isMobile ? '120px' : '180px')};
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  display: block;
-  line-height: 1.4;
-`;
+const TokenName = ({ className, children, isDark, isMobile, ...p }) => (
+  <span
+    className={cn(
+      'font-medium overflow-hidden text-ellipsis whitespace-nowrap block leading-[1.4]',
+      isMobile ? 'text-[14px] max-w-[120px]' : 'text-[15px] max-w-[180px]',
+      isDark ? 'text-white' : 'text-[#1a1a1a]',
+      className
+    )}
+    {...p}
+  >
+    {children}
+  </span>
+);
 
-const UserName = styled.span`
-  font-size: ${(props) => (props.isMobile ? '12px' : '13px')};
-  color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.5)')};
-  font-weight: 400;
-  display: block;
-  max-width: ${(props) => (props.isMobile ? '120px' : '180px')};
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  line-height: 1.3;
-`;
+const UserName = ({ className, children, isDark, isMobile, ...p }) => (
+  <span
+    className={cn(
+      'font-normal block overflow-hidden text-ellipsis whitespace-nowrap leading-[1.3]',
+      isMobile ? 'text-xs max-w-[120px]' : 'text-[13px] max-w-[180px]',
+      isDark ? 'text-white/[0.45]' : 'text-black/50',
+      className
+    )}
+    {...p}
+  >
+    {children}
+  </span>
+);
 
 const PriceText = ({ flashColor, isDark, isMobile, children }) => (
   <span
+    className={cn(
+      'font-normal transition-colors duration-[800ms] ease-out font-mono',
+      isMobile ? 'text-[14px]' : 'text-[15px]'
+    )}
     style={{
-      fontWeight: 400,
-      fontSize: isMobile ? '14px' : '15px',
-      color: flashColor || (isDark ? 'rgba(255, 255, 255, 0.9)' : '#1a1a1a'),
-      transition: 'color 0.8s ease-out',
-      fontFamily: 'var(--font-mono)'
+      color: flashColor || (isDark ? 'rgba(255, 255, 255, 0.9)' : '#1a1a1a')
     }}
   >
     {children}
   </span>
 );
 
-const PercentText = styled.span`
-  font-weight: 400;
-  color: ${(props) => props.color};
-  font-size: ${(props) => (props.isMobile ? '14px' : '14px')};
-  font-family: var(--font-mono);
-`;
+const PercentText = ({ className, children, color, isMobile, ...p }) => (
+  <span
+    className={cn('font-normal text-sm font-mono', className)}
+    style={{ color }}
+    {...p}
+  >
+    {children}
+  </span>
+);
 
 const truncate = (str, n) => {
   if (!str) return '';
@@ -301,7 +375,7 @@ const PriceDisplay = ({ price, symbol = '' }) => {
   if (formatted?.compact) {
     return (
       <>
-        {symbol}0.0<sub style={{ fontSize: '0.6em' }}>{formatted.zeros}</sub>
+        {symbol}0.0<sub className="text-[0.6em]">{formatted.zeros}</sub>
         {formatted.significant}
       </>
     );
@@ -353,92 +427,28 @@ const formatTimeAgo = (dateValue, fallbackValue) => {
   return `${days}d`;
 };
 
-// Optimized image component with intersection observer for lazy loading
+// Optimized image component using Next.js native image optimization and lazy loading
 const OptimizedImage = memo(
   ({ src, alt, size, onError, priority = false, md5 }) => {
     const [imgSrc, setImgSrc] = useState(src);
-    const [isInView, setIsInView] = useState(priority || typeof window === 'undefined');
-    const imgRef = useRef(null);
-    const observerRef = useRef(null);
-
-    useEffect(() => {
-      if (priority || !imgRef.current) return;
-
-      // Delay observer creation to reduce initial overhead
-      const timer = setTimeout(() => {
-        if (!imgRef.current) return;
-
-        observerRef.current = new IntersectionObserver(
-          ([entry]) => {
-            if (entry.isIntersecting) {
-              setIsInView(true);
-              if (observerRef.current) {
-                observerRef.current.disconnect();
-                observerRef.current = null;
-              }
-            }
-          },
-          {
-            rootMargin: '100px', // Increased margin
-            threshold: 0.01
-          }
-        );
-
-        if (imgRef.current) {
-          observerRef.current.observe(imgRef.current);
-        }
-      }, 20);
-
-      return () => {
-        clearTimeout(timer);
-        if (observerRef.current) {
-          observerRef.current.disconnect();
-          observerRef.current = null;
-        }
-      };
-    }, [priority]);
 
     const handleError = useCallback(() => {
       setImgSrc('/static/alt.webp');
       if (onError) onError();
     }, [onError]);
 
-    // Show placeholder until in view
-    if (!isInView) {
-      return (
-        <div
-          ref={imgRef}
-          style={{
-            width: size,
-            height: size,
-            borderRadius: '50%',
-            background: 'rgba(128, 128, 128, 0.1)',
-            willChange: 'auto'
-          }}
-        />
-      );
-    }
-
     return (
-      <div
-        ref={imgRef}
-        style={{ width: size, height: size, borderRadius: '50%', overflow: 'hidden' }}
-      >
+      <div className="rounded-full overflow-hidden" style={{ width: size, height: size }}>
         <Image
           src={imgSrc}
           alt={alt}
           width={size}
           height={size}
+          sizes={`${size}px`}
           priority={priority}
           loading={priority ? undefined : 'lazy'}
-          unoptimized={true}
           onError={handleError}
-          style={{
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-            display: 'block'
-          }}
+          className="w-full h-full object-cover block"
         />
       </div>
     );
@@ -696,7 +706,7 @@ const DesktopTokenRow = ({
           paddingRight: '8px'
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div className="flex items-center gap-[10px]">
           <TokenImage isDark={darkMode}>
             <OptimizedImage
               src={imgError ? '/static/alt.webp' : imgUrl}
@@ -707,7 +717,7 @@ const DesktopTokenRow = ({
               md5={md5}
             />
           </TokenImage>
-          <div style={{ minWidth: 0 }}>
+          <div className="min-w-0">
             <TokenName isDark={darkMode} title={displayName}>
               {truncate(displayName, 16)}
             </TokenName>
@@ -728,7 +738,7 @@ const DesktopTokenRow = ({
             {formatted?.compact ? (
               <>
                 {currencySymbols[activeFiatCurrency]}0.0
-                <sub style={{ fontSize: '0.6em' }}>{formatted.zeros}</sub>
+                <sub className="text-[0.6em]">{formatted.zeros}</sub>
                 {formatted.significant}
               </>
             ) : (
@@ -791,7 +801,7 @@ const DesktopTokenRow = ({
               {sparklineUrl ? (
                 <SparklineChart key={sparklineUrl} url={sparklineUrl} darkMode={darkMode} />
               ) : (
-                <span style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
+                <span className={darkMode ? 'text-white/50' : 'text-black/50'}>
                   -
                 </span>
               )}
@@ -879,7 +889,7 @@ const DesktopTokenRow = ({
               {sparklineUrl ? (
                 <SparklineChart key={sparklineUrl} url={sparklineUrl} darkMode={darkMode} />
               ) : (
-                <span style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
+                <span className={darkMode ? 'text-white/50' : 'text-black/50'}>
                   -
                 </span>
               )}
@@ -928,7 +938,7 @@ const DesktopTokenRow = ({
               {sparklineUrl ? (
                 <SparklineChart key={sparklineUrl} url={sparklineUrl} darkMode={darkMode} />
               ) : (
-                <span style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
+                <span className={darkMode ? 'text-white/50' : 'text-black/50'}>
                   -
                 </span>
               )}
@@ -959,7 +969,7 @@ const DesktopTokenRow = ({
                       {customFormatted?.compact ? (
                         <>
                           {currencySymbols[activeFiatCurrency]}0.0
-                          <sub style={{ fontSize: '0.6em' }}>{customFormatted.zeros}</sub>
+                          <sub className="text-[0.6em]">{customFormatted.zeros}</sub>
                           {customFormatted.significant}
                         </>
                       ) : (
@@ -1084,10 +1094,7 @@ const DesktopTokenRow = ({
                 columnElements.push(
                   <StyledCell key="created" align="right" isDark={darkMode} style={extraStyle}>
                     <span
-                      style={{
-                        fontSize: '11px',
-                        color: darkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)'
-                      }}
+                      className={cn('text-[11px]', darkMode ? 'text-white/70' : 'text-black/70')}
                     >
                       {formatTimeAgo(dateon, date)}
                     </span>
@@ -1115,7 +1122,7 @@ const DesktopTokenRow = ({
                       <SparklineChart key={sparklineUrl} url={sparklineUrl} darkMode={darkMode} />
                     ) : (
                       <span
-                        style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}
+                        className={darkMode ? 'text-white/50' : 'text-black/50'}
                       >
                         -
                       </span>
@@ -1142,17 +1149,15 @@ const DesktopTokenRow = ({
             {tokenCell}
             {priceCell}
             {/* Trendline after price */}
-            <td style={{ padding: '14px 4px', width: 128, maxWidth: 128 }}>
+            <td className="py-[14px] px-1 w-[128px] max-w-[128px]">
               {sparklineUrl ? (
                 <SparklineChart key={sparklineUrl} url={sparklineUrl} darkMode={darkMode} />
               ) : (
                 <div
-                  style={{
-                    width: 120,
-                    height: 32,
-                    background: darkMode ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
-                    borderRadius: 4
-                  }}
+                  className={cn(
+                    'w-[120px] h-[32px] rounded',
+                    darkMode ? 'bg-white/[0.03]' : 'bg-black/[0.02]'
+                  )}
                 />
               )}
             </td>
@@ -1190,10 +1195,7 @@ const DesktopTokenRow = ({
             </StyledCell>
             <StyledCell align="right" isDark={darkMode}>
               <span
-                style={{
-                  fontSize: '13px',
-                  color: darkMode ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)'
-                }}
+                className={cn('text-[13px]', darkMode ? 'text-white/60' : 'text-black/60')}
               >
                 {formatTimeAgo(dateon, date)}
               </span>
@@ -1236,18 +1238,14 @@ const DesktopTokenRow = ({
         >
           <span
             onClick={handleWatchlistClick}
-            style={{
-              cursor: 'pointer',
-              color: watchList.includes(md5)
-                ? '#F59E0B'
+            className={cn(
+              'cursor-pointer inline-flex justify-center w-full transition-colors duration-150',
+              watchList.includes(md5)
+                ? 'text-[#F59E0B]'
                 : darkMode
-                  ? 'rgba(255,255,255,0.25)'
-                  : 'rgba(0,0,0,0.2)',
-              display: 'inline-flex',
-              justifyContent: 'center',
-              width: '100%',
-              transition: 'color 0.15s ease'
-            }}
+                  ? 'text-white/25'
+                  : 'text-black/20'
+            )}
           >
             <Bookmark size={16} fill={watchList.includes(md5) ? 'currentColor' : 'none'} />
           </span>
@@ -1264,12 +1262,10 @@ const DesktopTokenRow = ({
         }}
       >
         <span
-          style={{
-            fontWeight: '400',
-            fontSize: '13px',
-            color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
-            fontFamily: 'var(--font-mono)'
-          }}
+          className={cn(
+            'font-normal text-[13px] font-mono',
+            darkMode ? 'text-white/40' : 'text-black/40'
+          )}
         >
           {idx + 1}
         </span>
@@ -1299,7 +1295,7 @@ const FTokenRow = memo(
     rows = 50
   }) {
     const BASE_URL = 'https://api.xrpl.to/v1';
-    const { accountProfile } = useContext(AppContext);
+    const { accountProfile } = useContext(WalletContext);
     const isAdmin = accountProfile && accountProfile.account && accountProfile.admin;
 
     const [imgError, setImgError] = useState(false);
@@ -1350,14 +1346,14 @@ const FTokenRow = memo(
       [marketcap, vol24hxrp, tvl, exchRate]
     );
 
-    const formatValue = (val, type = 'number') => {
+    const formatValue = useCallback((val, type = 'number') => {
       if (val === undefined || val === null || isNaN(val)) return '0';
       if (val >= 1e12) return `${(val / 1e12).toFixed(1)}T`;
       if (val >= 1e9) return `${(val / 1e9).toFixed(1)}B`;
       if (val >= 999500) return `${(val / 1e6).toFixed(1)}M`;
       if (val >= 999.5) return `${(val / 1e3).toFixed(1)}K`;
       return type === 'int' ? formatInt(val) : formatNumber(val);
-    };
+    }, []);
 
     const sparklineUrl = useMemo(() => {
       if (!BASE_URL || !md5 || isMobile) return null;
@@ -1468,46 +1464,47 @@ export const MobileTokenList = ({
   );
 };
 
-export const MobileContainer = styled.div`
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  padding: 0;
-  margin: 0;
-  background: transparent;
-`;
+export const MobileContainer = ({ className, children, ...p }) => (
+  <div className={cn('w-full flex flex-col bg-transparent p-0 m-0', className)} {...p}>
+    {children}
+  </div>
+);
 
-export const MobileHeader = styled.div`
-  display: flex;
-  width: 100%;
-  padding: 12px 16px;
-  background: ${(props) => (props.isDark ? 'rgba(0, 0, 0, 0.5)' : 'rgba(255, 255, 255, 0.8)')};
-  backdrop-filter: blur(16px);
-  border-bottom: 1.5px solid
-    ${(props) => (props.isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)')};
-  font-size: 12px;
-  font-weight: 400;
-  text-transform: none;
-  letter-spacing: 0.01em;
-  color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)')};
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  box-sizing: border-box;
-`;
+export const MobileHeader = ({ className, children, isDark, ...p }) => (
+  <div
+    className={cn(
+      'flex w-full text-xs font-normal sticky top-0 z-10 box-border',
+      'py-3 px-4 backdrop-blur-[16px] border-b-[1.5px] tracking-[0.01em]',
+      isDark ? 'bg-black/50 border-white/10 text-white/50' : 'bg-white/80 border-black/[0.06] text-black/50',
+      className
+    )}
+    {...p}
+  >
+    {children}
+  </div>
+);
 
-export const HeaderCell = styled.div`
-  flex: ${(props) => props.flex || 1};
-  text-align: ${(props) => props.align || 'left'};
-  padding: 0 6px;
-  cursor: ${(props) => (props.sortable ? 'pointer' : 'default')};
-  transition: color 0.15s ease;
-
-  &:hover {
-    color: ${(props) =>
-      props.sortable && (props.isDark ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)')};
-  }
-`;
+export const HeaderCell = ({ className, children, isDark, flex, align, sortable, ...p }) => (
+  <div
+    className={cn(
+      'transition-colors duration-150 px-[6px]',
+      sortable ? 'cursor-pointer' : 'cursor-default',
+      className
+    )}
+    style={{
+      flex: flex || 1,
+      textAlign: align || 'left'
+    }}
+    onMouseEnter={(e) => {
+      if (sortable) e.currentTarget.style.color = isDark ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)';
+    }}
+    onMouseLeave={(e) => {
+      if (sortable) e.currentTarget.style.color = '';
+    }}
+    {...p}
+  >
+    {children}
+  </div>
+);
 
 export const TokenRow = FTokenRow;

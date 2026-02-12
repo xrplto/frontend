@@ -2,7 +2,7 @@ import api from 'src/utils/api';
 import { useState, useEffect, useContext } from 'react';
 import { ExternalLink, ChevronLeft, ChevronRight, MessageCircle } from 'lucide-react';
 import { cn } from 'src/utils/cn';
-import { AppContext } from 'src/context/AppContext';
+import { ThemeContext, WalletContext, AppContext } from 'src/context/AppContext';
 import { fNumber } from 'src/utils/formatters';
 
 // Filter type labels
@@ -17,7 +17,9 @@ const FILTER_TYPES = [
 
 // Main AccountTransactions Component
 export default function AccountTransactions({ creatorAccount, collectionSlug }) {
-  const { openSnackbar, themeName, accountProfile } = useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
+  const { accountProfile } = useContext(WalletContext);
+  const { openSnackbar } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
   const accountLogin = accountProfile?.account;
 
@@ -463,6 +465,7 @@ export default function AccountTransactions({ creatorAccount, collectionSlug }) 
                       type="button"
                       onClick={onPrevHandler}
                       disabled={!hasPrev}
+                      aria-label="Previous page"
                       className={cn(
                         'p-1.5 rounded-md transition-colors',
                         !hasPrev ? 'opacity-30 cursor-not-allowed' : 'hover:bg-white/10',
@@ -483,6 +486,7 @@ export default function AccountTransactions({ creatorAccount, collectionSlug }) 
                       type="button"
                       onClick={onNextHandler}
                       disabled={!hasNext}
+                      aria-label="Next page"
                       className={cn(
                         'p-1.5 rounded-md transition-colors',
                         !hasNext ? 'opacity-30 cursor-not-allowed' : 'hover:bg-white/10',

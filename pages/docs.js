@@ -36,7 +36,7 @@ import {
   Droplets,
   Radio
 } from 'lucide-react';
-import { AppContext } from 'src/context/AppContext';
+import { ThemeContext } from 'src/context/AppContext';
 import { cn } from 'src/utils/cn';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
@@ -44,7 +44,7 @@ import ScrollToTop from 'src/components/ScrollToTop';
 import { API_REFERENCE, getTotalEndpointCount, ApiButton } from 'src/components/ApiEndpointsModal';
 
 const ApiDocsPage = ({ apiDocs, ogp }) => {
-  const { themeName } = useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
   const isDark = themeName === 'XrplToDarkTheme';
   const [currentSection, setCurrentSection] = useState('overview');
   const [searchTerm, setSearchTerm] = useState('');
@@ -3782,7 +3782,7 @@ const ws = new WebSocket('wss://api.xrpl.to/ws/token/0413ca7cfc258dfaf698c02fe30
 ws.onmessage = (event) => {
   const data = JSON.parse(event.data);
   // data contains: price, vol24h, priceChange24h, etc.
-  console.log('Token update:', data);
+  // Process token update data here
 };
 
 // Sync stream for multiple tokens

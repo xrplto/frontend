@@ -1,7 +1,7 @@
 import React, { useState, useContext, useEffect, useMemo, useCallback, memo, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import { selectMetrics } from 'src/redux/statusSlice';
-import { AppContext } from 'src/context/AppContext';
+import { ThemeContext, WalletContext, AppContext } from 'src/context/AppContext';
 import { fNumber, checkExpiration, getHashIcon } from 'src/utils/formatters';
 import { cn } from 'src/utils/cn';
 import {
@@ -104,8 +104,9 @@ const OriginIcon = ({ origin, isDark }) => {
 const TokenSummary = memo(({ token }) => {
   const BASE_URL = 'https://api.xrpl.to/v1';
   const metrics = useSelector(selectMetrics);
-  const { activeFiatCurrency, accountProfile, sync, setSync, themeName, setOpenWalletModal, setTrustlineUpdate } =
-    useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
+  const { accountProfile, setOpenWalletModal } = useContext(WalletContext);
+  const { activeFiatCurrency, sync, setSync, setTrustlineUpdate } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
   const [isMobile, setIsMobile] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -139,77 +140,10 @@ const TokenSummary = memo(({ token }) => {
   const [dustConfirm, setDustConfirm] = useState(null); // 'dex' | 'issuer' | null
   const [showVerifyModal, setShowVerifyModal] = useState(false);
   const [currentVerified, setCurrentVerified] = useState(token?.verified || 0);
-  const [debugInfo, setDebugInfo] = useState(null);
   const [showInfo, setShowInfo] = useState(false);
   const [copiedField, setCopiedField] = useState(null);
   const [tweetCount, setTweetCount] = useState(0);
   const [showPromoteModal, setShowPromoteModal] = useState(false);
-
-  // Debug info loader
-  useEffect(() => {
-    const loadDebugInfo = async () => {
-      if (!accountProfile) {
-        setDebugInfo(null);
-        return;
-      }
-      let walletKeyId =
-        accountProfile.walletKeyId ||
-        (accountProfile.wallet_type === 'device' ? accountProfile.deviceKeyId : null) ||
-        (accountProfile.provider && accountProfile.provider_id
-          ? `${accountProfile.provider}_${accountProfile.provider_id}`
-          : null);
-      let seed = accountProfile.seed || null;
-      if (
-        !seed &&
-        (accountProfile.wallet_type === 'oauth' || accountProfile.wallet_type === 'social')
-      ) {
-        try {
-          const { EncryptedWalletStorage } = await import('src/utils/encryptedWalletStorage');
-          const walletStorage = new EncryptedWalletStorage();
-          const walletId = `${accountProfile.provider}_${accountProfile.provider_id}`;
-          const storedPassword = await walletStorage.getSecureItem(`wallet_pwd_${walletId}`);
-          if (storedPassword) {
-            const walletData = await walletStorage.getWallet(
-              accountProfile.account,
-              storedPassword
-            );
-            seed = walletData?.seed || 'encrypted';
-          }
-        } catch (e) {
-          seed = 'error: ' + e.message;
-        }
-      }
-      // Handle device wallets
-      if (!seed && accountProfile.wallet_type === 'device') {
-        try {
-          const { EncryptedWalletStorage, deviceFingerprint } =
-            await import('src/utils/encryptedWalletStorage');
-          const walletStorage = new EncryptedWalletStorage();
-          const deviceKeyId = await deviceFingerprint.getDeviceId();
-          walletKeyId = deviceKeyId;
-          if (deviceKeyId) {
-            const storedPassword = await walletStorage.getWalletCredential(deviceKeyId);
-            if (storedPassword) {
-              const walletData = await walletStorage.getWallet(
-                accountProfile.account,
-                storedPassword
-              );
-              seed = walletData?.seed || 'encrypted';
-            }
-          }
-        } catch (e) {
-          seed = 'error: ' + e.message;
-        }
-      }
-      setDebugInfo({
-        wallet_type: accountProfile.wallet_type,
-        account: accountProfile.account,
-        walletKeyId,
-        seed: seed && seed.length > 10 ? `${seed.substring(0, 4)}...(${seed.length} chars)` : (seed || 'N/A')
-      });
-    };
-    loadDebugInfo();
-  }, [accountProfile]);
 
   const {
     id,
@@ -247,7 +181,7 @@ const TokenSummary = memo(({ token }) => {
   useEffect(() => {
     if (!md5) return;
     let cancelled = false;
-    api.get(`${BASE_URL}/api/tweet/token/${md5}?limit=0`)
+    api.get(`${BASE_URL}/tweet/token/${md5}?limit=0`)
       .then(res => {
         if (!cancelled && res.data) setTweetCount(res.data.count || 0);
       })
@@ -519,15 +453,12 @@ const TokenSummary = memo(({ token }) => {
     const controller = new AbortController();
 
     const url = `${BASE_URL}/account/trustline/${accountProfile.account}/${issuer}/${encodeURIComponent(currency)}`;
-    console.log('[TokenSummary] Checking trustline:', { url, sync });
-
     api
       .get(url, {
         signal: controller.signal,
         timeout: 5000
       })
       .then((res) => {
-        console.log('[TokenSummary] API response:', res.data);
         if (res.status === 200 && res.data?.success && mountedRef.current) {
           setIsRemove(res.data.hasTrustline);
           setTrustlineBalance(res.data.balance || 0);
@@ -605,8 +536,8 @@ const TokenSummary = memo(({ token }) => {
               alt={name}
               width={52}
               height={52}
+              sizes="52px"
               priority
-              unoptimized
               className={cn(
                 'w-[52px] h-[52px] rounded-2xl object-cover border shadow-sm transition-all duration-300 group-hover:scale-105 group-hover:shadow-lg',
                 isDark ? 'border-white/10 shadow-black/20' : 'border-black/[0.08] shadow-gray-200'
@@ -931,47 +862,6 @@ const TokenSummary = memo(({ token }) => {
           )}
         </div>
       </div>
-
-      {/* Debug Panel */}
-      {
-        debugInfo && (
-          <div
-            className={cn(
-              'mt-2 p-2 rounded-lg border font-mono text-[9px]',
-              isDark
-                ? 'border-yellow-500/20 bg-yellow-500/[0.06]'
-                : 'border-yellow-200 bg-yellow-50/50'
-            )}
-          >
-            <div
-              className={cn(
-                'font-medium mb-1 text-[10px]',
-                isDark ? 'text-yellow-400/80' : 'text-yellow-600'
-              )}
-            >
-              Debug:
-            </div>
-            <div className="space-y-0.5">
-              <div className={isDark ? 'text-white/50' : 'text-gray-600'}>
-                wallet_type:{' '}
-                <span className="text-blue-400">{debugInfo.wallet_type || 'undefined'}</span>
-              </div>
-              <div className={isDark ? 'text-white/50' : 'text-gray-600'}>
-                account: <span className="opacity-70">{debugInfo.account || 'undefined'}</span>
-              </div>
-              <div className={isDark ? 'text-white/50' : 'text-gray-600'}>
-                walletKeyId:{' '}
-                <span className={debugInfo.walletKeyId ? 'text-green-400' : 'text-red-400'}>
-                  {debugInfo.walletKeyId || 'undefined'}
-                </span>
-              </div>
-              <div className={isDark ? 'text-white/50' : 'text-gray-600'}>
-                seed: <span className="text-green-400 break-all">{debugInfo.seed}</span>
-              </div>
-            </div>
-          </div>
-        )
-      }
 
       {/* Technical Info Modal */}
       {

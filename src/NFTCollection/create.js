@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 
 // Context
-import { AppContext } from 'src/context/AppContext';
+import { ThemeContext, WalletContext, AppContext } from 'src/context/AppContext';
 
 // Utils
 import { fNumber } from 'src/utils/formatters';
@@ -33,7 +33,7 @@ const LoadingTextField = ({ type, value, uuid, setValid, startText, ...props }) 
   const BASE_URL = 'https://api.xrpl.to/v1';
   const [status, setStatus] = useState(TEXT_EMPTY);
 
-  const { accountProfile } = useContext(AppContext);
+  const { accountProfile } = useContext(WalletContext);
 
   const checkValidation = (text, uuid) => {
     const account = accountProfile?.account;
@@ -87,7 +87,7 @@ const LoadingTextField = ({ type, value, uuid, setValid, startText, ...props }) 
     }
   }, [status, setValid]);
 
-  const { themeName } = useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
   const isDark = themeName === 'XrplToDarkTheme';
 
   return (
@@ -137,7 +137,7 @@ const LoadingButton = ({
   className
 }) => {
   const isDisabled = disabled || loading;
-  const { themeName } = useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
   const isDark = themeName === 'XrplToDarkTheme';
 
   const getStartIcon = () => {
@@ -202,7 +202,9 @@ export default function CreateCollection({ showHeader = true, onCreate }) {
   const fileRef3 = useRef();
   const fileRef4 = useRef();
 
-  const { accountProfile, openSnackbar, themeName } = useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
+  const { accountProfile } = useContext(WalletContext);
+  const { openSnackbar } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
 
   const account = accountProfile?.account;
@@ -485,17 +487,14 @@ export default function CreateCollection({ showHeader = true, onCreate }) {
           >
             <input
               ref={fileRef1}
-              style={{ display: 'none' }}
+              className="hidden"
               accept=".png, .jpg, .gif"
               id="contained-button-file1"
               type="file"
               onChange={handleFileSelect1}
             />
             <div
-              className="relative flex items-center justify-center w-[140px] h-[140px] rounded-full overflow-hidden cursor-pointer"
-              style={{
-                border: isDark ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.1)'
-              }}
+              className={cn('relative flex items-center justify-center w-[140px] h-[140px] rounded-full overflow-hidden cursor-pointer border', isDark ? 'border-white/10' : 'border-black/10')}
             >
               <div
                 className="absolute inset-0 flex flex-col items-center justify-center bg-black opacity-0 hover:opacity-60 transition-opacity z-10"
@@ -532,17 +531,14 @@ export default function CreateCollection({ showHeader = true, onCreate }) {
           >
             <input
               ref={fileRef2}
-              style={{ display: 'none' }}
+              className="hidden"
               accept=".png, .jpg, .gif"
               id="contained-button-file2"
               type="file"
               onChange={handleFileSelect2}
             />
             <div
-              className="relative flex items-center justify-center w-[320px] h-[240px] rounded-lg overflow-hidden cursor-pointer"
-              style={{
-                border: isDark ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.1)'
-              }}
+              className={cn('relative flex items-center justify-center w-[320px] h-[240px] rounded-lg overflow-hidden cursor-pointer border', isDark ? 'border-white/10' : 'border-black/10')}
             >
               <div
                 className="absolute inset-0 flex flex-col items-center justify-center bg-black opacity-0 hover:opacity-60 transition-opacity z-10"
@@ -580,17 +576,14 @@ export default function CreateCollection({ showHeader = true, onCreate }) {
           >
             <input
               ref={fileRef3}
-              style={{ display: 'none' }}
+              className="hidden"
               accept=".png, .jpg, .gif"
               id="contained-button-file3"
               type="file"
               onChange={handleFileSelect3}
             />
             <div
-              className="relative flex items-center justify-center h-[200px] rounded-lg overflow-hidden cursor-pointer"
-              style={{
-                border: isDark ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.1)'
-              }}
+              className={cn('relative flex items-center justify-center h-[200px] rounded-lg overflow-hidden cursor-pointer border', isDark ? 'border-white/10' : 'border-black/10')}
             >
               <div
                 className="absolute inset-0 flex flex-col items-center justify-center bg-black opacity-0 hover:opacity-60 transition-opacity z-10"
@@ -838,19 +831,14 @@ export default function CreateCollection({ showHeader = true, onCreate }) {
                 >
                   <input
                     ref={fileRef4}
-                    style={{ display: 'none' }}
+                    className="hidden"
                     accept=".png, .jpg, .gif"
                     id="contained-button-file4"
                     type="file"
                     onChange={handleFileSelect4}
                   />
                   <div
-                    className="relative flex items-center justify-center w-[320px] h-[240px] rounded-lg overflow-hidden cursor-pointer"
-                    style={{
-                      border: isDark
-                        ? '1px solid rgba(255,255,255,0.1)'
-                        : '1px solid rgba(0,0,0,0.1)'
-                    }}
+                    className={cn('relative flex items-center justify-center w-[320px] h-[240px] rounded-lg overflow-hidden cursor-pointer border', isDark ? 'border-white/10' : 'border-black/10')}
                   >
                     <div
                       className="absolute inset-0 flex flex-col items-center justify-center bg-black opacity-0 hover:opacity-60 transition-opacity z-10"

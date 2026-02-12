@@ -1,23 +1,15 @@
 import { useState, useMemo, useEffect } from 'react';
-import styled from '@emotion/styled';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import TokenList from 'src/TokenList';
 import ScrollToTop from 'src/components/ScrollToTop';
 import Summary from 'src/TokenList/Summary';
 import { getTokens } from 'src/utils/formatters';
+import { cn } from 'src/utils/cn';
 
-const OverviewWrapper = styled.div`
-  overflow: hidden;
-  min-height: 100vh;
-  margin: 0;
-  padding: 0;
-
-  @media (max-width: 768px) {
-    margin: 0;
-    padding: 0;
-  }
-`;
+const OverviewWrapper = ({ className, ...props }) => (
+  <div className={cn('overflow-hidden min-h-screen m-0 p-0', className)} {...props} />
+);
 
 function getInitialTokens(data) {
   if (data) return data.tokens;

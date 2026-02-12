@@ -4,7 +4,7 @@ import { useState, useEffect, useContext } from 'react';
 import dynamic from 'next/dynamic';
 
 // Context
-import { AppContext } from 'src/context/AppContext';
+import { ThemeContext, WalletContext, AppContext } from 'src/context/AppContext';
 import { cn } from 'src/utils/cn';
 
 // Dynamic imports for heavy components (code splitting)
@@ -37,11 +37,13 @@ import TokenSummary from '../../components/TokenSummary';
 import OrderBook from './OrderBook';
 
 const Overview = memo(
-  ({ token, onTransactionClick, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
+  ({ token, onTransactionClick }) => {
     const isMobile = typeof window !== 'undefined' && window.innerWidth < 640;
     const isTablet = typeof window !== 'undefined' && window.innerWidth < 960;
     const BASE_URL = 'https://api.xrpl.to/v1';
-    const { accountProfile, setLoading, openSnackbar, themeName } = useContext(AppContext);
+    const { themeName } = useContext(ThemeContext);
+    const { accountProfile } = useContext(WalletContext);
+    const { setLoading, openSnackbar } = useContext(AppContext);
     const isDark = themeName === 'XrplToDarkTheme';
 
     const [showEditor, setShowEditor] = useState(false);
@@ -86,7 +88,6 @@ const Overview = memo(
         try {
           const pairsUrl = `${BASE_URL}/pairs?md5=${token.md5}`;
           const t0 = performance.now();
-          console.log('[Overview] Fetching pairs:', pairsUrl);
           const response = await fetch(pairsUrl, {
             signal: controller.signal
           });
@@ -94,7 +95,6 @@ const Overview = memo(
           if (controller.signal.aborted) return;
 
           const data = await response.json();
-          console.log(`[Overview] Pairs done in ${(performance.now() - t0).toFixed(0)}ms, ${data.pairs?.length || 0} pairs`);
           if (data.pairs) {
             setPairs(data.pairs);
           }
@@ -157,9 +157,6 @@ const Overview = memo(
           <TokenSummary token={token} />
           <Swap
             token={token}
-            onOrderBookToggle={onOrderBookToggle}
-            orderBookOpen={orderBookOpen}
-            onOrderBookData={onOrderBookData}
             onLimitPriceChange={setSwapLimitPrice}
             onOrderTypeChange={setSwapOrderType}
           />
@@ -212,7 +209,7 @@ const Overview = memo(
         <div className="flex flex-col md:flex-row items-stretch gap-2 mb-2">
           {/* Left column: Chart + OrderBook + Trading History */}
           <div className="w-full md:flex-1 min-w-0 flex flex-col gap-2">
-            <div className="flex gap-2" style={{ position: 'relative', zIndex: 10 }}>
+            <div className="flex gap-2 relative z-10">
               <section aria-label="Price Chart" className="flex-1 min-w-0">
                 <h2 className="sr-only">Price Chart</h2>
                 <PriceChart token={token} />
@@ -254,7 +251,7 @@ const Overview = memo(
                 </button>
               )}
             </div>
-            <section aria-label="Trading History" style={{ position: 'relative', zIndex: 0 }}>
+            <section aria-label="Trading History" className="relative z-0">
               <h2 className="sr-only">Trading History</h2>
               <TradingHistory
                 tokenId={token.md5}
@@ -277,9 +274,6 @@ const Overview = memo(
             <h2 className="sr-only">Swap</h2>
             <Swap
               token={token}
-              onOrderBookToggle={onOrderBookToggle}
-              orderBookOpen={orderBookOpen}
-              onOrderBookData={onOrderBookData}
               onLimitPriceChange={setSwapLimitPrice}
               onOrderTypeChange={setSwapOrderType}
             />

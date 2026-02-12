@@ -54,9 +54,8 @@ export function useTokenDetail({
     onOpen: () => {
       connectCountRef.current++;
       const elapsed = connectTimeRef.current ? (performance.now() - connectTimeRef.current).toFixed(0) : '?';
-      console.log(`[TokenDetail WS] Connected #${connectCountRef.current} in ${elapsed}ms`);
     },
-    onReconnectStop: () => console.log('[TokenDetail WS] Reconnect stopped (max attempts)'),
+    onReconnectStop: () => {},
     onMessage: (e) => {
       try {
         const data = JSON.parse(e.data);
@@ -67,7 +66,6 @@ export function useTokenDetail({
       } catch {}
     },
     onClose: (event) => {
-      console.log(`[TokenDetail WS] Closed code=${event.code} reason="${event.reason}"`);
       if (event.code === 4011) {
         console.warn('[TokenDetail WS] Connection limit reached - will not reconnect');
       }
@@ -75,7 +73,7 @@ export function useTokenDetail({
     onError: (e) => console.error('[TokenDetail WS] Error:', e?.message || e),
     // Don't reconnect on: 4011=max connections, 4020/4021=custom auth errors
     shouldReconnect: (e) => ![4011, 4020, 4021].includes(e.code),
-    reconnectAttempts: 10,
+    reconnectAttempts: 5,
     reconnectInterval: (n) => Math.min(3000 * Math.pow(2, n), 60000),
     share: true
   });

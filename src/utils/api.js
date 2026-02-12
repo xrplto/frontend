@@ -40,14 +40,11 @@ export async function simulateTransaction(tx) {
     SigningPubKey: '' // Must be empty for simulate
   };
 
-  console.log('[simulateTransaction] Sending to API:', JSON.stringify(prepared, null, 2));
   const simRes = await fetch(`${BASE_URL}/v1/submit/simulate`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'X-Api-Key': API_KEY },
     body: JSON.stringify({ tx_json: prepared })
   }).then(r => r.json());
-  console.log('[simulateTransaction] Response:', JSON.stringify(simRes, null, 2));
-
   // API returns data directly (not nested in .result)
   const meta = simRes.meta || {};
 
@@ -97,6 +94,44 @@ export async function submitTransaction(wallet, tx) {
 
   if (!submitRes.success) throw new Error(submitRes.engine_result_message || submitRes.error || 'Submit failed');
   return { ...submitRes, hash: signed.hash };
+}
+
+// Get wallet auth headers for protected endpoints
+export async function getWalletAuthHeaders(accountProfile) {
+  const address = accountProfile?.account;
+  if (!address) throw new Error('Not logged in');
+
+  const { EncryptedWalletStorage, deviceFingerprint } = await import('src/utils/encryptedWalletStorage');
+  const ws = new EncryptedWalletStorage();
+  let seed = null;
+
+  if (accountProfile.wallet_type === 'oauth' || accountProfile.wallet_type === 'social') {
+    const walletId = `${accountProfile.provider}_${accountProfile.provider_id}`;
+    const pwd = await ws.getSecureItem(`wallet_pwd_${walletId}`);
+    if (pwd) seed = (await ws.getWallet(address, pwd))?.seed;
+  } else if (accountProfile.wallet_type === 'device') {
+    const deviceKeyId = await deviceFingerprint.getDeviceId();
+    if (deviceKeyId) {
+      const pwd = await ws.getWalletCredential(deviceKeyId);
+      if (pwd) seed = (await ws.getWallet(address, pwd))?.seed;
+    }
+  }
+  if (!seed) throw new Error('Could not retrieve wallet credentials');
+
+  const { Wallet } = await import('xrpl');
+  const { sign } = await import('ripple-keypairs');
+  const algorithm = seed.startsWith('sEd') ? 'ed25519' : 'secp256k1';
+  const wallet = Wallet.fromSeed(seed, { algorithm });
+  const timestamp = Date.now();
+  const messageHex = Buffer.from(`${address}:${timestamp}`).toString('hex');
+  const signature = sign(messageHex, wallet.privateKey);
+
+  return {
+    'X-Wallet': address,
+    'X-Timestamp': timestamp.toString(),
+    'X-Signature': signature,
+    'X-Public-Key': wallet.publicKey
+  };
 }
 
 export default api;

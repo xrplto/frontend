@@ -1,7 +1,8 @@
 import { useState, useContext, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { cn } from 'src/utils/cn';
-import { AppContext } from 'src/context/AppContext';
+import { TIER_CONFIG } from 'src/components/VerificationBadge';
+import { ThemeContext, WalletContext } from 'src/context/AppContext';
 import {
   X,
   Star,
@@ -28,7 +29,7 @@ const TESTNET_EXPLORER = 'https://testnet.xrpl.org/transactions/';
 // Prices in USD - XRP amount calculated dynamically
 const TIERS = {
   2: {
-    name: 'Premium',
+    name: TIER_CONFIG[2].label,
     priceUsd: 589,
     icon: Sparkles,
     gradient: 'from-fuchsia-400 via-purple-500 to-violet-600',
@@ -40,7 +41,7 @@ const TIERS = {
     features: ['Violet badge on token', 'Priority in search', 'Verified partner']
   },
   3: {
-    name: 'Standard',
+    name: TIER_CONFIG[3].label,
     priceUsd: 250,
     icon: Check,
     gradient: 'from-yellow-400 via-amber-500 to-orange-500',
@@ -52,7 +53,7 @@ const TIERS = {
     features: ['Gold badge on token', 'Improved visibility', 'Verified status']
   },
   4: {
-    name: 'Basic',
+    name: TIER_CONFIG[4].label,
     priceUsd: 99,
     icon: Check,
     gradient: 'from-green-500 to-green-500',
@@ -68,8 +69,9 @@ const TIERS = {
 // Step indicators
 const STEPS = ['Select Tier', 'Confirm Payment', 'Processing', 'Complete'];
 
-export default function VerifyBadgeModal({ token, onClose, onSuccess }) {
-  const { accountProfile, themeName, setOpenWalletModal } = useContext(AppContext);
+export default function VerifyBadgeModal({ token, onClose, onSuccess, itemType = 'token', itemId, itemName, itemImage }) {
+  const { themeName } = useContext(ThemeContext);
+  const { accountProfile, setOpenWalletModal } = useContext(WalletContext);
   const isDark = themeName === 'XrplToDarkTheme';
 
   const [step, setStep] = useState(0); // 0: select, 1: confirm, 2: processing, 3: complete
@@ -82,6 +84,11 @@ export default function VerifyBadgeModal({ token, onClose, onSuccess }) {
   const [paymentMethod, setPaymentMethod] = useState('card'); // 'card' or 'xrp'
   const [copied, setCopied] = useState(null);
 
+  // Support both token objects and generic items (collections)
+  const resolvedType = itemType;
+  const resolvedId = itemId || token?.md5;
+  const resolvedName = itemName || token?.name;
+  const resolvedImage = itemImage || (token ? `https://s1.xrpl.to/token/${token.md5}` : null);
   const currentVerified = token?.verified || 0;
 
   const copyToClipboard = (text, id) => {
@@ -125,8 +132,8 @@ export default function VerifyBadgeModal({ token, onClose, onSuccess }) {
 
     try {
       const res = await api.post(`${BASE_URL}/verify/request`, {
-        type: 'token',
-        id: token.md5,
+        type: resolvedType,
+        id: resolvedId,
         tier
       });
 
@@ -261,8 +268,8 @@ export default function VerifyBadgeModal({ token, onClose, onSuccess }) {
 
     try {
       const res = await api.post(`${BASE_URL}/verify/stripe/checkout`, {
-        type: 'token',
-        id: token.md5,
+        type: resolvedType,
+        id: resolvedId,
         tier: selectedTier
       });
 
@@ -282,10 +289,10 @@ export default function VerifyBadgeModal({ token, onClose, onSuccess }) {
   const renderTierSelection = () => (
     <div className="space-y-2">
       <div className={cn('text-center mb-3', isDark ? 'text-white/60' : 'text-gray-500')}>
-        <p className="text-xs">Select verification for <span className={cn('font-semibold', isDark ? 'text-white' : 'text-gray-900')}>{token.name}</span></p>
+        <p className="text-xs">Select verification for <span className={cn('font-semibold', isDark ? 'text-white' : 'text-gray-900')}>{resolvedName}</span></p>
         {currentVerified > 0 && currentVerified <= 4 && (
           <p className="text-[10px] mt-1 text-amber-500">
-            Current: Tier {currentVerified} ({currentVerified === 2 ? 'Premium' : currentVerified === 3 ? 'Standard' : 'Basic'})
+            Current: Tier {currentVerified} ({TIER_CONFIG[currentVerified]?.label || 'Unknown'})
           </p>
         )}
       </div>
@@ -316,8 +323,8 @@ export default function VerifyBadgeModal({ token, onClose, onSuccess }) {
               {/* Badge Preview with Token Image */}
               <div className="relative flex-shrink-0">
                 <img
-                  src={`https://s1.xrpl.to/token/${token.md5}`}
-                  alt={token.name}
+                  src={resolvedImage}
+                  alt={resolvedName}
                   className={cn(
                     'w-10 h-10 rounded-lg object-cover border',
                     isDark ? 'border-white/10' : 'border-gray-200'
@@ -398,7 +405,7 @@ export default function VerifyBadgeModal({ token, onClose, onSuccess }) {
               {config.name} Verification
             </div>
             <div className={cn('text-xs truncate', isDark ? 'text-white/50' : 'text-gray-500')}>
-              for {token.name}
+              for {resolvedName}
             </div>
           </div>
           <div className="text-right">
@@ -566,7 +573,7 @@ export default function VerifyBadgeModal({ token, onClose, onSuccess }) {
           Verification Complete!
         </div>
         <div className={cn('text-xs mb-3', isDark ? 'text-white/50' : 'text-gray-500')}>
-          {token.name} is now {config.name} Verified
+          {resolvedName} is now {config.name} Verified
         </div>
 
         {txHash && (

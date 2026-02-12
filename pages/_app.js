@@ -5,42 +5,14 @@ import { useRouter } from 'next/router';
 import ThemeProvider from 'src/theme/ThemeProvider';
 import { CacheProvider } from '@emotion/react';
 import createEmotionCache from 'src/theme/createEmotionCache';
-import { ContextProvider, AppContext } from 'src/context/AppContext';
+import { ContextProvider, ThemeContext, WalletContext } from 'src/context/AppContext';
 import { useContext, useEffect, useState } from 'react';
 import { Toaster, toast } from 'sonner';
 import 'src/styles/globals.css';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
-import { inter, jetbrainsMono } from 'src/theme/fonts';
 import { cn } from 'src/utils/cn';
-
-// Polyfills for Safari iOS compatibility
-if (typeof window !== 'undefined') {
-  // Add requestIdleCallback polyfill for Safari
-  if (!window.requestIdleCallback) {
-    window.requestIdleCallback = function (callback, options) {
-      const timeout = options?.timeout || 0;
-      const startTime = Date.now();
-      return setTimeout(function () {
-        callback({
-          didTimeout: timeout > 0 && Date.now() - startTime > timeout,
-          timeRemaining: function () {
-            return Math.max(0, 50 - (Date.now() - startTime));
-          }
-        });
-      }, 1);
-    };
-  }
-
-  if (!window.cancelIdleCallback) {
-    window.cancelIdleCallback = function (id) {
-      clearTimeout(id);
-    };
-  }
-}
-
-// Error logging handled by ErrorDebugger component
 
 // Lazy load non-critical components
 // Removed dynamic import of Snackbar.js - component inlined below
@@ -165,7 +137,7 @@ function AppProgressBar({ router }) {
 
 // Inline PageLayout component
 function AppPageLayout({ children }) {
-  const { accountProfile, open } = useContext(AppContext);
+  const { accountProfile, open } = useContext(WalletContext);
   const router = useRouter();
 
   // Check if we're on the API docs page
@@ -174,20 +146,20 @@ function AppPageLayout({ children }) {
   return (
     <div style={{ position: 'relative', zIndex: 1 }}>
       {/* Main content with padding for fixed headers */}
-      <div
+      <main
         style={{
           paddingTop: isApiDocsPage ? '0' : '56px'
         }}
       >
         {children}
-      </div>
+      </main>
     </div>
   );
 }
 
 // Custom Toaster wrapper that uses theme context
 function ThemedToaster() {
-  const { themeName } = useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
   const isDark = themeName === 'XrplToDarkTheme';
 
   return (
@@ -254,15 +226,10 @@ function XRPLToApp({ Component, pageProps, router, emotionCache = clientSideEmot
 
   return (
     <CacheProvider value={emotionCache}>
-      <div className={`${inter.variable} ${jetbrainsMono.variable}`}>
+      <div>
         <style jsx global>{`
-          :root {
-            --font-inter: ${inter.style.fontFamily};
-            --font-jetbrains-mono: ${jetbrainsMono.style.fontFamily};
-          }
           body {
             font-family:
-              var(--font-inter),
               -apple-system,
               BlinkMacSystemFont,
               'Segoe UI',
@@ -271,7 +238,7 @@ function XRPLToApp({ Component, pageProps, router, emotionCache = clientSideEmot
           code,
           .monospace,
           input[type='number'] {
-            font-family: var(--font-jetbrains-mono), 'Courier New', monospace;
+            font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Courier New', monospace;
             font-variant-numeric: tabular-nums;
           }
         `}</style>

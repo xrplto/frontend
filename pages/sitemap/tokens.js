@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import api from 'src/utils/api';
 import { performance } from 'perf_hooks';
 import { cn } from 'src/utils/cn';
-import { AppContext } from 'src/context/AppContext';
+import { ThemeContext } from 'src/context/AppContext';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import ScrollToTop from 'src/components/ScrollToTop';
@@ -10,7 +10,7 @@ import ScrollToTop from 'src/components/ScrollToTop';
 const BASE_URL = 'https://api.xrpl.to/v1';
 
 const Sitemap = ({ tokens, slug }) => {
-  const { themeName } = useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
   const isDark = themeName === 'XrplToDarkTheme';
 
   const totalCount = tokens.length;

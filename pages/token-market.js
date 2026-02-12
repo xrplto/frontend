@@ -1,7 +1,6 @@
 import { useState, useContext, useMemo, useRef, useCallback, useEffect } from 'react';
 import api from 'src/utils/api';
-import styled from '@emotion/styled';
-import { AppContext } from 'src/context/AppContext';
+import { ThemeContext } from 'src/context/AppContext';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import ScrollToTop from 'src/components/ScrollToTop';
@@ -19,23 +18,23 @@ import {
   ChevronDown,
   PiggyBank
 } from 'lucide-react';
+import { cn } from 'src/utils/cn';
 
 // XRP value display component
 const XrpValue = ({ value, format = fVolume, size = 'normal', showSymbol = true, color }) => {
   const formatted = format(value);
   return (
     <span
-      style={{ display: 'inline-flex', alignItems: 'center', gap: size === 'small' ? 3 : 4, color }}
+      className={cn('inline-flex items-center', size === 'small' ? 'gap-[3px]' : 'gap-[4px]')}
+      style={{ color }}
     >
       <span>{formatted}</span>
       {showSymbol && (
         <span
-          style={{
-            fontSize: size === 'small' ? 9 : size === 'large' ? 12 : 10,
-            fontWeight: 500,
-            opacity: 0.6,
-            letterSpacing: '0.02em'
-          }}
+          className={cn(
+            'font-medium opacity-60 tracking-[0.02em]',
+            size === 'small' ? 'text-[9px]' : size === 'large' ? 'text-[12px]' : 'text-[10px]'
+          )}
         >
           XRP
         </span>
@@ -46,264 +45,45 @@ const XrpValue = ({ value, format = fVolume, size = 'normal', showSymbol = true,
 
 const BASE_URL = 'https://api.xrpl.to/v1';
 
-const Container = styled.div`
-  max-width: 1920px;
-  margin: 0 auto;
-  padding: 24px 16px;
-`;
-
-const Title = styled.h1`
-  font-size: 22px;
-  font-weight: 400;
-  margin-bottom: 4px;
-  color: ${({ darkMode }) => (darkMode ? '#fff' : '#212B36')};
-`;
-
-const Subtitle = styled.p`
-  font-size: 13px;
-  margin-bottom: 24px;
-  color: ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.5)' : '#637381')};
-`;
-
-const Grid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-  margin-bottom: 24px;
-  @media (min-width: 768px) {
-    grid-template-columns: repeat(4, 1fr);
-  }
-  @media (min-width: 1024px) {
-    grid-template-columns: repeat(6, 1fr);
-  }
-`;
-
-const StatCard = styled.div`
-  padding: 16px;
-  border-radius: 12px;
-  border: 1px solid ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)')};
-  background: ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.02)' : '#fff')};
-`;
-
-const StatLabel = styled.p`
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  margin-bottom: 6px;
-  color: ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.45)')};
-  display: flex;
-  align-items: center;
-  gap: 6px;
-`;
-
-const StatValue = styled.p`
-  font-size: 18px;
-  font-weight: 600;
-  color: ${({ darkMode }) => (darkMode ? '#fff' : '#212B36')};
-  margin-bottom: 4px;
-`;
-
-const StatChange = styled.span`
-  font-size: 11px;
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  color: ${({ positive }) => (positive ? '#10b981' : '#ef4444')};
-`;
-
-const Section = styled.div`
-  margin-bottom: 24px;
-`;
-
-const ChartCard = styled.div`
-  border-radius: 12px;
-  border: 1px solid ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)')};
-  background: ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.02)' : '#fff')};
-`;
-
-const ChartHeader = styled.div`
-  position: relative;
-  padding: 16px;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  border-bottom: 1px solid
-    ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)')};
-  z-index: 10;
-`;
-
-const MetricSelect = styled.div`
-  position: relative;
-  display: inline-block;
-`;
-
-const MetricButton = styled.button`
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 14px;
-  font-size: 13px;
-  font-weight: 500;
-  border-radius: 8px;
-  border: 1px solid ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)')};
-  cursor: pointer;
-  background: ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.03)' : '#fff')};
-  color: ${({ darkMode }) => (darkMode ? '#fff' : '#212B36')};
-  transition: all 0.15s ease;
-  &:hover {
-    border-color: #3b82f6;
-  }
-`;
-
-const MetricDropdown = styled.div`
-  position: absolute;
-  top: calc(100% + 4px);
-  left: 0;
-  min-width: 200px;
-  padding: 6px;
-  border-radius: 10px;
-  border: 1px solid ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)')};
-  background: ${({ darkMode }) => (darkMode ? '#1a1a1a' : '#fff')};
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-  z-index: 50;
-`;
-
-const MetricGroup = styled.div`
-  &:not(:last-child) {
-    border-bottom: 1px solid
-      ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)')};
-    padding-bottom: 6px;
-    margin-bottom: 6px;
-  }
-`;
-
-const MetricGroupLabel = styled.div`
-  font-size: 9px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  padding: 4px 10px;
-  color: ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)')};
-`;
-
-const MetricOption = styled.button`
-  display: block;
-  width: 100%;
-  padding: 8px 10px;
-  font-size: 12px;
-  text-align: left;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  background: ${({ active }) => (active ? 'rgba(59,130,246,0.15)' : 'transparent')};
-  color: ${({ active, darkMode }) => (active ? '#3b82f6' : darkMode ? '#fff' : '#212B36')};
-  transition: all 0.1s ease;
-  &:hover {
-    background: ${({ active }) => (active ? 'rgba(59,130,246,0.2)' : 'rgba(59,130,246,0.08)')};
-  }
-`;
-
-const ChartTitle = styled.h3`
-  font-size: 14px;
-  font-weight: 500;
-  color: ${({ darkMode }) => (darkMode ? '#fff' : '#212B36')};
-`;
-
-const ButtonGroup = styled.div`
-  display: flex;
-  gap: 4px;
-`;
-
-const ToggleBtn = styled.button`
-  padding: 6px 12px;
-  font-size: 11px;
-  font-weight: 500;
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  background: ${({ active, darkMode }) =>
-    active ? '#3b82f6' : darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'};
-  color: ${({ active, darkMode }) =>
-    active ? '#fff' : darkMode ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)'};
-  &:hover {
-    background: ${({ active }) => (active ? '#2563eb' : 'rgba(59,130,246,0.1)')};
-  }
-`;
-
-const ChartArea = styled.div`
-  position: relative;
-  height: 280px;
-  padding: 20px 16px 40px;
-`;
-
-const ChartSvg = styled.svg`
-  width: 100%;
-  height: 100%;
-  overflow: visible;
-`;
-
-const Tooltip = styled.div`
-  position: absolute;
-  padding: 10px 14px;
-  border-radius: 8px;
-  font-size: 12px;
-  pointer-events: none;
-  z-index: 20;
-  background: ${({ darkMode }) => (darkMode ? 'rgba(0,0,0,0.9)' : 'rgba(255,255,255,0.95)')};
-  border: 1px solid ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)')};
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  color: ${({ darkMode }) => (darkMode ? '#fff' : '#212B36')};
-`;
-
-const TableContainer = styled.div`
-  border-radius: 12px;
-  border: 1px solid ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)')};
-  background: ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.02)' : '#fff')};
-  overflow: hidden;
-`;
-
-const Table = styled.table`
-  width: 100%;
-  border-collapse: collapse;
-`;
-
-const Th = styled.th`
-  font-size: 10px;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  padding: 12px 16px;
-  text-align: ${({ align }) => align || 'left'};
-  color: ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.45)')};
-  border-bottom: 1px solid
-    ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)')};
-`;
-
-const Td = styled.td`
-  font-size: 12px;
-  padding: 12px 16px;
-  text-align: ${({ align }) => align || 'left'};
-  color: ${({ darkMode }) => (darkMode ? '#fff' : '#212B36')};
-  border-bottom: 1px solid
-    ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)')};
-`;
-
-const VolumeBar = styled.div`
-  height: 6px;
-  border-radius: 3px;
-  background: ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)')};
-  overflow: hidden;
-  margin-top: 4px;
-`;
-
-const VolumeFill = styled.div`
-  height: 100%;
-  background: #3b82f6;
-  border-radius: 3px;
-`;
+const Container = ({ className, children, ...p }) => <div className={cn('max-w-[1920px] mx-auto px-4 py-6', className)} {...p}>{children}</div>;
+const Title = ({ darkMode, className, children, ...p }) => <h1 className={cn('text-[22px] font-normal mb-1', darkMode ? 'text-white' : 'text-[#212B36]', className)} {...p}>{children}</h1>;
+const Subtitle = ({ darkMode, className, children, ...p }) => <p className={cn('text-[13px] mb-6', darkMode ? 'text-white/50' : 'text-[#637381]', className)} {...p}>{children}</p>;
+const Grid = ({ className, children, ...p }) => <div className={cn('grid grid-cols-2 gap-3 mb-6 md:grid-cols-4 lg:grid-cols-6', className)} {...p}>{children}</div>;
+const StatCard = ({ darkMode, className, children, ...p }) => <div className={cn('p-4 rounded-xl border', darkMode ? 'border-white/[0.08] bg-white/[0.02]' : 'border-black/[0.06] bg-white', className)} {...p}>{children}</div>;
+const StatLabel = ({ darkMode, className, children, ...p }) => <p className={cn('text-[10px] uppercase tracking-[0.04em] mb-[6px] flex items-center gap-[6px]', darkMode ? 'text-white/40' : 'text-black/[0.45]', className)} {...p}>{children}</p>;
+const StatValue = ({ darkMode, className, children, ...p }) => <p className={cn('text-lg font-semibold mb-1', darkMode ? 'text-white' : 'text-[#212B36]', className)} {...p}>{children}</p>;
+const StatChange = ({ positive, className, children, ...p }) => <span className={cn('text-[11px] flex items-center gap-[2px]', positive ? 'text-[#10b981]' : 'text-[#ef4444]', className)} {...p}>{children}</span>;
+const Section = ({ className, children, ...p }) => <div className={cn('mb-6', className)} {...p}>{children}</div>;
+const ChartCard = ({ darkMode, className, children, ...p }) => <div className={cn('rounded-xl border', darkMode ? 'border-white/[0.08] bg-white/[0.02]' : 'border-black/[0.06] bg-white', className)} {...p}>{children}</div>;
+const ChartHeader = ({ darkMode, className, children, ...p }) => <div className={cn('relative p-4 flex flex-wrap items-center justify-between gap-3 border-b z-10', darkMode ? 'border-white/[0.06]' : 'border-black/[0.06]', className)} {...p}>{children}</div>;
+const MetricSelect = ({ className, children, ...p }) => <div className={cn('relative inline-block', className)} {...p}>{children}</div>;
+const MetricButton = ({ darkMode, className, children, ...p }) => (
+  <button className={cn('flex items-center gap-[6px] py-2 px-[14px] text-[13px] font-medium rounded-lg border cursor-pointer transition-all duration-150 hover:border-[#3b82f6]', darkMode ? 'border-white/10 bg-white/[0.03] text-white' : 'border-black/10 bg-white text-[#212B36]', className)} {...p}>{children}</button>
+);
+const MetricDropdown = ({ darkMode, className, children, ...p }) => (
+  <div className={cn('absolute top-[calc(100%+4px)] left-0 min-w-[200px] p-[6px] rounded-[10px] border shadow-[0_8px_24px_rgba(0,0,0,0.15)] z-50', darkMode ? 'border-white/10 bg-[#1a1a1a]' : 'border-black/10 bg-white', className)} {...p}>{children}</div>
+);
+const MetricGroup = ({ darkMode, className, children, ...p }) => <div className={cn('[&:not(:last-child)]:border-b [&:not(:last-child)]:pb-[6px] [&:not(:last-child)]:mb-[6px]', darkMode ? '[&:not(:last-child)]:border-white/[0.06]' : '[&:not(:last-child)]:border-black/[0.06]', className)} {...p}>{children}</div>;
+const MetricGroupLabel = ({ darkMode, className, children, ...p }) => <div className={cn('text-[9px] font-semibold uppercase tracking-[0.05em] py-1 px-[10px]', darkMode ? 'text-white/[0.35]' : 'text-black/[0.35]', className)} {...p}>{children}</div>;
+const MetricOption = ({ active, darkMode, className, children, ...p }) => (
+  <button className={cn('block w-full py-2 px-[10px] text-xs text-left border-none rounded-md cursor-pointer transition-all duration-100', active ? 'bg-[rgba(59,130,246,0.15)] text-[#3b82f6] hover:bg-[rgba(59,130,246,0.2)]' : cn(darkMode ? 'text-white' : 'text-[#212B36]', 'bg-transparent hover:bg-[rgba(59,130,246,0.08)]'), className)} {...p}>{children}</button>
+);
+const ChartTitle = ({ darkMode, className, children, ...p }) => <h3 className={cn('text-sm font-medium', darkMode ? 'text-white' : 'text-[#212B36]', className)} {...p}>{children}</h3>;
+const ButtonGroup = ({ className, children, ...p }) => <div className={cn('flex gap-1', className)} {...p}>{children}</div>;
+const ToggleBtn = ({ active, darkMode, className, children, ...p }) => (
+  <button className={cn('py-[6px] px-3 text-[11px] font-medium rounded-md border-none cursor-pointer transition-all duration-150', active ? 'bg-[#3b82f6] text-white hover:bg-[#2563eb]' : darkMode ? 'bg-white/[0.05] text-white/60 hover:bg-[rgba(59,130,246,0.1)]' : 'bg-black/[0.05] text-black/60 hover:bg-[rgba(59,130,246,0.1)]', className)} {...p}>{children}</button>
+);
+const ChartArea = ({ className, children, ...p }) => <div className={cn('relative h-[280px] pt-5 px-4 pb-10', className)} {...p}>{children}</div>;
+const ChartSvg = ({ className, children, ...p }) => <svg className={cn('w-full h-full overflow-visible', className)} {...p}>{children}</svg>;
+const Tooltip = ({ darkMode, className, children, ...p }) => (
+  <div className={cn('absolute py-[10px] px-[14px] rounded-lg text-xs pointer-events-none z-20 shadow-[0_4px_12px_rgba(0,0,0,0.15)]', darkMode ? 'bg-black/90 border border-white/10 text-white' : 'bg-white/95 border border-black/10 text-[#212B36]', className)} {...p}>{children}</div>
+);
+const TableContainer = ({ darkMode, className, children, ...p }) => <div className={cn('rounded-xl border overflow-hidden', darkMode ? 'border-white/[0.08] bg-white/[0.02]' : 'border-black/[0.06] bg-white', className)} {...p}>{children}</div>;
+const Table = ({ className, children, ...p }) => <table className={cn('w-full border-collapse', className)} {...p}>{children}</table>;
+const Th = ({ darkMode, align, className, children, ...p }) => <th className={cn('text-[10px] font-medium uppercase tracking-[0.04em] py-3 px-4', darkMode ? 'text-white/40 border-b border-white/[0.06]' : 'text-black/[0.45] border-b border-black/[0.06]', className)} style={{ textAlign: align || 'left' }} {...p}>{children}</th>;
+const Td = ({ darkMode, align, className, children, ...p }) => <td className={cn('text-xs py-3 px-4', darkMode ? 'text-white border-b border-white/[0.04]' : 'text-[#212B36] border-b border-black/[0.04]', className)} style={{ textAlign: align || 'left' }} {...p}>{children}</td>;
+const VolumeBar = ({ darkMode, className, children, ...p }) => <div className={cn('h-[6px] rounded-[3px] overflow-hidden mt-1', darkMode ? 'bg-white/10' : 'bg-black/10', className)} {...p}>{children}</div>;
+const VolumeFill = ({ className, ...p }) => <div className={cn('h-full bg-[#3b82f6] rounded-[3px]', className)} {...p} />;
 
 const TIME_RANGES = [
   { key: '7d', label: '7D', days: 7 },
@@ -365,7 +145,7 @@ const PLATFORM_COLORS = {
 };
 
 export default function TokenMarketPage({ stats }) {
-  const { themeName } = useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
   const darkMode = themeName === 'XrplToDarkTheme';
   const [notificationPanelOpen, setNotificationPanelOpen] = useState(false);
   const [timeRange, setTimeRange] = useState('30d');
@@ -548,8 +328,8 @@ export default function TokenMarketPage({ stats }) {
 
   if (!stats) {
     return (
-      <div style={{ minHeight: '100vh' }}>
-        <div id="back-to-top-anchor" style={{ height: 24 }} />
+      <div className="min-h-screen">
+        <div id="back-to-top-anchor" className="h-[24px]" />
         <Header
           notificationPanelOpen={notificationPanelOpen}
           onNotificationPanelToggle={setNotificationPanelOpen}
@@ -624,34 +404,22 @@ export default function TokenMarketPage({ stats }) {
   }, [isPlatformChart, platformNames, chartData, maxValue]);
 
   return (
-    <div style={{ minHeight: '100vh', overflow: 'hidden' }}>
-      <div id="back-to-top-anchor" style={{ height: 24 }} />
+    <div className="min-h-screen overflow-hidden">
+      <div id="back-to-top-anchor" className="h-[24px]" />
       <Header
         notificationPanelOpen={notificationPanelOpen}
         onNotificationPanelToggle={setNotificationPanelOpen}
       />
 
       <Container>
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'flex-start',
-            flexWrap: 'wrap',
-            gap: 8
-          }}
-        >
+        <div className="flex justify-between items-start flex-wrap gap-[8px]">
           <div>
             <Title darkMode={darkMode}>Token Market Stats</Title>
             <Subtitle darkMode={darkMode}>XRPL DEX token trading analytics</Subtitle>
           </div>
           {stats.lastUpdated && (
             <div
-              style={{
-                fontSize: 11,
-                color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
-                marginTop: 4
-              }}
+              className={cn('text-[11px] mt-[4px]', darkMode ? 'text-white/40' : 'text-black/40')}
             >
               Updated {new Date(stats.lastUpdated).toLocaleString()}
             </div>
@@ -666,23 +434,13 @@ export default function TokenMarketPage({ stats }) {
             <StatValue darkMode={darkMode}>
               <XrpValue value={stats.volume24h || 0} size="large" />
             </StatValue>
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                gap: 8
-              }}
-            >
+            <div className="flex items-center justify-between gap-[8px]">
               <StatChange positive={stats.volumePct >= 0}>
                 {stats.volumePct >= 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
                 {Math.abs(stats.volumePct || 0).toFixed(1)}%
               </StatChange>
               <span
-                style={{
-                  fontSize: 10,
-                  color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'
-                }}
+                className={cn('text-[10px]', darkMode ? 'text-white/40' : 'text-black/40')}
               >
                 7d: <XrpValue value={stats.volume7d || 0} size="small" showSymbol={false} />
               </span>
@@ -694,23 +452,13 @@ export default function TokenMarketPage({ stats }) {
               <BarChart3 size={12} /> 24h Trades
             </StatLabel>
             <StatValue darkMode={darkMode}>{fNumber(stats.trades24h || 0)}</StatValue>
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                gap: 8
-              }}
-            >
+            <div className="flex items-center justify-between gap-[8px]">
               <StatChange positive={stats.tradesPct >= 0}>
                 {stats.tradesPct >= 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
                 {Math.abs(stats.tradesPct || 0).toFixed(1)}%
               </StatChange>
               <span
-                style={{
-                  fontSize: 10,
-                  color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'
-                }}
+                className={cn('text-[10px]', darkMode ? 'text-white/40' : 'text-black/40')}
               >
                 Avg: <XrpValue value={stats.avgTradeSize || 0} size="small" />
               </span>
@@ -724,23 +472,13 @@ export default function TokenMarketPage({ stats }) {
             <StatValue darkMode={darkMode}>
               <XrpValue value={stats.totalMarketcap || 0} size="large" />
             </StatValue>
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                gap: 8
-              }}
-            >
+            <div className="flex items-center justify-between gap-[8px]">
               <StatChange positive={stats.marketcapPct >= 0}>
                 {stats.marketcapPct >= 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
                 {Math.abs(stats.marketcapPct || 0).toFixed(1)}%
               </StatChange>
               <span
-                style={{
-                  fontSize: 10,
-                  color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'
-                }}
+                className={cn('text-[10px]', darkMode ? 'text-white/40' : 'text-black/40')}
               >
                 {fNumber(stats.tokenCount || 0)} tokens
               </span>
@@ -761,35 +499,21 @@ export default function TokenMarketPage({ stats }) {
                 <>
                   <StatValue
                     darkMode={darkMode}
-                    style={{ display: 'flex', alignItems: 'center', gap: 6 }}
+                    className="flex items-center gap-[6px]"
                   >
                     <span
-                      style={{
-                        width: 10,
-                        height: 10,
-                        borderRadius: 2,
-                        background: PLATFORM_COLORS[top[0]] || PLATFORM_COLORS.default
-                      }}
+                      className="w-[10px] h-[10px] rounded-[2px]"
+                      style={{ background: PLATFORM_COLORS[top[0]] || PLATFORM_COLORS.default }}
                     />
                     {top[0]}
                   </StatValue>
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      gap: 8
-                    }}
-                  >
+                  <div className="flex items-center justify-between gap-[8px]">
                     <span
-                      style={{
-                        fontSize: 11,
-                        color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)'
-                      }}
+                      className={cn('text-[11px]', darkMode ? 'text-white/50' : 'text-black/50')}
                     >
                       <XrpValue value={top[1].volume || 0} size="small" />
                     </span>
-                    <span style={{ fontSize: 10, color: '#3b82f6', fontWeight: 500 }}>
+                    <span className="text-[10px] text-[#3b82f6] font-medium">
                       {totalVol > 0 ? ((top[1].volume / totalVol) * 100).toFixed(1) : 0}% share
                     </span>
                   </div>
@@ -805,13 +529,13 @@ export default function TokenMarketPage({ stats }) {
             <StatValue darkMode={darkMode}>
               {fNumber((stats.uniqueTradersAMM || 0) + (stats.uniqueTradersNonAMM || 0))}
             </StatValue>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 10 }}>
-              <span style={{ display: 'flex', alignItems: 'center', gap: 3, color: '#8b5cf6' }}>
-                <span style={{ width: 6, height: 6, borderRadius: 1, background: '#8b5cf6' }} />
+            <div className="flex items-center gap-[8px] text-[10px]">
+              <span className="flex items-center gap-[3px] text-[#8b5cf6]">
+                <span className="w-[6px] h-[6px] rounded-[1px] bg-[#8b5cf6]" />
                 AMM {fNumber(stats.uniqueTradersAMM || 0)}
               </span>
-              <span style={{ display: 'flex', alignItems: 'center', gap: 3, color: '#10b981' }}>
-                <span style={{ width: 6, height: 6, borderRadius: 1, background: '#10b981' }} />
+              <span className="flex items-center gap-[3px] text-[#10b981]">
+                <span className="w-[6px] h-[6px] rounded-[1px] bg-[#10b981]" />
                 DEX {fNumber(stats.uniqueTradersNonAMM || 0)}
               </span>
             </div>
@@ -825,33 +549,18 @@ export default function TokenMarketPage({ stats }) {
               {stats.volume24h > 0 ? ((stats.volumeAMM / stats.volume24h) * 100).toFixed(1) : 0}%
               AMM
             </StatValue>
-            <div style={{ marginTop: 4 }}>
+            <div className="mt-[4px]">
               <div
-                style={{
-                  height: 6,
-                  borderRadius: 3,
-                  background: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
-                  overflow: 'hidden',
-                  display: 'flex'
-                }}
+                className={cn('h-[6px] rounded-[3px] overflow-hidden flex', darkMode ? 'bg-white/10' : 'bg-black/10')}
               >
                 <div
-                  style={{
-                    height: '100%',
-                    background: '#8b5cf6',
-                    width: `${stats.volume24h > 0 ? (stats.volumeAMM / stats.volume24h) * 100 : 0}%`
-                  }}
+                  className="h-full bg-[#8b5cf6]"
+                  style={{ width: `${stats.volume24h > 0 ? (stats.volumeAMM / stats.volume24h) * 100 : 0}%` }}
                 />
-                <div style={{ height: '100%', background: '#10b981', flex: 1 }} />
+                <div className="h-full bg-[#10b981] flex-1" />
               </div>
               <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  marginTop: 4,
-                  fontSize: 10,
-                  color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'
-                }}
+                className={cn('flex justify-between mt-[4px] text-[10px]', darkMode ? 'text-white/40' : 'text-black/40')}
               >
                 <XrpValue value={stats.volumeAMM || 0} size="small" />
                 <XrpValue value={stats.volumeNonAMM || 0} size="small" />
@@ -863,36 +572,23 @@ export default function TokenMarketPage({ stats }) {
         <Section>
           <ChartCard darkMode={darkMode}>
             <ChartHeader darkMode={darkMode}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
+              <div className="flex items-center gap-[16px] flex-wrap">
                 <div>
                   <div
-                    style={{
-                      fontSize: 10,
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.04em',
-                      color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.45)',
-                      marginBottom: 2
-                    }}
+                    className={cn('text-[10px] uppercase tracking-[0.04em] mb-[2px]', darkMode ? 'text-white/40' : 'text-black/[0.45]')}
                   >
                     {TIME_RANGES.find((r) => r.key === timeRange)?.label} Total
                   </div>
                   <div
-                    style={{
-                      fontSize: 20,
-                      fontWeight: 600,
-                      color:
-                        metric === 'ammNetFlow'
-                          ? periodTotal >= 0
-                            ? '#10b981'
-                            : '#ef4444'
-                          : metric === 'ammDeposits'
-                            ? '#10b981'
-                            : metric === 'ammWithdraws'
-                              ? '#ef4444'
-                              : darkMode
-                                ? '#fff'
-                                : '#212B36'
-                    }}
+                    className={cn('text-[20px] font-semibold',
+                      metric === 'ammNetFlow'
+                        ? periodTotal >= 0 ? 'text-[#10b981]' : 'text-[#ef4444]'
+                        : metric === 'ammDeposits'
+                          ? 'text-[#10b981]'
+                          : metric === 'ammWithdraws'
+                            ? 'text-[#ef4444]'
+                            : darkMode ? 'text-white' : 'text-[#212B36]'
+                    )}
                   >
                     {metric === 'ammNetFlow' && periodTotal >= 0 ? '+' : ''}
                     {[
@@ -918,11 +614,7 @@ export default function TokenMarketPage({ stats }) {
                     {metricConfig?.label || 'Volume'}
                     <ChevronDown
                       size={14}
-                      style={{
-                        opacity: 0.5,
-                        transform: metricDropdownOpen ? 'rotate(180deg)' : 'none',
-                        transition: 'transform 0.15s'
-                      }}
+                      className={cn('opacity-50 transition-transform duration-150', metricDropdownOpen && 'rotate-180')}
                     />
                   </MetricButton>
                   {metricDropdownOpen && (
@@ -1087,35 +779,21 @@ export default function TokenMarketPage({ stats }) {
               {hoverData && (
                 <>
                   <div
-                    style={{
-                      position: 'absolute',
-                      left: hoverData.x,
-                      top: 0,
-                      bottom: 40,
-                      width: 1,
-                      background: darkMode ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)',
-                      pointerEvents: 'none'
-                    }}
+                    className={cn('absolute top-0 bottom-[40px] w-[1px] pointer-events-none', darkMode ? 'bg-white/15' : 'bg-black/10')}
+                    style={{ left: hoverData.x }}
                   />
                   <Tooltip
                     darkMode={darkMode}
                     style={{ left: Math.min(Math.max(hoverData.x - 80, 10), 300), top: 10 }}
                   >
-                    <div style={{ fontWeight: 600, marginBottom: 6, fontSize: 11, opacity: 0.7 }}>
+                    <div className="font-semibold mb-[6px] text-[11px] opacity-70">
                       {hoverData.date}
                     </div>
                     {isPlatformChart ? (
                       <>
-                        <div
-                          style={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            gap: 20,
-                            marginBottom: 6
-                          }}
-                        >
-                          <span style={{ opacity: 0.6 }}>Total</span>
-                          <span style={{ fontWeight: 600 }}>
+                        <div className="flex justify-between gap-[20px] mb-[6px]">
+                          <span className="opacity-60">Total</span>
+                          <span className="font-semibold">
                             <XrpValue value={hoverData.volume || 0} size="small" />
                           </span>
                         </div>
@@ -1126,21 +804,12 @@ export default function TokenMarketPage({ stats }) {
                           return (
                             <div
                               key={platform}
-                              style={{
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                                gap: 16,
-                                fontSize: 11
-                              }}
+                              className="flex justify-between gap-[16px] text-[11px]"
                             >
-                              <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                              <span className="flex items-center gap-[6px]">
                                 <span
-                                  style={{
-                                    width: 8,
-                                    height: 8,
-                                    borderRadius: 2,
-                                    background: color
-                                  }}
+                                  className="w-[8px] h-[8px] rounded-[2px]"
+                                  style={{ background: color }}
                                 />
                                 {platform}
                               </span>
@@ -1153,26 +822,12 @@ export default function TokenMarketPage({ stats }) {
                       </>
                     ) : isDualChart ? (
                       <>
-                        <div
-                          style={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            gap: 16,
-                            alignItems: 'center'
-                          }}
-                        >
-                          <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                            <span
-                              style={{
-                                width: 8,
-                                height: 8,
-                                borderRadius: 2,
-                                background: '#8b5cf6'
-                              }}
-                            />
-                            <span style={{ opacity: 0.6 }}>AMM:</span>
+                        <div className="flex justify-between gap-[16px] items-center">
+                          <span className="flex items-center gap-[6px]">
+                            <span className="w-[8px] h-[8px] rounded-[2px] bg-[#8b5cf6]" />
+                            <span className="opacity-60">AMM:</span>
                           </span>
-                          <span style={{ fontWeight: 500 }}>
+                          <span className="font-medium">
                             {metric === 'tradesSplit' ? (
                               fNumber(hoverData.tradesAMM || 0)
                             ) : (
@@ -1180,26 +835,12 @@ export default function TokenMarketPage({ stats }) {
                             )}
                           </span>
                         </div>
-                        <div
-                          style={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            gap: 16,
-                            alignItems: 'center'
-                          }}
-                        >
-                          <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                            <span
-                              style={{
-                                width: 8,
-                                height: 8,
-                                borderRadius: 2,
-                                background: '#10b981'
-                              }}
-                            />
-                            <span style={{ opacity: 0.6 }}>DEX:</span>
+                        <div className="flex justify-between gap-[16px] items-center">
+                          <span className="flex items-center gap-[6px]">
+                            <span className="w-[8px] h-[8px] rounded-[2px] bg-[#10b981]" />
+                            <span className="opacity-60">DEX:</span>
                           </span>
-                          <span style={{ fontWeight: 500 }}>
+                          <span className="font-medium">
                             {metric === 'tradesSplit' ? (
                               fNumber(hoverData.tradesNonAMM || 0)
                             ) : (
@@ -1208,17 +849,10 @@ export default function TokenMarketPage({ stats }) {
                           </span>
                         </div>
                         <div
-                          style={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            gap: 16,
-                            marginTop: 4,
-                            paddingTop: 4,
-                            borderTop: `1px solid ${darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`
-                          }}
+                          className={cn('flex justify-between gap-[16px] mt-[4px] pt-[4px] border-t', darkMode ? 'border-white/10' : 'border-black/10')}
                         >
-                          <span style={{ opacity: 0.6 }}>Total:</span>
-                          <span style={{ fontWeight: 500 }}>
+                          <span className="opacity-60">Total:</span>
+                          <span className="font-medium">
                             {metric === 'tradesSplit' ? (
                               fNumber((hoverData.tradesAMM || 0) + (hoverData.tradesNonAMM || 0))
                             ) : (
@@ -1232,55 +866,33 @@ export default function TokenMarketPage({ stats }) {
                       </>
                     ) : isPoolMetric ? (
                       <>
-                        <div
-                          style={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            gap: 20,
-                            marginBottom: 4
-                          }}
-                        >
-                          <span style={{ opacity: 0.6 }}>{metricConfig?.label}</span>
+                        <div className="flex justify-between gap-[20px] mb-[4px]">
+                          <span className="opacity-60">{metricConfig?.label}</span>
                           <span
-                            style={{
-                              fontWeight: 600,
-                              color:
-                                metric === 'ammNetFlow'
-                                  ? (hoverData.ammNetFlow || 0) >= 0
-                                    ? '#10b981'
-                                    : '#ef4444'
-                                  : '#3b82f6'
-                            }}
+                            className={cn('font-semibold', metric === 'ammNetFlow' ? (hoverData.ammNetFlow || 0) >= 0 ? 'text-[#10b981]' : 'text-[#ef4444]' : 'text-[#3b82f6]')}
                           >
                             {metric === 'ammNetFlow' && (hoverData.ammNetFlow || 0) >= 0 ? '+' : ''}
                             <XrpValue value={hoverData[metric] || 0} size="small" />
                           </span>
                         </div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 20 }}>
-                          <span style={{ opacity: 0.6 }}>Deposits</span>
-                          <span style={{ color: '#10b981' }}>
+                        <div className="flex justify-between gap-[20px]">
+                          <span className="opacity-60">Deposits</span>
+                          <span className="text-[#10b981]">
                             <XrpValue value={hoverData.ammDeposits || 0} size="small" />
                           </span>
                         </div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 20 }}>
-                          <span style={{ opacity: 0.6 }}>Withdrawals</span>
-                          <span style={{ color: '#ef4444' }}>
+                        <div className="flex justify-between gap-[20px]">
+                          <span className="opacity-60">Withdrawals</span>
+                          <span className="text-[#ef4444]">
                             <XrpValue value={hoverData.ammWithdraws || 0} size="small" />
                           </span>
                         </div>
                       </>
                     ) : (
                       <>
-                        <div
-                          style={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            gap: 20,
-                            marginBottom: 4
-                          }}
-                        >
-                          <span style={{ opacity: 0.6 }}>{metricConfig?.label}</span>
-                          <span style={{ fontWeight: 600, color: '#3b82f6' }}>
+                        <div className="flex justify-between gap-[20px] mb-[4px]">
+                          <span className="opacity-60">{metricConfig?.label}</span>
+                          <span className="font-semibold text-[#3b82f6]">
                             {metric === 'volume' || metric === 'marketcap' ? (
                               <XrpValue value={hoverData[metric] || 0} size="small" />
                             ) : (
@@ -1289,20 +901,16 @@ export default function TokenMarketPage({ stats }) {
                           </span>
                         </div>
                         {metric !== 'volume' && (
-                          <div
-                            style={{ display: 'flex', justifyContent: 'space-between', gap: 20 }}
-                          >
-                            <span style={{ opacity: 0.6 }}>Volume</span>
+                          <div className="flex justify-between gap-[20px]">
+                            <span className="opacity-60">Volume</span>
                             <span>
                               <XrpValue value={hoverData.volume || 0} size="small" />
                             </span>
                           </div>
                         )}
                         {metric !== 'trades' && (
-                          <div
-                            style={{ display: 'flex', justifyContent: 'space-between', gap: 20 }}
-                          >
-                            <span style={{ opacity: 0.6 }}>Trades</span>
+                          <div className="flex justify-between gap-[20px]">
+                            <span className="opacity-60">Trades</span>
                             <span>{fNumber(hoverData.trades || 0)}</span>
                           </div>
                         )}
@@ -1312,16 +920,7 @@ export default function TokenMarketPage({ stats }) {
                 </>
               )}
               <div
-                style={{
-                  position: 'absolute',
-                  bottom: 8,
-                  left: 16,
-                  right: 16,
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  fontSize: 10,
-                  color: darkMode ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'
-                }}
+                className={cn('absolute bottom-[8px] left-[16px] right-[16px] flex justify-between text-[10px]', darkMode ? 'text-white/30' : 'text-black/30')}
               >
                 <span>{chartData[0]?.date}</span>
                 <span>{chartData[chartData.length - 1]?.date}</span>
@@ -1329,32 +928,16 @@ export default function TokenMarketPage({ stats }) {
             </ChartArea>
             {isPlatformChart && (
               <div
-                style={{
-                  padding: '12px 16px',
-                  borderTop: `1px solid ${darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`,
-                  display: 'flex',
-                  flexWrap: 'wrap',
-                  gap: '8px 16px'
-                }}
+                className={cn('py-[12px] px-[16px] flex flex-wrap gap-[8px_16px] border-t', darkMode ? 'border-white/[0.06]' : 'border-black/[0.06]')}
               >
                 {platformNames.map((p) => (
                   <div
                     key={p}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 6,
-                      fontSize: 11,
-                      color: darkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)'
-                    }}
+                    className={cn('flex items-center gap-[6px] text-[11px]', darkMode ? 'text-white/70' : 'text-black/70')}
                   >
                     <span
-                      style={{
-                        width: 10,
-                        height: 10,
-                        borderRadius: 2,
-                        background: PLATFORM_COLORS[p] || '#6b7280'
-                      }}
+                      className="w-[10px] h-[10px] rounded-[2px]"
+                      style={{ background: PLATFORM_COLORS[p] || '#6b7280' }}
                     />
                     {p}
                   </div>
@@ -1363,71 +946,31 @@ export default function TokenMarketPage({ stats }) {
             )}
             {isDualChart && (
               <div
-                style={{
-                  padding: '12px 16px',
-                  borderTop: `1px solid ${darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`,
-                  display: 'flex',
-                  flexWrap: 'wrap',
-                  gap: '8px 16px'
-                }}
+                className={cn('py-[12px] px-[16px] flex flex-wrap gap-[8px_16px] border-t', darkMode ? 'border-white/[0.06]' : 'border-black/[0.06]')}
               >
                 <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 6,
-                    fontSize: 11,
-                    color: darkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)'
-                  }}
+                  className={cn('flex items-center gap-[6px] text-[11px]', darkMode ? 'text-white/70' : 'text-black/70')}
                 >
-                  <span style={{ width: 10, height: 10, borderRadius: 2, background: '#8b5cf6' }} />
+                  <span className="w-[10px] h-[10px] rounded-[2px] bg-[#8b5cf6]" />
                   AMM
                 </div>
                 <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 6,
-                    fontSize: 11,
-                    color: darkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)'
-                  }}
+                  className={cn('flex items-center gap-[6px] text-[11px]', darkMode ? 'text-white/70' : 'text-black/70')}
                 >
-                  <span style={{ width: 10, height: 10, borderRadius: 2, background: '#10b981' }} />
+                  <span className="w-[10px] h-[10px] rounded-[2px] bg-[#10b981]" />
                   DEX
                 </div>
               </div>
             )}
             {isPoolMetric && (
               <div
-                style={{
-                  padding: '12px 16px',
-                  borderTop: `1px solid ${darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`,
-                  display: 'flex',
-                  flexWrap: 'wrap',
-                  gap: '8px 16px'
-                }}
+                className={cn('py-[12px] px-[16px] flex flex-wrap gap-[8px_16px] border-t', darkMode ? 'border-white/[0.06]' : 'border-black/[0.06]')}
               >
                 <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 6,
-                    fontSize: 11,
-                    color: darkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)'
-                  }}
+                  className={cn('flex items-center gap-[6px] text-[11px]', darkMode ? 'text-white/70' : 'text-black/70')}
                 >
                   <span
-                    style={{
-                      width: 10,
-                      height: 10,
-                      borderRadius: 2,
-                      background:
-                        metric === 'ammDeposits'
-                          ? '#10b981'
-                          : metric === 'ammWithdraws'
-                            ? '#ef4444'
-                            : '#3b82f6'
-                    }}
+                    className={cn('w-[10px] h-[10px] rounded-[2px]', metric === 'ammDeposits' ? 'bg-[#10b981]' : metric === 'ammWithdraws' ? 'bg-[#ef4444]' : 'bg-[#3b82f6]')}
                   />
                   {metricConfig?.label}
                 </div>
@@ -1440,20 +983,12 @@ export default function TokenMarketPage({ stats }) {
         <Section>
           <TableContainer darkMode={darkMode}>
             <div
-              style={{
-                padding: '12px 16px',
-                borderBottom: `1px solid ${darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`,
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                flexWrap: 'wrap',
-                gap: 8
-              }}
+              className={cn('py-[12px] px-[16px] flex justify-between items-center flex-wrap gap-[8px] border-b', darkMode ? 'border-white/[0.06]' : 'border-black/[0.06]')}
             >
-              <span style={{ fontSize: 12, fontWeight: 500, color: darkMode ? '#fff' : '#212B36' }}>
+              <span className={cn('text-[12px] font-medium', darkMode ? 'text-white' : 'text-[#212B36]')}>
                 Trading Platform Stats
               </span>
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              <div className="flex gap-[8px] flex-wrap">
                 <ButtonGroup>
                   {[
                     { key: '24h', label: '24H' },
@@ -1489,7 +1024,7 @@ export default function TokenMarketPage({ stats }) {
                 </ButtonGroup>
               </div>
             </div>
-            <div style={{ overflowX: 'auto' }}>
+            <div className="overflow-x-auto">
               <Table style={{ minWidth: 500 }}>
                 <thead>
                   <tr>
@@ -1524,11 +1059,7 @@ export default function TokenMarketPage({ stats }) {
                           <Td
                             darkMode={darkMode}
                             colSpan={5}
-                            style={{
-                              textAlign: 'center',
-                              color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
-                              padding: 24
-                            }}
+                            className={cn('text-center p-[24px]', darkMode ? 'text-white/40' : 'text-black/40')}
                           >
                             No platform data available for this period
                           </Td>
@@ -1537,34 +1068,22 @@ export default function TokenMarketPage({ stats }) {
                     }
                     return displayPlatforms.map((p) => (
                       <tr key={p.name}>
-                        <Td darkMode={darkMode} style={{ minWidth: 140 }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <Td darkMode={darkMode} className="min-w-[140px]">
+                          <div className="flex items-center gap-[8px]">
                             <span
-                              style={{
-                                width: 10,
-                                height: 10,
-                                borderRadius: 2,
-                                background: PLATFORM_COLORS[p.name] || PLATFORM_COLORS.default,
-                                flexShrink: 0
-                              }}
+                              className="w-[10px] h-[10px] rounded-[2px] shrink-0"
+                              style={{ background: PLATFORM_COLORS[p.name] || PLATFORM_COLORS.default }}
                             />
-                            <span style={{ fontWeight: 500 }}>{p.name}</span>
+                            <span className="font-medium">{p.name}</span>
                           </div>
                           <div
-                            style={{
-                              height: 4,
-                              borderRadius: 2,
-                              background: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
-                              marginTop: 6
-                            }}
+                            className={cn('h-[4px] rounded-[2px] mt-[6px]', darkMode ? 'bg-white/10' : 'bg-black/10')}
                           >
                             <div
+                              className="h-full rounded-[2px] transition-[width] duration-300 ease-in-out"
                               style={{
-                                height: '100%',
-                                borderRadius: 2,
                                 background: PLATFORM_COLORS[p.name] || PLATFORM_COLORS.default,
-                                width: `${(p[platformSort] / maxVal) * 100}%`,
-                                transition: 'width 0.3s ease'
+                                width: `${(p[platformSort] / maxVal) * 100}%`
                               }}
                             />
                           </div>
@@ -1572,28 +1091,28 @@ export default function TokenMarketPage({ stats }) {
                         <Td
                           darkMode={darkMode}
                           align="right"
-                          style={{ fontWeight: platformSort === 'volume' ? 600 : 400 }}
+                          className={platformSort === 'volume' ? 'font-semibold' : 'font-normal'}
                         >
                           <XrpValue value={p.volume} size="small" />
                         </Td>
                         <Td
                           darkMode={darkMode}
                           align="right"
-                          style={{ fontWeight: platformSort === 'trades' ? 600 : 400 }}
+                          className={platformSort === 'trades' ? 'font-semibold' : 'font-normal'}
                         >
                           {fNumber(p.trades)}
                         </Td>
                         <Td
                           darkMode={darkMode}
                           align="right"
-                          style={{ fontWeight: platformSort === 'fees' ? 600 : 400 }}
+                          className={platformSort === 'fees' ? 'font-semibold' : 'font-normal'}
                         >
                           <XrpValue value={p.fees} size="small" />
                         </Td>
                         <Td
                           darkMode={darkMode}
                           align="right"
-                          style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : '#637381' }}
+                          className={darkMode ? 'text-white/50' : 'text-[#637381]'}
                         >
                           {totalVol > 0 ? ((p.volume / totalVol) * 100).toFixed(1) : 0}%
                         </Td>
@@ -1606,27 +1125,11 @@ export default function TokenMarketPage({ stats }) {
             {/* Show more button */}
             {platformStats.length > 10 && (
               <div
-                style={{
-                  padding: '12px 16px',
-                  borderTop: `1px solid ${darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`,
-                  textAlign: 'center'
-                }}
+                className={cn('py-[12px] px-[16px] text-center border-t', darkMode ? 'border-white/[0.06]' : 'border-black/[0.06]')}
               >
                 <button
                   onClick={() => setPlatformExpanded(!platformExpanded)}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    color: '#3b82f6',
-                    fontSize: 12,
-                    fontWeight: 500,
-                    cursor: 'pointer',
-                    padding: '6px 12px',
-                    borderRadius: 6,
-                    transition: 'background 0.15s'
-                  }}
-                  onMouseEnter={(e) => (e.target.style.background = 'rgba(59,130,246,0.1)')}
-                  onMouseLeave={(e) => (e.target.style.background = 'none')}
+                  className="bg-transparent border-none text-[#3b82f6] text-[12px] font-medium cursor-pointer py-[6px] px-[12px] rounded-[6px] transition-colors duration-150 hover:bg-[rgba(59,130,246,0.1)]"
                 >
                   {platformExpanded ? 'Show less' : `Show ${platformStats.length - 10} more`}
                 </button>
@@ -1634,46 +1137,38 @@ export default function TokenMarketPage({ stats }) {
             )}
             {/* Period summary */}
             <div
-              style={{
-                padding: '12px 16px',
-                borderTop: `1px solid ${darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`,
-                display: 'flex',
-                justifyContent: 'space-between',
-                flexWrap: 'wrap',
-                gap: 16,
-                fontSize: 12
-              }}
+              className={cn('py-[12px] px-[16px] flex justify-between flex-wrap gap-[16px] text-[12px] border-t', darkMode ? 'border-white/[0.06]' : 'border-black/[0.06]')}
             >
-              <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
+              <div className="flex gap-[24px] flex-wrap">
                 <div>
-                  <span style={{ color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>
+                  <span className={darkMode ? 'text-white/40' : 'text-black/40'}>
                     Total Volume:{' '}
                   </span>
-                  <span style={{ fontWeight: 600, color: darkMode ? '#fff' : '#212B36' }}>
+                  <span className={cn('font-semibold', darkMode ? 'text-white' : 'text-[#212B36]')}>
                     <XrpValue value={platformStats.reduce((s, p) => s + p.volume, 0)} />
                   </span>
                 </div>
                 <div>
-                  <span style={{ color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>
+                  <span className={darkMode ? 'text-white/40' : 'text-black/40'}>
                     Total Trades:{' '}
                   </span>
-                  <span style={{ fontWeight: 600, color: darkMode ? '#fff' : '#212B36' }}>
+                  <span className={cn('font-semibold', darkMode ? 'text-white' : 'text-[#212B36]')}>
                     {fNumber(platformStats.reduce((s, p) => s + p.trades, 0))}
                   </span>
                 </div>
                 <div>
-                  <span style={{ color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>
+                  <span className={darkMode ? 'text-white/40' : 'text-black/40'}>
                     Total Fees:{' '}
                   </span>
-                  <span style={{ fontWeight: 600, color: darkMode ? '#fff' : '#212B36' }}>
+                  <span className={cn('font-semibold', darkMode ? 'text-white' : 'text-[#212B36]')}>
                     <XrpValue value={platformStats.reduce((s, p) => s + p.fees, 0)} />
                   </span>
                 </div>
                 <div>
-                  <span style={{ color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>
+                  <span className={darkMode ? 'text-white/40' : 'text-black/40'}>
                     Platforms:{' '}
                   </span>
-                  <span style={{ fontWeight: 600, color: darkMode ? '#fff' : '#212B36' }}>
+                  <span className={cn('font-semibold', darkMode ? 'text-white' : 'text-[#212B36]')}>
                     {platformStats.length}
                   </span>
                 </div>
@@ -1687,141 +1182,86 @@ export default function TokenMarketPage({ stats }) {
           <Section>
             <TableContainer darkMode={darkMode}>
               <div
-                style={{
-                  padding: '12px 16px',
-                  borderBottom: `1px solid ${darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 8
-                }}
+                className={cn('py-[12px] px-[16px] flex items-center gap-[8px] border-b', darkMode ? 'border-white/[0.06]' : 'border-black/[0.06]')}
               >
-                <PiggyBank size={14} style={{ color: '#3b82f6' }} />
+                <PiggyBank size={14} className="text-[#3b82f6]" />
                 <span
-                  style={{ fontSize: 12, fontWeight: 500, color: darkMode ? '#fff' : '#212B36' }}
+                  className={cn('text-[12px] font-medium', darkMode ? 'text-white' : 'text-[#212B36]')}
                 >
                   Trader Balances
                 </span>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 0 }}>
+              <div className="grid grid-cols-4">
                 <div
-                  style={{
-                    padding: '14px 16px',
-                    borderRight: `1px solid ${darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'}`
-                  }}
+                  className={cn('py-[14px] px-[16px] border-r', darkMode ? 'border-white/[0.04]' : 'border-black/[0.04]')}
                 >
                   <div
-                    style={{
-                      fontSize: 10,
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.04em',
-                      color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.45)',
-                      marginBottom: 4
-                    }}
+                    className={cn('text-[10px] uppercase tracking-[0.04em] mb-[4px]', darkMode ? 'text-white/40' : 'text-black/[0.45]')}
                   >
                     24h Active
                   </div>
                   <div
-                    style={{ fontSize: 16, fontWeight: 600, color: darkMode ? '#fff' : '#212B36' }}
+                    className={cn('text-[16px] font-semibold', darkMode ? 'text-white' : 'text-[#212B36]')}
                   >
                     <XrpValue value={stats.traderBalances.balance24h || 0} />
                   </div>
                   <div
-                    style={{
-                      fontSize: 10,
-                      color: darkMode ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)',
-                      marginTop: 2
-                    }}
+                    className={cn('text-[10px] mt-[2px]', darkMode ? 'text-white/[0.35]' : 'text-black/[0.35]')}
                   >
                     {fNumber(stats.traderBalances.traders24h || 0)} traders
                   </div>
                 </div>
                 <div
-                  style={{
-                    padding: '14px 16px',
-                    borderRight: `1px solid ${darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'}`
-                  }}
+                  className={cn('py-[14px] px-[16px] border-r', darkMode ? 'border-white/[0.04]' : 'border-black/[0.04]')}
                 >
                   <div
-                    style={{
-                      fontSize: 10,
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.04em',
-                      color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.45)',
-                      marginBottom: 4
-                    }}
+                    className={cn('text-[10px] uppercase tracking-[0.04em] mb-[4px]', darkMode ? 'text-white/40' : 'text-black/[0.45]')}
                   >
                     7d Active
                   </div>
                   <div
-                    style={{ fontSize: 16, fontWeight: 600, color: darkMode ? '#fff' : '#212B36' }}
+                    className={cn('text-[16px] font-semibold', darkMode ? 'text-white' : 'text-[#212B36]')}
                   >
                     <XrpValue value={stats.traderBalances.balance7d || 0} />
                   </div>
                   <div
-                    style={{
-                      fontSize: 10,
-                      color: darkMode ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)',
-                      marginTop: 2
-                    }}
+                    className={cn('text-[10px] mt-[2px]', darkMode ? 'text-white/[0.35]' : 'text-black/[0.35]')}
                   >
                     {fNumber(stats.traderBalances.traders7d || 0)} traders
                   </div>
                 </div>
                 <div
-                  style={{
-                    padding: '14px 16px',
-                    borderRight: `1px solid ${darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'}`
-                  }}
+                  className={cn('py-[14px] px-[16px] border-r', darkMode ? 'border-white/[0.04]' : 'border-black/[0.04]')}
                 >
                   <div
-                    style={{
-                      fontSize: 10,
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.04em',
-                      color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.45)',
-                      marginBottom: 4
-                    }}
+                    className={cn('text-[10px] uppercase tracking-[0.04em] mb-[4px]', darkMode ? 'text-white/40' : 'text-black/[0.45]')}
                   >
                     30d Active
                   </div>
                   <div
-                    style={{ fontSize: 16, fontWeight: 600, color: darkMode ? '#fff' : '#212B36' }}
+                    className={cn('text-[16px] font-semibold', darkMode ? 'text-white' : 'text-[#212B36]')}
                   >
                     <XrpValue value={stats.traderBalances.balance30d || 0} />
                   </div>
                   <div
-                    style={{
-                      fontSize: 10,
-                      color: darkMode ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)',
-                      marginTop: 2
-                    }}
+                    className={cn('text-[10px] mt-[2px]', darkMode ? 'text-white/[0.35]' : 'text-black/[0.35]')}
                   >
                     {fNumber(stats.traderBalances.traders30d || 0)} traders
                   </div>
                 </div>
-                <div style={{ padding: '14px 16px' }}>
+                <div className="py-[14px] px-[16px]">
                   <div
-                    style={{
-                      fontSize: 10,
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.04em',
-                      color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.45)',
-                      marginBottom: 4
-                    }}
+                    className={cn('text-[10px] uppercase tracking-[0.04em] mb-[4px]', darkMode ? 'text-white/40' : 'text-black/[0.45]')}
                   >
                     All Time
                   </div>
                   <div
-                    style={{ fontSize: 16, fontWeight: 600, color: darkMode ? '#fff' : '#212B36' }}
+                    className={cn('text-[16px] font-semibold', darkMode ? 'text-white' : 'text-[#212B36]')}
                   >
                     <XrpValue value={stats.traderBalances.balanceAll || 0} />
                   </div>
                   <div
-                    style={{
-                      fontSize: 10,
-                      color: darkMode ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)',
-                      marginTop: 2
-                    }}
+                    className={cn('text-[10px] mt-[2px]', darkMode ? 'text-white/[0.35]' : 'text-black/[0.35]')}
                   >
                     {fNumber(stats.traderBalances.tradersAll || 0)} traders
                   </div>
@@ -1835,17 +1275,9 @@ export default function TokenMarketPage({ stats }) {
         <Section>
           <TableContainer darkMode={darkMode}>
             <div
-              style={{
-                padding: '12px 16px',
-                borderBottom: `1px solid ${darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`,
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                flexWrap: 'wrap',
-                gap: 8
-              }}
+              className={cn('py-[12px] px-[16px] flex justify-between items-center flex-wrap gap-[8px] border-b', darkMode ? 'border-white/[0.06]' : 'border-black/[0.06]')}
             >
-              <span style={{ fontSize: 12, fontWeight: 500, color: darkMode ? '#fff' : '#212B36' }}>
+              <span className={cn('text-[12px] font-medium', darkMode ? 'text-white' : 'text-[#212B36]')}>
                 Market Summary
               </span>
               <ButtonGroup>
@@ -1866,146 +1298,60 @@ export default function TokenMarketPage({ stats }) {
                 ))}
               </ButtonGroup>
             </div>
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
-                gap: 0
-              }}
-            >
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))' }}>
               <div
-                style={{
-                  padding: '14px 16px',
-                  borderRight: `1px solid ${darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'}`,
-                  borderBottom: `1px solid ${darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'}`
-                }}
+                className={cn('py-[14px] px-[16px] border-r border-b', darkMode ? 'border-white/[0.04]' : 'border-black/[0.04]')}
               >
-                <div
-                  style={{
-                    fontSize: 10,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.04em',
-                    color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.45)',
-                    marginBottom: 4
-                  }}
-                >
+                <div className={cn('text-[10px] uppercase tracking-[0.04em] mb-[4px]', darkMode ? 'text-white/40' : 'text-black/[0.45]')}>
                   Volume
                 </div>
-                <div
-                  style={{ fontSize: 18, fontWeight: 600, color: darkMode ? '#fff' : '#212B36' }}
-                >
+                <div className={cn('text-[18px] font-semibold', darkMode ? 'text-white' : 'text-[#212B36]')}>
                   <XrpValue value={summaryStats.volume} />
                 </div>
               </div>
               <div
-                style={{
-                  padding: '14px 16px',
-                  borderRight: `1px solid ${darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'}`,
-                  borderBottom: `1px solid ${darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'}`
-                }}
+                className={cn('py-[14px] px-[16px] border-r border-b', darkMode ? 'border-white/[0.04]' : 'border-black/[0.04]')}
               >
-                <div
-                  style={{
-                    fontSize: 10,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.04em',
-                    color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.45)',
-                    marginBottom: 4
-                  }}
-                >
+                <div className={cn('text-[10px] uppercase tracking-[0.04em] mb-[4px]', darkMode ? 'text-white/40' : 'text-black/[0.45]')}>
                   Trades
                 </div>
-                <div
-                  style={{ fontSize: 18, fontWeight: 600, color: darkMode ? '#fff' : '#212B36' }}
-                >
+                <div className={cn('text-[18px] font-semibold', darkMode ? 'text-white' : 'text-[#212B36]')}>
                   {fNumber(summaryStats.trades)}
                 </div>
               </div>
               <div
-                style={{
-                  padding: '14px 16px',
-                  borderRight: `1px solid ${darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'}`,
-                  borderBottom: `1px solid ${darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'}`
-                }}
+                className={cn('py-[14px] px-[16px] border-r border-b', darkMode ? 'border-white/[0.04]' : 'border-black/[0.04]')}
               >
-                <div
-                  style={{
-                    fontSize: 10,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.04em',
-                    color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.45)',
-                    marginBottom: 4
-                  }}
-                >
+                <div className={cn('text-[10px] uppercase tracking-[0.04em] mb-[4px]', darkMode ? 'text-white/40' : 'text-black/[0.45]')}>
                   Avg Trade Size
                 </div>
-                <div
-                  style={{ fontSize: 18, fontWeight: 600, color: darkMode ? '#fff' : '#212B36' }}
-                >
+                <div className={cn('text-[18px] font-semibold', darkMode ? 'text-white' : 'text-[#212B36]')}>
                   <XrpValue value={summaryStats.avgTrade} format={(v) => (v || 0).toFixed(0)} />
                 </div>
-                <div
-                  style={{
-                    fontSize: 10,
-                    color: darkMode ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)',
-                    marginTop: 2
-                  }}
-                >
+                <div className={cn('text-[10px] mt-[2px]', darkMode ? 'text-white/[0.35]' : 'text-black/[0.35]')}>
                   Volume / Trades
                 </div>
               </div>
               <div
-                style={{
-                  padding: '14px 16px',
-                  borderRight: `1px solid ${darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'}`,
-                  borderBottom: `1px solid ${darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'}`
-                }}
+                className={cn('py-[14px] px-[16px] border-r border-b', darkMode ? 'border-white/[0.04]' : 'border-black/[0.04]')}
               >
-                <div
-                  style={{
-                    fontSize: 10,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.04em',
-                    color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.45)',
-                    marginBottom: 4
-                  }}
-                >
+                <div className={cn('text-[10px] uppercase tracking-[0.04em] mb-[4px]', darkMode ? 'text-white/40' : 'text-black/[0.45]')}>
                   Fees Collected
                 </div>
-                <div
-                  style={{ fontSize: 18, fontWeight: 600, color: darkMode ? '#fff' : '#212B36' }}
-                >
+                <div className={cn('text-[18px] font-semibold', darkMode ? 'text-white' : 'text-[#212B36]')}>
                   <XrpValue value={summaryStats.fees} />
                 </div>
               </div>
               <div
-                style={{
-                  padding: '14px 16px',
-                  borderRight: `1px solid ${darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'}`,
-                  borderBottom: `1px solid ${darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'}`
-                }}
+                className={cn('py-[14px] px-[16px] border-r border-b', darkMode ? 'border-white/[0.04]' : 'border-black/[0.04]')}
               >
-                <div
-                  style={{
-                    fontSize: 10,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.04em',
-                    color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.45)',
-                    marginBottom: 4
-                  }}
-                >
+                <div className={cn('text-[10px] uppercase tracking-[0.04em] mb-[4px]', darkMode ? 'text-white/40' : 'text-black/[0.45]')}>
                   AMM Volume
                 </div>
-                <div style={{ fontSize: 18, fontWeight: 600, color: '#8b5cf6' }}>
+                <div className="text-[18px] font-semibold text-[#8b5cf6]">
                   <XrpValue value={summaryStats.volumeAMM} />
                 </div>
-                <div
-                  style={{
-                    fontSize: 10,
-                    color: darkMode ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)',
-                    marginTop: 2
-                  }}
-                >
+                <div className={cn('text-[10px] mt-[2px]', darkMode ? 'text-white/[0.35]' : 'text-black/[0.35]')}>
                   {summaryStats.volume > 0
                     ? ((summaryStats.volumeAMM / summaryStats.volume) * 100).toFixed(1)
                     : 0}
@@ -2013,32 +1359,15 @@ export default function TokenMarketPage({ stats }) {
                 </div>
               </div>
               <div
-                style={{
-                  padding: '14px 16px',
-                  borderBottom: `1px solid ${darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'}`
-                }}
+                className={cn('py-[14px] px-[16px] border-b', darkMode ? 'border-white/[0.04]' : 'border-black/[0.04]')}
               >
-                <div
-                  style={{
-                    fontSize: 10,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.04em',
-                    color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.45)',
-                    marginBottom: 4
-                  }}
-                >
+                <div className={cn('text-[10px] uppercase tracking-[0.04em] mb-[4px]', darkMode ? 'text-white/40' : 'text-black/[0.45]')}>
                   DEX Volume
                 </div>
-                <div style={{ fontSize: 18, fontWeight: 600, color: '#10b981' }}>
+                <div className="text-[18px] font-semibold text-[#10b981]">
                   <XrpValue value={summaryStats.volumeNonAMM} />
                 </div>
-                <div
-                  style={{
-                    fontSize: 10,
-                    color: darkMode ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)',
-                    marginTop: 2
-                  }}
-                >
+                <div className={cn('text-[10px] mt-[2px]', darkMode ? 'text-white/[0.35]' : 'text-black/[0.35]')}>
                   {summaryStats.volume > 0
                     ? ((summaryStats.volumeNonAMM / summaryStats.volume) * 100).toFixed(1)
                     : 0}
@@ -2048,12 +1377,7 @@ export default function TokenMarketPage({ stats }) {
             </div>
             {/* Period indicator */}
             <div
-              style={{
-                padding: '10px 16px',
-                borderTop: `1px solid ${darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'}`,
-                fontSize: 11,
-                color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'
-              }}
+              className={cn('py-[10px] px-[16px] text-[11px] border-t', darkMode ? 'border-white/[0.04] text-white/40' : 'border-black/[0.04] text-black/40')}
             >
               {summaryTimeRange === 'all'
                 ? `Based on ${summaryStats.days} days of data`
@@ -2066,17 +1390,9 @@ export default function TokenMarketPage({ stats }) {
         <Section>
           <TableContainer darkMode={darkMode}>
             <div
-              style={{
-                padding: '12px 16px',
-                borderBottom: `1px solid ${darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`,
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                flexWrap: 'wrap',
-                gap: 8
-              }}
+              className={cn('py-[12px] px-[16px] flex justify-between items-center flex-wrap gap-[8px] border-b', darkMode ? 'border-white/[0.06]' : 'border-black/[0.06]')}
             >
-              <span style={{ fontSize: 12, fontWeight: 500, color: darkMode ? '#fff' : '#212B36' }}>
+              <span className={cn('text-[12px] font-medium', darkMode ? 'text-white' : 'text-[#212B36]')}>
                 AMM vs DEX
               </span>
               <ButtonGroup>
@@ -2097,17 +1413,9 @@ export default function TokenMarketPage({ stats }) {
                 ))}
               </ButtonGroup>
             </div>
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-                gap: 0
-              }}
-            >
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))' }}>
               <div
-                style={{
-                  borderRight: `1px solid ${darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'}`
-                }}
+                className={cn('border-r', darkMode ? 'border-white/[0.04]' : 'border-black/[0.04]')}
               >
                 <Table>
                   <thead>
@@ -2125,21 +1433,21 @@ export default function TokenMarketPage({ stats }) {
                     <tr>
                       <Td
                         darkMode={darkMode}
-                        style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : '#637381' }}
+                        className={darkMode ? 'text-white/50' : 'text-[#637381]'}
                       >
                         Volume
                       </Td>
-                      <Td darkMode={darkMode} align="right" style={{ fontWeight: 500 }}>
+                      <Td darkMode={darkMode} align="right" className="font-medium">
                         <XrpValue value={ammStats.volumeAMM} size="small" />
                       </Td>
-                      <Td darkMode={darkMode} align="right" style={{ fontWeight: 500 }}>
+                      <Td darkMode={darkMode} align="right" className="font-medium">
                         <XrpValue value={ammStats.volumeNonAMM} size="small" />
                       </Td>
                     </tr>
                     <tr>
                       <Td
                         darkMode={darkMode}
-                        style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : '#637381' }}
+                        className={darkMode ? 'text-white/50' : 'text-[#637381]'}
                       >
                         Trades
                       </Td>
@@ -2154,7 +1462,7 @@ export default function TokenMarketPage({ stats }) {
                       <tr>
                         <Td
                           darkMode={darkMode}
-                          style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : '#637381' }}
+                          className={darkMode ? 'text-white/50' : 'text-[#637381]'}
                         >
                           Traders
                         </Td>
@@ -2169,63 +1477,41 @@ export default function TokenMarketPage({ stats }) {
                   </tbody>
                 </Table>
               </div>
-              <div style={{ padding: '16px' }}>
+              <div className="p-[16px]">
                 <div
-                  style={{
-                    fontSize: 10,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.04em',
-                    color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.45)',
-                    marginBottom: 16
-                  }}
+                  className={cn('text-[10px] uppercase tracking-[0.04em] mb-[16px]', darkMode ? 'text-white/40' : 'text-black/[0.45]')}
                 >
                   Pool Activity
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
+                <div className="grid grid-cols-3 gap-[16px]">
                   <div>
                     <div
-                      style={{
-                        fontSize: 11,
-                        color: darkMode ? 'rgba(255,255,255,0.5)' : '#637381',
-                        marginBottom: 4
-                      }}
+                      className={cn('text-[11px] mb-[4px]', darkMode ? 'text-white/50' : 'text-[#637381]')}
                     >
                       Deposits
                     </div>
-                    <div style={{ fontSize: 16, fontWeight: 600, color: '#10b981' }}>
+                    <div className="text-[16px] font-semibold text-[#10b981]">
                       <XrpValue value={ammStats.ammDeposits} />
                     </div>
                   </div>
                   <div>
                     <div
-                      style={{
-                        fontSize: 11,
-                        color: darkMode ? 'rgba(255,255,255,0.5)' : '#637381',
-                        marginBottom: 4
-                      }}
+                      className={cn('text-[11px] mb-[4px]', darkMode ? 'text-white/50' : 'text-[#637381]')}
                     >
                       Withdrawals
                     </div>
-                    <div style={{ fontSize: 16, fontWeight: 600, color: '#ef4444' }}>
+                    <div className="text-[16px] font-semibold text-[#ef4444]">
                       <XrpValue value={ammStats.ammWithdraws} />
                     </div>
                   </div>
                   <div>
                     <div
-                      style={{
-                        fontSize: 11,
-                        color: darkMode ? 'rgba(255,255,255,0.5)' : '#637381',
-                        marginBottom: 4
-                      }}
+                      className={cn('text-[11px] mb-[4px]', darkMode ? 'text-white/50' : 'text-[#637381]')}
                     >
                       Net Flow
                     </div>
                     <div
-                      style={{
-                        fontSize: 16,
-                        fontWeight: 600,
-                        color: ammStats.ammNetFlow >= 0 ? '#10b981' : '#ef4444'
-                      }}
+                      className={cn('text-[16px] font-semibold', ammStats.ammNetFlow >= 0 ? 'text-[#10b981]' : 'text-[#ef4444]')}
                     >
                       {ammStats.ammNetFlow >= 0 ? '+' : ''}
                       <XrpValue value={ammStats.ammNetFlow} showSymbol={true} />
@@ -2233,15 +1519,9 @@ export default function TokenMarketPage({ stats }) {
                   </div>
                 </div>
                 {/* Visual comparison bar */}
-                <div style={{ marginTop: 16 }}>
+                <div className="mt-[16px]">
                   <div
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      fontSize: 10,
-                      marginBottom: 4,
-                      color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'
-                    }}
+                    className={cn('flex justify-between text-[10px] mb-[4px]', darkMode ? 'text-white/40' : 'text-black/40')}
                   >
                     <span>AMM vs DEX Volume Share</span>
                     <span>
@@ -2255,62 +1535,25 @@ export default function TokenMarketPage({ stats }) {
                     </span>
                   </div>
                   <div
-                    style={{
-                      height: 8,
-                      borderRadius: 4,
-                      background: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
-                      overflow: 'hidden',
-                      display: 'flex'
-                    }}
+                    className={cn('h-[8px] rounded-[4px] overflow-hidden flex', darkMode ? 'bg-white/10' : 'bg-black/10')}
                   >
                     <div
-                      style={{
-                        height: '100%',
-                        background: '#8b5cf6',
-                        width: `${ammStats.volumeAMM + ammStats.volumeNonAMM > 0 ? (ammStats.volumeAMM / (ammStats.volumeAMM + ammStats.volumeNonAMM)) * 100 : 0}%`,
-                        transition: 'width 0.3s ease'
-                      }}
+                      className="h-full bg-[#8b5cf6] transition-[width] duration-300 ease-in-out"
+                      style={{ width: `${ammStats.volumeAMM + ammStats.volumeNonAMM > 0 ? (ammStats.volumeAMM / (ammStats.volumeAMM + ammStats.volumeNonAMM)) * 100 : 0}%` }}
                     />
-                    <div
-                      style={{
-                        height: '100%',
-                        background: '#10b981',
-                        flex: 1
-                      }}
-                    />
+                    <div className="h-full bg-[#10b981] flex-1" />
                   </div>
-                  <div
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      marginTop: 6,
-                      fontSize: 10
-                    }}
-                  >
+                  <div className="flex justify-between mt-[6px] text-[10px]">
                     <span
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 4,
-                        color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)'
-                      }}
+                      className={cn('flex items-center gap-[4px]', darkMode ? 'text-white/50' : 'text-black/50')}
                     >
-                      <span
-                        style={{ width: 8, height: 8, borderRadius: 2, background: '#8b5cf6' }}
-                      />{' '}
+                      <span className="w-[8px] h-[8px] rounded-[2px] bg-[#8b5cf6]" />{' '}
                       AMM
                     </span>
                     <span
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 4,
-                        color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)'
-                      }}
+                      className={cn('flex items-center gap-[4px]', darkMode ? 'text-white/50' : 'text-black/50')}
                     >
-                      <span
-                        style={{ width: 8, height: 8, borderRadius: 2, background: '#10b981' }}
-                      />{' '}
+                      <span className="w-[8px] h-[8px] rounded-[2px] bg-[#10b981]" />{' '}
                       DEX
                     </span>
                   </div>
