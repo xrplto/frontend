@@ -1421,7 +1421,7 @@ const WalletContent = ({
         {showAllAccounts && (
           <div
             className={cn(
-              'border-t max-h-[200px] overflow-y-auto',
+              'border-t max-h-[320px] overflow-y-auto',
               isDark ? 'border-white/[0.06]' : 'border-gray-100'
             )}
           >
@@ -1429,8 +1429,7 @@ const WalletContent = ({
               const currentAccount = profiles.find((p) => p.account === accountLogin);
               const others = profiles.filter((p) => p.account !== accountLogin);
               const sorted = [...(currentAccount ? [currentAccount] : []), ...others];
-              const startIndex = walletPage * walletsPerPage;
-              return sorted.slice(startIndex, startIndex + walletsPerPage).map((profile) => {
+              return sorted.map((profile) => {
                 const isCurrent = profile.account === accountLogin;
                 const isInactive = accountsActivation[profile.account] === false && !(isCurrent && parseFloat(accountBalance?.curr1?.value));
                 return (
@@ -2875,14 +2874,12 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
   // Removed visibleWalletCount - now showing all accounts by default with search/pagination
 
-  // Check activation status for visible accounts (parallel)
+  // Check activation status for all accounts (parallel)
   useEffect(() => {
     if (!profiles?.length) return;
 
     const checkActivations = async () => {
-      const start = walletPage * walletsPerPage;
-      const visible = profiles.slice(start, start + walletsPerPage);
-      const unchecked = visible.filter(p => accountsActivation[p.account] === undefined);
+      const unchecked = profiles.filter(p => accountsActivation[p.account] === undefined);
 
       if (!unchecked.length) return;
 
@@ -2903,7 +2900,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     };
 
     checkActivations();
-  }, [profiles, walletPage, walletsPerPage, checkAccountActivity, accountsActivation]);
+  }, [profiles, checkAccountActivity, accountsActivation]);
 
   const handleBackupSeed = async (targetProfile = null, seedOnly = false) => {
     const profile = targetProfile || accountProfile;

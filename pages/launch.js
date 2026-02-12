@@ -379,6 +379,16 @@ function CreatePage() {
     return () => { cancelled = true; };
   }, [formData.bundleRecipients]);
 
+  // Remove bundle recipients that match the active wallet when account changes
+  useEffect(() => {
+    const activeAddr = accountProfile?.account || accountProfile?.address;
+    if (!activeAddr || formData.bundleRecipients.length === 0) return;
+    const filtered = formData.bundleRecipients.filter((r) => r.address !== activeAddr);
+    if (filtered.length !== formData.bundleRecipients.length) {
+      setFormData((prev) => ({ ...prev, bundleRecipients: filtered }));
+    }
+  }, [accountProfile]);
+
   // Decrypt seed on mount if OAuth wallet
   useEffect(() => {
     const decryptSeed = async () => {
