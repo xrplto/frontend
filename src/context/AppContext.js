@@ -1,6 +1,5 @@
 import { useState, createContext, useEffect, useMemo } from 'react';
 import api from 'src/utils/api';
-import { Client } from 'xrpl';
 
 // Redux
 import { Provider, useDispatch } from 'react-redux';
@@ -12,6 +11,9 @@ import { PuffLoader } from 'src/components/Spinners';
 // Encrypted storage for sensitive data
 import { EncryptedWalletStorage } from 'src/utils/encryptedWalletStorage';
 
+// Split contexts for performance — consumers only re-render when their slice changes
+export const ThemeContext = createContext({});
+export const WalletContext = createContext({});
 export const AppContext = createContext({});
 
 // Module-level singleton to prevent re-initialization on every render
@@ -44,8 +46,19 @@ function ContextProviderInner({ children, data, openSnackbar }) {
   const [trustlineUpdate, setTrustlineUpdate] = useState(null); // { issuer, currency, hasTrustline }
   const [loading, setLoading] = useState(false);
   const [connecting, setConnecting] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
-  const [themeName, setThemeName] = useState('XrplToLightTheme');
+  const [darkMode, setDarkMode] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    const saved = window.localStorage.getItem('appThemeName');
+    if (saved) return saved === 'XrplToDarkTheme';
+    return window.localStorage.getItem('appTheme') === 'true';
+  });
+  const [themeName, setThemeName] = useState(() => {
+    if (typeof window === 'undefined') return 'XrplToLightTheme';
+    const saved = window.localStorage.getItem('appThemeName');
+    if (saved) return saved;
+    const isDark = window.localStorage.getItem('appTheme');
+    return isDark === 'true' ? 'XrplToDarkTheme' : 'XrplToLightTheme';
+  });
   const [activeFiatCurrency, setActiveFiatCurrency] = useState('XRP');
 
   // Load profile synchronously on mount to avoid flash of "No wallet connected"
@@ -140,7 +153,7 @@ function ContextProviderInner({ children, data, openSnackbar }) {
           });
           const safeAllProfiles = stripSeedArray(allProfiles);
           setProfiles(safeAllProfiles);
-          window.localStorage.setItem('account_profiles_2', JSON.stringify(safeAllProfiles));
+          window.localStorage.setItem('profiles', JSON.stringify(safeAllProfiles));
         }
       }
     };
@@ -324,9 +337,12 @@ function ContextProviderInner({ children, data, openSnackbar }) {
   };
 
   const doLogOut = () => {
-    // CRITICAL: Preserve encryption entropy before clearing localStorage
-    // Without this, encrypted data in IndexedDB becomes unrecoverable
+    // CRITICAL: Preserve keys that must survive logout
+    // Without entropy, encrypted data in IndexedDB becomes unrecoverable
+    // Without device_key_id, stored credentials in IndexedDB become orphaned
     const entropy = localStorage.getItem('__wk_entropy__');
+    const avatars = localStorage.getItem('__user_avatars__');
+    const deviceKeyId = localStorage.getItem('device_key_id');
 
     // Clear credential cache (seeds in memory)
     try { walletStorage.lockWallet(); } catch (e) { /* ignore */ }
@@ -335,9 +351,15 @@ function ContextProviderInner({ children, data, openSnackbar }) {
     localStorage.clear();
     sessionStorage.clear();
 
-    // Restore encryption entropy so IndexedDB data can still be decrypted
+    // Restore keys that must persist across sessions
     if (entropy) {
       localStorage.setItem('__wk_entropy__', entropy);
+    }
+    if (avatars) {
+      localStorage.setItem('__user_avatars__', avatars);
+    }
+    if (deviceKeyId) {
+      localStorage.setItem('device_key_id', deviceKeyId);
     }
 
     // Clear React state
@@ -387,16 +409,17 @@ function ContextProviderInner({ children, data, openSnackbar }) {
     const account = accountProfile.account;
     let ws = null;
     let reconnectTimeout = null;
+    let attempts = 0;
+    const MAX_RECONNECT = 5;
 
     const connect = async () => {
       try {
         const res = await fetch(`/api/ws/session?type=balance&id=${account}`);
         const { wsUrl } = await res.json();
-        console.log('[Balance WS] Connecting:', wsUrl);
         ws = new WebSocket(wsUrl);
 
       ws.onopen = () => {
-        console.log('[Balance WS] Connected');
+        attempts = 0; // Reset on successful connection
       };
 
       ws.onmessage = (event) => {
@@ -417,21 +440,22 @@ function ContextProviderInner({ children, data, openSnackbar }) {
         }
       };
 
-      ws.onerror = (err) => {
-        console.error('[Balance WS] Error:', err);
-      };
+      ws.onerror = () => {};
 
       ws.onclose = (ev) => {
-          console.log(`[Balance WS] Closed code=${ev.code} reason="${ev.reason}"`);
-          if (ev.code !== 4011) {
-            reconnectTimeout = setTimeout(connect, 3000);
-          } else {
-            console.warn('[Balance WS] Connection limit reached - will not reconnect');
+          if (ev.code === 4011) return;
+          if (attempts < MAX_RECONNECT) {
+            const delay = Math.min(3000 * Math.pow(2, attempts), 60000);
+            attempts++;
+            reconnectTimeout = setTimeout(connect, delay);
           }
         };
       } catch (e) {
-        console.error('[Balance WS] Session error:', e);
-        reconnectTimeout = setTimeout(connect, 3000);
+        if (attempts < MAX_RECONNECT) {
+          const delay = Math.min(3000 * Math.pow(2, attempts), 60000);
+          attempts++;
+          reconnectTimeout = setTimeout(connect, delay);
+        }
       }
     };
 
@@ -504,13 +528,21 @@ function ContextProviderInner({ children, data, openSnackbar }) {
     }
   };
 
-  const contextValue = useMemo(
+  // Theme context — changes rarely (only on theme toggle)
+  const themeValue = useMemo(
     () => ({
       toggleTheme,
       darkMode,
       setDarkMode,
       themeName,
-      setTheme,
+      setTheme
+    }),
+    [darkMode, themeName]
+  );
+
+  // Wallet context — changes on login/logout/balance updates
+  const walletValue = useMemo(
+    () => ({
       accountProfile,
       setActiveProfile,
       profiles,
@@ -518,26 +550,33 @@ function ContextProviderInner({ children, data, openSnackbar }) {
       removeProfile,
       doLogIn,
       doLogOut,
-      setLoading,
-      openSnackbar,
-      sync,
-      setSync,
-      activeFiatCurrency,
-      toggleFiatCurrency,
+      accountBalance,
+      setAccountBalance,
       open,
       setOpen,
       openWalletModal,
       setOpenWalletModal,
       pendingWalletAuth,
       setPendingWalletAuth,
-      accountBalance,
-      setAccountBalance,
+      connecting,
+      setConnecting,
       handleOpen,
       handleClose,
       handleLogin,
-      handleLogout,
-      connecting,
-      setConnecting,
+      handleLogout
+    }),
+    [accountProfile, profiles, accountBalance, open, openWalletModal, pendingWalletAuth, connecting]
+  );
+
+  // App context — misc state (sync, currency, NFTs, watchlist, snackbar)
+  const appValue = useMemo(
+    () => ({
+      setLoading,
+      openSnackbar,
+      sync,
+      setSync,
+      activeFiatCurrency,
+      toggleFiatCurrency,
       deletingNfts,
       setDeletingNfts,
       watchList,
@@ -545,32 +584,22 @@ function ContextProviderInner({ children, data, openSnackbar }) {
       trustlineUpdate,
       setTrustlineUpdate
     }),
-    [
-      darkMode,
-      themeName,
-      accountProfile,
-      profiles,
-      sync,
-      activeFiatCurrency,
-      open,
-      openWalletModal,
-      accountBalance,
-      connecting,
-      deletingNfts,
-      watchList,
-      trustlineUpdate
-    ]
+    [sync, activeFiatCurrency, deletingNfts, watchList, trustlineUpdate]
   );
 
   return (
-    <AppContext.Provider value={contextValue}>
-      {loading && (
-        <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/70 backdrop-blur-md">
-          <PuffLoader color={'#00AB55'} size={50} />
-        </div>
-      )}
-      {children}
-    </AppContext.Provider>
+    <ThemeContext.Provider value={themeValue}>
+      <WalletContext.Provider value={walletValue}>
+        <AppContext.Provider value={appValue}>
+          {loading && (
+            <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/70 backdrop-blur-md">
+              <PuffLoader color={'#00AB55'} size={50} />
+            </div>
+          )}
+          {children}
+        </AppContext.Provider>
+      </WalletContext.Provider>
+    </ThemeContext.Provider>
   );
 }
 

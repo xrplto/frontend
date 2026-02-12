@@ -1,7 +1,7 @@
 import React, { useState, useRef, useContext, useEffect } from 'react';
 import api from 'src/utils/api';
 import * as xrpl from 'xrpl';
-import { AppContext } from 'src/context/AppContext';
+import { ThemeContext, WalletContext, AppContext } from 'src/context/AppContext';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import { UnifiedWalletStorage, deviceFingerprint } from 'src/utils/encryptedWalletStorage';
@@ -142,7 +142,9 @@ const Alert = ({ severity = 'info', children, className }) => {
 const Spinner = ({ size = 24 }) => <Loader2 size={size} className="animate-spin text-[#3b82f6]" />;
 
 function CreatePage() {
-  const { themeName, accountProfile, openSnackbar } = useContext(AppContext);
+  const { themeName } = useContext(ThemeContext);
+  const { accountProfile, profiles } = useContext(WalletContext);
+  const { openSnackbar } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
   const fileInputRef = useRef(null);
   const [formData, setFormData] = useState({
@@ -157,7 +159,8 @@ function CreatePage() {
     tokenSupply: 1000000000,
     userCheckPercent: 0,
     antiSnipe: false,
-    platformRetentionPercent: 3
+    platformRetentionPercent: 3,
+    bundleRecipients: []
   });
   const [fileName, setFileName] = useState('');
   const [imagePreview, setImagePreview] = useState('');
@@ -182,6 +185,9 @@ function CreatePage() {
   const [walletBalance, setWalletBalance] = useState(null);
   const [fundingSending, setFundingSending] = useState(false);
   const [seedDebugInfo, setSeedDebugInfo] = useState(null);
+  const [bundleClaimed, setBundleClaimed] = useState({}); // { [checkId]: boolean }
+  const [bundleClaiming, setBundleClaiming] = useState({}); // { [checkId]: 'connecting' | 'trustline' | 'cashing' }
+  const [bundleBalances, setBundleBalances] = useState({}); // { [address]: number | null }
 
   // Debug: load seed info for display
   useEffect(() => {
@@ -260,81 +266,48 @@ function CreatePage() {
   }, [accountProfile]);
 
   // Get signing wallet from cached credentials (no password prompt needed)
-  const getSigningWallet = async () => {
-    if (!accountProfile) {
-      console.log('[getSigningWallet] No accountProfile');
-      return null;
-    }
-    console.log('[getSigningWallet] wallet_type:', accountProfile.wallet_type, 'account:', accountProfile.account || accountProfile.address);
+  const safeParseSeed = (seed) => {
+    const trimmed = seed.trim();
+    const algorithm = trimmed.startsWith('sEd') ? 'ed25519' : 'secp256k1';
+    return xrpl.Wallet.fromSeed(trimmed, { algorithm });
+  };
 
-    const safeParseSeed = (seed, source) => {
-      console.log(`[getSigningWallet] Seed from ${source}: length=${seed?.length}, algo=${seed?.startsWith('sEd') ? 'ed25519' : 'secp256k1'}`);
-      const trimmed = seed.trim();
-      if (trimmed !== seed) {
-        console.warn(`[getSigningWallet] Seed had whitespace! original=${seed.length} trimmed=${trimmed.length}`);
-      }
-      const algorithm = trimmed.startsWith('sEd') ? 'ed25519' : 'secp256k1';
-      console.log(`[getSigningWallet] Using algorithm: ${algorithm}`);
-      return xrpl.Wallet.fromSeed(trimmed, { algorithm });
-    };
-
+  const getSigningWalletForProfile = async (profile) => {
+    if (!profile) return null;
     try {
-      // 1. Use pre-decrypted seed (set by decryptSeed useEffect)
-      if (decryptedSeed) {
-        return safeParseSeed(decryptedSeed, 'decryptedSeed');
-      }
-
-      // 2. Direct seed on profile
-      if (accountProfile.seed) {
-        return safeParseSeed(accountProfile.seed, 'accountProfile.seed');
-      }
-
-      // 3. Try auto-unlock from credential cache
+      if (profile.seed) return safeParseSeed(profile.seed);
       const walletStorage = new UnifiedWalletStorage();
-      let seed = null;
-
-      if (accountProfile.wallet_type === 'oauth' || accountProfile.wallet_type === 'social') {
-        const walletId = `${accountProfile.provider}_${accountProfile.provider_id}`;
-        console.log('[getSigningWallet] OAuth wallet, walletId:', walletId);
-        const storedPassword = await walletStorage.getSecureItem(`wallet_pwd_${walletId}`);
-        console.log('[getSigningWallet] storedPassword found:', !!storedPassword);
-        if (storedPassword) {
-          const walletData = await walletStorage.findWalletBySocialId(
-            walletId, storedPassword, accountProfile.account || accountProfile.address
-          );
-          console.log('[getSigningWallet] walletData found:', !!walletData, 'has seed:', !!walletData?.seed);
-          seed = walletData?.seed;
+      const address = profile.account || profile.address;
+      if (profile.wallet_type === 'oauth' || profile.wallet_type === 'social') {
+        const walletId = `${profile.provider}_${profile.provider_id}`;
+        const pwd = await walletStorage.getSecureItem(`wallet_pwd_${walletId}`);
+        if (pwd) {
+          const data = await walletStorage.findWalletBySocialId(walletId, pwd, address);
+          if (data?.seed) return safeParseSeed(data.seed);
         }
-      } else if (accountProfile.wallet_type === 'device') {
-        const deviceKeyId = await deviceFingerprint.getDeviceId();
-        console.log('[getSigningWallet] Device wallet, deviceKeyId:', !!deviceKeyId);
-        if (deviceKeyId) {
-          const storedPassword = await walletStorage.getWalletCredential(deviceKeyId);
-          console.log('[getSigningWallet] storedPassword found:', !!storedPassword);
-          if (storedPassword) {
-            const walletData = await walletStorage.getWalletByAddress(
-              accountProfile.account || accountProfile.address, storedPassword
-            );
-            console.log('[getSigningWallet] walletData found:', !!walletData, 'has seed:', !!walletData?.seed);
-            seed = walletData?.seed;
+      } else if (profile.wallet_type === 'device') {
+        const dkId = await deviceFingerprint.getDeviceId();
+        if (dkId) {
+          const pwd = await walletStorage.getWalletCredential(dkId);
+          if (pwd) {
+            const data = await walletStorage.getWalletByAddress(address, pwd);
+            if (data?.seed) return safeParseSeed(data.seed);
           }
         }
-      } else {
-        console.log('[getSigningWallet] Unknown wallet_type:', accountProfile.wallet_type);
       }
-
-      if (seed) {
-        const w = safeParseSeed(seed, 'credential-cache');
-        setDecryptedSeed(seed.trim()); // Cache trimmed for next time
-        return w;
-      }
-
-      console.log('[getSigningWallet] No seed found from any source');
       return null;
     } catch (err) {
-      console.error('[getSigningWallet] Error:', err.message, err.stack);
+      console.error('[getSigningWalletForProfile] Error:', err.message, err.stack);
       throw err;
     }
+  };
+
+  const getSigningWallet = async () => {
+    if (!accountProfile) return null;
+    if (decryptedSeed) return safeParseSeed(decryptedSeed);
+    const w = await getSigningWalletForProfile(accountProfile);
+    if (w) setDecryptedSeed(w.seed); // Cache for next time
+    return w;
   };
 
   // Fetch testnet balance for connected wallet or entered address
@@ -365,6 +338,46 @@ function CreatePage() {
     fetchBalance();
     return () => { cancelled = true; };
   }, [accountProfile, userWallet]);
+
+  // Fetch balances for bundle recipient addresses
+  useEffect(() => {
+    const addresses = formData.bundleRecipients
+      .map(r => r.address)
+      .filter(addr => addr && addr.startsWith('r') && addr.length >= 25);
+
+    if (addresses.length === 0) {
+      setBundleBalances({});
+      return;
+    }
+
+    let cancelled = false;
+    const fetchBalances = async () => {
+      const balances = {};
+      const client = new xrpl.Client('wss://s.altnet.rippletest.net:51233');
+      try {
+        await client.connect();
+        for (const addr of addresses) {
+          try {
+            const info = await client.request({
+              command: 'account_info',
+              account: addr,
+              ledger_index: 'validated'
+            });
+            balances[addr] = parseInt(info.result.account_data.Balance) / 1000000;
+          } catch {
+            balances[addr] = null;
+          }
+        }
+        await client.disconnect();
+        if (!cancelled) setBundleBalances(balances);
+      } catch {
+        if (!cancelled) setBundleBalances({});
+      }
+    };
+
+    fetchBalances();
+    return () => { cancelled = true; };
+  }, [formData.bundleRecipients]);
 
   // Decrypt seed on mount if OAuth wallet
   useEffect(() => {
@@ -440,7 +453,7 @@ function CreatePage() {
       try {
         const userCheckAmount = Math.floor(formData.tokenSupply * (formData.userCheckPercent / 100));
         const res = await api.get(
-          `https://api.xrpl.to/v1/launch-token/calculate-funding?ammXrpAmount=${formData.ammXrpAmount}&antiSnipe=${formData.antiSnipe}&tokenSupply=${formData.tokenSupply}&userCheckAmount=${userCheckAmount}&platformRetentionPercent=${formData.platformRetentionPercent}`
+          `https://api.xrpl.to/v1/launch-token/calculate-funding?ammXrpAmount=${formData.ammXrpAmount}&antiSnipe=${formData.antiSnipe}&tokenSupply=${formData.tokenSupply}&userCheckAmount=${userCheckAmount}&platformRetentionPercent=${formData.platformRetentionPercent}&bundleCount=${formData.bundleRecipients.length}`
         );
         if (!cancelled) setCostBreakdown(res.data);
       } catch (e) {
@@ -455,7 +468,7 @@ function CreatePage() {
     };
     const timeout = setTimeout(fetchCost, 300);
     return () => { cancelled = true; clearTimeout(timeout); };
-  }, [formData.ammXrpAmount, formData.antiSnipe, formData.tokenSupply, formData.userCheckPercent, formData.platformRetentionPercent]);
+  }, [formData.ammXrpAmount, formData.antiSnipe, formData.tokenSupply, formData.userCheckPercent, formData.platformRetentionPercent, formData.bundleRecipients.length]);
 
   // Restore session from localStorage on mount
   useEffect(() => {
@@ -468,7 +481,7 @@ function CreatePage() {
 
         // Restore form data if available
         if (parsed.formData) {
-          setFormData(parsed.formData);
+          setFormData((prev) => ({ ...prev, ...parsed.formData, bundleRecipients: parsed.formData.bundleRecipients || [] }));
           if (parsed.formData.image) {
             setFileName(parsed.formData.image.name || 'uploaded-file');
           }
@@ -634,15 +647,33 @@ function CreatePage() {
   };
 
   const isFormValid = () => {
-    return (
-      formData.tokenName &&
-      formData.ticker &&
-      formData.ticker.length >= 3 &&
-      formData.ticker.length <= 20 &&
-      formData.tokenSupply >= 1000 &&
-      formData.ammXrpAmount >= 1 &&
-      !Object.keys(errors).length
-    );
+    if (
+      !formData.tokenName ||
+      !formData.ticker ||
+      formData.ticker.length < 3 ||
+      formData.ticker.length > 20 ||
+      formData.tokenSupply < 1000 ||
+      formData.ammXrpAmount < 1 ||
+      Object.keys(errors).length
+    ) return false;
+
+    // Validate bundle recipients if any
+    if (formData.bundleRecipients.length > 0) {
+      const totalBundlePercent = formData.bundleRecipients.reduce((s, r) => s + r.percent, 0);
+      const totalAllocated = formData.userCheckPercent + totalBundlePercent + formData.platformRetentionPercent;
+      if (totalAllocated > 92) return false;
+      const seen = new Set();
+      for (const r of formData.bundleRecipients) {
+        if (!r.address || !/^r[1-9A-HJ-NP-Za-km-z]{24,34}$/.test(r.address)) return false;
+        if (r.percent <= 0 || r.percent > 50) return false;
+        if (seen.has(r.address)) return false;
+        // Check if account exists on-chain (null = account not found)
+        if (bundleBalances[r.address] === null) return false;
+        seen.add(r.address);
+      }
+    }
+
+    return true;
   };
 
   // Polling function to check funding status
@@ -732,6 +763,12 @@ function CreatePage() {
       if (formData.twitter) payload.twitter = formData.twitter;
       if (formData.antiSnipe) payload.antiSnipe = true;
       payload.platformRetentionPercent = formData.platformRetentionPercent;
+      if (formData.bundleRecipients.length > 0) {
+        payload.bundleRecipients = formData.bundleRecipients.map((r) => ({
+          address: r.address,
+          percent: r.percent
+        }));
+      }
 
       // Step 1: Initialize token launch (no image - keeps payload small)
       const response = await api.post('https://api.xrpl.to/v1/launch-token', payload);
@@ -768,7 +805,8 @@ function CreatePage() {
             userCheckPercent: formData.userCheckPercent,
             twitter: formData.twitter,
             telegram: formData.telegram,
-            website: formData.website
+            website: formData.website,
+            bundleRecipients: formData.bundleRecipients
           }
         })
       );
@@ -945,6 +983,22 @@ function CreatePage() {
                 </span>
               ))}
             </div>
+          </div>
+
+          {/* Connected wallet debug */}
+          <div className={cn(
+            'mb-3 px-3 py-2 rounded-lg flex items-center gap-2 text-[11px] font-mono',
+            accountProfile
+              ? isDark ? 'bg-green-500/10 text-green-400' : 'bg-green-50 text-green-700'
+              : isDark ? 'bg-white/5 text-white/40' : 'bg-gray-50 text-gray-400'
+          )}>
+            <span className={cn('w-1.5 h-1.5 rounded-full flex-shrink-0', accountProfile ? 'bg-green-500' : 'bg-gray-400')} />
+            {accountProfile
+              ? `${accountProfile.account || accountProfile.address}`
+              : 'No wallet connected'}
+            {profiles?.length > 1 && (
+              <span className="opacity-50 ml-auto text-[10px]">{profiles.length} wallets</span>
+            )}
           </div>
 
           {/* Token Information */}
@@ -1142,6 +1196,211 @@ function CreatePage() {
                     />
                   </div>
                 </div>
+              </div>
+
+              {/* Bundle Distribution */}
+              <div
+                className={cn(
+                  'rounded-lg border overflow-hidden transition-colors',
+                  formData.bundleRecipients.length > 0
+                    ? isDark
+                      ? 'border-[#3b82f6]/40 bg-[#3b82f6]/10'
+                      : 'border-[#3b82f6]/30 bg-[#3b82f6]/5'
+                    : isDark
+                      ? 'border-white/10 hover:border-white/20'
+                      : 'border-gray-200 hover:border-gray-300'
+                )}
+              >
+                <div
+                  className="flex items-center justify-between px-3 py-2.5 cursor-pointer"
+                  onClick={() => {
+                    if (formData.bundleRecipients.length === 0) {
+                      setFormData((prev) => ({
+                        ...prev,
+                        bundleRecipients: [{ address: '', percent: 5 }]
+                      }));
+                    } else {
+                      setFormData((prev) => ({ ...prev, bundleRecipients: [] }));
+                    }
+                  }}
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-[12px]">Bundle distribution</span>
+                    <span
+                      className={cn(
+                        'text-[10px] px-1.5 py-0.5 rounded',
+                        isDark ? 'bg-white/10' : 'bg-gray-100'
+                      )}
+                    >
+                      1 XRP/recipient
+                    </span>
+                  </div>
+                  <div
+                    className={cn(
+                      'w-8 h-4 rounded-full transition-colors relative',
+                      formData.bundleRecipients.length > 0 ? 'bg-[#3b82f6]' : isDark ? 'bg-white/20' : 'bg-gray-300'
+                    )}
+                  >
+                    <div
+                      className={cn(
+                        'absolute top-0.5 w-3 h-3 rounded-full bg-white transition-transform',
+                        formData.bundleRecipients.length > 0 ? 'translate-x-4' : 'translate-x-0.5'
+                      )}
+                    />
+                  </div>
+                </div>
+
+                {formData.bundleRecipients.length > 0 && (
+                  <div className="px-3 pb-3 space-y-2">
+                    {formData.bundleRecipients.map((r, idx) => {
+                      const activeAddr = accountProfile?.account || accountProfile?.address;
+                      const usedAddrs = new Set(formData.bundleRecipients.filter((_, j) => j !== idx).map((x) => x.address));
+                      const availableProfiles = (profiles || []).filter(
+                        (p) => (p.account || p.address) && (p.account || p.address) !== activeAddr && !usedAddrs.has(p.account || p.address)
+                      );
+                      const dupeAddr = r.address && formData.bundleRecipients.some(
+                        (x, j) => j !== idx && x.address === r.address
+                      );
+                      return (
+                        <div key={idx} className="flex items-start gap-2">
+                          <div className="flex-1">
+                            <select
+                              value={r.address}
+                              onChange={(e) => {
+                                const updated = [...formData.bundleRecipients];
+                                updated[idx] = { ...updated[idx], address: e.target.value };
+                                setFormData((prev) => ({ ...prev, bundleRecipients: updated }));
+                              }}
+                              className={cn(
+                                'w-full px-2.5 py-2 rounded-lg border text-[12px] bg-transparent transition-colors appearance-none cursor-pointer',
+                                dupeAddr
+                                  ? 'border-red-500/40'
+                                  : r.address
+                                    ? 'border-green-500/40'
+                                    : isDark
+                                      ? 'border-white/10 hover:border-white/20'
+                                      : 'border-gray-200 hover:border-gray-300',
+                                'focus:outline-none focus:border-[#3b82f6]'
+                              )}
+                            >
+                              <option value="" className={isDark ? 'bg-[#111]' : 'bg-white'}>Select wallet...</option>
+                              {availableProfiles.map((p) => {
+                                const addr = p.account || p.address;
+                                const typeLabel = p.wallet_type === 'oauth' || p.wallet_type === 'social'
+                                  ? p.provider || 'social'
+                                  : p.wallet_type || 'wallet';
+                                return (
+                                  <option key={addr} value={addr} className={isDark ? 'bg-[#111]' : 'bg-white'}>
+                                    {addr.slice(0, 8)}...{addr.slice(-4)} ({typeLabel})
+                                  </option>
+                                );
+                              })}
+                              {r.address && !availableProfiles.some((p) => (p.account || p.address) === r.address) && (
+                                <option value={r.address} className={isDark ? 'bg-[#111]' : 'bg-white'}>
+                                  {r.address.slice(0, 8)}...{r.address.slice(-4)}
+                                </option>
+                              )}
+                            </select>
+                            {dupeAddr && (
+                              <span className="text-[10px] text-red-500">Duplicate address</span>
+                            )}
+                            {r.address && bundleBalances[r.address] !== undefined && (
+                              <span className={cn(
+                                'text-[10px] mt-0.5',
+                                bundleBalances[r.address] === null
+                                  ? 'text-red-400'
+                                  : bundleBalances[r.address] >= 1
+                                    ? 'text-green-500'
+                                    : 'text-orange-400'
+                              )}>
+                                {bundleBalances[r.address] === null
+                                  ? 'Account not found'
+                                  : `${bundleBalances[r.address].toFixed(2)} XRP`}
+                              </span>
+                            )}
+                          </div>
+                          <div className="w-[72px] flex-shrink-0">
+                            <div className="flex items-center gap-1">
+                              <input
+                                type="number"
+                                min={0.01}
+                                max={50}
+                                step={0.1}
+                                value={r.percent}
+                                onChange={(e) => {
+                                  const updated = [...formData.bundleRecipients];
+                                  const val = Math.min(50, Math.max(0, parseFloat(e.target.value) || 0));
+                                  updated[idx] = { ...updated[idx], percent: val };
+                                  setFormData((prev) => ({ ...prev, bundleRecipients: updated }));
+                                }}
+                                className={cn(
+                                  'w-full px-2 py-2 rounded-lg border text-[12px] bg-transparent text-center transition-colors',
+                                  r.percent <= 0 || r.percent > 50
+                                    ? 'border-red-500/40'
+                                    : isDark
+                                      ? 'border-white/10 hover:border-white/20'
+                                      : 'border-gray-200 hover:border-gray-300',
+                                  'focus:outline-none focus:border-[#3b82f6]'
+                                )}
+                              />
+                              <span className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-gray-400')}>%</span>
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => {
+                              const updated = formData.bundleRecipients.filter((_, j) => j !== idx);
+                              setFormData((prev) => ({ ...prev, bundleRecipients: updated }));
+                            }}
+                            className={cn(
+                              'mt-2 text-[14px] leading-none opacity-40 hover:opacity-80 transition-opacity',
+                              isDark ? 'text-white' : 'text-gray-600'
+                            )}
+                          >
+                            ×
+                          </button>
+                        </div>
+                      );
+                    })}
+
+                    {(() => {
+                      const totalBundlePercent = formData.bundleRecipients.reduce((s, x) => s + x.percent, 0);
+                      const totalAllocated = formData.userCheckPercent + totalBundlePercent + formData.platformRetentionPercent;
+                      const activeAddr = accountProfile?.account || accountProfile?.address;
+                      const usedAddrs = new Set(formData.bundleRecipients.map((x) => x.address));
+                      const canAddMore = formData.bundleRecipients.length < 10 && (profiles || []).some(
+                        (p) => (p.account || p.address) && (p.account || p.address) !== activeAddr && !usedAddrs.has(p.account || p.address)
+                      );
+                      return (
+                        <>
+                          {totalAllocated > 92 && (
+                            <div className="flex items-center gap-1.5 text-[10px] text-red-500">
+                              <Info size={12} className="flex-shrink-0" />
+                              Total allocation {totalAllocated.toFixed(1)}% exceeds 92% max
+                            </div>
+                          )}
+                          <div className="flex items-center justify-between">
+                            {canAddMore && (
+                              <button
+                                onClick={() => {
+                                  setFormData((prev) => ({
+                                    ...prev,
+                                    bundleRecipients: [...prev.bundleRecipients, { address: '', percent: 5 }]
+                                  }));
+                                }}
+                                className="text-[11px] text-[#3b82f6] hover:underline"
+                              >
+                                + Add wallet
+                              </button>
+                            )}
+                            <span className="text-[10px] opacity-40 ml-auto">
+                              {formData.bundleRecipients.length}/10 · {totalBundlePercent.toFixed(1)}% total
+                            </span>
+                          </div>
+                        </>
+                      );
+                    })()}
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -1367,6 +1626,16 @@ function CreatePage() {
             />
           </div>
 
+          {/* Bundle recipient balance warning */}
+          {formData.bundleRecipients.length > 0 && formData.bundleRecipients.some(r => r.address && bundleBalances[r.address] === null) && (
+            <Alert severity="error" className="mb-3">
+              <Info size={14} className="flex-shrink-0" />
+              <span>
+                Bundle recipients must have active accounts. Fund missing addresses on testnet or remove them.
+              </span>
+            </Alert>
+          )}
+
           {/* Submit */}
           <Button
             fullWidth
@@ -1449,7 +1718,7 @@ function CreatePage() {
                 <div className="flex items-center justify-between py-1.5">
                   <span className="text-[12px] opacity-50">AMM pool</span>
                   <span className="text-[12px]">
-                    {(100 - formData.userCheckPercent - formData.platformRetentionPercent)}% · {formData.ammXrpAmount} XRP
+                    {(100 - formData.userCheckPercent - formData.platformRetentionPercent - formData.bundleRecipients.reduce((s, r) => s + r.percent, 0))}% · {formData.ammXrpAmount} XRP
                   </span>
                 </div>
                 <div className="flex items-center justify-between py-1.5">
@@ -1472,6 +1741,22 @@ function CreatePage() {
                     <span className="text-[12px] text-[#137DFE]">Enabled</span>
                   </div>
                 )}
+                {formData.bundleRecipients.length > 0 && (
+                  <div className="flex items-center justify-between py-1.5">
+                    <span className="text-[12px] opacity-50">Bundle distribution</span>
+                    <span className="text-[12px] text-[#137DFE]">
+                      {formData.bundleRecipients.length} recipient{formData.bundleRecipients.length > 1 ? 's' : ''} · {formData.bundleRecipients.reduce((s, r) => s + r.percent, 0).toFixed(1)}%
+                    </span>
+                  </div>
+                )}
+                {formData.bundleRecipients.length > 0 && formData.bundleRecipients.map((r, idx) => (
+                  <div key={idx} className="flex items-center justify-between py-1 pl-3">
+                    <span className="text-[11px] opacity-40 font-mono truncate max-w-[200px]">{r.address}</span>
+                    <span className="text-[11px] opacity-40">
+                      {r.percent}% · {Math.floor(formData.tokenSupply * (r.percent / 100)).toLocaleString()} tokens
+                    </span>
+                  </div>
+                ))}
               </div>
               {formData.userCheckPercent === 0 && (
                 <div className={cn(
@@ -1767,25 +2052,18 @@ function CreatePage() {
                     onClick={async () => {
                       if (!sessionData?.issuerAddress || !accountProfile) return;
                       setFundingSending(true);
-                      console.log('[FundWallet] Starting. issuerAddress:', sessionData.issuerAddress, 'required:', sessionData.requiredFunding || fundingAmount.required);
                       try {
-                        console.log('[FundWallet] Getting signing wallet...');
                         const wallet = await getSigningWallet();
                         if (!wallet) {
-                          console.log('[FundWallet] No wallet returned');
                           openSnackbar?.('Wallet locked - please reconnect your wallet', 'error');
                           setFundingSending(false);
                           return;
                         }
-                        console.log('[FundWallet] Wallet address:', wallet.address);
-
                         const wsUrl = sessionData?.network === 'mainnet'
                           ? 'wss://xrplcluster.com'
                           : 'wss://s.altnet.rippletest.net:51233';
-                        console.log('[FundWallet] Connecting to:', wsUrl);
                         const client = new xrpl.Client(wsUrl);
                         await client.connect();
-                        console.log('[FundWallet] Connected');
 
                         const amountDrops = String(
                           Math.ceil((sessionData.requiredFunding || fundingAmount.required) * 1000000)
@@ -1797,14 +2075,11 @@ function CreatePage() {
                           Amount: amountDrops,
                           SourceTag: 161803
                         };
-                        console.log('[FundWallet] Submitting payment:', JSON.stringify(paymentTx));
-
                         const result = await client.submitAndWait(paymentTx, {
                           autofill: true,
                           wallet
                         });
                         await client.disconnect();
-                        console.log('[FundWallet] Result:', result.result.meta.TransactionResult);
 
                         if (result.result.meta.TransactionResult === 'tesSUCCESS') {
                           openSnackbar?.('Funding sent! Waiting for confirmation...', 'success');
@@ -2169,7 +2444,6 @@ function CreatePage() {
                           await client.disconnect();
                           if (tx.result.meta.TransactionResult === 'tesSUCCESS') {
                             setCheckClaimed(true);
-                            localStorage.removeItem('tokenLaunchSession');
                             openSnackbar?.('Tokens claimed!', 'success');
                           } else {
                             openSnackbar?.('Failed: ' + tx.result.meta.TransactionResult, 'error');
@@ -2209,6 +2483,196 @@ function CreatePage() {
                     </p>
                   </div>
                 )}
+
+                {/* Bundle check claiming */}
+                {(sessionData.bundleCheckIds || []).length > 0 && (() => {
+                  const claimableChecks = (sessionData.bundleCheckIds || []).filter((b) =>
+                    (profiles || []).some((p) => (p.account || p.address) === b.address)
+                  );
+                  if (!claimableChecks.length) return null;
+                  return (
+                    <div
+                      className={cn(
+                        'p-4 rounded-lg border space-y-3',
+                        isDark ? 'border-white/10' : 'border-gray-200'
+                      )}
+                    >
+                      <p className="text-[14px] font-medium">Bundle Checks</p>
+                      <p className="text-[12px] opacity-70">
+                        {claimableChecks.length} check{claimableChecks.length > 1 ? 's' : ''} for your wallets
+                      </p>
+                      {claimableChecks.map((b) => {
+                        const isClaimed = bundleClaimed[b.checkId];
+                        const claimingStep = bundleClaiming[b.checkId];
+                        const profile = (profiles || []).find((p) => (p.account || p.address) === b.address);
+                        const typeLabel = profile?.wallet_type === 'oauth' || profile?.wallet_type === 'social'
+                          ? profile.provider || 'social'
+                          : profile?.wallet_type || 'wallet';
+                        return (
+                          <div
+                            key={b.checkId}
+                            className={cn(
+                              'p-3 rounded-lg border',
+                              isClaimed
+                                ? 'border-green-500/20 bg-green-500/5'
+                                : 'border-[#3b82f6]/20 bg-[#3b82f6]/5'
+                            )}
+                          >
+                            <div className="flex items-center justify-between mb-2">
+                              <div className="flex items-center gap-2">
+                                <span className="font-mono text-[11px]">
+                                  {b.address.slice(0, 8)}...{b.address.slice(-4)}
+                                </span>
+                                <span className={cn(
+                                  'text-[9px] px-1.5 py-0.5 rounded',
+                                  isDark ? 'bg-white/10' : 'bg-gray-100'
+                                )}>
+                                  {typeLabel}
+                                </span>
+                              </div>
+                              <span className="text-[12px]">
+                                {b.percent}% · {Number(b.amount).toLocaleString()} tokens
+                              </span>
+                            </div>
+                            {claimingStep && (
+                              <div className="mb-2 space-y-1">
+                                {['connecting', 'trustline', 'cashing'].map((step, i) => {
+                                  const labels = { connecting: 'Connecting to XRPL', trustline: 'Setting trustline', cashing: 'Claiming tokens' };
+                                  const steps = ['connecting', 'trustline', 'cashing'];
+                                  const currentIdx = steps.indexOf(claimingStep);
+                                  const isDone = i < currentIdx;
+                                  const isActive = step === claimingStep;
+                                  return (
+                                    <div key={step} className={cn(
+                                      'flex items-center gap-2 text-[11px] transition-opacity',
+                                      isDone ? 'opacity-50' : isActive ? 'opacity-100' : 'opacity-30'
+                                    )}>
+                                      {isDone ? (
+                                        <CheckCircle size={10} className="text-green-500" />
+                                      ) : isActive ? (
+                                        <Loader2 size={10} className="animate-spin text-[#3b82f6]" />
+                                      ) : (
+                                        <div className="w-2.5 h-2.5 rounded-full border border-current opacity-30" />
+                                      )}
+                                      {labels[step]}
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            )}
+                            {isClaimed && (
+                              <Alert severity="success" className="mb-2">
+                                <CheckCircle size={12} /> Claimed
+                              </Alert>
+                            )}
+                            <Button
+                              variant="primary"
+                              fullWidth
+                              size="small"
+                              disabled={isClaimed || !!claimingStep}
+                              onClick={async () => {
+                                setBundleClaiming((prev) => ({ ...prev, [b.checkId]: 'connecting' }));
+                                try {
+                                  const ticker =
+                                    formData.ticker ||
+                                    sessionData.currencyCode ||
+                                    sessionData.data?.currencyCode;
+                                  if (!ticker) {
+                                    openSnackbar?.('Currency code not found', 'error');
+                                    setBundleClaiming((prev) => { const n = { ...prev }; delete n[b.checkId]; return n; });
+                                    return;
+                                  }
+                                  const wallet = await getSigningWalletForProfile(profile);
+                                  if (!wallet) {
+                                    openSnackbar?.('Cannot sign for this wallet', 'error');
+                                    setBundleClaiming((prev) => { const n = { ...prev }; delete n[b.checkId]; return n; });
+                                    return;
+                                  }
+                                  const wsUrl =
+                                    sessionData?.network === 'mainnet'
+                                      ? 'wss://xrplcluster.com'
+                                      : 'wss://s.altnet.rippletest.net:51233';
+                                  const client = new xrpl.Client(wsUrl);
+                                  await client.connect();
+                                  const currencyCode =
+                                    ticker.length === 3
+                                      ? ticker
+                                      : xrpl.convertStringToHex(ticker).padEnd(40, '0');
+                                  const issuerAddr =
+                                    sessionData.issuerAddress ||
+                                    sessionData.issuer ||
+                                    sessionData.data?.issuer;
+
+                                  setBundleClaiming((prev) => ({ ...prev, [b.checkId]: 'trustline' }));
+                                  const trustSetTx = {
+                                    TransactionType: 'TrustSet',
+                                    Account: wallet.address,
+                                    LimitAmount: {
+                                      currency: currencyCode,
+                                      issuer: issuerAddr,
+                                      value: String(b.amount)
+                                    }
+                                  };
+                                  const trustResult = await client.submitAndWait(trustSetTx, {
+                                    autofill: true,
+                                    wallet
+                                  });
+                                  if (trustResult.result.meta.TransactionResult !== 'tesSUCCESS') {
+                                    await client.disconnect();
+                                    openSnackbar?.('Trustline failed: ' + trustResult.result.meta.TransactionResult, 'error');
+                                    setBundleClaiming((prev) => { const n = { ...prev }; delete n[b.checkId]; return n; });
+                                    return;
+                                  }
+
+                                  setBundleClaiming((prev) => ({ ...prev, [b.checkId]: 'cashing' }));
+                                  const checkCashTx = {
+                                    TransactionType: 'CheckCash',
+                                    Account: wallet.address,
+                                    CheckID: b.checkId,
+                                    Amount: {
+                                      currency: currencyCode,
+                                      issuer: issuerAddr,
+                                      value: String(b.amount)
+                                    }
+                                  };
+                                  const tx = await client.submitAndWait(checkCashTx, {
+                                    autofill: true,
+                                    wallet
+                                  });
+                                  await client.disconnect();
+                                  if (tx.result.meta.TransactionResult === 'tesSUCCESS') {
+                                    setBundleClaimed((prev) => ({ ...prev, [b.checkId]: true }));
+                                    openSnackbar?.(`Bundle claimed for ${b.address.slice(0, 8)}...`, 'success');
+                                  } else {
+                                    openSnackbar?.('Failed: ' + tx.result.meta.TransactionResult, 'error');
+                                  }
+                                } catch (error) {
+                                  if (error.message?.includes('tecNO_ENTRY')) {
+                                    setBundleClaimed((prev) => ({ ...prev, [b.checkId]: true }));
+                                    openSnackbar?.('Already claimed', 'warning');
+                                  } else {
+                                    openSnackbar?.('Error: ' + error.message, 'error');
+                                  }
+                                } finally {
+                                  setBundleClaiming((prev) => { const n = { ...prev }; delete n[b.checkId]; return n; });
+                                }
+                              }}
+                            >
+                              {claimingStep ? (
+                                <span className="flex items-center justify-center gap-2">
+                                  <Loader2 size={12} className="animate-spin" />
+                                  {claimingStep === 'connecting' && 'Connecting...'}
+                                  {claimingStep === 'trustline' && 'Setting trustline...'}
+                                  {claimingStep === 'cashing' && 'Claiming...'}
+                                </span>
+                              ) : isClaimed ? 'Claimed' : 'Claim'}
+                            </Button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                })()}
 
                 <a
                   href={`/token/${(sessionData.issuer || sessionData.issuerAddress)}-${sessionData.originalCurrencyCode || formData.ticker}`}
@@ -2250,33 +2714,43 @@ function CreatePage() {
                   return null;
                 })()}
 
-                {(!(sessionData.data?.userCheckId || sessionData.userCheckId) || checkClaimed) && (
-                  <Button
-                    variant="primary"
-                    fullWidth
-                    onClick={() => {
-                      resetLaunchState();
-                      setFormData({
-                        tokenName: '',
-                        ticker: '',
-                        description: '',
-                        twitter: '',
-                        telegram: '',
-                        website: '',
-                        image: null,
-                        ammXrpAmount: 10,
-                        tokenSupply: 1000000000,
-                        userCheckPercent: 0,
-                        antiSnipe: false,
-                        platformRetentionPercent: 3
-                      });
-                      setFileName('');
-                      setImagePreview('');
-                    }}
-                  >
-                    Done
-                  </Button>
-                )}
+                {(() => {
+                  const hasDevCheck = !!(sessionData.data?.userCheckId || sessionData.userCheckId);
+                  const devDone = !hasDevCheck || checkClaimed;
+                  const claimableBundles = (sessionData.bundleCheckIds || []).filter((b) =>
+                    (profiles || []).some((p) => (p.account || p.address) === b.address)
+                  );
+                  const allBundlesDone = claimableBundles.every((b) => bundleClaimed[b.checkId]);
+                  const allDone = devDone && allBundlesDone;
+                  return (
+                    <Button
+                      variant="primary"
+                      fullWidth
+                      onClick={() => {
+                        resetLaunchState();
+                        setFormData({
+                          tokenName: '',
+                          ticker: '',
+                          description: '',
+                          twitter: '',
+                          telegram: '',
+                          website: '',
+                          image: null,
+                          ammXrpAmount: 10,
+                          tokenSupply: 1000000000,
+                          userCheckPercent: 0,
+                          antiSnipe: false,
+                          platformRetentionPercent: 3,
+                          bundleRecipients: []
+                        });
+                        setFileName('');
+                        setImagePreview('');
+                      }}
+                    >
+                      {allDone ? 'Done' : 'Skip & Close'}
+                    </Button>
+                  );
+                })()}
               </div>
             )}
 
