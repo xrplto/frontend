@@ -51,7 +51,7 @@ const EditDialog = ({ label, value, setValue, isDark }) => {
       </button>
 
       {open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm max-sm:h-dvh">
           <div
             className={cn(
               'rounded-2xl border p-6 w-[400px] max-w-[90vw]',
@@ -368,12 +368,12 @@ export default function EditTokenDialog({ token, setToken }) {
   return (
     <>
       {loading && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm max-sm:h-dvh">
           <PulseLoader color={'#FF4842'} size={10} />
         </div>
       )}
 
-      <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
+      <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto max-sm:h-dvh">
         <div
           className={cn(
             'rounded-2xl border w-full max-w-4xl my-8',
@@ -838,7 +838,7 @@ export default function EditTokenDialog({ token, setToken }) {
 
       {/* Inline AddTag Dialog */}
       {addTagOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm max-sm:h-dvh">
           <div
             className={cn(
               'rounded-2xl border p-6 w-[400px] max-w-[90vw]',

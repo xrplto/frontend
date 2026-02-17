@@ -94,7 +94,7 @@ export async function getStaticProps() {
     ogp.canonical = 'https://xrpl.to/mpt';
     ogp.title = 'MPT Tokens | Multi-Purpose Tokens | XRP Ledger';
     ogp.url = 'https://xrpl.to/mpt';
-    ogp.imgUrl = 'https://xrpl.to/static/ogp.webp';
+    ogp.imgUrl = 'https://xrpl.to/og/mpt.webp';
     ogp.desc =
       'Discover Multi-Purpose Tokens (MPT) on the XRP Ledger. Browse the latest MPT token listings and explore new tokenization possibilities on XRPL.';
     ogp.type = 'website';

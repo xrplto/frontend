@@ -12,6 +12,7 @@ import { addTokenToTabs } from 'src/hooks/useTokenTabs';
 import { isValidClassicAddress } from 'ripple-address-codec';
 import { fCurrency5, fDateTime } from 'src/utils/formatters';
 import { getNftCoverUrl, BLACKHOLE_ACCOUNTS } from 'src/utils/parseUtils';
+import VerificationBadge from 'src/components/VerificationBadge';
 import { formatDistanceToNow } from 'date-fns';
 import Link from 'next/link';
 import {
@@ -42,7 +43,6 @@ import {
   Zap,
   BarChart2,
   Search,
-  CheckCircle2,
   Users,
   Swords,
   Medal,
@@ -705,15 +705,15 @@ const OverView = ({ account }) => {
                         )}
                         style={{
                           background: isDark
-                            ? `linear-gradient(135deg, ${`#${account.slice(2, 8)}`}22, ${`#${account.slice(8, 14)}`}18)`
-                            : `linear-gradient(135deg, ${`#${account.slice(2, 8)}`}15, ${`#${account.slice(8, 14)}`}10)`
+                            ? `#${account.slice(2, 8)}22`
+                            : `#${account.slice(2, 8)}15`
                         }}
                       >
                         <User size={36} className={isDark ? 'text-white/30' : 'text-gray-300'} strokeWidth={1.5} />
                       </div>
                     )}
                     {userProfile?.tier && (
-                      <div className={cn('absolute -bottom-1 -right-1 w-6 h-6 rounded-full border-4', isDark ? 'border-[#0a0a0a]' : 'border-white', userProfile.tier === 'verified' ? 'bg-gradient-to-r from-[#FFD700] via-[#FF6B9D] to-[#00FFFF]' : userProfile.tier === 'diamond' ? 'bg-violet-500' : userProfile.tier === 'nova' ? 'bg-amber-500' : userProfile.tier === 'vip' ? 'bg-emerald-500' : 'bg-gray-400')} />
+                      <div className={cn('absolute -bottom-1 -right-1 w-6 h-6 rounded-full border-4', isDark ? 'border-[#0a0a0a]' : 'border-white', userProfile.tier === 'verified' ? 'bg-[#FFD700]' : userProfile.tier === 'diamond' ? 'bg-violet-500' : userProfile.tier === 'nova' ? 'bg-amber-500' : userProfile.tier === 'vip' ? 'bg-emerald-500' : 'bg-gray-400')} />
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -847,7 +847,7 @@ const OverView = ({ account }) => {
                         const groupConfig = {
                           member: { icon: User, bg: isDark ? 'bg-white/[0.03]' : 'bg-gray-100', text: isDark ? 'text-white/60' : 'text-gray-600', border: isDark ? 'border-white/10' : 'border-gray-200' },
                           admin: { icon: Shield, bg: 'bg-red-500/10', text: 'text-red-400', border: 'border-red-500/20' },
-                          verified: { icon: Check, bg: 'bg-gradient-to-r from-[#FFD700]/10 via-[#FF6B9D]/10 to-[#00FFFF]/10', text: 'bg-gradient-to-r from-[#FFD700] via-[#FF6B9D] to-[#00FFFF] bg-clip-text text-transparent', border: 'border-[#FFD700]/30', gradient: true },
+                          verified: { icon: Check, bg: 'bg-[#FFD700]/10', text: 'text-[#FFD700]', border: 'border-[#FFD700]/30' },
                           diamond: { icon: Gem, bg: 'bg-[#650CD4]/10', text: 'text-[#a855f7]', border: 'border-[#650CD4]/20' },
                           nova: { icon: Star, bg: 'bg-[#F6AF01]/10', text: 'text-[#F6AF01]', border: 'border-[#F6AF01]/20' },
                           vip: { icon: Sparkles, bg: 'bg-[#08AA09]/10', text: 'text-[#08AA09]', border: 'border-[#08AA09]/20' }
@@ -856,7 +856,7 @@ const OverView = ({ account }) => {
                         const Icon = config.icon;
                         return (
                           <div key={group} className={cn('flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold border', config.bg, config.border)}>
-                            {Icon && <Icon size={11} className={config.gradient ? 'text-[#FFD700]' : ''} style={!config.gradient ? { color: 'inherit' } : {}} />}
+                            {Icon && <Icon size={11} style={{ color: 'inherit' }} />}
                             <span className={config.text}>{group.charAt(0).toUpperCase() + group.slice(1)}</span>
                           </div>
                         );
@@ -1728,7 +1728,7 @@ const OverView = ({ account }) => {
                                     <td className="px-4 py-2.5">
                                       <Link href={`/token/${line.token?.md5}`} className="flex items-center gap-2.5">
                                         <div className={cn(
-                                          'w-7 h-7 rounded-xl p-0.5 border transition-transform group-hover:scale-105 flex-shrink-0',
+                                          'relative w-7 h-7 rounded-xl p-0.5 border transition-transform group-hover:scale-105 flex-shrink-0',
                                           isDark ? 'bg-black border-white/10' : 'bg-white border-gray-100'
                                         )}>
                                           <img
@@ -1737,15 +1737,13 @@ const OverView = ({ account }) => {
                                             onError={(e) => { e.target.src = 'https://s1.xrpl.to/token/84e5efeb89c4eae8f68188982dc290d8'; }}
                                             alt=""
                                           />
+                                          <VerificationBadge verified={line.token?.verified} size="sm" isDark={isDark} />
                                         </div>
                                         <div className="flex flex-col min-w-0">
                                           <div className="flex items-center gap-1">
                                             <span className={cn('text-[12px] font-bold group-hover:text-primary transition-colors truncate', isDark ? 'text-white' : 'text-gray-900')}>
                                               {line.token?.name || line.currency}
                                             </span>
-                                            {line.token?.verified >= 1 && (
-                                              <CheckCircle2 size={11} className="text-primary" />
-                                            )}
                                           </div>
                                           {pctOwned > 0.01 && (
                                             <span className={cn('text-[8px] font-medium opacity-40', isDark ? 'text-white' : 'text-gray-500')}>
@@ -3027,7 +3025,7 @@ export async function getServerSideProps(ctx) {
       canonical: `https://xrpl.to/address/${account}`,
       title: `Profile - ${account.substring(0, 8)}...${account.substring(account.length - 6)}`,
       url: `https://xrpl.to/address/${account}`,
-      imgUrl: 'https://xrpl.to/static/ogp.png',
+      imgUrl: 'https://xrpl.to/og/address.webp',
       desc: `View portfolio, NFT collections, and trading activity for XRP Ledger account ${account.substring(0, 12)}...`
     };
 

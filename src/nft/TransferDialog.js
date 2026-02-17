@@ -105,7 +105,7 @@ export default function TransferDialog({ open, setOpen, nft, nftImageUrl }) {
       {isLoading && (
         <div
           className={cn(
-            'fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md',
+            'fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md max-sm:h-dvh',
             isDark ? 'bg-black/70' : 'bg-white/60'
           )}
         >
@@ -114,7 +114,7 @@ export default function TransferDialog({ open, setOpen, nft, nftImageUrl }) {
       )}
 
       {/* Dialog */}
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 max-sm:h-dvh">
         <div
           className={cn(
             'absolute inset-0 backdrop-blur-md',

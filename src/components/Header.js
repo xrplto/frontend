@@ -1,5 +1,5 @@
 import { apiFetch } from 'src/utils/api';
-import Image from 'next/image';
+
 import { useState, useContext, useEffect, memo, useCallback, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useRouter } from 'next/router';
@@ -17,23 +17,16 @@ import {
   Menu,
   Bookmark,
   ChevronDown,
-  ExternalLink,
   Sparkles,
   ArrowLeftRight,
-  Palette,
-  Check,
   Eye,
   Waves,
   X,
-  PawPrint,
   Sun,
   Moon,
-  BadgeCheck,
   Settings,
   Wallet,
-  Trash2,
   Fingerprint,
-  Mail,
   Loader2,
   ArrowRight,
   Layers,
@@ -46,7 +39,6 @@ import {
   LayoutDashboard,
   FileText,
   Info,
-  Star,
   Image as ImageIcon
 } from 'lucide-react';
 import VerificationBadge from 'src/components/VerificationBadge';
@@ -787,12 +779,11 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
       >
       <div className="relative mx-auto flex w-full max-w-full items-center justify-between px-4 sm:px-6">
         {/* Left: Logo + Nav */}
-        <div className="flex shrink-0 items-center gap-6">
+        <div className="flex shrink-0 items-center gap-2 2xl:gap-6">
           <Logo alt="xrpl.to Logo" />
 
           {/* Desktop Navigation - Left Side */}
-          {isDesktop && (
-            <nav className="flex items-center">
+            <nav className="hidden lg:flex items-center [&_a]:px-2 2xl:[&_a]:px-3">
               {/* Tokens Dropdown */}
               <div
                 ref={tokensRef}
@@ -803,7 +794,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                 <a
                   href="/"
                   className={cn(
-                    'mr-1 inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[13px] font-semibold transition-all duration-200',
+                    'mr-1 inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[13px] font-semibold transition-[background-color,border-color,opacity,transform] duration-200',
                     isTokensActive
                       ? isDark
                         ? 'text-[#3f96fe] bg-[rgba(63,150,254,0.1)]'
@@ -841,7 +832,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                           key={item.path}
                           onClick={() => handleTokenOptionSelect(item.path)}
                           className={cn(
-                            'group flex cursor-pointer items-center gap-3 rounded-xl px-3 py-2 transition-all duration-200',
+                            'group flex cursor-pointer items-center gap-3 rounded-xl px-3 py-2 transition-[background-color,border-color,opacity,transform] duration-200',
                             isActive(item.path)
                               ? isDark
                                 ? 'bg-white/10'
@@ -894,7 +885,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                 <a
                   href="/nfts"
                   className={cn(
-                    'mr-1 inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[13px] font-semibold transition-all duration-200',
+                    'mr-1 inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[13px] font-semibold transition-[background-color,border-color,opacity,transform] duration-200',
                     isNftsActive
                       ? isDark
                         ? 'text-[#3f96fe] bg-[rgba(63,150,254,0.1)]'
@@ -932,7 +923,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                           key={item.path}
                           onClick={() => handleTokenOptionSelect(item.path)}
                           className={cn(
-                            'group flex cursor-pointer items-center gap-3 rounded-xl px-3 py-2 transition-all duration-200',
+                            'group flex cursor-pointer items-center gap-3 rounded-xl px-3 py-2 transition-[background-color,border-color,opacity,transform] duration-200',
                             isActive(item.path)
                               ? isDark
                                 ? 'bg-white/10'
@@ -978,7 +969,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
               <a
                 href="/swap"
                 className={cn(
-                  'mr-1 inline-flex items-center rounded-lg px-3 py-1.5 text-[13px] font-medium transition-all duration-200',
+                  'mr-1 inline-flex items-center rounded-lg px-3 py-1.5 text-[13px] font-medium transition-[background-color,border-color,opacity,transform] duration-200',
                   isActive('/swap')
                     ? isDark
                       ? 'text-[#3f96fe] bg-[rgba(63,150,254,0.1)]'
@@ -993,7 +984,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
               <a
                 href="/news"
                 className={cn(
-                  'mr-1 inline-flex items-center rounded-lg px-3 py-1.5 text-[13px] font-medium transition-all duration-200',
+                  'mr-1 inline-flex items-center rounded-lg px-3 py-1.5 text-[13px] font-medium transition-[background-color,border-color,opacity,transform] duration-200',
                   isActive('/news')
                     ? isDark
                       ? 'text-[#3f96fe] bg-[rgba(63,150,254,0.1)]'
@@ -1006,18 +997,16 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                 News
               </a>
             </nav>
-          )}
         </div>
 
         {/* Center: Search */}
-        {isDesktop && (
           <div
             ref={searchRef}
-            className="absolute left-1/2 -translate-x-1/2 w-full max-w-[580px] px-4"
+            className="hidden lg:block absolute left-1/2 -translate-x-1/2 w-full max-w-[360px] 2xl:max-w-[580px] px-4"
           >
             <div
               className={cn(
-                'flex items-center gap-3 px-4 h-[38px] w-full cursor-text rounded-xl transition-all duration-300 border',
+                'flex items-center gap-3 px-4 h-[38px] w-full cursor-text rounded-xl transition-[background-color,border-color,opacity,transform] duration-300 border',
                 searchOpen
                   ? isDark
                     ? 'bg-blue-600/10 border-blue-500/50 shadow-[0_0_15px_rgba(59,130,246,0.2)]'
@@ -1031,10 +1020,9 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
               <Search
                 size={17}
                 className={cn(
-                  'transition-colors duration-300',
                   searchOpen
                     ? isDark ? 'text-blue-400' : 'text-blue-600'
-                    : isDark ? 'text-white/40' : 'text-gray-400'
+                    : isDark ? 'text-white/60' : 'text-gray-400'
                 )}
               />
               {searchOpen ? (
@@ -1046,15 +1034,15 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   className={cn(
                     'flex-1 bg-transparent text-[14px] outline-none font-medium',
                     isDark
-                      ? 'text-white placeholder:text-white/30'
+                      ? 'text-white placeholder:text-white/60'
                       : 'text-gray-900 placeholder:text-gray-400'
                   )}
                 />
               ) : (
                 <span
                   className={cn(
-                    'flex-1 text-[13.5px] font-medium transition-colors duration-300',
-                    isDark ? 'text-white/30' : 'text-gray-400'
+                    'flex-1 text-[13.5px] font-medium',
+                    isDark ? 'text-white/60' : 'text-gray-400'
                   )}
                 >
                   Search assets, NFTs, accounts...
@@ -1066,7 +1054,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                     className={cn(
                       'px-1.5 py-0.5 rounded-md text-[10px] font-medium border flex items-center justify-center min-w-[20px]',
                       isDark
-                        ? 'bg-white/[0.05] border-white/10 text-white/40'
+                        ? 'bg-white/[0.05] border-white/10 text-white/60'
                         : 'bg-white border-gray-200 text-gray-400 shadow-sm'
                     )}
                   >
@@ -1076,11 +1064,11 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                     className={cn(
                       'px-1.5 py-0.5 rounded-md text-[10px] font-medium border flex items-center justify-center gap-1 min-w-[40px]',
                       isDark
-                        ? 'bg-white/[0.05] border-white/10 text-white/40'
+                        ? 'bg-white/[0.05] border-white/10 text-white/60'
                         : 'bg-white border-gray-200 text-gray-400 shadow-sm'
                     )}
                   >
-                    {navigator?.platform?.includes('Mac') ? '⌘' : 'Ctrl'} K
+                    {typeof navigator !== 'undefined' && navigator.platform?.includes('Mac') ? '⌘' : 'Ctrl'} K
                   </kbd>
                 </div>
               )}
@@ -1102,7 +1090,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       <span
                         className={cn(
                           'text-[10px] font-bold uppercase tracking-[0.1em]',
-                          isDark ? 'text-white/30' : 'text-gray-400'
+                          isDark ? 'text-white/60' : 'text-gray-400'
                         )}
                       >
                         Recent
@@ -1112,7 +1100,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                           key={i}
                           onClick={() => handleSearchSelect(item, item.type)}
                           className={cn(
-                            'flex items-center gap-2 pl-1.5 pr-3 py-1 rounded-lg transition-all border group',
+                            'flex items-center gap-2 pl-1.5 pr-3 py-1 rounded-lg transition-[background-color,border-color,opacity,transform] duration-150 border group',
                             isDark
                               ? 'bg-white/[0.03] border-white/5 hover:bg-white/[0.08] hover:border-white/10'
                               : 'bg-gray-50 border-gray-100 hover:bg-gray-100 hover:border-gray-200 shadow-sm'
@@ -1134,7 +1122,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                           />
                           <span
                             className={cn(
-                              'text-[12px] font-medium transition-colors',
+                              'text-[12px] font-medium',
                               isDark ? 'text-white/60 group-hover:text-white' : 'text-gray-600 group-hover:text-gray-900'
                             )}
                           >
@@ -1145,9 +1133,9 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       <button
                         onClick={clearRecentSearches}
                         className={cn(
-                          'text-[11px] ml-auto font-medium transition-colors',
+                          'text-[11px] ml-auto font-medium',
                           isDark
-                            ? 'text-white/20 hover:text-white/40'
+                            ? 'text-white/20 hover:text-white/60'
                             : 'text-gray-300 hover:text-gray-500'
                         )}
                       >
@@ -1178,7 +1166,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                                 key={i}
                                 onClick={() => handleSearchSelect(token, 'token')}
                                 className={cn(
-                                  'flex items-center gap-3 px-3 py-1.5 rounded-xl cursor-pointer transition-all duration-200 group border border-transparent',
+                                  'flex items-center gap-3 px-3 py-1.5 rounded-xl cursor-pointer transition-[background-color,border-color,opacity,transform] duration-200 group border border-transparent',
                                   isDark ? 'hover:bg-white/5 hover:border-white/5' : 'hover:bg-gray-50 hover:border-gray-100'
                                 )}
                               >
@@ -1198,7 +1186,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                                       {token.user}
                                     </span>
                                     <span className={cn('text-[11px] font-medium px-1.5 py-0.5 rounded uppercase tracking-wider',
-                                      isDark ? 'bg-white/5 text-white/40' : 'bg-gray-100 text-gray-500')}>
+                                      isDark ? 'bg-white/5 text-white/60' : 'bg-gray-100 text-gray-500')}>
                                       {token.name}
                                     </span>
                                   </div>
@@ -1238,7 +1226,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                                 key={i}
                                 onClick={() => handleSearchSelect(col, 'collection')}
                                 className={cn(
-                                  'flex items-center gap-3 px-3 py-1.5 rounded-xl cursor-pointer transition-all duration-200 group border border-transparent',
+                                  'flex items-center gap-3 px-3 py-1.5 rounded-xl cursor-pointer transition-[background-color,border-color,opacity,transform] duration-200 group border border-transparent',
                                   isDark ? 'hover:bg-white/5 hover:border-white/5' : 'hover:bg-gray-50 hover:border-gray-100'
                                 )}
                               >
@@ -1291,7 +1279,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                     <div
                       onClick={() => handleSearchSelect(searchResults.txHash, 'tx')}
                       className={cn(
-                        'flex items-center gap-3 px-3 py-2 rounded-xl cursor-pointer transition-all duration-300 group border border-transparent',
+                        'flex items-center gap-3 px-3 py-2 rounded-xl cursor-pointer transition-[background-color,border-color,opacity,transform] duration-300 group border border-transparent',
                         isDark ? 'hover:bg-white/5 hover:border-white/5' : 'hover:bg-gray-50 hover:border-gray-100'
                       )}
                     >
@@ -1334,7 +1322,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                     <div
                       onClick={() => handleSearchSelect(searchResults.nft, 'nft')}
                       className={cn(
-                        'flex items-center gap-3 px-3 py-2 rounded-xl cursor-pointer transition-all duration-300 group border border-transparent',
+                        'flex items-center gap-3 px-3 py-2 rounded-xl cursor-pointer transition-[background-color,border-color,opacity,transform] duration-300 group border border-transparent',
                         isDark ? 'hover:bg-white/5 hover:border-white/5' : 'hover:bg-gray-50 hover:border-gray-100'
                       )}
                     >
@@ -1387,7 +1375,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                     <div
                       onClick={() => handleSearchSelect(searchResults.address.address, 'address')}
                       className={cn(
-                        'flex items-center gap-3 px-3 py-2 rounded-xl cursor-pointer transition-all duration-300 group border border-transparent',
+                        'flex items-center gap-3 px-3 py-2 rounded-xl cursor-pointer transition-[background-color,border-color,opacity,transform] duration-300 group border border-transparent',
                         isDark ? 'hover:bg-white/5 hover:border-white/5' : 'hover:bg-gray-50 hover:border-gray-100'
                       )}
                     >
@@ -1434,7 +1422,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                     <div
                       onClick={() => handleSearchSelect(searchResults.ledger, 'ledger')}
                       className={cn(
-                        'flex items-center gap-3 px-3 py-2 rounded-xl cursor-pointer transition-all duration-300 group border border-transparent',
+                        'flex items-center gap-3 px-3 py-2 rounded-xl cursor-pointer transition-[background-color,border-color,opacity,transform] duration-300 group border border-transparent',
                         isDark ? 'hover:bg-white/5 hover:border-white/5' : 'hover:bg-gray-50 hover:border-gray-100'
                       )}
                     >
@@ -1480,7 +1468,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                           key={i}
                           onClick={() => handleSearchSelect(token, 'token')}
                           className={cn(
-                            'flex items-center gap-3 px-3 py-1.5 rounded-xl cursor-pointer transition-all duration-300 group border border-transparent',
+                            'flex items-center gap-3 px-3 py-1.5 rounded-xl cursor-pointer transition-[background-color,border-color,opacity,transform] duration-300 group border border-transparent',
                             isDark ? 'hover:bg-white/5 hover:border-white/5' : 'hover:bg-gray-50 hover:border-gray-100'
                           )}
                         >
@@ -1498,7 +1486,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                                 {token.user}
                               </span>
                               <span className={cn('text-[11px] font-medium px-1.5 py-0.5 rounded uppercase tracking-wider',
-                                isDark ? 'bg-white/5 text-white/40' : 'bg-gray-100 text-gray-500')}>
+                                isDark ? 'bg-white/5 text-white/60' : 'bg-gray-100 text-gray-500')}>
                                 {token.name}
                               </span>
                             </div>
@@ -1538,7 +1526,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                           key={i}
                           onClick={() => handleSearchSelect(col, 'collection')}
                           className={cn(
-                            'flex items-center gap-3 px-3 py-1.5 rounded-xl cursor-pointer transition-all duration-300 group border border-transparent',
+                            'flex items-center gap-3 px-3 py-1.5 rounded-xl cursor-pointer transition-[background-color,border-color,opacity,transform] duration-300 group border border-transparent',
                             isDark ? 'hover:bg-white/5 hover:border-white/5' : 'hover:bg-gray-50 hover:border-gray-100'
                           )}
                         >
@@ -1576,7 +1564,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                 {searchQuery && searchLoading && (
                   <div className="py-12 flex flex-col items-center justify-center gap-3">
                     <Loader2 size={24} className={cn('animate-spin', isDark ? 'text-blue-400/50' : 'text-blue-500/50')} />
-                    <span className={cn('text-[13px] font-medium animate-pulse', isDark ? 'text-white/30' : 'text-gray-400')}>
+                    <span className={cn('text-[13px] font-medium animate-pulse', isDark ? 'text-white/60' : 'text-gray-400')}>
                       Searching curated data...
                     </span>
                   </div>
@@ -1596,7 +1584,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       <p className={cn('text-[14px] font-semibold', isDark ? 'text-white/90' : 'text-gray-900')}>
                         No results found
                       </p>
-                      <p className={cn('text-[12px]', isDark ? 'text-white/30' : 'text-gray-400')}>
+                      <p className={cn('text-[12px]', isDark ? 'text-white/60' : 'text-gray-400')}>
                         Try searching for a different token, NFT or address
                       </p>
                     </div>
@@ -1604,14 +1592,13 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
               </div>
             )}
           </div>
-        )}
 
         {/* Mobile Full Search */}
         {fullSearch && isTabletOrMobile && (
           <>
             <div
               className={cn(
-                'fixed inset-0 z-[9998] backdrop-blur-md',
+                'fixed inset-0 z-[9998] backdrop-blur-md max-sm:h-dvh',
                 isDark ? 'bg-black/70' : 'bg-white/60'
               )}
               onClick={() => {
@@ -1622,7 +1609,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
             <div className="fixed inset-x-0 top-0 z-[9999] px-4 pt-4" ref={searchRef}>
               <div
                 className={cn(
-                  'flex items-center gap-3 px-4 h-[42px] rounded-2xl border transition-all duration-300',
+                  'flex items-center gap-3 px-4 h-[42px] rounded-2xl border transition-[background-color,border-color,opacity,transform] duration-300',
                   isDark
                     ? 'bg-black/80 backdrop-blur-2xl border-blue-500/30 shadow-[0_4px_30px_rgba(59,130,246,0.3)]'
                     : 'bg-white/90 backdrop-blur-2xl border-blue-500/20 shadow-[0_4px_30px_rgba(59,130,246,0.1)]'
@@ -1637,7 +1624,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   className={cn(
                     'flex-1 bg-transparent text-[15px] font-medium outline-none',
                     isDark
-                      ? 'text-white placeholder:text-white/40'
+                      ? 'text-white placeholder:text-white/60'
                       : 'text-gray-900 placeholder:text-gray-400'
                   )}
                 />
@@ -1648,7 +1635,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   }}
                   className={cn(
                     'p-1.5 rounded-lg transition-colors',
-                    isDark ? 'text-white/40 hover:text-white hover:bg-white/10' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
+                    isDark ? 'text-white/60 hover:text-white hover:bg-white/10' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
                   )}
                 >
                   <X size={18} />
@@ -1658,7 +1645,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
               {/* Mobile Search Results */}
               <div
                 className={cn(
-                  'mt-3 rounded-2xl border overflow-hidden max-h-[calc(100vh-100px)] overflow-y-auto animate-in fade-in zoom-in-95 duration-300',
+                  'mt-3 rounded-2xl border overflow-hidden max-h-[calc(100dvh-100px)] overflow-y-auto animate-in fade-in zoom-in-95 duration-300',
                   isDark
                     ? 'bg-black/90 backdrop-blur-2xl border-white/5 shadow-[0_20px_50px_rgba(0,0,0,0.8)]'
                     : 'bg-white/98 backdrop-blur-2xl border-gray-100 shadow-[0_20px_50px_rgba(0,0,0,0.1)]'
@@ -1683,7 +1670,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                           key={i}
                           onClick={() => handleSearchSelect(token, 'token')}
                           className={cn(
-                            'flex items-center gap-3 px-3 py-1.5 rounded-xl cursor-pointer transition-all duration-300 group border border-transparent',
+                            'flex items-center gap-3 px-3 py-1.5 rounded-xl cursor-pointer transition-[background-color,border-color,opacity,transform] duration-300 group border border-transparent',
                             isDark ? 'hover:bg-white/5 hover:border-white/5' : 'hover:bg-gray-50 hover:border-gray-100'
                           )}
                         >
@@ -1701,7 +1688,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                                 {token.user}
                               </span>
                               <span className={cn('text-[11px] font-medium px-1.5 py-0.5 rounded uppercase tracking-wider',
-                                isDark ? 'bg-white/5 text-white/40' : 'bg-gray-100 text-gray-500')}>
+                                isDark ? 'bg-white/5 text-white/60' : 'bg-gray-100 text-gray-500')}>
                                 {token.name}
                               </span>
                             </div>
@@ -1741,7 +1728,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                           key={i}
                           onClick={() => handleSearchSelect(col, 'collection')}
                           className={cn(
-                            'flex items-center gap-3 px-3 py-1.5 rounded-xl cursor-pointer transition-all duration-300 group border border-transparent',
+                            'flex items-center gap-3 px-3 py-1.5 rounded-xl cursor-pointer transition-[background-color,border-color,opacity,transform] duration-300 group border border-transparent',
                             isDark ? 'hover:bg-white/5 hover:border-white/5' : 'hover:bg-gray-50 hover:border-gray-100'
                           )}
                         >
@@ -1792,7 +1779,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                     <div
                       onClick={() => handleSearchSelect(searchResults.txHash, 'tx')}
                       className={cn(
-                        'flex items-center gap-3 px-3 py-1.5 rounded-xl cursor-pointer transition-all duration-300 group border border-transparent',
+                        'flex items-center gap-3 px-3 py-1.5 rounded-xl cursor-pointer transition-[background-color,border-color,opacity,transform] duration-300 group border border-transparent',
                         isDark ? 'hover:bg-white/5 hover:border-white/5' : 'hover:bg-gray-50 hover:border-gray-100'
                       )}
                     >
@@ -1835,7 +1822,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                     <div
                       onClick={() => handleSearchSelect(searchResults.nft, 'nft')}
                       className={cn(
-                        'flex items-center gap-3 px-3 py-1.5 rounded-xl cursor-pointer transition-all duration-300 group border border-transparent',
+                        'flex items-center gap-3 px-3 py-1.5 rounded-xl cursor-pointer transition-[background-color,border-color,opacity,transform] duration-300 group border border-transparent',
                         isDark ? 'hover:bg-white/5 hover:border-white/5' : 'hover:bg-gray-50 hover:border-gray-100'
                       )}
                     >
@@ -1888,7 +1875,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                     <div
                       onClick={() => handleSearchSelect(searchResults.address.address, 'address')}
                       className={cn(
-                        'flex items-center gap-3 px-3 py-1.5 rounded-xl cursor-pointer transition-all duration-300 group border border-transparent',
+                        'flex items-center gap-3 px-3 py-1.5 rounded-xl cursor-pointer transition-[background-color,border-color,opacity,transform] duration-300 group border border-transparent',
                         isDark ? 'hover:bg-white/5 hover:border-white/5' : 'hover:bg-gray-50 hover:border-gray-100'
                       )}
                     >
@@ -1935,7 +1922,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                     <div
                       onClick={() => handleSearchSelect(searchResults.ledger, 'ledger')}
                       className={cn(
-                        'flex items-center gap-3 px-3 py-1.5 rounded-xl cursor-pointer transition-all duration-300 group border border-transparent',
+                        'flex items-center gap-3 px-3 py-1.5 rounded-xl cursor-pointer transition-[background-color,border-color,opacity,transform] duration-300 group border border-transparent',
                         isDark ? 'hover:bg-white/5 hover:border-white/5' : 'hover:bg-gray-50 hover:border-gray-100'
                       )}
                     >
@@ -1981,7 +1968,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                           key={i}
                           onClick={() => handleSearchSelect(token, 'token')}
                           className={cn(
-                            'flex items-center gap-3 px-3 py-1.5 rounded-xl cursor-pointer transition-all duration-300 group border border-transparent',
+                            'flex items-center gap-3 px-3 py-1.5 rounded-xl cursor-pointer transition-[background-color,border-color,opacity,transform] duration-300 group border border-transparent',
                             isDark ? 'hover:bg-white/5 hover:border-white/5' : 'hover:bg-gray-50 hover:border-gray-100'
                           )}
                         >
@@ -1999,7 +1986,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                                 {token.user}
                               </span>
                               <span className={cn('text-[11px] font-medium px-1.5 py-0.5 rounded uppercase tracking-wider',
-                                isDark ? 'bg-white/5 text-white/40' : 'bg-gray-100 text-gray-500')}>
+                                isDark ? 'bg-white/5 text-white/60' : 'bg-gray-100 text-gray-500')}>
                                 {token.name}
                               </span>
                             </div>
@@ -2039,7 +2026,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                           key={i}
                           onClick={() => handleSearchSelect(col, 'collection')}
                           className={cn(
-                            'flex items-center gap-3 px-3 py-1.5 rounded-xl cursor-pointer transition-all duration-300 group border border-transparent',
+                            'flex items-center gap-3 px-3 py-1.5 rounded-xl cursor-pointer transition-[background-color,border-color,opacity,transform] duration-300 group border border-transparent',
                             isDark ? 'hover:bg-white/5 hover:border-white/5' : 'hover:bg-gray-50 hover:border-gray-100'
                           )}
                         >
@@ -2077,7 +2064,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                 {searchQuery && searchLoading && (
                   <div className="py-12 flex flex-col items-center justify-center gap-3">
                     <Loader2 size={24} className={cn('animate-spin', isDark ? 'text-blue-400/50' : 'text-blue-500/50')} />
-                    <span className={cn('text-[13px] font-medium animate-pulse', isDark ? 'text-white/30' : 'text-gray-400')}>
+                    <span className={cn('text-[13px] font-medium animate-pulse', isDark ? 'text-white/60' : 'text-gray-400')}>
                       Searching curated data...
                     </span>
                   </div>
@@ -2097,7 +2084,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       <p className={cn('text-[14px] font-semibold', isDark ? 'text-white/90' : 'text-gray-900')}>
                         No results found
                       </p>
-                      <p className={cn('text-[12px]', isDark ? 'text-white/30' : 'text-gray-400')}>
+                      <p className={cn('text-[12px]', isDark ? 'text-white/60' : 'text-gray-400')}>
                         Try searching for a different token, NFT or address
                       </p>
                     </div>
@@ -2107,7 +2094,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   suggestedCollections.length === 0 && (
                     <div className="py-12 flex flex-col items-center justify-center gap-3">
                       <Loader2 size={24} className={cn('animate-spin', isDark ? 'text-blue-400/50' : 'text-blue-500/50')} />
-                      <span className={cn('text-[13px] font-medium animate-pulse', isDark ? 'text-white/30' : 'text-gray-400')}>
+                      <span className={cn('text-[13px] font-medium animate-pulse', isDark ? 'text-white/60' : 'text-gray-400')}>
                         Fetching suggestions...
                       </span>
                     </div>
@@ -2118,17 +2105,17 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
         )}
 
         {/* Mobile spacer */}
-        {!fullSearch && isTabletOrMobile && <div className="flex-1" />}
+        {!fullSearch && <div className="flex-1 lg:hidden" />}
 
         {/* Right Side Actions */}
         <div className="flex items-center gap-2">
           {/* Mobile Search Icon */}
-          {!fullSearch && isTabletOrMobile && (
+          {!fullSearch && (
             <button
               aria-label="Open search"
               onClick={handleFullSearch}
               className={cn(
-                'flex h-9 w-9 items-center justify-center rounded-full transition-all duration-200',
+                'lg:hidden flex h-9 w-9 items-center justify-center rounded-full transition-[background-color,border-color,opacity,transform] duration-200',
                 isDark
                   ? 'text-white/60 hover:text-[#3f96fe] hover:bg-[rgba(63,150,254,0.1)]'
                   : 'text-gray-500 hover:text-[#3f96fe] hover:bg-blue-50'
@@ -2139,14 +2126,14 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
           )}
 
           {/* Desktop Actions */}
-          {!fullSearch && isDesktop && (
-            <div className="flex items-center gap-1">
+          {!fullSearch && (
+            <div className="hidden lg:flex items-center gap-1">
               {/* Watchlist */}
               <a
                 href="/watchlist"
                 aria-label="Watchlist"
                 className={cn(
-                  'flex h-8 w-8 items-center justify-center rounded-lg border transition-all duration-200',
+                  'flex h-8 w-8 items-center justify-center rounded-lg border transition-[background-color,border-color,opacity,transform] duration-200',
                   isDark
                     ? 'border-white/10 text-white/50 hover:text-[#3f96fe] hover:border-[#3f96fe]/50 hover:bg-[rgba(63,150,254,0.1)]'
                     : 'border-gray-200 text-gray-400 hover:text-[#3f96fe] hover:border-[#3f96fe]/50 hover:bg-blue-50'
@@ -2161,7 +2148,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   onClick={handleSettingsToggle}
                   aria-label="Settings"
                   className={cn(
-                    'flex h-8 w-8 items-center justify-center rounded-lg border transition-all duration-200',
+                    'flex h-8 w-8 items-center justify-center rounded-lg border transition-[background-color,border-color,opacity,transform] duration-200',
                     isDark
                       ? 'border-white/10 text-white/50 hover:text-[#3f96fe] hover:border-[#3f96fe]/50 hover:bg-[rgba(63,150,254,0.1)]'
                       : 'border-gray-200 text-gray-400 hover:text-[#3f96fe] hover:border-[#3f96fe]/50 hover:bg-blue-50'
@@ -2184,7 +2171,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       <p
                         className={cn(
                           'text-[10px] font-medium uppercase tracking-wider mb-2',
-                          isDark ? 'text-white/40' : 'text-gray-400'
+                          isDark ? 'text-white/60' : 'text-gray-400'
                         )}
                       >
                         Currency
@@ -2203,7 +2190,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                               setSettingsMenuOpen(false);
                             }}
                             className={cn(
-                              'flex items-center justify-center h-8 rounded-lg text-[11px] font-medium transition-all duration-150',
+                              'flex items-center justify-center h-8 rounded-lg text-[11px] font-medium transition-[background-color,opacity,transform] duration-150',
                               currency === activeFiatCurrency
                                 ? isDark
                                   ? 'bg-[rgba(63,150,254,0.15)] text-[#3f96fe] ring-1 ring-[rgba(63,150,254,0.4)]'
@@ -2231,7 +2218,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       <p
                         className={cn(
                           'text-[10px] font-medium uppercase tracking-wider mb-2',
-                          isDark ? 'text-white/40' : 'text-gray-400'
+                          isDark ? 'text-white/60' : 'text-gray-400'
                         )}
                       >
                         Theme
@@ -2243,7 +2230,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                             setSettingsMenuOpen(false);
                           }}
                           className={cn(
-                            'flex items-center justify-center gap-1.5 h-8 rounded-lg text-[12px] font-medium transition-all duration-150',
+                            'flex items-center justify-center gap-1.5 h-8 rounded-lg text-[12px] font-medium transition-[background-color,opacity,transform] duration-150',
                             themeName === 'XrplToLightTheme'
                               ? isDark
                                 ? 'bg-[rgba(63,150,254,0.15)] text-[#3f96fe] ring-1 ring-[rgba(63,150,254,0.4)]'
@@ -2262,7 +2249,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                             setSettingsMenuOpen(false);
                           }}
                           className={cn(
-                            'flex items-center justify-center gap-1.5 h-8 rounded-lg text-[12px] font-medium transition-all duration-150',
+                            'flex items-center justify-center gap-1.5 h-8 rounded-lg text-[12px] font-medium transition-[background-color,opacity,transform] duration-150',
                             themeName === 'XrplToDarkTheme'
                               ? isDark
                                 ? 'bg-[rgba(63,150,254,0.15)] text-[#3f96fe] ring-1 ring-[rgba(63,150,254,0.4)]'
@@ -2285,7 +2272,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
               <a
                 href="/launch"
                 className={cn(
-                  'group relative flex h-8 items-center gap-1.5 rounded-lg px-3 text-[13px] font-medium transition-all duration-300 overflow-hidden',
+                  'group relative flex h-8 items-center gap-1.5 rounded-lg px-3 text-[13px] font-medium transition-[background-color,border-color,opacity,transform] duration-300 overflow-hidden',
                   isDark
                     ? 'bg-[#0d0d1a] text-purple-300 border border-purple-500/30 hover:border-purple-400/50 hover:text-white hover:shadow-[0_0_20px_rgba(168,85,247,0.3)]'
                     : 'bg-gradient-to-r from-violet-50 to-fuchsia-50 text-violet-600 border border-violet-200 hover:from-violet-100 hover:to-fuchsia-100 hover:border-violet-300'
@@ -2321,7 +2308,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   <a
                     href="/wallet"
                     className={cn(
-                      'flex items-center gap-2 px-3 h-full transition-all duration-200',
+                      'flex items-center gap-2 px-3 h-full transition-[background-color,border-color,opacity,transform] duration-200',
                       !isAccountActivated
                         ? isDark
                           ? 'hover:bg-amber-500/10'
@@ -2379,7 +2366,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   <button
                     onClick={() => setOpenWalletModal(true)}
                     className={cn(
-                      'flex items-center justify-center px-2 h-full transition-all duration-200',
+                      'flex items-center justify-center px-2 h-full transition-[background-color,border-color,opacity,transform] duration-200',
                       !isAccountActivated
                         ? isDark
                           ? 'hover:bg-amber-500/10'
@@ -2389,14 +2376,14 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                           : 'hover:bg-emerald-100/50'
                     )}
                   >
-                    <ChevronDown size={12} className={isDark ? 'text-white/40' : 'text-gray-400'} />
+                    <ChevronDown size={12} className={isDark ? 'text-white/60' : 'text-gray-400'} />
                   </button>
                 </div>
               ) : (
                 <button
                   onClick={() => setOpenWalletModal(true)}
                   className={cn(
-                    'relative flex h-8 items-center gap-2 rounded-lg px-3 text-[13px] font-medium transition-all duration-200 border',
+                    'relative flex h-8 items-center gap-2 rounded-lg px-3 text-[13px] font-medium transition-[background-color,border-color,opacity,transform] duration-200 border',
                     isDark
                       ? 'bg-white/[0.04] text-white/70 border-white/15 hover:border-white/30 hover:bg-white/[0.06]'
                       : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100 hover:border-gray-300'
@@ -2410,8 +2397,8 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
           )}
 
           {/* Mobile Wallet + Menu */}
-          {isTabletOrMobile && !fullSearch && (
-            <div className="flex items-center gap-1">
+          {!fullSearch && (
+            <div className="lg:hidden flex items-center gap-1">
               {/* Mobile Wallet Button */}
               {accountProfile ? (
                 <div
@@ -2430,7 +2417,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   <a
                     href="/wallet"
                     className={cn(
-                      'flex items-center gap-1.5 px-2.5 h-full transition-all duration-200',
+                      'flex items-center gap-1.5 px-2.5 h-full transition-[background-color,border-color,opacity,transform] duration-200',
                       !isAccountActivated
                         ? isDark
                           ? 'hover:bg-amber-500/10'
@@ -2475,7 +2462,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                     aria-label="Wallet options"
                     onClick={() => setOpenWalletModal(true)}
                     className={cn(
-                      'flex items-center justify-center px-1.5 h-full transition-all duration-200',
+                      'flex items-center justify-center px-1.5 h-full transition-[background-color,border-color,opacity,transform] duration-200',
                       !isAccountActivated
                         ? isDark
                           ? 'hover:bg-amber-500/10'
@@ -2485,7 +2472,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                           : 'hover:bg-emerald-100/50'
                     )}
                   >
-                    <ChevronDown size={10} className={isDark ? 'text-white/40' : 'text-gray-400'} />
+                    <ChevronDown size={10} className={isDark ? 'text-white/60' : 'text-gray-400'} />
                   </button>
                 </div>
               ) : (
@@ -2493,10 +2480,10 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   aria-label="Connect wallet"
                   onClick={() => setOpenWalletModal(true)}
                   className={cn(
-                    'flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-[12px] font-medium transition-all duration-200 border',
+                    'flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-[12px] font-medium transition-[background-color,border-color,opacity,transform] duration-200 border active:scale-95',
                     isDark
-                      ? 'bg-white/[0.04] text-white/60 border-white/15'
-                      : 'bg-gray-50 text-gray-500 border-gray-200'
+                      ? 'bg-white/[0.08] text-white/70 border-white/20 hover:border-white/30 hover:bg-white/[0.12]'
+                      : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50 hover:border-gray-300'
                   )}
                 >
                   <Wallet size={14} />
@@ -2507,7 +2494,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                 aria-label="Open menu"
                 onClick={() => toggleDrawer(true)}
                 className={cn(
-                  'flex h-9 w-9 items-center justify-center rounded-full transition-all duration-200',
+                  'flex h-9 w-9 items-center justify-center rounded-full transition-[background-color,border-color,opacity,transform] duration-200',
                   isDark
                     ? 'text-white/60 hover:text-[#3f96fe] hover:bg-[rgba(63,150,254,0.1)]'
                     : 'text-gray-500 hover:text-[#3f96fe] hover:bg-blue-50'
@@ -2526,14 +2513,14 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
         <>
           <div
             className={cn(
-              'fixed inset-0 z-[2147483646] backdrop-blur-md',
+              'fixed inset-0 z-[2147483646] backdrop-blur-md h-dvh',
               isDark ? 'bg-black/70' : 'bg-white/60'
             )}
             onClick={() => toggleDrawer(false)}
           />
           <div
             className={cn(
-              'fixed inset-x-4 top-2 bottom-4 z-[2147483647] rounded-2xl border-[1.5px] animate-in fade-in zoom-in-95 duration-200',
+              'fixed inset-x-4 top-2 bottom-4 pb-[env(safe-area-inset-bottom)] z-[2147483647] rounded-2xl border-[1.5px] animate-in fade-in zoom-in-95 duration-200',
               isDark
                 ? 'bg-black/80 backdrop-blur-2xl border-white/[0.08] shadow-2xl shadow-black/50'
                 : 'bg-white/80 backdrop-blur-2xl border-gray-200/60 shadow-2xl shadow-gray-300/30'
@@ -2585,7 +2572,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                     className={cn(
                       'transition-transform duration-150',
                       tokensExpanded && 'rotate-180',
-                      isDark ? 'text-white/40' : 'text-gray-400'
+                      isDark ? 'text-white/60' : 'text-gray-400'
                     )}
                   />
                 </button>
@@ -2598,7 +2585,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                         href={item.path}
                         onClick={() => toggleDrawer(false)}
                         className={cn(
-                          'flex items-center gap-3 rounded-xl px-3 py-2 transition-all duration-200',
+                          'flex items-center gap-3 rounded-xl px-3 py-2 transition-[background-color,border-color,opacity,transform] duration-200',
                           isActive(item.path)
                             ? isDark
                               ? 'bg-white/10'
@@ -2659,7 +2646,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                     className={cn(
                       'transition-transform duration-150',
                       nftsExpanded && 'rotate-180',
-                      isDark ? 'text-white/40' : 'text-gray-400'
+                      isDark ? 'text-white/60' : 'text-gray-400'
                     )}
                   />
                 </button>
@@ -2672,7 +2659,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                         href={item.path}
                         onClick={() => toggleDrawer(false)}
                         className={cn(
-                          'flex items-center gap-3 rounded-xl px-3 py-2 transition-all duration-200',
+                          'flex items-center gap-3 rounded-xl px-3 py-2 transition-[background-color,border-color,opacity,transform] duration-200',
                           isActive(item.path)
                             ? isDark
                               ? 'bg-white/10'
@@ -2772,7 +2759,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   href="/launch"
                   onClick={() => toggleDrawer(false)}
                   className={cn(
-                    'group relative flex items-center justify-center gap-1.5 rounded-lg px-4 py-2 text-[13px] font-medium transition-all duration-300 overflow-hidden',
+                    'group relative flex items-center justify-center gap-1.5 rounded-lg px-4 py-2 text-[13px] font-medium transition-[background-color,border-color,opacity,transform] duration-300 overflow-hidden',
                     isDark
                       ? 'bg-[#0d0d1a] text-purple-300 border border-purple-500/30 hover:border-purple-400/50 hover:text-white hover:shadow-[0_0_20px_rgba(168,85,247,0.3)]'
                       : 'bg-gradient-to-r from-violet-50 to-fuchsia-50 text-violet-600 border border-violet-200 hover:from-violet-100 hover:to-fuchsia-100 hover:border-violet-300'
@@ -2818,7 +2805,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       href="/wallet"
                       onClick={() => toggleDrawer(false)}
                       className={cn(
-                        'flex flex-1 items-center justify-center gap-2 px-4 py-2.5 transition-all duration-200',
+                        'flex flex-1 items-center justify-center gap-2 px-4 py-2.5 transition-[background-color,border-color,opacity,transform] duration-200',
                         !isAccountActivated
                           ? isDark
                             ? 'hover:bg-amber-500/10'
@@ -2879,7 +2866,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                         toggleDrawer(false);
                       }}
                       className={cn(
-                        'flex items-center justify-center px-3 py-2.5 transition-all duration-200',
+                        'flex items-center justify-center px-3 py-2.5 transition-[background-color,border-color,opacity,transform] duration-200',
                         !isAccountActivated
                           ? isDark
                             ? 'hover:bg-amber-500/10'
@@ -2889,7 +2876,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                             : 'hover:bg-emerald-100/50'
                       )}
                     >
-                      <ChevronDown size={14} className={isDark ? 'text-white/40' : 'text-gray-400'} />
+                      <ChevronDown size={14} className={isDark ? 'text-white/60' : 'text-gray-400'} />
                     </button>
                   </div>
                 ) : (
@@ -2897,7 +2884,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                     <button
                       onClick={() => setWalletExpanded(!walletExpanded)}
                       className={cn(
-                        'relative flex w-full items-center justify-between rounded-lg px-4 py-2.5 text-[13px] font-medium transition-all duration-300 border overflow-hidden',
+                        'relative flex w-full items-center justify-between rounded-lg px-4 py-2.5 text-[13px] font-medium transition-[background-color,border-color,opacity,transform] duration-300 border overflow-hidden',
                         'before:absolute before:inset-0 before:rounded-[inherit] before:bg-[length:250%_250%,100%_100%] before:bg-[position:200%_0,0_0] before:bg-no-repeat before:transition-[background-position_0s_ease] hover:before:bg-[position:-100%_0,0_0] hover:before:duration-[1500ms]',
                         isDark
                           ? 'bg-[#0a0a12] text-white/70 border-white/20 hover:border-white/40 hover:text-white before:bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.15)_50%,transparent_75%,transparent_100%)]'
@@ -3019,7 +3006,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                             className={cn(
                               'flex-1 rounded-lg border px-3 py-2 text-[12px] outline-none',
                               isDark
-                                ? 'border-white/10 bg-white/5 placeholder:text-white/30'
+                                ? 'border-white/10 bg-white/5 placeholder:text-white/60'
                                 : 'border-gray-200 bg-white placeholder:text-gray-400'
                             )}
                           />
@@ -3058,7 +3045,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                 <p
                   className={cn(
                     'mb-2 px-2 text-[10px] font-medium uppercase tracking-wider',
-                    isDark ? 'text-white/40' : 'text-gray-400'
+                    isDark ? 'text-white/60' : 'text-gray-400'
                   )}
                 >
                   Currency
@@ -3074,7 +3061,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       key={currency}
                       onClick={() => toggleFiatCurrency(currency)}
                       className={cn(
-                        'flex items-center justify-center h-10 rounded-lg text-[12px] font-medium transition-all duration-150',
+                        'flex items-center justify-center h-10 rounded-lg text-[12px] font-medium transition-[background-color,opacity,transform] duration-150',
                         currency === activeFiatCurrency
                           ? isDark
                             ? 'bg-[rgba(63,150,254,0.15)] text-[#3f96fe] ring-1 ring-[rgba(63,150,254,0.4)]'
@@ -3097,7 +3084,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                 <p
                   className={cn(
                     'mb-2 px-2 text-[10px] font-medium uppercase tracking-wider',
-                    isDark ? 'text-white/40' : 'text-gray-400'
+                    isDark ? 'text-white/60' : 'text-gray-400'
                   )}
                 >
                   Theme
@@ -3106,7 +3093,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   <button
                     onClick={() => setTheme('XrplToLightTheme')}
                     className={cn(
-                      'flex items-center justify-center gap-2 h-10 rounded-lg text-[13px] font-medium transition-all duration-150',
+                      'flex items-center justify-center gap-2 h-10 rounded-lg text-[13px] font-medium transition-[background-color,opacity,transform] duration-150',
                       themeName === 'XrplToLightTheme'
                         ? isDark
                           ? 'bg-[rgba(63,150,254,0.15)] text-[#3f96fe] ring-1 ring-[rgba(63,150,254,0.4)]'
@@ -3122,7 +3109,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   <button
                     onClick={() => setTheme('XrplToDarkTheme')}
                     className={cn(
-                      'flex items-center justify-center gap-2 h-10 rounded-lg text-[13px] font-medium transition-all duration-150',
+                      'flex items-center justify-center gap-2 h-10 rounded-lg text-[13px] font-medium transition-[background-color,opacity,transform] duration-150',
                       themeName === 'XrplToDarkTheme'
                         ? isDark
                           ? 'bg-[rgba(63,150,254,0.15)] text-[#3f96fe] ring-1 ring-[rgba(63,150,254,0.4)]'
@@ -3147,7 +3134,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
         <>
           <div
             className={cn(
-              'fixed inset-0 z-[2147483646] backdrop-blur-sm',
+              'fixed inset-0 z-[2147483646] backdrop-blur-sm h-dvh',
               isDark ? 'bg-black/60' : 'bg-black/20'
             )}
             onClick={() => setCommandPaletteOpen(false)}
@@ -3167,7 +3154,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                 isDark ? 'border-white/10' : 'border-gray-200'
               )}
             >
-              <Command size={16} className={isDark ? 'text-white/40' : 'text-gray-400'} />
+              <Command size={16} className={isDark ? 'text-white/60' : 'text-gray-400'} />
               <input
                 ref={commandInputRef}
                 value={commandQuery}
@@ -3176,7 +3163,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                 className={cn(
                   'flex-1 bg-transparent text-[14px] outline-none',
                   isDark
-                    ? 'text-white placeholder:text-white/40'
+                    ? 'text-white placeholder:text-white/60'
                     : 'text-gray-900 placeholder:text-gray-400'
                 )}
                 onKeyDown={(e) => {
@@ -3189,7 +3176,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
               <kbd
                 className={cn(
                   'px-1.5 py-0.5 rounded text-[10px] font-mono',
-                  isDark ? 'bg-white/10 text-white/40' : 'bg-gray-100 text-gray-400'
+                  isDark ? 'bg-white/10 text-white/60' : 'bg-gray-100 text-gray-400'
                 )}
               >
                 esc
@@ -3233,7 +3220,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       <span
                         className={cn(
                           'text-[11px] block',
-                          isDark ? 'text-white/40' : 'text-gray-500'
+                          isDark ? 'text-white/60' : 'text-gray-500'
                         )}
                       >
                         {page.desc}
@@ -3251,7 +3238,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                 ))
               ) : (
                 <div className="py-8 text-center">
-                  <p className={cn('text-[13px]', isDark ? 'text-white/40' : 'text-gray-400')}>
+                  <p className={cn('text-[13px]', isDark ? 'text-white/60' : 'text-gray-400')}>
                     No pages found
                   </p>
                 </div>
@@ -3260,7 +3247,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
             <div
               className={cn(
                 'flex items-center justify-between px-4 py-2 border-t text-[10px]',
-                isDark ? 'border-white/10 text-white/30' : 'border-gray-200 text-gray-400'
+                isDark ? 'border-white/10 text-white/60' : 'border-gray-200 text-gray-400'
               )}
             >
               <span>Navigate to any page</span>

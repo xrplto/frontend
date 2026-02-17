@@ -151,7 +151,7 @@ export const getServerSideProps = async (ctx) => {
     ogp.canonical = 'https://xrpl.to';
     ogp.title = slug.charAt(0).toUpperCase() + slug.substr(1) + ' Sitemap';
     ogp.url = 'https://xrpl.to/';
-    ogp.imgUrl = 'https://xrpl.to/static/ogp.webp';
+    ogp.imgUrl = 'https://xrpl.to/og/index.webp';
     ogp.desc =
       "Discover XRPL tokens with ease! XRPL.to's Tokens Sitemap provides a streamlined overview of all available tokens on the XRP Ledger for easy access and exploration.";
 

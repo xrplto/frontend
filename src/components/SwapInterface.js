@@ -2,7 +2,6 @@ import api, { submitTransaction, simulateTransaction } from 'src/utils/api';
 import { toast } from 'sonner';
 import { useState, useEffect, useCallback, useMemo, useRef, memo } from 'react';
 import Decimal from 'decimal.js-light';
-import Image from 'next/image';
 import { useRouter } from 'next/router';
 
 // Set Decimal precision immediately after import
@@ -328,7 +327,7 @@ const StatusIndicator = () => (
 const MAX_RECENT_SEARCHES = 6;
 
 const TokenImage = ({ className, ...props }) => (
-  <Image className={cn('rounded-full overflow-hidden border border-white/10', className)} {...props} />
+  <img className={cn('rounded-full overflow-hidden border border-white/10', className)} {...props} />
 );
 
 const SelectTokenButton = ({ className, children, ...props }) => (
@@ -350,7 +349,7 @@ const SelectTokenButton = ({ className, children, ...props }) => (
 const PanelContainer = ({ className, children, ...props }) => (
   <div
     className={cn(
-      'w-full max-w-[540px] mx-auto max-h-[80vh] h-[600px] rounded-xl flex flex-col overflow-hidden border-[1.5px] shadow-none',
+      'w-full max-w-[540px] mx-auto max-h-[80dvh] h-[600px] rounded-xl flex flex-col overflow-hidden border-[1.5px] shadow-none',
       'dark:bg-[#020a1a] dark:border-white/[0.12]',
       'bg-white border-black/[0.12]',
       className
@@ -567,10 +566,17 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
     }
 
     fetchOrderbook();
-    const timer = setInterval(fetchOrderbook, 5000);
+    const timer = setInterval(() => {
+      if (document.visibilityState === 'visible') fetchOrderbook();
+    }, 5000);
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') fetchOrderbook();
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
     return () => {
       controller.abort();
       clearInterval(timer);
+      document.removeEventListener('visibilitychange', handleVisibility);
     };
   }, [token1, token2, orderType, showOrderbook]);
 
@@ -829,10 +835,10 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
     const connect = async () => {
       try {
         const res = await fetch(`/api/ws/session?type=balancePair&id=${account}&${params}`);
-        const { wsUrl } = await res.json();
+        const { wsUrl, apiKey } = await res.json();
         ws = new WebSocket(wsUrl);
 
-        ws.onopen = () => { attempts = 0; };
+        ws.onopen = () => { attempts = 0; if (apiKey) ws.send(JSON.stringify({ type: 'auth', apiKey })); };
 
         ws.onmessage = (event) => {
           try {
@@ -1367,7 +1373,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
         }
 
         if (!validated) {
-          toast.success('Swap submitted', { id: toastId, description: 'Validation pending...' });
+          toast.loading('Swap submitted', { id: toastId, description: 'Validation pending...' });
           setAmount1(''); setAmount2(''); setLimitPrice('');
           setSync((s) => s + 1); setIsSwapped((v) => !v);
           return;
@@ -1449,6 +1455,10 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
           api.get(`${BASE_URL}/submit/fee`)
         ]);
 
+        if (!seqRes?.data?.sequence || !feeRes?.data?.base_fee) {
+          throw new Error('Failed to fetch account sequence or network fee');
+        }
+
         const prepared = {
           ...tx,
           Sequence: seqRes.data.sequence,
@@ -1459,7 +1469,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
         const signed = deviceWallet.sign(prepared);
         const result = await api.post(`${BASE_URL}/submit`, { tx_blob: signed.tx_blob });
 
-        if (result.data.engine_result === 'tesSUCCESS') {
+        if (result?.data?.engine_result === 'tesSUCCESS') {
           toast.loading('Order submitted', { id: toastId, description: 'Waiting for validation...' });
           const txHash = signed.hash;
           let validated = false;
@@ -1477,13 +1487,13 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
           if (validated) {
             toast.success('Order placed!', { id: toastId, description: `TX: ${txHash.slice(0, 8)}...` });
           } else {
-            toast.success('Order submitted!', { id: toastId, description: 'Validation pending...' });
+            toast.loading('Order submitted', { id: toastId, description: 'Validation pending...' });
           }
 
           setAmount1(''); setAmount2(''); setLimitPrice('');
           setSync((s) => s + 1); setIsSwapped((v) => !v);
         } else {
-          toast.error('Order failed', { id: toastId, description: result.data.engine_result });
+          toast.error('Order failed', { id: toastId, description: result?.data?.engine_result || 'Unknown error' });
         }
       }
     } catch (err) {
@@ -1576,8 +1586,9 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
         return false;
       }
 
-      const algorithm = walletData.seed.startsWith('sEd') ? 'ed25519' : 'secp256k1';
-      const deviceWallet = Wallet.fromSeed(walletData.seed, { algorithm });
+      const seed = walletData.seed.trim();
+      const algorithm = seed.startsWith('sEd') ? 'ed25519' : 'secp256k1';
+      const deviceWallet = Wallet.fromSeed(seed, { algorithm });
 
       const tx = {
         Account: accountProfile.account,
@@ -1596,6 +1607,10 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
         api.get(`${BASE_URL}/submit/fee`)
       ]);
 
+      if (!seqRes?.data?.sequence || !feeRes?.data?.base_fee) {
+        throw new Error('Failed to fetch account sequence or network fee');
+      }
+
       const prepared = {
         ...tx,
         Sequence: seqRes.data.sequence,
@@ -1606,7 +1621,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
       const signed = deviceWallet.sign(prepared);
       const result = await api.post(`${BASE_URL}/submit`, { tx_blob: signed.tx_blob });
 
-      if (result.data.engine_result === 'tesSUCCESS') {
+      if (result?.data?.engine_result === 'tesSUCCESS') {
         const txHash = signed.hash;
         for (let i = 0; i < 10; i++) {
           await new Promise(r => setTimeout(r, 400));
@@ -1624,7 +1639,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
         if (!silent) dispatch(updateProcess(0));
         return true;
       } else {
-        if (!silent) toast.error('Trustline failed', { description: result.data.engine_result });
+        if (!silent) toast.error('Trustline failed', { description: result?.data?.engine_result || 'Unknown error' });
         if (!silent) dispatch(updateProcess(0));
         return false;
       }
@@ -1663,8 +1678,9 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
         return;
       }
 
-      const algorithm = walletData.seed.startsWith('sEd') ? 'ed25519' : 'secp256k1';
-      const deviceWallet = Wallet.fromSeed(walletData.seed, { algorithm });
+      const seed = walletData.seed.trim();
+      const algorithm = seed.startsWith('sEd') ? 'ed25519' : 'secp256k1';
+      const deviceWallet = Wallet.fromSeed(seed, { algorithm });
 
       const tx = {
         Account: accountProfile.account,
@@ -1683,6 +1699,10 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
         api.get(`${BASE_URL}/submit/fee`)
       ]);
 
+      if (!seqRes?.data?.sequence || !feeRes?.data?.base_fee) {
+        throw new Error('Failed to fetch account sequence or network fee');
+      }
+
       const prepared = {
         ...tx,
         Sequence: seqRes.data.sequence,
@@ -1693,11 +1713,11 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
       const signed = deviceWallet.sign(prepared);
       const result = await api.post(`${BASE_URL}/submit`, { tx_blob: signed.tx_blob });
 
-      if (result.data.engine_result === 'tesSUCCESS') {
+      if (result?.data?.engine_result === 'tesSUCCESS') {
         toast.success('Trustline removed!', { id: toastId, description: '0.2 XRP freed' });
         setSync((s) => s + 1);
       } else {
-        toast.error('Remove failed', { id: toastId, description: result.data.engine_result });
+        toast.error('Remove failed', { id: toastId, description: result?.data?.engine_result || 'Unknown error' });
       }
     } catch (err) {
       console.error('Remove trustline error:', err);
@@ -2521,7 +2541,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
       {/* Modal Panel - Glassmorphism */}
       <div
         className={cn(
-          'fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[800px] rounded-[2rem] overflow-hidden max-h-[85vh] flex flex-col z-[1201]',
+          'fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[800px] max-sm:max-w-[calc(100vw-32px)] rounded-[2rem] overflow-hidden max-h-[85dvh] flex flex-col z-[1201]',
           darkMode
             ? 'bg-black/90 backdrop-blur-3xl border-[1.5px] border-white/[0.08] shadow-2xl shadow-black/80'
             : 'bg-white/95 backdrop-blur-3xl border-[1.5px] border-gray-200/60 shadow-2xl shadow-gray-400/20'
@@ -2710,7 +2730,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
       {/* Transaction Preview Modal */}
       {txPreview && (
         <div
-          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/85 backdrop-blur-[8px]"
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/85 backdrop-blur-[8px] max-sm:h-dvh"
           onClick={handleCancelPreview}
         >
           <div
@@ -3293,7 +3313,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                 {showSettingsModal && (
                   <div
                     className={cn(
-                      'fixed inset-0 z-[1200] flex items-center justify-center',
+                      'fixed inset-0 z-[1200] flex items-center justify-center max-sm:h-dvh',
                       darkMode ? 'bg-black/70 backdrop-blur-md' : 'bg-white/60 backdrop-blur-md'
                     )}
                     onClick={() => setShowSettingsModal(false)}

@@ -2546,7 +2546,7 @@ const HoldersTab = React.memo(({ slug }) => {
               isDark ? 'border-white/[0.08]' : 'border-gray-200'
             )}
           >
-            <table className="w-full min-w-[500px]">
+            <table className="w-full min-w-[360px] sm:min-w-[500px]">
               <thead
                 className={cn(
                   'sticky top-0 z-10',

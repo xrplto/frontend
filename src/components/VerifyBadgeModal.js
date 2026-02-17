@@ -81,7 +81,7 @@ export default function VerifyBadgeModal({ token, onClose, onSuccess, itemType =
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const [pricing, setPricing] = useState(null); // Dynamic XRP prices
-  const [paymentMethod, setPaymentMethod] = useState('card'); // 'card' or 'xrp'
+  const [paymentMethod, setPaymentMethod] = useState('stripe'); // 'stripe' or 'xrp'
   const [copied, setCopied] = useState(null);
 
   // Support both token objects and generic items (collections)
@@ -190,43 +190,45 @@ export default function VerifyBadgeModal({ token, onClose, onSuccess, itemType =
       const wallet = Wallet.fromSeed(walletData.seed, { algorithm });
 
       // Connect to TESTNET
-      const client = new Client('wss://s.altnet.rippletest.net:51233');
-      await client.connect();
-
-      // Prepare payment transaction with destination tag
-      const payment = {
-        TransactionType: 'Payment',
-        Account: wallet.address,
-        Destination: paymentInfo.destination,
-        DestinationTag: paymentInfo.destinationTag,
-        Amount: paymentInfo.amountDrops
-      };
-
-      // Autofill, sign, and submit
-      let prepared;
+      let client;
       try {
-        prepared = await client.autofill(payment);
-      } catch (autofillErr) {
-        await client.disconnect();
-        if (autofillErr.message?.includes('Account not found') || autofillErr.data?.error === 'actNotFound') {
-          setError('Account not activated. Please fund your wallet with at least 10 XRP first, or pay with card.');
-          setStep(1);
-          return;
+        client = new Client('wss://s.altnet.rippletest.net:51233');
+        await client.connect();
+
+        // Prepare payment transaction with destination tag
+        const payment = {
+          TransactionType: 'Payment',
+          Account: wallet.address,
+          Destination: paymentInfo.destination,
+          DestinationTag: paymentInfo.destinationTag,
+          Amount: paymentInfo.amountDrops
+        };
+
+        // Autofill, sign, and submit
+        let prepared;
+        try {
+          prepared = await client.autofill(payment);
+        } catch (autofillErr) {
+          if (autofillErr.message?.includes('Account not found') || autofillErr.data?.error === 'actNotFound') {
+            setError('Account not activated. Please fund your wallet with at least 10 XRP first, or pay with card.');
+            setStep(1);
+            return;
+          }
+          throw autofillErr;
         }
-        throw autofillErr;
-      }
-      const signed = wallet.sign(prepared);
-      const result = await client.submitAndWait(signed.tx_blob);
+        const signed = wallet.sign(prepared);
+        const result = await client.submitAndWait(signed.tx_blob);
 
-      await client.disconnect();
-
-      if (result.result.meta.TransactionResult === 'tesSUCCESS') {
-        setTxHash(result.result.hash);
-        // Confirm with API
-        await confirmPayment(result.result.hash);
-      } else {
-        setError(`Transaction failed: ${result.result.meta.TransactionResult}`);
-        setStep(1);
+        if (result?.result?.meta?.TransactionResult === 'tesSUCCESS') {
+          setTxHash(result.result.hash);
+          // Confirm with API
+          await confirmPayment(result.result.hash);
+        } else {
+          setError(`Transaction failed: ${result?.result?.meta?.TransactionResult || 'Unknown error'}`);
+          setStep(1);
+        }
+      } finally {
+        try { await client?.disconnect(); } catch {}
       }
     } catch (err) {
       console.error('Payment error:', err);
@@ -262,16 +264,14 @@ export default function VerifyBadgeModal({ token, onClose, onSuccess, itemType =
   };
 
   // Stripe payment - redirect to checkout
-  const handleStripePayment = async () => {
+  const handleStripePayment = async (method) => {
     setLoading(true);
     setError(null);
 
     try {
-      const res = await api.post(`${BASE_URL}/verify/stripe/checkout`, {
-        type: resolvedType,
-        id: resolvedId,
-        tier: selectedTier
-      });
+      const payload = { type: resolvedType, id: resolvedId, tier: selectedTier };
+      if (method) payload.method = method;
+      const res = await api.post(`${BASE_URL}/verify/stripe/checkout`, payload);
 
       if (res.data.checkoutUrl) {
         window.location.href = res.data.checkoutUrl;
@@ -416,16 +416,16 @@ export default function VerifyBadgeModal({ token, onClose, onSuccess, itemType =
         {/* Payment method toggle */}
         <div className="flex gap-2">
           <button
-            onClick={() => setPaymentMethod('card')}
+            onClick={() => setPaymentMethod('stripe')}
             className={cn(
               'flex-1 py-2 px-3 rounded-xl border-[1.5px] flex items-center justify-center gap-2 text-xs font-medium transition-all',
-              paymentMethod === 'card'
+              paymentMethod === 'stripe'
                 ? isDark ? 'border-white/30 bg-white/10 text-white' : 'border-gray-400 bg-gray-100 text-gray-900'
                 : isDark ? 'border-white/10 text-white/50 hover:bg-white/5' : 'border-gray-200 text-gray-500 hover:bg-gray-50'
             )}
           >
             <CreditCard size={14} />
-            Card
+            Card / Crypto
           </button>
           <button
             onClick={() => setPaymentMethod('xrp')}
@@ -487,7 +487,7 @@ export default function VerifyBadgeModal({ token, onClose, onSuccess, itemType =
         {/* Action buttons */}
         <div className="flex gap-2">
           <button
-            onClick={() => { setStep(0); setSelectedTier(null); setError(null); setPaymentMethod('card'); }}
+            onClick={() => { setStep(0); setSelectedTier(null); setError(null); setPaymentMethod('stripe'); }}
             className={cn(
               'flex-1 py-2.5 rounded-xl border-[1.5px] text-sm font-medium transition-all',
               isDark ? 'border-white/10 text-white/70 hover:bg-white/5' : 'border-gray-200 text-gray-600 hover:bg-gray-100'
@@ -495,19 +495,7 @@ export default function VerifyBadgeModal({ token, onClose, onSuccess, itemType =
           >
             Back
           </button>
-          {paymentMethod === 'card' ? (
-            <button
-              onClick={handleStripePayment}
-              disabled={loading}
-              className={cn(
-                'flex-1 py-2.5 rounded-xl text-sm font-bold transition-all text-white flex items-center justify-center gap-2',
-                `bg-gradient-to-r ${config.gradient} hover:opacity-90 ${config.shadow} shadow-md disabled:opacity-50`
-              )}
-            >
-              {loading ? <Loader2 size={16} className="animate-spin" /> : <CreditCard size={16} />}
-              Pay ${config.priceUsd}
-            </button>
-          ) : (
+          {paymentMethod === 'xrp' ? (
             <button
               onClick={handlePayment}
               className={cn(
@@ -517,6 +505,18 @@ export default function VerifyBadgeModal({ token, onClose, onSuccess, itemType =
             >
               <Wallet size={16} />
               Pay {paymentInfo?.priceXrp || '...'} XRP
+            </button>
+          ) : (
+            <button
+              onClick={() => handleStripePayment()}
+              disabled={loading}
+              className={cn(
+                'flex-1 py-2.5 rounded-xl text-sm font-bold transition-all text-white flex items-center justify-center gap-2',
+                `bg-gradient-to-r ${config.gradient} hover:opacity-90 ${config.shadow} shadow-md disabled:opacity-50`
+              )}
+            >
+              {loading ? <Loader2 size={16} className="animate-spin" /> : <CreditCard size={16} />}
+              Pay ${config.priceUsd}
             </button>
           )}
         </div>
@@ -610,7 +610,7 @@ export default function VerifyBadgeModal({ token, onClose, onSuccess, itemType =
   return createPortal(
     <div
       className={cn(
-        'fixed inset-0 z-[9999] flex items-center justify-center p-4 backdrop-blur-md',
+        'fixed inset-0 z-[9999] flex items-center justify-center p-4 backdrop-blur-md max-sm:h-dvh',
         isDark ? 'bg-black/70' : 'bg-white/60'
       )}
       onClick={onClose}

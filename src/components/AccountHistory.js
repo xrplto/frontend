@@ -5,7 +5,7 @@ import { ThemeContext } from 'src/context/AppContext';
 import { cn } from 'src/utils/cn';
 import { getNftCoverUrl, parseTransaction } from 'src/utils/parseUtils';
 import Link from 'next/link';
-import CryptoJS from 'crypto-js';
+import { MD5 } from 'crypto-js';
 import {
   Copy,
   ExternalLink,
@@ -187,7 +187,7 @@ const getTokenMd5 = (t) =>
   t?.currency === 'XRP'
     ? '84e5efeb89c4eae8f68188982dc290d8'
     : t?.issuer
-      ? CryptoJS.MD5(`${t.issuer}_${t.currency}`).toString()
+      ? MD5(`${t.issuer}_${t.currency}`).toString()
       : null;
 
 
@@ -376,7 +376,7 @@ const AccountHistory = ({ account, compact = false }) => {
                   >
                     <div className="flex items-center gap-3 min-w-0">
                       <span className={cn(
-                        'px-2 py-1 rounded-lg text-[10px] font-bold flex-shrink-0',
+                        'w-[38px] text-center py-1 rounded-lg text-[10px] font-bold flex-shrink-0',
                         parsed.type === 'failed' ? 'bg-amber-500/10 text-amber-500' :
                           parsed.type === 'in' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'
                       )}>
@@ -391,7 +391,7 @@ const AccountHistory = ({ account, compact = false }) => {
                           />
                         ) : parsed.tokenCurrency ? (
                           <img
-                            src={`https://s1.xrpl.to/token/${parsed.tokenCurrency === 'XRP' ? '84e5efeb89c4eae8f68188982dc290d8' : CryptoJS.MD5(`${parsed.tokenIssuer}_${parsed.tokenCurrency}`).toString()}`}
+                            src={`https://s1.xrpl.to/token/${parsed.tokenCurrency === 'XRP' ? '84e5efeb89c4eae8f68188982dc290d8' : MD5(`${parsed.tokenIssuer}_${parsed.tokenCurrency}`).toString()}`}
                             alt=""
                             className="w-8 h-8 rounded-full object-cover bg-white/5"
                             onError={(e) => { e.target.onerror = null; e.target.src = '/static/alt.webp'; }}
@@ -587,8 +587,7 @@ const AccountHistory = ({ account, compact = false }) => {
               <table className="w-full">
                 <thead>
                   <tr className={cn('text-[10px] font-bold uppercase tracking-widest border-b', isDark ? 'text-white/30 border-white/[0.04]' : 'text-gray-400 border-gray-50')}>
-                    <th className="px-6 py-4 text-left w-[40px]"></th>
-                    <th className="px-4 py-4 text-left">Asset</th>
+                    <th className="px-6 py-4 text-left">Asset</th>
                     <th className="px-4 py-4 text-left">Type</th>
                     <th className="px-4 py-4 text-left">Info</th>
                     <th className="px-4 py-4 text-right">Value</th>
@@ -606,18 +605,16 @@ const AccountHistory = ({ account, compact = false }) => {
                         onClick={() => window.open(`/tx/${parsed.hash}`, '_blank')}
                       >
                         <td className="px-6 py-3.5">
-                          <span className={cn(
-                            'px-2 py-1 rounded-lg text-[10px] font-bold transition-transform group-hover:scale-105',
-                            parsed.type === 'failed' ? 'bg-amber-500/10 text-amber-500' :
-                              parsed.type === 'in' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'
-                          )}>
-                            {parsed.type === 'failed' ? 'Fail' : parsed.type === 'in' ? 'In' : 'Out'}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3.5">
                           <div className="flex items-center gap-3">
+                            <span className={cn(
+                              'w-10 text-center flex-shrink-0 py-1 rounded-lg text-[10px] font-bold transition-transform group-hover:scale-105',
+                              parsed.type === 'failed' ? 'bg-amber-500/10 text-amber-500' :
+                                parsed.type === 'in' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'
+                            )}>
+                              {parsed.type === 'failed' ? 'Fail' : parsed.type === 'in' ? 'In' : 'Out'}
+                            </span>
                             {parsed.nftTokenId ? (
-                              <div className="relative group/nft">
+                              <div className="relative group/nft w-9 h-9 flex-shrink-0">
                                 <NftImage
                                   nftTokenId={parsed.nftTokenId}
                                   className="w-9 h-9 rounded-xl object-cover bg-white/5 border border-white/10 shadow-sm"
@@ -635,13 +632,13 @@ const AccountHistory = ({ account, compact = false }) => {
                               </div>
                             ) : parsed.tokenCurrency ? (
                               <img
-                                src={`https://s1.xrpl.to/token/${parsed.tokenCurrency === 'XRP' ? '84e5efeb89c4eae8f68188982dc290d8' : CryptoJS.MD5(`${parsed.tokenIssuer}_${parsed.tokenCurrency}`).toString()}`}
+                                src={`https://s1.xrpl.to/token/${parsed.tokenCurrency === 'XRP' ? '84e5efeb89c4eae8f68188982dc290d8' : MD5(`${parsed.tokenIssuer}_${parsed.tokenCurrency}`).toString()}`}
                                 alt=""
-                                className="w-9 h-9 rounded-full object-cover bg-white/5 border border-white/10 shadow-sm"
+                                className="w-9 h-9 flex-shrink-0 rounded-full object-cover bg-white/5 border border-white/10 shadow-sm"
                                 onError={(e) => { e.target.onerror = null; e.target.src = '/static/alt.webp'; }}
                               />
                             ) : (
-                              <div className={cn('w-9 h-9 rounded-full border border-white/5', isDark ? 'bg-white/[0.03]' : 'bg-gray-100')} />
+                              <div className={cn('w-9 h-9 flex-shrink-0 rounded-full border border-white/5', isDark ? 'bg-white/[0.03]' : 'bg-gray-100')} />
                             )}
                             <div className="flex flex-col">
                               <span className={cn('text-[13px] font-bold tracking-tight', isDark ? 'text-white' : 'text-gray-900')}>

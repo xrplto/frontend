@@ -26,7 +26,7 @@ export default function ConfirmBurnDialog({ open, setOpen, onContinue }) {
     <>
       <div
         className={cn(
-          'fixed inset-0 z-50 backdrop-blur-md',
+          'fixed inset-0 z-50 backdrop-blur-md max-sm:h-dvh',
           isDark ? 'bg-black/70' : 'bg-white/60'
         )}
         onClick={handleClose}

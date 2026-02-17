@@ -8,10 +8,12 @@ export default class MyDocument extends Document {
       <Html lang="en">
         <Head>
           <meta charSet="utf-8" />
-          <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
 
           {/* Critical font sizes to prevent FOUC - must match globals.css @theme */}
           <style dangerouslySetInnerHTML={{ __html: `html{font-size:14px;line-height:1.5}body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}` }} />
+
+          {/* Preload LCP logo — inline script picks the right variant based on saved theme */}
+          <script dangerouslySetInnerHTML={{ __html: `(function(){try{var t=localStorage.getItem('appThemeName');if(!t){var d=localStorage.getItem('appTheme');t=d==='true'?'XrplToDarkTheme':'XrplToLightTheme'}var h=t==='XrplToDarkTheme'?'/logo/xrpl-to-logo-white.svg':'/logo/xrpl-to-logo-black.svg';var l=document.createElement('link');l.rel='preload';l.as='image';l.type='image/svg+xml';l.href=h;l.fetchPriority='high';document.head.appendChild(l)}catch(e){}})();` }} />
 
           {/* Preconnect to external domains */}
           <link rel="preconnect" href="https://api.xrpl.to" />

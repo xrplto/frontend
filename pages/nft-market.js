@@ -1217,9 +1217,21 @@ export async function getServerSideProps() {
       lastUpdated: data.lastUpdated
     };
 
-    return { props: { stats } };
+    return { props: { stats, ogp: {
+      canonical: 'https://xrpl.to/nft-market',
+      title: 'NFT Market | XRPL NFT Market Analytics',
+      url: 'https://xrpl.to/nft-market',
+      imgUrl: 'https://xrpl.to/og/nft-market.webp',
+      desc: 'XRPL NFT market analytics with volume, sales, and trader activity data.'
+    } } };
   } catch (error) {
     console.error('Failed to fetch NFT market stats:', error.message);
-    return { props: { stats: null } };
+    return { props: { stats: null, ogp: {
+      canonical: 'https://xrpl.to/nft-market',
+      title: 'NFT Market | XRPL NFT Market Analytics',
+      url: 'https://xrpl.to/nft-market',
+      imgUrl: 'https://xrpl.to/og/nft-market.webp',
+      desc: 'XRPL NFT market analytics with volume, sales, and trader activity data.'
+    } } };
   }
 }

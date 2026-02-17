@@ -14,6 +14,7 @@ import { EncryptedWalletStorage } from 'src/utils/encryptedWalletStorage';
 // Split contexts for performance — consumers only re-render when their slice changes
 export const ThemeContext = createContext({});
 export const WalletContext = createContext({});
+export const WalletUIContext = createContext({});
 export const AppContext = createContext({});
 
 // Module-level singleton to prevent re-initialization on every render
@@ -47,17 +48,18 @@ function ContextProviderInner({ children, data, openSnackbar }) {
   const [loading, setLoading] = useState(false);
   const [connecting, setConnecting] = useState(false);
   const [darkMode, setDarkMode] = useState(() => {
-    if (typeof window === 'undefined') return false;
+    if (typeof window === 'undefined') return true;
     const saved = window.localStorage.getItem('appThemeName');
     if (saved) return saved === 'XrplToDarkTheme';
-    return window.localStorage.getItem('appTheme') === 'true';
+    const legacy = window.localStorage.getItem('appTheme');
+    return legacy !== null ? legacy === 'true' : true;
   });
   const [themeName, setThemeName] = useState(() => {
-    if (typeof window === 'undefined') return 'XrplToLightTheme';
+    if (typeof window === 'undefined') return 'XrplToDarkTheme';
     const saved = window.localStorage.getItem('appThemeName');
     if (saved) return saved;
     const isDark = window.localStorage.getItem('appTheme');
-    return isDark === 'true' ? 'XrplToDarkTheme' : 'XrplToLightTheme';
+    return isDark === 'false' ? 'XrplToLightTheme' : 'XrplToDarkTheme';
   });
   const [activeFiatCurrency, setActiveFiatCurrency] = useState('XRP');
 
@@ -129,11 +131,11 @@ function ContextProviderInner({ children, data, openSnackbar }) {
     if (savedThemeName) {
       setThemeName(savedThemeName);
       setDarkMode(savedThemeName === 'XrplToDarkTheme');
-    } else if (isDarkMode) {
+    } else if (isDarkMode !== null) {
       // Backward compatibility: convert boolean to theme name
-      const theme = isDarkMode === 'true' ? 'XrplToDarkTheme' : 'XrplToLightTheme';
+      const theme = isDarkMode === 'false' ? 'XrplToLightTheme' : 'XrplToDarkTheme';
       setThemeName(theme);
-      setDarkMode(isDarkMode === 'true');
+      setDarkMode(isDarkMode !== 'false');
     }
   }, []);
 
@@ -145,22 +147,25 @@ function ContextProviderInner({ children, data, openSnackbar }) {
 
         // If device accounts exist, restore them all
         if (event.data.allDeviceAccounts && event.data.allDeviceAccounts.length >= 1) {
-          const allProfiles = [...profiles];
-          event.data.allDeviceAccounts.forEach((deviceProfile) => {
-            if (!allProfiles.find((p) => p.account === deviceProfile.account)) {
-              allProfiles.push(deviceProfile);
-            }
+          setProfiles((prev) => {
+            const allProfiles = [...prev];
+            event.data.allDeviceAccounts.forEach((deviceProfile) => {
+              if (!allProfiles.find((p) => p.account === deviceProfile.account)) {
+                allProfiles.push(deviceProfile);
+              }
+            });
+            const safeAllProfiles = stripSeedArray(allProfiles);
+            window.localStorage.setItem('profiles', JSON.stringify(safeAllProfiles));
+            return safeAllProfiles;
           });
-          const safeAllProfiles = stripSeedArray(allProfiles);
-          setProfiles(safeAllProfiles);
-          window.localStorage.setItem('profiles', JSON.stringify(safeAllProfiles));
         }
       }
     };
 
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
-  }, [profiles]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Listen for storage changes (e.g., from OAuth callback updating profiles)
   useEffect(() => {
@@ -176,12 +181,10 @@ function ContextProviderInner({ children, data, openSnackbar }) {
       if (storedProfile) {
         try {
           const profile = JSON.parse(storedProfile);
-          if (
-            profile &&
-            profile.account &&
-            (!accountProfile || accountProfile.account !== profile.account)
-          ) {
-            setAccountProfile(profile);
+          if (profile && profile.account) {
+            setAccountProfile((prev) =>
+              !prev || prev.account !== profile.account ? profile : prev
+            );
           }
         } catch (e) {
           /* ignore parse errors */
@@ -191,7 +194,8 @@ function ContextProviderInner({ children, data, openSnackbar }) {
 
     window.addEventListener('storage-updated', handleStorageChange);
     return () => window.removeEventListener('storage-updated', handleStorageChange);
-  }, [accountProfile]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     const loadStoredData = async () => {
@@ -277,6 +281,7 @@ function ContextProviderInner({ children, data, openSnackbar }) {
     if (!profile) return;
     setAccountProfile(profile);
     localStorage.setItem(KEY_ACCOUNT_PROFILE, JSON.stringify(stripSeed(profile)));
+    window.dispatchEvent(new StorageEvent('storage', { key: KEY_ACCOUNT_PROFILE }));
   };
 
   const doLogIn = async (profile, profilesOverride = null) => {
@@ -316,6 +321,8 @@ function ContextProviderInner({ children, data, openSnackbar }) {
 
     setAccountProfile(profileWithTimestamp); // seed stays in memory
     localStorage.setItem(KEY_ACCOUNT_PROFILE, JSON.stringify(stripSeed(profileWithTimestamp)));
+    // Notify same-tab listeners (storage event only fires cross-tab)
+    window.dispatchEvent(new StorageEvent('storage', { key: KEY_ACCOUNT_PROFILE }));
 
     let exist = false;
     const newProfiles = [];
@@ -366,6 +373,8 @@ function ContextProviderInner({ children, data, openSnackbar }) {
     setAccountProfile(null);
     setProfiles([]);
     setAccountBalance(null);
+    // Notify same-tab listeners (storage event only fires cross-tab)
+    window.dispatchEvent(new StorageEvent('storage', { key: KEY_ACCOUNT_PROFILE }));
   };
 
   const removeProfile = async (account) => {
@@ -415,11 +424,20 @@ function ContextProviderInner({ children, data, openSnackbar }) {
     const connect = async () => {
       try {
         const res = await fetch(`/api/ws/session?type=balance&id=${account}`);
-        const { wsUrl } = await res.json();
+        const { wsUrl, apiKey } = await res.json();
         ws = new WebSocket(wsUrl);
 
+      // Connection timeout — abort if not open within 10s
+      const connectTimer = setTimeout(() => {
+        if (ws && ws.readyState !== WebSocket.OPEN) {
+          ws.close();
+        }
+      }, 10000);
+
       ws.onopen = () => {
+        clearTimeout(connectTimer);
         attempts = 0; // Reset on successful connection
+        if (apiKey) ws.send(JSON.stringify({ type: 'auth', apiKey }));
       };
 
       ws.onmessage = (event) => {
@@ -471,16 +489,16 @@ function ContextProviderInner({ children, data, openSnackbar }) {
   }, [accountProfile?.account, sync]);
 
   // Fetch watchlist
+  const accountAddress = accountProfile?.account;
   useEffect(() => {
     const getWatchList = () => {
-      const account = accountProfile?.account;
-      if (!account) {
+      if (!accountAddress) {
         setWatchList([]);
         return;
       }
 
       api
-        .get(`${BASE_URL}/watchlist?account=${account}`)
+        .get(`${BASE_URL}/watchlist?account=${accountAddress}`)
         .then((res) => {
           if (res.status === 200 && res.data.success) {
             setWatchList(res.data.watchlist || []);
@@ -489,7 +507,7 @@ function ContextProviderInner({ children, data, openSnackbar }) {
         .catch((err) => {});
     };
     getWatchList();
-  }, [accountProfile, sync, BASE_URL]);
+  }, [accountAddress, sync, BASE_URL]);
 
   const updateWatchList = async (md5) => {
     const account = accountProfile?.account;
@@ -540,7 +558,8 @@ function ContextProviderInner({ children, data, openSnackbar }) {
     [darkMode, themeName]
   );
 
-  // Wallet context — changes on login/logout/balance updates
+  // Wallet context — identity & balance (consumed by 40+ components)
+  // Setters are stable (React guarantees identity) so they don't trigger re-renders
   const walletValue = useMemo(
     () => ({
       accountProfile,
@@ -552,6 +571,17 @@ function ContextProviderInner({ children, data, openSnackbar }) {
       doLogOut,
       accountBalance,
       setAccountBalance,
+      setOpenWalletModal,
+      setPendingWalletAuth,
+      handleLogin,
+      handleLogout
+    }),
+    [accountProfile, profiles, accountBalance]
+  );
+
+  // Wallet UI context — transient dialog/modal state (consumed only by Wallet.js)
+  const walletUIValue = useMemo(
+    () => ({
       open,
       setOpen,
       openWalletModal,
@@ -561,11 +591,9 @@ function ContextProviderInner({ children, data, openSnackbar }) {
       connecting,
       setConnecting,
       handleOpen,
-      handleClose,
-      handleLogin,
-      handleLogout
+      handleClose
     }),
-    [accountProfile, profiles, accountBalance, open, openWalletModal, pendingWalletAuth, connecting]
+    [open, openWalletModal, pendingWalletAuth, connecting]
   );
 
   // App context — misc state (sync, currency, NFTs, watchlist, snackbar)
@@ -590,14 +618,16 @@ function ContextProviderInner({ children, data, openSnackbar }) {
   return (
     <ThemeContext.Provider value={themeValue}>
       <WalletContext.Provider value={walletValue}>
-        <AppContext.Provider value={appValue}>
-          {loading && (
-            <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/70 backdrop-blur-md">
-              <PuffLoader color={'#00AB55'} size={50} />
-            </div>
-          )}
-          {children}
-        </AppContext.Provider>
+        <WalletUIContext.Provider value={walletUIValue}>
+          <AppContext.Provider value={appValue}>
+            {loading && (
+              <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/70 backdrop-blur-md max-sm:h-dvh">
+                <PuffLoader color={'#00AB55'} size={50} />
+              </div>
+            )}
+            {children}
+          </AppContext.Provider>
+        </WalletUIContext.Provider>
       </WalletContext.Provider>
     </ThemeContext.Provider>
   );

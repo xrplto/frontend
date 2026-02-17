@@ -31,10 +31,11 @@ function Detail({ data }) {
 
     // Log when page is fully interactive
     if (typeof window !== 'undefined') {
-      requestIdleCallback(() => {
+      const cb = () => {
         const idleTime = (typeof performance !== 'undefined' ? performance.now() : Date.now()) - PAGE_LOAD_START;
         // fully interactive
-      });
+      };
+      typeof requestIdleCallback === 'function' ? requestIdleCallback(cb) : setTimeout(cb, 1);
     }
   }, []);
 
@@ -74,7 +75,7 @@ function Detail({ data }) {
     creatorPanelOpen || transactionPanelOpen || notificationPanelOpen;
 
   return (
-    <main className="overflow-hidden min-h-screen">
+    <main className="overflow-x-clip w-full max-w-[100vw] min-h-screen">
       <Header
         notificationPanelOpen={notificationPanelOpen}
         onNotificationPanelToggle={setNotificationPanelOpen}
@@ -183,7 +184,7 @@ export async function getStaticProps({ params }) {
   if (data && data.token) {
     let ogp = {};
     const token = data.token;
-    const { name, ext, md5, slug, exch, pro24h, vol24hxrp, marketcap, holders } = token;
+    const { name, ext, md5, slug, exch, pro24h, vol24hxrp, marketcap, holders, issuer } = token;
 
     // Format price and percentage change for meta description
     const priceDisplay = exch ? `${Number(exch).toFixed(exch < 0.01 ? 10 : 8)} XRP` : '';
@@ -270,11 +271,10 @@ export async function getStaticProps({ params }) {
           url: ogp.canonical
         }
       }),
-      ...(marketcap && {
-        aggregateRating: {
-          '@type': 'AggregateRating',
-          ratingValue: marketcap > 1000000 ? '4.5' : '4.0',
-          reviewCount: holders || 1
+      ...(issuer && {
+        provider: {
+          '@type': 'Organization',
+          name: issuer
         }
       })
     };

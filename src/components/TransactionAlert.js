@@ -111,7 +111,7 @@ const TransactionAlert = () => {
       <div
         className={cn(
           'fixed bottom-6 right-6 z-[9999] sm:min-w-[360px] sm:max-w-[480px]',
-          'max-sm:left-4 max-sm:right-4 max-sm:bottom-4',
+          'max-sm:left-4 max-sm:right-4 max-sm:bottom-[calc(16px+env(safe-area-inset-bottom))]',
           isClosing ? 'animate-slideOutDown' : 'animate-slideInUp'
         )}
       >

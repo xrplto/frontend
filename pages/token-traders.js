@@ -547,9 +547,21 @@ export async function getServerSideProps({ query }) {
     const pagination = tradersRes.data.pagination || {};
     const traderBalances = summaryRes.data.traderBalances || {};
 
-    return { props: { traders, pagination, traderBalances } };
+    return { props: { traders, pagination, traderBalances, ogp: {
+      canonical: 'https://xrpl.to/token-traders',
+      title: 'Token Traders | Top XRPL Token Traders',
+      url: 'https://xrpl.to/token-traders',
+      imgUrl: 'https://xrpl.to/og/token-traders.webp',
+      desc: 'Discover the top token traders on the XRP Ledger. Track profits, volume, and trading activity.'
+    } } };
   } catch (error) {
     console.error('Failed to fetch token traders:', error.message);
-    return { props: { traders: [], pagination: {}, traderBalances: {} } };
+    return { props: { traders: [], pagination: {}, traderBalances: {}, ogp: {
+      canonical: 'https://xrpl.to/token-traders',
+      title: 'Token Traders | Top XRPL Token Traders',
+      url: 'https://xrpl.to/token-traders',
+      imgUrl: 'https://xrpl.to/og/token-traders.webp',
+      desc: 'Discover the top token traders on the XRP Ledger. Track profits, volume, and trading activity.'
+    } } };
   }
 }

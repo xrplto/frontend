@@ -295,6 +295,52 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
     return '12';
   });
 
+  // Anti-snipe state
+  const [antiSnipeInfo, setAntiSnipeInfo] = useState(null); // { sessionId, antiSnipeMode, authWindow, requireAuthRemoved }
+  const [antiSnipeAuthorized, setAntiSnipeAuthorized] = useState(false);
+  const [authorizingAntiSnipe, setAuthorizingAntiSnipe] = useState(false);
+
+  // Check if token is in active anti-snipe mode
+  useEffect(() => {
+    const issuer = token?.issuer;
+    const currency = token?.currency;
+    if (!issuer || !currency || currency === 'XRP') {
+      setAntiSnipeInfo(null);
+      return;
+    }
+    let cancelled = false;
+    api.get(`${BASE_URL}/launch-token/auth-info/${issuer}/${encodeURIComponent(currency)}`)
+      .then(res => {
+        if (cancelled) return;
+        const d = res.data || res;
+        if (d.antiSnipeMode && !d.requireAuthRemoved) {
+          setAntiSnipeInfo(d);
+        } else {
+          setAntiSnipeInfo(null);
+        }
+      })
+      .catch(() => { if (!cancelled) setAntiSnipeInfo(null); });
+    return () => { cancelled = true; };
+  }, [token?.issuer, token?.currency]);
+
+  // Check if connected wallet is already authorized for anti-snipe
+  useEffect(() => {
+    const addr = accountProfile?.account || accountProfile?.address;
+    if (!antiSnipeInfo?.antiSnipeMode || !addr) {
+      setAntiSnipeAuthorized(false);
+      return;
+    }
+    let cancelled = false;
+    api.get(`${BASE_URL}/launch-token/check-auth/${token.issuer}/${encodeURIComponent(token.currency)}/${addr}`)
+      .then(res => {
+        if (cancelled) return;
+        const d = res.data || res;
+        setAntiSnipeAuthorized(d.authorized === true);
+      })
+      .catch(() => { if (!cancelled) setAntiSnipeAuthorized(false); });
+    return () => { cancelled = true; };
+  }, [antiSnipeInfo, accountProfile?.account, accountProfile?.address, token?.issuer, token?.currency]);
+
   // Swap quote state
   const [swapQuoteApi, setSwapQuoteApi] = useState(null);
   const [quoteRequiresTrustline, setQuoteRequiresTrustline] = useState(null); // null or { currency, issuer, limit }
@@ -714,9 +760,10 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
     const connect = async () => {
       try {
         const res = await fetch(`/api/ws/session?type=balancePair&id=${account}&${params}`);
-        const { wsUrl } = await res.json();
+        const { wsUrl, apiKey } = await res.json();
         ws = new WebSocket(wsUrl);
 
+        ws.onopen = () => { if (apiKey) ws.send(JSON.stringify({ type: 'auth', apiKey })); };
         ws.onmessage = (event) => {
           try {
             const data = JSON.parse(event.data);
@@ -731,17 +778,19 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
         };
 
         ws.onclose = () => {
-          reconnectTimeout = setTimeout(connect, 3000);
+          if (!unmounted) reconnectTimeout = setTimeout(connect, 3000);
         };
       } catch (e) {
         console.error('[Pair WS] Session error:', e);
-        reconnectTimeout = setTimeout(connect, 3000);
+        if (!unmounted) reconnectTimeout = setTimeout(connect, 3000);
       }
     };
 
+    let unmounted = false;
     connect();
 
     return () => {
+      unmounted = true;
       if (reconnectTimeout) clearTimeout(reconnectTimeout);
       if (ws) {
         ws.onclose = null;
@@ -952,6 +1001,46 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
         setSync((s) => s + 1); // Trigger TokenSummary to refresh trustline state
       }
 
+      // Anti-snipe: authorize trustline before swap if needed
+      if (antiSnipeInfo?.antiSnipeMode && !antiSnipeAuthorized) {
+        toast.loading('Processing swap...', { id: toastId, description: 'Requesting anti-snipe authorization...' });
+        setAuthorizingAntiSnipe(true);
+        try {
+          const authRes = await api.post(`${BASE_URL}/launch-token/authorize`, {
+            sessionId: antiSnipeInfo.sessionId,
+            userAddress: accountProfile.account
+          });
+          const authData = authRes.data || authRes;
+          if (!authData.success && authData.error !== 'Already authorized') {
+            toast.error('Authorization failed', { id: toastId, description: authData.error || 'Could not authorize' });
+            setAuthorizingAntiSnipe(false);
+            return;
+          }
+          // Poll until authorized on-chain (max 15s)
+          toast.loading('Processing swap...', { id: toastId, description: 'Waiting for on-chain authorization...' });
+          let authorized = authData.error === 'Already authorized';
+          for (let i = 0; i < 10 && !authorized; i++) {
+            await new Promise(r => setTimeout(r, 1500));
+            const checkRes = await api.get(
+              `${BASE_URL}/launch-token/check-auth/${token.issuer}/${encodeURIComponent(token.currency)}/${accountProfile.account}`
+            );
+            const checkData = checkRes.data || checkRes;
+            if (checkData.authorized) authorized = true;
+          }
+          if (!authorized) {
+            toast.error('Authorization timeout', { id: toastId, description: 'Try again in a few seconds' });
+            setAuthorizingAntiSnipe(false);
+            return;
+          }
+          setAntiSnipeAuthorized(true);
+        } catch (err) {
+          toast.error('Authorization error', { id: toastId, description: err.message });
+          setAuthorizingAntiSnipe(false);
+          return;
+        }
+        setAuthorizingAntiSnipe(false);
+      }
+
       // Check if we created any trustline (which reserves XRP)
       const createdTrustline = needsTrustline1 || needsTrustline2;
 
@@ -1059,7 +1148,7 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
 
         // Check trustline limit for receiving token via API
         if (curr2.currency !== 'XRP') {
-          const trustlineRes = await api.get(`https://api.xrpl.to/v1/account/trustline/${accountProfile.account}/${curr2.issuer}/${curr2.currency}`).then(r => r.data);
+          const trustlineRes = await api.get(`${BASE_URL}/account/trustline/${accountProfile.account}/${curr2.issuer}/${curr2.currency}`).then(r => r.data);
 
           const currentBalance = parseFloat(trustlineRes.balance) || 0;
           const currentLimit = parseFloat(trustlineRes.limit) || 0;
@@ -1238,7 +1327,7 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
         for (let i = 0; i < 15; i++) {
           await new Promise(r => setTimeout(r, 500));
           try {
-            const txRes = await api.get(`https://api.xrpl.to/v1/tx/${txHash}`);
+            const txRes = await api.get(`${BASE_URL}/tx/${txHash}`);
             if (txRes.data?.validated) {
               validated = true;
               txResult = txRes.data?.meta?.TransactionResult || txRes.data?.engine_result;
@@ -1248,7 +1337,7 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
         }
 
         if (!validated) {
-          toast.success('Swap submitted', { id: toastId, description: 'Validation pending...' });
+          toast.loading('Swap submitted', { id: toastId, description: 'Validation pending...' });
           setAmount1(''); setAmount2(''); setLimitPrice('');
           setSync((s) => s + 1); setIsSwapped((v) => !v);
           return;
@@ -1323,9 +1412,13 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
         }
 
         const [seqRes, feeRes] = await Promise.all([
-          api.get(`https://api.xrpl.to/v1/submit/account/${accountProfile.account}/sequence`),
-          api.get('https://api.xrpl.to/v1/submit/fee')
+          api.get(`${BASE_URL}/submit/account/${accountProfile.account}/sequence`),
+          api.get(`${BASE_URL}/submit/fee`)
         ]);
+
+        if (!seqRes?.data?.sequence || !feeRes?.data?.base_fee) {
+          throw new Error('Failed to fetch account sequence or network fee');
+        }
 
         const prepared = {
           ...tx,
@@ -1335,9 +1428,9 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
         };
 
         const signed = deviceWallet.sign(prepared);
-        const result = await api.post('https://api.xrpl.to/v1/submit', { tx_blob: signed.tx_blob });
+        const result = await api.post(`${BASE_URL}/submit`, { tx_blob: signed.tx_blob });
 
-        if (result.data.engine_result === 'tesSUCCESS') {
+        if (result?.data?.engine_result === 'tesSUCCESS') {
           toast.loading('Order submitted', { id: toastId, description: 'Waiting for validation...' });
 
           const txHash = signed.hash;
@@ -1350,7 +1443,7 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
             await new Promise(r => setTimeout(r, 500));
 
             try {
-              const txRes = await api.get(`https://api.xrpl.to/v1/tx/${txHash}`);
+              const txRes = await api.get(`${BASE_URL}/tx/${txHash}`);
               if (txRes.data?.validated === true || txRes.data?.meta?.TransactionResult === 'tesSUCCESS') {
                 validated = true;
                 break;
@@ -1363,7 +1456,7 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
           if (validated) {
             toast.success('Order placed!', { id: toastId, description: `TX: ${txHash.slice(0, 8)}...` });
           } else {
-            toast.success('Order submitted!', { id: toastId, description: 'Validation pending...' });
+            toast.loading('Order submitted', { id: toastId, description: 'Validation pending...' });
           }
 
           setAmount1('');
@@ -1372,7 +1465,7 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
           setSync((s) => s + 1);
           setIsSwapped((v) => !v);
         } else {
-          toast.error('Order failed', { id: toastId, description: result.data.engine_result });
+          toast.error('Order failed', { id: toastId, description: result?.data?.engine_result || 'Unknown error' });
         }
       }
     } catch (err) {
@@ -1407,7 +1500,7 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
       for (let i = 0; i < 15; i++) {
         await new Promise(r => setTimeout(r, 500));
         try {
-          const txRes = await api.get(`https://api.xrpl.to/v1/tx/${txHash}`);
+          const txRes = await api.get(`${BASE_URL}/tx/${txHash}`);
           if (txRes.data?.validated) {
             validated = true;
             txResult = txRes.data?.meta?.TransactionResult || txRes.data?.engine_result;
@@ -1562,8 +1655,9 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
         return false;
       }
 
-      const algorithm = walletData.seed.startsWith('sEd') ? 'ed25519' : 'secp256k1';
-      const deviceWallet = Wallet.fromSeed(walletData.seed, { algorithm });
+      const seed = walletData.seed.trim();
+      const algorithm = seed.startsWith('sEd') ? 'ed25519' : 'secp256k1';
+      const deviceWallet = Wallet.fromSeed(seed, { algorithm });
 
       const tx = {
         Account: accountProfile.account,
@@ -1578,9 +1672,13 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
       };
 
       const [seqRes, feeRes] = await Promise.all([
-        api.get(`https://api.xrpl.to/v1/submit/account/${accountProfile.account}/sequence`),
-        api.get('https://api.xrpl.to/v1/submit/fee')
+        api.get(`${BASE_URL}/submit/account/${accountProfile.account}/sequence`),
+        api.get(`${BASE_URL}/submit/fee`)
       ]);
+
+      if (!seqRes?.data?.sequence || !feeRes?.data?.base_fee) {
+        throw new Error('Failed to fetch account sequence or network fee');
+      }
 
       const prepared = {
         ...tx,
@@ -1590,9 +1688,9 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
       };
 
       const signed = deviceWallet.sign(prepared);
-      const result = await api.post('https://api.xrpl.to/v1/submit', { tx_blob: signed.tx_blob });
+      const result = await api.post(`${BASE_URL}/submit`, { tx_blob: signed.tx_blob });
 
-      if (result.data.engine_result === 'tesSUCCESS') {
+      if (result?.data?.engine_result === 'tesSUCCESS') {
         // Poll for transaction validation
         const txHash = signed.hash;
         let attempts = 0;
@@ -1602,7 +1700,7 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
           attempts++;
           await new Promise(r => setTimeout(r, 400));
           try {
-            const txRes = await api.get(`https://api.xrpl.to/v1/tx/${txHash}`);
+            const txRes = await api.get(`${BASE_URL}/tx/${txHash}`);
             if (txRes.data?.validated === true || txRes.data?.meta?.TransactionResult === 'tesSUCCESS') {
               break;
             }
@@ -1618,7 +1716,7 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
         }
         return true;
       } else {
-        if (!silent) toast.error('Trustline failed', { description: result.data.engine_result });
+        if (!silent) toast.error('Trustline failed', { description: result?.data?.engine_result || 'Unknown error' });
         return false;
       }
     } catch (err) {
@@ -1655,8 +1753,9 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
         return;
       }
 
-      const algorithm = walletData.seed.startsWith('sEd') ? 'ed25519' : 'secp256k1';
-      const deviceWallet = Wallet.fromSeed(walletData.seed, { algorithm });
+      const seed = walletData.seed.trim();
+      const algorithm = seed.startsWith('sEd') ? 'ed25519' : 'secp256k1';
+      const deviceWallet = Wallet.fromSeed(seed, { algorithm });
 
       const tx = {
         Account: accountProfile.account,
@@ -1675,6 +1774,10 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
         api.get(`${BASE_URL}/submit/fee`)
       ]);
 
+      if (!seqRes?.data?.sequence || !feeRes?.data?.base_fee) {
+        throw new Error('Failed to fetch account sequence or network fee');
+      }
+
       const prepared = {
         ...tx,
         Sequence: seqRes.data.sequence,
@@ -1685,11 +1788,11 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
       const signed = deviceWallet.sign(prepared);
       const result = await api.post(`${BASE_URL}/submit`, { tx_blob: signed.tx_blob });
 
-      if (result.data.engine_result === 'tesSUCCESS') {
+      if (result?.data?.engine_result === 'tesSUCCESS') {
         toast.success('Trustline removed!', { id: toastId, description: '0.2 XRP freed' });
         setSync((s) => s + 1);
       } else {
-        toast.error('Remove failed', { id: toastId, description: result.data.engine_result });
+        toast.error('Remove failed', { id: toastId, description: result?.data?.engine_result || 'Unknown error' });
       }
     } catch (err) {
       console.error('Remove trustline error:', err);
@@ -1702,7 +1805,7 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
       {/* Transaction Preview Modal */}
       {txPreview && (
         <div
-          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/85 backdrop-blur-lg"
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/85 backdrop-blur-lg max-sm:h-dvh"
           onClick={handleCancelPreview}
         >
           <div
@@ -2102,6 +2205,8 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
                       autoComplete="new-password"
                       className={cn('outline-none max-sm:text-base max-sm:p-[10px]', isDark ? 'text-white placeholder:text-white/40' : 'text-[#212B36] placeholder:text-black/40')}
                       style={{ width: '100%', padding: '0px', border: 'none', fontSize: '20px', textAlign: 'end', appearance: 'none', fontWeight: 500, background: 'transparent' }}
+                      value={amount2}
+                      onChange={handleChangeAmount2}
                     />
                     <span className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-black/40')}>
                       {curr2IsXRP ? `≈ ${fNumber(tokenPrice2)} XRP` : `≈ ${currencySymbols[activeFiatCurrency]}${fNumber(tokenPrice2)}`}
@@ -2129,7 +2234,7 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
           {showSettingsModal && (
             <div
               className={cn(
-                'fixed inset-0 z-[1000] flex items-center justify-center backdrop-blur-md',
+                'fixed inset-0 z-[1000] flex items-center justify-center backdrop-blur-md max-sm:h-dvh',
                 isDark ? 'bg-black/70' : 'bg-white/60'
               )}
               onClick={() => setShowSettingsModal(false)}
@@ -2671,6 +2776,31 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
                 {orderExpiry !== 'never' && <span className="opacity-60"> · {expiryHours}h</span>}
               </span>
             </SummaryBox>
+          )}
+
+          {/* Anti-snipe notice */}
+          {antiSnipeInfo?.antiSnipeMode && (
+            <div className={cn(
+              'rounded-lg px-3 py-2 mt-2 border',
+              isDark ? 'bg-amber-500/5 border-amber-500/20' : 'bg-amber-50 border-amber-200'
+            )}>
+              <div className="flex items-center gap-1.5">
+                <AlertTriangle size={12} className="text-amber-500 shrink-0" />
+                <span className={cn('text-[11px] font-medium', isDark ? 'text-amber-400' : 'text-amber-700')}>
+                  Anti-snipe active
+                </span>
+              </div>
+              <p className={cn('text-[10px] mt-0.5', isDark ? 'text-white/50' : 'text-black/50')}>
+                {antiSnipeAuthorized
+                  ? 'Your wallet is authorized — you can swap.'
+                  : 'Authorization required before buying. It will be requested automatically when you swap.'}
+                {antiSnipeInfo.authWindow?.remainingSec > 0 && (
+                  <span className="ml-1 opacity-70">
+                    Window: {Math.ceil(antiSnipeInfo.authWindow.remainingSec / 60)}m left
+                  </span>
+                )}
+              </p>
+            </div>
           )}
 
           {/* Connect Wallet - inside the swap card when not connected */}

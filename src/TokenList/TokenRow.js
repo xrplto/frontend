@@ -1,7 +1,7 @@
 import Decimal from 'decimal.js-light';
 import { useState, useEffect, useContext, memo, useMemo, useCallback, useRef } from 'react';
 import React from 'react';
-import Image from 'next/image';
+
 import { Bookmark } from 'lucide-react';
 import api from 'src/utils/api';
 import { cn } from 'src/utils/cn';
@@ -19,22 +19,35 @@ const currencySymbols = {
 };
 
 // Sparkline API request queue with concurrency limit
-const SPARKLINE_MAX_CONCURRENT = 6;
+const SPARKLINE_MAX_CONCURRENT = 25;
 let sparklineActiveCount = 0;
 const sparklineQueue = [];
+const sparklineCache = new Map();
 
-function enqueueSparklineRequest(fn) {
+function enqueueSparklineRequest(fn, id) {
   return new Promise((resolve, reject) => {
-    sparklineQueue.push(() => fn().then(resolve, reject));
+    const entry = { id, run: () => fn().then(resolve, reject), cancelled: false };
+    sparklineQueue.push(entry);
     drainSparklineQueue();
+    return entry;
   });
+}
+
+function cancelSparklineRequest(id) {
+  for (let i = sparklineQueue.length - 1; i >= 0; i--) {
+    if (sparklineQueue[i].id === id && !sparklineQueue[i].running) {
+      sparklineQueue.splice(i, 1);
+    }
+  }
 }
 
 function drainSparklineQueue() {
   while (sparklineActiveCount < SPARKLINE_MAX_CONCURRENT && sparklineQueue.length > 0) {
-    const task = sparklineQueue.shift();
+    const entry = sparklineQueue.shift();
+    if (entry.cancelled) continue;
+    entry.running = true;
     sparklineActiveCount++;
-    task().finally(() => {
+    entry.run().finally(() => {
       sparklineActiveCount--;
       drainSparklineQueue();
     });
@@ -91,40 +104,47 @@ const SparklineChart = memo(
     useEffect(() => {
       if (!visible || !url) return;
       let cancelled = false;
+
+      const processData = (prices) => {
+        if (prices.length < 2) return;
+        const w = 120, h = 32;
+        const min = Math.min(...prices), max = Math.max(...prices), range = max - min || 1;
+        const pts = prices.map((p, i) => [(i / (prices.length - 1)) * w, h - ((p - min) / range) * (h - 4) - 2]);
+        const line = 'M' + pts.map((p) => p.join(',')).join('L');
+        setLinePath(line);
+        setAreaPath(line + `L${w},${h}L0,${h}Z`);
+        setColor(prices[prices.length - 1] >= prices[0] ? '#22c55e' : '#ef4444');
+      };
+
+      if (sparklineCache.has(url)) {
+        processData(sparklineCache.get(url));
+        return;
+      }
+
+      const controller = new AbortController();
       enqueueSparklineRequest(() =>
         api
-          .get(url)
+          .get(url, { signal: controller.signal })
           .then((res) => {
             if (cancelled) return;
             const prices = res.data?.data?.prices?.map(Number) || [];
-            if (prices.length < 2) return;
-            const w = 120,
-              h = 32;
-            const min = Math.min(...prices),
-              max = Math.max(...prices),
-              range = max - min || 1;
-            const pts = prices.map((p, i) => [
-              (i / (prices.length - 1)) * w,
-              h - ((p - min) / range) * (h - 4) - 2
-            ]);
-            const line = 'M' + pts.map((p) => p.join(',')).join('L');
-            const area = line + `L${w},${h}L0,${h}Z`;
-            const c = prices[prices.length - 1] >= prices[0] ? '#22c55e' : '#ef4444';
-            setLinePath(line);
-            setAreaPath(area);
-            setColor(c);
+            sparklineCache.set(url, prices);
+            processData(prices);
           })
-          .catch(() => {})
+          .catch(() => {}),
+        url
       );
       return () => {
         cancelled = true;
+        controller.abort();
+        cancelSparklineRequest(url);
       };
     }, [visible, url]);
 
     const fillColor = color === '#22c55e' ? 'rgba(34, 197, 94, 0.15)' : 'rgba(239, 68, 68, 0.15)';
 
     return (
-      <div ref={containerRef} className="w-[120px] h-[32px]">
+      <div ref={containerRef} className="tr-spark w-[120px] h-[32px]">
         {linePath ? (
           <svg
             width="120"
@@ -156,25 +176,11 @@ SparklineChart.displayName = 'SparklineChart';
 
 const StyledRow = ({ className, children, isDark, isNew, ...p }) => (
   <tr
-    className={cn('cursor-pointer transition-all duration-150', className)}
+    className={cn('tr-row cursor-pointer', isNew && 'tr-row-new', className)}
     style={{
-      borderBottom: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)'}`,
-      ...(isNew
-        ? {
-            background: isDark ? 'rgba(34, 197, 94, 0.08)' : 'rgba(34, 197, 94, 0.06)',
-            boxShadow: 'inset 3px 0 8px -4px rgba(34, 197, 94, 0.4)'
-          }
-        : {})
-    }}
-    onMouseEnter={(e) => {
-      e.currentTarget.style.background = isDark
-        ? 'linear-gradient(90deg, rgba(19, 125, 254, 0.06) 0%, rgba(255, 255, 255, 0.03) 100%)'
-        : 'linear-gradient(90deg, rgba(19, 125, 254, 0.04) 0%, rgba(0, 0, 0, 0.01) 100%)';
-    }}
-    onMouseLeave={(e) => {
-      e.currentTarget.style.background = isNew
-        ? (isDark ? 'rgba(34, 197, 94, 0.08)' : 'rgba(34, 197, 94, 0.06)')
-        : 'transparent';
+      contentVisibility: 'auto',
+      containIntrinsicSize: 'auto 52px',
+      borderBottom: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)'}`
     }}
     {...p}
   >
@@ -185,7 +191,7 @@ const StyledRow = ({ className, children, isDark, isNew, ...p }) => (
 const StyledCell = ({ className, children, isDark, isTokenColumn, align, fontWeight, color, ...p }) => (
   <td
     className={cn(
-      'text-sm align-middle first:pl-3 last:pr-3 py-[14px] px-1 font-normal',
+      'tr-cell text-sm align-middle first:pl-3 last:pr-3 py-[14px] px-1 font-normal',
       isTokenColumn ? 'whitespace-normal' : 'whitespace-nowrap',
       className
     )}
@@ -205,29 +211,16 @@ const StyledCell = ({ className, children, isDark, isTokenColumn, align, fontWei
 const MobileTokenCard = ({ className, children, isDark, isNew, ...p }) => (
   <div
     className={cn(
-      'flex w-full items-center cursor-pointer box-border transition-all duration-150',
-      'py-[10px] px-3 border-b-[1.5px] bg-transparent',
+      'mobile-card flex w-full items-center cursor-pointer box-border',
+      'py-[7px] px-2.5 border-b bg-transparent',
       isDark ? 'border-white/10' : 'border-black/[0.06]',
+      isNew && 'tr-row-new',
       className
     )}
     style={{
-      ...(isNew
-        ? {
-            background: isDark ? 'rgba(34, 197, 94, 0.08)' : 'rgba(34, 197, 94, 0.06)',
-            borderLeft: '2px solid #22c55e',
-            boxShadow: 'inset 3px 0 8px -4px rgba(34, 197, 94, 0.4)'
-          }
-        : {})
-    }}
-    onMouseEnter={(e) => {
-      e.currentTarget.style.background = isDark
-        ? 'linear-gradient(90deg, rgba(19, 125, 254, 0.06) 0%, rgba(255, 255, 255, 0.03) 100%)'
-        : 'linear-gradient(90deg, rgba(19, 125, 254, 0.04) 0%, rgba(0, 0, 0, 0.01) 100%)';
-    }}
-    onMouseLeave={(e) => {
-      e.currentTarget.style.background = isNew
-        ? (isDark ? 'rgba(34, 197, 94, 0.08)' : 'rgba(34, 197, 94, 0.06)')
-        : 'transparent';
+      contentVisibility: 'auto',
+      containIntrinsicSize: 'auto 44px',
+      ...(isNew ? { borderLeft: '2px solid #22c55e' } : {})
     }}
     {...p}
   >
@@ -237,7 +230,7 @@ const MobileTokenCard = ({ className, children, isDark, isNew, ...p }) => (
 
 const MobileTokenInfo = ({ className, children, ...p }) => (
   <div
-    className={cn('flex items-center gap-2.5 min-w-0 flex-[2] px-1', className)}
+    className={cn('flex items-center gap-2 min-w-0 flex-[2] px-0.5', className)}
     {...p}
   >
     {children}
@@ -247,7 +240,7 @@ const MobileTokenInfo = ({ className, children, ...p }) => (
 const MobilePriceCell = ({ className, children, isDark, ...p }) => (
   <div
     className={cn(
-      'text-right text-[13px] font-medium min-w-0 flex-[1.2] px-[6px] tracking-[0.01em]',
+      'text-right text-[12.5px] font-medium min-w-0 flex-[1.2] px-1 tracking-[0.01em]',
       isDark ? 'text-white/90' : 'text-black',
       className
     )}
@@ -259,7 +252,7 @@ const MobilePriceCell = ({ className, children, isDark, ...p }) => (
 
 const MobilePercentCell = ({ className, children, isDark, ...p }) => (
   <div
-    className={cn('text-right text-[13px] font-medium min-w-0 flex-[0.8] px-[6px] tracking-[0.01em]', className)}
+    className={cn('text-right text-[12.5px] font-medium min-w-0 flex-[0.8] px-1 tracking-[0.01em]', className)}
     {...p}
   >
     {children}
@@ -271,7 +264,7 @@ const TokenImage = ({ className, children, isDark, isMobile, ...p }) => (
   <div
     className={cn(
       'rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center',
-      isMobile ? 'w-8 h-8' : 'w-10 h-10',
+      isMobile ? 'w-7 h-7' : 'tr-img w-10 h-10',
       isDark ? 'bg-white/[0.08]' : 'bg-black/[0.05]',
       className
     )}
@@ -282,7 +275,7 @@ const TokenImage = ({ className, children, isDark, isMobile, ...p }) => (
 );
 
 const TokenDetails = ({ className, children, ...p }) => (
-  <div className={cn('flex-1 min-w-0 flex flex-col gap-0.5', className)} {...p}>
+  <div className={cn('flex-1 min-w-0 flex flex-col gap-px', className)} {...p}>
     {children}
   </div>
 );
@@ -291,7 +284,7 @@ const TokenName = ({ className, children, isDark, isMobile, ...p }) => (
   <span
     className={cn(
       'font-medium overflow-hidden text-ellipsis whitespace-nowrap block leading-[1.4]',
-      isMobile ? 'text-[14px] max-w-[120px]' : 'text-[15px] max-w-[180px]',
+      isMobile ? 'text-[13px] max-w-[110px]' : 'tr-name text-[15px] max-w-[180px]',
       isDark ? 'text-white' : 'text-[#1a1a1a]',
       className
     )}
@@ -305,8 +298,8 @@ const UserName = ({ className, children, isDark, isMobile, ...p }) => (
   <span
     className={cn(
       'font-normal block overflow-hidden text-ellipsis whitespace-nowrap leading-[1.3]',
-      isMobile ? 'text-xs max-w-[120px]' : 'text-[13px] max-w-[180px]',
-      isDark ? 'text-white/[0.45]' : 'text-black/50',
+      isMobile ? 'text-[11px] max-w-[110px]' : 'tr-user text-[13px] max-w-[180px]',
+      isDark ? 'text-white/60' : 'text-black/60',
       className
     )}
     {...p}
@@ -318,7 +311,7 @@ const UserName = ({ className, children, isDark, isMobile, ...p }) => (
 const PriceText = ({ flashColor, isDark, isMobile, children }) => (
   <span
     className={cn(
-      'font-normal transition-colors duration-[800ms] ease-out font-mono',
+      'font-normal font-mono',
       isMobile ? 'text-[14px]' : 'text-[15px]'
     )}
     style={{
@@ -427,28 +420,37 @@ const formatTimeAgo = (dateValue, fallbackValue) => {
   return `${days}d`;
 };
 
-// Optimized image component using Next.js native image optimization and lazy loading
+// Optimized image component — uses server-side thumb endpoint for resize + animation stripping
 const OptimizedImage = memo(
   ({ src, alt, size, onError, priority = false, md5 }) => {
-    const [imgSrc, setImgSrc] = useState(src);
+    const [errored, setErrored] = useState(false);
+
+    // Request 2x for retina, snapped to allowed sizes [16,32,40,48,64,96,128]
+    const s2 = size * 2;
+    const thumbSize = s2 <= 32 ? 32 : s2 <= 48 ? 48 : s2 <= 64 ? 64 : s2 <= 96 ? 96 : 128;
+    const imgSrc = errored
+      ? '/static/alt.webp'
+      : md5
+        ? `https://s1.xrpl.to/thumb/${md5}_${thumbSize}`
+        : src;
 
     const handleError = useCallback(() => {
-      setImgSrc('/static/alt.webp');
+      setErrored(true);
       if (onError) onError();
     }, [onError]);
 
     return (
-      <div className="rounded-full overflow-hidden" style={{ width: size, height: size }}>
-        <Image
+      <div className="rounded-full overflow-hidden relative" style={{ width: size, height: size }}>
+        <img
           src={imgSrc}
           alt={alt}
           width={size}
           height={size}
-          sizes={`${size}px`}
-          priority={priority}
-          loading={priority ? undefined : 'lazy'}
+          loading={priority ? 'eager' : 'lazy'}
+          decoding="async"
           onError={handleError}
-          className="w-full h-full object-cover block"
+          className="object-cover"
+          style={{ width: size, height: size }}
         />
       </div>
     );
@@ -598,8 +600,8 @@ const MobileTokenRow = ({
         <TokenImage isMobile={true} isDark={darkMode}>
           <OptimizedImage
             src={imgError ? '/static/alt.webp' : imgUrl}
-            alt={name || 'Token'}
-            size={32}
+            alt=""
+            size={28}
             onError={() => setImgError(true)}
             priority={false}
             md5={md5}
@@ -710,7 +712,7 @@ const DesktopTokenRow = ({
           <TokenImage isDark={darkMode}>
             <OptimizedImage
               src={imgError ? '/static/alt.webp' : imgUrl}
-              alt={name || 'Token'}
+              alt=""
               size={40}
               onError={() => setImgError(true)}
               priority={false}
@@ -1253,6 +1255,7 @@ const DesktopTokenRow = ({
       )}
 
       <StyledCell
+        className="tr-idx"
         align="center"
         isDark={darkMode}
         style={{
@@ -1264,7 +1267,7 @@ const DesktopTokenRow = ({
         <span
           className={cn(
             'font-normal text-[13px] font-mono',
-            darkMode ? 'text-white/40' : 'text-black/40'
+            darkMode ? 'text-white/50' : 'text-black/50'
           )}
         >
           {idx + 1}
@@ -1474,7 +1477,7 @@ export const MobileHeader = ({ className, children, isDark, ...p }) => (
   <div
     className={cn(
       'flex w-full text-xs font-normal sticky top-0 z-10 box-border',
-      'py-3 px-4 backdrop-blur-[16px] border-b-[1.5px] tracking-[0.01em]',
+      'py-2 px-2.5 backdrop-blur-[16px] border-b tracking-[0.01em]',
       isDark ? 'bg-black/50 border-white/10 text-white/50' : 'bg-white/80 border-black/[0.06] text-black/50',
       className
     )}

@@ -337,7 +337,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
     try {
       let url = `https://api.xrpl.to/v1/creator-activity/${creator}?limit=12`;
       if (filter === 'swaps') url += '&side=sell,buy';
-      else if (filter === 'transfers') url += '&side=transfer_out,receive';
+      else if (filter === 'transfers') url += '&side=transfer_out,receive,other_send,other_receive,send';
       else if (filter === 'checks')
         url += '&side=check_incoming,check_create,check_receive,check_send,check_cancel';
       else if (filter === 'lp') url += '&side=deposit,withdraw,amm_create';
@@ -460,6 +460,12 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
   }, [hasScamTag]);
 
   // Memoize copy handler
+  const handleCopyIssuer = useCallback(() => {
+    navigator.clipboard.writeText(issuer).then(() => {
+      openSnackbar('Copied!', 'success');
+    });
+  }, [issuer, openSnackbar]);
+
   const handleCopyCreator = useCallback(() => {
     navigator.clipboard.writeText(creator).then(() => {
       openSnackbar('Copied!', 'success');
@@ -481,7 +487,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
       >
         {/* Scam Warning Dialog */}
         {openScamWarning && (
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-[4px] flex items-center justify-center z-[1000]">
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-[4px] flex items-center justify-center z-[1000] max-sm:h-dvh">
             <div className={cn('rounded-[14px] border p-0 max-w-[400px] w-[90%] mx-auto', isDark ? 'bg-[#0a0a0a] border-white/10' : 'bg-white border-black/10')} onClick={(e) => e.stopPropagation()}>
               <div className="text-center p-[24px]">
                 <AlertTriangle
@@ -534,7 +540,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
         {(aiReview || aiLoading) && (
           <div
             className={cn(
-              'm-2 p-4 rounded-xl border transition-all duration-300 relative overflow-hidden',
+              'm-2 px-3 py-2.5 rounded-xl border transition-all duration-300 relative overflow-hidden',
               isDark 
                 ? 'bg-white/[0.03] border-white/[0.08] hover:bg-white/[0.05] shadow-[0_4px_20px_rgba(0,0,0,0.3)]' 
                 : 'bg-black/[0.015] border-black/[0.05] hover:bg-black/[0.025] shadow-[0_4px_15px_rgba(0,0,0,0.05)]'
@@ -569,63 +575,32 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                 const Icon = score <= 2 ? ShieldCheck : score <= 6 ? ShieldAlert : AlertTriangle;
 
                 return (
-                  <div className="flex flex-col gap-3.5">
+                  <div className="flex flex-col gap-2">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2.5">
-                        <div 
-                          className="p-1.5 rounded-lg"
-                          style={{ backgroundColor: `${color}15`, border: `1px solid ${color}25` }}
-                        >
-                          <Icon size={16} color={color} strokeWidth={2.5} />
-                        </div>
-                        <div className="flex flex-col">
-                          <span className="text-[10px] font-black uppercase tracking-[0.12em] opacity-40 leading-none mb-1">Safety Score</span>
-                          <span className="text-[12px] font-bold" style={{ color }}>{label} Risk Profile</span>
+                      <div className="flex items-center gap-2">
+                        <Icon size={15} color={color} strokeWidth={2.5} />
+                        <span className="text-[11px] font-bold" style={{ color }}>{label} Risk</span>
+                        <div className="flex items-center gap-2 ml-1">
+                          {aiReview.riskCount > 0 && (
+                            <span className="text-[10px] font-bold text-red-500/80">{aiReview.riskCount} risks</span>
+                          )}
+                          {aiReview.positiveCount > 0 && (
+                            <span className="text-[10px] font-bold text-emerald-500/80">{aiReview.positiveCount} passes</span>
+                          )}
                         </div>
                       </div>
-                      <div className="flex items-center bg-black/5 dark:bg-white/5 px-2.5 py-1 rounded-lg border border-black/5 dark:border-white/5">
-                        <span className="text-[20px] font-black tracking-tighter leading-none" style={{ color }}>{score}</span>
-                        <span className="text-[10px] font-bold opacity-30 tracking-widest uppercase ml-1">/ 10</span>
-                      </div>
+                      <span className="text-[15px] font-black tracking-tighter leading-none" style={{ color }}>{score}<span className="text-[9px] font-bold opacity-30 ml-0.5">/10</span></span>
                     </div>
 
-                    <div className="relative h-2 w-full bg-black/10 dark:bg-white/5 rounded-full overflow-hidden">
+                    <div className="relative h-1.5 w-full bg-black/10 dark:bg-white/5 rounded-full overflow-hidden">
                       <div
                         className="h-full transition-all duration-1000 ease-out rounded-full"
                         style={{
-                          width: `${(10 - score) * 10}%`,
+                          width: `${score * 10}%`,
                           background: `linear-gradient(90deg, ${color}cc, ${color})`,
-                          boxShadow: `0 0 12px ${color}40`
+                          boxShadow: `0 0 8px ${color}40`
                         }}
                       />
-                    </div>
-
-                    <div className="flex items-center justify-between mt-0.5">
-                      <div className="flex items-center gap-4">
-                        {aiReview.riskCount > 0 && (
-                          <div className="flex items-center gap-1.5">
-                            <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-                            <span className="text-[10px] font-bold text-red-500/90 uppercase tracking-widest">
-                              {aiReview.riskCount} Risks
-                            </span>
-                          </div>
-                        )}
-                        {aiReview.positiveCount > 0 && (
-                          <div className="flex items-center gap-1.5">
-                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                            <span className="text-[10px] font-bold text-emerald-500/90 uppercase tracking-widest">
-                              {aiReview.positiveCount} Passes
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                      
-                      {aiReview.md5 && (
-                        <div className="flex items-center gap-1 opacity-40 hover:opacity-100 transition-opacity cursor-help">
-                          <Sparkles size={10} />
-                          <span className="text-[9px] font-bold uppercase tracking-tighter">AI Analysis</span>
-                        </div>
-                      )}
                     </div>
                   </div>
                 );
@@ -994,7 +969,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
             )}
 
             {/* ========== TOKEN INFO GROUP ========== */}
-            {(date || dateon || creator) && (
+            {(date || dateon || creator || issuer) && (
               <tr>
                 <td colSpan={2} className="p-[16px_12px_8px]">
                   <span
@@ -1025,6 +1000,52 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                 </td>
               </tr>
             ) : null}
+
+            {/* Issuer Row */}
+            {issuer && (
+              <tr className={cn('transition-[background] duration-150', isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-black/[0.015]')}>
+                <td className="border-b-0 align-middle first-of-type:w-[45%] last-of-type:w-[55%] last-of-type:text-right p-[6px_10px]">
+                  <span
+                    className={cn('font-normal text-[13px] whitespace-nowrap', isDark ? 'text-white/[0.45]' : 'text-black/50')}
+                  >
+                    Issuer
+                  </span>
+                </td>
+                <td className="border-b-0 align-middle first-of-type:w-[45%] last-of-type:w-[55%] last-of-type:text-right p-[6px_10px]">
+                  <div className="flex flex-row items-center justify-end gap-[6px]">
+                    <a
+                      href={`/address/${issuer}`}
+                      className="inline-flex items-center rounded-lg font-normal px-[10px] h-[28px] overflow-hidden transition-all duration-200 no-underline"
+                      style={{
+                        padding: '2px 10px',
+                        fontSize: '11px',
+                        background: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)',
+                        border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'}`,
+                        maxWidth: isMobile ? '110px' : '180px'
+                      }}
+                    >
+                      <span
+                        className={cn('font-medium text-[11px] overflow-hidden text-ellipsis whitespace-nowrap font-mono', isDark ? 'text-white/70' : 'text-black/[0.65]')}
+                      >
+                        {issuer.slice(0, 12)}...
+                      </span>
+                    </a>
+                    <button
+                      title="Copy issuer address"
+                      onClick={handleCopyIssuer}
+                      className={cn(
+                        'flex items-center justify-center w-[26px] h-[26px] rounded-lg border transition-all duration-150 cursor-pointer',
+                        isDark
+                          ? 'bg-white/[0.04] border-white/[0.08] hover:bg-white/[0.08]'
+                          : 'bg-black/[0.03] border-black/[0.05] hover:bg-black/[0.06]'
+                      )}
+                    >
+                      <Copy size={13} color={isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'} />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            )}
 
             {/* Creator Row */}
             {creator && (
@@ -1348,14 +1369,14 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                 <td colSpan={2} className="border-b-0 align-middle" style={{ padding: '4px 10px 8px' }}>
                   <div
                     className={cn(
-                      'rounded-[8px] p-[10px]',
+                      'rounded-[8px] p-[6px] sm:p-[10px]',
                       isDark
                         ? 'bg-white/[0.02] border border-white/[0.06]'
                         : 'bg-black/[0.02] border border-black/[0.05]'
                     )}
                   >
                     {/* Filter Tabs */}
-                    <div className="flex flex-row gap-[4px] mb-[8px] flex-wrap">
+                    <div className="flex flex-row gap-[3px] sm:gap-[4px] mb-[6px] sm:mb-[8px]">
                       {[
                         { key: 'all', label: 'All' },
                         { key: 'swaps', label: 'Swaps', color: '#3b82f6' },
@@ -1366,7 +1387,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                         <span
                           key={f.key}
                           onClick={() => setActivityFilter(f.key)}
-                          className="px-[12px] py-[5px] text-[11px] rounded-[6px] cursor-pointer transition-all duration-150 ease-out"
+                          className="flex-1 sm:flex-none text-center sm:text-left px-[2px] sm:px-[12px] py-[4px] sm:py-[5px] text-[9px] sm:text-[11px] rounded-[6px] cursor-pointer transition-all duration-150 ease-out"
                           style={{
                             fontWeight: activityFilter === f.key ? 500 : 400,
                             background:
@@ -1393,7 +1414,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
 
                     {/* Stats Summary */}
                     {creatorStats && (
-                      <div className="flex flex-row gap-[10px] mb-[8px] flex-wrap">
+                      <div className="grid grid-cols-2 sm:flex sm:flex-row gap-[4px] sm:gap-[10px] mb-[6px] sm:mb-[8px]">
                         {creatorStats.buy?.count > 0 && (
                           <span
                             className="text-[10px] text-[#22c55e]"
@@ -1484,35 +1505,38 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                           const isFailed = result && result !== 'tesSUCCESS';
 
                           const sideConfig = {
-                            sell: { label: 'SELL', color: '#ef4444', Icon: ArrowUpRight },
-                            buy: { label: 'BUY', color: '#22c55e', Icon: ArrowDownLeft },
-                            deposit: { label: 'DEPOSIT', color: '#22c55e', Icon: Droplet },
-                            withdraw: { label: 'WITHDRAW', color: '#f59e0b', Icon: Flame },
-                            receive: { label: 'RECEIVE', color: '#22c55e', Icon: ArrowDownLeft },
-                            send: { label: 'SEND', color: '#f59e0b', Icon: ArrowUpRight },
-                            transfer_out: { label: 'TRANSFER', color: '#9C27B0', Icon: ArrowLeftRight },
-                            clawback: { label: 'CLAWBACK', color: '#ef4444', Icon: AlertTriangle },
-                            amm_create: { label: 'AMM CREATE', color: '#22c55e', Icon: Droplet },
-                            check_create: { label: 'CHECK', color: '#3b82f6', Icon: FileText },
-                            check_incoming: { label: 'CHECK IN', color: '#22c55e', Icon: ArrowDownLeft },
-                            check_receive: { label: 'CASHED', color: '#22c55e', Icon: ArrowDownLeft },
-                            check_send: { label: 'CHECK OUT', color: '#ef4444', Icon: ArrowUpRight },
-                            check_cancel: { label: 'CANCELLED', color: '#6b7280', Icon: X }
+                            sell: { label: 'SELL', mLabel: 'SELL', color: '#ef4444', Icon: ArrowUpRight },
+                            buy: { label: 'BUY', mLabel: 'BUY', color: '#22c55e', Icon: ArrowDownLeft },
+                            deposit: { label: 'DEPOSIT', mLabel: 'DEP', color: '#22c55e', Icon: Droplet },
+                            withdraw: { label: 'WITHDRAW', mLabel: 'WDR', color: '#f59e0b', Icon: Flame },
+                            receive: { label: 'RECEIVE', mLabel: 'RECV', color: '#22c55e', Icon: ArrowDownLeft },
+                            send: { label: 'SEND', mLabel: 'SEND', color: '#f59e0b', Icon: ArrowUpRight },
+                            other_send: { label: 'SEND', mLabel: 'SEND', color: '#f59e0b', Icon: ArrowUpRight },
+                            other_receive: { label: 'RECEIVE', mLabel: 'RECV', color: '#22c55e', Icon: ArrowDownLeft },
+                            transfer_out: { label: 'TRANSFER', mLabel: 'XFER', color: '#9C27B0', Icon: ArrowLeftRight },
+                            clawback: { label: 'CLAWBACK', mLabel: 'CLAW', color: '#ef4444', Icon: AlertTriangle },
+                            amm_create: { label: 'AMM CREATE', mLabel: 'AMM+', color: '#22c55e', Icon: Droplet },
+                            check_create: { label: 'CHECK', mLabel: 'CHK', color: '#3b82f6', Icon: FileText },
+                            check_incoming: { label: 'CHECK IN', mLabel: 'CHK IN', color: '#22c55e', Icon: ArrowDownLeft },
+                            check_receive: { label: 'CASHED', mLabel: 'CASH', color: '#22c55e', Icon: ArrowDownLeft },
+                            check_send: { label: 'CHECK OUT', mLabel: 'CHK OUT', color: '#ef4444', Icon: ArrowUpRight },
+                            check_cancel: { label: 'CANCELLED', mLabel: 'CNCL', color: '#6b7280', Icon: X }
                           };
                           const typeConfig = {
-                            Payment: { label: 'TRANSFER', color: '#9C27B0', Icon: ArrowLeftRight },
-                            AMMDeposit: { label: 'AMM ADD', color: '#22c55e', Icon: Droplet },
-                            AMMWithdraw: { label: 'AMM EXIT', color: '#f59e0b', Icon: Flame },
-                            OfferCreate: { label: 'OFFER', color: '#3b82f6', Icon: BarChart2 },
-                            OfferCancel: { label: 'CANCEL', color: '#9C27B0', Icon: X },
-                            TrustSet: { label: 'TRUST', color: '#3b82f6', Icon: Link2 },
-                            AccountSet: { label: 'SETTINGS', color: '#6b7280', Icon: Settings },
-                            Clawback: { label: 'CLAWBACK', color: '#ef4444', Icon: AlertTriangle }
+                            Payment: { label: 'TRANSFER', mLabel: 'XFER', color: '#9C27B0', Icon: ArrowLeftRight },
+                            AMMDeposit: { label: 'AMM ADD', mLabel: 'AMM+', color: '#22c55e', Icon: Droplet },
+                            AMMWithdraw: { label: 'AMM EXIT', mLabel: 'AMM-', color: '#f59e0b', Icon: Flame },
+                            OfferCreate: { label: 'OFFER', mLabel: 'OFFR', color: '#3b82f6', Icon: BarChart2 },
+                            OfferCancel: { label: 'CANCEL', mLabel: 'CNCL', color: '#9C27B0', Icon: X },
+                            TrustSet: { label: 'TRUST', mLabel: 'TRST', color: '#3b82f6', Icon: Link2 },
+                            AccountSet: { label: 'SETTINGS', mLabel: 'SET', color: '#6b7280', Icon: Settings },
+                            Clawback: { label: 'CLAWBACK', mLabel: 'CLAW', color: '#ef4444', Icon: AlertTriangle }
                           };
                           const cfg = sideConfig[side] ||
                             sideConfig[side?.toLowerCase()] ||
                             typeConfig[type] || {
                             label: type?.slice(0, 8) || 'TX',
+                            mLabel: type?.slice(0, 4) || 'TX',
                             color: '#9C27B0',
                             Icon: null
                           };
@@ -1538,7 +1562,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                               className="no-underline"
                             >
                               <div
-                                className="flex flex-row items-center py-[5px] cursor-pointer gap-[8px]"
+                                className="flex flex-row items-center py-[3px] sm:py-[5px] cursor-pointer gap-[4px] sm:gap-[8px]"
                                 style={{
                                   borderBottom:
                                     i < transactions.length - 1
@@ -1548,17 +1572,17 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                                 }}
                               >
                                 {cfg.Icon && (
-                                  <cfg.Icon size={13} className="shrink-0" style={{ color: displayColor }} />
+                                  <cfg.Icon size={isMobile ? 11 : 13} className="shrink-0" style={{ color: displayColor }} />
                                 )}
                                 <span
-                                  className="text-[10px] font-semibold w-[65px] shrink-0"
+                                  className="text-[9px] sm:text-[10px] font-semibold w-[38px] sm:w-[65px] shrink-0"
                                   style={{ color: displayColor }}
                                 >
-                                  {cfg.label}
+                                  {isMobile ? cfg.mLabel : cfg.label}
                                   {isFailed && ' ✕'}
                                 </span>
                                 <span
-                                  className="flex-1 text-[11px] font-medium overflow-hidden text-ellipsis whitespace-nowrap font-mono"
+                                  className="flex-1 text-[10px] sm:text-[11px] font-medium overflow-hidden text-ellipsis whitespace-nowrap font-mono min-w-0"
                                   style={{
                                     color: hasToken
                                       ? isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.85)'
@@ -1572,7 +1596,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                                         amount > 0 &&
                                         tokenAmount > 0 && (
                                           <span
-                                            className="ml-[6px] px-[5px] py-[1px] rounded-[4px] text-[9px] font-semibold"
+                                            className="ml-[4px] sm:ml-[6px] px-[4px] sm:px-[5px] py-[1px] rounded-[4px] text-[8px] sm:text-[9px] font-semibold"
                                             style={{
                                               background:
                                                 (tokenAmount / amount) * 100 >= 6
@@ -1594,7 +1618,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                                   )}
                                 </span>
                                 <span
-                                  className="w-[80px] text-right text-[11px] shrink-0 font-mono"
+                                  className="text-right text-[10px] sm:text-[11px] shrink-0 whitespace-nowrap font-mono"
                                   style={{
                                     color: hasXrp
                                       ? '#22c55e'
@@ -1605,9 +1629,14 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                                   {hasXrp ? `${fNumber(xrpAmount)} XRP` : '—'}
                                 </span>
                                 <span
-                                  className={cn('w-[70px] text-right text-[9px] shrink-0 font-mono', isDark ? 'text-white/30' : 'text-black/30')}
+                                  className={cn('hidden sm:inline w-[70px] text-right text-[9px] shrink-0 font-mono', isDark ? 'text-white/30' : 'text-black/30')}
                                 >
                                   {hash?.slice(0, 6)} · {timeAgo}
+                                </span>
+                                <span
+                                  className={cn('sm:hidden text-right text-[8px] shrink-0 font-mono', isDark ? 'text-white/30' : 'text-black/30')}
+                                >
+                                  {timeAgo}
                                 </span>
                               </div>
                             </a>
@@ -1659,8 +1688,8 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
 
             {/* Token Flow Modal */}
             {flowModalOpen && tokenFlow && createPortal(
-              <div className="fixed inset-0 bg-black/50 backdrop-blur-[4px] flex items-center justify-center z-[1000]" onClick={() => setFlowModalOpen(false)}>
-                <div className={cn('rounded-[14px] border p-0 mx-auto max-w-[720px] w-[95%] max-h-[85vh] flex flex-col rounded-[16px] overflow-hidden', isDark ? 'bg-[#0a0a0a] border-white/10' : 'bg-white border-black/10')} onClick={(e) => e.stopPropagation()}>
+              <div className="fixed inset-0 bg-black/50 backdrop-blur-[4px] flex items-center justify-center z-[1000] max-sm:h-dvh" onClick={() => setFlowModalOpen(false)}>
+                <div className={cn('rounded-[14px] border p-0 mx-auto max-w-[720px] w-[95%] max-h-[85dvh] flex flex-col rounded-[16px] overflow-hidden', isDark ? 'bg-[#0a0a0a] border-white/10' : 'bg-white border-black/10')} onClick={(e) => e.stopPropagation()}>
                   {/* Modal Header */}
                   <div className={cn(
                     'px-[20px] py-[14px] flex items-center justify-between shrink-0',
@@ -2253,13 +2282,13 @@ export const CompactTags = memo(
     if (!enhancedTags || enhancedTags.length === 0) return null;
 
     return (
-      <div className="flex flex-row items-center gap-2 flex-wrap">
+      <div className="flex flex-row items-center gap-1.5 sm:gap-2 flex-wrap">
         {enhancedTags.slice(0, maxTags).map((tag) => (
           <a
             key={tag}
             href={`/view/${normalizeTag(tag)}`}
             className={cn(
-              'inline-flex items-center gap-[4px] px-[6px] py-[3px] rounded-[4px] no-underline text-[10px] font-medium uppercase tracking-[0.2px] border',
+              'inline-flex items-center gap-[3px] sm:gap-[4px] px-[5px] sm:px-[6px] py-[2px] sm:py-[3px] rounded-[4px] no-underline text-[9px] sm:text-[10px] font-medium uppercase tracking-[0.2px] border',
               isDark
                 ? 'bg-white/[0.03] border-white/[0.06] text-white/[0.55]'
                 : 'bg-black/[0.025] border-black/[0.05] text-black/50'
@@ -2267,7 +2296,7 @@ export const CompactTags = memo(
             rel="noreferrer noopener nofollow"
           >
             {tag === 'aigent.run' && (
-              <img src="/static/aigentrun.gif" alt="" className="w-[10px] h-[10px]" />
+              <img src="/static/aigentrun.gif" alt="" className="w-[9px] h-[9px] sm:w-[10px] sm:h-[10px]" />
             )}
             {tag}
           </a>
@@ -2275,7 +2304,7 @@ export const CompactTags = memo(
         {enhancedTags.length > maxTags && (
           <span
             className={cn(
-              'px-[6px] py-[3px] rounded-[4px] text-[10px] font-medium border',
+              'px-[5px] sm:px-[6px] py-[2px] sm:py-[3px] rounded-[4px] text-[9px] sm:text-[10px] font-medium border',
               isDark
                 ? 'bg-white/[0.03] border-white/[0.06] text-white/40'
                 : 'bg-black/[0.025] border-black/[0.05] text-black/[0.35]',

@@ -262,9 +262,11 @@ const DashboardPage = () => {
     }
 
     try {
+      const headers = await getAuthHeaders();
+      if (!headers) { setLoading(false); return; }
       const [keysRes, usageRes] = await Promise.all([
-        api.get(`${BASE_URL}/keys/${walletAddress}`),
-        api.get(`${BASE_URL}/keys/${walletAddress}/usage`)
+        api.get(`${BASE_URL}/keys/${walletAddress}`, { headers }),
+        api.get(`${BASE_URL}/keys/${walletAddress}/usage`, { headers })
       ]);
 
       setApiKeys(keysRes.data.keys || []);
@@ -280,14 +282,16 @@ const DashboardPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [walletAddress]);
+  }, [walletAddress, getAuthHeaders]);
 
   const fetchCredits = useCallback(async () => {
     if (!walletAddress) return;
     try {
+      const headers = await getAuthHeaders();
+      if (!headers) return;
       const [creditsRes, subRes] = await Promise.all([
-        api.get(`${BASE_URL}/keys/${walletAddress}/credits`),
-        api.get(`${BASE_URL}/keys/${walletAddress}/subscription`).catch(() => null)
+        api.get(`${BASE_URL}/keys/${walletAddress}/credits`, { headers }),
+        api.get(`${BASE_URL}/keys/${walletAddress}/subscription`, { headers }).catch(() => null)
       ]);
       setCredits(creditsRes.data);
       if (subRes?.data) setSubscription(subRes.data);
@@ -298,7 +302,7 @@ const DashboardPage = () => {
     } catch (err) {
       console.error('Failed to fetch credits:', err);
     }
-  }, [walletAddress]);
+  }, [walletAddress, getAuthHeaders]);
 
   // Admin fetch functions
   const fetchAdminData = useCallback(async (tab) => {
@@ -329,7 +333,11 @@ const DashboardPage = () => {
       }
     } catch (err) {
       console.error(`Failed to fetch admin ${tab}:`, err);
-      setError(err.response?.data?.message || err.response?.data?.error || `Failed to load admin ${tab}`);
+      if (err.response?.status === 401 || err.response?.status === 403) {
+        setIsAdmin(false);
+      } else {
+        setError(err.response?.data?.message || err.response?.data?.error || `Failed to load admin ${tab}`);
+      }
     } finally {
       setAdminLoading(false);
     }
@@ -612,8 +620,8 @@ const DashboardPage = () => {
       const result = await submitTransaction(wallet, payment);
       const txHash = result.hash || result.tx_json?.hash;
 
-      if (result.engine_result !== 'tesSUCCESS') {
-        const txResult = result.engine_result;
+      if (!result?.engine_result || result.engine_result !== 'tesSUCCESS') {
+        const txResult = result?.engine_result || 'Unknown error';
         if (txResult === 'tecUNFUNDED_PAYMENT') {
           setError('Insufficient XRP balance. Please fund your wallet or pay with card.');
         } else {
@@ -1288,7 +1296,7 @@ const DashboardPage = () => {
                     </h2>
                     <p className={cn('text-[13px] mt-1', isDark ? 'text-white/50' : 'text-gray-500')}>One-time credit purchases for extra usage</p>
                   </div>
-                  <div className="grid grid-cols-4 gap-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                     {packages.map((pkg, idx) => {
                       const gradients = [
                         'from-emerald-400 to-green-500',
@@ -1352,7 +1360,7 @@ const DashboardPage = () => {
                       </button>
                     </div>
                   </div>
-                  <div className="grid grid-cols-5 gap-3">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
                     {tiers.map((tier) => {
                       const price = billingPeriod === 'yearly' ? tier.yearly : tier.monthly;
                       const monthlyEquiv = billingPeriod === 'yearly' && tier.yearly ? Math.round(tier.yearly / 12) : null;
@@ -1472,7 +1480,7 @@ const DashboardPage = () => {
                       <p className={cn('text-[12px]', isDark ? 'text-white/50' : 'text-gray-500')}>Dedicated XRPL nodes for maximum performance</p>
                     </div>
                   </div>
-                  <div className="grid grid-cols-3 gap-4 mt-5">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-5">
                     <div className={cn('p-4 rounded-xl border-[1.5px]', isDark ? 'border-white/10 bg-white/[0.02]' : 'border-gray-200 bg-white')}>
                       <div className={cn('text-[13px] font-semibold mb-1', isDark ? 'text-white' : 'text-gray-900')}>TurboSubmit</div>
                       <div className={cn('text-[11px] mb-3', isDark ? 'text-white/50' : 'text-gray-500')}>Fast transaction submission API</div>
@@ -1618,7 +1626,7 @@ const DashboardPage = () => {
                   <p className={cn('text-[14px]', isDark ? 'text-white/60' : 'text-gray-600')}>Payment analytics and revenue tracking</p>
                 </div>
 
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div className={cn('p-5 rounded-xl border-[1.5px]', isDark ? 'border-white/10 bg-white/[0.02]' : 'border-gray-200 bg-white')}>
                     <div className={cn('text-[11px] uppercase tracking-wide mb-1', isDark ? 'text-white/40' : 'text-gray-500')}>Total Payments</div>
                     <div className={cn('text-2xl font-medium', isDark ? 'text-white' : 'text-gray-900')}>{adminRevenue?.totalPayments || 0}</div>
@@ -1695,7 +1703,7 @@ const DashboardPage = () => {
 
       {/* Modals */}
       {showCreateForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 max-sm:h-dvh">
           <div className={cn('w-full max-w-md mx-4 p-6 rounded-xl border-[1.5px]', isDark ? 'bg-black border-white/10' : 'bg-white border-gray-200')}>
             <h3 className={cn('text-lg font-medium mb-4', isDark ? 'text-white' : 'text-gray-900')}>Create API Key</h3>
             <input type="text" placeholder="Key name (e.g., Production Bot)" value={newKeyName} onChange={(e) => setNewKeyName(e.target.value)} className={cn('w-full px-4 py-3 rounded-lg border-[1.5px] text-[14px] mb-4', isDark ? 'bg-white/[0.02] border-white/10' : 'bg-gray-50 border-gray-200')} autoFocus />
@@ -1710,7 +1718,7 @@ const DashboardPage = () => {
       )}
 
       {showAdminCreateKey && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 max-sm:h-dvh">
           <div className={cn('w-full max-w-md mx-4 p-6 rounded-xl border-[1.5px]', isDark ? 'bg-black border-white/10' : 'bg-white border-gray-200')}>
             <h3 className={cn('text-lg font-medium mb-4', isDark ? 'text-white' : 'text-gray-900')}>Create Partner API Key</h3>
             <div className="space-y-3">
@@ -1737,7 +1745,7 @@ const DashboardPage = () => {
       )}
 
       {showAdminAddCredits && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 max-sm:h-dvh">
           <div className={cn('w-full max-w-md mx-4 p-6 rounded-xl border-[1.5px]', isDark ? 'bg-black border-white/10' : 'bg-white border-gray-200')}>
             <h3 className={cn('text-lg font-medium mb-4', isDark ? 'text-white' : 'text-gray-900')}>Add Credits to Wallet</h3>
             <div className="space-y-3">
@@ -1757,7 +1765,7 @@ const DashboardPage = () => {
       )}
 
       {showAdminChatAccess && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 max-sm:h-dvh">
           <div className={cn('w-full max-w-md mx-4 p-6 rounded-xl border-[1.5px]', isDark ? 'bg-black border-white/10' : 'bg-white border-gray-200')}>
             <h3 className={cn('text-lg font-medium mb-4', isDark ? 'text-white' : 'text-gray-900')}>Manage Chat Access</h3>
             <div className="space-y-3">
@@ -1779,7 +1787,7 @@ const DashboardPage = () => {
       )}
 
       {showAdminPlatformKey && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 max-sm:h-dvh">
           <div className={cn('w-full max-w-md mx-4 p-6 rounded-xl border-[1.5px]', isDark ? 'bg-black border-white/10' : 'bg-white border-gray-200')}>
             <h3 className={cn('text-lg font-medium mb-4', isDark ? 'text-white' : 'text-gray-900')}>Create Platform API Key</h3>
             <div className="space-y-3">
@@ -1806,7 +1814,7 @@ const DashboardPage = () => {
       )}
 
       {xrpPayment && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 max-sm:h-dvh">
           <div className={cn('w-full max-w-md mx-4 p-6 rounded-xl border-[1.5px]', isDark ? 'bg-black border-white/10' : 'bg-white border-gray-200')}>
             <div className="flex items-center justify-between mb-4">
               <h3 className={cn('text-lg font-medium', isDark ? 'text-white' : 'text-gray-900')}>Pay with XRP - {xrpPayment.name}</h3>
@@ -1874,3 +1882,17 @@ const DashboardPage = () => {
 };
 
 export default DashboardPage;
+
+export async function getStaticProps() {
+  return {
+    props: {
+      ogp: {
+        canonical: 'https://xrpl.to/dashboard',
+        title: 'Dashboard | XRPL.to Portfolio Overview',
+        url: 'https://xrpl.to/dashboard',
+        imgUrl: 'https://xrpl.to/og/dashboard.webp',
+        desc: 'Track your XRPL portfolio with real-time token balances, NFTs, and trading activity.'
+      }
+    }
+  };
+}

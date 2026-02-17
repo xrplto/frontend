@@ -14,18 +14,20 @@ import {
   Loader2,
   X,
   Link2,
-  Unlink2
+  Unlink2,
+  Zap
 } from 'lucide-react';
 import Decimal from 'decimal.js-light';
 import Image from 'next/image';
 import VerificationBadge from 'src/components/VerificationBadge';
-import api from 'src/utils/api';
+import api, { apiFetch } from 'src/utils/api';
 import { toast } from 'sonner';
 import { TokenShareModal as Share } from 'src/components/ShareButtons';
 import Watch from './Watch';
 import EditTokenDialog from 'src/components/EditTokenDialog';
 import { ApiButton } from 'src/components/ApiEndpointsModal';
 import VerifyBadgeModal from 'src/components/VerifyBadgeModal';
+import BoostModal from 'src/components/BoostModal';
 import TweetPromoteModal from 'src/components/TweetPromoteModal';
 
 // Constants
@@ -144,6 +146,7 @@ const TokenSummary = memo(({ token }) => {
   const [copiedField, setCopiedField] = useState(null);
   const [tweetCount, setTweetCount] = useState(0);
   const [showPromoteModal, setShowPromoteModal] = useState(false);
+  const [showBoostModal, setShowBoostModal] = useState(false);
 
   const {
     id,
@@ -254,10 +257,20 @@ const TokenSummary = memo(({ token }) => {
       };
 
       toast.loading(`${action} trustline...`, { id: toastId, description: 'Fetching account info' });
-      const [seqRes, feeRes] = await Promise.all([
-        api.get(`https://api.xrpl.to/v1/submit/account/${accountProfile.account}/sequence`),
-        api.get('https://api.xrpl.to/v1/submit/fee')
-      ]);
+      let seqRes, feeRes;
+      try {
+        [seqRes, feeRes] = await Promise.all([
+          api.get(`https://api.xrpl.to/v1/submit/account/${accountProfile.account}/sequence`),
+          api.get('https://api.xrpl.to/v1/submit/fee')
+        ]);
+      } catch (fetchErr) {
+        if (fetchErr?.response?.status === 404) {
+          toast.error('Account not activated', { id: toastId, description: 'Fund your account with at least 1 XRP to activate it' });
+        } else {
+          toast.error('Network error', { id: toastId, description: 'Could not fetch account info' });
+        }
+        return;
+      }
 
       const prepared = {
         ...tx,
@@ -332,7 +345,7 @@ const TokenSummary = memo(({ token }) => {
         toast.success('Dust sold on DEX!', { id: toastId, description: `Tx: ${txHash?.slice(0, 8)}...` });
       } else {
         // Check issuer flags via API (lsfRequireDestTag = 0x00020000)
-        const issuerInfo = await fetch(`https://api.xrpl.to/v1/account/info/${issuer}`).then(r => r.json());
+        const issuerInfo = await apiFetch(`https://api.xrpl.to/v1/account/info/${issuer}`).then(r => r.json());
         const needsTag = (issuerInfo.flags & 0x00020000) !== 0;
         const tx = {
           TransactionType: 'Payment',
@@ -465,6 +478,7 @@ const TokenSummary = memo(({ token }) => {
         }
       })
       .catch((err) => {
+        if (err.name === 'AbortError' || err.name === 'CanceledError') return;
         console.error('[TokenSummary] API error:', err.message);
       });
 
@@ -522,7 +536,7 @@ const TokenSummary = memo(({ token }) => {
       )}
     >
       {/* Background Accent */}
-      <div className={cn('absolute -top-24 -right-24 w-48 h-48 rounded-full blur-[100px] opacity-20', isDark ? 'bg-[#137DFE]' : 'bg-blue-400')} />
+      <div className={cn('absolute -top-24 -right-24 w-48 h-48 rounded-full blur-[100px] opacity-20', isDark ? 'bg-[#137DFE]/20' : 'bg-blue-400/20')} />
 
       <div className="flex items-start justify-between gap-4">
         {/* Left: Token Image + Info */}
@@ -747,10 +761,10 @@ const TokenSummary = memo(({ token }) => {
             isDark ? 'bg-white/[0.06]' : 'bg-black/[0.06]'
           )}>
             <div
-              className="absolute inset-y-0 bg-gradient-to-r from-red-500 via-yellow-500 to-green-500 opacity-20 w-full"
+              className="absolute inset-y-0 bg-yellow-500/20 w-full"
             />
             <div
-              className="absolute top-0 bottom-0 bg-gradient-to-r from-red-500 via-blue-500 to-green-500 transition-all duration-1000 ease-out shadow-[0_0_8px_rgba(59,130,246,0.5)]"
+              className="absolute top-0 bottom-0 bg-blue-500 transition-all duration-1000 ease-out"
               style={{
                 left: '0%',
                 width: `${range24h.percent}%`,
@@ -767,7 +781,7 @@ const TokenSummary = memo(({ token }) => {
       {/* Row 5: Actions */}
       <div
         className={cn(
-          'grid grid-cols-2 gap-2 mt-4 pt-4 border-t',
+          'grid grid-cols-2 gap-1.5 sm:gap-2 mt-3 sm:mt-4 pt-3 sm:pt-4 border-t',
           isDark ? 'border-white/[0.06]' : 'border-black/[0.06]'
         )}
       >
@@ -776,14 +790,14 @@ const TokenSummary = memo(({ token }) => {
           <button
             onClick={() => setShowVerifyModal(true)}
             className={cn(
-              'col-span-2 flex items-center justify-center gap-2 py-3 rounded-xl text-[13px] font-bold uppercase tracking-wider transition-all duration-300 relative overflow-hidden group',
+              'col-span-2 flex items-center justify-center gap-2 py-2.5 sm:py-3 rounded-xl text-[12px] sm:text-[13px] font-bold uppercase tracking-wider transition-all duration-300 relative overflow-hidden group',
               currentVerified === 0
                 ? isDark
-                  ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-500 hover:to-indigo-500 border border-blue-500/50 shadow-lg shadow-blue-900/20'
-                  : 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white hover:from-blue-600 hover:to-indigo-600 border border-blue-400 shadow-lg shadow-blue-200'
+                  ? 'bg-blue-600 text-white hover:bg-blue-500 border border-blue-500/50'
+                  : 'bg-blue-500 text-white hover:bg-blue-600 border border-blue-400'
                 : isDark
-                  ? 'bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white hover:from-purple-500 hover:to-fuchsia-500 border border-purple-500/50 shadow-lg shadow-purple-900/20'
-                  : 'bg-gradient-to-r from-purple-500 to-fuchsia-500 text-white hover:from-purple-600 hover:to-fuchsia-600 border border-purple-400 shadow-lg shadow-purple-200'
+                  ? 'bg-purple-600 text-white hover:bg-purple-500 border border-purple-500/50'
+                  : 'bg-purple-500 text-white hover:bg-purple-600 border border-purple-400'
             )}
           >
             <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -792,36 +806,52 @@ const TokenSummary = memo(({ token }) => {
           </button>
         )}
 
-        <div className="col-span-2 flex gap-2">
+        <div className="col-span-2 grid grid-cols-3 sm:flex gap-1.5 sm:gap-2">
           {/* Trustline button - only for non-XRP/MPT tokens when logged in */}
           {accountProfile?.account && CURRENCY_ISSUERS?.XRP_MD5 !== md5 && !isMPT && (
             <button
               onClick={handleSetTrust}
-              title={isRemove ? 'Remove trustline to free 0.2 XRP' : 'Set trustline'}
+              title={isRemove ? 'Remove trustline to free 0.2 XRP reserve' : 'Set trustline to hold this token'}
               className={cn(
-                "h-10 px-3 flex items-center justify-center gap-1.5 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all duration-200",
+                "group/trust h-9 sm:h-10 px-3 sm:px-4 flex items-center justify-center gap-1.5 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all duration-200",
                 isRemove
-                  ? isDark ? "bg-green-600/80 text-white hover:bg-red-500/80" : "bg-green-500 text-white hover:bg-red-500"
-                  : isDark ? "bg-white/[0.04] border border-white/[0.08] text-white/60 hover:bg-green-600/80 hover:text-white hover:border-green-500/50" : "bg-gray-50 border border-black/[0.04] text-gray-500 hover:bg-green-500 hover:text-white hover:border-green-400"
+                  ? isDark
+                    ? "bg-green-500/15 border border-green-500/30 text-green-400 hover:bg-red-500/15 hover:border-red-500/30 hover:text-red-400"
+                    : "bg-green-50 border border-green-200 text-green-600 hover:bg-red-50 hover:border-red-200 hover:text-red-500"
+                  : isDark
+                    ? "bg-white/[0.04] border border-white/[0.08] text-white/60 hover:bg-blue-500/15 hover:border-blue-500/30 hover:text-blue-400"
+                    : "bg-gray-50 border border-black/[0.04] text-gray-500 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-600"
               )}
             >
-              {isRemove ? <Link2 size={14} /> : <Unlink2 size={14} />}
+              {isRemove ? (
+                <>
+                  <Check size={13} className="group-hover/trust:hidden" />
+                  <X size={13} className="hidden group-hover/trust:block" />
+                  <span className="hidden sm:inline group-hover/trust:hidden">Trusted</span>
+                  <span className="hidden group-hover/trust:sm:inline">Remove</span>
+                </>
+              ) : (
+                <>
+                  <Link2 size={13} />
+                  <span className="hidden sm:inline">Trust</span>
+                </>
+              )}
             </button>
           )}
-          <div className="flex-1">
+          <div className="sm:flex-1">
             <ApiButton
               token={token}
               className={cn(
-                "w-full h-10 flex items-center justify-center gap-2 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all duration-200",
+                "w-full h-9 sm:h-10 flex items-center justify-center gap-2 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all duration-200",
                 isDark ? "bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.08]" : "bg-gray-50 border border-black/[0.04] hover:bg-gray-100"
               )}
             />
           </div>
-          <div className="flex-1">
+          <div className="sm:flex-1">
             <Watch
               token={token}
               className={cn(
-                "w-full h-10 flex items-center justify-center gap-2 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all duration-200",
+                "w-full h-9 sm:h-10 flex items-center justify-center gap-2 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all duration-200",
                 isDark ? "bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.08]" : "bg-gray-50 border border-black/[0.04] hover:bg-gray-100"
               )}
             />
@@ -832,17 +862,30 @@ const TokenSummary = memo(({ token }) => {
             onCountChange={setTweetCount}
             open={showPromoteModal}
             onOpenChange={setShowPromoteModal}
-            wrapperClassName="flex-1"
+            wrapperClassName="sm:flex-1"
             className={cn(
-              "w-full h-10 flex items-center justify-center gap-2 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all duration-200",
-              isDark ? "bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.08]" : "bg-gray-50 border border-black/[0.04] hover:bg-gray-100"
+              "w-full h-9 sm:h-10 flex items-center justify-center gap-2 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all duration-200",
+              isDark ? "bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.08] text-white/60 hover:text-white/80" : "bg-gray-50 border border-black/[0.04] hover:bg-gray-100 text-gray-500 hover:text-gray-700"
             )}
           />
-          <div className="flex-1">
+          <div className="sm:flex-1">
+            <button
+              onClick={() => setShowBoostModal(true)}
+              title="Boost trending position"
+              className={cn(
+                "w-full h-9 sm:h-10 flex items-center justify-center gap-2 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all duration-200",
+                isDark ? "bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.08] text-white/60 hover:text-white/80" : "bg-gray-50 border border-black/[0.04] hover:bg-gray-100 text-gray-500 hover:text-gray-700"
+              )}
+            >
+              <Zap size={14} />
+              Boost
+            </button>
+          </div>
+          <div className="sm:flex-1">
             <Share
               token={token}
               className={cn(
-                "w-full h-10 flex items-center justify-center gap-2 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all duration-200",
+                "w-full h-9 sm:h-10 flex items-center justify-center gap-2 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all duration-200",
                 isDark ? "bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.08]" : "bg-gray-50 border border-black/[0.04] hover:bg-gray-100"
               )}
             />
@@ -851,7 +894,7 @@ const TokenSummary = memo(({ token }) => {
             <button
               onClick={() => setEditToken(token)}
               className={cn(
-                'px-3 h-10 rounded-xl border text-[10px] font-bold uppercase tracking-wider transition-all flex items-center justify-center',
+                'px-3 h-9 sm:h-10 rounded-xl border text-[10px] font-bold uppercase tracking-wider transition-all flex items-center justify-center',
                 isDark
                   ? 'border-amber-500/20 text-amber-500 hover:bg-amber-500/10'
                   : 'border-amber-200 text-amber-600 hover:bg-amber-50 shadow-sm'
@@ -868,14 +911,14 @@ const TokenSummary = memo(({ token }) => {
         showInfo && (
           <div
             className={cn(
-              'fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-md',
+              'fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-md max-sm:h-dvh',
               isDark ? 'bg-black/70' : 'bg-white/60'
             )}
             onClick={() => setShowInfo(false)}
           >
             <div
               className={cn(
-                'w-full max-w-md rounded-2xl border-[1.5px] max-h-[85vh] overflow-hidden',
+                'w-full max-w-md rounded-2xl border-[1.5px] max-h-[85dvh] overflow-hidden',
                 isDark
                   ? 'bg-black/80 backdrop-blur-2xl border-white/[0.08] shadow-2xl shadow-black/50'
                   : 'bg-white/80 backdrop-blur-2xl border-gray-200/60 shadow-2xl shadow-gray-300/30'
@@ -904,9 +947,7 @@ const TokenSummary = memo(({ token }) => {
                       backgroundImage: isDark
                         ? 'radial-gradient(circle, rgba(63,150,254,0.25) 1px, transparent 1px)'
                         : 'radial-gradient(circle, rgba(0,180,220,0.3) 1px, transparent 1px)',
-                      backgroundSize: '8px 5px',
-                      WebkitMaskImage: 'linear-gradient(90deg, black 0%, transparent 100%)',
-                      maskImage: 'linear-gradient(90deg, black 0%, transparent 100%)'
+                      backgroundSize: '8px 5px'
                     }}
                   />
                 </div>
@@ -988,7 +1029,7 @@ const TokenSummary = memo(({ token }) => {
         dustConfirm && (
           <div
             className={cn(
-              'fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-md',
+              'fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-md max-sm:h-dvh',
               isDark ? 'bg-black/70' : 'bg-white/60'
             )}
             onClick={() => setDustConfirm(null)}
@@ -1051,6 +1092,15 @@ const TokenSummary = memo(({ token }) => {
             setCurrentVerified(newTier);
             setShowVerifyModal(false);
           }}
+        />
+      )}
+
+      {/* Boost Modal */}
+      {showBoostModal && (
+        <BoostModal
+          token={token}
+          onClose={() => setShowBoostModal(false)}
+          onSuccess={() => setShowBoostModal(false)}
         />
       )}
     </div >

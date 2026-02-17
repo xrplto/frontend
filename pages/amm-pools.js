@@ -19,7 +19,7 @@ const currencySymbols = {
   XRP: '✕ '
 };
 
-const Wrapper = ({ className, children, ...p }) => <div className={cn('overflow-hidden min-h-screen', className)} {...p}>{children}</div>;
+const Wrapper = ({ className, children, ...p }) => <div className={cn('overflow-x-clip w-full max-w-[100vw] min-h-screen', className)} {...p}>{children}</div>;
 
 const Controls = ({ darkMode, className, children, ...p }) => <div className={cn('flex flex-col gap-3 mb-4 p-[14px] rounded-xl border w-full transition-[border-color] duration-150', darkMode ? 'bg-white/[0.015] border-white/[0.06] hover:border-white/10' : 'bg-black/[0.01] border-black/[0.06] hover:border-black/10', className)} {...p}>{children}</div>;
 
@@ -559,7 +559,7 @@ export async function getServerSideProps({ query }) {
           canonical: 'https://xrpl.to/amm-pools',
           title: 'AMM Pools | XRPL Automated Market Maker Analytics',
           url: 'https://xrpl.to/amm-pools',
-          imgUrl: 'https://xrpl.to/static/ogp.webp',
+          imgUrl: 'https://xrpl.to/og/amm-pools.webp',
           desc: 'Explore XRPL AMM pools with real-time liquidity, volume, fees, and APY analytics',
           keywords: 'AMM pools, XRPL, automated market maker, liquidity pools, DEX, APY'
         }
@@ -575,7 +575,7 @@ export async function getServerSideProps({ query }) {
           canonical: 'https://xrpl.to/amm-pools',
           title: 'AMM Pools | XRPL Automated Market Maker Analytics',
           url: 'https://xrpl.to/amm-pools',
-          imgUrl: 'https://xrpl.to/static/ogp.webp',
+          imgUrl: 'https://xrpl.to/og/amm-pools.webp',
           desc: 'Explore XRPL AMM pools with real-time liquidity, volume, fees, and APY analytics',
           keywords: 'AMM pools, XRPL, automated market maker, liquidity pools, DEX, APY'
         }

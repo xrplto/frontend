@@ -1,7 +1,7 @@
 import { apiFetch, submitTransaction } from 'src/utils/api';
 import { useRef, useState, useEffect, useCallback, useMemo, useContext } from 'react';
 import { useRouter } from 'next/router';
-import Image from 'next/image';
+
 import Link from 'next/link';
 import {
   Wallet as XRPLWallet,
@@ -43,14 +43,14 @@ import {
   ExternalLink,
   RefreshCw,
   ChevronRight,
-  Settings,
   Camera,
   SwitchCamera,
-  WifiOff
+  WifiOff,
+  LogOut
 } from 'lucide-react';
 
 // Context
-import { ThemeContext, WalletContext, AppContext } from 'src/context/AppContext';
+import { ThemeContext, WalletContext, WalletUIContext, AppContext } from 'src/context/AppContext';
 
 // Translation removed - not using i18n
 
@@ -129,6 +129,13 @@ const Dialog = ({ open, onClose, children, maxWidth, fullWidth, sx, ...props }) 
       setIsVisible(false);
       const timer = setTimeout(() => setShouldRender(false), 200);
       document.body.style.overflow = '';
+      // Reset iOS Safari auto-zoom caused by input focus
+      const vp = document.querySelector('meta[name="viewport"]');
+      if (vp) {
+        const orig = vp.getAttribute('content');
+        vp.setAttribute('content', orig.replace(/maximum-scale=[^,]*/, 'maximum-scale=1.0'));
+        setTimeout(() => vp.setAttribute('content', orig), 100);
+      }
       return () => clearTimeout(timer);
     }
   }, [open, isMobile]);
@@ -140,7 +147,7 @@ const Dialog = ({ open, onClose, children, maxWidth, fullWidth, sx, ...props }) 
     return (
       <div
         className={cn(
-          'fixed inset-0 z-[9999] flex items-start justify-center pt-16 px-4 transition-opacity duration-200 backdrop-blur-md',
+          'fixed inset-0 z-[9999] flex items-start justify-center pt-16 px-4 transition-opacity duration-200 backdrop-blur-md max-sm:h-dvh',
           isVisible ? 'opacity-100' : 'opacity-0',
           isDark ? 'bg-black/70' : 'bg-white/60'
         )}
@@ -148,7 +155,7 @@ const Dialog = ({ open, onClose, children, maxWidth, fullWidth, sx, ...props }) 
       >
         <div
           className={cn(
-            'relative w-full max-w-[400px] max-h-[80vh] overflow-hidden transition-all duration-200 ease-out',
+            'relative w-full max-w-[400px] max-h-[80dvh] overflow-hidden transition-all duration-200 ease-out',
             isVisible ? 'translate-y-0 opacity-100 scale-100' : '-translate-y-4 opacity-0 scale-95'
           )}
           onClick={(e) => e.stopPropagation()}
@@ -163,7 +170,7 @@ const Dialog = ({ open, onClose, children, maxWidth, fullWidth, sx, ...props }) 
   return (
     <div
       className={cn(
-        'fixed inset-0 z-[9999] flex items-start justify-end transition-opacity duration-200',
+        'fixed inset-0 z-[9999] flex items-start justify-end transition-opacity duration-200 max-sm:h-dvh',
         isVisible ? 'opacity-100' : 'opacity-0'
       )}
       onClick={onClose}
@@ -194,7 +201,7 @@ const DialogContent = ({ children, sx }) => (
 const StyledPopoverPaper = ({ children, isDark, isMobile }) => (
   <div
     className={cn(
-      'overflow-hidden max-h-[80vh] overflow-y-auto rounded-2xl border',
+      'overflow-hidden max-h-[80dvh] overflow-y-auto rounded-2xl border',
       isDark
         ? 'bg-black border-white/[0.08] shadow-[0_8px_32px_rgba(0,0,0,0.6)]'
         : 'bg-white border-gray-200/80 shadow-[0_8px_24px_rgba(0,0,0,0.08)]'
@@ -316,7 +323,7 @@ const TextField = ({
   const inputStyle = {
     width: fullWidth ? '100%' : 'auto',
     padding: size === 'small' ? '8px 12px' : '12px 14px',
-    fontSize: 14,
+    fontSize: 16,
     borderRadius: 12,
     border: isDark ? '1.5px solid rgba(156,163,175,0.25)' : '1.5px solid rgba(156,163,175,0.4)',
     background: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(249,250,251,1)',
@@ -625,9 +632,12 @@ const WalletContent = ({
 }) => {
   const needsBackup =
     typeof window !== 'undefined' && localStorage.getItem(`wallet_needs_backup_${accountLogin}`);
+  const avatarCache = useRef(null);
+  if (avatarCache.current === null && typeof window !== 'undefined') {
+    try { avatarCache.current = JSON.parse(localStorage.getItem('__user_avatars__') || '{}'); } catch { avatarCache.current = {}; }
+  }
   const [showAllAccounts, setShowAllAccounts] = useState(false);
   const [addressCopied, setAddressCopied] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
 
   // Send state
@@ -1255,15 +1265,28 @@ const WalletContent = ({
           )}
         >
           <div className="relative flex-shrink-0">
+            {(() => {
+              const masked = accountLogin ? `${accountLogin.slice(0, 6)}...${accountLogin.slice(-4)}` : null;
+              const avatarUrl = masked ? (avatarCache.current || {})[masked] : null;
+              return (
+                <div className="w-7 h-7 rounded-full overflow-hidden ring-1 ring-white/10">
+                  {avatarUrl ? (
+                    <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
+                  ) : accountProfile?.logo ? (
+                    <img src={`https://s1.xrpl.to/address/${accountProfile.logo}`} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <img src={getHashIcon(accountLogin)} alt="" className="w-full h-full" />
+                  )}
+                </div>
+              );
+            })()}
             <div
               className={cn(
-                'w-2 h-2 rounded-full',
+                'absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2',
+                isDark ? 'border-[#1a1a2e]' : 'border-white',
                 accountsActivation[accountLogin] === false && !parseFloat(accountBalance?.curr1?.value) ? 'bg-amber-400' : 'bg-emerald-500'
               )}
             />
-            {!addressCopied && !(accountsActivation[accountLogin] === false && !parseFloat(accountBalance?.curr1?.value)) && (
-              <div className="absolute inset-0 w-2 h-2 rounded-full bg-emerald-500 animate-ping opacity-75" />
-            )}
           </div>
           <span
             className={cn(
@@ -1379,10 +1402,10 @@ const WalletContent = ({
         </div>
       </div>
 
-      {/* Accounts - symmetric expandable section */}
+      {/* Accounts - unified section with inline actions */}
       <div
         className={cn(
-          'mx-4 mb-4 rounded-2xl overflow-hidden transition-all duration-300',
+          'mx-4 mb-4 rounded-2xl overflow-hidden',
           isDark
             ? 'bg-white/[0.02] border border-white/[0.08]'
             : 'bg-gray-50 border border-gray-200'
@@ -1391,17 +1414,17 @@ const WalletContent = ({
         <button
           onClick={() => setShowAllAccounts(!showAllAccounts)}
           className={cn(
-            'w-full px-4 py-4 flex items-center justify-between transition-colors',
+            'w-full px-4 py-3 flex items-center justify-between transition-colors',
             isDark ? 'hover:bg-white/[0.04]' : 'hover:bg-gray-100'
           )}
         >
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5">
             <span className={cn('text-[11px] font-bold uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-500')}>
-              Your Accounts
+              Accounts
             </span>
             <span
               className={cn(
-                'px-2 py-0.5 rounded-full text-[10px] font-bold',
+                'min-w-[20px] h-5 flex items-center justify-center rounded-full text-[10px] font-bold',
                 isDark ? 'bg-white/10 text-white/40' : 'bg-gray-200 text-gray-600'
               )}
             >
@@ -1411,14 +1434,14 @@ const WalletContent = ({
           <ChevronDown
             size={16}
             className={cn(
-              'transition-all duration-300',
+              'transition-transform duration-300',
               showAllAccounts && 'rotate-180',
               isDark ? 'text-white/20' : 'text-gray-300'
             )}
           />
         </button>
 
-        {showAllAccounts && (
+        {showAllAccounts && (<>
           <div
             className={cn(
               'border-t max-h-[320px] overflow-y-auto',
@@ -1432,12 +1455,12 @@ const WalletContent = ({
               return sorted.map((profile) => {
                 const isCurrent = profile.account === accountLogin;
                 const isInactive = accountsActivation[profile.account] === false && !(isCurrent && parseFloat(accountBalance?.curr1?.value));
+                const isDeleting = deleteConfirm === profile.account;
                 return (
-                  <button
+                  <div
                     key={profile.account}
-                    onClick={() => !isCurrent && onAccountSwitch(profile.account)}
                     className={cn(
-                      'w-full px-4 py-2.5 flex items-center gap-3 text-left transition-all',
+                      'group relative w-full px-4 py-2.5 flex items-center gap-3 transition-all',
                       isCurrent
                         ? isDark
                           ? 'bg-primary/10'
@@ -1447,257 +1470,171 @@ const WalletContent = ({
                           : 'hover:bg-gray-100/50'
                     )}
                   >
-                    <div
-                      className={cn(
-                        'w-2 h-2 rounded-full flex-shrink-0',
-                        isInactive ? 'bg-amber-400/60' : 'bg-emerald-400'
-                      )}
-                    />
-                    <span
-                      className={cn(
-                        'font-mono text-[12px] flex-1',
-                        isCurrent
-                          ? isDark
-                            ? 'text-white'
-                            : 'text-gray-900'
-                          : isDark
-                            ? 'text-white/60'
-                            : 'text-gray-600'
-                      )}
+                    <button
+                      onClick={() => !isCurrent && onAccountSwitch(profile.account)}
+                      className="flex items-center gap-3 flex-1 min-w-0 text-left"
+                      disabled={isCurrent}
                     >
-                      {truncateAccount(profile.account, 8)}
-                    </span>
-                    {isCurrent && !isInactive && (
-                      <span className="text-[10px] font-medium text-emerald-500 px-2 py-0.5 rounded-full bg-emerald-500/10">Active</span>
-                    )}
-                    {isInactive && (
+                      {isCurrent ? (
+                        <Check size={14} className="text-primary flex-shrink-0" />
+                      ) : (
+                        <div
+                          className={cn(
+                            'w-2 h-2 rounded-full flex-shrink-0',
+                            isInactive ? 'bg-amber-400/60' : 'bg-white/20'
+                          )}
+                        />
+                      )}
                       <span
-                        className="text-[10px] font-medium text-amber-500 px-2 py-0.5 rounded-full bg-amber-500/10"
-                        title="Fund with 1 XRP to activate"
+                        className={cn(
+                          'font-mono text-[12px] flex-1 truncate',
+                          isCurrent
+                            ? isDark
+                              ? 'text-white font-medium'
+                              : 'text-gray-900 font-medium'
+                            : isDark
+                              ? 'text-white/60'
+                              : 'text-gray-600'
+                        )}
                       >
-                        Inactive
+                        {truncateAccount(profile.account, 8)}
                       </span>
-                    )}
-                  </button>
+                      {isInactive && (
+                        <span
+                          className="text-[10px] font-medium text-amber-500 px-2 py-0.5 rounded-full bg-amber-500/10"
+                          title="Fund with 1 XRP to activate"
+                        >
+                          Inactive
+                        </span>
+                      )}
+                    </button>
+                    {/* Inline actions - visible on hover or when confirming delete */}
+                    <div className={cn(
+                      'flex items-center gap-0.5 transition-opacity duration-200',
+                      isDeleting ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+                    )}>
+                      {isDeleting ? (
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => {
+                              onRemoveProfile(profile.account);
+                              setDeleteConfirm(null);
+                            }}
+                            className="px-2.5 py-1 rounded-lg text-[10px] font-medium bg-red-500 text-white"
+                          >
+                            Delete
+                          </button>
+                          <button
+                            onClick={() => setDeleteConfirm(null)}
+                            className={cn(
+                              'px-2.5 py-1 rounded-lg text-[10px] font-medium',
+                              isDark ? 'bg-white/10 text-white/60' : 'bg-gray-200 text-gray-600'
+                            )}
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      ) : (
+                        <>
+                          <button
+                            onClick={() => onBackupSeed(profile, true)}
+                            className={cn(
+                              'p-1.5 rounded-lg transition-colors',
+                              isDark
+                                ? 'text-white/30 hover:text-amber-400 hover:bg-amber-500/10'
+                                : 'text-gray-400 hover:text-amber-600 hover:bg-amber-50'
+                            )}
+                            title="Backup seed"
+                          >
+                            <Shield size={13} />
+                          </button>
+                          {!isCurrent && (
+                            <button
+                              onClick={() => setDeleteConfirm(profile.account)}
+                              className={cn(
+                                'p-1.5 rounded-lg transition-colors',
+                                isDark
+                                  ? 'text-white/30 hover:text-red-400 hover:bg-red-500/10'
+                                  : 'text-gray-400 hover:text-red-500 hover:bg-red-50'
+                              )}
+                              title="Remove account"
+                            >
+                              <Trash2 size={13} />
+                            </button>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  </div>
                 );
               });
             })()}
           </div>
-        )}
-      </div>
-
-      {/* Settings Panel - symmetric layout */}
-      {showSettings && (
-        <div
-          className={cn(
-            'mx-4 mb-4 rounded-2xl overflow-hidden transition-all duration-300 shadow-xl',
-            isDark
-              ? 'bg-white/[0.03] border border-white/[0.1] backdrop-blur-md'
-              : 'bg-white border border-gray-200'
-          )}
-        >
-          <div
-            className={cn(
-              'px-4 py-4 flex items-center justify-between border-b',
-              isDark ? 'border-white/[0.08]' : 'border-gray-100'
-            )}
-          >
-            <span
-              className={cn('text-[11px] font-bold uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-500')}
-            >
-              Manage Accounts
-            </span>
+          {/* Quick actions row */}
+          <div className={cn(
+            'px-3 py-2.5 border-t flex items-center gap-2',
+            isDark ? 'border-white/[0.06]' : 'border-gray-100'
+          )}>
             <button
-              onClick={() => setShowSettings(false)}
+              onClick={onCreateNewAccount}
+              disabled={!onCreateNewAccount || profiles.length >= 25}
               className={cn(
-                'p-1.5 rounded-lg transition-colors',
-                isDark ? 'text-white/40 hover:text-white/60 hover:bg-white/5' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
+                'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all',
+                !onCreateNewAccount || profiles.length >= 25 ? 'opacity-30 cursor-not-allowed' : '',
+                isDark
+                  ? 'text-white/40 hover:text-white hover:bg-white/[0.06]'
+                  : 'text-gray-400 hover:text-gray-700 hover:bg-gray-100'
               )}
             >
-              <XIcon size={14} />
+              <Plus size={13} />
+              Add
+            </button>
+            <div className={cn('w-px h-4', isDark ? 'bg-white/[0.06]' : 'bg-gray-200')} />
+            <button
+              onClick={() => onQrSyncExport?.()}
+              className={cn(
+                'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all',
+                isDark
+                  ? 'text-white/40 hover:text-white hover:bg-white/[0.06]'
+                  : 'text-gray-400 hover:text-gray-700 hover:bg-gray-100'
+              )}
+            >
+              <QrCode size={13} />
+              Export
+            </button>
+            <button
+              onClick={() => onQrSyncImport?.()}
+              className={cn(
+                'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all',
+                isDark
+                  ? 'text-white/40 hover:text-white hover:bg-white/[0.06]'
+                  : 'text-gray-400 hover:text-gray-700 hover:bg-gray-100'
+              )}
+            >
+              <Download size={13} />
+              Import
             </button>
           </div>
-          <div className="max-h-[180px] overflow-y-auto">
-            {profiles.map((profile) => {
-              const isCurrent = profile.account === accountLogin;
-              const isInactiveAccount = accountsActivation[profile.account] === false && !(isCurrent && parseFloat(accountBalance?.curr1?.value));
-              return (
-                <div
-                  key={profile.account}
-                  className={cn(
-                    'px-4 py-3 flex items-center gap-3',
-                    isDark
-                      ? 'border-b border-white/[0.06] last:border-0'
-                      : 'border-b border-gray-100 last:border-0'
-                  )}
-                >
-                  <span
-                    className={cn(
-                      'font-mono text-[11px] flex-1',
-                      isDark ? 'text-white/60' : 'text-gray-600'
-                    )}
-                  >
-                    {truncateAccount(profile.account, 6)}
-                  </span>
-                  {isInactiveAccount && (
-                    <span
-                      className="text-[9px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-500 font-medium"
-                      title="Fund with 1 XRP to activate"
-                    >
-                      Inactive
-                    </span>
-                  )}
-                  {isCurrent && !isInactiveAccount && (
-                    <span className="text-[9px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 font-medium">
-                      Active
-                    </span>
-                  )}
-                  <div className="flex items-center gap-1">
-                    <button
-                      onClick={() => {
-                        onBackupSeed(profile, true);
-                        setShowSettings(false);
-                      }}
-                      className={cn(
-                        'p-2 rounded-lg transition-colors',
-                        isDark
-                          ? 'text-amber-500/70 hover:text-amber-400 hover:bg-amber-500/10'
-                          : 'text-amber-500 hover:text-amber-600 hover:bg-amber-50'
-                      )}
-                      title="Backup seed"
-                    >
-                      <Shield size={14} />
-                    </button>
-                    {deleteConfirm === profile.account ? (
-                      <div className="flex items-center gap-1">
-                        <button
-                          onClick={() => {
-                            onRemoveProfile(profile.account);
-                            setDeleteConfirm(null);
-                          }}
-                          className="px-2.5 py-1 rounded-lg text-[10px] font-medium bg-red-500 text-white"
-                        >
-                          Yes
-                        </button>
-                        <button
-                          onClick={() => setDeleteConfirm(null)}
-                          className={cn(
-                            'px-2.5 py-1 rounded-lg text-[10px] font-medium',
-                            isDark ? 'bg-white/10 text-white/60' : 'bg-gray-200 text-gray-600'
-                          )}
-                        >
-                          No
-                        </button>
-                      </div>
-                    ) : (
-                      <button
-                        onClick={() => !isCurrent && setDeleteConfirm(profile.account)}
-                        disabled={isCurrent}
-                        className={cn(
-                          'p-2 rounded-lg transition-colors',
-                          isCurrent
-                            ? 'opacity-30 cursor-not-allowed'
-                            : isDark
-                              ? 'text-white/40 hover:text-red-400 hover:bg-red-500/10'
-                              : 'text-gray-400 hover:text-red-500 hover:bg-red-50'
-                        )}
-                        title="Delete account"
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-          {/* QR Sync - Transfer wallet between devices */}
-          <div className={cn('px-4 py-4 border-t', isDark ? 'border-white/[0.08]' : 'border-gray-100')}>
-            <p className={cn('text-[10px] mb-3 text-center uppercase font-bold tracking-widest', isDark ? 'text-white/20' : 'text-gray-400')}>
-              Transfer between devices
-            </p>
-            <div className="flex gap-2">
-              <button
-                onClick={() => {
-                  setShowSettings(false);
-                  onQrSyncExport?.();
-                }}
-                className={cn(
-                  'flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all',
-                  isDark
-                    ? 'bg-white/[0.05] text-white/50 hover:bg-white/[0.08] hover:text-white'
-                    : 'bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-900'
-                )}
-              >
-                <QrCode size={14} />
-                Export
-              </button>
-              <button
-                onClick={() => {
-                  setShowSettings(false);
-                  onQrSyncImport?.();
-                }}
-                className={cn(
-                  'flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all',
-                  isDark
-                    ? 'bg-white/[0.05] text-white/50 hover:bg-white/[0.08] hover:text-white'
-                    : 'bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-900'
-                )}
-              >
-                <Download size={14} />
-                Import
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+        </>)}
+      </div>
 
-      {/* Footer - symmetric 3-column actions */}
+      {/* Footer - logout */}
       <div
         className={cn(
-          'px-4 py-4 grid grid-cols-3 gap-3 border-t',
-          isDark ? 'border-white/[0.08]' : 'border-gray-100'
+          'mx-4 mb-4',
         )}
       >
         <button
-          onClick={onCreateNewAccount}
-          disabled={!onCreateNewAccount || profiles.length >= 25}
-          className={cn(
-            'flex items-center justify-center gap-2 py-3 rounded-2xl text-[11px] font-bold uppercase tracking-wider transition-all active:scale-[0.95]',
-            !onCreateNewAccount || profiles.length >= 25 ? 'opacity-30 cursor-not-allowed' : '',
-            isDark
-              ? 'text-white/50 hover:text-white hover:bg-white/[0.06]'
-              : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'
-          )}
-        >
-          <Plus size={16} />
-          <span>Add</span>
-        </button>
-        <button
-          onClick={() => setShowSettings(!showSettings)}
-          className={cn(
-            'flex items-center justify-center gap-2 py-3 rounded-2xl text-[11px] font-bold uppercase tracking-wider transition-all active:scale-[0.95]',
-            showSettings
-              ? 'text-primary bg-primary/10'
-              : isDark
-                ? 'text-white/50 hover:text-white hover:bg-white/[0.06]'
-                : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'
-          )}
-        >
-          <Settings size={16} />
-          <span>Manage</span>
-        </button>
-        <button
           onClick={onLogout}
           className={cn(
-            'flex items-center justify-center gap-2 py-3 rounded-2xl text-[11px] font-bold uppercase tracking-wider transition-all active:scale-[0.95]',
+            'w-full flex items-center justify-center gap-2 py-3 rounded-2xl text-[11px] font-bold uppercase tracking-wider transition-all active:scale-[0.95]',
             isDark
-              ? 'text-white/50 hover:text-red-400 hover:bg-red-500/10'
-              : 'text-gray-500 hover:text-red-500 hover:bg-red-50'
+              ? 'text-white/30 hover:text-red-400 hover:bg-red-500/10'
+              : 'text-gray-400 hover:text-red-500 hover:bg-red-50'
           )}
         >
-          <XIcon size={16} />
-          <span>Logout</span>
+          <LogOut size={14} />
+          <span>Disconnect</span>
         </button>
       </div>
     </div>
@@ -1758,6 +1695,12 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   };
   // Translation removed - using hardcoded English text
 
+  // Cache avatars from localStorage once (avoid JSON.parse in render)
+  const walletAvatarCache = useRef(null);
+  if (walletAvatarCache.current === null && typeof window !== 'undefined') {
+    try { walletAvatarCache.current = JSON.parse(localStorage.getItem('__user_avatars__') || '{}'); } catch { walletAvatarCache.current = {}; }
+  }
+
   // Helper to sync profiles to localStorage (profiles are NOT stored in IndexedDB)
   const syncProfilesToIndexedDB = async (profilesArray) => {
     try {
@@ -1787,7 +1730,16 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   const [currentSeed, setCurrentSeed] = useState('');
   const [seedBlurred, setSeedBlurred] = useState(true);
   const [showAllAccounts, setShowAllAccounts] = useState(false);
-  const [accountsActivation, setAccountsActivation] = useState({});
+  const [accountsActivation, setAccountsActivation] = useState(() => {
+    try {
+      const cached = localStorage.getItem('accountsActivation');
+      if (cached) {
+        const { data, ts } = JSON.parse(cached);
+        if (Date.now() - ts < 30 * 60 * 1000) return data;
+      }
+    } catch {}
+    return {};
+  });
   const [isCheckingActivation, setIsCheckingActivation] = useState(false);
   const [showSeedDialog, setShowSeedDialog] = useState(false);
   const [walletPage, setWalletPage] = useState(0);
@@ -1800,6 +1752,14 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   const [backupMode, setBackupMode] = useState(null); // 'seed' or 'full'
   const [backupTargetProfile, setBackupTargetProfile] = useState(null); // profile to backup
   const walletStorage = useMemo(() => new EncryptedWalletStorage(), []);
+
+  // Auto-clear seed from memory after 60s and on unmount
+  useEffect(() => {
+    if (!displaySeed) return;
+    const timer = setTimeout(() => setDisplaySeed(''), 60000);
+    return () => clearTimeout(timer);
+  }, [displaySeed]);
+  useEffect(() => () => setDisplaySeed(''), []);
   const [showNewAccountFlow, setShowNewAccountFlow] = useState(false);
   const [newAccountPassword, setNewAccountPassword] = useState('');
   const [showNewAccountPassword, setShowNewAccountPassword] = useState(false);
@@ -2377,19 +2337,23 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     profiles,
     setProfiles,
     removeProfile,
-    setOpenWalletModal,
-    openWalletModal,
-    pendingWalletAuth,
-    setPendingWalletAuth,
-    open,
-    setOpen,
     accountBalance,
-    handleOpen,
-    handleClose,
     handleLogin,
     handleLogout,
     doLogIn
   } = useContext(WalletContext);
+  const {
+    open,
+    setOpen,
+    openWalletModal,
+    setOpenWalletModal,
+    pendingWalletAuth,
+    setPendingWalletAuth,
+    connecting,
+    setConnecting,
+    handleOpen,
+    handleClose
+  } = useContext(WalletUIContext);
   const { openSnackbar } = useContext(AppContext);
 
   // Auto-open modal if there's pending wallet setup flow
@@ -2652,8 +2616,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
           const data = await res.json();
           if (data.success && data.user?.avatar) {
             const masked = `${imported.address.slice(0, 6)}...${imported.address.slice(-4)}`;
-            const cached = JSON.parse(localStorage.getItem('__user_avatars__') || '{}');
-            cached[masked] = data.user.avatar;
+            const cached = { ...(walletAvatarCache.current || {}), [masked]: data.user.avatar };
+            walletAvatarCache.current = cached;
             localStorage.setItem('__user_avatars__', JSON.stringify(cached));
           }
         }
@@ -2874,17 +2838,21 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
   // Removed visibleWalletCount - now showing all accounts by default with search/pagination
 
-  // Check activation status for all accounts (parallel)
+  // Check activation status for all accounts (parallel, cached in localStorage)
+  // Active account is always re-checked; others use cache
   useEffect(() => {
     if (!profiles?.length) return;
 
+    const activeAccount = accountProfile?.account;
     const checkActivations = async () => {
-      const unchecked = profiles.filter(p => accountsActivation[p.account] === undefined);
+      const toCheck = profiles.filter(p =>
+        accountsActivation[p.account] === undefined || p.account === activeAccount
+      );
 
-      if (!unchecked.length) return;
+      if (!toCheck.length) return;
 
-      const results = await Promise.all(
-        unchecked.map(async (profile) => ({
+      const results = await Promise.allSettled(
+        toCheck.map(async (profile) => ({
           account: profile.account,
           isActive: await checkAccountActivity(profile.account)
         }))
@@ -2892,15 +2860,26 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
       setAccountsActivation((prev) => {
         const updated = { ...prev };
-        results.forEach(({ account, isActive }) => {
-          updated[account] = isActive;
+        let changed = false;
+        results.forEach((result) => {
+          if (result.status === 'fulfilled') {
+            const { account, isActive } = result.value;
+            if (prev[account] !== isActive) changed = true;
+            updated[account] = isActive;
+          }
         });
+        if (changed || Object.keys(prev).length !== Object.keys(updated).length) {
+          try {
+            localStorage.setItem('accountsActivation', JSON.stringify({ data: updated, ts: Date.now() }));
+          } catch {}
+        }
         return updated;
       });
     };
 
     checkActivations();
-  }, [profiles, checkAccountActivity, accountsActivation]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profiles, checkAccountActivity, accountProfile?.account]);
 
   const handleBackupSeed = async (targetProfile = null, seedOnly = false) => {
     const profile = targetProfile || accountProfile;
@@ -2957,23 +2936,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     const url = 'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js';
 
     try {
-      // Method 1: Try fetch + eval (works on some iOS versions)
-      try {
-        const response = await fetch(url);
-        if (response.ok) {
-          const code = await response.text();
-          // eslint-disable-next-line no-eval
-          eval(code);
-          if (window.jsQR) {
-            devLog('jsQR loaded via fetch+eval');
-            return window.jsQR;
-          }
-        }
-      } catch (fetchErr) {
-        devLog('Fetch method failed, trying script tag');
-      }
-
-      // Method 2: Traditional script tag
+      // Load via script tag (safe, CSP-compliant)
       const existingScript = document.querySelector(`script[src="${url}"]`);
       if (!existingScript) {
         await new Promise((resolve, reject) => {
@@ -3366,8 +3329,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
           const data = await res.json();
           if (data.success && data.user?.avatar) {
             const masked = `${imported.address.slice(0, 6)}...${imported.address.slice(-4)}`;
-            const cached = JSON.parse(localStorage.getItem('__user_avatars__') || '{}');
-            cached[masked] = data.user.avatar;
+            const cached = { ...(walletAvatarCache.current || {}), [masked]: data.user.avatar };
+            walletAvatarCache.current = cached;
             localStorage.setItem('__user_avatars__', JSON.stringify(cached));
           }
         }
@@ -3725,21 +3688,33 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
           )}
           {accountProfile ? (
             <>
-              <div className="relative flex items-center">
+              <div className="relative flex-shrink-0">
+                {(() => {
+                  const masked = accountLogin ? `${accountLogin.slice(0, 6)}...${accountLogin.slice(-4)}` : null;
+                  const avatarUrl = masked ? (walletAvatarCache.current || {})[masked] : null;
+                  return (
+                    <div className="w-5 h-5 rounded-full overflow-hidden">
+                      {avatarUrl ? (
+                        <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
+                      ) : accountProfile?.logo ? (
+                        <img src={`https://s1.xrpl.to/address/${accountProfile.logo}`} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        <img src={getHashIcon(accountLogin)} alt="" className="w-full h-full" />
+                      )}
+                    </div>
+                  );
+                })()}
                 <div
                   className={cn(
-                    'h-2 w-2 rounded-full transition-all duration-300',
+                    'absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full border-[1.5px]',
+                    isDark ? 'border-black' : 'border-white',
                     showNewWalletScreen && newWalletData
-                      ? 'bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.5)]'
+                      ? 'bg-amber-400'
                       : accountsActivation[accountLogin] === false && !parseFloat(accountBalance?.curr1?.value)
                         ? 'bg-red-500'
-                        : 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]'
+                        : 'bg-emerald-400'
                   )}
                 />
-                {!(showNewWalletScreen && newWalletData) &&
-                  !(accountsActivation[accountLogin] === false && !parseFloat(accountBalance?.curr1?.value)) && (
-                    <div className="absolute inset-0 h-2 w-2 rounded-full bg-emerald-400 animate-ping opacity-40" />
-                  )}
               </div>
               <span className="font-mono text-[13px] tracking-tight transition-colors">
                 {showNewWalletScreen && newWalletData ? 'SETUP' : truncateAccount(accountLogin, 6)}
@@ -5136,7 +5111,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                         {(() => {
                           const exportAccount = (backupTargetProfile || accountProfile)?.account || (backupTargetProfile || accountProfile)?.address;
                           const maskedAddr = exportAccount ? `${exportAccount.slice(0, 6)}...${exportAccount.slice(-4)}` : null;
-                          const avatarUrl = maskedAddr ? (JSON.parse(localStorage.getItem('__user_avatars__') || '{}'))[maskedAddr] : null;
+                          const avatarUrl = maskedAddr ? (walletAvatarCache.current || {})[maskedAddr] : null;
                           return exportAccount ? (
                             <div className="flex items-center gap-3">
                               <div className={cn(
@@ -5196,7 +5171,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             </p>
                           </div>
                           <p className={cn('text-[10px] leading-relaxed', isDark ? 'text-red-400/70' : 'text-red-500')}>
-                            Only scan this QR on the official site. Phishing sites may steal your wallet. Verify the URL is <span className="font-semibold">xrpl.to</span> before importing.
+                            Only scan this QR on the official site. Impersonating sites may steal your wallet. Always make sure you're on <span className="font-semibold">xrpl.to</span> before importing.
                           </p>
                         </div>
 
@@ -5293,7 +5268,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                         {(() => {
                           const exportAccount = (backupTargetProfile || accountProfile)?.account || (backupTargetProfile || accountProfile)?.address;
                           const maskedAddr = exportAccount ? `${exportAccount.slice(0, 6)}...${exportAccount.slice(-4)}` : null;
-                          const avatarUrl = maskedAddr ? (JSON.parse(localStorage.getItem('__user_avatars__') || '{}'))[maskedAddr] : null;
+                          const avatarUrl = maskedAddr ? (walletAvatarCache.current || {})[maskedAddr] : null;
                           return exportAccount ? (
                             <div className="flex items-center gap-3">
                               <div className={cn(
@@ -5690,7 +5665,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                       {/* Cached profile avatar */}
                       {(() => {
                         try {
-                          const cached = JSON.parse(localStorage.getItem('__user_avatars__') || '{}');
+                          const cached = walletAvatarCache.current || {};
                           const match = walletMetadata.find((w) => cached[w.maskedAddress]);
                           const avatarUrl = match ? cached[match.maskedAddress] : null;
                           if (avatarUrl) {
@@ -5729,9 +5704,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             onChange={(e) => setUnlockPassword(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && handlePasswordUnlock()}
                             placeholder="Enter password to unlock"
-                            autoFocus
                             className={cn(
-                              'w-full px-4 py-3 pr-12 rounded-xl text-[14px] outline-none transition-all duration-300 font-medium',
+                              'w-full px-4 py-2.5 pr-12 rounded-xl text-[16px] outline-none transition-all duration-300 font-medium',
                               isDark
                                 ? 'bg-black/40 border border-white/[0.08] text-white placeholder:text-white/20 focus:border-primary/50'
                                 : 'bg-white border border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-primary/50'
@@ -5885,7 +5859,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                                   placeholder="Starts with 's'..."
                                   autoFocus
                                   className={cn(
-                                    'w-full px-4 py-3 rounded-xl text-[14px] font-mono outline-none transition-all duration-300',
+                                    'w-full px-4 py-2.5 rounded-xl text-[16px] font-mono outline-none transition-all duration-300',
                                     isDark
                                       ? 'bg-white/[0.04] border text-white placeholder:text-white/20 focus:border-primary/50'
                                       : 'bg-gray-50 border text-gray-900 placeholder:text-gray-400 focus:border-primary/50',
@@ -6065,7 +6039,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                                 placeholder={createMode === 'qr' ? 'Export password' : 'Create strong password'}
                                 autoFocus={createMode === 'new'}
                                 className={cn(
-                                  'w-full px-4 py-3 pr-12 rounded-xl text-[14px] outline-none transition-all duration-300 font-medium',
+                                  'w-full px-4 py-2.5 pr-12 rounded-xl text-[16px] outline-none transition-all duration-300 font-medium',
                                   isDark
                                     ? 'bg-white/[0.04] border border-white/[0.08] text-white placeholder:text-white/20 focus:border-primary/50'
                                     : 'bg-white border border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-primary/50'
@@ -6106,7 +6080,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                                 }
                                 placeholder="Repeat your password"
                                 className={cn(
-                                  'w-full px-4 py-3 rounded-xl text-[14px] outline-none transition-all duration-300 font-medium',
+                                  'w-full px-4 py-2.5 rounded-xl text-[16px] outline-none transition-all duration-300 font-medium',
                                   isDark
                                     ? 'bg-white/[0.04] border border-white/[0.08] text-white placeholder:text-white/20 focus:border-primary/50'
                                     : 'bg-white border border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-primary/50'

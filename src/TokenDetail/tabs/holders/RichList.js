@@ -152,17 +152,19 @@ const RichList = ({ token, walletLabels: walletLabelsProp = {}, onLabelsChange }
       return;
     }
 
-    let ws = null;
+    let unmounted = false;
     (async () => {
       try {
         const res = await fetch(`/api/ws/session?type=holders&id=${token.md5}&limit=${rowsPerPage}`);
-        const { wsUrl } = await res.json();
-        ws = new WebSocket(wsUrl);
+        if (unmounted) return;
+        const { wsUrl, apiKey } = await res.json();
+        if (unmounted) return;
+        const ws = new WebSocket(wsUrl);
         wsRef.current = ws;
 
-        ws.onopen = () => setWsConnected(true);
-        ws.onclose = () => setWsConnected(false);
-        ws.onerror = () => setWsConnected(false);
+        ws.onopen = () => { if (apiKey) ws.send(JSON.stringify({ type: 'auth', apiKey })); setWsConnected(true); };
+        ws.onclose = () => { if (!unmounted) setWsConnected(false); };
+        ws.onerror = () => { if (!unmounted) setWsConnected(false); };
 
         ws.onmessage = (event) => {
           try {
@@ -182,13 +184,16 @@ const RichList = ({ token, walletLabels: walletLabelsProp = {}, onLabelsChange }
             console.error('WS parse error:', e);
           }
         };
+
+        if (unmounted) { ws.close(); wsRef.current = null; }
       } catch (e) {
         console.error('[Holders WS] Session error:', e);
       }
     })();
 
     return () => {
-      if (ws) ws.close();
+      unmounted = true;
+      if (wsRef.current) wsRef.current.close();
       wsRef.current = null;
       setWsConnected(false);
     };

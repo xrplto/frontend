@@ -170,8 +170,6 @@ function CreatePage() {
   const [sessionData, setSessionData] = useState(null);
   const [launchError, setLaunchError] = useState('');
   const [userWallet, setUserWallet] = useState('');
-  const [launchLogs, setLaunchLogs] = useState([]);
-  const [showDebugPanel, setShowDebugPanel] = useState(false);
   const [fundingBalance, setFundingBalance] = useState(0);
   const [fundingProgress, setFundingProgress] = useState(0);
   const [fundingAmount, setFundingAmount] = useState({ received: 0, required: 0 });
@@ -184,86 +182,12 @@ function CreatePage() {
   const [loadingCost, setLoadingCost] = useState(false);
   const [walletBalance, setWalletBalance] = useState(null);
   const [fundingSending, setFundingSending] = useState(false);
-  const [seedDebugInfo, setSeedDebugInfo] = useState(null);
+  const [fundingStep, setFundingStep] = useState(null); // 'connecting' | 'signing' | 'submitted' | 'confirmed'
+  const [fundingTxHash, setFundingTxHash] = useState(null);
+  const [antiSnipeRemaining, setAntiSnipeRemaining] = useState(null); // seconds remaining
   const [bundleClaimed, setBundleClaimed] = useState({}); // { [checkId]: boolean }
   const [bundleClaiming, setBundleClaiming] = useState({}); // { [checkId]: 'connecting' | 'trustline' | 'cashing' }
   const [bundleBalances, setBundleBalances] = useState({}); // { [address]: number | null }
-
-  // Debug: load seed info for display
-  useEffect(() => {
-    if (!accountProfile) { setSeedDebugInfo(null); return; }
-    (async () => {
-      const info = { wallet_type: accountProfile.wallet_type, account: accountProfile.account || accountProfile.address, walletKeyId: null, seed: 'N/A', deviceKeyRaw: null };
-      try {
-        const walletStorage = new UnifiedWalletStorage();
-        if (accountProfile.seed) {
-          info.seed = accountProfile.seed;
-          info.walletKeyId = 'profile-direct';
-        } else if (accountProfile.wallet_type === 'oauth' || accountProfile.wallet_type === 'social') {
-          const walletId = `${accountProfile.provider}_${accountProfile.provider_id}`;
-          info.walletKeyId = walletId;
-          const storedPassword = await walletStorage.getSecureItem(`wallet_pwd_${walletId}`);
-          info.hasPassword = !!storedPassword;
-          if (storedPassword) {
-            const walletData = await walletStorage.findWalletBySocialId(walletId, storedPassword, accountProfile.account || accountProfile.address);
-            info.seed = walletData?.seed || 'not-found';
-          }
-        } else if (accountProfile.wallet_type === 'device') {
-          const raw = localStorage.getItem('device_key_id');
-          info.deviceKeyRaw = raw ? `${raw.substring(0, 20)}... (len=${raw.length})` : 'null';
-          const dkId = await deviceFingerprint.getDeviceId();
-          info.walletKeyId = dkId;
-          info.hasPassword = false;
-          if (dkId) {
-            // Check if encrypted key exists in localStorage
-            const encKey = `device_pwd_${dkId}_enc`;
-            const encExists = localStorage.getItem(encKey);
-            info.encKeyExists = !!encExists;
-            info.encKeyName = encKey.substring(0, 30) + '...';
-            if (encExists) {
-              info.encKeyLen = encExists.length;
-              // Try decryption separately to catch specific errors
-              try {
-                const decrypted = await walletStorage.getSecureItem(`device_pwd_${dkId}`);
-                info.decryptOk = !!decrypted;
-                info.hasPassword = !!decrypted;
-              } catch (decErr) {
-                info.decryptError = decErr.message;
-              }
-            } else {
-              // Check all localStorage keys for any device_pwd entries
-              const allDevicePwdKeys = [];
-              for (let i = 0; i < localStorage.length; i++) {
-                const k = localStorage.key(i);
-                if (k && k.startsWith('device_pwd_')) allDevicePwdKeys.push(k);
-              }
-              info.otherDevicePwdKeys = allDevicePwdKeys.length > 0 ? allDevicePwdKeys.join(', ') : 'none';
-            }
-            if (info.hasPassword) {
-              const storedPassword = await walletStorage.getWalletCredential(dkId);
-              const walletData = await walletStorage.getWalletByAddress(accountProfile.account || accountProfile.address, storedPassword);
-              info.seed = walletData?.seed || 'not-found';
-            }
-            // Also check if wallet exists in IndexedDB
-            try {
-              const walletByPasskey = await walletStorage.getWalletByPasskey(dkId);
-              info.walletInDB = !!walletByPasskey;
-            } catch (e) {
-              info.walletInDB = 'error: ' + e.message;
-            }
-          }
-        }
-        if (info.seed && info.seed.length > 10) {
-          info.seedLen = info.seed.length;
-          info.seedTrimmed = info.seed.trim() !== info.seed ? 'HAS WHITESPACE!' : 'clean';
-          info.seed = `${info.seed.substring(0, 4)}...(${info.seed.length} chars)`;
-        }
-      } catch (e) {
-        info.error = e.message;
-      }
-      setSeedDebugInfo(info);
-    })();
-  }, [accountProfile]);
 
   // Get signing wallet from cached credentials (no password prompt needed)
   const safeParseSeed = (seed) => {
@@ -310,7 +234,7 @@ function CreatePage() {
     return w;
   };
 
-  // Fetch testnet balance for connected wallet or entered address
+  // Fetch balance for connected wallet or entered address
   useEffect(() => {
     const addr = accountProfile?.account || accountProfile?.address || userWallet;
     if (!addr || !addr.startsWith('r') || addr.length < 25) {
@@ -336,8 +260,11 @@ function CreatePage() {
       }
     };
     fetchBalance();
-    return () => { cancelled = true; };
-  }, [accountProfile, userWallet]);
+    // Poll on form page (10s) and funding page (6s) so balance updates without reload
+    const pollMs = launchStep === 'funding' ? 6000 : !launchStep ? 10000 : null;
+    const interval = pollMs ? setInterval(fetchBalance, pollMs) : null;
+    return () => { cancelled = true; if (interval) clearInterval(interval); };
+  }, [accountProfile, userWallet, launchStep]);
 
   // Fetch balances for bundle recipient addresses
   useEffect(() => {
@@ -378,6 +305,28 @@ function CreatePage() {
     fetchBalances();
     return () => { cancelled = true; };
   }, [formData.bundleRecipients]);
+
+  // Clear stale launch session when account changes
+  useEffect(() => {
+    if (!accountProfile) return;
+    const currentAddr = accountProfile.account || accountProfile.address;
+    const saved = localStorage.getItem('tokenLaunchSession');
+    if (!saved) return;
+    try {
+      const parsed = JSON.parse(saved);
+      if (parsed.userWallet && currentAddr && parsed.userWallet !== currentAddr) {
+        localStorage.removeItem('tokenLaunchSession');
+        setLaunchStep('');
+        setLaunchError('');
+        setFundingProgress(0);
+        setFundingAmount({ received: 0, required: 0 });
+        setSessionData(null);
+        setFundingStep(null);
+        setFundingTxHash(null);
+        setAntiSnipeRemaining(null);
+      }
+    } catch {}
+  }, [accountProfile]);
 
   // Remove bundle recipients that match the active wallet when account changes
   useEffect(() => {
@@ -478,7 +427,9 @@ function CreatePage() {
     };
     const timeout = setTimeout(fetchCost, 300);
     return () => { cancelled = true; clearTimeout(timeout); };
-  }, [formData.ammXrpAmount, formData.antiSnipe, formData.tokenSupply, formData.userCheckPercent, formData.platformRetentionPercent, formData.bundleRecipients.length]);
+  }, [formData.ammXrpAmount, formData.antiSnipe, formData.tokenSupply, formData.userCheckPercent, formData.platformRetentionPercent, formData.bundleRecipients.length,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    JSON.stringify(formData.bundleRecipients.map(b => b.percent))]);
 
   // Restore session from localStorage on mount
   useEffect(() => {
@@ -506,8 +457,28 @@ function CreatePage() {
 
           // Update to current step
           if (['success', 'completed'].includes(status.status)) {
+            console.log('[session-restore] Completion from reload, status:', JSON.stringify({
+              status: status.status,
+              userCheckClaimed: status.userCheckClaimed,
+              userCheckId: status.userCheckId || status.data?.userCheckId,
+              bundleCheckIds: status.bundleCheckIds?.map(b => ({ checkId: b.checkId?.substring(0, 8), claimed: b.claimed })),
+            }));
             setLaunchStep('completed');
-            setSessionData((prev) => ({ ...prev, ...status }));
+            setSessionData((prev) => ({
+              ...prev,
+              ...status,
+              bundleCheckIds: status.bundleCheckIds?.length ? status.bundleCheckIds : prev.bundleCheckIds,
+              userCheckId: status.userCheckId || prev.userCheckId || prev.data?.userCheckId,
+            }));
+            // Restore claim states from API (explicit set, not conditional)
+            setCheckClaimed(!!status.userCheckClaimed);
+            const claimedMap = {};
+            if (status.bundleCheckIds?.length) {
+              for (const b of status.bundleCheckIds) {
+                if (b.claimed) claimedMap[b.checkId] = true;
+              }
+            }
+            setBundleClaimed(claimedMap);
           } else if (['failed', 'funding_timeout', 'cancelled'].includes(status.status)) {
             setLaunchStep('error');
             setLaunchError(status.error || 'Launch failed');
@@ -519,12 +490,18 @@ function CreatePage() {
               'creating_trustline',
               'sending_tokens',
               'creating_checks',
+              'creating_bundle_checks',
               'creating_amm',
               'scheduling_blackhole'
             ].includes(status.status)
           ) {
             setLaunchStep('processing');
-            setSessionData((prev) => ({ ...prev, ...status }));
+            setSessionData((prev) => ({
+              ...prev,
+              ...status,
+              bundleCheckIds: status.bundleCheckIds?.length ? status.bundleCheckIds : prev.bundleCheckIds,
+              userCheckId: status.userCheckId || prev.userCheckId || prev.data?.userCheckId,
+            }));
           } else {
             setLaunchStep('funding');
           }
@@ -667,6 +644,13 @@ function CreatePage() {
       Object.keys(errors).length
     ) return false;
 
+    // Must have a connected wallet
+    if (!accountProfile && !userWallet) return false;
+
+    // Check wallet has sufficient balance for launch cost
+    const requiredFunding = costBreakdown?.requiredFunding || Math.ceil(9 + formData.ammXrpAmount);
+    if (walletBalance !== null && walletBalance < requiredFunding) return false;
+
     // Validate bundle recipients if any
     if (formData.bundleRecipients.length > 0) {
       const totalBundlePercent = formData.bundleRecipients.reduce((s, r) => s + r.percent, 0);
@@ -677,8 +661,8 @@ function CreatePage() {
         if (!r.address || !/^r[1-9A-HJ-NP-Za-km-z]{24,34}$/.test(r.address)) return false;
         if (r.percent <= 0 || r.percent > 50) return false;
         if (seen.has(r.address)) return false;
-        // Check if account exists on-chain (null = account not found)
-        if (bundleBalances[r.address] === null) return false;
+        // Check if account exists on-chain (null = account not found, undefined = still loading)
+        if (bundleBalances[r.address] === null || bundleBalances[r.address] === undefined) return false;
         seen.add(r.address);
       }
     }
@@ -723,8 +707,12 @@ function CreatePage() {
     setShowSummary(false);
     setLaunchStep('initializing');
     setLaunchError('');
-    setLaunchLogs([]);
     setFundingProgress(0);
+    setCheckClaimed(false);
+    setClaiming(false);
+    setClaimStep(null);
+    setBundleClaimed({});
+    setBundleClaiming({});
 
     try {
       // Get user wallet address
@@ -848,27 +836,32 @@ function CreatePage() {
     localStorage.removeItem('tokenLaunchSession');
     setLaunchStep('');
     setLaunchError('');
-    setLaunchLogs([]);
     setFundingProgress(0);
     setFundingAmount({ received: 0, required: 0 });
-    setShowDebugPanel(false);
     setSessionData(null);
+    setFundingStep(null);
+    setFundingTxHash(null);
+    setAntiSnipeRemaining(null);
+    setCheckClaimed(false);
+    setClaiming(false);
+    setClaimStep(null);
+    setBundleClaimed({});
+    setBundleClaiming({});
   };
 
   // Polling effect for funding status
   useEffect(() => {
     if (launchStep !== 'funding' || !sessionData?.sessionId) return;
+    let cleared = false;
 
     const pollInterval = setInterval(async () => {
+      // Guard: if launchStep changed since this interval was created, stop polling
+      if (cleared) return;
+
       const status = await checkFundingStatus(sessionData.sessionId);
 
       if (!status) {
         return;
-      }
-
-      // Update logs if available
-      if (status.logs && status.logs.length > 0) {
-        setLaunchLogs(status.logs);
       }
 
       // Check funding status
@@ -887,14 +880,6 @@ function CreatePage() {
         } else if (sufficient) {
           // Fully funded - just show progress, backend handles continuation
           setFundingProgress(100);
-          setLaunchLogs((prev) => [
-            ...prev,
-            {
-              timestamp: new Date().toISOString(),
-              level: 'success',
-              message: 'Funding complete! Waiting for backend to continue...'
-            }
-          ]);
         }
       }
 
@@ -907,21 +892,44 @@ function CreatePage() {
           'creating_trustline',
           'sending_tokens',
           'creating_checks',
+          'creating_bundle_checks',
           'creating_amm',
           'scheduling_blackhole'
         ].includes(status.status)
       ) {
-        // Backend is processing - transition to processing view
-        if (launchStep === 'funding') {
-          setLaunchStep('processing');
-        }
+        // Backend is processing - transition to processing view and stop this poll
+        clearInterval(pollInterval);
+        cleared = true;
+        setLaunchStep('processing');
+        return;
       }
 
       if (['success', 'completed', 'failed', 'funding_timeout'].includes(status.status)) {
         clearInterval(pollInterval);
+        cleared = true;
         if (status.status === 'success' || status.status === 'completed') {
+          console.log('[funding-poll] Completion detected, status:', JSON.stringify({
+            status: status.status,
+            userCheckClaimed: status.userCheckClaimed,
+            userCheckId: status.userCheckId || status.data?.userCheckId,
+            bundleCheckIds: status.bundleCheckIds?.map(b => ({ checkId: b.checkId?.substring(0, 8), claimed: b.claimed })),
+          }));
           setLaunchStep('completed');
-          setSessionData((prev) => ({ ...prev, ...status }));
+          // Don't let empty API fields overwrite existing populated data
+          setSessionData((prev) => ({
+            ...prev,
+            ...status,
+            bundleCheckIds: status.bundleCheckIds?.length ? status.bundleCheckIds : prev.bundleCheckIds,
+            userCheckId: status.userCheckId || prev.userCheckId || prev.data?.userCheckId,
+          }));
+          setCheckClaimed(!!status.userCheckClaimed);
+          const fundingClaimedMap = {};
+          if (status.bundleCheckIds?.length) {
+            for (const b of status.bundleCheckIds) {
+              if (b.claimed) fundingClaimedMap[b.checkId] = true;
+            }
+          }
+          setBundleClaimed(fundingClaimedMap);
         } else {
           setLaunchError(status.error || `Launch ${status.status}`);
           setLaunchStep('error');
@@ -929,7 +937,7 @@ function CreatePage() {
       }
     }, 3000); // Poll every 3 seconds
 
-    return () => clearInterval(pollInterval);
+    return () => { cleared = true; clearInterval(pollInterval); };
   }, [launchStep, sessionData?.sessionId]);
 
   // Polling effect for processing status
@@ -940,19 +948,38 @@ function CreatePage() {
       const status = await pollLaunchStatus(sessionData.sessionId);
       if (!status) return;
 
-      // Update logs
-      if (status.logs) {
-        setLaunchLogs(status.logs);
-      }
-
-      // Update status and session data
-      setSessionData((prev) => ({ ...prev, ...status }));
+      // Update status and session data — preserve existing fields the API may not have yet
+      setSessionData((prev) => ({
+        ...prev,
+        ...status,
+        bundleCheckIds: status.bundleCheckIds?.length ? status.bundleCheckIds : prev.bundleCheckIds,
+        userCheckId: status.userCheckId || prev.userCheckId || prev.data?.userCheckId,
+      }));
 
       // Check completion
       if (status.status === 'success' || status.status === 'completed') {
         clearInterval(pollInterval);
+        console.log('[processing-poll] Completion detected, status:', JSON.stringify({
+          status: status.status,
+          userCheckClaimed: status.userCheckClaimed,
+          userCheckId: status.userCheckId || status.data?.userCheckId,
+          bundleCheckIds: status.bundleCheckIds?.map(b => ({ checkId: b.checkId?.substring(0, 8), claimed: b.claimed })),
+        }));
         setLaunchStep('completed');
-        setSessionData((prev) => ({ ...prev, ...status }));
+        setSessionData((prev) => ({
+          ...prev,
+          ...status,
+          bundleCheckIds: status.bundleCheckIds?.length ? status.bundleCheckIds : prev.bundleCheckIds,
+          userCheckId: status.userCheckId || prev.userCheckId || prev.data?.userCheckId,
+        }));
+        setCheckClaimed(!!status.userCheckClaimed);
+        const processingClaimedMap = {};
+        if (status.bundleCheckIds?.length) {
+          for (const b of status.bundleCheckIds) {
+            if (b.claimed) processingClaimedMap[b.checkId] = true;
+          }
+        }
+        setBundleClaimed(processingClaimedMap);
       } else if (status.status === 'failed') {
         clearInterval(pollInterval);
         setLaunchError(status.error || 'Launch failed');
@@ -962,6 +989,86 @@ function CreatePage() {
 
     return () => clearInterval(pollInterval);
   }, [launchStep, sessionData?.sessionId]);
+
+  // Anti-snipe countdown: sync from poll, tick locally every second
+  useEffect(() => {
+    const aw = sessionData?.authWindow;
+    if (!aw || !aw.open || !aw.remainingSec) {
+      setAntiSnipeRemaining(null);
+      return;
+    }
+    setAntiSnipeRemaining(aw.remainingSec);
+    const tick = setInterval(() => {
+      setAntiSnipeRemaining((prev) => (prev !== null && prev > 0 ? prev - 1 : 0));
+    }, 1000);
+    return () => clearInterval(tick);
+  }, [sessionData?.authWindow?.remainingSec]);
+
+  // On completed, verify on-chain which checks still exist (unclaimed).
+  // entryNotFound is ambiguous (could be "not yet propagated" OR "already cashed"),
+  // so we only use positive lookups: if check exists on-chain → definitely unclaimed.
+  // We poll periodically so claimed checks eventually get detected.
+  useEffect(() => {
+    if (launchStep !== 'completed' || !sessionData) return;
+    const userCheck = sessionData.data?.userCheckId || sessionData.userCheckId;
+    const bundleChecks = sessionData.bundleCheckIds || [];
+    const allCheckIds = [
+      ...(userCheck ? [{ id: userCheck, type: 'user' }] : []),
+      ...bundleChecks.map((b) => ({ id: b.checkId, type: 'bundle', checkId: b.checkId }))
+    ];
+    if (allCheckIds.length === 0) return;
+
+    let cancelled = false;
+    // Track which checks we've confirmed exist on-chain at least once
+    const confirmedOnChain = new Set();
+
+    const checkOnChain = async () => {
+      if (cancelled) return;
+      console.log('[on-chain-check] Starting on-chain verification for', allCheckIds.length, 'checks');
+      const wsUrl = sessionData?.network === 'mainnet'
+        ? 'wss://xrplcluster.com'
+        : 'wss://s.altnet.rippletest.net:51233';
+      const client = new xrpl.Client(wsUrl);
+      try {
+        await client.connect();
+        for (const entry of allCheckIds) {
+          if (cancelled) break;
+          try {
+            await client.request({ command: 'ledger_entry', check: entry.id, ledger_index: 'validated' });
+            // Check exists on-chain — confirmed unclaimed
+            confirmedOnChain.add(entry.id);
+            console.log('[on-chain-check]', entry.type, entry.id.substring(0, 12), '→ EXISTS (unclaimed)');
+          } catch (err) {
+            const errCode = err?.data?.error || err?.message || '';
+            console.log('[on-chain-check]', entry.type, entry.id.substring(0, 12), '→ ERROR:', errCode, 'previouslyConfirmed:', confirmedOnChain.has(entry.id));
+            // Only mark claimed if we previously confirmed this check existed on-chain
+            // (so entryNotFound means it was cashed, not that it hasn't propagated yet)
+            if (!cancelled && errCode === 'entryNotFound' && confirmedOnChain.has(entry.id)) {
+              console.log('[on-chain-check] Marking', entry.type, 'as CLAIMED (was on-chain before, now gone)');
+              if (entry.type === 'user') {
+                setCheckClaimed(true);
+              } else {
+                setBundleClaimed((prev) => ({ ...prev, [entry.checkId]: true }));
+              }
+            }
+          }
+        }
+        await client.disconnect();
+      } catch {
+        // Connection failed — leave states as-is
+      }
+    };
+
+    // Initial check after 10s, then poll every 30s to detect claimed checks
+    const timeout = setTimeout(() => {
+      if (cancelled) return;
+      checkOnChain();
+      const interval = setInterval(checkOnChain, 30000);
+      if (!cancelled) intervalRef = interval;
+    }, 10000);
+    let intervalRef = null;
+    return () => { cancelled = true; clearTimeout(timeout); if (intervalRef) clearInterval(intervalRef); };
+  }, [launchStep, sessionData?.sessionId, sessionData?.userCheckId, sessionData?.data?.userCheckId]);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -1032,8 +1139,8 @@ function CreatePage() {
                   placeholder="My Token"
                   value={formData.tokenName}
                   onChange={handleInputChange('tokenName')}
-                  error={errors.tokenName}
-                  helperText={errors.tokenName}
+                  error={errors.tokenName || !formData.tokenName}
+                  helperText={errors.tokenName || (!formData.tokenName ? 'Required' : null)}
                   counter={`${formData.tokenName.length}/50`}
                   counterError={formData.tokenName.length > 50}
                   isDark={isDark}
@@ -1043,8 +1150,8 @@ function CreatePage() {
                   placeholder="TKN"
                   value={formData.ticker}
                   onChange={handleInputChange('ticker')}
-                  error={errors.ticker}
-                  helperText={errors.ticker}
+                  error={errors.ticker || !formData.ticker || formData.ticker.length < 3}
+                  helperText={errors.ticker || (!formData.ticker ? 'Required' : formData.ticker.length < 3 ? 'Min 3 characters' : null)}
                   counter={`${formData.ticker.length}/20`}
                   counterError={formData.ticker.length < 3 || formData.ticker.length > 20}
                   isDark={isDark}
@@ -1071,6 +1178,8 @@ function CreatePage() {
                   type="number"
                   value={formData.tokenSupply}
                   onChange={handleInputChange('tokenSupply')}
+                  error={formData.tokenSupply < 1000}
+                  helperText={formData.tokenSupply < 1000 ? 'Minimum 1,000' : null}
                   isDark={isDark}
                   min={1000}
                 />
@@ -1530,10 +1639,16 @@ function CreatePage() {
                     <span className="text-[12px]">
                       {fmt(bd
                         ? (bd.issuerReserve || 0) + (bd.holderReserve || 0) + (bd.ownerReserves || 0) + (bd.transactionFees || 0)
-                        : '~3.8'
+                        : '~3'
                       )} XRP
                     </span>
                   </div>
+                  {bd?.antiSnipeFee > 0 && (
+                    <div className="flex items-center justify-between py-1.5">
+                      <span className="text-[12px] opacity-50">Anti-snipe fee</span>
+                      <span className="text-[12px]">{fmt(bd.antiSnipeFee)} XRP</span>
+                    </div>
+                  )}
                   {bd?.bundleFee > 0 && (
                     <div className="flex items-center justify-between py-1.5">
                       <span className="text-[12px] opacity-50">Bundle fee</span>
@@ -1655,7 +1770,33 @@ function CreatePage() {
           >
             {isFormValid()
               ? 'Launch Token'
-              : `Complete ${4 - (formData.tokenName ? 1 : 0) - (formData.ticker ? 1 : 0) - (formData.tokenSupply > 0 ? 1 : 0) - (formData.ammXrpAmount >= 1 ? 1 : 0)} required fields`}
+              : (() => {
+                  const missing = [];
+                  if (!formData.tokenName) missing.push('Token name');
+                  if (!formData.ticker || formData.ticker.length < 3 || formData.ticker.length > 20) missing.push('Ticker');
+                  if (formData.tokenSupply < 1000) missing.push('Total supply');
+                  if (formData.ammXrpAmount < 1) missing.push('AMM amount');
+                  if (!accountProfile && !userWallet) missing.push('Connect wallet');
+                  const requiredFunding = costBreakdown?.requiredFunding || Math.ceil(9 + formData.ammXrpAmount);
+                  if (walletBalance !== null && walletBalance < requiredFunding) {
+                    missing.push(`Insufficient balance (need ${requiredFunding} XRP)`);
+                  }
+                  if (Object.keys(errors).length > 0) {
+                    for (const key of Object.keys(errors)) {
+                      const label = { tokenName: 'Token name', ticker: 'Ticker', website: 'Website', description: 'Description', file: 'Image' }[key] || key;
+                      if (!missing.includes(label)) missing.push(label);
+                    }
+                  }
+                  if (formData.bundleRecipients.some(r => r.address && bundleBalances[r.address] === null)) {
+                    missing.push('Bundle recipient not found');
+                  }
+                  if (formData.bundleRecipients.some(r => r.address && bundleBalances[r.address] === undefined)) {
+                    missing.push('Checking bundle recipients...');
+                  }
+                  return missing.length > 0
+                    ? `Fix: ${missing.join(', ')}`
+                    : 'Launch Token';
+                })()}
           </Button>
         </div>
       )}
@@ -1740,9 +1881,14 @@ function CreatePage() {
                   </span>
                 </div>
                 {formData.platformRetentionPercent > 0 && (
-                  <div className="flex items-center justify-between py-1.5">
-                    <span className="text-[12px] opacity-50">Platform share</span>
-                    <span className="text-[12px] opacity-40">{formData.platformRetentionPercent}%</span>
+                  <div className="py-1.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[12px] opacity-50">Platform share</span>
+                      <span className="text-[12px] opacity-40">{formData.platformRetentionPercent}%</span>
+                    </div>
+                    <p className="text-[11px] opacity-40 mt-0.5">
+                      All platform share supply will be distributed to users who tweet about your token. You can turn this off above if you wish.
+                    </p>
                   </div>
                 )}
                 {formData.antiSnipe && (
@@ -1845,7 +1991,7 @@ function CreatePage() {
             <h2 className="text-lg font-normal">
               {launchStep === 'initializing' && 'Initializing...'}
               {launchStep === 'funding' && 'Fund Issuer'}
-              {launchStep === 'processing' && 'Creating Token'}
+              {launchStep === 'processing' && 'Launching Token'}
               {launchStep === 'completed' && 'Launch Complete'}
               {launchStep === 'error' && 'Launch Failed'}
             </h2>
@@ -1867,9 +2013,9 @@ function CreatePage() {
               </div>
             )}
 
-            {launchStep === 'funding' && sessionData && (
+            {(launchStep === 'funding' || launchStep === 'processing') && sessionData && (
               <div className="space-y-3">
-                {/* Funding Progress */}
+                {/* Unified Progress */}
                 <div className={cn(
                   'rounded-xl border overflow-hidden',
                   isDark ? 'border-white/10' : 'border-gray-200'
@@ -1878,12 +2024,35 @@ function CreatePage() {
                     'px-4 py-3 flex items-center justify-between',
                     isDark ? 'bg-white/[0.03]' : 'bg-gray-100/60'
                   )}>
-                    <span className={cn('text-[13px] font-medium', fundingProgress === 100 ? 'text-green-500' : '')}>
-                      {fundingProgress === 100 ? 'Funded!' : 'Awaiting Funding'}
-                    </span>
-                    <span className="text-[13px] opacity-60">
-                      {fundingBalance} / {fundingAmount.required} XRP
-                    </span>
+                    {launchStep === 'processing' ? (
+                      <>
+                        <span className="text-[13px] font-medium text-[#3b82f6]">
+                          {sessionData?.status === 'scheduling_blackhole' && sessionData?.antiSnipe && antiSnipeRemaining > 0
+                            ? `Anti-snipe · ${Math.floor(antiSnipeRemaining / 60)}:${String(antiSnipeRemaining % 60).padStart(2, '0')}`
+                            : sessionData?.progressMessage || {
+                                funded: 'Starting launch...',
+                                configuring_issuer: 'Configuring issuer...',
+                                registering_token: 'Registering token...',
+                                creating_trustline: 'Creating trustline...',
+                                sending_tokens: 'Minting tokens...',
+                                creating_checks: 'Creating check...',
+                                creating_bundle_checks: 'Creating bundle checks...',
+                                creating_amm: 'Creating AMM pool...',
+                                scheduling_blackhole: 'Finalizing...'
+                              }[sessionData?.status] || 'Processing...'}
+                        </span>
+                        <span className="text-[13px] text-[#3b82f6]">{sessionData?.progress || 0}%</span>
+                      </>
+                    ) : (
+                      <>
+                        <span className={cn('text-[13px] font-medium', fundingProgress === 100 ? 'text-green-500' : '')}>
+                          {fundingProgress === 100 ? 'Funded!' : 'Awaiting Funding'}
+                        </span>
+                        <span className="text-[13px] opacity-60">
+                          {fundingBalance} / {fundingAmount.required} XRP
+                        </span>
+                      </>
+                    )}
                   </div>
                   <div className="px-4 py-3">
                     <div className={cn(
@@ -1891,11 +2060,127 @@ function CreatePage() {
                       isDark ? 'bg-white/10' : 'bg-gray-200'
                     )}>
                       <div
-                        className="h-full bg-[#3b82f6] transition-all"
-                        style={{ width: `${fundingProgress}%` }}
+                        className="h-full bg-[#3b82f6] transition-all duration-500"
+                        style={{ width: `${launchStep === 'processing' ? (sessionData?.progress || 0) : fundingProgress}%` }}
                       />
                     </div>
                   </div>
+
+                  {/* Processing step indicators */}
+                  {launchStep === 'processing' && (() => {
+                    const allSteps = [
+                      { key: 'funded', label: 'Funded' },
+                      { key: 'configuring_issuer', label: 'Configuring issuer' },
+                      { key: 'registering_token', label: 'Registering token' },
+                      { key: 'creating_trustline', label: 'Creating trustline' },
+                      { key: 'sending_tokens', label: 'Minting tokens' },
+                      { key: 'creating_checks', label: 'Creating check' },
+                      { key: 'creating_bundle_checks', label: 'Creating bundle checks' },
+                      { key: 'creating_amm', label: 'Creating AMM pool' },
+                      { key: 'scheduling_blackhole', label: 'Finalizing' }
+                    ];
+                    const currentIdx = allSteps.findIndex(s => s.key === sessionData?.status);
+                    const showCountdown = sessionData?.status === 'scheduling_blackhole'
+                      && sessionData?.antiSnipe
+                      && antiSnipeRemaining !== null
+                      && antiSnipeRemaining > 0;
+                    return (
+                      <div className="px-4 pb-3 space-y-1">
+                        {allSteps.map((s, i) => {
+                          const isDone = i < currentIdx;
+                          const isActive = i === currentIdx;
+                          if (!isDone && !isActive) return null;
+                          return (
+                            <div key={s.key} className={cn(
+                              'flex items-center gap-2 text-[12px]',
+                              isDone ? 'opacity-40' : 'opacity-100'
+                            )}>
+                              {isDone ? (
+                                <CheckCircle size={12} className="text-green-500" />
+                              ) : (
+                                <Loader2 size={12} className="animate-spin text-[#3b82f6]" />
+                              )}
+                              {s.label}
+                            </div>
+                          );
+                        })}
+                        {showCountdown && (() => {
+                          const tokenIssuer = sessionData.issuer || sessionData.issuerAddress;
+                          const tokenCurrency = sessionData.originalCurrencyCode || sessionData.currencyCode || formData.ticker;
+                          const tokenSlug = tokenIssuer && tokenCurrency ? `${tokenIssuer}-${tokenCurrency}` : null;
+                          const tokenUrl = tokenSlug ? `https://xrpl.to/token/${tokenSlug}` : null;
+                          return (
+                            <>
+                              <div className={cn(
+                                'mt-2 px-3 py-2.5 rounded-lg border flex items-center justify-between',
+                                isDark ? 'border-yellow-500/20 bg-yellow-500/[0.06]' : 'border-yellow-500/20 bg-yellow-50'
+                              )}>
+                                <div>
+                                  <span className={cn('text-[12px] font-medium', isDark ? 'text-yellow-400' : 'text-yellow-600')}>
+                                    Anti-snipe window
+                                  </span>
+                                  <p className={cn('text-[10px] mt-0.5', isDark ? 'text-yellow-400/60' : 'text-yellow-600/60')}>
+                                    Issuer locked until window closes
+                                  </p>
+                                </div>
+                                <span className={cn(
+                                  'text-[20px] font-semibold tabular-nums',
+                                  antiSnipeRemaining <= 30
+                                    ? isDark ? 'text-green-400' : 'text-green-600'
+                                    : isDark ? 'text-yellow-400' : 'text-yellow-600'
+                                )}>
+                                  {Math.floor(antiSnipeRemaining / 60)}:{String(antiSnipeRemaining % 60).padStart(2, '0')}
+                                </span>
+                              </div>
+                              {tokenUrl && (
+                                <div className="mt-2 flex gap-2">
+                                  <a
+                                    href={`/token/${tokenSlug}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className={cn(
+                                      'flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-[12px] font-medium transition-colors',
+                                      'bg-[#137DFE] text-white hover:opacity-90'
+                                    )}
+                                  >
+                                    View Token <ExternalLink size={11} />
+                                  </a>
+                                  <button
+                                    onClick={() => {
+                                      navigator.clipboard.writeText(tokenUrl);
+                                      openSnackbar?.('Link copied!', 'success');
+                                    }}
+                                    className={cn(
+                                      'flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-[12px] transition-colors border',
+                                      isDark
+                                        ? 'border-white/10 hover:bg-white/5'
+                                        : 'border-gray-200 hover:bg-gray-50'
+                                    )}
+                                  >
+                                    <Copy size={11} /> Copy Link
+                                  </button>
+                                  <a
+                                    href={`https://x.com/intent/tweet?text=${encodeURIComponent(`Check out $${formData.ticker || tokenCurrency} on XRPL!`)}&url=${encodeURIComponent(tokenUrl)}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className={cn(
+                                      'flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-[12px] font-medium transition-colors',
+                                      isDark
+                                        ? 'bg-white text-black hover:bg-white/90'
+                                        : 'bg-black text-white hover:bg-black/90'
+                                    )}
+                                  >
+                                    <svg width={11} height={11} viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>
+                                    Share
+                                  </a>
+                                </div>
+                              )}
+                            </>
+                          );
+                        })()}
+                      </div>
+                    );
+                  })()}
                 </div>
 
                 {/* Issuer Address */}
@@ -1933,6 +2218,7 @@ function CreatePage() {
                 </div>
 
                 {/* Wallet */}
+                {launchStep === 'funding' && (
                 <div className={cn(
                   'rounded-xl border overflow-hidden',
                   isDark ? 'border-white/10' : 'border-gray-200'
@@ -1976,159 +2262,176 @@ function CreatePage() {
                     </p>
                   </div>
                 </div>
+                )}
 
-                {sessionData?.fundingBreakdown && (() => {
+                {launchStep === 'funding' && sessionData?.fundingBreakdown && (() => {
                   const b = sessionData.fundingBreakdown;
-                  const reserves = (b.issuerReserve || 0) + (b.holderReserve || 0) + (b.ownerReserves || 0);
-                  const txFees = b.transactionFees ?? (b.fees ? b.fees - (b.ownerReserves || 0) : 1);
                   const fmt = (v) => { const n = Number(v); return n % 1 === 0 ? `${n}` : `${n.toFixed(2)}`; };
-                  const rows = [
-                    { label: 'AMM liquidity', value: b.ammLiquidity },
-                    { label: 'Platform fee', value: b.platformFee },
-                    { label: 'Account reserves', value: reserves },
-                    { label: 'Transaction fees', value: txFees },
-                  ];
-                  if (b.bundleFee > 0) rows.push({ label: 'Bundle fee', value: b.bundleFee });
-                  if (b.bundleReserves > 0) rows.push({ label: 'Bundle reserves', value: b.bundleReserves });
-                  if (b.devAllocationPercent > 0) rows.push({ label: 'Dev allocation', value: `${b.devAllocationPercent}%`, isPercent: true });
-                  if (b.platformTokenRetentionPercent > 0) rows.push({ label: 'Platform token share', value: `${b.platformTokenRetentionPercent}% of supply`, isPercent: true });
+                  const fees = (b.platformFee || 0) + (b.antiSnipeFee || 0);
+                  const setup = (b.issuerReserve || 0) + (b.holderReserve || 0) + (b.ownerReserves || 0) + (b.transactionFees || 0) + (b.bundleFee || 0) + (b.bundleReserves || 0);
                   return (
                     <div className={cn(
                       'rounded-xl border overflow-hidden',
                       isDark ? 'border-white/10' : 'border-gray-200'
                     )}>
                       <div className={cn(
-                        'px-4 py-3 flex items-center justify-between',
+                        'px-4 py-2.5 flex items-center justify-between',
                         isDark ? 'bg-white/[0.03]' : 'bg-gray-100/60'
                       )}>
-                        <span className="text-[13px] font-medium">Cost Breakdown</span>
-                        <span className="text-[18px] font-semibold text-[#137DFE]">
+                        <span className="text-[13px] font-medium">Cost</span>
+                        <span className="text-[16px] font-semibold text-[#137DFE]">
                           {b.total || sessionData.requiredFunding} XRP
                         </span>
                       </div>
-                      <div className="px-4 py-2.5 space-y-0">
-                        {rows.map((r) => (
-                          <div key={r.label} className="flex items-center justify-between py-1.5">
-                            <span className="text-[12px] opacity-50">{r.label}</span>
-                            <span className={cn('text-[12px]', r.isPercent ? 'opacity-40' : '')}>
-                              {r.isPercent ? r.value : `${fmt(r.value)} XRP`}
-                            </span>
-                          </div>
-                        ))}
+                      <div className="px-4 py-1.5 flex items-center justify-between text-[12px]">
+                        <span className="opacity-50">AMM liquidity</span>
+                        <span>{fmt(b.ammLiquidity)} XRP</span>
+                      </div>
+                      <div className="px-4 py-1.5 flex items-center justify-between text-[12px]">
+                        <span className="opacity-50">Fees{b.antiSnipeFee > 0 ? ' + anti-snipe' : ''}</span>
+                        <span>{fmt(fees)} XRP</span>
+                      </div>
+                      <div className="px-4 py-1.5 pb-2.5 flex items-center justify-between text-[12px]">
+                        <span className="opacity-50">Reserves{b.bundleFee > 0 ? ' + bundle' : ''}</span>
+                        <span>{fmt(setup)} XRP</span>
                       </div>
                     </div>
                   );
                 })()}
 
-                {/* Seed Debug Panel */}
-                {seedDebugInfo && (
+
+
+                {/* Fund with connected wallet */}
+                {launchStep === 'funding' && accountProfile && fundingProgress < 100 && (
                   <div className={cn(
-                    'rounded-xl border overflow-hidden font-mono text-[9px]',
-                    'border-yellow-500/30',
-                    isDark ? 'bg-yellow-500/10' : 'bg-yellow-50'
+                    'rounded-xl border overflow-hidden',
+                    fundingStep
+                      ? fundingStep === 'confirmed'
+                        ? 'border-green-500/20 bg-green-500/5'
+                        : 'border-[#3b82f6]/20 bg-[#3b82f6]/5'
+                      : isDark ? 'border-white/10' : 'border-gray-200'
                   )}>
-                    <div className="px-3 py-1.5 text-[10px] font-semibold text-yellow-600">Debug: Seed</div>
-                    <div className="px-3 pb-2 space-y-0.5">
-                      <div>wallet_type: <span className="text-blue-400">{seedDebugInfo.wallet_type || 'undefined'}</span></div>
-                      <div>account: <span className="opacity-60">{seedDebugInfo.account || 'undefined'}</span></div>
-                      {seedDebugInfo.deviceKeyRaw && (
-                        <div>device_key_id (raw): <span className="opacity-60">{seedDebugInfo.deviceKeyRaw}</span></div>
-                      )}
-                      <div>walletKeyId: <span className={seedDebugInfo.walletKeyId ? 'text-green-500' : 'text-red-500'}>{seedDebugInfo.walletKeyId || 'undefined'}</span></div>
-                      <div>localStorage encrypted key: <span className={seedDebugInfo.encKeyExists ? 'text-green-500' : 'text-red-500'}>{seedDebugInfo.encKeyExists ? `YES (${seedDebugInfo.encKeyLen} chars)` : 'MISSING'}</span></div>
-                      {!seedDebugInfo.encKeyExists && seedDebugInfo.otherDevicePwdKeys && (
-                        <div>other device_pwd_* keys: <span className="text-yellow-500">{seedDebugInfo.otherDevicePwdKeys}</span></div>
-                      )}
-                      {seedDebugInfo.encKeyExists && (
-                        <div>decryption: <span className={seedDebugInfo.decryptOk ? 'text-green-500' : 'text-red-500'}>{seedDebugInfo.decryptOk ? 'OK' : seedDebugInfo.decryptError || 'FAILED'}</span></div>
-                      )}
-                      <div>hasPassword: <span className={seedDebugInfo.hasPassword ? 'text-green-500' : 'text-red-500'}>{String(seedDebugInfo.hasPassword ?? 'N/A')}</span></div>
-                      <div>walletInDB: <span className={seedDebugInfo.walletInDB === true ? 'text-green-500' : 'text-red-500'}>{String(seedDebugInfo.walletInDB ?? 'N/A')}</span></div>
-                      <div>seed: <span className="text-green-500 break-all">{seedDebugInfo.seed}</span></div>
-                      {seedDebugInfo.seedLen && (
-                        <div>seedLen: {seedDebugInfo.seedLen} | trimmed: <span className={seedDebugInfo.seedTrimmed === 'clean' ? 'text-green-500' : 'text-red-500'}>{seedDebugInfo.seedTrimmed}</span></div>
-                      )}
-                      {seedDebugInfo.error && (
-                        <div className="text-red-500">error: {seedDebugInfo.error}</div>
-                      )}
-                    </div>
+                    {fundingStep && (
+                      <div className="px-4 py-3 space-y-1.5">
+                        {['connecting', 'signing', 'submitted', 'confirmed'].map((step, i) => {
+                          const labels = {
+                            connecting: 'Connecting to XRPL',
+                            signing: 'Signing transaction',
+                            submitted: 'Confirming on ledger',
+                            confirmed: 'Payment confirmed'
+                          };
+                          const steps = ['connecting', 'signing', 'submitted', 'confirmed'];
+                          const currentIdx = steps.indexOf(fundingStep);
+                          const isDone = i < currentIdx;
+                          const isActive = step === fundingStep;
+                          if (!isDone && !isActive) return null;
+                          return (
+                            <div key={step} className={cn(
+                              'flex items-center gap-2 text-[12px] transition-opacity',
+                              isDone ? 'opacity-50' : 'opacity-100'
+                            )}>
+                              {isDone ? (
+                                <CheckCircle size={12} className="text-green-500" />
+                              ) : isActive && step !== 'confirmed' ? (
+                                <Loader2 size={12} className="animate-spin text-[#3b82f6]" />
+                              ) : (
+                                <CheckCircle size={12} className="text-green-500" />
+                              )}
+                              {labels[step]}
+                            </div>
+                          );
+                        })}
+                        {fundingStep === 'confirmed' && (
+                          <div className="flex items-center gap-2 text-[12px] mt-1">
+                            <Loader2 size={12} className="animate-spin text-[#3b82f6]" />
+                            <span className="text-[#3b82f6]">Backend processing...</span>
+                          </div>
+                        )}
+                        {fundingTxHash && (
+                          <a
+                            href={`${sessionData?.network === 'mainnet' ? 'https://xrpl.org' : 'https://testnet.xrpl.org'}/transactions/${fundingTxHash}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-1 text-[10px] text-[#3b82f6] hover:underline mt-1"
+                          >
+                            View transaction <ExternalLink size={10} />
+                          </a>
+                        )}
+                      </div>
+                    )}
+                    {!fundingStep && (
+                      <button
+                        disabled={fundingSending}
+                        onClick={async () => {
+                          if (!sessionData?.issuerAddress || !accountProfile) return;
+                          setFundingSending(true);
+                          setFundingStep('connecting');
+                          setFundingTxHash(null);
+                          try {
+                            const wallet = await getSigningWallet();
+                            if (!wallet) {
+                              openSnackbar?.('Wallet locked - please reconnect your wallet', 'error');
+                              setFundingSending(false);
+                              setFundingStep(null);
+                              return;
+                            }
+                            const wsUrl = sessionData?.network === 'mainnet'
+                              ? 'wss://xrplcluster.com'
+                              : 'wss://s.altnet.rippletest.net:51233';
+                            const client = new xrpl.Client(wsUrl);
+                            await client.connect();
+
+                            setFundingStep('signing');
+                            const amountDrops = String(
+                              Math.ceil((sessionData.requiredFunding || fundingAmount.required) * 1000000)
+                            );
+                            const paymentTx = {
+                              TransactionType: 'Payment',
+                              Account: wallet.address,
+                              Destination: sessionData.issuerAddress,
+                              Amount: amountDrops,
+                              SourceTag: 161803
+                            };
+
+                            setFundingStep('submitted');
+                            const result = await client.submitAndWait(paymentTx, {
+                              autofill: true,
+                              wallet
+                            });
+                            await client.disconnect();
+
+                            if (result.result.meta.TransactionResult === 'tesSUCCESS') {
+                              setFundingTxHash(result.result.hash);
+                              setFundingStep('confirmed');
+                            } else {
+                              openSnackbar?.(
+                                'Payment failed: ' + result.result.meta.TransactionResult,
+                                'error'
+                              );
+                              setFundingStep(null);
+                            }
+                          } catch (error) {
+                            console.error('[FundWallet] Error:', error.message, error.stack);
+                            openSnackbar?.(error.message || 'Failed to send funding', 'error');
+                            setFundingStep(null);
+                          } finally {
+                            setFundingSending(false);
+                          }
+                        }}
+                        className={cn(
+                          'w-full flex items-center justify-center gap-2 py-2.5 text-[13px] font-medium transition-colors',
+                          'hover:opacity-90 cursor-pointer',
+                          'bg-[#137DFE] text-white'
+                        )}
+                      >
+                        <WalletIcon size={14} />
+                        Fund with Wallet ({sessionData.requiredFunding || fundingAmount.required} XRP)
+                      </button>
+                    )}
                   </div>
                 )}
 
-                {/* Fund with connected wallet */}
-                {accountProfile && fundingProgress < 100 && (
-                  <button
-                    disabled={fundingSending}
-                    onClick={async () => {
-                      if (!sessionData?.issuerAddress || !accountProfile) return;
-                      setFundingSending(true);
-                      try {
-                        const wallet = await getSigningWallet();
-                        if (!wallet) {
-                          openSnackbar?.('Wallet locked - please reconnect your wallet', 'error');
-                          setFundingSending(false);
-                          return;
-                        }
-                        const wsUrl = sessionData?.network === 'mainnet'
-                          ? 'wss://xrplcluster.com'
-                          : 'wss://s.altnet.rippletest.net:51233';
-                        const client = new xrpl.Client(wsUrl);
-                        await client.connect();
-
-                        const amountDrops = String(
-                          Math.ceil((sessionData.requiredFunding || fundingAmount.required) * 1000000)
-                        );
-                        const paymentTx = {
-                          TransactionType: 'Payment',
-                          Account: wallet.address,
-                          Destination: sessionData.issuerAddress,
-                          Amount: amountDrops,
-                          SourceTag: 161803
-                        };
-                        const result = await client.submitAndWait(paymentTx, {
-                          autofill: true,
-                          wallet
-                        });
-                        await client.disconnect();
-
-                        if (result.result.meta.TransactionResult === 'tesSUCCESS') {
-                          openSnackbar?.('Funding sent! Waiting for confirmation...', 'success');
-                        } else {
-                          openSnackbar?.(
-                            'Payment failed: ' + result.result.meta.TransactionResult,
-                            'error'
-                          );
-                        }
-                      } catch (error) {
-                        console.error('[FundWallet] Error:', error.message, error.stack);
-                        openSnackbar?.(error.message || 'Failed to send funding', 'error');
-                      } finally {
-                        setFundingSending(false);
-                      }
-                    }}
-                    className={cn(
-                      'w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-[13px] font-medium transition-colors',
-                      fundingSending
-                        ? 'opacity-50 cursor-not-allowed'
-                        : 'hover:opacity-90 cursor-pointer',
-                      'bg-[#137DFE] text-white'
-                    )}
-                  >
-                    {fundingSending ? (
-                      <>
-                        <Loader2 size={14} className="animate-spin" />
-                        Sending {sessionData.requiredFunding || fundingAmount.required} XRP...
-                      </>
-                    ) : (
-                      <>
-                        <WalletIcon size={14} />
-                        Fund with Wallet ({sessionData.requiredFunding || fundingAmount.required} XRP)
-                      </>
-                    )}
-                  </button>
-                )}
-
-                {sessionData?.faucetUrl && (
+                {launchStep === 'funding' && sessionData?.faucetUrl && (
                   <a
                     href={sessionData.faucetUrl}
                     target="_blank"
@@ -2139,116 +2442,9 @@ function CreatePage() {
                   </a>
                 )}
 
-                <button
-                  onClick={async () => {
-                    if (!sessionData?.sessionId) return;
-                    try {
-                      const walletAddress =
-                        userWallet || accountProfile?.account || accountProfile?.address;
-                      await api.delete(
-                        `https://api.xrpl.to/v1/launch-token/${sessionData.sessionId}`,
-                        {
-                          data: { refundAddress: walletAddress }
-                        }
-                      );
-                      openSnackbar?.('Launch cancelled', 'success');
-                    } catch (error) {
-                      openSnackbar?.(error.response?.data?.error || 'Cancel failed', 'error');
-                    }
-                    resetLaunchState();
-                  }}
-                  className={cn(
-                    'w-full py-2 rounded-xl text-[12px] transition-colors',
-                    isDark
-                      ? 'text-white/50 hover:text-white/80 hover:bg-white/5'
-                      : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
-                  )}
-                >
-                  Cancel
-                </button>
               </div>
             )}
 
-            {launchStep === 'processing' && (
-              <div className={cn(
-                'rounded-xl border p-4 space-y-4',
-                isDark ? 'border-white/10' : 'border-gray-200'
-              )}>
-                {/* Progress bar */}
-                <div className="space-y-2">
-                  <div className="flex justify-between text-[11px]">
-                    <span className="opacity-60">
-                      {sessionData?.progressMessage || 'Processing...'}
-                    </span>
-                    <span className="text-[#3b82f6]">{sessionData?.progress || 0}%</span>
-                  </div>
-                  <div
-                    className={cn(
-                      'h-1.5 rounded-full overflow-hidden',
-                      isDark ? 'bg-white/10' : 'bg-gray-200'
-                    )}
-                  >
-                    <div
-                      className="h-full bg-[#3b82f6] transition-all duration-500"
-                      style={{ width: `${sessionData?.progress || 0}%` }}
-                    />
-                  </div>
-                </div>
-
-                <div className="text-center py-4">
-                  <Spinner />
-                  <p className="mt-3 text-[13px]">
-                    {sessionData?.progressMessage || {
-                      funded: 'Starting launch...',
-                      configuring_issuer: 'Configuring issuer...',
-                      registering_token: 'Registering token...',
-                      creating_trustline: 'Creating trustline...',
-                      sending_tokens: 'Minting tokens...',
-                      creating_checks: 'Creating check...',
-                      creating_amm: 'Creating AMM pool...',
-                      scheduling_blackhole: 'Finalizing...'
-                    }[sessionData?.status] || 'Processing...'}
-                  </p>
-                </div>
-
-                {launchLogs.some((log) => log.message?.includes('Insufficient')) && (
-                  <Alert severity="error">Insufficient funding - add more XRP</Alert>
-                )}
-
-                <button
-                  onClick={() => setShowDebugPanel(!showDebugPanel)}
-                  className="text-[12px] text-[#3b82f6] w-full"
-                >
-                  {showDebugPanel ? 'Hide' : 'Show'} logs ({launchLogs.length})
-                </button>
-
-                {showDebugPanel && launchLogs.length > 0 && (
-                  <div
-                    className={cn(
-                      'p-3 max-h-[200px] overflow-auto rounded-lg font-mono text-[10px]',
-                      isDark ? 'bg-black/50' : 'bg-gray-100'
-                    )}
-                  >
-                    {launchLogs.map((log, idx) => (
-                      <div
-                        key={idx}
-                        className={cn(
-                          log.level === 'error'
-                            ? 'text-red-500'
-                            : log.level === 'warn'
-                              ? 'text-yellow-500'
-                              : log.level === 'success'
-                                ? 'text-green-500'
-                                : 'opacity-70'
-                        )}
-                      >
-                        [{new Date(log.timestamp).toLocaleTimeString()}] {log.message}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
 
             {launchStep === 'completed' && sessionData && (
               <div className={cn(
@@ -2360,15 +2556,18 @@ function CreatePage() {
                       fullWidth
                       disabled={!accountProfile || checkClaimed || claiming}
                       onClick={async () => {
-                        if (!accountProfile?.account) {
+                        if (!(accountProfile?.account || accountProfile?.address)) {
                           openSnackbar?.('Connect your wallet', 'error');
                           return;
                         }
                         setClaiming(true);
                         setClaimStep('connecting');
+                        let client;
                         try {
                           const ticker =
                             formData.ticker ||
+                            sessionData.originalCurrencyCode ||
+                            sessionData.data?.originalCurrencyCode ||
                             sessionData.currencyCode ||
                             sessionData.data?.currencyCode;
                           const supply =
@@ -2380,6 +2579,9 @@ function CreatePage() {
                             sessionData.userCheckPercent ||
                             sessionData.data?.userCheckPercent ||
                             0;
+                          const apiCheckAmount =
+                            sessionData.userCheckAmount ||
+                            sessionData.data?.userCheckAmount;
                           if (!ticker) {
                             openSnackbar?.('Currency code not found', 'error');
                             setClaiming(false);
@@ -2397,17 +2599,25 @@ function CreatePage() {
                             sessionData?.network === 'mainnet'
                               ? 'wss://xrplcluster.com'
                               : 'wss://s.altnet.rippletest.net:51233';
-                          const client = new xrpl.Client(wsUrl);
-                          await client.connect();
+                          client = new xrpl.Client(wsUrl);
+                          await Promise.race([
+                            client.connect(),
+                            new Promise((_, reject) => setTimeout(() => reject(new Error('WebSocket connection timed out')), 15000))
+                          ]);
+                          // Use hex from API if already 40 chars, otherwise convert
                           const currencyCode =
-                            ticker.length === 3
-                              ? ticker
-                              : xrpl.convertStringToHex(ticker).padEnd(40, '0');
+                            (sessionData.currencyCode && sessionData.currencyCode.length === 40)
+                              ? sessionData.currencyCode
+                              : ticker.length === 3
+                                ? ticker
+                                : xrpl.convertStringToHex(ticker).padEnd(40, '0');
                           const issuerAddr =
                             sessionData.issuerAddress ||
                             sessionData.issuer ||
                             sessionData.data?.issuer;
-                          const claimAmount = String(Math.floor(supply * (checkPercent / 100)));
+                          const claimAmount = apiCheckAmount
+                            ? String(apiCheckAmount)
+                            : String(Math.floor(supply * (checkPercent / 100)));
 
                           // Step 1: Create trustline to issuer (required before CheckCash)
                           setClaimStep('trustline');
@@ -2418,20 +2628,18 @@ function CreatePage() {
                               currency: currencyCode,
                               issuer: issuerAddr,
                               value: claimAmount
-                            }
+                            },
+                            SourceTag: 161803
                           };
                           const trustResult = await client.submitAndWait(trustSetTx, {
                             autofill: true,
                             wallet
                           });
                           if (trustResult.result.meta.TransactionResult !== 'tesSUCCESS') {
-                            await client.disconnect();
                             openSnackbar?.(
                               'Trustline failed: ' + trustResult.result.meta.TransactionResult,
                               'error'
                             );
-                            setClaiming(false);
-                            setClaimStep(null);
                             return;
                           }
 
@@ -2445,13 +2653,13 @@ function CreatePage() {
                               currency: currencyCode,
                               issuer: issuerAddr,
                               value: claimAmount
-                            }
+                            },
+                            SourceTag: 161803
                           };
                           const tx = await client.submitAndWait(checkCashTx, {
                             autofill: true,
                             wallet
                           });
-                          await client.disconnect();
                           if (tx.result.meta.TransactionResult === 'tesSUCCESS') {
                             setCheckClaimed(true);
                             openSnackbar?.('Tokens claimed!', 'success');
@@ -2459,13 +2667,14 @@ function CreatePage() {
                             openSnackbar?.('Failed: ' + tx.result.meta.TransactionResult, 'error');
                           }
                         } catch (error) {
-                          if (error.message.includes('tecNO_ENTRY')) {
+                          if (error.message?.includes('tecNO_ENTRY')) {
                             setCheckClaimed(true);
                             openSnackbar?.('Already claimed', 'warning');
                           } else {
                             openSnackbar?.('Error: ' + error.message, 'error');
                           }
                         } finally {
+                          try { await client?.disconnect(); } catch {}
                           setClaiming(false);
                           setClaimStep(null);
                         }
@@ -2496,10 +2705,7 @@ function CreatePage() {
 
                 {/* Bundle check claiming */}
                 {(sessionData.bundleCheckIds || []).length > 0 && (() => {
-                  const claimableChecks = (sessionData.bundleCheckIds || []).filter((b) =>
-                    (profiles || []).some((p) => (p.account || p.address) === b.address)
-                  );
-                  if (!claimableChecks.length) return null;
+                  const allBundleChecks = sessionData.bundleCheckIds || [];
                   return (
                     <div
                       className={cn(
@@ -2509,12 +2715,13 @@ function CreatePage() {
                     >
                       <p className="text-[14px] font-medium">Bundle Checks</p>
                       <p className="text-[12px] opacity-70">
-                        {claimableChecks.length} check{claimableChecks.length > 1 ? 's' : ''} for your wallets
+                        {allBundleChecks.length} check{allBundleChecks.length > 1 ? 's' : ''}
                       </p>
-                      {claimableChecks.map((b) => {
-                        const isClaimed = bundleClaimed[b.checkId];
+                      {allBundleChecks.map((b) => {
+                        const isClaimed = b.claimed || bundleClaimed[b.checkId];
                         const claimingStep = bundleClaiming[b.checkId];
                         const profile = (profiles || []).find((p) => (p.account || p.address) === b.address);
+                        const canClaim = !!profile;
                         const typeLabel = profile?.wallet_type === 'oauth' || profile?.wallet_type === 'social'
                           ? profile.provider || 'social'
                           : profile?.wallet_type || 'wallet';
@@ -2579,12 +2786,15 @@ function CreatePage() {
                               variant="primary"
                               fullWidth
                               size="small"
-                              disabled={isClaimed || !!claimingStep}
+                              disabled={isClaimed || !!claimingStep || !canClaim}
                               onClick={async () => {
                                 setBundleClaiming((prev) => ({ ...prev, [b.checkId]: 'connecting' }));
+                                let client;
                                 try {
                                   const ticker =
                                     formData.ticker ||
+                                    sessionData.originalCurrencyCode ||
+                                    sessionData.data?.originalCurrencyCode ||
                                     sessionData.currencyCode ||
                                     sessionData.data?.currencyCode;
                                   if (!ticker) {
@@ -2602,12 +2812,18 @@ function CreatePage() {
                                     sessionData?.network === 'mainnet'
                                       ? 'wss://xrplcluster.com'
                                       : 'wss://s.altnet.rippletest.net:51233';
-                                  const client = new xrpl.Client(wsUrl);
-                                  await client.connect();
+                                  client = new xrpl.Client(wsUrl);
+                                  await Promise.race([
+                                    client.connect(),
+                                    new Promise((_, reject) => setTimeout(() => reject(new Error('WebSocket connection timed out')), 15000))
+                                  ]);
+                                  // Use hex from API if already 40 chars, otherwise convert
                                   const currencyCode =
-                                    ticker.length === 3
-                                      ? ticker
-                                      : xrpl.convertStringToHex(ticker).padEnd(40, '0');
+                                    (sessionData.currencyCode && sessionData.currencyCode.length === 40)
+                                      ? sessionData.currencyCode
+                                      : ticker.length === 3
+                                        ? ticker
+                                        : xrpl.convertStringToHex(ticker).padEnd(40, '0');
                                   const issuerAddr =
                                     sessionData.issuerAddress ||
                                     sessionData.issuer ||
@@ -2621,16 +2837,15 @@ function CreatePage() {
                                       currency: currencyCode,
                                       issuer: issuerAddr,
                                       value: String(b.amount)
-                                    }
+                                    },
+                                    SourceTag: 161803
                                   };
                                   const trustResult = await client.submitAndWait(trustSetTx, {
                                     autofill: true,
                                     wallet
                                   });
                                   if (trustResult.result.meta.TransactionResult !== 'tesSUCCESS') {
-                                    await client.disconnect();
                                     openSnackbar?.('Trustline failed: ' + trustResult.result.meta.TransactionResult, 'error');
-                                    setBundleClaiming((prev) => { const n = { ...prev }; delete n[b.checkId]; return n; });
                                     return;
                                   }
 
@@ -2643,13 +2858,13 @@ function CreatePage() {
                                       currency: currencyCode,
                                       issuer: issuerAddr,
                                       value: String(b.amount)
-                                    }
+                                    },
+                                    SourceTag: 161803
                                   };
                                   const tx = await client.submitAndWait(checkCashTx, {
                                     autofill: true,
                                     wallet
                                   });
-                                  await client.disconnect();
                                   if (tx.result.meta.TransactionResult === 'tesSUCCESS') {
                                     setBundleClaimed((prev) => ({ ...prev, [b.checkId]: true }));
                                     openSnackbar?.(`Bundle claimed for ${b.address.slice(0, 8)}...`, 'success');
@@ -2664,6 +2879,7 @@ function CreatePage() {
                                     openSnackbar?.('Error: ' + error.message, 'error');
                                   }
                                 } finally {
+                                  try { await client?.disconnect(); } catch {}
                                   setBundleClaiming((prev) => { const n = { ...prev }; delete n[b.checkId]; return n; });
                                 }
                               }}
@@ -2675,7 +2891,7 @@ function CreatePage() {
                                   {claimingStep === 'trustline' && 'Setting trustline...'}
                                   {claimingStep === 'cashing' && 'Claiming...'}
                                 </span>
-                              ) : isClaimed ? 'Claimed' : 'Claim'}
+                              ) : isClaimed ? 'Claimed' : canClaim ? 'Claim' : 'Connect wallet'}
                             </Button>
                           </div>
                         );
@@ -2727,15 +2943,16 @@ function CreatePage() {
                 {(() => {
                   const hasDevCheck = !!(sessionData.data?.userCheckId || sessionData.userCheckId);
                   const devDone = !hasDevCheck || checkClaimed;
-                  const claimableBundles = (sessionData.bundleCheckIds || []).filter((b) =>
-                    (profiles || []).some((p) => (p.account || p.address) === b.address)
-                  );
-                  const allBundlesDone = claimableBundles.every((b) => bundleClaimed[b.checkId]);
+                  const allBundles = sessionData.bundleCheckIds || [];
+                  const allBundlesDone = allBundles.every((b) => b.claimed || bundleClaimed[b.checkId]);
                   const allDone = devDone && allBundlesDone;
+                  const pendingBundles = allBundles.filter((b) => !b.claimed && !bundleClaimed[b.checkId]);
+                  const hasPending = (hasDevCheck && !checkClaimed) || pendingBundles.length > 0;
                   return (
                     <Button
-                      variant="primary"
+                      variant={allDone ? 'primary' : 'outline'}
                       fullWidth
+                      disabled={hasPending}
                       onClick={() => {
                         resetLaunchState();
                         setFormData({
@@ -2757,7 +2974,7 @@ function CreatePage() {
                         setImagePreview('');
                       }}
                     >
-                      {allDone ? 'Done' : 'Skip & Close'}
+                      {allDone ? 'Done' : `Claim ${(hasDevCheck && !checkClaimed ? 1 : 0) + pendingBundles.length} remaining`}
                     </Button>
                   );
                 })()}
@@ -2770,29 +2987,6 @@ function CreatePage() {
                 isDark ? 'border-white/10' : 'border-gray-200'
               )}>
                 <Alert severity="error">{launchError || 'An error occurred'}</Alert>
-                {launchLogs.length > 0 && (
-                  <div
-                    className={cn(
-                      'p-3 max-h-[200px] overflow-auto rounded-lg font-mono text-[10px]',
-                      isDark ? 'bg-black/30' : 'bg-gray-100'
-                    )}
-                  >
-                    {launchLogs.map((log, idx) => (
-                      <div
-                        key={idx}
-                        className={cn(
-                          log.level === 'error'
-                            ? 'text-red-500'
-                            : log.level === 'warn'
-                              ? 'text-yellow-500'
-                              : 'opacity-60'
-                        )}
-                      >
-                        [{new Date(log.timestamp).toLocaleTimeString()}] {log.message}
-                      </div>
-                    ))}
-                  </div>
-                )}
                 <Button fullWidth onClick={resetLaunchState}>
                   Close
                 </Button>
@@ -2808,3 +3002,17 @@ function CreatePage() {
 }
 
 export default CreatePage;
+
+export async function getStaticProps() {
+  return {
+    props: {
+      ogp: {
+        canonical: 'https://xrpl.to/launch',
+        title: 'Token Launch | Launch Your Token on XRPL',
+        url: 'https://xrpl.to/launch',
+        imgUrl: 'https://xrpl.to/og/launch.webp',
+        desc: 'Launch your token on the XRP Ledger with automated trustline setup, AMM pool creation, and listing.'
+      }
+    }
+  };
+}

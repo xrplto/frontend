@@ -997,10 +997,13 @@ export default function LedgerStreamPage() {
     setConnectionStatus('connecting');
     try {
       const res = await fetch('/api/ws/session?type=ledger');
-      const { wsUrl } = await res.json();
+      const { wsUrl, apiKey } = await res.json();
       const ws = new WebSocket(wsUrl);
 
-      ws.onopen = () => setConnectionStatus('connected');
+      ws.onopen = () => {
+        if (apiKey) ws.send(JSON.stringify({ type: 'auth', apiKey }));
+        setConnectionStatus('connected');
+      };
 
       ws.onmessage = (event) => {
         try {
@@ -1360,4 +1363,18 @@ export default function LedgerStreamPage() {
       <Footer />
     </div>
   );
+}
+
+export async function getStaticProps() {
+  return {
+    props: {
+      ogp: {
+        canonical: 'https://xrpl.to/ledger',
+        title: 'Ledger | XRPL Ledger Explorer',
+        url: 'https://xrpl.to/ledger',
+        imgUrl: 'https://xrpl.to/og/ledger.webp',
+        desc: 'Explore the XRP Ledger in real-time. View transactions, accounts, and network activity.'
+      }
+    }
+  };
 }

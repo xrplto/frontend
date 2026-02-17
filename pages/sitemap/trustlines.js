@@ -151,7 +151,7 @@ export const getServerSideProps = async (ctx) => {
     ogp.canonical = 'https://xrpl.to';
     ogp.title = slug.charAt(0).toUpperCase() + slug.substr(1) + ' Trustline Sitemap';
     ogp.url = 'https://xrpl.to/';
-    ogp.imgUrl = 'https://xrpl.to/static/ogp.webp';
+    ogp.imgUrl = 'https://xrpl.to/og/index.webp';
     ogp.desc =
       "Navigate XRPL tokens easily with XRPL.to's Token Trustlines Sitemap – a user-friendly guide for managing your trustlines and exploring new tokens!";
 

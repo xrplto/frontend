@@ -3894,7 +3894,7 @@ syncWs.onopen = () => {
 
       <Header />
 
-      <div className={cn('min-h-screen scroll-smooth', isDark ? 'bg-black' : 'bg-white')}>
+      <div className={cn('min-h-dvh scroll-smooth', isDark ? 'bg-black' : 'bg-white')}>
         <div className="flex">
           {/* Mobile menu button */}
           <button
@@ -3912,7 +3912,7 @@ syncWs.onopen = () => {
           {/* Mobile sidebar overlay */}
           {isSidebarOpen && (
             <div
-              className="md:hidden fixed inset-0 z-30 bg-black/50 backdrop-blur-sm"
+              className="md:hidden fixed inset-0 z-30 bg-black/50 backdrop-blur-sm h-dvh"
               onClick={() => setIsSidebarOpen(false)}
             />
           )}
@@ -3921,7 +3921,7 @@ syncWs.onopen = () => {
           <div
             className={cn(
               'w-[240px] border-r overflow-y-auto transition-all duration-300 pt-4',
-              'fixed md:sticky top-0 h-screen z-40',
+              'fixed md:sticky top-0 h-dvh z-40',
               isDark
                 ? 'bg-[rgba(59,130,246,0.01)] border-[rgba(59,130,246,0.08)]'
                 : 'bg-[rgba(59,130,246,0.02)] border-[rgba(59,130,246,0.15)]',
@@ -4132,7 +4132,7 @@ syncWs.onopen = () => {
           </div>
 
           {/* Main content */}
-          <div className="flex-1 min-h-screen">
+          <div className="flex-1 min-h-dvh">
             <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-12">
               {renderContent()}
             </div>
@@ -4178,14 +4178,14 @@ syncWs.onopen = () => {
         {/* Modal */}
         {isModalOpen && (
           <div
-            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 max-sm:h-dvh"
             onClick={() => setIsModalOpen(false)}
           >
             <div className={cn('fixed inset-0', isDark ? 'bg-black/70' : 'bg-black/30')} />
             <div
               onClick={(e) => e.stopPropagation()}
               className={cn(
-                'relative rounded-xl border w-full max-w-[900px] max-h-[85vh] overflow-hidden flex flex-col',
+                'relative rounded-xl border w-full max-w-[900px] max-h-[85dvh] overflow-hidden flex flex-col',
                 isDark ? 'bg-[#0a0a0a] border-white/10' : 'bg-white border-gray-200'
               )}
             >
@@ -4304,7 +4304,8 @@ export async function getStaticProps() {
     canonical: 'https://xrpl.to/docs',
     title: 'API Documentation - XRPL.to',
     desc: 'Complete API reference for XRPL.to - Access XRP Ledger token data, trading, NFT, and analytics endpoints.',
-    url: 'https://xrpl.to/docs'
+    url: 'https://xrpl.to/docs',
+    imgUrl: 'https://xrpl.to/og/docs.webp'
   };
 
   return {

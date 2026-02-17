@@ -33,7 +33,7 @@ export default function IssuerInfoDialog({ open, setOpen, token }) {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[1302] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+    <div className="fixed inset-0 z-[1302] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 max-sm:h-dvh">
       <div
         className={cn(
           'relative w-full max-w-md rounded-2xl border overflow-hidden',

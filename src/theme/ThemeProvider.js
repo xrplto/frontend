@@ -1,15 +1,10 @@
-import { useContext, useState, useEffect } from 'react';
+import { useContext, useEffect } from 'react';
 import { ThemeContext } from 'src/context/AppContext';
 import { themeCreator } from './base';
 
 const ThemeProviderWrapper = (props) => {
-  const [isMounted, setIsMounted] = useState(false);
   const { themeName } = useContext(ThemeContext);
   const isDark = themeName === 'XrplToDarkTheme';
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
 
   useEffect(() => {
     if (typeof document !== 'undefined') {
@@ -30,10 +25,6 @@ const ThemeProviderWrapper = (props) => {
       document.body.style.backgroundAttachment = 'fixed';
     }
   }, [isDark, themeName]);
-
-  if (!isMounted) {
-    return null;
-  }
 
   return <>{props.children}</>;
 };

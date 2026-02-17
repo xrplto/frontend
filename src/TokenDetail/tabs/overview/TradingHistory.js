@@ -805,7 +805,7 @@ const FormControlLabel = ({ isDark, className, children, ...p }) => (
   >{children}</label>
 );
 
-const Tabs = ({ className, children, ...p }) => (
+const Tabs = ({ isDark, className, children, ...p }) => (
   <div className={cn('flex gap-2 mb-3 max-sm:w-full max-sm:gap-[6px]', className)} {...p}>{children}</div>
 );
 
@@ -839,14 +839,14 @@ const Button = ({ size, isDark, className, children, ...p }) => (
 
 const Dialog = ({ open, className, children, ...p }) => (
   <div
-    className={cn('fixed inset-0 w-screen h-screen bg-black/40 backdrop-blur-[4px] items-center justify-center z-[99999] p-4 box-border', open ? 'flex' : 'hidden', className)}
+    className={cn('fixed inset-0 w-screen h-dvh bg-black/40 backdrop-blur-[4px] items-center justify-center z-[99999] p-4 box-border', open ? 'flex' : 'hidden', className)}
     {...p}
   >{children}</div>
 );
 
 const DialogPaper = ({ isDark, className, children, ...p }) => (
   <div
-    className={cn('border rounded-[14px] max-w-[420px] w-[90%] max-h-[calc(100vh-32px)] overflow-auto mx-auto', isDark ? 'bg-[#0a0a0a] border-white/10' : 'bg-white border-black/10', className)}
+    className={cn('border rounded-[14px] max-w-[420px] w-[90%] max-h-[calc(100dvh-32px)] overflow-auto mx-auto', isDark ? 'bg-[#0a0a0a] border-white/10' : 'bg-white border-black/10', className)}
     {...p}
   >{children}</div>
 );
@@ -865,7 +865,7 @@ const DialogContent = ({ isDark, className, children, ...p }) => (
 const TextField = ({ isDark, className, ...p }) => (
   <input
     className={cn(
-      'w-full py-3 px-[14px] text-sm border-[1.5px] rounded-[10px] box-border transition-[border-color] duration-150 focus:outline-none focus:border-blue-500',
+      'w-full py-3 px-[14px] text-[16px] sm:text-sm border-[1.5px] rounded-[10px] box-border transition-[border-color] duration-150 focus:outline-none focus:border-blue-500',
       isDark ? 'border-white/10 bg-white/[0.04] text-white placeholder:text-white/25' : 'border-black/10 bg-black/[0.02] text-[#1a1a1a] placeholder:text-black/[0.35]',
       className
     )}
@@ -1746,9 +1746,11 @@ const TradeDetails = ({ trade, account, isDark, onClose, walletLabel }) => {
   const dropsToXrp = (drops) =>
     (Number(drops) / 1000000).toLocaleString(undefined, { maximumFractionDigits: 6 });
 
+  const isMobilePanel = typeof window !== 'undefined' && window.innerWidth < 960;
+
   return (
     <div
-      className={cn('py-3 px-2 border-b animate-[expandIn_0.15s_ease-out]', isDark ? 'bg-black/40 border-white/10' : 'bg-[rgba(128,128,128,0.1)] border-black/10')}
+      className={cn('border-b animate-[expandIn_0.15s_ease-out]', isMobilePanel ? 'py-2 px-2' : 'py-3 px-2', isDark ? 'bg-black/40 border-white/10' : 'bg-[rgba(128,128,128,0.1)] border-black/10')}
     >
       <style>{`@keyframes expandIn { from { opacity: 0; max-height: 0; } to { opacity: 1; max-height: 400px; } }`}</style>
       {loading ? (
@@ -1756,68 +1758,71 @@ const TradeDetails = ({ trade, account, isDark, onClose, walletLabel }) => {
           <Spinner size={18} />
         </div>
       ) : (
-        <div className="flex gap-4 flex-wrap">
-          {/* Trader Info */}
-          {account && (
-            <div className="min-w-[120px] max-w-[180px] overflow-hidden">
-              <div className={cn('text-[9px]', isDark ? 'text-white/40' : 'text-black/40')}>
-                Trader
-              </div>
-              <a
-                href={`/address/${account}`}
-                className="text-[11px] font-mono text-[#3b82f6] no-underline block overflow-hidden text-ellipsis whitespace-nowrap"
-                title={account}
-              >
-                {walletLabel || `${account.slice(0, 6)}...${account.slice(-4)}`}
-              </a>
-              {(profileData?.balance ||
-                profileData?.Balance ||
-                profileData?.account_data?.Balance) && (
-                  <div className={cn('text-[10px]', isDark ? 'text-white/50' : 'text-black/50')}>
-                    {dropsToXrp(
-                      profileData?.balance ||
-                      profileData?.Balance ||
-                      profileData?.account_data?.Balance
-                    )}{' '}
-                    XRP
-                  </div>
-                )}
-            </div>
-          )}
-          {/* TX Info */}
-          {txData && (
-            <>
-              <div className="min-w-[100px]">
+        <div className={cn(isMobilePanel ? 'flex flex-col gap-2' : 'flex gap-4 flex-wrap')}>
+          {/* Info row */}
+          <div className={cn(isMobilePanel ? 'grid grid-cols-4 gap-2' : 'contents')}>
+            {/* Trader Info */}
+            {account && (
+              <div className="overflow-hidden">
                 <div className={cn('text-[9px]', isDark ? 'text-white/40' : 'text-black/40')}>
-                  Status
+                  Trader
                 </div>
-                <span
-                  className={cn(
-                    'text-[10px] py-[2px] px-[6px] rounded',
-                    txData.meta?.TransactionResult === 'tesSUCCESS' ? 'bg-[rgba(34,197,94,0.15)] text-[#22c55e]' : 'bg-[rgba(239,68,68,0.15)] text-[#ef4444]'
-                  )}
+                <a
+                  href={`/address/${account}`}
+                  className={cn('font-mono text-[#3b82f6] no-underline block overflow-hidden text-ellipsis whitespace-nowrap', isMobilePanel ? 'text-[10px]' : 'text-[11px]')}
+                  title={account}
                 >
-                  {txData.meta?.TransactionResult === 'tesSUCCESS' ? 'Success' : 'Failed'}
-                </span>
+                  {walletLabel || `${account.slice(0, 6)}...${account.slice(-4)}`}
+                </a>
+                {(profileData?.balance ||
+                  profileData?.Balance ||
+                  profileData?.account_data?.Balance) && (
+                    <div className={cn('text-[10px]', isDark ? 'text-white/50' : 'text-black/50')}>
+                      {dropsToXrp(
+                        profileData?.balance ||
+                        profileData?.Balance ||
+                        profileData?.account_data?.Balance
+                      )}{' '}
+                      XRP
+                    </div>
+                  )}
               </div>
-              <div className="min-w-[80px]">
-                <div className={cn('text-[9px]', isDark ? 'text-white/40' : 'text-black/40')}>
-                  Fee
+            )}
+            {/* TX Info */}
+            {txData && (
+              <>
+                <div>
+                  <div className={cn('text-[9px]', isDark ? 'text-white/40' : 'text-black/40')}>
+                    Status
+                  </div>
+                  <span
+                    className={cn(
+                      'text-[10px] py-[2px] px-[6px] rounded',
+                      txData.meta?.TransactionResult === 'tesSUCCESS' ? 'bg-[rgba(34,197,94,0.15)] text-[#22c55e]' : 'bg-[rgba(239,68,68,0.15)] text-[#ef4444]'
+                    )}
+                  >
+                    {txData.meta?.TransactionResult === 'tesSUCCESS' ? 'Success' : 'Failed'}
+                  </span>
                 </div>
-                <div className={cn('text-[11px]', isDark ? 'text-white' : 'text-[#1a1a1a]')}>
-                  {dropsToXrp(txData.Fee)} XRP
+                <div>
+                  <div className={cn('text-[9px]', isDark ? 'text-white/40' : 'text-black/40')}>
+                    Fee
+                  </div>
+                  <div className={cn('text-[11px]', isDark ? 'text-white' : 'text-[#1a1a1a]')}>
+                    {dropsToXrp(txData.Fee)} XRP
+                  </div>
                 </div>
-              </div>
-              <div className="min-w-[80px]">
-                <div className={cn('text-[9px]', isDark ? 'text-white/40' : 'text-black/40')}>
-                  Ledger
+                <div>
+                  <div className={cn('text-[9px]', isDark ? 'text-white/40' : 'text-black/40')}>
+                    Ledger
+                  </div>
+                  <div className={cn('text-[11px]', isDark ? 'text-white' : 'text-[#1a1a1a]')}>
+                    #{txData.ledger_index}
+                  </div>
                 </div>
-                <div className={cn('text-[11px]', isDark ? 'text-white' : 'text-[#1a1a1a]')}>
-                  #{txData.ledger_index}
-                </div>
-              </div>
-            </>
-          )}
+              </>
+            )}
+          </div>
           {/* Memo */}
           {txData?.Memos?.length > 0 &&
             (() => {
@@ -1837,7 +1842,7 @@ const TradeDetails = ({ trade, account, isDark, onClose, walletLabel }) => {
               };
               const data = memo?.MemoData ? decodeMemo(memo.MemoData) : null;
               return data ? (
-                <div className="min-w-[120px] max-w-[200px]">
+                <div className={cn(isMobilePanel ? 'max-w-full' : 'min-w-[120px] max-w-[200px]')}>
                   <div className={cn('text-[9px]', isDark ? 'text-white/40' : 'text-black/40')}>
                     Memo
                   </div>
@@ -1848,21 +1853,22 @@ const TradeDetails = ({ trade, account, isDark, onClose, walletLabel }) => {
               ) : null;
             })()}
           {/* Action Buttons */}
-          <div className="flex gap-2 items-center ml-auto">
+          <div className={cn('flex gap-2 items-center', isMobilePanel ? '' : 'ml-auto')}>
             <a
               href={`/tx/${trade.hash}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-[5px] text-[11px] font-medium text-white bg-[#3b82f6] border-none rounded-[6px] py-[6px] px-3 no-underline cursor-pointer"
+              className={cn('flex items-center gap-[5px] font-medium text-white bg-[#3b82f6] border-none rounded-[6px] no-underline cursor-pointer', isMobilePanel ? 'text-[10px] py-[5px] px-2' : 'text-[11px] py-[6px] px-3')}
             >
-              <ExternalLink size={12} />
+              <ExternalLink size={isMobilePanel ? 10 : 12} />
               <span>View Details</span>
             </a>
             <button
               onClick={explainWithAI}
               disabled={aiLoading || aiExplanation}
               className={cn(
-                'flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-[12px] font-medium transition-all duration-200',
+                'flex items-center gap-1.5 rounded-lg border font-medium transition-all duration-200',
+                isMobilePanel ? 'px-2 py-[5px] text-[10px]' : 'px-3 py-1.5 text-[12px]',
                 aiLoading || aiExplanation
                   ? isDark
                     ? 'border-white/10 bg-white/5 text-white/50 cursor-default'
@@ -1873,15 +1879,15 @@ const TradeDetails = ({ trade, account, isDark, onClose, walletLabel }) => {
               )}
             >
               {aiLoading ? (
-                <Loader2 size={12} className="animate-spin" />
+                <Loader2 size={isMobilePanel ? 10 : 12} className="animate-spin" />
               ) : (
-                <Sparkles size={12} />
+                <Sparkles size={isMobilePanel ? 10 : 12} />
               )}
               <span>{aiLoading ? 'Loading...' : 'Explain with AI'}</span>
             </button>
             <button
               onClick={onClose}
-              className="bg-transparent border-none cursor-pointer p-1 ml-1"
+              className="bg-transparent border-none cursor-pointer p-1 ml-auto"
             >
               <X
                 size={14}
@@ -1913,7 +1919,8 @@ const TradeDetails = ({ trade, account, isDark, onClose, walletLabel }) => {
           return (
             <div
               className={cn(
-                'mt-3 p-4 rounded-[12px] border relative overflow-hidden',
+                'mt-2 rounded-[12px] border relative overflow-hidden',
+                isMobilePanel ? 'p-3' : 'p-4',
                 isDark ? 'border-[rgba(139,92,246,0.15)] shadow-[0_4px_20px_rgba(0,0,0,0.2)]' : 'border-[rgba(139,92,246,0.1)] shadow-[0_4px_20px_rgba(139,92,246,0.05)]'
               )}
               style={{ background: isDark ? 'linear-gradient(145deg, rgba(139, 92, 246, 0.08) 0%, rgba(139, 92, 246, 0.02) 100%)' : 'linear-gradient(145deg, rgba(139, 92, 246, 0.04) 0%, rgba(139, 92, 246, 0.01) 100%)' }}
@@ -1922,7 +1929,7 @@ const TradeDetails = ({ trade, account, isDark, onClose, walletLabel }) => {
                 size={40}
                 className={cn('absolute -top-2 -right-2 text-[#8b5cf6] rotate-[15deg]', isDark ? 'opacity-5' : 'opacity-[0.03]')}
               />
-              <div className="flex items-center gap-2 mb-3">
+              <div className="flex items-center gap-2 mb-2">
                 <div className="text-[9px] font-bold uppercase py-[2px] px-[6px] rounded bg-[rgba(139,92,246,0.2)] text-[#a78bfa] tracking-[0.05em]">
                   {aiExplanation.extracted?.type || 'Analysis'}
                 </div>
@@ -1932,22 +1939,22 @@ const TradeDetails = ({ trade, account, isDark, onClose, walletLabel }) => {
               </div>
 
               <div
-                className={cn('text-[13px] leading-[1.5]', isDark ? 'text-white/95' : 'text-[#1a1a1a]', keyPoints.length ? 'mb-4' : 'mb-0')}
+                className={cn('leading-[1.5]', isMobilePanel ? 'text-[12px]' : 'text-[13px]', isDark ? 'text-white/95' : 'text-[#1a1a1a]', keyPoints.length ? 'mb-3' : 'mb-0')}
               >
                 {summaryText}
               </div>
 
               {keyPoints.length > 0 && (
                 <div>
-                  <div className={cn('text-[10px] font-semibold uppercase tracking-[0.05em] mb-[10px] flex items-center gap-[6px]', isDark ? 'text-white/40' : 'text-black/50')}>
+                  <div className={cn('text-[10px] font-semibold uppercase tracking-[0.05em] mb-[8px] flex items-center gap-[6px]', isDark ? 'text-white/40' : 'text-black/50')}>
                     <div className={cn('w-3 h-px', isDark ? 'bg-white/20' : 'bg-black/10')} />
                     Key Points
                   </div>
-                  <ul className="m-0 p-0 list-none flex flex-col gap-2">
+                  <ul className="m-0 p-0 list-none flex flex-col gap-1.5">
                     {keyPoints.map((point, idx) => (
                       <li
                         key={idx}
-                        className={cn('flex items-start gap-[10px] text-[12px] leading-[1.4]', isDark ? 'text-white/80' : 'text-black/70')}
+                        className={cn('flex items-start gap-[8px] leading-[1.4]', isMobilePanel ? 'text-[11px]' : 'text-[12px]', isDark ? 'text-white/80' : 'text-black/70')}
                       >
                         <div className="w-1 h-1 rounded-full bg-[#8b5cf6] mt-[6px] shrink-0" />
                         <span>{typeof point === 'string' ? point : JSON.stringify(point)}</span>
@@ -1970,7 +1977,9 @@ const TradingHistory = ({
   pairs,
   onTransactionClick,
   isDark = false,
-  isMobile: isMobileProp = false
+  isMobile: isMobileProp = false,
+  candleTimeFilter,
+  onClearCandleFilter
 }) => {
   // Use internal mobile detection for reliability
   const [isMobileState, setIsMobileState] = useState(isMobileProp);
@@ -2265,7 +2274,7 @@ const TradingHistory = ({
           params.set('pairType', pairType);
         }
 
-        if (xrpAmount && pairType === 'xrp' && historyType === 'trades') {
+        if (xrpAmount && pairType !== 'token') {
           params.set('xrpAmount', xrpAmount);
         }
 
@@ -2273,8 +2282,11 @@ const TradingHistory = ({
           params.set('account', accountFilter);
         }
 
-        // Add time range params
-        if (timeRange) {
+        // Add time range params - candleTimeFilter takes priority
+        if (candleTimeFilter?.startTime && candleTimeFilter?.endTime) {
+          params.set('startTime', String(candleTimeFilter.startTime));
+          params.set('endTime', String(candleTimeFilter.endTime));
+        } else if (timeRange) {
           const now = Date.now();
           const ranges = {
             '1h': 60 * 60 * 1000,
@@ -2308,7 +2320,7 @@ const TradingHistory = ({
 
           setTrades(hists.slice(0, 50));
           setNextCursor(meta.nextCursor || null);
-          setTotalRecords(meta.totalRecords || 0);
+          setTotalRecords(meta.totalRecords || meta.total || 0);
 
           // Determine if we've reached the end of records in the current direction
           const recordsReturned = meta.recordsReturned || hists.length;
@@ -2328,7 +2340,7 @@ const TradingHistory = ({
         setLoading(false);
       }
     },
-    [tokenId, pairType, xrpAmount, historyType, timeRange, accountFilter, liquidityType]
+    [tokenId, pairType, xrpAmount, historyType, timeRange, accountFilter, liquidityType, candleTimeFilter]
   );
 
   // Reset pagination when filters change
@@ -2343,13 +2355,13 @@ const TradingHistory = ({
     setLoading(true);
     fetchTradingHistory(null, false, 'desc');
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tokenId, pairType, xrpAmount, historyType, timeRange, accountFilter, liquidityType]);
+  }, [tokenId, pairType, xrpAmount, historyType, timeRange, accountFilter, liquidityType, candleTimeFilter]);
 
   // WebSocket for real-time trade updates (only for page 1 with desc direction, no account filter)
   useEffect(() => {
     let isMounted = true;
 
-    if (!tokenId || currentPage !== 1 || direction !== 'desc' || accountFilter) {
+    if (!tokenId || currentPage !== 1 || direction !== 'desc' || accountFilter || candleTimeFilter) {
       // Close existing WS if conditions not met
       if (wsRef.current) {
         wsRef.current.close();
@@ -2377,12 +2389,13 @@ const TradingHistory = ({
     (async () => {
       try {
         const res = await fetch(`/api/ws/session?type=history&id=${tokenId}&${wsParams}`);
-        const { wsUrl } = await res.json();
+        const { wsUrl, apiKey } = await res.json();
         if (!isMounted) return;
         const ws = new WebSocket(wsUrl);
         wsRef.current = ws;
 
         ws.onopen = () => {
+      if (apiKey) ws.send(JSON.stringify({ type: 'auth', apiKey }));
       wsPingRef.current = setInterval(() => {
         if (ws.readyState === WebSocket.OPEN) {
           ws.send(JSON.stringify({ type: 'ping' }));
@@ -2411,14 +2424,15 @@ const TradingHistory = ({
             if (pairType === 'token' && hasXrp) return false;
           }
 
-          // Filter by minimum XRP amount
+          // Filter by minimum XRP amount (only applies to trades with an XRP side)
           if (xrpAmount) {
             const minXrp = parseFloat(xrpAmount);
             if (!isNaN(minXrp) && minXrp > 0) {
-              const tradeXrp =
-                t.paid?.currency === 'XRP'
-                  ? parseFloat(t.paid?.value || 0)
-                  : parseFloat(t.got?.value || 0);
+              const hasXrpSide = t.paid?.currency === 'XRP' || t.got?.currency === 'XRP';
+              if (!hasXrpSide) return false;
+              const tradeXrp = t.paid?.currency === 'XRP'
+                ? Math.abs(parseFloat(t.paid?.value || 0))
+                : Math.abs(parseFloat(t.got?.value || 0));
               if (tradeXrp < minXrp) return false;
             }
           }
@@ -2430,7 +2444,7 @@ const TradingHistory = ({
       if (msg.type === 'initial' && msg.trades) {
         // WebSocket doesn't properly filter by type/pairType, so only use initial data when no filters active
         // Let HTTP fetch handle initial data when filters are set
-        if (historyType !== 'liquidity' && !pairType) {
+        if (historyType !== 'liquidity' && !pairType && !xrpAmount) {
           const filteredTrades = applyClientFilters(msg.trades);
           setTrades(filteredTrades.slice(0, 50));
           setLoading(false);
@@ -2488,7 +2502,8 @@ const TradingHistory = ({
     historyType,
     liquidityType,
     xrpAmount,
-    limit
+    limit,
+    candleTimeFilter
   ]);
 
   // Cursor-based pagination handlers
@@ -3452,6 +3467,15 @@ const TradingHistory = ({
       return addr ? addressColorMap[addr] : null;
     };
 
+    // Sqrt + P95 bar scaling — relative to visible trades, same approach as OrderBook
+    const tradeBarWidth = (() => {
+      const values = trades.map(getXRPAmount).filter((v) => v > 0).sort((a, b) => a - b);
+      if (!values.length) return () => 15;
+      const p95 = values[Math.floor(values.length * 0.95)] || values[values.length - 1];
+      const refMax = Math.max(p95, 1);
+      return (value) => Math.min(100, Math.max(8, Math.sqrt(Math.min(value, refMax * 2) / refMax) * 100));
+    })();
+
     return trades.map((trade, index) => {
       const isLiquidity = trade.isLiquidity;
       const isBuy = trade.paid.currency === 'XRP';
@@ -3475,7 +3499,7 @@ const TradingHistory = ({
 
       // Mobile card layout - grid similar to desktop
       if (isMobile) {
-        const barWidth = Math.min(100, Math.max(15, Math.log10(xrpAmount + 1) * 25));
+        const barWidth = tradeBarWidth(xrpAmount);
         return (
           <Card
             key={trade._id || trade.id || index}
@@ -3510,7 +3534,10 @@ const TradingHistory = ({
                   className="h-[26px] !px-2"
                 >
                   <span className={cn('text-[11px] font-semibold font-mono', isDark ? 'text-white' : 'text-[#1a1a1a]')}>
-                    {formatTradeDisplay(amountData.value)}
+                    {formatTradeDisplay(amountData.value)}{' '}
+                    <span className="opacity-40 text-[9px] font-normal">
+                      {decodeCurrency(amountData.currency)}
+                    </span>
                   </span>
                 </BarCell>
 
@@ -3524,13 +3551,16 @@ const TradingHistory = ({
                   className="h-[26px] !px-2"
                 >
                   <span className={cn('text-[11px] font-semibold font-mono', isDark ? 'text-white' : 'text-[#1a1a1a]')}>
-                    {formatTradeDisplay(totalData.value)}
+                    {formatTradeDisplay(totalData.value)}{' '}
+                    <span className="opacity-40 text-[9px] font-normal">
+                      {decodeCurrency(totalData.currency)}
+                    </span>
                   </span>
                 </BarCell>
 
                 {/* Link */}
                 <IconButton
-                  onClick={() => handleTxClick(trade.hash, addressToShow)}
+                  onClick={() => setExpandedTradeId(expandedTradeId === (trade._id || trade.id) ? null : trade._id || trade.id)}
                   isDark={isDark}
                   className="p-1 bg-transparent"
                 >
@@ -3538,13 +3568,22 @@ const TradingHistory = ({
                 </IconButton>
               </div>
             </CardContent>
+            {expandedTradeId === (trade._id || trade.id) && (
+              <TradeDetails
+                trade={trade}
+                account={addressToShow}
+                isDark={isDark}
+                onClose={() => setExpandedTradeId(null)}
+                walletLabel={walletLabels[addressToShow]}
+              />
+            )}
           </Card>
         );
       }
 
       // Desktop grid layout - matching screenshot design with colored bars
-      // Both bars scale based on XRP value for consistent sizing
-      const barWidth = Math.min(100, Math.max(15, Math.log10(xrpAmount + 1) * 25));
+      // Both bars scale based on XRP value with sqrt + P95 scaling
+      const barWidth = tradeBarWidth(xrpAmount);
 
       return (
         <Card
@@ -3736,9 +3775,25 @@ const TradingHistory = ({
         </Tabs>
         {tabValue === 0 && !isMobile && (
           <div className="flex items-center gap-2 flex-wrap">
+            {candleTimeFilter && (
+              <button
+                onClick={() => onClearCandleFilter?.()}
+                className={cn(
+                  'flex items-center gap-[6px] py-[5px] px-2.5 text-[11px] font-semibold rounded-[6px] border transition-colors',
+                  'border-[#f59e0b] text-[#f59e0b]',
+                  isDark ? 'bg-[rgba(245,158,11,0.12)] hover:bg-[rgba(245,158,11,0.2)]' : 'bg-[rgba(245,158,11,0.08)] hover:bg-[rgba(245,158,11,0.15)]'
+                )}
+              >
+                <Filter size={12} />
+                <span>
+                  {new Date(candleTimeFilter.startTime).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'America/New_York' })}
+                </span>
+                <X size={12} className="opacity-60" />
+              </button>
+            )}
             <select
               value={pairType}
-              onChange={(e) => setPairType(e.target.value)}
+              onChange={(e) => { setPairType(e.target.value); if (e.target.value === 'token') setXrpAmount(''); }}
               className={cn(
                 'py-[5px] px-2 text-[11px] font-medium rounded-[6px] border cursor-pointer outline-none appearance-none',
                 isDark ? 'color-scheme-dark' : 'color-scheme-light',
@@ -3811,6 +3866,7 @@ const TradingHistory = ({
                 </option>
               </select>
             )}
+            {pairType !== 'token' && (
             <select
               value={xrpAmount}
               onChange={(e) => setXrpAmount(e.target.value)}
@@ -3844,6 +3900,7 @@ const TradingHistory = ({
                 10k+
               </option>
             </select>
+            )}
             <input
               type="text"
               value={accountFilter}
@@ -3860,6 +3917,23 @@ const TradingHistory = ({
           </div>
         )}
       </div>
+
+      {tabValue === 0 && isMobile && candleTimeFilter && (
+        <button
+          onClick={() => onClearCandleFilter?.()}
+          className={cn(
+            'flex items-center gap-[6px] py-[5px] px-2.5 text-[11px] font-semibold rounded-[6px] border transition-colors self-start',
+            'border-[#f59e0b] text-[#f59e0b]',
+            isDark ? 'bg-[rgba(245,158,11,0.12)] hover:bg-[rgba(245,158,11,0.2)]' : 'bg-[rgba(245,158,11,0.08)] hover:bg-[rgba(245,158,11,0.15)]'
+          )}
+        >
+          <Filter size={12} />
+          <span>
+            {new Date(candleTimeFilter.startTime).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'America/New_York' })}
+          </span>
+          <X size={12} className="opacity-60" />
+        </button>
+      )}
 
       {tabValue === 0 && (
         <>

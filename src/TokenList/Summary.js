@@ -31,9 +31,9 @@ import Link from 'next/link';
 const Container = ({ className, children, isDark, ...p }) => (
   <div
     className={cn(
-      'flex flex-col gap-2 rounded-xl relative mb-3 box-border overflow-hidden',
+      'summary-root flex flex-col gap-1.5 rounded-xl relative mb-2 box-border overflow-hidden',
       'max-[600px]:p-1.5 max-[600px]:gap-1.5 max-[600px]:mb-2',
-      'border-[1.5px] backdrop-blur-[12px] py-[10px] px-[14px]',
+      'border-[1.5px] backdrop-blur-[12px] py-[8px] px-[12px]',
       isDark ? 'border-white/[0.08] bg-[rgba(10,10,10,0.5)]' : 'border-black/[0.06] bg-white/50',
       className
     )}
@@ -41,10 +41,40 @@ const Container = ({ className, children, isDark, ...p }) => (
   >
     {/* ::before pseudo-element replacement */}
     <span
-      className="absolute pointer-events-none z-0 -top-[60px] -right-[60px] w-[180px] h-[180px] rounded-full bg-[radial-gradient(circle,rgba(19,125,254,0.2)_0%,transparent_70%)] blur-[40px]"
+      className="absolute pointer-events-none z-0 -top-[60px] -right-[60px] w-[180px] h-[180px] rounded-full bg-[#137DFE]/20 blur-[40px]"
     />
     {children}
-    <style>{`.summary-container > * { position: relative; z-index: 1; }`}</style>
+    <style>{`
+      .summary-container > * { position: relative; z-index: 1; }
+      @media (max-width: 1024px) {
+        .summary-root { padding: 5px 8px; gap: 3px; margin-bottom: 5px; }
+        .summary-metric { height: 56px; padding: 5px 7px; gap: 2px; overflow: hidden; }
+        .summary-title { font-size: 0.55rem; }
+        .summary-value { font-size: 0.82rem; }
+        .summary-pct { font-size: 0.5rem; padding: 1px 3px; }
+        .summary-mcap-row { gap: 8px !important; }
+        .summary-mcap-row .summary-value { font-size: 0.78rem !important; }
+        .summary-mcap-row .summary-pct { font-size: 0.45rem; }
+        .summary-vol-badge { display: none; }
+        .summary-gauge { display: none !important; }
+        .summary-market-row { gap: 10px !important; }
+      }
+      @media (max-width: 820px) {
+        .summary-metric { height: 62px; padding: 6px 8px; gap: 3px; overflow: hidden; }
+        .summary-title { font-size: 0.58rem; }
+        .summary-value { font-size: 0.9rem; }
+        .summary-pct { font-size: 0.52rem; }
+        .summary-vol-badge { display: inline-flex; font-size: 0.5rem; }
+        .summary-gauge { display: none !important; }
+        .summary-mcap-row { gap: 12px !important; }
+        .summary-mcap-row .summary-value { font-size: 0.85rem !important; }
+        .summary-market-row { gap: 16px !important; }
+      }
+      @media (min-width: 601px) and (max-width: 820px) {
+        .summary-market-row span.font-semibold { font-size: 0.9rem !important; }
+        .summary-market-row div > div > span { font-size: 0.48rem !important; }
+      }
+    `}</style>
   </div>
 );
 
@@ -73,18 +103,36 @@ const Grid = ({ className, children, ...p }) => (
         grid-template-columns: 1.1fr 1fr 0.8fr 0.9fr 1fr 1.6fr;
         gap: 8px;
       }
-      @media (max-width: 1400px) { .summary-grid { grid-template-columns: repeat(3, 1fr); } }
-      @media (max-width: 1024px) { .summary-grid { grid-template-columns: repeat(3, 1fr); } }
-      @media (max-width: 768px) { .summary-grid { grid-template-columns: repeat(2, 1fr); } }
+      @media (max-width: 1400px) { .summary-grid { grid-template-columns: 1.1fr 1fr 0.8fr 0.9fr 1fr 1.6fr; gap: 6px; } }
+      @media (max-width: 1200px) { .summary-grid { grid-template-columns: repeat(3, 1fr); } }
+      @media (max-width: 1024px) { .summary-grid { grid-template-columns: 1fr 1fr 0.7fr 0.8fr 0.9fr 1.4fr; gap: 4px; } }
+      @media (max-width: 820px) { .summary-grid { grid-template-columns: repeat(3, 1fr); gap: 4px; } }
+      @media (max-width: 700px) { .summary-grid { grid-template-columns: repeat(2, 1fr); gap: 3px; } }
       @media (max-width: 600px) {
         .summary-grid {
-          display: flex;
-          overflow-x: auto;
-          gap: 5px;
-          -webkit-overflow-scrolling: touch;
-          scrollbar-width: none;
+          display: grid;
+          grid-template-columns: repeat(5, 1fr);
+          gap: 3px;
+          align-items: stretch;
         }
-        .summary-grid::-webkit-scrollbar { display: none; }
+        .summary-metric {
+          height: auto !important;
+          min-height: 0 !important;
+          padding: 6px 6px !important;
+          gap: 2px !important;
+          justify-content: center !important;
+        }
+        .summary-title { font-size: 0.5rem !important; margin-bottom: 0 !important; }
+        .summary-value { font-size: 0.7rem !important; }
+        .summary-pct { font-size: 0.48rem !important; padding: 0 2px !important; }
+        .summary-vol-badge { display: none !important; }
+        .summary-gauge { display: none !important; }
+        .summary-mcap-row { flex-direction: column !important; gap: 0 !important; }
+        .summary-mcap-row > div { flex-direction: row !important; align-items: baseline !important; gap: 2px !important; }
+        .summary-market-row { gap: 4px !important; flex-direction: row !important; align-items: center !important; }
+        .summary-market-row > div { gap: 0 !important; }
+        .summary-market-row span.font-semibold { font-size: 0.7rem !important; line-height: 1 !important; }
+        .summary-market-row div > div > span { font-size: 0.42rem !important; line-height: 1 !important; }
       }
     `}</style>
     <div className={cn('summary-grid relative z-[1]', className)} {...p}>
@@ -96,9 +144,10 @@ const Grid = ({ className, children, ...p }) => (
 const MetricBox = ({ className, children, isDark, ...p }) => (
   <div
     className={cn(
-      'flex flex-col justify-center rounded-xl transition-all duration-200',
+      'summary-metric flex flex-col justify-center rounded-xl transition-[background-color,border-color,opacity,transform] duration-200',
       'max-[600px]:rounded-[10px]',
-      'py-[8px] px-[12px] h-[78px] gap-[6px] backdrop-blur-[4px] border-[1.5px]',
+      'py-[6px] px-[10px] h-[68px] gap-[4px] backdrop-blur-[4px] border-[1.5px]',
+      'max-[600px]:h-auto max-[600px]:py-[6px] max-[600px]:px-[6px] max-[600px]:gap-[2px]',
       isDark ? 'bg-white/[0.02] border-white/[0.08]' : 'bg-black/[0.01] border-black/[0.06]',
       className
     )}
@@ -122,7 +171,7 @@ const MetricBox = ({ className, children, isDark, ...p }) => (
 const MetricTitle = ({ className, children, isDark, ...p }) => (
   <span
     className={cn(
-      'text-[0.68rem] max-[600px]:text-[0.52rem] font-normal tracking-[0.02em]',
+      'summary-title text-[0.68rem] max-[600px]:text-[0.52rem] font-normal tracking-[0.02em]',
       isDark ? 'text-white/50' : 'text-[rgba(33,43,54,0.5)]',
       className
     )}
@@ -135,7 +184,7 @@ const MetricTitle = ({ className, children, isDark, ...p }) => (
 const MetricValue = ({ className, children, isDark, ...p }) => (
   <span
     className={cn(
-      'text-xl max-[600px]:text-[0.78rem] font-semibold whitespace-nowrap leading-[1] tracking-[-0.02em]',
+      'summary-value text-lg max-[600px]:text-[0.78rem] font-semibold whitespace-nowrap leading-[1] tracking-[-0.02em]',
       isDark ? 'text-white' : 'text-[#212B36]',
       className
     )}
@@ -151,7 +200,7 @@ const MetricValue = ({ className, children, isDark, ...p }) => (
 const PercentageChange = ({ className, children, isPositive, ...p }) => (
   <span
     className={cn(
-      'text-[0.68rem] max-[600px]:text-[0.5rem] inline-flex items-center gap-0.5 font-medium rounded',
+      'summary-pct text-[0.68rem] max-[600px]:text-[0.5rem] inline-flex items-center gap-0.5 font-medium rounded',
       'tracking-[-0.01em] py-px px-1',
       isPositive ? 'text-[#10b981] bg-[rgba(16,185,129,0.1)]' : 'text-[#ef4444] bg-[rgba(239,68,68,0.1)]',
       className
@@ -228,7 +277,7 @@ const Skeleton = ({ className, children, height, width, ...p }) => (
     <div
       className={cn('rounded-lg', className)}
       style={{
-        background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
+        background: '#e8e8e8',
         backgroundSize: '200% 100%',
         animation: 'summary-loading 1.5s infinite',
         height: height || '20px',
@@ -263,20 +312,22 @@ const ChartMetricBox = ({ className, children, isDark, ...p }) => (
       .chart-metric-box {
         grid-column: span 1;
         overflow: visible;
-        height: 72px;
+        height: 64px;
         padding: 6px 10px;
         justify-content: flex-start;
         gap: 0;
       }
-      @media (max-width: 1400px) { .chart-metric-box { grid-column: span 3; } }
-      @media (max-width: 1024px) { .chart-metric-box { grid-column: span 3; } }
-      @media (max-width: 768px) { .chart-metric-box { grid-column: span 2; } }
+      @media (max-width: 1400px) { .chart-metric-box { height: 60px; } }
+      @media (max-width: 1200px) { .chart-metric-box { grid-column: span 3; } }
+      @media (max-width: 1024px) { .chart-metric-box { grid-column: span 1; height: 56px; padding: 5px 7px; } }
+      @media (max-width: 820px) { .chart-metric-box { grid-column: span 3; height: 60px; } }
+      @media (max-width: 700px) { .chart-metric-box { grid-column: span 2; } }
       @media (max-width: 600px) { .chart-metric-box { display: none; } }
     `}</style>
     <MetricBox
       className={cn('chart-metric-box', className)}
       isDark={isDark}
-      style={{ height: '72px', padding: '6px 10px', justifyContent: 'flex-start', gap: 0 }}
+      style={{ justifyContent: 'flex-start' }}
       {...p}
     >
       {children}
@@ -432,17 +483,13 @@ const TokenChart = ({ data, theme, activeFiatCurrency, darkMode }) => {
         const segmentColor = isHighPerformer ? '#10b981' : '#3b82f6';
 
         // Area fill
-        const gradient = ctx.createLinearGradient(0, points[i].y, 0, height);
-        gradient.addColorStop(0, segmentColor + '40');
-        gradient.addColorStop(1, segmentColor + '00');
-
         ctx.beginPath();
         ctx.moveTo(points[i].x, height);
         ctx.lineTo(points[i].x, points[i].y);
         ctx.lineTo(points[i + 1].x, points[i + 1].y);
         ctx.lineTo(points[i + 1].x, height);
         ctx.closePath();
-        ctx.fillStyle = gradient;
+        ctx.fillStyle = segmentColor + '20';
         ctx.fill();
 
         // Line
@@ -597,7 +644,7 @@ const TokenChart = ({ data, theme, activeFiatCurrency, darkMode }) => {
                     >
                       <img
                         src={`https://s1.xrpl.to/token/${token.md5}`}
-                        alt={token.name}
+                        alt=""
                         className="w-full h-full object-cover"
                         onError={(e) => {
                           e.target.parentElement.style.display = 'none';
@@ -688,7 +735,14 @@ export default function Summary() {
   const { darkMode } = useContext(ThemeContext);
   const { activeFiatCurrency } = useContext(AppContext);
   const [isLoading, setIsLoading] = useState(false);
-  const isMobile = typeof window !== 'undefined' && window.innerWidth < 600;
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 600);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
 
   const fiatRate =
     metrics[activeFiatCurrency] || (activeFiatCurrency === 'CNH' ? metrics.CNY : null) || 1;
@@ -822,23 +876,7 @@ export default function Summary() {
           width: 1.5
         },
         areaStyle: {
-          color: {
-            type: 'linear',
-            x: 0,
-            y: 0,
-            x2: 0,
-            y2: 1,
-            colorStops: [
-              {
-                offset: 0,
-                color: 'rgba(59, 130, 246, 0.3)'
-              },
-              {
-                offset: 1,
-                color: 'rgba(59, 130, 246, 0)'
-              }
-            ]
-          }
+          color: 'rgba(59, 130, 246, 0.15)'
         },
         showSymbol: false
       }
@@ -915,16 +953,11 @@ export default function Summary() {
         ) : (
           <>
             <Grid>
-              <MetricBox isDark={darkMode} style={isMobile ? { minWidth: '90px' } : {}}>
-                <MetricTitle isDark={darkMode}>MCap / TVL</MetricTitle>
-                <div
-                  className={cn('flex items-center w-full', isMobile ? 'gap-2' : 'gap-5')}
-                >
-                  <div className="flex flex-col gap-[3px]">
-                    <MetricValue
-                      isDark={darkMode}
-                      style={{ fontSize: isMobile ? '0.72rem' : '1.15rem' }}
-                    >
+              <MetricBox isDark={darkMode}>
+                <MetricTitle isDark={darkMode}>{isMobile ? 'MCap' : 'MCap / TVL'}</MetricTitle>
+                {isMobile ? (
+                  <>
+                    <MetricValue isDark={darkMode}>
                       {currencySymbols[activeFiatCurrency]}
                       {formatNumberWithDecimals(
                         new Decimal(metrics.global?.gMarketcap || metrics.market_cap_usd || 0)
@@ -932,56 +965,74 @@ export default function Summary() {
                           .toNumber()
                       )}
                     </MetricValue>
-                    <PercentageChange
-                      isPositive={(metrics.global?.gMarketcapPro || 0) >= 0}
-                      style={{ fontSize: '0.58rem' }}
-                    >
-                      {(metrics.global?.gMarketcapPro || 0) >= 0 ? '↑' : '↓'}
-                      {Math.abs(metrics.global?.gMarketcapPro || 0).toFixed(1)}%
-                    </PercentageChange>
-                  </div>
-                  <div className="flex flex-col gap-[3px]">
-                    <MetricValue
-                      isDark={darkMode}
-                      style={{ fontSize: isMobile ? '0.72rem' : '1.15rem', opacity: 0.6 }}
-                    >
-                      {currencySymbols[activeFiatCurrency]}
+                    <span className={cn('text-[0.5rem] leading-[1] whitespace-nowrap', darkMode ? 'text-white/50' : 'text-black/50')}>
+                      TVL {currencySymbols[activeFiatCurrency]}
                       {formatNumberWithDecimals(
-                        new Decimal(
-                          metrics.global?.gTVL ||
-                            metrics.global?.totalTVL ||
-                            metrics.H24?.totalTVL ||
-                            0
-                        )
+                        new Decimal(metrics.global?.gTVL || metrics.global?.totalTVL || metrics.H24?.totalTVL || 0)
                           .div(fiatRate)
                           .toNumber()
                       )}
-                    </MetricValue>
-                    <PercentageChange
-                      isPositive={
-                        (metrics.global?.gTVLPro ||
+                    </span>
+                  </>
+                ) : (
+                  <div className="summary-mcap-row flex w-full items-center gap-5">
+                    <div className="flex flex-col gap-[3px]">
+                      <MetricValue isDark={darkMode} style={{ fontSize: '1.15rem' }}>
+                        {currencySymbols[activeFiatCurrency]}
+                        {formatNumberWithDecimals(
+                          new Decimal(metrics.global?.gMarketcap || metrics.market_cap_usd || 0)
+                            .div(fiatRate)
+                            .toNumber()
+                        )}
+                      </MetricValue>
+                      <PercentageChange
+                        isPositive={(metrics.global?.gMarketcapPro || 0) >= 0}
+                        style={{ fontSize: '0.58rem' }}
+                      >
+                        {(metrics.global?.gMarketcapPro || 0) >= 0 ? '↑' : '↓'}
+                        {Math.abs(metrics.global?.gMarketcapPro || 0).toFixed(1)}%
+                      </PercentageChange>
+                    </div>
+                    <div className="flex flex-col gap-[3px]">
+                      <MetricValue isDark={darkMode} style={{ fontSize: '1.15rem', opacity: 0.6 }}>
+                        {currencySymbols[activeFiatCurrency]}
+                        {formatNumberWithDecimals(
+                          new Decimal(
+                            metrics.global?.gTVL ||
+                              metrics.global?.totalTVL ||
+                              metrics.H24?.totalTVL ||
+                              0
+                          )
+                            .div(fiatRate)
+                            .toNumber()
+                        )}
+                      </MetricValue>
+                      <PercentageChange
+                        isPositive={
+                          (metrics.global?.gTVLPro ||
+                            metrics.global?.totalTVLPro ||
+                            metrics.H24?.totalTVLPro ||
+                            0) >= 0
+                        }
+                        style={{ fontSize: '0.58rem' }}
+                      >
+                        {(metrics.global?.gTVLPro ||
                           metrics.global?.totalTVLPro ||
                           metrics.H24?.totalTVLPro ||
                           0) >= 0
-                      }
-                      style={{ fontSize: '0.58rem' }}
-                    >
-                      {(metrics.global?.gTVLPro ||
-                        metrics.global?.totalTVLPro ||
-                        metrics.H24?.totalTVLPro ||
-                        0) >= 0
-                        ? '↑'
-                        : '↓'}
-                      {Math.abs(
-                        metrics.global?.gTVLPro ||
-                          metrics.global?.totalTVLPro ||
-                          metrics.H24?.totalTVLPro ||
-                          0
-                      ).toFixed(1)}
-                      %
-                    </PercentageChange>
+                          ? '↑'
+                          : '↓'}
+                        {Math.abs(
+                          metrics.global?.gTVLPro ||
+                            metrics.global?.totalTVLPro ||
+                            metrics.H24?.totalTVLPro ||
+                            0
+                        ).toFixed(1)}
+                        %
+                      </PercentageChange>
+                    </div>
                   </div>
-                </div>
+                )}
               </MetricBox>
 
               <MetricBox isDark={darkMode}>
@@ -1008,10 +1059,10 @@ export default function Summary() {
                       </PercentageChange>
                       {!isMobile && (
                         <>
-                          <span className="text-[0.58rem] font-medium py-px px-1 rounded bg-[rgba(16,185,129,0.1)] text-[#10b981]">
+                          <span className="summary-vol-badge text-[0.58rem] font-medium py-px px-1 rounded bg-[rgba(16,185,129,0.1)] text-[#10b981]">
                             {stablePercent.toFixed(0)}% Stable
                           </span>
-                          <span className="text-[0.58rem] font-medium py-px px-1 rounded bg-[rgba(245,158,11,0.1)] text-[#f59e0b]">
+                          <span className="summary-vol-badge text-[0.58rem] font-medium py-px px-1 rounded bg-[rgba(245,158,11,0.1)] text-[#f59e0b]">
                             {memePercent.toFixed(0)}% Meme
                           </span>
                         </>
@@ -1045,32 +1096,25 @@ export default function Summary() {
                   const sellVol = metrics.H24?.globalSell24hxrp || 0;
                   const total = buyVol + sellVol;
                   const buyPercent = total > 0 ? (buyVol / total) * 100 : 50;
-                  return (
-                    <div className={cn('flex items-center', isMobile ? 'gap-[3px]' : 'gap-1')}>
-                      <span
-                        className={cn(
-                          'font-medium rounded bg-[rgba(16,185,129,0.1)] text-[#10b981]',
-                          isMobile ? 'text-[0.48rem] py-px px-[2px]' : 'text-[0.58rem] py-px px-1'
-                        )}
-                      >
+                  return !isMobile ? (
+                    <div className="flex items-center gap-1">
+                      <span className="font-medium rounded bg-[rgba(16,185,129,0.1)] text-[#10b981] text-[0.58rem] py-px px-1">
                         {buyPercent.toFixed(0)}% Buy
                       </span>
-                      <span
-                        className={cn(
-                          'font-medium rounded bg-[rgba(239,68,68,0.1)] text-[#ef4444]',
-                          isMobile ? 'text-[0.48rem] py-px px-[2px]' : 'text-[0.58rem] py-px px-1'
-                        )}
-                      >
+                      <span className="font-medium rounded bg-[rgba(239,68,68,0.1)] text-[#ef4444] text-[0.58rem] py-px px-1">
                         {(100 - buyPercent).toFixed(0)}% Sell
                       </span>
                     </div>
-                  );
+                    ) : (
+                    <PercentageChange isPositive={buyPercent >= 50}>
+                      {buyPercent.toFixed(0)}% B / {(100 - buyPercent).toFixed(0)}% S
+                    </PercentageChange>
+                    );
                 })()}
               </MetricBox>
 
               <MetricBox
                 isDark={darkMode}
-                style={isMobile ? { minWidth: '100px' } : {}}
               >
                 <MetricTitle isDark={darkMode}>Market</MetricTitle>
                 {(() => {
@@ -1085,93 +1129,71 @@ export default function Summary() {
                   const sentColor = getSentimentColor(sentiment);
                   const rsiColor = getRsiColor(rsi);
 
+                  if (isMobile) {
+                    return (
+                      <>
+                        <MetricValue isDark={darkMode}>
+                          <span style={{ color: sentColor }}>{sentiment.toFixed(0)}</span>
+                          <span className={cn('text-[0.35rem] ml-[2px] font-normal', darkMode ? 'text-white/50' : 'text-black/50')}>Sentiment</span>
+                        </MetricValue>
+                        <span className={cn('text-[0.5rem] leading-[1] whitespace-nowrap', darkMode ? 'text-white/50' : 'text-black/50')}>
+                          RSI <span style={{ color: rsiColor, fontWeight: 600 }}>{rsi.toFixed(0)}</span>
+                        </span>
+                      </>
+                    );
+                  }
+
                   return (
                     <div
-                      className={cn('flex items-center w-full justify-start', isMobile ? 'gap-[10px]' : 'gap-5')}
+                      className="summary-market-row flex items-center w-full justify-start gap-5"
                     >
                       {/* Sentiment gauge */}
-                      <div
-                        className={cn('flex flex-col items-center', isMobile ? 'gap-[2px]' : 'gap-[3px]')}
-                      >
-                        <div className={cn('relative', isMobile ? 'w-8 h-[18px]' : 'w-10 h-[22px]')}>
-                          {/* Semi-circle background */}
+                      <div className="flex flex-col items-center gap-[3px]">
+                        <div className="summary-gauge relative w-10 h-[22px]">
+                          <div className="absolute opacity-20 bg-[#fbbf24] w-10 h-5 rounded-t-[20px]" />
                           <div
-                            className={cn(
-                              'absolute opacity-20 bg-[conic-gradient(from_180deg,#ef4444_0deg,#fbbf24_90deg,#10b981_180deg)]',
-                              isMobile ? 'w-8 h-4 rounded-t-[16px]' : 'w-10 h-5 rounded-t-[20px]'
-                            )}
-                          />
-                          {/* Needle */}
-                          <div
-                            className={cn('absolute bottom-0 left-1/2 w-[2px] rounded-[1px] origin-bottom', isMobile ? 'h-3' : 'h-4')}
+                            className="absolute bottom-0 left-1/2 w-[2px] rounded-[1px] origin-bottom h-4"
                             style={{
                               background: sentColor,
                               transform: `translateX(-50%) rotate(${(sentiment - 50) * 1.8}deg)`
                             }}
                           />
-                          {/* Center dot */}
                           <div
-                            className={cn('absolute -bottom-[2px] left-1/2 -translate-x-1/2 rounded-full', isMobile ? 'w-[5px] h-[5px]' : 'w-[6px] h-[6px]')}
+                            className="absolute -bottom-[2px] left-1/2 -translate-x-1/2 rounded-full w-[6px] h-[6px]"
                             style={{ background: sentColor }}
                           />
                         </div>
-                        <div className={cn('flex items-baseline', isMobile ? 'gap-[2px]' : 'gap-[3px]')}>
-                          <span
-                            className={cn('font-semibold leading-[1]', isMobile ? 'text-[0.85rem]' : 'text-[1.15rem]')}
-                            style={{ color: sentColor }}
-                          >
+                        <div className="flex items-baseline gap-[3px]">
+                          <span className="font-semibold leading-[1] text-[1.15rem]" style={{ color: sentColor }}>
                             {sentiment.toFixed(0)}
                           </span>
-                          <span
-                            className={cn(
-                              isMobile ? 'text-[0.45rem]' : 'text-[0.52rem]',
-                              darkMode ? 'text-white/40' : 'text-black/40'
-                            )}
-                          >
+                          <span className={cn('text-[0.52rem]', darkMode ? 'text-white/60' : 'text-black/60')}>
                             Sentiment
                           </span>
                         </div>
                       </div>
 
                       {/* RSI gauge */}
-                      <div
-                        className={cn('flex flex-col items-center', isMobile ? 'gap-[2px]' : 'gap-[3px]')}
-                      >
-                        <div className={cn('relative', isMobile ? 'w-8 h-[18px]' : 'w-10 h-[22px]')}>
-                          {/* Semi-circle background */}
+                      <div className="flex flex-col items-center gap-[3px]">
+                        <div className="summary-gauge relative w-10 h-[22px]">
+                          <div className="absolute opacity-20 bg-[#10b981] w-10 h-5 rounded-t-[20px]" />
                           <div
-                            className={cn(
-                              'absolute opacity-20 bg-[conic-gradient(from_180deg,#8b5cf6_0deg,#10b981_90deg,#ef4444_180deg)]',
-                              isMobile ? 'w-8 h-4 rounded-t-[16px]' : 'w-10 h-5 rounded-t-[20px]'
-                            )}
-                          />
-                          {/* Needle */}
-                          <div
-                            className={cn('absolute bottom-0 left-1/2 w-[2px] rounded-[1px] origin-bottom', isMobile ? 'h-3' : 'h-4')}
+                            className="absolute bottom-0 left-1/2 w-[2px] rounded-[1px] origin-bottom h-4"
                             style={{
                               background: rsiColor,
                               transform: `translateX(-50%) rotate(${(rsi - 50) * 1.8}deg)`
                             }}
                           />
-                          {/* Center dot */}
                           <div
-                            className={cn('absolute -bottom-[2px] left-1/2 -translate-x-1/2 rounded-full', isMobile ? 'w-[5px] h-[5px]' : 'w-[6px] h-[6px]')}
+                            className="absolute -bottom-[2px] left-1/2 -translate-x-1/2 rounded-full w-[6px] h-[6px]"
                             style={{ background: rsiColor }}
                           />
                         </div>
-                        <div className={cn('flex items-baseline', isMobile ? 'gap-[2px]' : 'gap-[3px]')}>
-                          <span
-                            className={cn('font-semibold leading-[1]', isMobile ? 'text-[0.85rem]' : 'text-[1.15rem]')}
-                            style={{ color: rsiColor }}
-                          >
+                        <div className="flex items-baseline gap-[3px]">
+                          <span className="font-semibold leading-[1] text-[1.15rem]" style={{ color: rsiColor }}>
                             {rsi.toFixed(0)}
                           </span>
-                          <span
-                            className={cn(
-                              isMobile ? 'text-[0.45rem]' : 'text-[0.52rem]',
-                              darkMode ? 'text-white/40' : 'text-black/40'
-                            )}
-                          >
+                          <span className={cn('text-[0.52rem]', darkMode ? 'text-white/60' : 'text-black/60')}>
                             RSI
                           </span>
                         </div>
@@ -1198,7 +1220,7 @@ export default function Summary() {
                               {today}
                             </span>
                             <span
-                              className={cn('text-[0.52rem]', darkMode ? 'text-white/40' : 'text-black/40')}
+                              className={cn('text-[0.52rem]', darkMode ? 'text-white/60' : 'text-black/60')}
                             >
                               today
                             </span>
@@ -1212,6 +1234,7 @@ export default function Summary() {
                         {latestToken && (
                           <Link
                             href={`/token/${latestToken.md5}`}
+                            prefetch={false}
                             className={cn(
                               'text-[0.58rem] no-underline flex items-center gap-[6px] pl-2 border-l',
                               darkMode ? 'text-white/50 border-white/10' : 'text-black/50 border-black/10'
@@ -1256,7 +1279,7 @@ export default function Summary() {
                             {today}
                           </span>
                           <span
-                            className={cn('text-[0.48rem]', darkMode ? 'text-white/40' : 'text-black/40')}
+                            className={cn('text-[0.48rem]', darkMode ? 'text-white/50' : 'text-black/50')}
                           >
                             today
                           </span>
@@ -1268,6 +1291,7 @@ export default function Summary() {
                       {latestToken && (
                         <Link
                           href={`/token/${latestToken.md5}`}
+                          prefetch={false}
                           className={cn(
                             'text-[0.48rem] no-underline flex items-center gap-1 pl-[6px] border-l',
                             darkMode ? 'text-white/50 border-white/10' : 'text-black/50 border-black/10'

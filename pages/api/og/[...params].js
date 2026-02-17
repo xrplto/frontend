@@ -90,16 +90,20 @@ function getTokenConfig(token) {
 function getCollectionConfig(data) {
   return {
     title: data.name || 'NFT Collection',
-    subtitle: `${data.nfts || ''} NFTs on XRPL`,
-    image: data.image
+    user: data.nfts ? `${data.nfts} NFTs on XRPL` : 'NFT Collection on XRPL',
+    description: '',
+    image: data.image,
+    isToken: true
   };
 }
 
 function getNftConfig(data) {
   return {
     title: data.name || 'XRPL NFT',
-    subtitle: data.collection || 'NFT on XRP Ledger',
-    image: data.image
+    user: data.collection || 'NFT on XRP Ledger',
+    description: '',
+    image: data.image,
+    isToken: true
   };
 }
 

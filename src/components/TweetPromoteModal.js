@@ -225,7 +225,7 @@ export default function TweetPromoteModal({ token, tweetCount = 0, onCountChange
 
   const modal = isOpen && mounted && createPortal(
     <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center p-4 animate-in fade-in duration-300"
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-4 animate-in fade-in duration-300 max-sm:h-dvh"
       onClick={() => setIsOpen(false)}
     >
       <div className="absolute inset-0 bg-black/70 backdrop-blur-md" />

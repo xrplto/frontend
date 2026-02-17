@@ -524,9 +524,21 @@ export async function getServerSideProps({ query }) {
     const pagination = tradersRes.data.pagination || {};
     const traderBalances = marketRes.data.traderBalances || {};
 
-    return { props: { traders, pagination, traderBalances } };
+    return { props: { traders, pagination, traderBalances, ogp: {
+      canonical: 'https://xrpl.to/nft-traders',
+      title: 'NFT Traders | Top XRPL NFT Traders',
+      url: 'https://xrpl.to/nft-traders',
+      imgUrl: 'https://xrpl.to/og/nft-traders.webp',
+      desc: 'Discover the top NFT traders on the XRP Ledger. Track profits, volume, and trading activity.'
+    } } };
   } catch (error) {
     console.error('Failed to fetch NFT traders:', error.message);
-    return { props: { traders: [], pagination: {}, traderBalances: {} } };
+    return { props: { traders: [], pagination: {}, traderBalances: {}, ogp: {
+      canonical: 'https://xrpl.to/nft-traders',
+      title: 'NFT Traders | Top XRPL NFT Traders',
+      url: 'https://xrpl.to/nft-traders',
+      imgUrl: 'https://xrpl.to/og/nft-traders.webp',
+      desc: 'Discover the top NFT traders on the XRP Ledger. Track profits, volume, and trading activity.'
+    } } };
   }
 }

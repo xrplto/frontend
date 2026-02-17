@@ -200,7 +200,7 @@ export default function AccountTransactions({ creatorAccount, collectionSlug }) 
                   isDark ? 'border-white/[0.08]' : 'border-gray-200'
                 )}
               >
-                <table className="w-full min-w-[700px]">
+                <table className="w-full min-w-[500px] sm:min-w-[700px]">
                   <thead
                     className={cn(
                       'sticky top-0 z-10',

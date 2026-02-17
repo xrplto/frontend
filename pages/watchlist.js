@@ -593,7 +593,7 @@ export async function getStaticProps() {
     ogp.canonical = 'https://xrpl.to/watchlist';
     ogp.title = 'Create a Watchlist: Track Your Favorite XRPL Tokens and NFTs';
     ogp.url = 'https://xrpl.to/watchlist';
-    ogp.imgUrl = 'https://xrpl.to/static/ogp.webp';
+    ogp.imgUrl = 'https://xrpl.to/og/watchlist.webp';
     ogp.desc =
       'Create a custom XRPL watchlist: Track your favorite tokens and NFT collections, monitor the latest prices, and stay updated on popular XRPL assets.';
 

@@ -562,7 +562,7 @@ const DrawerBackdrop = ({ className, children, ...p }) => (
 const DrawerPaper = ({ isDark, className, children, ...p }) => (
   <div
     className={cn(
-      'fixed bottom-0 left-0 right-0 max-h-[70vh] backdrop-blur-[24px] rounded-t-xl border-t overflow-hidden flex flex-col z-[1301]',
+      'fixed bottom-0 left-0 right-0 max-h-[70dvh] pb-[env(safe-area-inset-bottom)] backdrop-blur-[24px] rounded-t-xl border-t overflow-hidden flex flex-col z-[1301]',
       isDark ? 'bg-black/85 border-blue-500/20 shadow-[0_-25px_50px_-12px_rgba(59,130,246,0.1)]' : 'bg-white/[0.98] border-blue-200 shadow-[0_-25px_50px_-12px_rgba(191,219,254,0.5)]',
       className
     )}

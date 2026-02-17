@@ -11,7 +11,6 @@ import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import Collection from 'src/NFTCollection/CollectionView';
 import ScrollToTop from 'src/components/ScrollToTop';
-import { ApiButton } from 'src/components/ApiEndpointsModal';
 
 const OverviewWrapper = ({ className, ...props }) => (
   <div className={cn('min-h-screen', className)} {...props} />
@@ -34,9 +33,6 @@ export default function Overview({ collection }) {
   return (
     <OverviewWrapper>
       <Header />
-      <div className="absolute top-20 right-4 z-10">
-        <ApiButton />
-      </div>
       <h1
         style={{
           position: 'absolute',
@@ -128,13 +124,17 @@ export async function getServerSideProps(ctx) {
         : rawDesc || '';
 
     // Enhanced OGP metadata
+    const collectionImage = logoImage
+      ? `https://s1.xrpl.to/nft-collection/${logoImage}`
+      : null;
     const ogp = {
       canonical: `https://xrpl.to/nfts/${slug}`,
       title: `${name} | XRPL NFT Collection`,
       url: `https://xrpl.to/nfts/${slug}`,
-      imgUrl: logoImage
-        ? `https://s1.xrpl.to/nft-collection/${logoImage}`
-        : '/logo/xrpl-to-logo-black.svg',
+      imgUrl: `https://xrpl.to/api/og/collection/${encodeURIComponent(slug)}?name=${encodeURIComponent(name)}${collectionImage ? `&image=${encodeURIComponent(collectionImage)}` : ''}`,
+      imgType: 'image/png',
+      imgWidth: 1200,
+      imgHeight: 630,
       desc:
         description ||
         `Explore ${name} on XRPL's largest NFT marketplace. Buy, sell, and trade unique digital assets.`,

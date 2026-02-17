@@ -1686,9 +1686,21 @@ export async function getServerSideProps() {
       lastUpdated: data.lastUpdated || null
     };
 
-    return { props: { stats } };
+    return { props: { stats, ogp: {
+      canonical: 'https://xrpl.to/token-market',
+      title: 'Token Market | XRPL Token Market Analytics',
+      url: 'https://xrpl.to/token-market',
+      imgUrl: 'https://xrpl.to/og/token-market.webp',
+      desc: 'XRPL token market analytics with volume, trades, and market cap data.'
+    } } };
   } catch (error) {
     console.error('Failed to fetch token market stats:', error.message);
-    return { props: { stats: null } };
+    return { props: { stats: null, ogp: {
+      canonical: 'https://xrpl.to/token-market',
+      title: 'Token Market | XRPL Token Market Analytics',
+      url: 'https://xrpl.to/token-market',
+      imgUrl: 'https://xrpl.to/og/token-market.webp',
+      desc: 'XRPL token market analytics with volume, trades, and market cap data.'
+    } } };
   }
 }

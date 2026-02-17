@@ -28,3 +28,17 @@ export default function SignupPage() {
 
   return null;
 }
+
+export async function getStaticProps() {
+  return {
+    props: {
+      ogp: {
+        canonical: 'https://xrpl.to/signup',
+        title: 'Sign Up | Create Your XRPL.to Account',
+        url: 'https://xrpl.to/signup',
+        imgUrl: 'https://xrpl.to/og/signup.webp',
+        desc: 'Create your XRPL.to account to track tokens, manage watchlists, and trade on the XRP Ledger.'
+      }
+    }
+  };
+}

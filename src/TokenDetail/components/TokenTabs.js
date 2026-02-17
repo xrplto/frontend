@@ -275,7 +275,7 @@ const TokenTabs = memo(({ currentMd5 }) => {
       {/* Search Modal */}
       {searchOpen && (
         <div
-          className="fixed inset-0 z-[10000] flex items-start justify-center pt-[10vh] px-4"
+          className="fixed inset-0 z-[10000] flex items-start justify-center pt-[10dvh] px-4 max-sm:h-dvh"
           onClick={() => {
             setSearchOpen(false);
             setQuery('');

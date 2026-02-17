@@ -6,17 +6,22 @@ function Logo({ asLink = true, style }) {
   const isDark = themeName === 'XrplToDarkTheme';
   const img = isDark ? '/logo/xrpl-to-logo-white.svg' : '/logo/xrpl-to-logo-black.svg';
 
+  // Compute explicit pixel dimensions to prevent CLS (never use height: auto)
+  const w = parseInt(style?.width) || 100;
+  const h = style?.height === 'auto' ? Math.round(w * 0.36) : parseInt(style?.height) || 36;
+
   const imgElement = (
     <img
       src={img}
       alt="XRPL.to"
-      width={100}
-      height={36}
+      width={w}
+      height={h}
+      fetchPriority="high"
+      decoding="async"
       style={{
-        width: style?.width || '100px',
-        height: style?.height || '36px',
-        objectFit: 'contain',
-        ...style
+        width: `${w}px`,
+        height: `${h}px`,
+        objectFit: 'contain'
       }}
     />
   );

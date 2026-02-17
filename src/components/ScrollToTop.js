@@ -62,7 +62,7 @@ export default function ScrollToTop(props) {
       onClick={handleClick}
       role="presentation"
       className={cn(
-        'fixed bottom-5 right-5 z-[1200] w-[42px] h-[42px] flex items-center justify-center',
+        'fixed bottom-[72px] right-5 z-[1200] w-[42px] h-[42px] flex items-center justify-center',
         'rounded-xl cursor-pointer text-base font-normal overflow-hidden border-[1.5px]',
         'backdrop-blur-md transition-all duration-300',
         isDark

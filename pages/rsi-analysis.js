@@ -1005,7 +1005,7 @@ export async function getStaticProps() {
           canonical: 'https://xrpl.to/rsi-analysis',
           title: 'RSI Analysis | XRPL Token Technical Indicators',
           url: 'https://xrpl.to/rsi-analysis',
-          imgUrl: 'https://xrpl.to/static/ogp.webp',
+          imgUrl: 'https://xrpl.to/og/rsi-analysis.webp',
           desc: 'Advanced RSI analysis for XRPL tokens with overbought/oversold detection',
           keywords: 'RSI analysis, XRPL tokens, technical indicators, crypto RSI'
         }

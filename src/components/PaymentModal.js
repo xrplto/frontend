@@ -30,7 +30,7 @@ export default function PaymentModal({
   const { setOpenWalletModal } = useContext(WalletContext);
   const isDark = themeName === 'XrplToDarkTheme';
 
-  const [paymentMethod, setPaymentMethod] = useState('card');
+  const [paymentMethod, setPaymentMethod] = useState('stripe');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [paymentInfo, setPaymentInfo] = useState(null);
@@ -47,7 +47,7 @@ export default function PaymentModal({
   // Reset state when modal opens/closes
   useEffect(() => {
     if (!isOpen) {
-      setPaymentMethod('card');
+      setPaymentMethod('stripe');
       setLoading(false);
       setError(null);
       setPaymentInfo(null);
@@ -79,7 +79,7 @@ export default function PaymentModal({
     }
   };
 
-  const handleStripePayment = async () => {
+  const handleStripePayment = async (method) => {
     if (!walletAddress) {
       setOpenWalletModal(true);
       return;
@@ -88,6 +88,7 @@ export default function PaymentModal({
     setError(null);
     try {
       const payload = { wallet: walletAddress, type: purchaseType };
+      if (method) payload.method = method;
       if (purchaseType === 'credits') {
         payload.package = item.id;
       } else {
@@ -159,8 +160,8 @@ export default function PaymentModal({
       const result = await submitTransaction(wallet, payment);
       const txHash = result.hash || result.tx_json?.hash;
 
-      if (result.engine_result !== 'tesSUCCESS') {
-        const txResult = result.engine_result;
+      if (!result?.engine_result || result.engine_result !== 'tesSUCCESS') {
+        const txResult = result?.engine_result || 'Unknown error';
         if (txResult === 'tecUNFUNDED_PAYMENT') {
           setError('Insufficient XRP balance. Fund your wallet or pay with card.');
         } else {
@@ -206,7 +207,7 @@ export default function PaymentModal({
   return createPortal(
     <div
       className={cn(
-        'fixed inset-0 z-[9999] flex items-center justify-center p-4 backdrop-blur-md',
+        'fixed inset-0 z-[9999] flex items-center justify-center p-4 backdrop-blur-md max-sm:h-dvh',
         isDark ? 'bg-black/70' : 'bg-white/60'
       )}
       onClick={onClose}
@@ -274,18 +275,18 @@ export default function PaymentModal({
             </div>
             <div className="flex gap-2">
               <button
-                onClick={() => setPaymentMethod('card')}
+                onClick={() => setPaymentMethod('stripe')}
                 disabled={paymentStatus}
                 className={cn(
                   'flex-1 py-3 px-4 rounded-xl border-[1.5px] flex items-center justify-center gap-2 text-[13px] font-medium transition-all',
-                  paymentMethod === 'card'
+                  paymentMethod === 'stripe'
                     ? 'border-primary bg-primary/10 text-primary'
                     : isDark ? 'border-white/10 text-white/60 hover:bg-white/5' : 'border-gray-200 text-gray-500 hover:bg-gray-50',
                   paymentStatus && 'opacity-50 cursor-not-allowed'
                 )}
               >
                 <CreditCard size={18} />
-                Card
+                Card / Crypto
               </button>
               <button
                 onClick={() => setPaymentMethod('xrp')}
@@ -358,12 +359,9 @@ export default function PaymentModal({
 
           {/* Action button */}
           <button
-            onClick={paymentMethod === 'card' ? handleStripePayment : handleXrpPayment}
+            onClick={paymentMethod === 'xrp' ? handleXrpPayment : () => handleStripePayment()}
             disabled={loading || paymentStatus || (paymentMethod === 'xrp' && !paymentInfo)}
-            className={cn(
-              'w-full py-3.5 rounded-xl text-[14px] font-semibold text-white flex items-center justify-center gap-2 transition-all',
-              'bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed'
-            )}
+            className="w-full py-3.5 rounded-xl text-[14px] font-semibold text-white flex items-center justify-center gap-2 transition-all bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? (
               <><Loader2 size={18} className="animate-spin" /> Preparing...</>
@@ -373,8 +371,8 @@ export default function PaymentModal({
               <><Loader2 size={18} className="animate-spin" /> Submitting...</>
             ) : paymentStatus === 'verifying' ? (
               <><Loader2 size={18} className="animate-spin" /> Verifying...</>
-            ) : paymentMethod === 'card' ? (
-              <><CreditCard size={18} /> Pay ${price} with Card</>
+            ) : paymentMethod === 'stripe' ? (
+              <><CreditCard size={18} /> Pay ${price}</>
             ) : (
               <><Wallet size={18} /> Pay {xrpAmount || '...'} XRP</>
             )}
@@ -382,7 +380,7 @@ export default function PaymentModal({
 
           {/* Footer */}
           <div className={cn('text-[10px] text-center', isDark ? 'text-white/30' : 'text-gray-400')}>
-            {paymentMethod === 'card' ? 'Secure checkout powered by Stripe' : 'Payment processed on XRPL Mainnet'}
+            {paymentMethod === 'xrp' ? 'Payment processed on XRPL Mainnet' : 'Card, Cash App, Link, Crypto - powered by Stripe'}
           </div>
         </div>
       </div>

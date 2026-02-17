@@ -120,7 +120,7 @@ export default function NFTActionsBulk({ nft }) {
       {loading && (
         <div
           className={cn(
-            'fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md',
+            'fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md max-sm:h-dvh',
             isDark ? 'bg-black/70' : 'bg-white/60'
           )}
         >

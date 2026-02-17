@@ -60,7 +60,10 @@ import {
   Swords,
   Crown,
   Pencil,
-  Tag
+  Tag,
+  Loader2,
+  DollarSign,
+  CreditCard
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import Link from 'next/link';
@@ -207,6 +210,7 @@ export default function WalletPage() {
   const [purchaseLoading, setPurchaseLoading] = useState(null);
   const [xrpInvoice, setXrpInvoice] = useState(null);
   const [verifyingPayment, setVerifyingPayment] = useState(false);
+  const [walletPayStatus, setWalletPayStatus] = useState(null); // 'signing' | 'submitting' | 'verifying'
   const [displayBadges, setDisplayBadges] = useState({ current: null, available: [] });
   const [settingBadge, setSettingBadge] = useState(false);
 
@@ -257,7 +261,7 @@ export default function WalletPage() {
       const wallet = XRPLWallet.fromSeed(seed, { algorithm: getAlgorithmFromSeed(seed) });
 
       // Check account's defaultRipple flag via API
-      const infoRes = await fetch(`https://api.xrpl.to/v1/account/info/${address}`).then(r => r.json());
+      const infoRes = await apiFetch(`https://api.xrpl.to/v1/account/info/${address}`).then(r => r.json());
       const accountFlags = infoRes.flags || 0;
       const hasDefaultRipple = (accountFlags & 0x00800000) !== 0; // lsfDefaultRipple
 
@@ -487,7 +491,7 @@ export default function WalletPage() {
       const wallet = XRPLWallet.fromSeed(seed, { algorithm: getAlgorithmFromSeed(seed) });
 
       // Check issuer flags via API (lsfRequireDestTag = 0x00020000)
-      const issuerInfo = await fetch(`https://api.xrpl.to/v1/account/info/${token.issuer}`).then(r => r.json());
+      const issuerInfo = await apiFetch(`https://api.xrpl.to/v1/account/info/${token.issuer}`).then(r => r.json());
       const requiresTag = (issuerInfo.flags & 0x00020000) !== 0;
 
       const tx = {
@@ -929,7 +933,7 @@ export default function WalletPage() {
         });
       } else {
         // Check issuer flags via API (lsfRequireDestTag = 0x00020000)
-        const issuerInfo = await fetch(`https://api.xrpl.to/v1/account/info/${token.issuer}`).then(r => r.json());
+        const issuerInfo = await apiFetch(`https://api.xrpl.to/v1/account/info/${token.issuer}`).then(r => r.json());
         const needsTag = (issuerInfo.flags & 0x00020000) !== 0;
         const tx = {
           TransactionType: 'Payment',
@@ -1802,6 +1806,73 @@ export default function WalletPage() {
     setVerifyingPayment(false);
   };
 
+  const handleWalletPayTier = async () => {
+    if (!xrpInvoice || !address) return;
+    setWalletPayStatus('signing');
+    setProfileError('');
+    try {
+      const { EncryptedWalletStorage, deviceFingerprint } = await import('src/utils/encryptedWalletStorage');
+      const walletStorage = new EncryptedWalletStorage();
+      const deviceKeyId = await deviceFingerprint.getDeviceId();
+      const storedPassword = await walletStorage.getWalletCredential(deviceKeyId);
+
+      if (!storedPassword) {
+        setProfileError('Wallet locked. Please unlock your wallet first.');
+        setWalletPayStatus(null);
+        return;
+      }
+
+      const walletData = await walletStorage.getWallet(address, storedPassword);
+      if (!walletData?.seed) {
+        setProfileError('Could not retrieve wallet credentials');
+        setWalletPayStatus(null);
+        return;
+      }
+
+      const algorithm = walletData.seed.startsWith('sEd') ? 'ed25519' : 'secp256k1';
+      const wallet = XRPLWallet.fromSeed(walletData.seed, { algorithm });
+
+      setWalletPayStatus('submitting');
+      const payment = {
+        TransactionType: 'Payment',
+        Account: address,
+        Destination: xrpInvoice.destination,
+        Amount: xrpToDrops(String(xrpInvoice.amount)),
+        SourceTag: 161803
+      };
+      if (xrpInvoice.destinationTag) {
+        payment.DestinationTag = xrpInvoice.destinationTag;
+      }
+
+      const result = await submitTransaction(wallet, payment);
+      if (!result?.engine_result || result.engine_result !== 'tesSUCCESS') {
+        const txResult = result?.engine_result || 'Unknown error';
+        if (txResult === 'tecUNFUNDED_PAYMENT') {
+          setProfileError('Insufficient XRP balance.');
+        } else {
+          setProfileError(`Transaction failed: ${txResult}`);
+        }
+        setWalletPayStatus(null);
+        return;
+      }
+
+      // Auto-verify
+      setWalletPayStatus('verifying');
+      const res = await apiFetch(`${BASE_URL}/api/user/tier/verify/${xrpInvoice.invoiceId}`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Payment not verified');
+      if (data.status === 'pending') throw new Error('Payment not yet confirmed. Try verifying again in a moment.');
+      if (data.perks && typeof data.perks === 'object') setUserPerks(data.perks);
+      if (data.tier) setProfileUser(u => u ? { ...u, tier: data.tier } : u);
+      setXrpInvoice(null);
+      toast.success(`Upgraded to ${data.tier || 'new tier'}!`);
+    } catch (e) {
+      console.error('Wallet pay error:', e);
+      setProfileError(e.message || 'Payment failed');
+    }
+    setWalletPayStatus(null);
+  };
+
   const handleSetDisplayBadge = async (badge) => {
     if (!address || settingBadge) return;
     setSettingBadge(true);
@@ -1824,15 +1895,17 @@ export default function WalletPage() {
     setSettingBadge(false);
   };
 
-  const handlePurchaseTierStripe = async (tierName) => {
+  const handlePurchaseTierStripe = async (tierName, method) => {
     if (!address) return;
     setPurchaseLoading(tierName);
     setProfileError('');
     try {
+      const payload = { address, tier: tierName };
+      if (method) payload.method = method;
       const res = await apiFetch(`${BASE_URL}/api/user/tier/stripe`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ address, tier: tierName })
+        body: JSON.stringify(payload)
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to create checkout');
@@ -1978,7 +2051,7 @@ export default function WalletPage() {
       {!address ? (
         <div
           className={cn(
-            'min-h-[calc(100vh-64px)] flex items-center justify-center',
+            'min-h-[calc(100dvh-64px)] flex items-center justify-center',
             isDark ? 'bg-black' : 'bg-gray-50'
           )}
         >
@@ -2025,7 +2098,7 @@ export default function WalletPage() {
       ) : (
         <div
           className={cn(
-            'min-h-screen',
+            'min-h-dvh',
             isDark ? 'bg-black text-white' : 'bg-gray-50 text-gray-900'
           )}
         >
@@ -2100,7 +2173,7 @@ export default function WalletPage() {
 
             {/* Send/Receive Modal */}
             {showPanel && (
-              <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 max-sm:h-dvh">
                 {/* Backdrop */}
                 <div
                   className="absolute inset-0 bg-black/60 backdrop-blur-sm"
@@ -2446,6 +2519,31 @@ export default function WalletPage() {
                     )}>
                       {/* Portfolio Row */}
                       <div className="flex flex-col lg:flex-row lg:items-center p-5 gap-6">
+                        {/* User Identity */}
+                        {profileUser && (
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className={cn(
+                              'w-10 h-10 rounded-xl shrink-0 overflow-hidden',
+                              isDark ? 'bg-white/5 border border-white/10' : 'bg-gray-50 border border-gray-200'
+                            )}>
+                              {profileUser.avatar ? (
+                                <img src={profileUser.avatar} alt="" className="w-full h-full object-cover" />
+                              ) : (
+                                <div className={cn(
+                                  'w-full h-full flex items-center justify-center text-sm font-bold',
+                                  isDark ? 'text-[#137DFE]' : 'text-blue-600'
+                                )}>
+                                  {profileUser.username?.[0]?.toUpperCase() || address?.[1]?.toUpperCase() || '?'}
+                                </div>
+                              )}
+                            </div>
+                            <span className={cn('text-sm font-bold truncate max-w-[120px]', isDark ? 'text-white/80' : 'text-gray-800')}>
+                              {profileUser.username || 'Anonymous'}
+                            </span>
+                            <div className={cn('hidden lg:block w-px h-10', isDark ? 'bg-white/10' : 'bg-gray-100')} />
+                          </div>
+                        )}
+
                         {/* Total Portfolio */}
                         <div className="flex flex-col gap-1 min-w-[200px]">
                           <span className={cn('text-[10px] font-bold uppercase tracking-widest', isDark ? 'text-white/30' : 'text-gray-400')}>Total Portfolio</span>
@@ -3381,7 +3479,7 @@ export default function WalletPage() {
                 {/* Delete Confirmation Modal */}
                 {deleteConfirmId && (
                   <div
-                    className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
+                    className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 max-sm:h-dvh"
                     onClick={() => setDeleteConfirmId(null)}
                   >
                     <div
@@ -3447,7 +3545,7 @@ export default function WalletPage() {
                 {/* Add Withdrawal Modal */}
                 {showAddWithdrawal && (
                   <div
-                    className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+                    className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm max-sm:h-dvh"
                     onClick={() => setShowAddWithdrawal(false)}
                   >
                     <div
@@ -3950,7 +4048,7 @@ export default function WalletPage() {
 
                     {/* Code Edit Overlay */}
                     {editingCode && (
-                      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setEditingCode(false)}>
+                      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm max-sm:h-dvh" onClick={() => setEditingCode(false)}>
                         <div className={cn('w-full max-w-sm rounded-xl p-6', isDark ? 'bg-[#0a0a0a] border-[1.5px] border-white/10' : 'bg-white border-[1.5px] border-gray-200')} onClick={e => e.stopPropagation()}>
                           <h3 className={cn('text-[16px] font-bold mb-1', isDark ? 'text-white' : 'text-gray-900')}>Edit Referral Code</h3>
                           <p className={cn('text-[11px] mb-5', isDark ? 'text-white/30' : 'text-gray-400')}>Choose a custom code for your referral link. 3-20 characters, letters, numbers, and underscores only.</p>
@@ -4225,7 +4323,7 @@ export default function WalletPage() {
 
                     {/* Avatar Picker Modal - Moved inside for better scoping or logic flow */}
                     {showAvatarPicker && (
-                      <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md" onClick={() => setShowAvatarPicker(false)}>
+                      <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md max-sm:h-dvh" onClick={() => setShowAvatarPicker(false)}>
                         <div
                           className={cn('w-full max-w-md rounded-xl p-5', isDark ? 'bg-[#0a0a0a] border-[1.5px] border-white/10' : 'bg-white border-[1.5px] border-gray-200')}
                           onClick={(e) => e.stopPropagation()}
@@ -4442,7 +4540,7 @@ export default function WalletPage() {
 
                   {/* XRP Invoice Modal */}
                   {xrpInvoice && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" onClick={() => setXrpInvoice(null)}>
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm max-sm:h-dvh" onClick={() => { if (!walletPayStatus) setXrpInvoice(null); }}>
                       <div className={cn('w-full max-w-sm rounded-xl p-6', isDark ? 'bg-[#0a0a0a] border-[1.5px] border-white/10' : 'bg-white border-[1.5px] border-gray-200')} onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-center justify-between mb-5">
                           <div className="flex items-center gap-2">
@@ -4451,7 +4549,7 @@ export default function WalletPage() {
                             </div>
                             <p className={cn('text-[15px] font-semibold', isDark ? 'text-white' : 'text-gray-900')}>Pay with XRP</p>
                           </div>
-                          <button onClick={() => setXrpInvoice(null)} className={cn('p-1.5 rounded-lg transition-colors', isDark ? 'hover:bg-white/10' : 'hover:bg-gray-100')}>
+                          <button onClick={() => { if (!walletPayStatus) setXrpInvoice(null); }} className={cn('p-1.5 rounded-lg transition-colors', isDark ? 'hover:bg-white/10' : 'hover:bg-gray-100')}>
                             <X size={18} className={isDark ? 'text-white/50' : 'text-gray-500'} />
                           </button>
                         </div>
@@ -4469,19 +4567,53 @@ export default function WalletPage() {
                             </div>
                           )}
                         </div>
+                        {/* Destination Tag Warning */}
+                        {xrpInvoice.destinationTag && (
+                          <div className={cn('text-[10px] p-2.5 rounded-xl mb-4 flex items-start gap-2', isDark ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : 'bg-amber-50 text-amber-600 border border-amber-200')}>
+                            <AlertTriangle size={14} className="flex-shrink-0 mt-0.5" />
+                            <span>Important: Include the Destination Tag or payment may be lost</span>
+                          </div>
+                        )}
+                        {/* Pay with Wallet button */}
+                        {(accountProfile?.wallet_type === 'device' || accountProfile?.wallet_type === 'oauth') && (
+                          <button
+                            onClick={handleWalletPayTier}
+                            disabled={walletPayStatus || verifyingPayment}
+                            className={cn('w-full py-3 rounded-xl text-[13px] font-semibold text-white mb-2 flex items-center justify-center gap-2 transition-colors disabled:opacity-50', 'bg-[#137DFE] hover:bg-[#137DFE]/90')}
+                          >
+                            {walletPayStatus === 'signing' ? (
+                              <><Loader2 size={16} className="animate-spin" /> Signing...</>
+                            ) : walletPayStatus === 'submitting' ? (
+                              <><Loader2 size={16} className="animate-spin" /> Submitting...</>
+                            ) : walletPayStatus === 'verifying' ? (
+                              <><Loader2 size={16} className="animate-spin" /> Verifying...</>
+                            ) : (
+                              <><Wallet size={16} /> Pay with Wallet</>
+                            )}
+                          </button>
+                        )}
+                        {/* Divider when both options available */}
+                        {(accountProfile?.wallet_type === 'device' || accountProfile?.wallet_type === 'oauth') && (
+                          <div className="flex items-center gap-3 mb-2">
+                            <div className={cn('flex-1 h-px', isDark ? 'bg-white/[0.08]' : 'bg-gray-200')} />
+                            <span className={cn('text-[10px] font-medium', isDark ? 'text-white/30' : 'text-gray-400')}>or pay manually</span>
+                            <div className={cn('flex-1 h-px', isDark ? 'bg-white/[0.08]' : 'bg-gray-200')} />
+                          </div>
+                        )}
                         <button
                           onClick={() => handleCopy(`${xrpInvoice.destination}${xrpInvoice.destinationTag ? `:${xrpInvoice.destinationTag}` : ''}`)}
-                          className={cn('w-full py-2.5 rounded-xl text-[12px] font-medium mb-2 flex items-center justify-center gap-2 transition-colors', isDark ? 'bg-white/[0.05] text-white/70 hover:bg-white/10 border border-white/[0.08]' : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200')}
+                          disabled={walletPayStatus}
+                          className={cn('w-full py-2.5 rounded-xl text-[12px] font-medium mb-2 flex items-center justify-center gap-2 transition-colors disabled:opacity-50', isDark ? 'bg-white/[0.05] text-white/70 hover:bg-white/10 border border-white/[0.08]' : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200')}
                         >
                           <Copy size={14} />
                           Copy Address
                         </button>
                         <button
                           onClick={handleVerifyXrpPayment}
-                          disabled={verifyingPayment}
-                          className="w-full py-3 rounded-xl text-[13px] font-semibold bg-[#137DFE] text-white hover:bg-[#137DFE]/90 disabled:opacity-50 transition-colors"
+                          disabled={verifyingPayment || walletPayStatus}
+                          className={cn('w-full py-2.5 rounded-xl text-[12px] font-medium flex items-center justify-center gap-2 transition-colors disabled:opacity-50', isDark ? 'bg-white/[0.05] text-white/70 hover:bg-white/10 border border-white/[0.08]' : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200')}
                         >
-                          {verifyingPayment ? 'Verifying...' : 'I have paid'}
+                          {verifyingPayment ? 'Verifying...' : 'I have paid manually'}
                         </button>
                         {profileError && (
                           <p className={cn('text-[11px] mt-3 text-center', 'text-red-400')}>{profileError}</p>
@@ -4581,21 +4713,28 @@ export default function WalletPage() {
                                 </div>
 
                                 {!isCurrentTier && tier.price > 0 && (
-                                  <div className="flex gap-2">
+                                  <div className="flex gap-1.5">
                                     <button
                                       onClick={() => handlePurchaseTierXRP(name)}
                                       disabled={purchaseLoading === name}
-                                      className={cn('flex-1 py-2.5 rounded-xl text-[11px] font-bold transition-all flex items-center justify-center gap-1.5 backdrop-blur-md', isDark ? 'bg-white/5 text-white/70 hover:bg-white/10 hover:text-white border border-white/10' : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200 shadow-sm')}
+                                      className={cn(
+                                        'flex-1 py-2 rounded-xl border-[1.5px] flex items-center justify-center gap-1.5 text-[11px] font-bold transition-all',
+                                        isDark ? 'border-white/[0.06] text-white/40 hover:bg-white/[0.04]' : 'border-gray-100 text-gray-400 hover:bg-gray-50'
+                                      )}
                                     >
-                                      <Coins size={12} />
+                                      {purchaseLoading === name ? <Loader2 size={12} className="animate-spin" /> : <Wallet size={12} />}
                                       XRP
                                     </button>
                                     <button
                                       onClick={() => handlePurchaseTierStripe(name)}
                                       disabled={purchaseLoading === name}
-                                      className={cn('flex-1 py-2.5 px-4 rounded-xl text-[11px] font-bold text-white transition-colors active:scale-95 bg-gradient-to-r', config.gradient)}
+                                      className={cn(
+                                        'flex-1 py-2 rounded-xl border-[1.5px] flex items-center justify-center gap-1.5 text-[11px] font-bold transition-all',
+                                        isDark ? 'border-white/[0.06] text-white/40 hover:bg-white/[0.04]' : 'border-gray-100 text-gray-400 hover:bg-gray-50'
+                                      )}
                                     >
-                                      {purchaseLoading === name ? '...' : 'Upgrade'}
+                                      {purchaseLoading === name ? <Loader2 size={12} className="animate-spin" /> : <CreditCard size={12} />}
+                                      Card / Crypto
                                     </button>
                                   </div>
                                 )}
@@ -4616,7 +4755,7 @@ export default function WalletPage() {
                 {/* NFT Transfer Modal */}
                 {nftToTransfer && (
                   <div
-                    className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
+                    className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 max-sm:h-dvh"
                     onClick={() => setNftToTransfer(null)}
                   >
                     <div
@@ -4727,7 +4866,7 @@ export default function WalletPage() {
                   const existingSellOffers = nftOffers.filter(o => o.nftId === nftToSell.nftId && o.type === 'sell');
                   return (
                   <div
-                    className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
+                    className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 max-sm:h-dvh"
                     onClick={() => setNftToSell(null)}
                   >
                     <div
@@ -5189,8 +5328,8 @@ export default function WalletPage() {
       {/* P/L Card Modal */}
       {
         showPLCard && (accountInfo || nftStats) && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70" onClick={() => setShowPLCard(false)}>
-            <div onClick={e => e.stopPropagation()} className="relative w-[400px]">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 max-sm:h-dvh" onClick={() => setShowPLCard(false)}>
+            <div onClick={e => e.stopPropagation()} className="relative w-[400px] max-w-[calc(100vw-32px)]">
               {/* Card for display and capture */}
               <div
                 ref={plCardRef}
@@ -5529,7 +5668,7 @@ export default function WalletPage() {
       {/* Burn Modal */}
       {
         burnModal && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 max-sm:h-dvh">
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setBurnModal(null)} />
             <div className={cn(
               "relative w-full max-w-sm rounded-2xl border p-6",
@@ -5621,7 +5760,7 @@ export default function WalletPage() {
       {/* Trade Modal */}
       {
         tradeModal && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 max-sm:h-dvh">
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setTradeModal(null)} />
             <div className={cn(
               "relative w-full max-w-[340px] rounded-2xl border p-5",
@@ -5777,7 +5916,7 @@ export default function WalletPage() {
       {/* Dust Confirmation Modal */}
       {
         dustConfirm && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 max-sm:h-dvh">
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setDustConfirm(null)} />
             <div className={cn(
               "relative w-full max-w-sm rounded-2xl border p-6",
@@ -5824,4 +5963,18 @@ export default function WalletPage() {
       <Footer />
     </>
   );
+}
+
+export async function getStaticProps() {
+  return {
+    props: {
+      ogp: {
+        canonical: 'https://xrpl.to/wallet',
+        title: 'Wallet | Manage Your XRPL Wallet',
+        url: 'https://xrpl.to/wallet',
+        imgUrl: 'https://xrpl.to/og/wallet.webp',
+        desc: 'Manage your XRP Ledger wallet. View balances, send payments, and trade tokens.'
+      }
+    }
+  };
 }

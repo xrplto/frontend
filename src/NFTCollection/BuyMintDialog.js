@@ -136,14 +136,14 @@ export default function BuyMintDialog({
     <>
       {/* Loading Backdrop */}
       {loading && (
-        <div className="fixed inset-0 z-[1303] flex items-center justify-center bg-black/50">
+        <div className="fixed inset-0 z-[1303] flex items-center justify-center bg-black/50 max-sm:h-dvh">
           <PulseLoader color={'#FF4842'} size={10} />
         </div>
       )}
 
       {/* Dialog */}
       <div
-        className="fixed inset-0 z-[1302] flex items-center justify-center p-4 overflow-y-auto bg-black/60 backdrop-blur-sm"
+        className="fixed inset-0 z-[1302] flex items-center justify-center p-4 overflow-y-auto bg-black/60 backdrop-blur-sm max-sm:h-dvh"
         onClick={handleClose}
       >
         <div

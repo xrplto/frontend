@@ -170,7 +170,7 @@ const BearEmptyState = ({ isDark, message = 'No chart data' }) => (
   </div>
 );
 
-const PriceChartAdvanced = memo(({ token }) => {
+const PriceChartAdvanced = memo(({ token, onCandleClick }) => {
   const { themeName } = useContext(ThemeContext);
   const { activeFiatCurrency } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
@@ -271,12 +271,12 @@ const PriceChartAdvanced = memo(({ token }) => {
       if (!mounted) return;
       try {
         const res = await fetch(`/api/ws/session?type=creator&id=${token.md5}`);
-        const { wsUrl } = await res.json();
+        const { wsUrl, apiKey } = await res.json();
         if (!wsUrl || !mounted) return;
 
         const ws = new WebSocket(wsUrl);
         creatorWsRef.current = ws;
-        ws.onopen = () => { retryDelay = 3000; };
+        ws.onopen = () => { retryDelay = 3000; if (apiKey) ws.send(JSON.stringify({ type: 'auth', apiKey })); };
         ws.onmessage = (e) => {
           if (!mounted) return;
           const msg = JSON.parse(e.data);
@@ -292,17 +292,18 @@ const PriceChartAdvanced = memo(({ token }) => {
           if (!mounted || ev.code === 1000) return;
           // Retry all failures including 4011 (rate limit) with backoff
           retryDelay = Math.min(retryDelay * 1.5, 30000);
-          setTimeout(connect, retryDelay);
+          creatorReconnectTimer = setTimeout(connect, retryDelay);
         };
       } catch {
         if (mounted) {
           retryDelay = Math.min(retryDelay * 1.5, 30000);
-          setTimeout(connect, retryDelay);
+          creatorReconnectTimer = setTimeout(connect, retryDelay);
         }
       }
     };
+    let creatorReconnectTimer = null;
     connect();
-    return () => { mounted = false; creatorWsRef.current?.close(); };
+    return () => { mounted = false; if (creatorReconnectTimer) clearTimeout(creatorReconnectTimer); creatorWsRef.current?.close(); };
   }, [token?.md5, mapCreatorEvent]);
 
   // Keep refs in sync
@@ -312,9 +313,11 @@ const PriceChartAdvanced = memo(({ token }) => {
       chartType,
       isZoomed: isUserZoomed,
       hasMore,
-      isLoadingMore
+      isLoadingMore,
+      timeRange,
+      onCandleClick
     };
-  }, [activeFiatCurrency, chartType, isUserZoomed, hasMore, isLoadingMore]);
+  }, [activeFiatCurrency, chartType, isUserZoomed, hasMore, isLoadingMore, timeRange, onCandleClick]);
 
   // Load more historical data
   const loadMoreData = useCallback(async () => {
@@ -416,12 +419,13 @@ const PriceChartAdvanced = memo(({ token }) => {
       try {
         const params = `interval=${getWsInterval(timeRange)}&vs_currency=${activeFiatCurrency}`;
         const res = await fetch(`/api/ws/session?type=ohlc&id=${token.md5}&${params}`);
-        const { wsUrl } = await res.json();
+        const { wsUrl, apiKey } = await res.json();
         if (!mounted) return;
         const ws = new WebSocket(wsUrl);
         wsRef.current = ws;
 
         ws.onopen = () => {
+          if (apiKey) ws.send(JSON.stringify({ type: 'auth', apiKey }));
           pingInterval = setInterval(() => ws.readyState === 1 && ws.send('{"type":"ping"}'), 30000);
         };
 
@@ -479,18 +483,20 @@ const PriceChartAdvanced = memo(({ token }) => {
 
         ws.onclose = (ev) => {
           clearInterval(pingInterval);
-          if (mounted && ev.code !== 1000 && ev.code !== 4011) setTimeout(connectWs, 3000);
+          if (mounted && ev.code !== 1000 && ev.code !== 4011) reconnectTimer = setTimeout(connectWs, 3000);
         };
       } catch {
-        if (mounted) setTimeout(connectWs, 3000);
+        if (mounted) reconnectTimer = setTimeout(connectWs, 3000);
       }
     };
 
+    let reconnectTimer = null;
     fetchData().then(() => mounted && connectWs());
 
     return () => {
       mounted = false;
       clearInterval(pingInterval);
+      if (reconnectTimer) clearTimeout(reconnectTimer);
       wsRef.current?.close();
       wsRef.current = null;
     };
@@ -503,16 +509,18 @@ const PriceChartAdvanced = memo(({ token }) => {
     const ctrl = new AbortController();
 
     setLoading(true);
-    const holdersUrl = `${BASE_URL}/holders/graph/${token.md5}?range=ALL`;
+    const rangeMap = { '1d': '1D', '5d': '7D', '1m': '1M', '3m': '3M', '1y': '1Y', '5y': '5Y', all: 'ALL' };
+    const holdersUrl = `${BASE_URL}/holders/graph/${token.md5}?range=${rangeMap[timeRange] || 'ALL'}`;
     api
       .get(holdersUrl, { signal: ctrl.signal })
       .then((res) => {
         if (!mounted || !res.data?.history?.length) return;
         const processed = res.data.history
           .map((h) => ({
-            time: Math.floor(h.time / 1000),
+            time: h.time > 1e12 ? Math.floor(h.time / 1000) : Math.floor(h.time),
             value: h.length || 0,
-            holders: h.length || 0,
+            trustlines: h.length || 0,
+            holders: h.holders,
             top10: h.top10 || 0,
             top20: h.top20 || 0,
             top50: h.top50 || 0
@@ -529,7 +537,7 @@ const PriceChartAdvanced = memo(({ token }) => {
       mounted = false;
       ctrl.abort();
     };
-  }, [token.md5, chartType]);
+  }, [token.md5, chartType, timeRange]);
 
   // Fetch liquidity data
   useEffect(() => {
@@ -695,7 +703,7 @@ const PriceChartAdvanced = memo(({ token }) => {
         secondsVisible: false,
         rightOffset: 5,
         barSpacing: isMobile ? 3 : 4,
-        minBarSpacing: isMobile ? 1 : 2,
+        minBarSpacing: isMobile ? 1.5 : 2,
         fixLeftEdge: true,
         fixRightEdge: true,
         rightBarStaysOnScroll: true,
@@ -881,10 +889,11 @@ const PriceChartAdvanced = memo(({ token }) => {
           return p.toLocaleString();
         };
 
+        const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
         const row = (l, v, c) =>
-          `<div style="display:flex;justify-content:space-between;line-height:1.5;margin-bottom:2px;${c ? `color:${c}` : ''}">
-            <span style="opacity:0.5;font-weight:500">${l}</span>
-            <span style="font-weight:600;font-family:var(--font-mono)">${v}</span>
+          `<div style="display:flex;justify-content:space-between;line-height:1.5;margin-bottom:2px;${c ? `color:${esc(c)}` : ''}">
+            <span style="opacity:0.5;font-weight:500">${esc(l)}</span>
+            <span style="font-weight:600;font-family:var(--font-mono)">${esc(v)}</span>
           </div>`;
         const sep = `<div style="height:1px;background:${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)'};margin:6px 0"></div>`;
 
@@ -905,7 +914,9 @@ const PriceChartAdvanced = memo(({ token }) => {
             row('Price', sym + fp(candle.close || candle.value)) +
             row('Vol', (candle.volume || 0).toLocaleString());
         } else if (ct === 'holders') {
-          html += row('Holders', (candle.holders || candle.value).toLocaleString());
+          html += row('Trustlines', (candle.trustlines || candle.value).toLocaleString(), '#a855f7');
+          if (candle.holders != null)
+            html += row('Holders', candle.holders.toLocaleString(), '#22c55e');
           if (candle.top10 !== undefined)
             html +=
               sep +
@@ -955,12 +966,12 @@ const PriceChartAdvanced = memo(({ token }) => {
 
     if (chartType === 'candles') {
       seriesRefs.current.candle = chart.addSeries(CandlestickSeries, {
-        upColor: '#22c55e',
+        upColor: 'transparent',
         downColor: '#ef4444',
         borderUpColor: '#22c55e',
         borderDownColor: '#ef4444',
-        wickUpColor: '#22c55e',
-        wickDownColor: '#ef4444',
+        wickUpColor: 'rgba(34,197,94,0.6)',
+        wickDownColor: 'rgba(239,68,68,0.6)',
         priceFormat: customPriceFormat
       });
     } else if (chartType === 'line') {
@@ -974,14 +985,27 @@ const PriceChartAdvanced = memo(({ token }) => {
         priceFormat: customPriceFormat
       });
     } else if (chartType === 'holders') {
+      // Trustlines line (primary)
       seriesRefs.current.line = chart.addSeries(AreaSeries, {
         lineColor: '#a855f7',
-        topColor: 'rgba(168,85,247,0.25)',
-        bottomColor: 'rgba(168,85,247,0.02)',
+        topColor: 'rgba(168,85,247,0.15)',
+        bottomColor: 'rgba(168,85,247,0.01)',
         lineWidth: 2,
         crosshairMarkerVisible: true,
         crosshairMarkerRadius: 3,
-        priceFormat: { type: 'price', minMove: 1, precision: 0 }
+        priceFormat: { type: 'price', minMove: 1, precision: 0 },
+        title: 'Trustlines'
+      });
+      // Holders line (secondary, same scale)
+      seriesRefs.current.xrpLine = chart.addSeries(AreaSeries, {
+        lineColor: '#22c55e',
+        topColor: 'rgba(34,197,94,0.15)',
+        bottomColor: 'rgba(34,197,94,0.01)',
+        lineWidth: 2,
+        crosshairMarkerVisible: true,
+        crosshairMarkerRadius: 3,
+        priceFormat: { type: 'price', minMove: 1, precision: 0 },
+        title: 'Holders'
       });
     } else {
       // Liquidity chart - dual lines for XRP and Token
@@ -1033,6 +1057,25 @@ const PriceChartAdvanced = memo(({ token }) => {
       }, 100);
     });
 
+    // Candle click handler - compute time range from resolution and notify parent
+    const resolutionMs = {
+      '1d': 60 * 1000,
+      '5d': 5 * 60 * 1000,
+      '1m': 30 * 60 * 1000,
+      '3m': 2 * 60 * 60 * 1000,
+      '1y': 7 * 24 * 60 * 60 * 1000,
+      '5y': 7 * 24 * 60 * 60 * 1000,
+      all: 24 * 60 * 60 * 1000
+    };
+    const clickUnsub = chart.subscribeClick((param) => {
+      if (!param.time || !refs.current.onCandleClick) return;
+      // Only fire for price chart types
+      if (refs.current.chartType !== 'candles' && refs.current.chartType !== 'line') return;
+      const startMs = param.time * 1000;
+      const interval = resolutionMs[refs.current.timeRange] || 5 * 60 * 1000;
+      refs.current.onCandleClick({ startTime: startMs, endTime: startMs + interval });
+    });
+
     const wheelHandler = (e) => e.preventDefault();
     chartContainerRef.current?.addEventListener('wheel', wheelHandler, { passive: false });
     resizeObs.observe(chartContainerRef.current);
@@ -1046,6 +1089,7 @@ const PriceChartAdvanced = memo(({ token }) => {
       chartContainerRef.current?.removeEventListener('wheel', wheelHandler);
       rangeUnsub?.();
       crossUnsub?.();
+      clickUnsub?.();
       if (rafId) cancelAnimationFrame(rafId);
       toolTipRef.current?.remove();
       toolTipRef.current = null;
@@ -1100,7 +1144,12 @@ const PriceChartAdvanced = memo(({ token }) => {
     } else if (chartType === 'line' && series.line) {
       series.line.setData(chartData.map((d) => ({ time: d.time, value: d.close })));
     } else if (chartType === 'holders' && series.line) {
-      series.line.setData(chartData.map((d) => ({ time: d.time, value: d.holders })));
+      series.line.setData(chartData.map((d) => ({ time: d.time, value: d.trustlines })));
+      if (series.xrpLine) {
+        // Only show holders line for entries that have real data (not null)
+        const holdersData = chartData.filter((d) => d.holders != null);
+        series.xrpLine.setData(holdersData.map((d) => ({ time: d.time, value: d.holders })));
+      }
     } else if (chartType === 'liquidity' && series.xrpLine && series.tokenLine) {
       series.xrpLine.setData(chartData.map((d) => ({ time: d.time, value: d.xrpLiquidity })));
       series.tokenLine.setData(chartData.map((d) => ({ time: d.time, value: d.tokenLiquidity })));
@@ -1119,21 +1168,25 @@ const PriceChartAdvanced = memo(({ token }) => {
 
     if (isNew) {
       const len = chartData.length;
-      const visMap = {
-        '1d': isMobile ? 60 : 100,
-        '5d': isMobile ? 80 : 120,
-        '1m': isMobile ? 60 : 100,
-        '3m': isMobile ? 80 : 120,
-        '1y': isMobile ? 30 : 52,
-        '5y': isMobile ? 80 : 120,
-        all: isMobile ? 100 : 150
-      };
-      // Ensure minimum visible slots so candles don't get too wide with sparse data
-      const minSlots = isMobile ? 40 : 60;
-      const vis = Math.max(minSlots, Math.min(visMap[timeRange] || 100, len));
       // Use requestAnimationFrame to set range after render to prevent layout shift
       requestAnimationFrame(() => {
-        if (chartRef.current) {
+        if (!chartRef.current) return;
+        // Holders/liquidity: API already filters by range, so fitContent to show all returned data
+        if (chartType === 'holders' || chartType === 'liquidity') {
+          chartRef.current.timeScale().fitContent();
+        } else {
+          const visMap = {
+            '1d': isMobile ? 200 : 300,
+            '5d': isMobile ? 300 : 576,
+            '1m': isMobile ? 100 : 150,
+            '3m': isMobile ? 100 : 150,
+            '1y': isMobile ? 40 : 52,
+            '5y': isMobile ? 100 : 150,
+            all: isMobile ? 150 : 200
+          };
+          // Ensure minimum visible slots so candles don't get too wide with sparse data
+          const minSlots = isMobile ? 40 : 60;
+          const vis = Math.max(minSlots, Math.min(visMap[timeRange] || 100, len));
           chartRef.current.timeScale().setVisibleLogicalRange({
             from: len - vis,
             to: len + 5
@@ -1180,7 +1233,7 @@ const PriceChartAdvanced = memo(({ token }) => {
         <ChartHeader>
           <HeaderSection>
             <span className={cn('text-[13px] font-semibold', isDark ? 'text-white' : 'text-[#1a1a1a]')}>
-              {token.name} <span className="opacity-50 font-normal">{chartType === 'holders' ? 'Holders' : chartType === 'liquidity' ? 'TVL' : activeFiatCurrency}</span>
+              {token.name} <span className="opacity-50 font-normal">{chartType === 'holders' ? 'Trustlines & Holders' : chartType === 'liquidity' ? 'TVL' : activeFiatCurrency}</span>
             </span>
 
             <div className="flex items-center gap-[6px] flex-nowrap">
@@ -1214,6 +1267,13 @@ const PriceChartAdvanced = memo(({ token }) => {
                   <span className={cn('flex items-center gap-[3px]', isDark ? 'text-white/60' : 'text-black/60')}><span className="w-[6px] h-[2px] rounded-sm bg-[#f59e0b]" />Token</span>
                 </div>
               )}
+
+              {chartType === 'holders' && (
+                <div className={cn('flex items-center gap-[6px] text-[9px] py-[2px] px-[6px] rounded-md', isDark ? 'bg-white/[0.03]' : 'bg-black/[0.03]')}>
+                  <span className={cn('flex items-center gap-[3px]', isDark ? 'text-white/60' : 'text-black/60')}><span className="w-[6px] h-[2px] rounded-sm bg-[#a855f7]" />Trustlines</span>
+                  <span className={cn('flex items-center gap-[3px]', isDark ? 'text-white/60' : 'text-black/60')}><span className="w-[6px] h-[2px] rounded-sm bg-[#22c55e]" />Holders</span>
+                </div>
+              )}
             </div>
           </HeaderSection>
 
@@ -1228,6 +1288,7 @@ const PriceChartAdvanced = memo(({ token }) => {
                     if (wasPrice && !isPrice) {
                       priceTimeRangeRef.current = timeRange;
                       setTimeRange('all');
+                      if (onCandleClick) onCandleClick(null);
                     } else if (!wasPrice && isPrice) {
                       setTimeRange(priceTimeRangeRef.current);
                     }
@@ -1256,6 +1317,7 @@ const PriceChartAdvanced = memo(({ token }) => {
                     if (chartType === 'candles' || chartType === 'line') {
                       priceTimeRangeRef.current = r;
                     }
+                    if (onCandleClick) onCandleClick(null);
                   }}
                   isActive={timeRange === r}
                   isMobile={isMobile}
@@ -1329,13 +1391,13 @@ const PriceChartAdvanced = memo(({ token }) => {
 
       {creatorEvents.length > 0 && chartType !== 'holders' && chartType !== 'liquidity' && (
         <div
-          className={cn('flex items-center gap-3 py-2 px-4 rounded-xl min-h-[40px] border', isDark ? 'bg-black/20 border-white/[0.05]' : 'bg-black/[0.02] border-black/[0.05]')}
+          className={cn('flex items-center gap-2 py-[5px] px-3 rounded-lg min-h-[30px] border', isDark ? 'bg-black/20 border-white/[0.05]' : 'bg-black/[0.02] border-black/[0.05]')}
         >
-          <div className={cn('flex items-center gap-2 pr-3 shrink-0', isDark ? 'border-r border-white/10' : 'border-r border-black/10')}>
-            <Sparkles size={14} color="#f59e0b" fill="#f59e0b" className="opacity-80" />
-            <span className={cn('font-bold text-[10px] uppercase tracking-[0.1em]', isDark ? 'text-white/50' : 'text-black/50')}>Creator</span>
+          <div className={cn('flex items-center gap-[5px] pr-2 shrink-0', isDark ? 'border-r border-white/10' : 'border-r border-black/10')}>
+            <Sparkles size={11} color="#f59e0b" fill="#f59e0b" className="opacity-80" />
+            <span className={cn('font-bold text-[9px] uppercase tracking-[0.08em]', isDark ? 'text-white/50' : 'text-black/50')}>Creator</span>
           </div>
-          <div className="flex gap-2 overflow-x-auto py-[2px]" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+          <div className="flex gap-[5px] overflow-x-auto py-px" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
             {creatorEvents.slice(0, 10).map((e, i) => {
               const f = (n) => n >= 9.995e5 ? (n / 1e6).toFixed(1) + 'M' : n >= 1e3 ? (n / 1e3).toFixed(0) + 'K' : n < 1 ? n.toFixed(2) : Math.round(n);
               const t = e.time > 1e12 ? e.time : e.time * 1000;
@@ -1351,13 +1413,13 @@ const PriceChartAdvanced = memo(({ token }) => {
                   target="_blank"
                   rel="noopener noreferrer"
                   className={cn(
-                    'inline-flex items-center gap-[6px] py-1 px-[10px] rounded-md border no-underline shrink-0 transition-all duration-200',
+                    'inline-flex items-center gap-1 py-[3px] px-[7px] rounded-md border no-underline shrink-0 transition-all duration-200',
                     isDark ? 'bg-white/[0.04] border-white/[0.08] text-white hover:-translate-y-px hover:bg-white/[0.08] hover:border-[#3b82f6]' : 'bg-white border-black/[0.08] text-[#1a1a1a] hover:-translate-y-px hover:bg-[#f8fafc] hover:border-[#3b82f6]'
                   )}
                 >
-                  <span className="font-extrabold text-[10px] uppercase" style={{ color: e.color }}>{short}</span>
-                  {amt && <span className="font-mono text-[10px] font-semibold opacity-90">{amt}</span>}
-                  <span className="opacity-40 text-[9px] font-semibold">{ago}</span>
+                  <span className="font-extrabold text-[9px] uppercase" style={{ color: e.color }}>{short}</span>
+                  {amt && <span className="font-mono text-[9px] font-semibold opacity-90">{amt}</span>}
+                  <span className="opacity-40 text-[8px] font-semibold">{ago}</span>
                 </a>
               );
             })}

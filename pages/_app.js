@@ -1,6 +1,5 @@
 import Head from 'next/head';
-import React, { memo, useMemo } from 'react';
-import dynamic from 'next/dynamic';
+import React, { memo, useMemo, lazy, Suspense } from 'react';
 import { useRouter } from 'next/router';
 import ThemeProvider from 'src/theme/ThemeProvider';
 import { CacheProvider } from '@emotion/react';
@@ -9,57 +8,67 @@ import { ContextProvider, ThemeContext, WalletContext } from 'src/context/AppCon
 import { useContext, useEffect, useState } from 'react';
 import { Toaster, toast } from 'sonner';
 import 'src/styles/globals.css';
-import 'swiper/css';
-import 'swiper/css/navigation';
-import 'swiper/css/pagination';
 import { cn } from 'src/utils/cn';
 
-// Lazy load non-critical components
-// Removed dynamic import of Snackbar.js - component inlined below
-const TransactionAlert = dynamic(() => import('src/components/TransactionAlert'), {
-  ssr: false,
-  loading: () => null
-});
+// Load performance monitor (registers window.__PERF__ for console access)
+if (typeof window !== 'undefined') {
+  import('src/utils/perfMonitor');
+}
 
-const Wallet = dynamic(() => import('src/components/Wallet'), {
-  ssr: false,
-  loading: () => null
-});
+// React.lazy — only imports when rendered (no prefetch unlike next/dynamic)
+const TransactionAlert = lazy(() => import('src/components/TransactionAlert'));
+const Wallet = lazy(() => import('src/components/Wallet'));
+const BridgeTracker = lazy(() => import('src/components/BridgeTracker'));
+const Chat = lazy(() => import('src/components/Chat'));
 
-const BridgeTracker = dynamic(() => import('src/components/BridgeTracker'), {
-  ssr: false,
-  loading: () => null
-});
-
-const Chat = dynamic(() => import('src/components/Chat'), {
-  ssr: false,
-  loading: () => null
-});
+// Defer mounting non-critical components until after hydration + idle time
+function useDeferredMount(delay = 0) {
+  const [ready, setReady] = useState(false);
+  useEffect(() => {
+    if (typeof requestIdleCallback === 'function') {
+      const id = requestIdleCallback(() => setReady(true), { timeout: 3000 });
+      return () => cancelIdleCallback(id);
+    }
+    const timer = setTimeout(() => setReady(true), delay || 2000);
+    return () => clearTimeout(timer);
+  }, []);
+  return ready;
+}
 
 // Move static schema outside component to prevent recreation
-const jsonLdSchema = {
-  '@context': 'http://schema.org/',
-  '@type': 'Organization',
-  name: 'xrpl.to',
-  logo: 'https://xrpl.to/logo/xrpl-to-logo-white.svg',
-  url: 'https://xrpl.to/',
-  sameAs: [
-    'https://twitter.com/xrplto',
-    'https://www.facebook.com/xrplto',
-    'https://www.instagram.com/xrplto',
-    'https://www.reddit.com/r/xrplto',
-    'https://medium.com/@xrpl.to',
-    'https://www.crunchbase.com/organization/xrpl-to',
-    'https://www.linkedin.com/company/xrplto/'
-  ],
-  address: {
-    '@type': 'PostalAddress',
-    streetAddress: '7102 Foster Court',
-    addressRegion: 'Sunnyvale',
-    postalCode: '94087',
-    addressCountry: 'US'
+const jsonLdSchema = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: 'xrpl.to',
+    description:
+      'Real-time XRP Ledger DEX token prices, charts, and trading. Track thousands of XRPL tokens by volume, market cap, and price action.',
+    logo: 'https://xrpl.to/logo/xrpl-to-logo-white.svg',
+    url: 'https://xrpl.to/',
+    sameAs: [
+      'https://twitter.com/xrplto',
+      'https://www.facebook.com/xrplto',
+      'https://www.instagram.com/xrplto',
+      'https://www.reddit.com/r/xrplto',
+      'https://medium.com/@xrpl.to',
+      'https://www.crunchbase.com/organization/xrpl-to',
+      'https://www.linkedin.com/company/xrplto/'
+    ],
+    address: {
+      '@type': 'PostalAddress',
+      streetAddress: '7102 Foster Court',
+      addressRegion: 'Sunnyvale',
+      postalCode: '94087',
+      addressCountry: 'US'
+    }
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: 'xrpl.to',
+    url: 'https://xrpl.to/'
   }
-};
+];
 
 const clientSideEmotionCache = createEmotionCache();
 
@@ -204,6 +213,9 @@ function XRPLToApp({ Component, pageProps, router, emotionCache = clientSideEmot
     }
   };
 
+  // Defer non-critical components until after hydration + idle
+  const deferredReady = useDeferredMount();
+
   // Memoize ogp to prevent unnecessary re-renders
   const ogp = useMemo(() => pageProps.ogp || {}, [pageProps.ogp]);
   const data = pageProps.data;
@@ -247,27 +259,21 @@ function XRPLToApp({ Component, pageProps, router, emotionCache = clientSideEmot
           <link rel="preconnect" href="https://s1.xrpl.to" crossOrigin="anonymous" />
           <link rel="dns-prefetch" href="https://s1.xrpl.to" />
           <link rel="preconnect" href="https://api.xrpl.to" crossOrigin="anonymous" />
-          <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
           <meta
             name="viewport"
-            content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0, viewport-fit=cover"
+            content="width=device-width, initial-scale=1.0, minimum-scale=1.0, interactive-widget=resizes-content, viewport-fit=cover"
           />
           <meta name="robots" content="index, follow" />
           <meta name="language" content="en" />
           <meta content="xrpl.to" name="author" />
           <meta name="copyright" content="xrpl.to" />
-          <meta name="coverage" content="Worldwide" />
-          <meta name="distribution" content="Global" />
-          <meta name="rating" content="General" />
-          <meta httpEquiv="Expires" content="0" />
-          <meta httpEquiv="Pragma" content="no-cache" />
-          <meta httpEquiv="Cache-Control" content="no-cache" />
           <meta
             name="google-site-verification"
             content="hh6F1f8GQ-_d3L7eGAcBc9G020PM2jSDzIjT12_I-Mc"
           />
           <meta name="msapplication-TileColor" content="#000000" />
           <meta name="theme-color" content="#147DFE" />
+          <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png" />
           <link rel="icon" type="image/webp" sizes="32x32" href="/icons/favicon-32x32.webp" />
           <link rel="icon" type="image/webp" sizes="16x16" href="/icons/favicon-16x16.webp" />
           <link rel="manifest" href="/icons/site.webmanifest" />
@@ -320,15 +326,67 @@ function XRPLToApp({ Component, pageProps, router, emotionCache = clientSideEmot
               <Component {...pageProps} />
             </AppPageLayout>
             <ThemedToaster />
-            <TransactionAlert />
-            <Wallet />
-            <BridgeTracker />
-            <Chat />
+            {deferredReady && (
+              <Suspense fallback={null}>
+                <TransactionAlert />
+                <Wallet />
+                <BridgeTracker />
+                <Chat />
+              </Suspense>
+            )}
           </ThemeProvider>
         </ContextProvider>
       </div>
     </CacheProvider>
   );
+}
+
+// Report Web Vitals - logs Core Web Vitals metrics to console in dev
+export function reportWebVitals(metric) {
+  const { id, name, label, value, startTime } = metric;
+  const color =
+    name === 'CLS'
+      ? value > 0.25
+        ? '#ef4444'
+        : value > 0.1
+          ? '#f59e0b'
+          : '#22c55e'
+      : name === 'LCP'
+        ? value > 4000
+          ? '#ef4444'
+          : value > 2500
+            ? '#f59e0b'
+            : '#22c55e'
+        : name === 'FID' || name === 'INP'
+          ? value > 500
+            ? '#ef4444'
+            : value > 200
+              ? '#f59e0b'
+              : '#22c55e'
+          : name === 'TTFB'
+            ? value > 1800
+              ? '#ef4444'
+              : value > 800
+                ? '#f59e0b'
+                : '#22c55e'
+            : '#3b82f6';
+
+  const unit = name === 'CLS' ? '' : 'ms';
+  const displayValue = name === 'CLS' ? value.toFixed(3) : Math.round(value);
+
+  console.log(
+    `%c[WebVital] %c${name}%c ${displayValue}${unit} %c(${label})`,
+    'color: #6b7280',
+    `color: ${color}; font-weight: bold`,
+    `color: ${color}`,
+    'color: #6b7280; font-size: 11px'
+  );
+
+  // Store metrics on window for easy access via DevTools console
+  if (typeof window !== 'undefined') {
+    window.__WEB_VITALS__ = window.__WEB_VITALS__ || {};
+    window.__WEB_VITALS__[name] = { value, rating: color === '#22c55e' ? 'good' : color === '#f59e0b' ? 'needs-improvement' : color === '#ef4444' ? 'poor' : 'info', id, startTime };
+  }
 }
 
 // Memoize the component to prevent unnecessary re-renders

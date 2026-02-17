@@ -217,6 +217,21 @@ const config = {
           }
         ]
       },
+      // Interactive pages - never cache (stateful, user-specific)
+      ...([
+        '/launch',
+        '/wallet-setup',
+        '/wallet',
+        '/dashboard',
+        '/watchlist',
+        '/swap/:path*',
+        '/faucet',
+        '/signup',
+        '/address/:path*'
+      ].map(source => ({
+        source,
+        headers: [{ key: 'Cache-Control', value: 'no-cache, no-store, must-revalidate' }]
+      }))),
       // SSR pages - short cache with revalidation
       {
         source: '/',
@@ -299,15 +314,27 @@ const config = {
         loaders: ['@svgr/webpack'],
         as: '*.js'
       }
-    }
+    },
+    // Note: polyfill-module.js in node_modules/next/dist/build/polyfills/ has been emptied
+    // since all target browsers natively support the polyfilled features.
+    // Re-empty after npm install if polyfills reappear in Lighthouse.
   },
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production'
   },
-  // Webpack config - optimized for performance
-  webpack: (config, { isServer, dev }) => {
-    // Ensure proper handling of dynamic imports
+  // Webpack config - optimized for performance (only used with --no-turbopack)
+  webpack: (config, { isServer, dev, webpack }) => {
     if (!isServer) {
+      // Skip unnecessary polyfills — all targets (Chrome/Edge 111+, FF 111+, Safari 16.4+)
+      // natively support: trimStart/End, Array.flat/at, Object.fromEntries/hasOwn, URL.canParse
+      const path = require('path');
+      config.plugins.push(
+        new webpack.NormalModuleReplacementPlugin(
+          /[\\/]next[\\/]dist[\\/]build[\\/]polyfills[\\/]polyfill-module\.js$/,
+          path.resolve(__dirname, 'src/utils/empty-polyfill.js')
+        )
+      );
+
       config.resolve.fallback = {
         ...config.resolve.fallback,
         fs: false

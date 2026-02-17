@@ -13,22 +13,21 @@ import { selectFilteredCount } from 'src/redux/statusSlice';
 import { cn } from 'src/utils/cn';
 
 // ============== TokenListHead Styles ==============
-const StyledTableHead = ({ scrollTopLength, darkMode, className, children, ...p }) => (
+const StyledTableHead = ({ darkMode, className, children, ...p }) => (
   <thead
-    className={cn('sticky z-[100] backdrop-blur-[12px]', darkMode ? 'bg-transparent' : 'bg-white/95', className)}
-    style={{ top: scrollTopLength || 0 }}
+    className={cn('relative z-[100] backdrop-blur-[12px]', darkMode ? 'bg-black/90' : 'bg-white', className)}
     {...p}
   >{children}</thead>
 );
 
-const StyledTableCell = ({ darkMode, isMobile, align, sortable, sticky, left, width, className, children, stickyThird, scrollLeft, isTokenColumn, ...p }) => (
+const StyledTableCell = ({ darkMode, isMobile, align, sortable, sticky, left, width, className, children, stickyThird, scrollLeft, isTokenColumn, style: extraStyle, ...p }) => (
   <th
     className={cn(
-      'font-medium text-[11px] tracking-[0.04em] uppercase whitespace-nowrap box-border font-[inherit] transition-[color] duration-150',
+      'font-medium text-[11px] tracking-[0.04em] uppercase whitespace-nowrap box-border font-[inherit]',
       'first-of-type:pl-3 last-of-type:pr-3',
-      darkMode ? 'text-white/40 border-b border-white/[0.08]' : 'text-black/45 border-b border-black/[0.06]',
+      darkMode ? 'text-white/60 border-b border-white/[0.08]' : 'text-black/60 border-b border-black/[0.06]',
       sortable ? 'cursor-pointer' : 'cursor-default',
-      sortable && (darkMode ? 'hover:text-white/70' : 'hover:text-black/70'),
+      sortable && (darkMode ? 'hover:text-white/80' : 'hover:text-black/80'),
       sticky ? 'sticky z-[101]' : 'relative',
       sticky && (darkMode ? 'bg-transparent' : 'bg-white/95'),
       !sticky && 'bg-transparent',
@@ -39,7 +38,8 @@ const StyledTableCell = ({ darkMode, isMobile, align, sortable, sticky, left, wi
       textAlign: align || 'left',
       left: left || 'unset',
       width: width ? `${width}px` : 'auto',
-      maxWidth: width ? `${width}px` : 'none'
+      maxWidth: width ? `${width}px` : 'none',
+      ...extraStyle
     }}
     {...p}
   >{children}</th>
@@ -47,7 +47,7 @@ const StyledTableCell = ({ darkMode, isMobile, align, sortable, sticky, left, wi
 
 const SortIndicator = ({ active, darkMode, direction, className, children, ...p }) => (
   <span
-    className={cn('inline-block ml-[6px] text-[8px] transition-all duration-150', className)}
+    className={cn('inline-block ml-[6px] text-[8px] transition-[transform,opacity] duration-150', className)}
     style={{
       color: active ? '#4285f4' : (darkMode ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.25)'),
       transform: direction === 'asc' ? 'rotate(180deg)' : 'rotate(0deg)',
@@ -152,7 +152,7 @@ const Select = ({ className, children, ...p }) => (
 
 const SelectButton = ({ className, children, ...p }) => (
   <button
-    className={cn('bg-transparent border-none text-blue-600 font-medium text-[11px] cursor-pointer p-0 flex items-center gap-px min-w-[36px] hover:opacity-80', className)}
+    className={cn('bg-transparent border-none text-blue-500 font-medium text-[11px] cursor-pointer p-0 flex items-center gap-px min-w-[36px] hover:opacity-80', className)}
     {...p}
   >{children}</button>
 );
@@ -208,7 +208,6 @@ export const TokenListHead = memo(function TokenListHead({
   onRequestSort,
   scrollLeft,
   tokens = [],
-  scrollTopLength,
   darkMode,
   isMobile,
   isLoggedIn = false,
@@ -785,7 +784,7 @@ export const TokenListHead = memo(function TokenListHead({
 
   return (
     <>
-      <StyledTableHead scrollTopLength={scrollTopLength} darkMode={darkMode}>
+      <StyledTableHead darkMode={darkMode}>
         <tr>
           {filteredTableHead.map((headCell) => {
             const isSticky = headCell.sticky && (!isMobile || !headCell.mobileHide);
@@ -810,7 +809,7 @@ export const TokenListHead = memo(function TokenListHead({
                   <span>
                     {headCell.id === 'vol24hxrp' ? (
                       <>
-                        Volume <span className="opacity-50 text-[10px]">24h</span>
+                        Volume <span className="opacity-70 text-[10px]">24h</span>
                       </>
                     ) : (
                       headCell.label
@@ -823,7 +822,7 @@ export const TokenListHead = memo(function TokenListHead({
                   </span>
                 ) : headCell.id === 'sparkline' ? (
                   <span>
-                    Trendline <span className="opacity-50 text-[10px]">24h</span>
+                    Trendline <span className="opacity-70 text-[10px]">24h</span>
                   </span>
                 ) : (
                   headCell.label
@@ -948,7 +947,7 @@ export const TokenListToolbar = memo(function TokenListToolbar({
           disabled={page === 0}
           aria-label="Previous page"
           className={cn(
-            'p-1.5 rounded-md transition-colors',
+            'p-1.5 rounded-md transition-[background-color]',
             page === 0 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-white/10',
             isDark ? 'text-white/50' : 'text-gray-500'
           )}
@@ -969,7 +968,7 @@ export const TokenListToolbar = memo(function TokenListToolbar({
           disabled={page === page_count - 1}
           aria-label="Next page"
           className={cn(
-            'p-1.5 rounded-md transition-colors',
+            'p-1.5 rounded-md transition-[background-color]',
             page === page_count - 1 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-white/10',
             isDark ? 'text-white/50' : 'text-gray-500'
           )}

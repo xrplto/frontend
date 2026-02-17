@@ -42,11 +42,11 @@ const Container = ({ className, children, ...p }) => (
 const TableWrapper = ({ className, children, darkMode, ...p }) => (
   <div
     className={cn(
-      'rounded-xl bg-transparent overflow-hidden border-[1.5px]',
+      'rounded-xl bg-transparent overflow-clip border-[1.5px]',
       darkMode ? 'border-white/10' : 'border-black/[0.06]',
       className
     )}
-    style={{ ...p.style }}
+    style={{ minHeight: '680px', ...p.style }}
     {...(({ style, ...rest }) => rest)(p)}
   >
     {children}
@@ -60,10 +60,6 @@ const TableContainer = React.forwardRef(({ className, children, isMobile, ...p }
     style={{ scrollbarWidth: 'none' }}
     {...p}
   >
-    <style>{`
-      .table-container-hide-scrollbar::-webkit-scrollbar { display: none; }
-      .table-container-hide-scrollbar > * { scroll-snap-align: center; }
-    `}</style>
     {children}
   </div>
 ));
@@ -80,11 +76,6 @@ const StyledTable = React.forwardRef(({ className, children, isMobile, ...p }, r
 
 const StyledTableBody = ({ className, children, isMobile, darkMode, ...p }) => (
   <tbody className={cn('m-0 p-0', className)} {...p}>
-    <style>{`
-      .token-tbody tr { margin: 0; padding: 0; }
-      .token-tbody tr:hover { background: ${darkMode ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.015)'}; }
-      .token-tbody td { padding: ${isMobile ? '16px 8px' : '2px 6px'}; height: ${isMobile ? 'auto' : '32px'}; }
-    `}</style>
     {children}
   </tbody>
 );
@@ -229,10 +220,17 @@ function TokenListComponent({
   const [rows, setRows] = useState(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('tokenListRows');
-      return saved ? parseInt(saved) : 50;
+      if (saved) return parseInt(saved);
     }
     return 50;
   });
+
+  // Lower default rows on mobile after hydration
+  useEffect(() => {
+    if (!localStorage.getItem('tokenListRows') && window.innerWidth < 768) {
+      setRows(25);
+    }
+  }, []);
   const [showNew, setShowNew] = useState(false);
   const [showSlug, setShowSlug] = useState(false);
   const [showDate, setShowDate] = useState(false);
@@ -345,7 +343,7 @@ function TokenListComponent({
   const tableContainerRef = useRef(null);
   const tableRef = useRef(null);
   const [scrollLeft, setScrollLeft] = useState(0);
-  const [scrollTopLength, setScrollTopLength] = useState(0);
+
 
   const handleScrollX = useMemo(
     () =>
@@ -373,7 +371,8 @@ function TokenListComponent({
       }
     };
 
-    updateDimensions();
+    // Defer initial measurement to avoid forced reflow during hydration
+    const id = requestAnimationFrame(updateDimensions);
 
     // Update dimensions on resize
     const resizeObserver = new ResizeObserver(updateDimensions);
@@ -381,29 +380,39 @@ function TokenListComponent({
       resizeObserver.observe(tableRef.current);
     }
 
-    return () => resizeObserver.disconnect();
+    return () => {
+      cancelAnimationFrame(id);
+      resizeObserver.disconnect();
+    };
   }, []);
 
-  const handleScrollY = useMemo(
-    () =>
-      throttle(() => {
-        // Use cached dimensions instead of querying DOM
-        const scrollTop = window.scrollY;
-        const { top: tableOffsetTop, height: tableHeight } = tableDimensionsRef.current;
-
-        if (tableHeight > 0) {
-          const anchorTop = tableOffsetTop;
-          const anchorBottom = tableOffsetTop + tableHeight;
-
-          if (scrollTop > anchorTop && scrollTop < anchorBottom) {
-            setScrollTopLength(scrollTop - anchorTop);
-          } else {
-            setScrollTopLength(0);
+  // Sticky desktop header: direct DOM update via rAF for smooth 60fps tracking
+  useEffect(() => {
+    if (isMobile) return;
+    let ticking = false;
+    const onScroll = () => {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          const thead = tableRef.current?.querySelector('thead');
+          if (thead) {
+            const { top: tableTop, height: tableHeight } = tableDimensionsRef.current;
+            if (tableHeight > 0) {
+              const scrollTop = window.scrollY;
+              if (scrollTop > tableTop && scrollTop < tableTop + tableHeight - 60) {
+                thead.style.top = `${scrollTop - tableTop}px`;
+              } else {
+                thead.style.top = '0px';
+              }
+            }
           }
-        }
-      }, 150), // Increased throttle time
-    []
-  );
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, [isMobile]);
 
   useEffect(() => {
     const tableContainer = tableContainerRef.current;
@@ -412,15 +421,13 @@ function TokenListComponent({
     if (tableContainer) {
       tableContainer.addEventListener('scroll', handleScrollX, scrollOptions);
     }
-    window.addEventListener('scroll', handleScrollY, scrollOptions);
 
     return () => {
       if (tableContainer) {
         tableContainer.removeEventListener('scroll', handleScrollX, scrollOptions);
       }
-      window.removeEventListener('scroll', handleScrollY, scrollOptions);
     };
-  }, [handleScrollX, handleScrollY]);
+  }, [handleScrollX]);
 
   // React 18 transition hook
   const [isPending, startTransition] = useTransition();
@@ -446,6 +453,10 @@ function TokenListComponent({
               tokenMap.set(update.md5, {
                 ...existing,
                 ...update,
+                slug: existing.slug,
+                name: existing.name,
+                user: existing.user,
+                md5: existing.md5,
                 time: Date.now(),
                 bearbull: existing.exch > update.exch ? -1 : 1,
                 bearbullTime: Date.now()
@@ -496,9 +507,8 @@ function TokenListComponent({
   useEffect(() => {
     return () => {
       if (handleScrollX.cancel) handleScrollX.cancel();
-      if (handleScrollY.cancel) handleScrollY.cancel();
     };
-  }, [handleScrollX, handleScrollY]);
+  }, [handleScrollX]);
 
   const debouncedLoadTokens = useMemo(
     () =>
@@ -612,14 +622,11 @@ function TokenListComponent({
   }, []);
 
   const visibleTokens = useMemo(() => {
-    // Display tokens based on rows setting
-    const maxRows = rows;
-    return tokens.slice(0, maxRows);
+    return tokens.slice(0, rows);
   }, [tokens, rows]);
 
-  // Skip deferred value to reduce re-renders
-  const deferredTokens = visibleTokens;
-  const isDeferring = false;
+  const deferredTokens = useDeferredValue(visibleTokens);
+  const isDeferring = deferredTokens !== visibleTokens;
 
   // Remove DOM manipulation effect entirely to reduce overhead
 
@@ -639,7 +646,7 @@ function TokenListComponent({
 
       {!hideFilters && (
         <SearchContainer>
-          <Suspense fallback={<div className="h-[56px]" />}>
+          <Suspense fallback={<div style={{ height: 91 }} />}>
             <LazySearchToolbar
               tags={liveTags || tags}
               tagName={tagName}
@@ -887,7 +894,7 @@ function TokenListComponent({
         </CustomColumnsPanel>
       ) : isMobile ? (
         <TableWrapper darkMode={darkMode}>
-          <MobileContainer isDark={darkMode}>
+          <MobileContainer>
             <MobileHeader isDark={darkMode}>
               <HeaderCell
                 flex={2}
@@ -895,7 +902,6 @@ function TokenListComponent({
                 isDark={darkMode}
                 sortable
                 onClick={() => handleRequestSort(null, 'name')}
-                debugColor="cyan"
               >
                 Token
               </HeaderCell>
@@ -984,7 +990,6 @@ function TokenListComponent({
                                         : col;
                   handleRequestSort(null, sortCol);
                 }}
-                debugColor="magenta"
               >
                 {(() => {
                   const col = customColumns && customColumns[1] ? customColumns[1] : 'pro24h';
@@ -1042,7 +1047,6 @@ function TokenListComponent({
                 onRequestSort={handleRequestSort}
                 scrollLeft={scrollLeft}
                 tokens={tokens}
-                scrollTopLength={scrollTopLength}
                 darkMode={darkMode}
                 isMobile={isMobile}
                 isLoggedIn={!!accountProfile?.account}

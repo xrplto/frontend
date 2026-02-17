@@ -1,18 +1,20 @@
 // Internal API key for frontend WebSocket connections (same tier as chat)
 const WS_API_KEY = process.env.CHAT_API_KEY;
 
-const WS_ENDPOINTS = {
-  sync: () => `wss://api.xrpl.to/ws/sync/`,
-  creator: (id) => `wss://api.xrpl.to/ws/creator/${id}`,
-  ohlc: (id, params) => `wss://api.xrpl.to/ws/ohlc/${id}${params ? '?' + params : ''}`,
-  history: (id, params) => `wss://api.xrpl.to/ws/history/${id}${params ? '?' + params : ''}`,
-  token: (id, params) => `wss://api.xrpl.to/ws/token/${id}${params ? '?' + params : ''}`,
-  orderbook: (params) => `wss://api.xrpl.to/ws/orderbook${params ? '?' + params : ''}`,
-  balance: (id) => `wss://api.xrpl.to/ws/account/balance/${id}`,
-  balancePair: (id, params) => `wss://api.xrpl.to/ws/account/balance/pair/${id}${params ? '?' + params : ''}`,
-  holders: (id, params) => `wss://api.xrpl.to/ws/holders/${id}${params ? '?' + params : ''}`,
-  ledger: () => `wss://api.xrpl.to/ws/ledger`,
-};
+function makeEndpoints(wsHost) {
+  return {
+    sync: () => `wss://${wsHost}/ws/sync`,
+    creator: (id) => `wss://${wsHost}/ws/creator/${id}`,
+    ohlc: (id, params) => `wss://${wsHost}/ws/ohlc/${id}${params ? '?' + params : ''}`,
+    history: (id, params) => `wss://${wsHost}/ws/history/${id}${params ? '?' + params : ''}`,
+    token: (id, params) => `wss://${wsHost}/ws/token/${id}${params ? '?' + params : ''}`,
+    orderbook: (params) => `wss://${wsHost}/ws/orderbook${params ? '?' + params : ''}`,
+    balance: (id) => `wss://${wsHost}/ws/account/balance/${id}`,
+    balancePair: (id, params) => `wss://${wsHost}/ws/account/balance/pair/${id}${params ? '?' + params : ''}`,
+    holders: (id, params) => `wss://${wsHost}/ws/holders/${id}${params ? '?' + params : ''}`,
+    ledger: () => `wss://${wsHost}/ws/ledger`,
+  };
+}
 
 export default function handler(req, res) {
   const { type, id, ...params } = req.query;
@@ -21,7 +23,12 @@ export default function handler(req, res) {
     return res.status(400).json({ error: 'Missing type parameter' });
   }
 
-  const builder = WS_ENDPOINTS[type];
+  // Use the request host for WebSocket URLs so they resolve from the browser
+  const host = req.headers.host || 'api.xrpl.to';
+  const wsHost = host.startsWith('dev.') ? host : 'api.xrpl.to';
+  const endpoints = makeEndpoints(wsHost);
+
+  const builder = endpoints[type];
   if (!builder) {
     return res.status(400).json({ error: `Unknown WebSocket type: ${type}` });
   }
@@ -35,9 +42,7 @@ export default function handler(req, res) {
   // Build base URL
   let wsUrl = builder(id, queryParams);
 
-  // Append API key
-  const separator = wsUrl.includes('?') ? '&' : '?';
-  wsUrl += `${separator}apiKey=${WS_API_KEY}`;
-
-  res.json({ wsUrl });
+  // Return API key separately — never embed it in the URL.
+  // Clients must send {type:"auth", apiKey} as the first WS message.
+  res.json({ wsUrl, apiKey: WS_API_KEY });
 }

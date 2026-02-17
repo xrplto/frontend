@@ -99,9 +99,10 @@ class WithdrawalStorage {
     try {
       return await this.walletStorage.encryptForLocalStorage(data);
     } catch (e) {
-      // Fallback: base64 encode for development (not secure, but functional)
-      console.warn('Encryption unavailable, using base64 fallback');
-      return '__b64__' + btoa(JSON.stringify(data));
+      if (typeof window !== 'undefined' && window.location.protocol !== 'https:') {
+        throw new Error('Encryption requires a secure (HTTPS) context');
+      }
+      throw e;
     }
   }
 

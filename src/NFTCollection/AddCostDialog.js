@@ -42,7 +42,7 @@ export default function AddCostDialog({ open, setOpen, openSnackbar, onAddCost }
     <>
       {/* Dialog */}
       <div
-        className="fixed inset-0 z-[1301] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+        className="fixed inset-0 z-[1301] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm max-sm:h-dvh"
         onClick={handleClose}
       >
         <div

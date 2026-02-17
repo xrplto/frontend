@@ -3,11 +3,12 @@ import api from 'src/utils/api';
 import { ThemeContext, WalletContext } from 'src/context/AppContext';
 import { fNumber, fCurrency5 } from 'src/utils/formatters';
 import { normalizeCurrencyCode } from 'src/utils/parseUtils';
-import { Wifi, WifiOff } from 'lucide-react';
+import { Wifi, WifiOff, BarChart3, X } from 'lucide-react';
 import { cn } from 'src/utils/cn';
+import { createPortal } from 'react-dom';
 
 // Format price with compact notation for small values (matches TokenSummary)
-const formatPrice = (price) => {
+const formatPrice = (price, precision = 6) => {
   const numPrice = typeof price === 'string' ? parseFloat(price) : price;
   if (numPrice == null || isNaN(numPrice) || !isFinite(numPrice) || numPrice === 0) return '0';
 
@@ -16,24 +17,20 @@ const formatPrice = (price) => {
     const zeros = str.match(/0\.0*/)?.[0]?.length - 2 || 0;
     if (zeros >= 4) {
       const significant = str.replace(/^0\.0+/, '').replace(/0+$/, '');
-      return { compact: true, zeros, significant: significant.slice(0, 4) };
+      return { compact: true, zeros, significant: significant.slice(0, Math.max(precision - zeros, 2)) };
     }
-    return numPrice.toFixed(6).replace(/0+$/, '').replace(/\.$/, '');
-  } else if (numPrice < 1) {
-    return numPrice.toFixed(4).replace(/0+$/, '').replace(/\.$/, '');
-  } else if (numPrice < 100) {
-    return numPrice.toFixed(2);
+    return numPrice.toFixed(precision).replace(/0+$/, '').replace(/\.$/, '');
   } else if (numPrice >= 1e6) {
     return `${(numPrice / 1e6).toFixed(1)}M`;
   } else if (numPrice >= 1e3) {
     return `${(numPrice / 1e3).toFixed(1)}K`;
   }
-  return Math.round(numPrice).toString();
+  return numPrice.toFixed(precision).replace(/0+$/, '').replace(/\.$/, '');
 };
 
 // Render price with compact subscript notation
-const PriceDisplay = ({ price, type }) => {
-  const formatted = formatPrice(price);
+const PriceDisplay = ({ price, type, precision }) => {
+  const formatted = formatPrice(price, precision);
   if (formatted?.compact) {
     return (
       <Price type={type}>
@@ -123,32 +120,30 @@ const ColumnHeader = ({ className, children, isDark, ...p }) => (
   </div>
 );
 
-const Row = ({ className, children, type, isUserOrder, onClick, ...p }) => (
-  <div
-    className={cn(
-      'flex justify-between items-center px-4 py-1.5 relative cursor-pointer text-xs transition-all duration-200 border-l-2 font-mono',
-      isUserOrder ? 'border-l-[#3b82f6]' : 'border-l-transparent',
-      className
-    )}
-    style={{
-      background: isUserOrder ? 'rgba(59, 130, 246, 0.12)' : 'transparent'
-    }}
-    onClick={onClick}
-    onMouseEnter={(e) => {
-      e.currentTarget.style.background = isUserOrder
-        ? 'rgba(59, 130, 246, 0.18)'
-        : type === 'ask'
-          ? 'rgba(239, 68, 68, 0.08)'
-          : 'rgba(34, 197, 94, 0.08)';
-    }}
-    onMouseLeave={(e) => {
-      e.currentTarget.style.background = isUserOrder ? 'rgba(59, 130, 246, 0.12)' : 'transparent';
-    }}
-    {...p}
-  >
-    {children}
-  </div>
-);
+const Row = ({ className, children, type, isUserOrder, isHovered, isHighlighted, onClick, ...p }) => {
+  const bg = isUserOrder
+    ? (isHovered ? 'rgba(59, 130, 246, 0.18)' : 'rgba(59, 130, 246, 0.12)')
+    : isHovered
+      ? (type === 'ask' ? 'rgba(239, 68, 68, 0.10)' : 'rgba(34, 197, 94, 0.10)')
+      : isHighlighted
+        ? (type === 'ask' ? 'rgba(239, 68, 68, 0.05)' : 'rgba(34, 197, 94, 0.05)')
+        : 'transparent';
+
+  return (
+    <div
+      className={cn(
+        'flex justify-between items-center px-4 py-1.5 relative cursor-pointer text-xs transition-all duration-200 border-l-2 font-mono',
+        isUserOrder ? 'border-l-[#3b82f6]' : 'border-l-transparent',
+        className
+      )}
+      style={{ background: bg }}
+      onClick={onClick}
+      {...p}
+    >
+      {children}
+    </div>
+  );
+};
 
 const DepthBar = ({ className, type, width, ...p }) => (
   <div
@@ -220,6 +215,33 @@ const LimitPriceLine = ({ className, ...p }) => (
   </div>
 );
 
+const OrderTooltip = ({ isDark, type, cumSum, avgPrice, cumXrp, pctFromBest, tokenName }) => (
+  <div className={cn(
+    'absolute left-1/2 -translate-x-1/2 rounded-[8px] px-[10px] py-[6px] text-[9px] whitespace-nowrap z-10 shadow-[0_4px_12px_rgba(0,0,0,0.3)] flex flex-col gap-[3px]',
+    type === 'ask' ? '-top-[52px]' : 'top-full mt-1',
+    isDark
+      ? 'bg-black/95 border border-white/10'
+      : 'bg-white/95 border border-black/10'
+  )}>
+    <div className="flex items-center gap-[6px]">
+      <span className={cn(isDark ? 'text-white/40' : 'text-black/40')}>{'\u03A3'}</span>
+      <span className={cn('font-semibold', type === 'ask' ? 'text-[#ef4444]' : 'text-[#22c55e]')}>{fNumber(cumSum)} {tokenName}</span>
+      <span className={cn(isDark ? 'text-white/20' : 'text-black/20')}>{'\u00B7'}</span>
+      <span className={cn(isDark ? 'text-white/40' : 'text-black/40')}>Avg</span>
+      <span className={cn('font-medium', isDark ? 'text-white/80' : 'text-black/80')}>{renderInlinePrice(avgPrice)}</span>
+    </div>
+    <div className="flex items-center gap-[6px]">
+      <span className={cn(isDark ? 'text-white/40' : 'text-black/40')}>Total</span>
+      <span className={cn('font-semibold', isDark ? 'text-white/80' : 'text-black/80')}>{fNumber(cumXrp)} XRP</span>
+      <span className={cn(isDark ? 'text-white/20' : 'text-black/20')}>{'\u00B7'}</span>
+      <span className={cn(isDark ? 'text-white/40' : 'text-black/40')}>Depth</span>
+      <span className={cn('font-semibold', pctFromBest > 5 ? 'text-[#f59e0b]' : isDark ? 'text-white/70' : 'text-black/70')}>
+        {pctFromBest != null ? `${pctFromBest.toFixed(2)}%` : '\u2014'}
+      </span>
+    </div>
+  </div>
+);
+
 const BearEmptyState = ({ isDark, message }) => (
   <div className={cn(
     'flex flex-col items-center justify-center px-[20px] py-[40px] m-[12px] rounded-[12px] gap-[12px]',
@@ -234,6 +256,291 @@ const BearEmptyState = ({ isDark, message }) => (
   </div>
 );
 
+const MIN_XRP_OPTIONS = [0, 10, 100, 1000, 10000];
+
+const DepthChartModal = ({ bids, asks, isDark, onClose, userAccount }) => {
+  const chartRef = useRef(null);
+  const containerRef = useRef(null);
+  const overlayRef = useRef(null);
+  const seriesRef = useRef({ bid: null, ask: null });
+  const [chartReady, setChartReady] = useState(false);
+  const [minXrp, setMinXrp] = useState(0);
+
+  // Build cumulative depth data from orders
+  const buildDepthData = (bids, asks) => {
+    const aggregate = (orders) => {
+      const map = new Map();
+      for (const o of orders) map.set(o.price, (map.get(o.price) || 0) + o.amount);
+      return [...map.entries()].sort((a, b) => a[0] - b[0]);
+    };
+    const bidAgg = aggregate(bids);
+    const bidData = [];
+    let bidCum = 0;
+    for (let i = bidAgg.length - 1; i >= 0; i--) bidCum += bidAgg[i][1];
+    let bidRunning = bidCum;
+    for (const [price, amt] of bidAgg) { bidData.push({ time: price, value: bidRunning }); bidRunning -= amt; }
+    const askAgg = aggregate(asks);
+    const askData = [];
+    let askCum = 0;
+    for (const [price, amt] of askAgg) { askCum += amt; askData.push({ time: price, value: askCum }); }
+    return { bidData, askData };
+  };
+
+  // Create chart once (only on mount / theme change)
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    (async () => {
+      const { createChart, LineSeries } = await import('lightweight-charts');
+      if (!containerRef.current) return;
+
+      const chart = createChart(containerRef.current, {
+        width: containerRef.current.clientWidth,
+        height: containerRef.current.clientHeight,
+        layout: {
+          background: { type: 'solid', color: 'transparent' },
+          textColor: isDark ? '#FFFFFF' : '#212B36',
+          fontSize: 11,
+          fontFamily: 'var(--font-sans)'
+        },
+        grid: {
+          vertLines: { color: isDark ? 'rgba(255, 255, 255, 0.04)' : 'rgba(0, 0, 0, 0.04)', style: 0 },
+          horzLines: { color: isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)', style: 0 }
+        },
+        crosshair: {
+          mode: 0,
+          vertLine: { color: isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.15)', width: 1, style: 3, labelBackgroundColor: '#3b82f6' },
+          horzLine: { color: isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.15)', width: 1, style: 3, labelBackgroundColor: '#3b82f6' }
+        },
+        rightPriceScale: { borderColor: isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.15)', scaleMargins: { top: 0.1, bottom: 0.1 } },
+        timeScale: { borderColor: isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)', timeVisible: false, tickMarkFormatter: (t) => t.toFixed(6), rightOffset: 15 },
+        handleScroll: false,
+        handleScale: false
+      });
+      chartRef.current = chart;
+
+      const bidSeries = chart.addSeries(LineSeries, { color: '#22c55e', lineWidth: 2, priceLineVisible: false, lastValueVisible: false, crosshairMarkerVisible: true });
+      const askSeries = chart.addSeries(LineSeries, { color: '#ef4444', lineWidth: 2, priceLineVisible: false, lastValueVisible: false, crosshairMarkerVisible: true });
+      seriesRef.current = { bid: bidSeries, ask: askSeries };
+      setChartReady(true);
+    })();
+
+    const handleResize = () => {
+      if (chartRef.current && containerRef.current) {
+        chartRef.current.applyOptions({ width: containerRef.current.clientWidth, height: containerRef.current.clientHeight });
+      }
+    };
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      setChartReady(false);
+      if (overlayRef.current) { overlayRef.current.remove(); overlayRef.current = null; }
+      seriesRef.current = { bid: null, ask: null };
+      if (chartRef.current) { chartRef.current.remove(); chartRef.current = null; }
+    };
+  }, [isDark]);
+
+  // Update series data when bids/asks change (no chart rebuild)
+  useEffect(() => {
+    const { bid: bidSeries, ask: askSeries } = seriesRef.current;
+    if (!bidSeries || !askSeries || (!bids.length && !asks.length)) return;
+    const { bidData, askData } = buildDepthData(bids, asks);
+    bidSeries.setData(bidData);
+    askSeries.setData(askData);
+    chartRef.current?.timeScale().fitContent();
+  }, [bids, asks]);
+
+  // Separate effect for address labels — re-runs when minXrp, data, or chart readiness changes
+  useEffect(() => {
+    if (!chartReady) return;
+    const chart = chartRef.current;
+    const bidSeries = seriesRef.current.bid;
+    const askSeries = seriesRef.current.ask;
+    if (!chart || !bidSeries || !askSeries || (!bids.length && !asks.length) || !containerRef.current) return;
+
+    const { bidData, askData } = buildDepthData(bids, asks);
+
+    // Create or reuse overlay
+    let overlay = overlayRef.current;
+    if (!overlay) {
+      overlay = document.createElement('div');
+      overlay.style.cssText = 'position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:5';
+      containerRef.current.style.position = 'relative';
+      containerRef.current.appendChild(overlay);
+      overlayRef.current = overlay;
+    }
+
+    const shortAddr = (acc) => userAccount && acc === userAccount ? 'YOU' : `${acc.slice(0, 4)}..${acc.slice(-3)}`;
+    const fmtXrp = (v) => v >= 1e6 ? `${(v/1e6).toFixed(1)}M` : v >= 1e3 ? `${(v/1e3).toFixed(1)}K` : v.toFixed(0);
+
+    // Deterministic color per address via hash — every address gets a unique hue
+    const getAddrColor = (acc) => {
+      let h = 0;
+      for (let i = 0; i < acc.length; i++) h = ((h << 5) - h + acc.charCodeAt(i)) | 0;
+      const hue = ((h % 360) + 360) % 360;
+      const sat = 55 + (((h >>> 8) % 20));   // 55-74%
+      const lit = 55 + (((h >>> 16) % 15));   // 55-69%
+      return `hsl(${hue}, ${sat}%, ${lit}%)`;
+    };
+
+    const placeLabels = () => {
+      overlay.innerHTML = '';
+      const ts = chart.timeScale();
+      const allOrders = [
+        ...bids.map((b) => ({ ...b, side: 'bid', series: bidSeries })),
+        ...asks.map((a) => ({ ...a, side: 'ask', series: askSeries }))
+      ];
+
+      const usedSlots = [];
+      for (const o of allOrders) {
+        const acc = o.account || o.Account;
+        if (!acc) continue;
+        const isYou = userAccount && acc === userAccount;
+        const xrpValue = o.total && !isNaN(o.total) ? o.total : o.price * o.amount;
+        if (!isYou && minXrp > 0 && xrpValue < minXrp) continue;
+
+        const x = ts.timeToCoordinate(o.price);
+        if (x === null || x < 0) continue;
+        const sideData = o.side === 'bid' ? bidData : askData;
+        let nearest = sideData[0];
+        let minDist = Math.abs(o.price - nearest.time);
+        for (const d of sideData) {
+          const dist = Math.abs(o.price - d.time);
+          if (dist < minDist) { minDist = dist; nearest = d; }
+        }
+        if (!nearest) continue;
+        const y = o.series.priceToCoordinate(nearest.value);
+        if (y === null || y < 0) continue;
+
+        const tooClose = usedSlots.some((s) => Math.abs(s.x - x) < 60 && Math.abs(s.y - y) < 14);
+        if (tooClose && !isYou) continue;
+        usedSlots.push({ x, y });
+
+        const color = isYou ? '#3b82f6' : getAddrColor(acc);
+        const dot = document.createElement('div');
+        dot.style.cssText = `position:absolute;width:${isYou ? 10 : 6}px;height:${isYou ? 10 : 6}px;border-radius:50%;background:${color};left:${x - (isYou ? 5 : 3)}px;top:${y - (isYou ? 5 : 3)}px;${isYou ? `box-shadow:0 0 8px ${color}` : ''}`;
+        overlay.appendChild(dot);
+
+        const label = document.createElement('div');
+        label.style.cssText = `position:absolute;left:${x + 8}px;top:${y - 8}px;font-size:${isYou ? 10 : 9}px;font-family:var(--font-mono);white-space:nowrap;padding:1px 4px;border-radius:3px;font-weight:${isYou ? 700 : 500};color:${color};background:${isDark ? 'rgba(0,0,0,0.7)' : 'rgba(255,255,255,0.85)'}`;
+        label.textContent = `${shortAddr(acc)} ${fmtXrp(xrpValue)} XRP`;
+        overlay.appendChild(label);
+      }
+    };
+
+    requestAnimationFrame(placeLabels);
+    const unsub = chart.timeScale().subscribeVisibleLogicalRangeChange(placeLabels);
+
+    return () => {
+      unsub?.();
+    };
+  }, [bids, asks, isDark, userAccount, minXrp, chartReady]);
+
+  useEffect(() => {
+    const handleEsc = (e) => e.key === 'Escape' && onClose();
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, [onClose]);
+
+  const totalBidVol = bids.reduce((s, b) => s + (b.total || b.price * b.amount), 0);
+  const totalAskVol = asks.reduce((s, a) => s + (a.total || a.price * a.amount), 0);
+  const bidPct = totalBidVol + totalAskVol > 0 ? (totalBidVol / (totalBidVol + totalAskVol)) * 100 : 50;
+
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-6 max-sm:p-3 max-sm:h-dvh" onClick={onClose}>
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+      <div
+        className={cn(
+          'relative w-full max-w-[1200px] rounded-2xl border-[1.5px] overflow-hidden flex flex-col',
+          isDark ? 'bg-[#000000] border-white/10' : 'bg-[#F8FAFD] border-black/10'
+        )}
+        style={{ height: 'min(80dvh, 720px)' }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className={cn(
+          'flex items-center justify-between px-5 py-3.5 border-b flex-shrink-0',
+          isDark ? 'border-white/[0.06]' : 'border-black/[0.06]'
+        )}>
+          <div className="flex items-center gap-3">
+            <BarChart3 size={16} className={isDark ? 'text-white/50' : 'text-black/50'} />
+            <span className={cn('text-[13px] font-semibold tracking-wide', isDark ? 'text-white' : 'text-[#212B36]')}>
+              Depth Chart
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className={cn(
+              'flex items-center rounded-lg p-[2px]',
+              isDark ? 'bg-white/[0.04] border border-white/[0.06]' : 'bg-black/[0.03] border border-black/[0.06]'
+            )}>
+              <span className={cn('text-[10px] font-medium px-2.5', isDark ? 'text-white/30' : 'text-black/30')}>Min XRP</span>
+              {MIN_XRP_OPTIONS.map((v) => (
+                <button
+                  key={v}
+                  onClick={() => setMinXrp(v)}
+                  className={cn(
+                    'h-[26px] px-2.5 rounded-md border-none cursor-pointer text-[10px] font-semibold transition-all',
+                    minXrp === v
+                      ? 'bg-[#3b82f6] text-white'
+                      : isDark ? 'text-white/40 hover:text-white hover:bg-white/10' : 'text-black/40 hover:text-black hover:bg-black/5'
+                  )}
+                >
+                  {v === 0 ? 'All' : v >= 1000 ? `${v / 1000}K` : v}
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={onClose}
+              className={cn(
+                'p-1.5 rounded-lg transition-colors ml-1',
+                isDark ? 'hover:bg-white/10 text-white/40' : 'hover:bg-black/5 text-black/40'
+              )}
+            >
+              <X size={16} />
+            </button>
+          </div>
+        </div>
+
+        {/* Chart */}
+        <div ref={containerRef} className="flex-1 min-h-0" />
+
+        {/* Footer */}
+        <div className={cn(
+          'flex items-center justify-between px-5 py-2.5 border-t flex-shrink-0',
+          isDark ? 'border-white/[0.06]' : 'border-black/[0.06]'
+        )}>
+          <div className="flex items-center gap-5 text-[11px]">
+            <span className="flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#22c55e]" />
+              <span className={isDark ? 'text-white/50' : 'text-black/50'}>Bids</span>
+              <span className="text-[#22c55e] font-semibold font-mono ml-0.5">{fNumber(totalBidVol)} XRP</span>
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#ef4444]" />
+              <span className={isDark ? 'text-white/50' : 'text-black/50'}>Asks</span>
+              <span className="text-[#ef4444] font-semibold font-mono ml-0.5">{fNumber(totalAskVol)} XRP</span>
+            </span>
+          </div>
+          <div className="flex items-center gap-2.5">
+            <div className={cn(
+              'w-[120px] h-[6px] rounded-full overflow-hidden flex',
+              isDark ? 'bg-white/[0.06]' : 'bg-black/[0.06]'
+            )}>
+              <div className="h-full bg-[#22c55e] rounded-l-full" style={{ width: `${bidPct}%` }} />
+              <div className="h-full bg-[#ef4444] rounded-r-full" style={{ width: `${100 - bidPct}%` }} />
+            </div>
+            <span className={cn('text-[10px] font-mono font-medium', isDark ? 'text-white/40' : 'text-black/40')}>
+              {bidPct.toFixed(0)}% / {(100 - bidPct).toFixed(0)}%
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>,
+    document.body
+  );
+};
+
 const OrderBook = ({ token, onPriceClick, limitPrice }) => {
   const { themeName } = useContext(ThemeContext);
   const { accountProfile } = useContext(WalletContext);
@@ -245,6 +552,7 @@ const OrderBook = ({ token, onPriceClick, limitPrice }) => {
   const asksSideRef = useRef(null);
   const [rlusdToken, setRlusdToken] = useState(null);
   const [wsConnected, setWsConnected] = useState(false);
+  const [showDepthChart, setShowDepthChart] = useState(false);
   const [viewMode, setViewMode] = useState(() => {
     if (typeof window !== 'undefined') {
       return localStorage.getItem('orderbook_viewMode') || 'both';
@@ -336,8 +644,8 @@ const OrderBook = ({ token, onPriceClick, limitPrice }) => {
       a.sumAmount = askSum;
     });
 
-    setBids(parsedBids.slice(0, 30));
-    setAsks(parsedAsks.slice(0, 30));
+    setBids(parsedBids.slice(0, 100));
+    setAsks(parsedAsks.slice(0, 100));
   };
 
   // WebSocket for real-time orderbook updates
@@ -355,20 +663,22 @@ const OrderBook = ({ token, onPriceClick, limitPrice }) => {
       base_currency: 'XRP',
       quote_currency: effectiveToken.currency,
       quote_issuer: effectiveToken.issuer,
-      limit: '30'
+      limit: '100'
     });
 
-    let ws = null;
+    let unmounted = false;
     (async () => {
       try {
         const res = await fetch(`/api/ws/session?type=orderbook&${params}`);
-        const { wsUrl } = await res.json();
-        ws = new WebSocket(wsUrl);
+        if (unmounted) return;
+        const { wsUrl, apiKey } = await res.json();
+        if (unmounted) return;
+        const ws = new WebSocket(wsUrl);
         wsRef.current = ws;
 
-        ws.onopen = () => setWsConnected(true);
-        ws.onclose = () => setWsConnected(false);
-        ws.onerror = () => setWsConnected(false);
+        ws.onopen = () => { if (apiKey) ws.send(JSON.stringify({ type: 'auth', apiKey })); setWsConnected(true); };
+        ws.onclose = () => { if (!unmounted) setWsConnected(false); };
+        ws.onerror = () => { if (!unmounted) setWsConnected(false); };
         ws.onmessage = (event) => {
           try {
             const msg = JSON.parse(event.data);
@@ -381,13 +691,16 @@ const OrderBook = ({ token, onPriceClick, limitPrice }) => {
             // Parse error
           }
         };
+
+        if (unmounted) { ws.close(); wsRef.current = null; }
       } catch {
         // Session error
       }
     })();
 
     return () => {
-      if (ws) ws.close();
+      unmounted = true;
+      if (wsRef.current) wsRef.current.close();
       wsRef.current = null;
       setWsConnected(false);
     };
@@ -407,7 +720,7 @@ const OrderBook = ({ token, onPriceClick, limitPrice }) => {
       const params = new URLSearchParams({
         base_currency: 'XRP',
         quote_currency: effectiveToken.currency,
-        limit: '60'
+        limit: '100'
       });
       params.append('quote_issuer', effectiveToken.issuer);
       const url = `${BASE_URL}/orderbook?${params}`;
@@ -481,8 +794,8 @@ const OrderBook = ({ token, onPriceClick, limitPrice }) => {
       });
 
       if (mountedRef.current) {
-        setBids(parsedBids.slice(0, 30));
-        setAsks(parsedAsks.slice(0, 30));
+        setBids(parsedBids.slice(0, 100));
+        setAsks(parsedAsks.slice(0, 100));
       }
     }
 
@@ -549,15 +862,62 @@ const OrderBook = ({ token, onPriceClick, limitPrice }) => {
     return { bestBid: bb, bestAsk: ba, spreadPct: spread };
   }, [asks, bids]);
 
-  const bidMax = Math.max(...bids.map((b) => b.amount || 0), 1);
-  const askMax = Math.max(...asks.map((a) => a.amount || 0), 1);
+  // Aggregate orders by rounded price at current precision
+  const aggregateOrders = (orders, prec) => {
+    const map = new Map();
+    for (const o of orders) {
+      const key = o.price.toFixed(prec);
+      if (map.has(key)) {
+        const g = map.get(key);
+        g.amount += o.amount;
+        g.total += (o.total && !isNaN(o.total) ? o.total : o.price * o.amount);
+        const acc = o.account || o.Account;
+        if (acc && !g.accounts.has(acc)) g.accounts.add(acc);
+        g.orders.push(o);
+      } else {
+        const acc = o.account || o.Account;
+        const accounts = new Set();
+        if (acc) accounts.add(acc);
+        map.set(key, {
+          price: o.price,
+          amount: o.amount,
+          total: o.total && !isNaN(o.total) ? o.total : o.price * o.amount,
+          account: acc,
+          accounts,
+          orders: [o],
+          funded: o.funded
+        });
+      }
+    }
+    const result = [...map.values()];
+    let sum = 0;
+    result.forEach((r) => { sum += r.amount; r.sumAmount = sum; });
+    return result;
+  };
+
+  const groupedBids = useMemo(() => aggregateOrders(bids, precision), [bids, precision]);
+  const groupedAsks = useMemo(() => aggregateOrders(asks, precision), [asks, precision]);
+
+  // Depth bars use XRP value with sqrt scaling (industry standard)
+  // Sqrt compresses whale orders while keeping small orders visible
+  // P95 cap prevents a single mega-whale from squashing everything
+  const getXrpValue = (o) => (o.total && !isNaN(o.total) ? o.total : o.price * o.amount) || 0;
+  const getDepthWidth = (orders) => {
+    if (!orders.length) return () => 0;
+    const values = orders.map(getXrpValue).sort((a, b) => a - b);
+    const p95 = values[Math.floor(values.length * 0.95)] || values[values.length - 1];
+    const refMax = Math.max(p95, 1);
+    return (value) => Math.min(Math.sqrt(Math.min(value, refMax * 2) / refMax) * 100, 100);
+  };
+  const bidBarWidth = getDepthWidth(groupedBids);
+  const askBarWidth = getDepthWidth(groupedAsks);
 
   // Auto-scroll asks to bottom (so lowest ask is visible near spread)
   useEffect(() => {
-    if (asksSideRef.current && asks.length > 0) {
+    if (asksSideRef.current && groupedAsks.length > 0) {
       asksSideRef.current.scrollTop = asksSideRef.current.scrollHeight;
     }
-  }, [asks]);
+  }, [groupedAsks]);
 
   const isMPT = token?.tokenType === 'mpt';
 
@@ -576,6 +936,16 @@ const OrderBook = ({ token, onPriceClick, limitPrice }) => {
       <Header isDark={isDark}>
         <Title isDark={isDark} />
         <div className="flex items-center gap-[10px]">
+          <button
+            onClick={() => setShowDepthChart(true)}
+            className={cn(
+              'h-[24px] w-[24px] flex items-center justify-center rounded-[6px] transition-colors',
+              isDark ? 'hover:bg-white/10 text-white/40 hover:text-white/80' : 'hover:bg-black/5 text-black/40 hover:text-black/80'
+            )}
+            title="Depth Chart"
+          >
+            <BarChart3 size={14} />
+          </button>
           <div className={cn('flex rounded-[6px] p-[2px]', isDark ? 'bg-white/[0.05]' : 'bg-black/[0.05]')}>
             {[
               { id: 'both', label: 'Both' },
@@ -622,6 +992,7 @@ const OrderBook = ({ token, onPriceClick, limitPrice }) => {
               backgroundPosition: 'right 8px center'
             }}
           >
+            <option value={2} className={cn(isDark ? 'bg-[#1a1f2e] text-white' : 'bg-white text-black')}>2 Decimals</option>
             <option value={4} className={cn(isDark ? 'bg-[#1a1f2e] text-white' : 'bg-white text-black')}>4 Decimals</option>
             <option value={6} className={cn(isDark ? 'bg-[#1a1f2e] text-white' : 'bg-white text-black')}>6 Decimals</option>
             <option value={8} className={cn(isDark ? 'bg-[#1a1f2e] text-white' : 'bg-white text-black')}>8 Decimals</option>
@@ -638,50 +1009,45 @@ const OrderBook = ({ token, onPriceClick, limitPrice }) => {
               <span>Size ({normalizeCurrencyCode(displayToken?.currency) || 'Token'})</span>
               <span>Maker</span>
             </ColumnHeader>
-            {[...asks].reverse().map((ask, idx, arr) => {
-              const acc = ask.account || ask.Account;
-              const cumSum = arr.slice(0, idx + 1).reduce((s, a) => s + a.amount, 0);
-              const avgPrice = arr.slice(0, idx + 1).reduce((s, a) => s + a.price * a.amount, 0) / cumSum;
+            {[...groupedAsks].reverse().map((ask, idx, arr) => {
+              const accs = ask.accounts;
+              const hasUser = userAccount && accs.has(userAccount);
+              const makerCount = accs.size;
+              const cumSum = arr.slice(idx).reduce((s, a) => s + a.amount, 0);
+              const avgPrice = arr.slice(idx).reduce((s, a) => s + a.total, 0) / cumSum;
+              const cumXrp = arr.slice(idx).reduce((s, a) => s + a.total, 0);
+              const pctFromBest = bestAsk ? ((ask.price - bestAsk) / bestAsk) * 100 : null;
               const rowKey = `ask-${idx}`;
               const nextAsk = arr[idx + 1];
               const showLimitLine = limitPrice && nextAsk && ask.price > limitPrice && nextAsk.price <= limitPrice;
-              const isUserOrder = userAccount && acc === userAccount;
+              const singleAcc = makerCount === 1 ? [...accs][0] : null;
               return (
                 <React.Fragment key={idx}>
                   <Row
                     type="ask"
-                    isUserOrder={isUserOrder}
+                    isUserOrder={hasUser}
+                    isHovered={hoveredRow === rowKey}
+                    isHighlighted={hoveredRow?.startsWith('ask-') && idx >= parseInt(hoveredRow.split('-')[1], 10) && hoveredRow !== rowKey}
                     onClick={() => onPriceClick?.(ask.price)}
                     onMouseEnter={() => setHoveredRow(rowKey)}
                     onMouseLeave={() => setHoveredRow(null)}
                   >
-                    <DepthBar type="ask" width={(ask.amount / askMax) * 100} />
-                    <PriceDisplay price={ask.price} type="ask" />
+                    <DepthBar type="ask" width={askBarWidth(getXrpValue(ask))} />
+                    <PriceDisplay price={ask.price} type="ask" precision={precision} />
                     <Amount isDark={isDark}>{fNumber(ask.amount)}</Amount>
                     <Maker
                       isDark={isDark}
-                      title={acc || ''}
+                      title={makerCount > 1 ? [...accs].join(', ') : (singleAcc || '')}
                       onClick={(e) => {
                         e.stopPropagation();
-                        acc && window.open(`/address/${acc}`, '_blank');
+                        if (singleAcc) window.open(`/address/${singleAcc}`, '_blank');
                       }}
-                      style={isUserOrder ? { color: '#3b82f6', fontWeight: 600 } : {}}
+                      style={hasUser ? { color: '#3b82f6', fontWeight: 600 } : {}}
                     >
-                      {isUserOrder ? 'YOU' : acc ? `${acc.slice(1, 5)}\u2026${acc.slice(-2)}` : ''}
+                      {makerCount > 1 ? `${makerCount} makers` : hasUser ? 'YOU' : singleAcc ? `${singleAcc.slice(1, 5)}\u2026${singleAcc.slice(-2)}` : ''}
                     </Maker>
                     {hoveredRow === rowKey && (
-                      <div className={cn(
-                        'absolute left-1/2 -top-[28px] -translate-x-1/2 rounded-[6px] px-[8px] py-[4px] text-[9px] whitespace-nowrap z-10 shadow-[0_4px_12px_rgba(0,0,0,0.3)]',
-                        isDark
-                          ? 'bg-black/90 border border-white/10'
-                          : 'bg-white/95 border border-black/10'
-                      )}>
-                        <span className={cn(isDark ? 'text-white/50' : 'text-black/50')}>{'\u03A3'} </span>
-                        <span className="text-[#ef4444]">{fNumber(cumSum)}</span>
-                        <span className={cn(isDark ? 'text-white/30' : 'text-black/30')}> {'\u00B7'} </span>
-                        <span className={cn(isDark ? 'text-white/50' : 'text-black/50')}>Avg </span>
-                        <span>{renderInlinePrice(avgPrice)}</span>
-                      </div>
+                      <OrderTooltip isDark={isDark} type="ask" cumSum={cumSum} avgPrice={avgPrice} cumXrp={cumXrp} pctFromBest={pctFromBest} tokenName={normalizeCurrencyCode(displayToken?.currency) || 'Token'} />
                     )}
                   </Row>
                   {showLimitLine && <LimitPriceLine />}
@@ -764,50 +1130,45 @@ const OrderBook = ({ token, onPriceClick, limitPrice }) => {
               <span>Size ({normalizeCurrencyCode(displayToken?.currency) || 'Token'})</span>
               <span>Maker</span>
             </ColumnHeader>
-            {bids.map((bid, idx) => {
-              const acc = bid.account || bid.Account;
-              const cumSum = bids.slice(0, idx + 1).reduce((s, b) => s + b.amount, 0);
-              const avgPrice = bids.slice(0, idx + 1).reduce((s, b) => s + b.price * b.amount, 0) / cumSum;
+            {groupedBids.map((bid, idx) => {
+              const accs = bid.accounts;
+              const hasUser = userAccount && accs.has(userAccount);
+              const makerCount = accs.size;
+              const cumSum = groupedBids.slice(0, idx + 1).reduce((s, b) => s + b.amount, 0);
+              const avgPrice = groupedBids.slice(0, idx + 1).reduce((s, b) => s + b.total, 0) / cumSum;
+              const cumXrp = groupedBids.slice(0, idx + 1).reduce((s, b) => s + b.total, 0);
+              const pctFromBest = bestBid ? ((bestBid - bid.price) / bestBid) * 100 : null;
               const rowKey = `bid-${idx}`;
-              const nextBid = bids[idx + 1];
+              const nextBid = groupedBids[idx + 1];
               const showLimitLine = limitPrice && nextBid && bid.price > limitPrice && nextBid.price <= limitPrice;
-              const isUserOrder = userAccount && acc === userAccount;
+              const singleAcc = makerCount === 1 ? [...accs][0] : null;
               return (
                 <React.Fragment key={idx}>
                   <Row
                     type="bid"
-                    isUserOrder={isUserOrder}
+                    isUserOrder={hasUser}
+                    isHovered={hoveredRow === rowKey}
+                    isHighlighted={hoveredRow?.startsWith('bid-') && idx <= parseInt(hoveredRow.split('-')[1], 10) && hoveredRow !== rowKey}
                     onClick={() => onPriceClick?.(bid.price)}
                     onMouseEnter={() => setHoveredRow(rowKey)}
                     onMouseLeave={() => setHoveredRow(null)}
                   >
-                    <DepthBar type="bid" width={(bid.amount / bidMax) * 100} />
-                    <PriceDisplay price={bid.price} type="bid" />
+                    <DepthBar type="bid" width={bidBarWidth(getXrpValue(bid))} />
+                    <PriceDisplay price={bid.price} type="bid" precision={precision} />
                     <Amount isDark={isDark}>{fNumber(bid.amount)}</Amount>
                     <Maker
                       isDark={isDark}
-                      title={acc || ''}
+                      title={makerCount > 1 ? [...accs].join(', ') : (singleAcc || '')}
                       onClick={(e) => {
                         e.stopPropagation();
-                        acc && window.open(`/address/${acc}`, '_blank');
+                        if (singleAcc) window.open(`/address/${singleAcc}`, '_blank');
                       }}
-                      style={isUserOrder ? { color: '#3b82f6', fontWeight: 600 } : {}}
+                      style={hasUser ? { color: '#3b82f6', fontWeight: 600 } : {}}
                     >
-                      {isUserOrder ? 'YOU' : acc ? `${acc.slice(1, 5)}\u2026${acc.slice(-2)}` : ''}
+                      {makerCount > 1 ? `${makerCount} makers` : hasUser ? 'YOU' : singleAcc ? `${singleAcc.slice(1, 5)}\u2026${singleAcc.slice(-2)}` : ''}
                     </Maker>
                     {hoveredRow === rowKey && (
-                      <div className={cn(
-                        'absolute left-1/2 -top-[28px] -translate-x-1/2 rounded-[6px] px-[8px] py-[4px] text-[9px] whitespace-nowrap z-10 shadow-[0_4px_12px_rgba(0,0,0,0.3)]',
-                        isDark
-                          ? 'bg-black/90 border border-white/10'
-                          : 'bg-white/95 border border-black/10'
-                      )}>
-                        <span className={cn(isDark ? 'text-white/50' : 'text-black/50')}>{'\u03A3'} </span>
-                        <span className="text-[#22c55e]">{fNumber(cumSum)}</span>
-                        <span className={cn(isDark ? 'text-white/30' : 'text-black/30')}> {'\u00B7'} </span>
-                        <span className={cn(isDark ? 'text-white/50' : 'text-black/50')}>Avg </span>
-                        <span>{renderInlinePrice(avgPrice)}</span>
-                      </div>
+                      <OrderTooltip isDark={isDark} type="bid" cumSum={cumSum} avgPrice={avgPrice} cumXrp={cumXrp} pctFromBest={pctFromBest} tokenName={normalizeCurrencyCode(displayToken?.currency) || 'Token'} />
                     )}
                   </Row>
                   {showLimitLine && <LimitPriceLine />}
@@ -817,6 +1178,9 @@ const OrderBook = ({ token, onPriceClick, limitPrice }) => {
           </Side>
         )}
       </Content>
+      {showDepthChart && (
+        <DepthChartModal bids={bids} asks={asks} isDark={isDark} onClose={() => setShowDepthChart(false)} userAccount={userAccount} />
+      )}
     </Container>
   );
 };

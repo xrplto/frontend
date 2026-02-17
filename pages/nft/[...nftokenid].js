@@ -133,12 +133,14 @@ export async function getServerSideProps(ctx) {
     ogp.canonical = `https://xrpl.to/nft/${NFTokenID}`;
     ogp.title = cname ? `${name} - ${cname}` : `${name}`;
     ogp.url = `https://xrpl.to/nft/${NFTokenID}`;
-    ogp.imgUrl = getNftCoverUrl(nft, '', 'image') || getNftCoverUrl(nft, '', 'animation'); // (NFTokenID, meta, dfile, 48)
-    ogp.videoUrl = getNftCoverUrl(nft, '', 'video');
+    const nftImage = getNftCoverUrl(nft, '', 'image') || getNftCoverUrl(nft, '', 'animation');
+    ogp.imgUrl = `https://xrpl.to/api/og/nft/${NFTokenID}?name=${encodeURIComponent(name)}${cname ? `&collection=${encodeURIComponent(cname)}` : ''}${nftImage ? `&image=${encodeURIComponent(nftImage)}` : ''}`;
+    ogp.imgType = 'image/png';
+    ogp.imgWidth = 1200;
+    ogp.imgHeight = 630;
     ogp.desc = description
       ? description
       : `XRPL's largest NFT marketplace: Buy, sell, mint with ease. Experience exclusive NFT creation and trade.`;
-    ogp.isVideo = meta?.video ? true : false;
 
     // Product schema for NFT
     const nftSchema = {

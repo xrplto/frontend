@@ -3,7 +3,7 @@ import { cn } from 'src/utils/cn';
 // Components
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
-import CreateCollection from 'src/NFTCollection/Create';
+import CreateCollection from 'src/NFTCollection/create';
 import ScrollToTop from 'src/components/ScrollToTop';
 
 const OverviewWrapper = ({ className, ...props }) => (

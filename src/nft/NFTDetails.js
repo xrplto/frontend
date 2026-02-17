@@ -1,4 +1,5 @@
 import React, { memo, useMemo, useState, useContext, useEffect } from 'react';
+import { apiFetch } from 'src/utils/api';
 import Head from 'next/head';
 import dynamic from 'next/dynamic';
 const Swiper = dynamic(() => import('swiper/react').then((mod) => mod.Swiper), { ssr: false });
@@ -6,6 +7,9 @@ const SwiperSlide = dynamic(() => import('swiper/react').then((mod) => mod.Swipe
   ssr: false
 });
 import { Navigation, Pagination } from 'swiper/modules';
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/pagination';
 import Link from 'next/link';
 
 // Icons
@@ -323,16 +327,16 @@ const NFTPreviewComponent = memo(function NFTPreviewComponent({ nft, showDetails
             {openImage && (
               <div
                 className={cn(
-                  'fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md',
+                  'fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md max-sm:h-dvh',
                   isDark ? 'bg-black/80' : 'bg-black/70'
                 )}
                 onClick={() => setOpenImage(false)}
               >
-                <div className="relative max-w-[95vw] max-h-[95vh] flex items-center justify-center">
+                <div className="relative max-w-[95vw] max-h-[95dvh] flex items-center justify-center">
                   <img
                     src={selectedImageUrl}
                     alt={NFTName}
-                    className="max-w-[95vw] max-h-[95vh] object-contain"
+                    className="max-w-[95vw] max-h-[95dvh] object-contain"
                     fetchpriority={selectedImageUrl?.includes('ipfs.io') ? 'low' : 'auto'}
                   />
                   <button
@@ -423,7 +427,7 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
   // Check if NFT is in watchlist
   React.useEffect(() => {
     if (!accountLogin || !nft?.NFTokenID) return;
-    fetch(`https://api.xrpl.to/v1/watchlist/nft?account=${accountLogin}`)
+    apiFetch(`https://api.xrpl.to/v1/watchlist/nft?account=${accountLogin}`)
       .then((res) => res.json())
       .then((data) => {
         if (data?.success && data.watchlist) {
@@ -442,7 +446,7 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
     setSaveLoading(true);
     try {
       const action = isSaved ? 'remove' : 'add';
-      const res = await fetch('https://api.xrpl.to/v1/watchlist/nft', {
+      const res = await apiFetch('https://api.xrpl.to/v1/watchlist/nft', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

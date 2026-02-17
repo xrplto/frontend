@@ -423,7 +423,7 @@ export function TokenShareModal({ token, className }) {
   ];
 
   const modal = open && mounted && createPortal(
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => setOpen(false)}>
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 animate-in fade-in duration-300 max-sm:h-dvh" onClick={() => setOpen(false)}>
       <div className="absolute inset-0 bg-black/70 backdrop-blur-md" />
       <div
         onClick={(e) => e.stopPropagation()}
@@ -524,7 +524,7 @@ export function NFTShareModal({ name, imageUrl, url }) {
 
       {open && (
         <div
-          className="fixed inset-0 z-[1300] flex items-center justify-center bg-black/60 backdrop-blur-sm"
+          className="fixed inset-0 z-[1300] flex items-center justify-center bg-black/60 backdrop-blur-sm max-sm:h-dvh"
           onClick={() => setOpen(false)}
         >
           <div
@@ -637,7 +637,7 @@ export function TxShareModal({ hash, type }) {
 
       {open && (
         <div
-          className="fixed inset-0 z-[1300] flex items-center justify-center bg-black/60 backdrop-blur-sm"
+          className="fixed inset-0 z-[1300] flex items-center justify-center bg-black/60 backdrop-blur-sm max-sm:h-dvh"
           onClick={() => setOpen(false)}
         >
           <div

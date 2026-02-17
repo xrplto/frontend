@@ -13,21 +13,23 @@ import {
   Flame,
   Tag,
   List,
-  X
+  X,
+  Calendar,
+  MessageCircle
 } from 'lucide-react';
 import { fNumber } from 'src/utils/formatters';
 import { cn } from 'src/utils/cn';
 import { ThemeContext } from 'src/context/AppContext';
 
 const TYPE_CONFIG = {
-  SALE: { label: 'Sale', color: '#e5e5e5', Icon: DollarSign },
-  MINT: { label: 'Mint', color: '#a3a3a3', Icon: Sparkles },
-  TRANSFER: { label: 'Transfer', color: '#a3a3a3', Icon: ArrowUpRight },
-  BURN: { label: 'Burn', color: '#737373', Icon: Flame },
-  CREATE_BUY_OFFER: { label: 'Bid', color: '#a3a3a3', Icon: Tag },
-  CREATE_SELL_OFFER: { label: 'List', color: '#a3a3a3', Icon: List },
-  CANCEL_BUY_OFFER: { label: 'Cancel', color: '#525252', Icon: X },
-  CANCEL_SELL_OFFER: { label: 'Delist', color: '#525252', Icon: X }
+  SALE: { label: 'Sale', Icon: DollarSign },
+  MINT: { label: 'Mint', Icon: Sparkles },
+  TRANSFER: { label: 'Transfer', Icon: ArrowUpRight },
+  BURN: { label: 'Burn', Icon: Flame },
+  CREATE_BUY_OFFER: { label: 'Bid', Icon: Tag },
+  CREATE_SELL_OFFER: { label: 'List', Icon: List },
+  CANCEL_BUY_OFFER: { label: 'Cancel', Icon: X },
+  CANCEL_SELL_OFFER: { label: 'Delist', Icon: X }
 };
 
 const formatAddr = (addr) => (addr ? `${addr.slice(0, 6)}...${addr.slice(-4)}` : '');
@@ -84,25 +86,18 @@ export default function HistoryList({ nft }) {
       .finally(() => setLoading(false));
   }, [nft?.NFTokenID]);
 
-  // Calculate stats
   const stats = useMemo(() => {
     const sales = history.filter((h) => h.type === 'SALE');
     const totalVolume = sales.reduce((sum, h) => sum + (h.costXRP || 0), 0);
     const highestSale = Math.max(...sales.map((h) => h.costXRP || 0), 0);
 
-    // Count unique owners - only people who actually held the NFT
     const owners = new Set();
     history.forEach((h) => {
-      if (h.type === 'MINT' && h.account) {
-        owners.add(h.account); // Minter is first owner
-      } else if (h.type === 'SALE' && h.buyer) {
-        owners.add(h.buyer); // Sale buyer becomes owner
-      } else if (h.type === 'TRANSFER' && h.buyer) {
-        owners.add(h.buyer); // Transfer recipient becomes owner
-      }
+      if (h.type === 'MINT' && h.account) owners.add(h.account);
+      else if (h.type === 'SALE' && h.buyer) owners.add(h.buyer);
+      else if (h.type === 'TRANSFER' && h.buyer) owners.add(h.buyer);
     });
 
-    // Current owner is from most recent SALE/TRANSFER, or minter if never sold
     let currentOwner = null;
     for (const h of history) {
       if ((h.type === 'SALE' || h.type === 'TRANSFER') && h.buyer) {
@@ -112,14 +107,12 @@ export default function HistoryList({ nft }) {
       if (h.type === 'MINT') currentOwner = h.account;
     }
 
-    // Last list price vs last sale
     const lastList = history.find((h) => h.type === 'CREATE_SELL_OFFER');
     const lastSale = history.find((h) => h.type === 'SALE');
     const listPrice = lastList?.costXRP || lastList?.amountXRP || 0;
     const salePrice = lastSale?.costXRP || 0;
     const priceDiff = salePrice > 0 ? ((listPrice - salePrice) / salePrice) * 100 : 0;
 
-    // Mint date
     const mintEvent = [...history].reverse().find((h) => h.type === 'MINT');
     const mintDate = mintEvent?.time || null;
 
@@ -136,13 +129,11 @@ export default function HistoryList({ nft }) {
     };
   }, [history]);
 
-  // Get unique event types present in history
   const availableTypes = useMemo(() => {
     const types = new Set(history.map((h) => h.type));
     return Array.from(types);
   }, [history]);
 
-  // Filter and group history
   const { filtered, grouped } = useMemo(() => {
     const filteredItems =
       activeFilter === 'all' ? history : history.filter((h) => h.type === activeFilter);
@@ -163,31 +154,29 @@ export default function HistoryList({ nft }) {
     return (
       <div
         className={cn(
-          'rounded-2xl border overflow-hidden',
-          isDark
-            ? 'border-gray-800/60 bg-gradient-to-b from-gray-900/50 to-black/50'
-            : 'border-gray-200 bg-gray-50'
+          'rounded-xl border-[1.5px] overflow-hidden',
+          isDark ? 'border-white/10 bg-black' : 'border-gray-200 bg-white'
         )}
       >
         <div className="p-4">
-          <div className="grid grid-cols-4 gap-3 mb-4">
+          <div className="grid grid-cols-2 gap-2 mb-3">
             {[1, 2, 3, 4].map((i) => (
               <div
                 key={i}
                 className={cn(
-                  'h-16 rounded-xl animate-pulse',
-                  isDark ? 'bg-white/[0.03]' : 'bg-gray-200'
+                  'h-14 rounded-lg animate-pulse',
+                  isDark ? 'bg-white/[0.03]' : 'bg-gray-100'
                 )}
               />
             ))}
           </div>
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             {[1, 2, 3].map((i) => (
               <div
                 key={i}
                 className={cn(
-                  'h-14 rounded-xl animate-pulse',
-                  isDark ? 'bg-white/[0.02]' : 'bg-gray-100'
+                  'h-12 rounded-lg animate-pulse',
+                  isDark ? 'bg-white/[0.02]' : 'bg-gray-50'
                 )}
               />
             ))}
@@ -201,23 +190,23 @@ export default function HistoryList({ nft }) {
     return (
       <div
         className={cn(
-          'rounded-2xl border overflow-hidden',
-          isDark
-            ? 'border-gray-800/60 bg-gradient-to-b from-gray-900/50 to-black/50'
-            : 'border-gray-200 bg-gray-50'
+          'rounded-xl border-[1.5px] overflow-hidden',
+          isDark ? 'border-white/10 bg-black' : 'border-gray-200 bg-white'
         )}
       >
         <div className="py-12 text-center">
           <div
             className={cn(
-              'w-12 h-12 mx-auto mb-3 rounded-full flex items-center justify-center',
-              isDark ? 'bg-white/5' : 'bg-gray-200'
+              'w-10 h-10 mx-auto mb-3 rounded-lg flex items-center justify-center',
+              isDark ? 'bg-white/5' : 'bg-gray-100'
             )}
           >
-            <Zap size={20} className="text-gray-500" />
+            <Zap size={18} className="text-gray-500" />
           </div>
-          <p className="text-sm text-gray-500">No activity yet</p>
-          <p className={cn('text-xs mt-1', isDark ? 'text-gray-600' : 'text-gray-400')}>
+          <p className={cn('text-sm', isDark ? 'text-white/50' : 'text-gray-500')}>
+            No activity yet
+          </p>
+          <p className={cn('text-xs mt-1', isDark ? 'text-white/25' : 'text-gray-400')}>
             History will appear here
           </p>
         </div>
@@ -228,195 +217,163 @@ export default function HistoryList({ nft }) {
   return (
     <div
       className={cn(
-        'rounded-2xl border overflow-hidden',
-        isDark ? 'border-neutral-800 bg-neutral-950' : 'border-gray-200 bg-white'
+        'rounded-xl border-[1.5px] overflow-hidden',
+        isDark ? 'border-white/10 bg-black' : 'border-gray-200 bg-white'
       )}
     >
-      {/* Stats Summary */}
+      {/* Stats Grid */}
       {stats.salesCount > 0 && (
-        <div className={cn('p-3 border-b', isDark ? 'border-neutral-800' : 'border-gray-200')}>
-          <div className="grid grid-cols-4 gap-1.5">
-            <div
-              className={cn('text-center p-2 rounded-lg', isDark ? 'bg-neutral-900' : 'bg-gray-50')}
-            >
-              <div className="flex items-center justify-center gap-1 mb-0.5">
-                <Zap size={11} className="text-gray-500" />
-                <span
-                  className={cn(
-                    'text-sm font-medium tabular-nums',
-                    isDark ? 'text-white' : 'text-gray-900'
-                  )}
-                >
-                  {stats.salesCount}
-                </span>
-              </div>
-              <p
-                className={cn(
-                  'text-[9px] uppercase tracking-wide',
-                  isDark ? 'text-neutral-600' : 'text-gray-500'
-                )}
-              >
-                Sales
-              </p>
-            </div>
-            <div
-              className={cn('text-center p-2 rounded-lg', isDark ? 'bg-neutral-900' : 'bg-gray-50')}
-            >
-              <div className="flex items-center justify-center gap-1 mb-0.5">
-                <TrendingUp size={11} className="text-gray-500" />
-                <span
-                  className={cn(
-                    'text-sm font-medium tabular-nums',
-                    isDark ? 'text-white' : 'text-gray-900'
-                  )}
-                >
-                  {fNumber(stats.totalVolume)}
-                </span>
-              </div>
-              <p
-                className={cn(
-                  'text-[9px] uppercase tracking-wide',
-                  isDark ? 'text-neutral-600' : 'text-gray-500'
-                )}
-              >
-                Volume
-              </p>
-            </div>
-            <div
-              className={cn('text-center p-2 rounded-lg', isDark ? 'bg-neutral-900' : 'bg-gray-50')}
-            >
-              <div className="flex items-center justify-center gap-1 mb-0.5">
-                <Award size={11} className="text-gray-500" />
-                <span
-                  className={cn(
-                    'text-sm font-medium tabular-nums',
-                    isDark ? 'text-white' : 'text-gray-900'
-                  )}
-                >
-                  {fNumber(stats.highestSale)}
-                </span>
-              </div>
-              <p
-                className={cn(
-                  'text-[9px] uppercase tracking-wide',
-                  isDark ? 'text-neutral-600' : 'text-gray-500'
-                )}
-              >
-                ATH
-              </p>
-            </div>
-            <div
-              className={cn('text-center p-2 rounded-lg', isDark ? 'bg-neutral-900' : 'bg-gray-50')}
-            >
-              <div className="flex items-center justify-center gap-1 mb-0.5">
-                <Users size={11} className="text-gray-500" />
-                <span
-                  className={cn(
-                    'text-sm font-medium tabular-nums',
-                    isDark ? 'text-white' : 'text-gray-900'
-                  )}
-                >
-                  {stats.uniqueOwners}
-                </span>
-              </div>
-              <p
-                className={cn(
-                  'text-[9px] uppercase tracking-wide',
-                  isDark ? 'text-neutral-600' : 'text-gray-500'
-                )}
-              >
-                Owners
-              </p>
-            </div>
-          </div>
-          {/* List vs Last Sale + Mint Date */}
-          <div className="mt-2 flex items-center gap-2">
-            {stats.listPrice > 0 && stats.salePrice > 0 && (
+        <div className={cn('p-3 border-b', isDark ? 'border-white/10' : 'border-gray-200')}>
+          <div className="grid grid-cols-2 gap-2">
+            {[
+              { icon: Zap, label: 'Sales', value: stats.salesCount },
+              { icon: TrendingUp, label: 'Volume', value: fNumber(stats.totalVolume), suffix: 'XRP' },
+              { icon: Award, label: 'Highest', value: fNumber(stats.highestSale), suffix: 'XRP' },
+              { icon: Users, label: 'Owners', value: stats.uniqueOwners }
+            ].map(({ icon: Icon, label, value, suffix }) => (
               <div
+                key={label}
                 className={cn(
-                  'flex-1 flex items-center justify-between px-2 py-1.5 rounded-lg',
-                  isDark ? 'bg-neutral-900' : 'bg-gray-50'
+                  'flex items-center gap-2.5 px-3 py-2 rounded-lg',
+                  isDark ? 'bg-white/[0.03]' : 'bg-gray-50'
                 )}
               >
-                <span className="text-[10px] text-gray-500">List vs Sale</span>
-                <div className="flex items-center gap-2">
-                  <span
+                <div
+                  className={cn(
+                    'w-7 h-7 rounded-md flex items-center justify-center shrink-0',
+                    isDark ? 'bg-white/[0.06]' : 'bg-gray-200'
+                  )}
+                >
+                  <Icon size={13} className={isDark ? 'text-white/40' : 'text-gray-500'} />
+                </div>
+                <div className="min-w-0">
+                  <p
                     className={cn(
-                      'text-[11px] tabular-nums',
-                      isDark ? 'text-neutral-400' : 'text-gray-600'
+                      'text-xs font-semibold tabular-nums leading-tight',
+                      isDark ? 'text-white' : 'text-gray-900'
                     )}
                   >
-                    {fNumber(stats.listPrice)} / {fNumber(stats.salePrice)}
-                  </span>
-                  <span
-                    className={cn(
-                      'text-[10px] font-medium tabular-nums px-1.5 py-0.5 rounded',
-                      stats.priceDiff >= 0
-                        ? 'text-emerald-400 bg-emerald-500/10'
-                        : 'text-red-400 bg-red-500/10'
+                    {value}
+                    {suffix && (
+                      <span className={cn('ml-1 font-normal', isDark ? 'text-white/30' : 'text-gray-400')}>
+                        {suffix}
+                      </span>
                     )}
-                  >
-                    {stats.priceDiff >= 0 ? '+' : ''}
-                    {stats.priceDiff.toFixed(0)}%
-                  </span>
+                  </p>
+                  <p className={cn('text-[10px] leading-tight', isDark ? 'text-white/30' : 'text-gray-500')}>
+                    {label}
+                  </p>
                 </div>
               </div>
-            )}
-            {stats.mintDate && (
-              <div
-                className={cn(
-                  'flex items-center justify-between px-2 py-1.5 rounded-lg',
-                  isDark ? 'bg-neutral-900' : 'bg-gray-50'
-                )}
-              >
-                <span className="text-[10px] text-gray-500 mr-2">Minted</span>
-                <span className={cn('text-[11px]', isDark ? 'text-neutral-400' : 'text-gray-600')}>
-                  {new Date(stats.mintDate).toLocaleDateString('en-US', {
-                    month: 'short',
-                    day: 'numeric',
-                    year: 'numeric'
-                  })}
-                </span>
-              </div>
-            )}
+            ))}
           </div>
+
+          {/* Secondary stats row */}
+          {(stats.listPrice > 0 && stats.salePrice > 0 || stats.mintDate) && (
+            <div className="grid grid-cols-2 gap-2 mt-2">
+              {stats.listPrice > 0 && stats.salePrice > 0 ? (
+                <div
+                  className={cn(
+                    'flex items-center justify-between px-3 py-2 rounded-lg',
+                    isDark ? 'bg-white/[0.03]' : 'bg-gray-50'
+                  )}
+                >
+                  <span className={cn('text-[10px]', isDark ? 'text-white/30' : 'text-gray-500')}>
+                    List / Sale
+                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <span
+                      className={cn(
+                        'text-[11px] tabular-nums font-medium',
+                        isDark ? 'text-white/60' : 'text-gray-700'
+                      )}
+                    >
+                      {fNumber(stats.listPrice)} / {fNumber(stats.salePrice)}
+                    </span>
+                    <span
+                      className={cn(
+                        'text-[10px] font-semibold tabular-nums px-1.5 py-0.5 rounded',
+                        stats.priceDiff >= 0
+                          ? 'text-emerald-400 bg-emerald-500/10'
+                          : 'text-red-400 bg-red-500/10'
+                      )}
+                    >
+                      {stats.priceDiff >= 0 ? '+' : ''}
+                      {stats.priceDiff.toFixed(0)}%
+                    </span>
+                  </div>
+                </div>
+              ) : (
+                <div />
+              )}
+              {stats.mintDate ? (
+                <div
+                  className={cn(
+                    'flex items-center justify-between px-3 py-2 rounded-lg',
+                    isDark ? 'bg-white/[0.03]' : 'bg-gray-50'
+                  )}
+                >
+                  <div className="flex items-center gap-1.5">
+                    <Calendar size={11} className={isDark ? 'text-white/30' : 'text-gray-400'} />
+                    <span className={cn('text-[10px]', isDark ? 'text-white/30' : 'text-gray-500')}>
+                      Minted
+                    </span>
+                  </div>
+                  <span
+                    className={cn(
+                      'text-[11px] tabular-nums font-medium',
+                      isDark ? 'text-white/60' : 'text-gray-700'
+                    )}
+                  >
+                    {new Date(stats.mintDate).toLocaleDateString('en-US', {
+                      month: 'short',
+                      day: 'numeric',
+                      year: 'numeric'
+                    })}
+                  </span>
+                </div>
+              ) : (
+                <div />
+              )}
+            </div>
+          )}
         </div>
       )}
 
       {/* Filter Pills */}
-      <div className={cn('px-3 py-2 border-b', isDark ? 'border-neutral-800' : 'border-gray-200')}>
-        <div className="flex items-center gap-1 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
+      <div className={cn('px-3 py-2 border-b', isDark ? 'border-white/10' : 'border-gray-200')}>
+        <div className="flex items-center gap-1.5 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
           <button
             onClick={() => setActiveFilter('all')}
             className={cn(
-              'px-2.5 py-1 rounded text-[10px] font-medium transition-all whitespace-nowrap border',
+              'px-2.5 py-1 rounded-md text-[11px] font-medium transition-all whitespace-nowrap',
               activeFilter === 'all'
                 ? isDark
-                  ? 'bg-white/10 text-white/90 border-white/15'
-                  : 'bg-gray-900 text-white border-gray-900'
+                  ? 'bg-white/10 text-white'
+                  : 'bg-gray-900 text-white'
                 : isDark
-                  ? 'text-white/50 border-white/10 hover:text-white/70 hover:bg-white/[0.06]'
-                  : 'text-gray-600 border-gray-300 hover:text-gray-900 hover:bg-gray-100'
+                  ? 'text-white/40 hover:text-white/70 hover:bg-white/[0.04]'
+                  : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'
             )}
           >
             All {history.length}
           </button>
           {availableTypes.map((type) => {
-            const config = TYPE_CONFIG[type] || { label: type, color: '#737373' };
+            const config = TYPE_CONFIG[type] || { label: type };
             const count = history.filter((h) => h.type === type).length;
             return (
               <button
                 key={type}
                 onClick={() => setActiveFilter(activeFilter === type ? 'all' : type)}
                 className={cn(
-                  'px-2.5 py-1 rounded text-[10px] font-medium transition-all whitespace-nowrap border',
+                  'px-2.5 py-1 rounded-md text-[11px] font-medium transition-all whitespace-nowrap',
                   activeFilter === type
                     ? isDark
-                      ? 'bg-white/10 text-white/90 border-white/15'
-                      : 'bg-gray-900 text-white border-gray-900'
+                      ? 'bg-white/10 text-white'
+                      : 'bg-gray-900 text-white'
                     : isDark
-                      ? 'text-white/50 border-white/10 hover:text-white/70 hover:bg-white/[0.06]'
-                      : 'text-gray-600 border-gray-300 hover:text-gray-900 hover:bg-gray-100'
+                      ? 'text-white/40 hover:text-white/70 hover:bg-white/[0.04]'
+                      : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'
                 )}
               >
                 {config.label} {count}
@@ -426,47 +383,54 @@ export default function HistoryList({ nft }) {
         </div>
       </div>
 
-      {/* Timeline List */}
+      {/* Timeline */}
       <div className="max-h-[420px] overflow-y-auto" style={{ scrollbarWidth: 'none' }}>
         {filtered.length === 0 ? (
           <div className="py-10 text-center">
-            <p className="text-sm text-gray-500">
+            <p className={cn('text-sm', isDark ? 'text-white/50' : 'text-gray-500')}>
               No {TYPE_CONFIG[activeFilter]?.label || activeFilter} events
             </p>
             <button
               onClick={() => setActiveFilter('all')}
-              className="mt-2 text-[11px] text-primary hover:underline"
+              className="mt-2 text-[11px] text-[#137DFE] hover:underline"
             >
               Show all events
             </button>
           </div>
         ) : (
-          <div className="p-3 space-y-3">
+          <div className="p-2">
             {groupOrder.map((groupName) => {
               const items = grouped[groupName];
               if (!items || items.length === 0) return null;
 
               return (
-                <div key={groupName}>
+                <div key={groupName} className="mb-2 last:mb-0">
                   {/* Date Group Header */}
-                  <div className="flex items-center gap-2 mb-2">
+                  <div className="flex items-center gap-2 px-2 py-1.5">
                     <span
                       className={cn(
-                        'text-[9px] font-medium uppercase tracking-wider',
-                        isDark ? 'text-neutral-600' : 'text-gray-500'
+                        'text-[10px] font-medium uppercase tracking-wider',
+                        isDark ? 'text-white/20' : 'text-gray-400'
                       )}
                     >
                       {groupName}
                     </span>
-                    <div className={cn('flex-1 h-px', isDark ? 'bg-neutral-800' : 'bg-gray-200')} />
+                    <div className={cn('flex-1 h-px', isDark ? 'bg-white/5' : 'bg-gray-100')} />
+                    <span
+                      className={cn(
+                        'text-[10px] tabular-nums',
+                        isDark ? 'text-white/15' : 'text-gray-300'
+                      )}
+                    >
+                      {items.length}
+                    </span>
                   </div>
 
-                  {/* Items */}
-                  <div className="space-y-1">
+                  {/* Items - Table-like rows */}
+                  <div className="space-y-px">
                     {items.map((item, idx) => {
                       const config = TYPE_CONFIG[item.type] || {
                         label: item.type,
-                        color: '#6b7280',
                         Icon: Zap
                       };
                       const from = item.seller || item.account;
@@ -474,10 +438,8 @@ export default function HistoryList({ nft }) {
                       const price = item.costXRP || item.amountXRP;
                       const isCancelled =
                         item.type === 'CANCEL_BUY_OFFER' || item.type === 'CANCEL_SELL_OFFER';
-                      const isSpend =
-                        item.type === 'SALE' || item.type === 'CREATE_BUY_OFFER';
-                      const isReceive =
-                        item.type === 'CREATE_SELL_OFFER';
+                      const isSpend = item.type === 'SALE' || item.type === 'CREATE_BUY_OFFER';
+                      const isReceive = item.type === 'CREATE_SELL_OFFER';
                       const isOwnershipChange =
                         item.type === 'SALE' || item.type === 'TRANSFER' || item.type === 'MINT';
 
@@ -485,147 +447,158 @@ export default function HistoryList({ nft }) {
                         <div
                           key={item._id || item.hash || idx}
                           className={cn(
-                            'group relative flex items-center gap-2.5 px-3 py-2 rounded-lg transition-all',
+                            'group grid grid-cols-[28px_1fr_1fr_1fr_auto] items-center gap-2 px-2 py-2 rounded-lg transition-colors',
                             isOwnershipChange
                               ? isDark
-                                ? 'bg-neutral-900/50 border-l-2 border-l-neutral-600 hover:bg-neutral-800/50'
-                                : 'bg-gray-100 border-l-2 border-l-gray-400 hover:bg-gray-200'
+                                ? 'bg-white/[0.02] hover:bg-white/[0.05]'
+                                : 'bg-gray-50 hover:bg-gray-100'
                               : isDark
-                                ? 'hover:bg-neutral-900/50'
-                                : 'hover:bg-gray-100'
+                                ? 'hover:bg-white/[0.03]'
+                                : 'hover:bg-gray-50'
                           )}
                         >
-                          {/* Icon */}
+                          {/* Col 1: Icon */}
                           <div
                             className={cn(
-                              'w-7 h-7 rounded-md flex items-center justify-center shrink-0',
-                              isDark ? 'bg-neutral-800' : 'bg-gray-200'
+                              'w-7 h-7 rounded-md flex items-center justify-center',
+                              isDark ? 'bg-white/[0.06]' : 'bg-gray-100'
                             )}
                           >
                             <config.Icon
-                              size={14}
-                              className={isDark ? 'text-neutral-400' : 'text-gray-600'}
+                              size={13}
+                              className={isDark ? 'text-white/40' : 'text-gray-500'}
                             />
                           </div>
 
-                          {/* Content */}
-                          <div className="flex-1 min-w-0 flex items-center justify-between gap-2">
-                            <div className="min-w-0">
-                              {/* Event + Price */}
-                              <div className="flex items-center gap-1.5">
-                                <span
-                                  className={cn(
-                                    'text-[11px] font-medium',
-                                    isDark ? 'text-neutral-400' : 'text-gray-500'
-                                  )}
-                                >
-                                  {config.label}
-                                </span>
-                                {price > 0 && (
-                                  <span
-                                    className={cn(
-                                      'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold tabular-nums border',
-                                      isCancelled
-                                        ? isDark
-                                          ? 'bg-neutral-800/60 text-neutral-600 border-neutral-800 line-through'
-                                          : 'bg-gray-100 text-gray-400 border-gray-200 line-through'
-                                        : isSpend
-                                          ? isDark
-                                            ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
-                                            : 'bg-emerald-50 text-emerald-600 border-emerald-200'
-                                          : isReceive
-                                            ? isDark
-                                              ? 'bg-blue-500/10 text-blue-400 border-blue-500/20'
-                                              : 'bg-blue-50 text-blue-600 border-blue-200'
-                                            : isDark
-                                              ? 'bg-white/[0.06] text-white/80 border-white/10'
-                                              : 'bg-gray-100 text-gray-800 border-gray-200'
-                                    )}
-                                  >
-                                    {!isCancelled && isSpend && (
-                                      <span className={cn('text-[9px]', isDark ? 'text-emerald-500/60' : 'text-emerald-400')}>
-                                        &#x25B2;
-                                      </span>
-                                    )}
-                                    {!isCancelled && isReceive && (
-                                      <span className={cn('text-[9px]', isDark ? 'text-blue-500/60' : 'text-blue-400')}>
-                                        &#x25CF;
-                                      </span>
-                                    )}
-                                    {fNumber(price)} XRP
-                                  </span>
+                          {/* Col 2: Event label */}
+                          <div className="flex items-center gap-1.5 min-w-0">
+                            <span
+                              className={cn(
+                                'text-[11px] font-semibold',
+                                isDark ? 'text-white/70' : 'text-gray-700'
+                              )}
+                            >
+                              {config.label}
+                            </span>
+                            {isOwnershipChange && (
+                              <div
+                                className={cn(
+                                  'w-1.5 h-1.5 rounded-full shrink-0',
+                                  isDark ? 'bg-white/20' : 'bg-gray-400'
                                 )}
-                              </div>
-                              {/* Address */}
-                              <div className="flex items-center gap-1 text-[10px] mt-0.5">
-                                {from && (
-                                  <Link
-                                    href={`/address/${from}`}
-                                    className={cn(
-                                      'transition-colors font-mono',
-                                      from === stats.currentOwner
-                                        ? isDark
-                                          ? 'text-white hover:text-white'
-                                          : 'text-gray-900 hover:text-gray-900'
-                                        : isDark
-                                          ? 'text-neutral-500 hover:text-white'
-                                          : 'text-gray-500 hover:text-gray-900'
-                                    )}
-                                  >
-                                    {formatAddr(from)}
-                                    {from === stats.currentOwner && ' ·owner'}
-                                  </Link>
-                                )}
-                                {to && (
-                                  <>
-                                    <span className={isDark ? 'text-neutral-700' : 'text-gray-400'}>
-                                      →
-                                    </span>
-                                    <Link
-                                      href={`/address/${to}`}
-                                      className={cn(
-                                        'transition-colors font-mono',
-                                        to === stats.currentOwner
-                                          ? isDark
-                                            ? 'text-white hover:text-white'
-                                            : 'text-gray-900 hover:text-gray-900'
-                                          : isDark
-                                            ? 'text-neutral-500 hover:text-white'
-                                            : 'text-gray-500 hover:text-gray-900'
-                                      )}
-                                    >
-                                      {formatAddr(to)}
-                                      {to === stats.currentOwner && ' ·owner'}
-                                    </Link>
-                                  </>
-                                )}
-                              </div>
-                            </div>
-                            {/* Time */}
-                            <div className="flex items-center gap-1.5 shrink-0">
+                              />
+                            )}
+                          </div>
+
+                          {/* Col 3: Price */}
+                          <div className="flex items-center justify-center">
+                            {price > 0 ? (
                               <span
                                 className={cn(
-                                  'text-[10px] tabular-nums',
-                                  isDark ? 'text-neutral-600' : 'text-gray-500'
+                                  'inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold tabular-nums',
+                                  isCancelled
+                                    ? isDark
+                                      ? 'text-white/20 line-through'
+                                      : 'text-gray-400 line-through'
+                                    : isSpend
+                                      ? 'text-emerald-400'
+                                      : isReceive
+                                        ? 'text-[#137DFE]'
+                                        : isDark
+                                          ? 'text-white/70'
+                                          : 'text-gray-800'
                                 )}
                               >
-                                {formatRelativeTime(item.time)}
+                                {fNumber(price)} XRP
                               </span>
-                              {item.hash && (
+                            ) : (
+                              <span className={cn('text-[11px]', isDark ? 'text-white/10' : 'text-gray-300')}>
+                                --
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Col 4: Addresses */}
+                          <div className="flex items-center gap-1 text-[10px] min-w-0 justify-center">
+                            {from && (
+                              <Link
+                                href={`/address/${from}`}
+                                className={cn(
+                                  'font-mono transition-colors truncate',
+                                  from === stats.currentOwner
+                                    ? isDark
+                                      ? 'text-white font-semibold'
+                                      : 'text-gray-900 font-semibold'
+                                    : isDark
+                                      ? 'text-white/30 hover:text-white/70'
+                                      : 'text-gray-400 hover:text-gray-700'
+                                )}
+                              >
+                                {formatAddr(from)}
+                              </Link>
+                            )}
+                            {to && (
+                              <>
+                                <span className={isDark ? 'text-white/15' : 'text-gray-300'}>
+                                  →
+                                </span>
                                 <Link
-                                  href={`/tx/${item.hash}`}
-                                  target="_blank"
+                                  href={`/address/${to}`}
                                   className={cn(
-                                    'p-1 rounded transition-all opacity-0 group-hover:opacity-100',
-                                    isDark
-                                      ? 'text-neutral-600 hover:text-white'
-                                      : 'text-gray-500 hover:text-gray-900'
+                                    'font-mono transition-colors truncate',
+                                    to === stats.currentOwner
+                                      ? isDark
+                                        ? 'text-white font-semibold'
+                                        : 'text-gray-900 font-semibold'
+                                      : isDark
+                                        ? 'text-white/30 hover:text-white/70'
+                                        : 'text-gray-400 hover:text-gray-700'
                                   )}
                                 >
-                                  <ExternalLink size={11} />
+                                  {formatAddr(to)}
                                 </Link>
+                              </>
+                            )}
+                            {!from && !to && (
+                              <span className={cn('text-[10px]', isDark ? 'text-white/10' : 'text-gray-300')}>
+                                --
+                              </span>
+                            )}
+                            {(from || to) && (
+                              <button
+                                onClick={() => window.dispatchEvent(new CustomEvent('openDm', { detail: { user: to || from } }))}
+                                className="p-0.5 rounded hover:bg-white/10 text-gray-500 hover:text-[#650CD4] transition-colors opacity-0 group-hover:opacity-100"
+                                title="Message"
+                              >
+                                <MessageCircle size={11} />
+                              </button>
+                            )}
+                          </div>
+
+                          {/* Col 5: Time + Link */}
+                          <div className="flex items-center gap-1 shrink-0 justify-end min-w-[70px]">
+                            <span
+                              className={cn(
+                                'text-[10px] tabular-nums',
+                                isDark ? 'text-white/20' : 'text-gray-400'
                               )}
-                            </div>
+                            >
+                              {formatRelativeTime(item.time)}
+                            </span>
+                            {item.hash && (
+                              <Link
+                                href={`/tx/${item.hash}`}
+                                target="_blank"
+                                className={cn(
+                                  'p-0.5 rounded transition-all opacity-0 group-hover:opacity-100',
+                                  isDark
+                                    ? 'text-white/20 hover:text-white/60'
+                                    : 'text-gray-300 hover:text-gray-600'
+                                )}
+                              >
+                                <ExternalLink size={10} />
+                              </Link>
+                            )}
                           </div>
                         </div>
                       );

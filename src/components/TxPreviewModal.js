@@ -30,7 +30,7 @@ export default function TxPreviewModal({
   });
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-[rgba(0,0,0,0.92)] backdrop-blur-[4px]">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-[rgba(0,0,0,0.92)] backdrop-blur-[4px] max-sm:h-dvh">
       <div className={cn(
         'w-full max-w-[340px] mx-4 p-5 rounded-2xl border',
         isDark ? 'bg-black border-white/[0.08]' : 'bg-white border-black/[0.08]'

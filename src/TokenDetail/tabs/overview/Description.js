@@ -225,16 +225,26 @@ export default function Description({
       {(hasSocial || hasTags) && (
         <div
           className={cn(
-            'py-5 px-4 flex flex-col gap-5 border-t',
+            'py-3 sm:py-5 px-3 sm:px-4 flex flex-col gap-3 sm:gap-5 border-t',
             effectiveIsDark ? 'border-white/[0.06] bg-white/[0.01]' : 'border-black/[0.04] bg-black/[0.005]'
           )}
         >
           {hasSocial && (
-            <CompactSocialLinks
-              social={{ ...token.social, website: token.domain }}
-              isDark={effectiveIsDark}
-              fullWidth
-            />
+            <>
+              <div className="hidden sm:block">
+                <CompactSocialLinks
+                  social={{ ...token.social, website: token.domain }}
+                  isDark={effectiveIsDark}
+                  fullWidth
+                />
+              </div>
+              <div className="sm:hidden">
+                <CompactSocialLinks
+                  social={{ ...token.social, website: token.domain }}
+                  isDark={effectiveIsDark}
+                />
+              </div>
+            </>
           )}
           {hasSocial && hasTags && (
             <div className={cn('h-px', effectiveIsDark ? 'bg-white/[0.06]' : 'bg-black/[0.04]')} />

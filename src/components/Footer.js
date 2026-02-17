@@ -186,7 +186,7 @@ function Footer() {
                 variant="body2"
                 color="text.secondary"
                 isDark={isDark}
-                opacity={0.5}
+                opacity={0.7}
                 style={{ fontSize: '0.85rem' }}
               >
                 &copy; {year}

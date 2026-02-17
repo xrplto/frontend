@@ -385,7 +385,7 @@ export async function getStaticProps() {
     ogp.title = 'About XRPL.to | Premier XRP Ledger Analytics Platform';
     ogp.url = 'https://xrpl.to/about';
     ogp.canonical = 'https://xrpl.to/about';
-    ogp.imgUrl = 'https://xrpl.to/static/ogp.webp';
+    ogp.imgUrl = 'https://xrpl.to/og/about.webp';
     ogp.desc =
       'XRPL.to tracks 19,000+ tokens with 40,000+ monthly users. Comprehensive XRP Ledger analytics, DEX trading, NFT marketplace, and real-time price data.';
 

@@ -127,22 +127,25 @@ export async function getStaticProps() {
     const itemListSchema = {
       '@context': 'https://schema.org',
       '@type': 'ItemList',
-      itemListElement: (data.tokens || []).slice(0, 20).map((token, index) => ({
-        '@type': 'ListItem',
-        position: index + 1,
-        item: {
+      itemListElement: (data.tokens || []).slice(0, 20).map((token, index) => {
+        const item = {
           '@type': 'FinancialProduct',
           name: token.name,
-          url: `https://xrpl.to/token/${token.slug}`,
-          offers: token.exch
-            ? {
-                '@type': 'Offer',
-                price: token.exch,
-                priceCurrency: 'XRP'
-              }
-            : undefined
+          url: `https://xrpl.to/token/${token.slug}`
+        };
+        if (token.exch) {
+          item.offers = {
+            '@type': 'Offer',
+            price: token.exch,
+            priceCurrency: 'XRP'
+          };
         }
-      }))
+        return {
+          '@type': 'ListItem',
+          position: index + 1,
+          item
+        };
+      })
     };
     ogp.jsonLd = itemListSchema;
 

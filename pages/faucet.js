@@ -254,3 +254,17 @@ export default function FaucetPage() {
     </PageWrapper>
   );
 }
+
+export async function getStaticProps() {
+  return {
+    props: {
+      ogp: {
+        canonical: 'https://xrpl.to/faucet',
+        title: 'Faucet | Get Testnet XRP',
+        url: 'https://xrpl.to/faucet',
+        imgUrl: 'https://xrpl.to/og/faucet.webp',
+        desc: 'Get free testnet XRP for development and testing on the XRP Ledger.'
+      }
+    }
+  };
+}

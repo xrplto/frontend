@@ -16,7 +16,9 @@ export function useTokenDetail({
   enabled = true
 }) {
   const [wsUrl, setWsUrl] = useState(null);
-  const rafRef = useRef(null);
+  const apiKeyRef = useRef(null);
+  const batchRef = useRef(null);
+  const batchTimerRef = useRef(null);
   const connectTimeRef = useRef(null);
   const connectCountRef = useRef(0);
 
@@ -24,7 +26,7 @@ export function useTokenDetail({
     if (!enabled || !md5) { setWsUrl(null); return; }
     fetch(`/api/ws/session?type=token&id=${md5}&fields=${fields}&delta=${delta}`)
       .then(r => r.json())
-      .then(d => setWsUrl(d.wsUrl))
+      .then(d => { apiKeyRef.current = d.apiKey; setWsUrl(d.wsUrl); })
       .catch(() => {});
   }, [enabled, md5, fields, delta]);
 
@@ -53,7 +55,7 @@ export function useTokenDetail({
   const { sendJsonMessage, readyState } = useWebSocket(wsUrl, {
     onOpen: () => {
       connectCountRef.current++;
-      const elapsed = connectTimeRef.current ? (performance.now() - connectTimeRef.current).toFixed(0) : '?';
+      if (apiKeyRef.current) sendJsonMessage({ type: 'auth', apiKey: apiKeyRef.current });
     },
     onReconnectStop: () => {},
     onMessage: (e) => {
@@ -61,8 +63,14 @@ export function useTokenDetail({
         const data = JSON.parse(e.data);
         if (data.type === 'pong') return;
 
-        cancelAnimationFrame(rafRef.current);
-        rafRef.current = requestAnimationFrame(() => processMessage(data));
+        // Batch: keep latest data, flush once per frame via debounced RAF
+        batchRef.current = data;
+        if (!batchTimerRef.current) {
+          batchTimerRef.current = requestAnimationFrame(() => {
+            batchTimerRef.current = null;
+            if (batchRef.current) processMessage(batchRef.current);
+          });
+        }
       } catch {}
     },
     onClose: (event) => {
@@ -85,7 +93,10 @@ export function useTokenDetail({
     return () => clearInterval(id);
   }, [readyState, sendJsonMessage]);
 
-  useEffect(() => () => cancelAnimationFrame(rafRef.current), []);
+  useEffect(() => () => {
+    cancelAnimationFrame(batchTimerRef.current);
+    batchRef.current = null;
+  }, []);
 
   return {
     setFields: (f) => sendJsonMessage({ type: 'setFields', fields: f }),

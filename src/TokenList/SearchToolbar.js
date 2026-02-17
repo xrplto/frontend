@@ -12,21 +12,41 @@ import { cn } from 'src/utils/cn';
 const Container = ({ darkMode, className, children, ...p }) => (
   <div
     className={cn(
-      'flex flex-col gap-2 rounded-xl border-[1.5px] backdrop-blur-[12px] py-[10px] px-[14px] relative box-border overflow-hidden',
-      'before:content-[""] before:absolute before:-top-[60px] before:-right-[60px] before:w-[180px] before:h-[180px] before:rounded-full before:bg-[radial-gradient(circle,rgba(19,125,254,0.2)_0%,transparent_70%)] before:blur-[40px] before:pointer-events-none before:z-0',
+      'st-container flex flex-col gap-2 rounded-xl border-[1.5px] backdrop-blur-[12px] py-[10px] px-[14px] relative box-border overflow-hidden',
+      'before:content-[""] before:absolute before:-top-[60px] before:-right-[60px] before:w-[180px] before:h-[180px] before:rounded-full before:bg-[#137DFE]/20 before:blur-[40px] before:pointer-events-none before:z-0',
       '[&>*]:relative [&>*]:z-[1]',
       'max-sm:py-[6px] max-sm:px-2 max-sm:gap-[6px]',
       darkMode ? 'border-white/[0.08] bg-[rgba(10,10,10,0.5)]' : 'border-black/[0.06] bg-white/50',
       className
     )}
     {...p}
-  >{children}</div>
+  >
+    <style>{`
+      @media (max-width: 1024px) {
+        .st-container { padding: 7px 10px; gap: 5px; }
+        .st-tags-row { gap: 4px; }
+        .st-tags-scroll { gap: 4px; }
+        .st-tag { font-size: 0.62rem; height: 22px; padding: 0 6px; gap: 2px; }
+        .st-tag svg { width: 11px; height: 11px; }
+        .st-row { gap: 4px; }
+        .st-row-content { gap: 3px; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+        .st-row-content::-webkit-scrollbar { display: none; }
+        .st-lp-group { padding: 2px 4px 2px 6px; gap: 1px; margin-left: 4px; }
+        .st-lp-label { font-size: 0.52rem; margin-right: 2px; }
+        .st-lp-chip { font-size: 0.58rem; height: 18px; padding: 0 4px; }
+        .st-select { height: 26px; font-size: 0.65rem; min-width: 58px; padding: 0 22px 0 8px !important; background-position: right 6px center !important; background-size: 10px !important; }
+        .st-stack { gap: 4px; }
+        .st-all-btn { font-size: 0.62rem; height: 22px; padding: 0 8px; }
+      }
+    `}</style>
+    {children}
+  </div>
 );
 
 const Row = ({ spaceBetween, noWrap, className, children, ...p }) => (
   <div
     className={cn(
-      'flex items-center gap-[6px] flex-row w-full relative overflow-y-visible',
+      'st-row flex items-center gap-[6px] flex-row w-full relative overflow-y-visible',
       spaceBetween ? 'justify-between' : 'justify-start',
       noWrap ? 'flex-nowrap overflow-x-auto' : 'flex-wrap overflow-x-hidden',
       'max-sm:gap-[5px] max-sm:overflow-x-auto max-sm:flex-nowrap max-sm:pb-[2px] max-sm:[scrollbar-width:none] max-sm:[&::-webkit-scrollbar]:hidden',
@@ -37,12 +57,12 @@ const Row = ({ spaceBetween, noWrap, className, children, ...p }) => (
 );
 
 const TagsRow = ({ className, children, ...p }) => (
-  <div className={cn('flex items-center gap-[6px] w-full', className)} {...p}>{children}</div>
+  <div className={cn('st-tags-row flex items-center gap-[6px] w-full', className)} {...p}>{children}</div>
 );
 
 const TagsScrollArea = ({ className, children, ...p }) => (
   <div
-    className={cn('flex items-center gap-[6px] overflow-x-auto flex-auto min-w-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden', className)}
+    className={cn('st-tags-scroll flex items-center gap-[6px] overflow-x-auto flex-auto min-w-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden', className)}
     style={{ WebkitOverflowScrolling: 'touch' }}
     {...p}
   >{children}</div>
@@ -55,7 +75,7 @@ const AllButtonWrapper = ({ className, children, ...p }) => (
 const RowContent = ({ className, children, ...p }) => (
   <div
     className={cn(
-      'flex items-center gap-1 flex-wrap flex-auto',
+      'st-row-content flex items-center gap-1 flex-wrap flex-auto',
       'max-sm:gap-1 max-sm:flex-nowrap max-sm:overflow-x-auto max-sm:mr-2 max-sm:[scrollbar-width:none] max-sm:[&::-webkit-scrollbar]:hidden',
       className
     )}
@@ -71,7 +91,7 @@ const RowsSelector = ({ darkMode, noMargin, className, children, ...p }) => {
   return (
     <select
       className={cn(
-        'rounded-lg border-[1.5px] text-xs font-medium cursor-pointer h-8 min-w-[70px] appearance-none transition-all duration-150',
+        'st-select rounded-lg border-[1.5px] text-xs font-medium cursor-pointer h-8 min-w-[70px] appearance-none transition-[background-color,border-color,opacity] duration-150',
         'hover:border-blue-500/50 focus:outline-none focus:border-blue-500',
         'max-sm:text-[0.62rem] max-sm:h-[26px] max-sm:min-w-[48px] max-sm:pl-[6px] max-sm:pr-5',
         darkMode ? 'border-white/10 bg-black/40 text-white/85 [&_option]:bg-[#0a0a0a] [&_option]:text-[#e5e5e5]' : 'border-black/[0.08] bg-white/90 text-black/70 [&_option]:bg-white [&_option]:text-[#1a1a1a]',
@@ -92,13 +112,13 @@ const RowsSelector = ({ darkMode, noMargin, className, children, ...p }) => {
 };
 
 const Stack = ({ className, children, ...p }) => (
-  <div className={cn('flex flex-row gap-[6px] items-center shrink-0 relative z-[1] max-sm:gap-[3px] max-sm:touch-manipulation', className)} {...p}>{children}</div>
+  <div className={cn('st-stack flex flex-row gap-[6px] items-center shrink-0 relative z-[1] max-sm:gap-[3px] max-sm:touch-manipulation', className)} {...p}>{children}</div>
 );
 
 const StyledIconButton = ({ darkMode, className, children, ...p }) => (
   <button
     className={cn(
-      'inline-flex items-center justify-center w-[30px] h-[30px] p-0 border-none rounded-lg bg-transparent cursor-pointer transition-all duration-150 shrink-0',
+      'inline-flex items-center justify-center w-[30px] h-[30px] p-0 border-none rounded-lg bg-transparent cursor-pointer transition-[background-color,border-color,opacity] duration-150 shrink-0',
       'hover:bg-blue-500/10 hover:text-blue-500',
       'max-sm:w-[26px] max-sm:h-[26px]',
       darkMode ? 'text-white/50' : 'text-black/40',
@@ -113,7 +133,7 @@ const ButtonGroup = ({ darkMode, hideOnMobile, className, children, ...p }) => (
     className={cn(
       'flex gap-[2px] shrink-0 p-[3px] rounded-lg border-none',
       darkMode ? 'bg-white/[0.04]' : 'bg-black/[0.03]',
-      '[&>button]:rounded-[6px] [&>button]:border-none [&>button]:min-w-[36px] [&>button]:h-6 [&>button]:px-[10px] [&>button]:text-[0.72rem] [&>button]:font-normal [&>button]:bg-transparent [&>button]:cursor-pointer [&>button]:inline-flex [&>button]:items-center [&>button]:justify-center [&>button]:gap-1 [&>button]:touch-manipulation [&>button]:transition-all [&>button]:duration-150',
+      '[&>button]:rounded-[6px] [&>button]:border-none [&>button]:min-w-[36px] [&>button]:h-6 [&>button]:px-[10px] [&>button]:text-[0.72rem] [&>button]:font-normal [&>button]:bg-transparent [&>button]:cursor-pointer [&>button]:inline-flex [&>button]:items-center [&>button]:justify-center [&>button]:gap-1 [&>button]:touch-manipulation [&>button]:transition-[background-color,border-color,opacity] [&>button]:duration-150',
       darkMode ? '[&>button]:text-white/60 [&>button:hover]:text-white/90 [&>button:hover]:bg-white/[0.06]' : '[&>button]:text-black/50 [&>button:hover]:text-black/80 [&>button:hover]:bg-black/[0.04]',
       darkMode ? '[&>button.selected]:bg-white/95 [&>button.selected]:text-[#111] [&>button.selected]:font-medium [&>button.selected]:shadow-[0_1px_2px_rgba(0,0,0,0.08)] [&>button.selected:hover]:bg-white' : '[&>button.selected]:bg-white [&>button.selected]:text-[#333] [&>button.selected]:font-medium [&>button.selected]:shadow-[0_1px_2px_rgba(0,0,0,0.08)] [&>button.selected:hover]:bg-white',
       hideOnMobile && 'max-sm:hidden',
@@ -126,14 +146,14 @@ const ButtonGroup = ({ darkMode, hideOnMobile, className, children, ...p }) => (
 
 const LaunchpadGroup = ({ darkMode, className, children, ...p }) => (
   <div
-    className={cn('inline-flex items-center gap-[2px] py-[3px] pl-2 pr-[6px] rounded-[6px] border ml-2', darkMode ? 'bg-white/[0.03] border-white/[0.06]' : 'bg-black/[0.03] border-black/[0.06]', className)}
+    className={cn('st-lp-group inline-flex items-center gap-[2px] py-[3px] pl-2 pr-[6px] rounded-[6px] border ml-2', darkMode ? 'bg-white/[0.03] border-white/[0.06]' : 'bg-black/[0.03] border-black/[0.06]', className)}
     {...p}
   >{children}</div>
 );
 
 const LaunchpadLabel = ({ darkMode, className, children, ...p }) => (
   <span
-    className={cn('text-[0.6rem] font-semibold uppercase tracking-[0.05em] mr-1', darkMode ? 'text-white/[0.35]' : 'text-black/[0.35]', className)}
+    className={cn('st-lp-label text-[0.6rem] font-semibold uppercase tracking-[0.05em] mr-1', darkMode ? 'text-white/[0.35]' : 'text-black/[0.35]', className)}
     {...p}
   >{children}</span>
 );
@@ -141,7 +161,7 @@ const LaunchpadLabel = ({ darkMode, className, children, ...p }) => (
 const LaunchpadChip = ({ selected, darkMode, className, children, ...p }) => (
   <button
     className={cn(
-      'inline-flex items-center px-[6px] border-none rounded text-[0.65rem] cursor-pointer whitespace-nowrap h-5 shrink-0 transition-all duration-150',
+      'st-lp-chip inline-flex items-center px-[6px] border-none rounded text-[0.65rem] cursor-pointer whitespace-nowrap h-5 shrink-0 transition-[background-color,border-color,opacity] duration-150',
       'hover:bg-blue-500/10 hover:text-blue-500',
       selected ? 'bg-blue-500/[0.15] text-blue-500 font-medium' : cn('bg-transparent', darkMode ? 'text-white/60 font-normal' : 'text-[#212B36]/60 font-normal'),
       className
@@ -153,7 +173,7 @@ const LaunchpadChip = ({ selected, darkMode, className, children, ...p }) => (
 const TagChip = ({ selected, darkMode, className, children, ...p }) => (
   <button
     className={cn(
-      'inline-flex items-center gap-[3px] px-2 rounded-[6px] border text-[0.68rem] cursor-pointer whitespace-nowrap h-6 shrink-0 transition-all duration-150',
+      'st-tag inline-flex items-center gap-[3px] px-2 rounded-[6px] border text-[0.68rem] cursor-pointer whitespace-nowrap h-6 shrink-0 transition-[background-color,border-color,opacity] duration-150',
       selected
         ? 'border-blue-500/30 bg-blue-500/10 text-blue-500 font-medium hover:bg-blue-500/[0.15]'
         : cn(
@@ -168,7 +188,7 @@ const TagChip = ({ selected, darkMode, className, children, ...p }) => (
 const AllTagsButton = ({ darkMode, className, children, ...p }) => (
   <button
     className={cn(
-      'inline-flex items-center gap-1 px-3 border-none rounded-2xl text-blue-500 text-[0.7rem] font-medium cursor-pointer whitespace-nowrap h-[26px] shrink-0 ml-auto transition-all duration-150 hover:bg-blue-500/20',
+      'st-all-btn inline-flex items-center gap-1 px-3 border-none rounded-2xl text-blue-500 text-[0.7rem] font-medium cursor-pointer whitespace-nowrap h-[26px] shrink-0 ml-auto transition-[background-color,border-color,opacity] duration-150 hover:bg-blue-500/20',
       'max-sm:text-[0.68rem] max-sm:h-6 max-sm:px-2 max-sm:gap-[3px]',
       darkMode ? 'bg-blue-500/[0.15]' : 'bg-blue-500/10',
       className
@@ -188,7 +208,7 @@ const DrawerBackdrop = ({ className, children, ...p }) => (
 const DrawerPaper = ({ isDark, className, children, ...p }) => (
   <div
     className={cn(
-      'fixed bottom-0 left-0 right-0 max-h-[70vh] backdrop-blur-[24px] rounded-t-xl border-t overflow-hidden flex flex-col z-[1301]',
+      'fixed bottom-0 left-0 right-0 max-h-[70dvh] pb-[env(safe-area-inset-bottom)] backdrop-blur-[24px] rounded-t-xl border-t overflow-hidden flex flex-col z-[1301]',
       isDark ? 'bg-black/85 border-blue-500/20 shadow-[0_-25px_50px_-12px_rgba(59,130,246,0.1)]' : 'bg-white/[0.98] border-blue-200 shadow-[0_-25px_50px_-12px_rgba(191,219,254,0.5)]',
       className
     )}
@@ -207,7 +227,7 @@ const DrawerTitle = ({ isDark, className, children, ...p }) => (
 const DrawerClose = ({ isDark, className, children, ...p }) => (
   <button
     className={cn(
-      'w-8 h-8 border-[1.5px] rounded-lg bg-transparent cursor-pointer flex items-center justify-center transition-all duration-150',
+      'w-8 h-8 border-[1.5px] rounded-lg bg-transparent cursor-pointer flex items-center justify-center transition-[background-color,border-color,opacity] duration-150',
       'hover:border-blue-400/50 hover:text-[#4285f4]',
       isDark ? 'border-white/10 text-white/40' : 'border-black/10 text-black/40',
       className
@@ -263,7 +283,7 @@ const TagsGrid = ({ className, children, ...p }) => (
 const TagButton = ({ isDark, className, children, ...p }) => (
   <button
     className={cn(
-      'inline-flex items-center justify-center py-1 px-3 border rounded-lg bg-transparent text-xs font-normal cursor-pointer font-[inherit] whitespace-nowrap h-7 shrink-0 transition-all duration-200',
+      'inline-flex items-center justify-center py-1 px-3 border rounded-lg bg-transparent text-xs font-normal cursor-pointer font-[inherit] whitespace-nowrap h-7 shrink-0 transition-[background-color,border-color,opacity] duration-200',
       'hover:bg-blue-500/[0.08] hover:border-blue-500/30 hover:text-blue-500',
       'max-sm:h-8 max-sm:py-1 max-sm:px-[14px] max-sm:text-[0.8rem]',
       isDark ? 'border-white/[0.08] text-white/70' : 'border-black/[0.08] text-[#212B36]/70',
@@ -364,6 +384,15 @@ const SearchToolbar = memo(function SearchToolbar({
   const containerRef = useRef(null);
   const [visibleTagCount, setVisibleTagCount] = useState(0);
   const [measuredTags, setMeasuredTags] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Detect mobile for abbreviated labels
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth <= 600);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
 
   // Calculate how many tags can fit using a width heuristic (no DOM measurement)
   useEffect(() => {
@@ -608,13 +637,13 @@ const SearchToolbar = memo(function SearchToolbar({
               noMargin
               aria-label="Sort by"
             >
-              <option value="vol24hxrp">Volume 24H</option>
-              <option value="marketcap">Market Cap</option>
-              <option value="pro5m">Change 5M</option>
-              <option value="pro1h">Change 1H</option>
-              <option value="pro24h">Change 24H</option>
-              <option value="pro7d">Change 7D</option>
-              <option value="tvl">Liquidity</option>
+              <option value="vol24hxrp">{isMobile ? 'Vol 24H' : 'Volume 24H'}</option>
+              <option value="marketcap">{isMobile ? 'MCap' : 'Market Cap'}</option>
+              <option value="pro5m">{isMobile ? 'Chg 5M' : 'Change 5M'}</option>
+              <option value="pro1h">{isMobile ? 'Chg 1H' : 'Change 1H'}</option>
+              <option value="pro24h">{isMobile ? 'Chg 24H' : 'Change 24H'}</option>
+              <option value="pro7d">{isMobile ? 'Chg 7D' : 'Change 7D'}</option>
+              <option value="tvl">{isMobile ? 'Liq.' : 'Liquidity'}</option>
               <option value="holders">Holders</option>
               <option value="vol24htx">Trades</option>
               <option value="dateon">Newest</option>
@@ -656,7 +685,7 @@ const SearchToolbar = memo(function SearchToolbar({
                   Categories {tags?.length ? `(${tags.length})` : ''}
                 </span>
                 <div
-                  className="flex-1 h-[14px] bg-[length:8px_5px] [mask-image:linear-gradient(90deg,black_0%,transparent_100%)] [-webkit-mask-image:linear-gradient(90deg,black_0%,transparent_100%)]"
+                  className="flex-1 h-[14px] bg-[length:8px_5px]"
                   style={{
                     backgroundImage: darkMode
                       ? 'radial-gradient(circle, rgba(96,165,250,0.4) 1px, transparent 1px)'

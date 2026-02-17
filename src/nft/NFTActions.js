@@ -1,4 +1,4 @@
-import api from 'src/utils/api';
+import api, { apiFetch } from 'src/utils/api';
 import { useRef, useState, useEffect, useContext } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -37,8 +37,8 @@ import HistoryList from './HistoryList';
 import { ConnectWallet } from 'src/components/Wallet';
 import TxPreviewModal from 'src/components/TxPreviewModal';
 
-// XRPL
-import { xrpToDrops, dropsToXrp, Wallet as XRPLWallet } from 'xrpl';
+// XRPL - lazy loaded to avoid bundling ~150KB synchronously
+const getXrpl = () => import('xrpl');
 import { toast } from 'sonner';
 import { submitTransaction, simulateTransaction } from 'src/utils/api';
 
@@ -318,7 +318,7 @@ export default function NFTActions({ nft }) {
       const isBuyOffer = tx.TransactionType === 'NFTokenCreateOffer' && tx.Flags === 0;
       if (isBuyOffer && tx.Amount) {
         try {
-          const res = await fetch(`${BASE_URL}/submit/account/${tx.Account}/sequence`).then(r => r.json());
+          const res = await apiFetch(`${BASE_URL}/submit/account/${tx.Account}/sequence`).then(r => r.json());
           if (res.success && res.balance !== undefined) {
             const reserve = 1 + ((res.ownerCount || 0) * 0.2);
             const available = res.balance - reserve;
@@ -400,6 +400,7 @@ export default function NFTActions({ nft }) {
     // Fetch offers to get broker info
     async function getOfferDetails() {
       try {
+        const { dropsToXrp } = await getXrpl();
         const response = await api.get(`https://api.xrpl.to/v1/nft/${NFTokenID}/offers`);
         const sellOffers = response.data?.sellOffers || [];
 
@@ -625,6 +626,7 @@ export default function NFTActions({ nft }) {
     const toastId = toast.loading('Transferring NFT...', { description: 'Signing...' });
 
     try {
+      const { Wallet: XRPLWallet } = await getXrpl();
       const seed = await getWalletSeed();
       if (!seed) {
         toast.error('Authentication failed', { id: toastId });
@@ -669,6 +671,7 @@ export default function NFTActions({ nft }) {
     const toastId = toast.loading('Burning NFT...', { description: 'Signing...' });
 
     try {
+      const { Wallet: XRPLWallet } = await getXrpl();
       const seed = await getWalletSeed();
       if (!seed) {
         toast.error('Authentication failed', { id: toastId });
@@ -735,6 +738,7 @@ export default function NFTActions({ nft }) {
       }
 
       toast.loading('Cancelling offer...', { id: toastId, description: 'Signing transaction...' });
+      const { Wallet: XRPLWallet } = await getXrpl();
       const wallet = XRPLWallet.fromSeed(seed, { algorithm: getAlgorithmFromSeed(seed) });
       const tx = {
         TransactionType: 'NFTokenCancelOffer',
@@ -769,6 +773,7 @@ export default function NFTActions({ nft }) {
     }
     setSimulating(true);
 
+    const { xrpToDrops } = await getXrpl();
     const priceInDrops = xrpToDrops(offerAmount);
     const isSell = activeAction === 'sell';
     const tx = {
@@ -796,6 +801,7 @@ export default function NFTActions({ nft }) {
     const toastId = toast.loading('Creating offer...', { description: 'Signing...' });
 
     try {
+      const { Wallet: XRPLWallet } = await getXrpl();
       const seed = await getWalletSeed();
       if (!seed) {
         toast.error('Authentication failed', { id: toastId });
@@ -849,6 +855,7 @@ export default function NFTActions({ nft }) {
     }
     setSimulating(true);
 
+    const { xrpToDrops } = await getXrpl();
     const totalAmountDrops = xrpToDrops(lowestSellOffer.totalAmount.toString());
     const tx = {
       TransactionType: 'NFTokenCreateOffer',
@@ -871,6 +878,7 @@ export default function NFTActions({ nft }) {
     const toastId = toast.loading('Creating buy offer...', { description: 'Signing...' });
 
     try {
+      const { Wallet: XRPLWallet } = await getXrpl();
       const seed = await getWalletSeed();
       if (!seed) {
         toast.error('Authentication failed', { id: toastId });
@@ -891,7 +899,7 @@ export default function NFTActions({ nft }) {
         const pollOwner = async (attempts = 0) => {
           if (attempts > 30) { router.reload(); return; } // Fallback after 60s
           try {
-            const res = await fetch(`${BASE_URL}/nft/${NFTokenID}`).then(r => r.json());
+            const res = await apiFetch(`${BASE_URL}/nft/${NFTokenID}`).then(r => r.json());
             if (res.account === accountLogin) {
               toast.success('Purchase complete!', { id: toastId, duration: 3000 });
               router.reload();

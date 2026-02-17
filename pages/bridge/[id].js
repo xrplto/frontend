@@ -21,16 +21,19 @@ const BridgeStatusPage = () => {
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
 
-  // Load from localStorage first, then fetch status
+  // Load from localStorage (cached data for instant display), API fetch sets final loading state
   useEffect(() => {
     if (!id) return;
     const stored = localStorage.getItem(`bridge_tx_${id}`);
     if (stored) {
       try {
         setTxData(JSON.parse(stored));
-      } catch (e) {}
+      } catch (e) {
+        console.warn('Failed to parse cached bridge data:', e);
+        localStorage.removeItem(`bridge_tx_${id}`);
+      }
     }
-    setLoading(false);
+    // Don't setLoading(false) here — let the API fetch effect handle it
   }, [id]);
 
   // Fetch status from API
@@ -55,6 +58,8 @@ const BridgeStatusPage = () => {
       }
     } catch (err) {
       setError('Failed to fetch status');
+    } finally {
+      setLoading(false);
     }
   }, [id]);
 
@@ -514,3 +519,17 @@ const BridgeStatusPage = () => {
 };
 
 export default BridgeStatusPage;
+
+export async function getServerSideProps() {
+  return {
+    props: {
+      ogp: {
+        canonical: 'https://xrpl.to/bridge',
+        title: 'Bridge | Cross-Chain Token Bridge',
+        url: 'https://xrpl.to/bridge',
+        imgUrl: 'https://xrpl.to/og/bridge.webp',
+        desc: 'Bridge tokens across chains to and from the XRP Ledger.'
+      }
+    }
+  };
+}

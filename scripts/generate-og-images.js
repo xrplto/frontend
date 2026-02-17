@@ -3,6 +3,12 @@
  * OG Image Generator for XRPL.to
  * Generates Open Graph images for all static pages and tokens
  *
+ * Design: Modern, clean, perfectly symmetrical
+ * - Subtle radial gradient background (dark navy → black)
+ * - Top accent gradient bar (brand blue → cyan)
+ * - Centered vertical layout with generous whitespace
+ * - WebP output for optimal file size
+ *
  * Usage:
  *   node scripts/generate-og-images.js          # Generate static pages only
  *   node scripts/generate-og-images.js --tokens # Generate all token OG images
@@ -22,9 +28,10 @@ const HEIGHT = 630;
 
 // Brand colors
 const BRAND_BLUE = '#3f96fe';
-const BG_DARK = '#000000';
+const BRAND_CYAN = '#38bdf8';
 const TEXT_WHITE = '#ffffff';
-const TEXT_MUTED = 'rgba(255, 255, 255, 0.6)';
+const TEXT_MUTED = 'rgba(255, 255, 255, 0.5)';
+const TEXT_SUBTLE = 'rgba(255, 255, 255, 0.25)';
 
 // API base
 const API_BASE = 'https://api.xrpl.to/v1';
@@ -38,9 +45,9 @@ const LOGO_PATH = path.join(__dirname, '../public/logo/xrpl-to-logo-white.svg');
 
 // Check flags
 const GENERATE_TOKENS = process.argv.includes('--tokens');
-const TEST_MODE = process.argv.includes('--test'); // Only generate 1 token for testing
+const TEST_MODE = process.argv.includes('--test');
 
-// Fetch token image and convert webp to PNG base64
+// Fetch token image and convert to PNG base64
 async function fetchTokenImage(md5) {
   try {
     const url = `https://s1.xrpl.to/token/${md5}`;
@@ -49,7 +56,7 @@ async function fetchTokenImage(md5) {
 
     const buffer = await response.arrayBuffer();
     const pngBuffer = await sharp(Buffer.from(buffer))
-      .resize(340, 340, { fit: 'cover' })
+      .resize(300, 300, { fit: 'cover' })
       .png()
       .toBuffer();
 
@@ -118,10 +125,34 @@ const PAGES = [
     title: 'Page Not Found',
     subtitle: 'The page you are looking for does not exist',
     icon: 'alert'
-  }
+  },
+  { slug: 'dashboard', title: 'Dashboard', subtitle: 'Your portfolio overview', icon: 'dashboard' },
+  { slug: 'docs', title: 'API Docs', subtitle: 'XRPL.to API reference', icon: 'doc' },
+  { slug: 'wallet', title: 'Wallet', subtitle: 'Manage your XRPL wallet', icon: 'wallet' },
+  { slug: 'bridge', title: 'Bridge', subtitle: 'Cross-chain token bridge', icon: 'bridge' },
+  { slug: 'ledger', title: 'Ledger', subtitle: 'XRPL ledger explorer', icon: 'ledger' },
+  { slug: 'nft-market', title: 'NFT Market', subtitle: 'XRPL NFT market analytics', icon: 'grid' },
+  {
+    slug: 'token-market',
+    title: 'Token Market',
+    subtitle: 'XRPL token market analytics',
+    icon: 'chart'
+  },
+  {
+    slug: 'token-traders',
+    title: 'Token Traders',
+    subtitle: 'Top token traders on XRPL',
+    icon: 'users'
+  },
+  { slug: 'mpt', title: 'MPT Tokens', subtitle: 'Multi-Purpose Tokens on XRPL', icon: 'token' },
+  { slug: 'scams', title: 'Scam Alerts', subtitle: 'Report & track XRPL scams', icon: 'shield' },
+  { slug: 'faucet', title: 'Faucet', subtitle: 'Get testnet XRP', icon: 'droplet' },
+  { slug: 'signup', title: 'Sign Up', subtitle: 'Create your XRPL.to account', icon: 'key' },
+  { slug: 'address', title: 'Account', subtitle: 'XRPL account details & history', icon: 'users' },
+  { slug: 'view', title: 'Browse by Tag', subtitle: 'Explore tokens by category', icon: 'grid' }
 ];
 
-// Icon SVG paths (simplified Lucide-style icons) - no inline stroke, set at SVG level
+// Icon SVG paths (Lucide-style)
 const ICONS = {
   chart: '<path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/>',
   trending: '<polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/>',
@@ -141,12 +172,33 @@ const ICONS = {
   info: '<circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>',
   megaphone: '<path d="m3 11 18-5v12L3 13v-2z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/>',
   alert:
-    '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>'
+    '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>',
+  wallet:
+    '<path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/>',
+  bridge:
+    '<path d="M4 18V8"/><path d="M20 18V8"/><path d="M2 8h20"/><path d="M6 8c0-2.2 2.7-4 6-4s6 1.8 6 4"/>',
+  ledger:
+    '<rect x="2" y="4" width="20" height="16" rx="2"/><path d="M7 8h10"/><path d="M7 12h6"/><path d="M7 16h8"/>',
+  doc: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>',
+  dashboard:
+    '<rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/>',
+  shield:
+    '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
+  droplet:
+    '<path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/>',
+  token:
+    '<circle cx="12" cy="12" r="10"/><path d="M12 6v12"/><path d="M8 10h8"/><path d="M8 14h8"/>',
+  key: '<path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>'
 };
+
+// Helper: create icon as data URL
+function iconDataUrl(iconKey, size, color) {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${ICONS[iconKey] || ICONS.chart}</svg>`;
+  return `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`;
+}
 
 // Load fonts
 async function loadFonts() {
-  // Use Inter from fontsource CDN (TTF format required by satori)
   const interRegular = await fetch(
     'https://cdn.jsdelivr.net/fontsource/fonts/inter@latest/latin-400-normal.ttf'
   ).then((res) => res.arrayBuffer());
@@ -161,8 +213,12 @@ async function loadFonts() {
   ];
 }
 
-// Create OG image for static pages (left-aligned with subtle gradient glow)
+// ═══════════════════════════════════════════════════════════════
+// STATIC PAGE LAYOUT — Centered, symmetrical
+// ═══════════════════════════════════════════════════════════════
 function createStaticOGImage(page, logoDataUrl) {
+  const ICON_SIZE = 48;
+
   return {
     type: 'div',
     props: {
@@ -170,63 +226,150 @@ function createStaticOGImage(page, logoDataUrl) {
         width: WIDTH,
         height: HEIGHT,
         display: 'flex',
-        backgroundColor: BG_DARK,
-        padding: 60,
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
         position: 'relative',
-        overflow: 'hidden'
+        overflow: 'hidden',
+        backgroundColor: '#000000'
       },
       children: [
-        // Subtle gradient glow top-right corner
+        // Background: radial gradient for depth
         {
           type: 'div',
           props: {
             style: {
               position: 'absolute',
-              top: -150,
-              right: -150,
-              width: 600,
-              height: 600,
-              borderRadius: 9999,
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
               background:
-                'radial-gradient(circle, rgba(63,150,254,0.12) 0%, rgba(63,150,254,0) 70%)'
+                'radial-gradient(ellipse 80% 60% at 50% 40%, #0a1628 0%, #050a14 50%, #000000 100%)'
             }
           }
         },
-        // Left content
+        // Ambient glow behind center content
+        {
+          type: 'div',
+          props: {
+            style: {
+              position: 'absolute',
+              top: '42%',
+              left: '50%',
+              width: 600,
+              height: 600,
+              borderRadius: 9999,
+              transform: 'translate(-50%, -50%)',
+              background:
+                'radial-gradient(circle, rgba(63,150,254,0.08) 0%, rgba(63,150,254,0) 70%)'
+            }
+          }
+        },
+        // Top accent bar — gradient line
+        {
+          type: 'div',
+          props: {
+            style: {
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              height: 3,
+              background: `linear-gradient(90deg, transparent 0%, ${BRAND_BLUE} 30%, ${BRAND_CYAN} 70%, transparent 100%)`
+            }
+          }
+        },
+        // Logo — top center
+        {
+          type: 'div',
+          props: {
+            style: {
+              position: 'absolute',
+              top: 44,
+              left: 0,
+              right: 0,
+              display: 'flex',
+              justifyContent: 'center'
+            },
+            children: [
+              {
+                type: 'img',
+                props: {
+                  src: logoDataUrl,
+                  style: { height: 26 }
+                }
+              }
+            ]
+          }
+        },
+        // Center content block
         {
           type: 'div',
           props: {
             style: {
               display: 'flex',
               flexDirection: 'column',
+              alignItems: 'center',
               justifyContent: 'center',
-              flex: 1,
-              paddingRight: 40
+              position: 'relative',
+              marginTop: 10
             },
             children: [
-              // Logo
-              {
-                type: 'img',
-                props: {
-                  src: logoDataUrl,
-                  style: {
-                    height: 32,
-                    marginBottom: 48
-                  }
-                }
-              },
-              // Main title
+              // Icon in a refined container
               {
                 type: 'div',
                 props: {
                   style: {
-                    fontSize: 72,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: 80,
+                    height: 80,
+                    borderRadius: 20,
+                    border: '1px solid rgba(63,150,254,0.15)',
+                    backgroundColor: 'rgba(63,150,254,0.06)',
+                    marginBottom: 32
+                  },
+                  children: [
+                    {
+                      type: 'img',
+                      props: {
+                        src: iconDataUrl(page.icon, ICON_SIZE, BRAND_BLUE),
+                        width: ICON_SIZE,
+                        height: ICON_SIZE
+                      }
+                    }
+                  ]
+                }
+              },
+              // Title
+              {
+                type: 'div',
+                props: {
+                  style: {
+                    fontSize: 56,
                     fontWeight: 700,
                     color: TEXT_WHITE,
                     lineHeight: 1.1,
+                    textAlign: 'center',
+                    letterSpacing: -1,
                     marginBottom: 16
                   },
                   children: page.title
+                }
+              },
+              // Thin separator line
+              {
+                type: 'div',
+                props: {
+                  style: {
+                    width: 64,
+                    height: 2,
+                    borderRadius: 1,
+                    background: `linear-gradient(90deg, ${BRAND_BLUE}, ${BRAND_CYAN})`,
+                    marginBottom: 20
+                  }
                 }
               },
               // Subtitle
@@ -234,8 +377,11 @@ function createStaticOGImage(page, logoDataUrl) {
                 type: 'div',
                 props: {
                   style: {
-                    fontSize: 28,
+                    fontSize: 22,
+                    fontWeight: 400,
                     color: TEXT_MUTED,
+                    lineHeight: 1.5,
+                    textAlign: 'center',
                     maxWidth: 600
                   },
                   children: page.subtitle
@@ -244,40 +390,29 @@ function createStaticOGImage(page, logoDataUrl) {
             ]
           }
         },
-        // Right side - Icon with glow
+        // Domain — bottom center
         {
           type: 'div',
           props: {
             style: {
+              position: 'absolute',
+              bottom: 36,
+              left: 0,
+              right: 0,
               display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: 320,
-              height: 320,
-              position: 'relative'
+              justifyContent: 'center'
             },
             children: [
-              // Soft glow behind icon
               {
                 type: 'div',
                 props: {
                   style: {
-                    position: 'absolute',
-                    width: 280,
-                    height: 280,
-                    borderRadius: 9999,
-                    background:
-                      'radial-gradient(circle, rgba(63,150,254,0.25) 0%, rgba(63,150,254,0) 60%)'
-                  }
-                }
-              },
-              // Icon
-              {
-                type: 'img',
-                props: {
-                  src: `data:image/svg+xml;base64,${Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="${BRAND_BLUE}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${ICONS[page.icon] || ICONS.chart}</svg>`).toString('base64')}`,
-                  width: 120,
-                  height: 120
+                    fontSize: 15,
+                    fontWeight: 400,
+                    color: TEXT_SUBTLE,
+                    letterSpacing: 2
+                  },
+                  children: 'xrpl.to'
                 }
               }
             ]
@@ -288,8 +423,12 @@ function createStaticOGImage(page, logoDataUrl) {
   };
 }
 
-// Create OG image for tokens (side-by-side layout like Pump.Fun)
+// ═══════════════════════════════════════════════════════════════
+// TOKEN LAYOUT — Side-by-side with token image
+// ═══════════════════════════════════════════════════════════════
 function createTokenOGImage(page, logoDataUrl, tokenImage) {
+  const IMG_SIZE = 300;
+
   return {
     type: 'div',
     props: {
@@ -297,111 +436,188 @@ function createTokenOGImage(page, logoDataUrl, tokenImage) {
         width: WIDTH,
         height: HEIGHT,
         display: 'flex',
-        backgroundColor: BG_DARK,
-        padding: 60,
-        position: 'relative'
+        position: 'relative',
+        overflow: 'hidden',
+        backgroundColor: '#000000'
       },
       children: [
-        // Left content
+        // Background gradient
+        {
+          type: 'div',
+          props: {
+            style: {
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background:
+                'radial-gradient(ellipse 70% 70% at 30% 50%, #0a1628 0%, #050a14 50%, #000000 100%)'
+            }
+          }
+        },
+        // Ambient glow behind token image area
+        {
+          type: 'div',
+          props: {
+            style: {
+              position: 'absolute',
+              top: '50%',
+              right: 120,
+              width: 500,
+              height: 500,
+              borderRadius: 9999,
+              transform: 'translateY(-50%)',
+              background:
+                'radial-gradient(circle, rgba(63,150,254,0.06) 0%, rgba(63,150,254,0) 70%)'
+            }
+          }
+        },
+        // Top accent bar
+        {
+          type: 'div',
+          props: {
+            style: {
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              height: 3,
+              background: `linear-gradient(90deg, transparent 0%, ${BRAND_BLUE} 30%, ${BRAND_CYAN} 70%, transparent 100%)`
+            }
+          }
+        },
+        // Content area
         {
           type: 'div',
           props: {
             style: {
               display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'center',
               flex: 1,
-              paddingRight: 40
+              alignItems: 'center',
+              padding: '0 80px',
+              gap: 60,
+              position: 'relative'
             },
             children: [
-              // XRPL.to logo
-              {
-                type: 'img',
-                props: {
-                  src: logoDataUrl,
-                  style: {
-                    height: 32,
-                    marginBottom: 48
-                  }
-                }
-              },
-              // Token ticker (large)
-              {
-                type: 'div',
-                props: {
-                  style: {
-                    fontSize: 72,
-                    fontWeight: 700,
-                    color: TEXT_WHITE,
-                    lineHeight: 1.1,
-                    marginBottom: 8
-                  },
-                  children: page.title
-                }
-              },
-              // Issuer name (bold, prominent)
-              ...(page.user
-                ? [
-                    {
-                      type: 'div',
-                      props: {
-                        style: {
-                          fontSize: 32,
-                          fontWeight: 700,
-                          color: TEXT_WHITE,
-                          marginBottom: 16
-                        },
-                        children: page.user
-                      }
-                    }
-                  ]
-                : []),
-              // Description
-              ...(page.description
-                ? [
-                    {
-                      type: 'div',
-                      props: {
-                        style: {
-                          fontSize: 20,
-                          color: TEXT_MUTED,
-                          maxWidth: 450,
-                          lineHeight: 1.5
-                        },
-                        children: page.description
-                      }
-                    }
-                  ]
-                : []),
-              // TRADE button
+              // Left: text content
               {
                 type: 'div',
                 props: {
                   style: {
                     display: 'flex',
-                    marginTop: 32
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    flex: 1
                   },
                   children: [
+                    // Logo
+                    {
+                      type: 'img',
+                      props: {
+                        src: logoDataUrl,
+                        style: { height: 24, marginBottom: 40 }
+                      }
+                    },
+                    // Token name
+                    {
+                      type: 'div',
+                      props: {
+                        style: {
+                          fontSize: 64,
+                          fontWeight: 700,
+                          color: TEXT_WHITE,
+                          lineHeight: 1.1,
+                          letterSpacing: -1,
+                          marginBottom: 8
+                        },
+                        children: page.title
+                      }
+                    },
+                    // Issuer
+                    ...(page.user
+                      ? [
+                          {
+                            type: 'div',
+                            props: {
+                              style: {
+                                fontSize: 24,
+                                fontWeight: 400,
+                                color: 'rgba(255,255,255,0.6)',
+                                marginBottom: 20
+                              },
+                              children: page.user
+                            }
+                          }
+                        ]
+                      : []),
+                    // Separator
+                    {
+                      type: 'div',
+                      props: {
+                        style: {
+                          width: 48,
+                          height: 2,
+                          borderRadius: 1,
+                          background: `linear-gradient(90deg, ${BRAND_BLUE}, ${BRAND_CYAN})`,
+                          marginBottom: 20
+                        }
+                      }
+                    },
+                    // Description
+                    ...(page.description
+                      ? [
+                          {
+                            type: 'div',
+                            props: {
+                              style: {
+                                fontSize: 18,
+                                fontWeight: 400,
+                                color: TEXT_MUTED,
+                                maxWidth: 420,
+                                lineHeight: 1.5
+                              },
+                              children: page.description
+                            }
+                          }
+                        ]
+                      : []),
+                    // Trade pill
                     {
                       type: 'div',
                       props: {
                         style: {
                           display: 'flex',
-                          alignItems: 'center',
-                          backgroundColor: BRAND_BLUE,
-                          paddingLeft: 28,
-                          paddingRight: 28,
-                          paddingTop: 14,
-                          paddingBottom: 14,
-                          borderRadius: 50,
-                          gap: 8
+                          marginTop: 28
                         },
                         children: [
                           {
                             type: 'div',
                             props: {
-                              style: { fontSize: 18, fontWeight: 700, color: TEXT_WHITE },
-                              children: 'TRADE'
+                              style: {
+                                display: 'flex',
+                                alignItems: 'center',
+                                background: `linear-gradient(135deg, ${BRAND_BLUE}, ${BRAND_CYAN})`,
+                                paddingLeft: 24,
+                                paddingRight: 24,
+                                paddingTop: 10,
+                                paddingBottom: 10,
+                                borderRadius: 50
+                              },
+                              children: [
+                                {
+                                  type: 'div',
+                                  props: {
+                                    style: {
+                                      fontSize: 15,
+                                      fontWeight: 700,
+                                      color: TEXT_WHITE,
+                                      letterSpacing: 1.5
+                                    },
+                                    children: 'TRADE'
+                                  }
+                                }
+                              ]
                             }
                           }
                         ]
@@ -409,69 +625,98 @@ function createTokenOGImage(page, logoDataUrl, tokenImage) {
                     }
                   ]
                 }
-              }
-            ]
-          }
-        },
-        // Right side - Token logo
-        {
-          type: 'div',
-          props: {
-            style: {
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: 360,
-              height: 360,
-              borderRadius: 24,
-              overflow: 'hidden'
-            },
-            children: tokenImage
-              ? [
-                  {
-                    type: 'img',
-                    props: {
-                      src: tokenImage,
-                      width: 360,
-                      height: 360,
-                      style: {
-                        width: 360,
-                        height: 360,
-                        objectFit: 'cover',
-                        borderRadius: 24
-                      }
-                    }
-                  }
-                ]
-              : [
-                  {
-                    type: 'div',
-                    props: {
-                      style: {
-                        width: 360,
-                        height: 360,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        backgroundColor: 'rgba(63, 150, 254, 0.15)',
-                        borderRadius: 24
-                      },
-                      children: [
+              },
+              // Right: token image
+              {
+                type: 'div',
+                props: {
+                  style: {
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: IMG_SIZE + 8,
+                    height: IMG_SIZE + 8,
+                    borderRadius: 32,
+                    border: '1px solid rgba(63,150,254,0.12)',
+                    backgroundColor: 'rgba(63,150,254,0.04)',
+                    flexShrink: 0
+                  },
+                  children: tokenImage
+                    ? [
+                        {
+                          type: 'img',
+                          props: {
+                            src: tokenImage,
+                            width: IMG_SIZE,
+                            height: IMG_SIZE,
+                            style: {
+                              width: IMG_SIZE,
+                              height: IMG_SIZE,
+                              borderRadius: 28
+                            }
+                          }
+                        }
+                      ]
+                    : [
                         {
                           type: 'div',
                           props: {
                             style: {
-                              fontSize: 120,
-                              fontWeight: 700,
-                              color: BRAND_BLUE
+                              width: IMG_SIZE,
+                              height: IMG_SIZE,
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              borderRadius: 28,
+                              backgroundColor: 'rgba(63,150,254,0.08)'
                             },
-                            children: page.title.charAt(0)
+                            children: [
+                              {
+                                type: 'div',
+                                props: {
+                                  style: {
+                                    fontSize: 100,
+                                    fontWeight: 700,
+                                    color: BRAND_BLUE
+                                  },
+                                  children: page.title.charAt(0)
+                                }
+                              }
+                            ]
                           }
                         }
                       ]
-                    }
-                  }
-                ]
+                }
+              }
+            ]
+          }
+        },
+        // Domain — bottom center
+        {
+          type: 'div',
+          props: {
+            style: {
+              position: 'absolute',
+              bottom: 28,
+              left: 0,
+              right: 0,
+              display: 'flex',
+              justifyContent: 'center'
+            },
+            children: [
+              {
+                type: 'div',
+                props: {
+                  style: {
+                    fontSize: 14,
+                    fontWeight: 400,
+                    color: TEXT_SUBTLE,
+                    letterSpacing: 2
+                  },
+                  children: 'xrpl.to'
+                }
+              }
+            ]
           }
         }
       ]
@@ -479,18 +724,16 @@ function createTokenOGImage(page, logoDataUrl, tokenImage) {
   };
 }
 
-// Create OG image component (Satori uses JSX-like objects)
+// Route to correct layout
 function createOGImage(page, logoDataUrl, tokenImage) {
-  // Use token layout for pages with md5 (token pages)
   if (page.md5) {
     return createTokenOGImage(page, logoDataUrl, tokenImage);
   }
   return createStaticOGImage(page, logoDataUrl);
 }
 
-// Generate SVG and convert to PNG
+// Generate SVG → PNG
 async function generateImage(page, fonts, logoDataUrl) {
-  // Fetch token image if md5 is provided
   let tokenImage = null;
   if (page.md5) {
     tokenImage = await fetchTokenImage(page.md5);
@@ -508,9 +751,8 @@ async function generateImage(page, fonts, logoDataUrl) {
     fitTo: { mode: 'width', value: WIDTH }
   });
 
-  const png = resvg.render().asPng();
-  // Convert to webp for smaller file size
-  return sharp(png).webp({ quality: 85 }).toBuffer();
+  const pngData = resvg.render().asPng();
+  return sharp(pngData).webp({ quality: 90 }).toBuffer();
 }
 
 // Fetch all tokens from API with pagination
@@ -625,7 +867,6 @@ async function main() {
     console.log('\n================================');
     console.log('Generating token OG images...\n');
 
-    // Fetch all tokens
     const tokens = await fetchAllTokens();
     console.log(`\nFound ${tokens.length} tokens to process.\n`);
 
@@ -633,14 +874,11 @@ async function main() {
     let failed = 0;
     let skipped = 0;
 
-    // Process tokens in batches for better performance
     const BATCH_SIZE = 10;
-    const CONCURRENCY = 5;
 
     for (let i = 0; i < tokens.length; i += BATCH_SIZE) {
       const batch = tokens.slice(i, i + BATCH_SIZE);
 
-      // Process batch with concurrency limit
       const results = await Promise.allSettled(
         batch.map(async (token) => {
           const md5 = token.md5;
@@ -654,7 +892,6 @@ async function main() {
           }
 
           try {
-            // Fetch token with description
             const tokenWithDesc = await fetchTokenWithDescription(token.slug || md5);
             const tokenData = tokenWithDesc || token;
 
@@ -667,7 +904,6 @@ async function main() {
         })
       );
 
-      // Process results
       for (const result of results) {
         if (result.status === 'fulfilled') {
           const r = result.value;
@@ -686,14 +922,12 @@ async function main() {
         }
       }
 
-      // Progress update every 100 tokens
       if ((i + BATCH_SIZE) % 100 === 0 || i + BATCH_SIZE >= tokens.length) {
         console.log(
           `\n  Progress: ${Math.min(i + BATCH_SIZE, tokens.length)}/${tokens.length} (${success} new, ${skipped} skipped, ${failed} failed)\n`
         );
       }
 
-      // Small delay between batches
       await new Promise((r) => setTimeout(r, 50));
     }
 
@@ -708,9 +942,9 @@ async function main() {
   console.log('\n================================');
   console.log('Done!');
   console.log('\nUsage in pages:');
-  console.log('  Static: <meta property="og:image" content="https://xrpl.to/og/{slug}.webp" />');
+  console.log('  Static: <meta property="og:image" content="https://dev.xrpl.to/og/{slug}.webp" />');
   console.log(
-    '  Tokens: <meta property="og:image" content="https://xrpl.to/og/token/{slug}.webp" />'
+    '  Tokens: <meta property="og:image" content="https://dev.xrpl.to/og/token/{md5}.webp" />'
   );
 }
 

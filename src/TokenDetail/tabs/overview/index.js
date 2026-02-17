@@ -71,6 +71,7 @@ const Overview = memo(
     const [pairs, setPairs] = useState([]);
     const [swapLimitPrice, setSwapLimitPrice] = useState(null);
     const [swapOrderType, setSwapOrderType] = useState('market');
+    const [candleTimeFilter, setCandleTimeFilter] = useState(null);
 
     // Markdown parser removed for build simplicity
 
@@ -160,7 +161,7 @@ const Overview = memo(
             onLimitPriceChange={setSwapLimitPrice}
             onOrderTypeChange={setSwapOrderType}
           />
-          <PriceChart token={token} />
+          <PriceChart token={token} onCandleClick={setCandleTimeFilter} />
           <Description
             token={token}
             showEditor={showEditor}
@@ -197,6 +198,8 @@ const Overview = memo(
             onTransactionClick={onTransactionClick}
             isDark={isDark}
             isMobile={true}
+            candleTimeFilter={candleTimeFilter}
+            onClearCandleFilter={() => setCandleTimeFilter(null)}
           />
           <TrendingTokens token={token} />
         </div>
@@ -212,7 +215,7 @@ const Overview = memo(
             <div className="flex gap-2 relative z-10">
               <section aria-label="Price Chart" className="flex-1 min-w-0">
                 <h2 className="sr-only">Price Chart</h2>
-                <PriceChart token={token} />
+                <PriceChart token={token} onCandleClick={setCandleTimeFilter} />
               </section>
               {sidePanelVisible ? (
                 <section aria-label="Side Panel" className={`w-[300px] flex-shrink-0 hidden lg:flex lg:flex-col h-[800px] rounded-xl border ${isDark ? 'border-white/[0.08]' : 'border-black/[0.08]'} overflow-hidden`}>
@@ -261,6 +264,8 @@ const Overview = memo(
                 onTransactionClick={onTransactionClick}
                 isDark={isDark}
                 isMobile={isTablet}
+                candleTimeFilter={candleTimeFilter}
+                onClearCandleFilter={() => setCandleTimeFilter(null)}
               />
             </section>
           </div>

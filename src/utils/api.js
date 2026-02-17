@@ -1,21 +1,38 @@
 import axiosLib from 'axios';
 
-const API_KEY = 'xrpl_p3PKb-sf3JfGCtcUIdRS_UV8acyvQ1ta';
-const BASE_URL = 'https://api.xrpl.to';
+const REMOTE_BASE = 'https://api.xrpl.to';
+const PROXY_BASE = '/api/proxy';
+const isServer = typeof window === 'undefined';
 
 const api = axiosLib.create({
-  baseURL: BASE_URL,
-  headers: { 'X-Api-Key': API_KEY }
+  baseURL: isServer ? REMOTE_BASE : PROXY_BASE
+});
+
+// Add API key for server-side requests (SSR with full URLs)
+api.interceptors.request.use((config) => {
+  if (isServer) {
+    config.headers['X-Api-Key'] = process.env.CHAT_API_KEY;
+  }
+  // Rewrite remote URLs to proxy on client-side
+  if (!isServer && config.url?.startsWith(REMOTE_BASE)) {
+    config.url = config.url.replace(REMOTE_BASE, PROXY_BASE);
+    config.baseURL = ''; // Prevent double-prepending since URL is now a full proxy path
+  }
+  return config;
 });
 
 // Attach static methods to api instance
 api.isCancel = axiosLib.isCancel;
 api.CancelToken = axiosLib.CancelToken;
 
-// Fetch wrapper with auth
+// Fetch wrapper with auth - client calls go through proxy
 export const apiFetch = (url, options = {}) => {
-  const headers = { 'X-Api-Key': API_KEY, ...options.headers };
-  return fetch(url, { ...options, headers });
+  const resolvedUrl = isServer ? url : url.replace(REMOTE_BASE, PROXY_BASE);
+  if (isServer) {
+    const headers = { 'X-Api-Key': process.env.CHAT_API_KEY, ...options.headers };
+    return fetch(resolvedUrl, { ...options, headers });
+  }
+  return fetch(resolvedUrl, options);
 };
 
 // Track pending sequences per account
@@ -25,9 +42,12 @@ const pendingSequences = new Map();
 // Simulate transaction to preview results (XLS-69)
 // Returns { success, engine_result, delivered_amount, meta } without submitting
 export async function simulateTransaction(tx) {
+  const base = isServer ? REMOTE_BASE : PROXY_BASE;
+  const headers = isServer ? { 'X-Api-Key': process.env.CHAT_API_KEY } : {};
+
   const [seqRes, feeRes] = await Promise.all([
-    fetch(`${BASE_URL}/v1/submit/account/${tx.Account}/sequence`).then(r => r.json()),
-    fetch(`${BASE_URL}/v1/submit/fee`).then(r => r.json())
+    fetch(`${base}/v1/submit/account/${tx.Account}/sequence`, { headers }).then((r) => r.json()),
+    fetch(`${base}/v1/submit/fee`, { headers }).then((r) => r.json())
   ]);
   if (!seqRes.success) throw new Error(seqRes.error || 'Failed to get sequence');
 
@@ -40,11 +60,11 @@ export async function simulateTransaction(tx) {
     SigningPubKey: '' // Must be empty for simulate
   };
 
-  const simRes = await fetch(`${BASE_URL}/v1/submit/simulate`, {
+  const simRes = await fetch(`${base}/v1/submit/simulate`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'X-Api-Key': API_KEY },
+    headers: { 'Content-Type': 'application/json', ...headers },
     body: JSON.stringify({ tx_json: prepared })
-  }).then(r => r.json());
+  }).then((r) => r.json());
   // API returns data directly (not nested in .result)
   const meta = simRes.meta || {};
 
@@ -66,9 +86,12 @@ export async function simulateTransaction(tx) {
 }
 
 export async function submitTransaction(wallet, tx) {
+  const base = isServer ? REMOTE_BASE : PROXY_BASE;
+  const headers = isServer ? { 'X-Api-Key': process.env.CHAT_API_KEY } : {};
+
   const [seqRes, feeRes] = await Promise.all([
-    fetch(`${BASE_URL}/v1/submit/account/${tx.Account}/sequence`).then(r => r.json()),
-    fetch(`${BASE_URL}/v1/submit/fee`).then(r => r.json())
+    fetch(`${base}/v1/submit/account/${tx.Account}/sequence`, { headers }).then((r) => r.json()),
+    fetch(`${base}/v1/submit/fee`, { headers }).then((r) => r.json())
   ]);
   if (!seqRes.success) throw new Error(seqRes.error || 'Failed to get sequence');
   if (!feeRes.success) throw new Error(feeRes.error || 'Failed to get fee');
@@ -86,11 +109,11 @@ export async function submitTransaction(wallet, tx) {
   };
 
   const signed = wallet.sign(prepared);
-  const submitRes = await fetch(`${BASE_URL}/v1/submit`, {
+  const submitRes = await fetch(`${base}/v1/submit`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...headers },
     body: JSON.stringify({ tx_blob: signed.tx_blob })
-  }).then(r => r.json());
+  }).then((r) => r.json());
 
   if (!submitRes.success) throw new Error(submitRes.engine_result_message || submitRes.error || 'Submit failed');
   return { ...submitRes, hash: signed.hash };

@@ -7,20 +7,33 @@ import useWebSocket from 'react-use-websocket';
  */
 export function useTokenSync({ onTokensUpdate, onMetricsUpdate, onTagsUpdate, enabled = true }) {
   const [wsUrl, setWsUrl] = useState(null);
+  const apiKeyRef = useRef(null);
   const queueRef = useRef([]);
   const timerRef = useRef(null);
+  const [ready, setReady] = useState(false);
 
-  // Fetch authenticated WebSocket URL
+  // Wait for user interaction or 10s before connecting WebSocket
   useEffect(() => {
-    if (!enabled) { setWsUrl(null); return; }
+    if (!enabled) return;
+    const activate = () => { setReady(true); cleanup(); };
+    const events = ['scroll', 'mousemove', 'keydown', 'touchstart', 'click'];
+    events.forEach(e => window.addEventListener(e, activate, { once: true, passive: true }));
+    const timer = setTimeout(activate, 10000);
+    const cleanup = () => {
+      events.forEach(e => window.removeEventListener(e, activate));
+      clearTimeout(timer);
+    };
+    return cleanup;
+  }, [enabled]);
+
+  // Fetch WebSocket URL and API key after ready
+  useEffect(() => {
+    if (!ready) { setWsUrl(null); return; }
     fetch('/api/ws/session?type=sync')
       .then(r => r.json())
-      .then(d => setWsUrl(d.wsUrl))
-      .catch((err) => {
-        console.error('[useTokenSync] Failed to get WS session:', err);
-        setWsUrl(null);
-      });
-  }, [enabled]);
+      .then(d => { apiKeyRef.current = d.apiKey; setWsUrl(d.wsUrl); })
+      .catch(() => setWsUrl(null));
+  }, [ready]);
 
   const processQueue = useCallback(() => {
     if (queueRef.current.length === 0) return;
@@ -49,21 +62,26 @@ export function useTokenSync({ onTokensUpdate, onMetricsUpdate, onTagsUpdate, en
     if (tokens.size > 0) onTokensUpdate?.(Array.from(tokens.values()));
 
     if (queueRef.current.length > 0) {
-      requestIdleCallback(processQueue, { timeout: 100 });
+      typeof requestIdleCallback === 'function' ? requestIdleCallback(processQueue, { timeout: 100 }) : setTimeout(processQueue, 100);
     }
   }, [onTokensUpdate, onMetricsUpdate, onTagsUpdate]);
 
   const { sendJsonMessage, readyState } = useWebSocket(wsUrl, {
+    onOpen: () => {
+      if (apiKeyRef.current) sendJsonMessage({ type: 'auth', apiKey: apiKeyRef.current });
+    },
     onMessage: (e) => {
       try {
         const data = JSON.parse(e.data);
         if (data.type === 'pong') return;
         queueRef.current.push(data);
-        clearTimeout(timerRef.current);
-        timerRef.current = setTimeout(
-          () => requestIdleCallback(processQueue, { timeout: 100 }),
-          32
-        );
+        // Schedule flush once per batch window; don't reset timer on each message
+        if (!timerRef.current) {
+          timerRef.current = setTimeout(() => {
+            timerRef.current = null;
+            typeof requestIdleCallback === 'function' ? requestIdleCallback(processQueue, { timeout: 100 }) : setTimeout(processQueue, 0);
+          }, 32);
+        }
       } catch {}
     },
     shouldReconnect: () => true,

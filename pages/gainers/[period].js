@@ -8,7 +8,7 @@ import { getTokens } from 'src/utils/formatters';
 import { cn } from 'src/utils/cn';
 
 const OverviewWrapper = ({ className, ...props }) => (
-  <div className={cn('overflow-hidden min-h-screen m-0 p-0', className)} {...props} />
+  <div className={cn('overflow-x-clip w-full max-w-[100vw] min-h-screen m-0 p-0', className)} {...props} />
 );
 
 function getInitialTokens(data) {
@@ -130,22 +130,25 @@ export async function getStaticProps({ params }) {
     const itemListSchema = {
       '@context': 'https://schema.org',
       '@type': 'ItemList',
-      itemListElement: (data.tokens || []).slice(0, 20).map((token, index) => ({
-        '@type': 'ListItem',
-        position: index + 1,
-        item: {
+      itemListElement: (data.tokens || []).slice(0, 20).map((token, index) => {
+        const item = {
           '@type': 'FinancialProduct',
           name: token.name,
-          url: `https://xrpl.to/token/${token.slug}`,
-          offers: token.exch
-            ? {
-                '@type': 'Offer',
-                price: token.exch,
-                priceCurrency: 'XRP'
-              }
-            : undefined
+          url: `https://xrpl.to/token/${token.slug}`
+        };
+        if (token.exch) {
+          item.offers = {
+            '@type': 'Offer',
+            price: token.exch,
+            priceCurrency: 'XRP'
+          };
         }
-      }))
+        return {
+          '@type': 'ListItem',
+          position: index + 1,
+          item
+        };
+      })
     };
     ogp.jsonLd = itemListSchema;
 

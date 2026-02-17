@@ -70,12 +70,14 @@
   border: 0 !important;
 }
 
-html { scroll-behavior: smooth; overflow-x: hidden; }
+html { scroll-behavior: smooth; overflow-x: clip; }
 body {
   margin: 0;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  overflow-x: hidden;
+  overflow-x: clip;
+  max-width: 100vw;
+  width: 100%;
   background: #F8FAFD;
 }
 
@@ -88,6 +90,27 @@ html.dark body {
 
 /* Firefox focus fix */
 *::-moz-focus-inner { border: 0; padding: 0; outline: none; }
+
+/* Hide scrollbar utility */
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* TokenList scrollbar hiding */
+.table-container-hide-scrollbar::-webkit-scrollbar { display: none; }
+.table-container-hide-scrollbar > * { scroll-snap-align: center; }
+
+/* Token table styles — CSS hover replaces JS onMouseEnter/Leave for perf */
+.token-tbody tr { margin: 0; padding: 0; }
+.token-tbody td { padding: 2px 6px; height: 32px; }
+@media (max-width: 768px) {
+  .token-tbody td { padding: 16px 8px; height: auto; }
+}
+.tr-row:hover { background: linear-gradient(90deg, rgba(19, 125, 254, 0.04) 0%, rgba(0, 0, 0, 0.01) 100%); }
+html.dark .tr-row:hover { background: linear-gradient(90deg, rgba(19, 125, 254, 0.06) 0%, rgba(255, 255, 255, 0.03) 100%); }
+.tr-row-new { background: rgba(34, 197, 94, 0.06); box-shadow: inset 3px 0 8px -4px rgba(34, 197, 94, 0.4); }
+html.dark .tr-row-new { background: rgba(34, 197, 94, 0.08); }
+.mobile-card:hover { background: linear-gradient(90deg, rgba(19, 125, 254, 0.04) 0%, rgba(0, 0, 0, 0.01) 100%); }
+html.dark .mobile-card:hover { background: linear-gradient(90deg, rgba(19, 125, 254, 0.06) 0%, rgba(255, 255, 255, 0.03) 100%); }
 
 /* Sonner Toast */
 [data-sonner-toaster] {
@@ -142,3 +165,17 @@ html:not(.dark) [data-sonner-toast][data-type="success"] [data-icon] svg { color
 html:not(.dark) [data-sonner-toast][data-type="error"] [data-icon] svg { color: #dc2626 !important; }
 html:not(.dark) [data-sonner-toast][data-type="warning"] [data-icon] svg { color: #d97706 !important; }
 html:not(.dark) [data-sonner-toast][data-type="info"] [data-icon] svg { color: #2563eb !important; }
+
+/* Token table compact styles for smaller desktop viewports */
+@media (max-width: 1024px) {
+  .tr-cell { padding-top: 8px; padding-bottom: 8px; font-size: 0.78rem; }
+  .tr-cell:first-child { padding-left: 8px; }
+  .tr-cell:last-child { padding-right: 8px; }
+  .tr-row { contain-intrinsic-size: auto 40px; }
+  .tr-img { width: 32px; height: 32px; }
+  .tr-name { font-size: 13px; max-width: 120px; }
+  .tr-user { font-size: 11px; max-width: 120px; }
+  .tr-spark { width: 80px; height: 24px; }
+  .tr-spark svg { width: 80px; height: 24px; }
+  .tr-idx { width: 36px; min-width: 36px; max-width: 36px; }
+}
