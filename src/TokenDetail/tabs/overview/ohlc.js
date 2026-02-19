@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, memo, useContext, useMemo, useCallback } from 'react';
+import { useState, useEffect, useLayoutEffect, useRef, memo, useContext, useMemo, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import {
   TrendingUp,
@@ -8,14 +8,11 @@ import {
   Minimize,
   Loader2,
   Droplets,
-  Sparkles
+  Sparkles,
+  Search,
+  X
 } from 'lucide-react';
-import {
-  createChart,
-  CandlestickSeries,
-  HistogramSeries,
-  AreaSeries
-} from 'lightweight-charts';
+// lightweight-charts is dynamically imported in the chart useEffect to reduce initial bundle size
 import api from 'src/utils/api';
 import { useSelector } from 'react-redux';
 import { selectMetrics } from 'src/redux/statusSlice';
@@ -108,13 +105,13 @@ const ToolGroup = ({ className, children, isDark, ...p }) => (
 const ToolBtn = ({ className, children, isActive, isMobile, isDark, ...p }) => (
   <button
     className={cn(
-      'flex items-center gap-[6px] font-semibold rounded-md border-none cursor-pointer transition-all duration-200',
+      'flex items-center gap-[6px] font-semibold rounded-md border-none cursor-pointer transition-[opacity,transform,background-color,border-color] duration-200',
       isMobile ? 'px-2 py-1 text-[10px]' : 'px-3 py-[6px] text-[11px]',
       isActive
-        ? 'bg-[#3b82f6] text-white hover:bg-[#2563eb]'
+        ? 'bg-[#2563eb] text-white hover:bg-[#1d4ed8]'
         : cn(
             'bg-transparent',
-            isDark ? 'text-white/50 hover:text-white hover:bg-white/[0.08]' : 'text-black/50 hover:text-black hover:bg-black/[0.05]'
+            isDark ? 'text-white/70 hover:text-white hover:bg-white/[0.08]' : 'text-black/70 hover:text-black hover:bg-black/[0.05]'
           ),
       '[&_svg]:w-[14px] [&_svg]:h-[14px] [&_svg]:stroke-[2.5]',
       isActive ? '[&_svg]:opacity-100' : '[&_svg]:opacity-70',
@@ -163,14 +160,14 @@ const BearEmptyState = ({ isDark, message = 'No chart data' }) => (
       <div className={cn('text-[13px] font-semibold mb-1', isDark ? 'text-white' : 'text-[#1a1a1a]')}>
         No chart data available
       </div>
-      <div className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-black/40')}>
+      <div className={cn('text-[11px]', isDark ? 'text-white/60' : 'text-black/60')}>
         {message}
       </div>
     </div>
   </div>
 );
 
-const PriceChartAdvanced = memo(({ token, onCandleClick }) => {
+const PriceChartAdvanced = memo(({ token, onCandleClick, trackAddress }) => {
   const { themeName } = useContext(ThemeContext);
   const { activeFiatCurrency } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
@@ -191,6 +188,8 @@ const PriceChartAdvanced = memo(({ token, onCandleClick }) => {
   const toolTipRef = useRef(null);
   const lastKeyRef = useRef(null);
   const lastChartTypeRef = useRef(null);
+  const markersPluginRef = useRef(null);
+  const lwcRef = useRef(null); // lightweight-charts module
   const priceTimeRangeRef = useRef('5d'); // Remember timeRange for candles/line charts
   const refs = useRef({
     currency: activeFiatCurrency,
@@ -214,9 +213,30 @@ const PriceChartAdvanced = memo(({ token, onCandleClick }) => {
   const liquidityDataRef = useRef(null);
   const [isUserZoomed, setIsUserZoomed] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [trackedAddress, setTrackedAddress] = useState('');
+  const [addressInput, setAddressInput] = useState('');
+  const [tradeMarkers, setTradeMarkers] = useState([]);
+  const [markersLoading, setMarkersLoading] = useState(false);
+  const [showTrackInput, setShowTrackInput] = useState(false);
+  const [chartReady, setChartReady] = useState(0);
+  const trackInputRef = useRef(null);
 
-  // Viewport check
+  // Accept external track address prop
   useEffect(() => {
+    if (trackAddress) {
+      setTrackedAddress(trackAddress);
+      setAddressInput(trackAddress);
+      setShowTrackInput(false);
+      // Switch to candles if on holders/liquidity
+      if (chartType !== 'candles' && chartType !== 'line') {
+        setChartType('candles');
+      }
+    }
+  }, [trackAddress]);
+
+  // Viewport check - useLayoutEffect prevents CLS from layout recalculation before paint
+  const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
+  useIsomorphicLayoutEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 600);
     check();
     window.addEventListener('resize', check);
@@ -589,6 +609,75 @@ const PriceChartAdvanced = memo(({ token, onCandleClick }) => {
     };
   }, [token.md5, chartType, timeRange]);
 
+  // Fetch trade markers for tracked address — paginate to get all trades in chart range
+  useEffect(() => {
+    if (!token?.md5 || !trackedAddress || (chartType !== 'candles' && chartType !== 'line')) {
+      setTradeMarkers([]);
+      return;
+    }
+    let mounted = true;
+    const ctrl = new AbortController();
+    setMarkersLoading(true);
+
+    // Compute time range from timeRange preset (stable, doesn't change on WS ticks)
+    const now = Date.now();
+    const rangeMs = { '1d': 864e5, '5d': 432e6, '1m': 2592e6, '3m': 7776e6, '1y': 31536e6, '5y': 1577e8, all: 0 }[timeRange] || 432e6;
+    const startTime = rangeMs ? now - rangeMs : '';
+    const endTime = now;
+    const timeParams = startTime ? `&startTime=${startTime}&endTime=${endTime}` : '';
+
+    const fetchAllTrades = async () => {
+      let allTrades = [];
+      let cursor = '';
+      while (mounted) {
+        const cursorParam = cursor ? `&cursor=${cursor}` : '';
+        const url = `${BASE_URL}/history?md5=${token.md5}&account=${trackedAddress}${timeParams}&direction=asc&limit=1000${cursorParam}`;
+        const res = await api.get(url, { signal: ctrl.signal });
+        const trades = res.data?.data;
+        if (!trades?.length) break;
+        allTrades = allTrades.concat(trades);
+        const nextCursor = res.data?.meta?.nextCursor;
+        if (!nextCursor || trades.length < 1000) break;
+        cursor = nextCursor;
+      }
+      return allTrades;
+    };
+
+    fetchAllTrades()
+      .then((trades) => {
+        if (!mounted || !trades.length) { setTradeMarkers([]); return; }
+        const markers = trades
+          .map((t) => {
+            const time = Math.floor((t.time > 1e12 ? t.time : t.time * 1000) / 1000);
+            const paidIsXrp = t.paid?.currency === 'XRP' || t.paid?.issuer === 'XRPL';
+            const gotIsXrp = t.got?.currency === 'XRP' || t.got?.issuer === 'XRPL';
+            const isBuy = paidIsXrp;
+            const fmtVal = (v) => v >= 1000 ? (v / 1000).toFixed(1) + 'K' : v >= 1 ? v.toFixed(0) : v.toFixed(2);
+            let label;
+            if (paidIsXrp || gotIsXrp) {
+              const xrpVal = paidIsXrp ? parseFloat(t.paid.value) || 0 : parseFloat(t.got.value) || 0;
+              label = fmtVal(xrpVal) + ' XRP';
+            } else {
+              const val = parseFloat(t.got?.value) || 0;
+              label = fmtVal(val);
+            }
+            return {
+              time,
+              position: isBuy ? 'belowBar' : 'aboveBar',
+              color: isBuy ? '#22c55e' : '#ef4444',
+              shape: isBuy ? 'arrowUp' : 'arrowDown',
+              text: (isBuy ? 'B ' : 'S ') + label
+            };
+          })
+          .sort((a, b) => a.time - b.time);
+        setTradeMarkers(markers);
+      })
+      .catch(() => { if (mounted) setTradeMarkers([]); })
+      .finally(() => { if (mounted) setMarkersLoading(false); });
+
+    return () => { mounted = false; ctrl.abort(); };
+  }, [token?.md5, trackedAddress, chartType, timeRange]);
+
   const hasData =
     chartType === 'holders'
       ? holderData?.length > 0
@@ -600,6 +689,14 @@ const PriceChartAdvanced = memo(({ token, onCandleClick }) => {
   useEffect(() => {
     if (!chartContainerRef.current || !hasData) return;
     if (lastChartTypeRef.current === chartType && chartRef.current) return;
+
+    let cancelled = false;
+    (async () => {
+    if (!lwcRef.current) {
+      lwcRef.current = await import('lightweight-charts');
+    }
+    if (cancelled || !chartContainerRef.current) return;
+    const { createChart, CandlestickSeries, HistogramSeries, AreaSeries } = lwcRef.current;
 
     if (chartRef.current) {
       try {
@@ -1047,6 +1144,9 @@ const PriceChartAdvanced = memo(({ token, onCandleClick }) => {
       chart.priceScale('volume').applyOptions({ scaleMargins: { top: 0.88, bottom: 0 } });
     }
 
+    // Signal that chart is ready so the data-setting effect re-runs
+    setChartReady((c) => c + 1);
+
     let resizeTimeout;
     const resizeObs = new ResizeObserver((entries) => {
       clearTimeout(resizeTimeout);
@@ -1106,6 +1206,18 @@ const PriceChartAdvanced = memo(({ token, onCandleClick }) => {
         xrpLine: null,
         tokenLine: null
       };
+      if (markersPluginRef.current) { try { markersPluginRef.current.detach(); } catch {} markersPluginRef.current = null; }
+    };
+    })(); // end async IIFE
+    return () => {
+      cancelled = true;
+      // Cleanup chart if it was created
+      if (chartRef.current) {
+        try { chartRef.current.remove(); } catch {}
+        chartRef.current = null;
+      }
+      seriesRefs.current = { candle: null, line: null, volume: null, xrpLine: null, tokenLine: null };
+      if (markersPluginRef.current) { try { markersPluginRef.current.detach(); } catch {} markersPluginRef.current = null; }
     };
   }, [chartType, isDark, isMobile, hasData, loadMoreData]);
 
@@ -1165,6 +1277,39 @@ const PriceChartAdvanced = memo(({ token, onCandleClick }) => {
       );
     }
 
+    // Apply trade markers for tracked address (lightweight-charts v5 API)
+    const targetSeries = series.candle || series.line;
+    if (targetSeries && (chartType === 'candles' || chartType === 'line') && tradeMarkers.length > 0) {
+      const minTime = chartData[0]?.time;
+      const maxTime = chartData[chartData.length - 1]?.time;
+      const validMarkers = tradeMarkers.filter((m) => m.time >= minTime && m.time <= maxTime);
+      // Snap each marker to the nearest candle time
+      const snapped = validMarkers.map((m) => {
+        let closest = chartData[0].time;
+        let md = Math.abs(m.time - closest);
+        for (let i = 1; i < chartData.length; i++) {
+          const diff = Math.abs(m.time - chartData[i].time);
+          if (diff < md) { md = diff; closest = chartData[i].time; }
+          if (chartData[i].time > m.time) break;
+        }
+        return { ...m, time: closest };
+      });
+      // Dedupe: keep one marker per time+position
+      const seen = new Set();
+      const deduped = snapped.filter((m) => {
+        const mk = `${m.time}-${m.position}`;
+        if (seen.has(mk)) return false;
+        seen.add(mk);
+        return true;
+      });
+      // Detach old plugin, create new one
+      if (markersPluginRef.current) { try { markersPluginRef.current.detach(); } catch {} }
+      if (lwcRef.current?.createSeriesMarkers) {
+        markersPluginRef.current = lwcRef.current.createSeriesMarkers(targetSeries, deduped);
+      }
+    } else {
+      if (markersPluginRef.current) { try { markersPluginRef.current.detach(); } catch {} markersPluginRef.current = null; }
+    }
 
     if (isNew) {
       const len = chartData.length;
@@ -1195,7 +1340,7 @@ const PriceChartAdvanced = memo(({ token, onCandleClick }) => {
       });
       lastKeyRef.current = key;
     }
-  }, [data, holderData, liquidityData, chartType, timeRange, activeFiatCurrency, isMobile]);
+  }, [data, holderData, liquidityData, chartType, timeRange, activeFiatCurrency, isMobile, tradeMarkers, chartReady]);
 
   const handleFullscreen = useCallback(() => {
     setIsFullscreen((prev) => {
@@ -1252,7 +1397,7 @@ const PriceChartAdvanced = memo(({ token, onCandleClick }) => {
                 const col = pct > 80 ? '#22c55e' : pct < 20 ? '#ef4444' : '#f59e0b';
                 return (
                   <div className={cn('flex items-center gap-2 py-1 px-[10px] rounded-lg h-6 border', isDark ? 'bg-white/[0.03] border-white/[0.08]' : 'bg-black/[0.03] border-black/[0.08]')}>
-                    <span className={cn('text-[9px] font-extrabold', isDark ? 'text-white/40' : 'text-black/40')}>ATH</span>
+                    <span className={cn('text-[9px] font-extrabold', isDark ? 'text-white/60' : 'text-black/60')}>ATH</span>
                     <div className={cn('relative h-1 rounded-sm overflow-hidden', isMobile ? 'w-[30px]' : 'w-10', isDark ? 'bg-white/[0.06]' : 'bg-black/10')}>
                       <div className="absolute left-0 top-0 h-full rounded-sm" style={{ width: `${pct}%`, background: col }} />
                     </div>
@@ -1274,6 +1419,7 @@ const PriceChartAdvanced = memo(({ token, onCandleClick }) => {
                   <span className={cn('flex items-center gap-[3px]', isDark ? 'text-white/60' : 'text-black/60')}><span className="w-[6px] h-[2px] rounded-sm bg-[#22c55e]" />Holders</span>
                 </div>
               )}
+
             </div>
           </HeaderSection>
 
@@ -1282,6 +1428,7 @@ const PriceChartAdvanced = memo(({ token, onCandleClick }) => {
               {Object.entries(chartIcons).map(([type, icon]) => (
                 <ToolBtn
                   key={type}
+                  aria-label={{ holders: 'Holders', liquidity: 'Liquidity', candles: 'Price', line: 'Area' }[type]}
                   onClick={() => {
                     const wasPrice = chartType === 'candles' || chartType === 'line';
                     const isPrice = type === 'candles' || type === 'line';
@@ -1329,6 +1476,7 @@ const PriceChartAdvanced = memo(({ token, onCandleClick }) => {
             </ToolGroup>
 
             <ToolBtn
+              aria-label={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
               onClick={handleFullscreen}
               isDark={isDark}
               isMobile={isMobile}
@@ -1337,6 +1485,52 @@ const PriceChartAdvanced = memo(({ token, onCandleClick }) => {
               {isFullscreen ? <Minimize /> : <Maximize />}
               {!isMobile && (isFullscreen ? 'Exit' : 'Full')}
             </ToolBtn>
+
+            {(chartType === 'candles' || chartType === 'line') && (
+              <div className="relative">
+                <ToolBtn
+                  aria-label={trackedAddress ? 'Clear tracked address' : 'Track wallet trades'}
+                  onClick={() => {
+                    if (trackedAddress) { setTrackedAddress(''); setAddressInput(''); setTradeMarkers([]); setShowTrackInput(false); }
+                    else { setShowTrackInput((p) => !p); setTimeout(() => trackInputRef.current?.focus(), 50); }
+                  }}
+                  isDark={isDark}
+                  isMobile={isMobile}
+                  isActive={!!trackedAddress}
+                  style={trackedAddress ? { background: '#3b82f6', color: '#fff' } : {}}
+                >
+                  {markersLoading ? <Loader2 size={14} className="animate-spin" /> : trackedAddress ? <X size={14} /> : <Search size={14} />}
+                  {!isMobile && trackedAddress && tradeMarkers.length > 0 && (
+                    <span className="text-[10px] font-bold">{tradeMarkers.filter((m) => m.shape === 'arrowUp').length}B {tradeMarkers.filter((m) => m.shape === 'arrowDown').length}S</span>
+                  )}
+                </ToolBtn>
+                {showTrackInput && !trackedAddress && (
+                  <div
+                    className={cn(
+                      'absolute top-full right-0 mt-1 z-50 flex items-center rounded-lg border p-[3px] shadow-lg',
+                      isDark ? 'bg-[#0d1117] border-white/10' : 'bg-white border-black/10'
+                    )}
+                  >
+                    <input
+                      ref={trackInputRef}
+                      type="text"
+                      value={addressInput}
+                      onChange={(e) => setAddressInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && addressInput.trim()) { setTrackedAddress(addressInput.trim()); setShowTrackInput(false); }
+                        if (e.key === 'Escape') { setAddressInput(''); setShowTrackInput(false); }
+                      }}
+                      onBlur={() => { if (!addressInput) setTimeout(() => setShowTrackInput(false), 150); }}
+                      placeholder="r-address..."
+                      className={cn(
+                        'bg-transparent border-none outline-none font-mono text-[11px] w-[200px] px-2 py-[5px] placeholder:opacity-30',
+                        isDark ? 'text-white' : 'text-black'
+                      )}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
           </HeaderSection>
         </ChartHeader>
 
@@ -1395,7 +1589,7 @@ const PriceChartAdvanced = memo(({ token, onCandleClick }) => {
         >
           <div className={cn('flex items-center gap-[5px] pr-2 shrink-0', isDark ? 'border-r border-white/10' : 'border-r border-black/10')}>
             <Sparkles size={11} color="#f59e0b" fill="#f59e0b" className="opacity-80" />
-            <span className={cn('font-bold text-[9px] uppercase tracking-[0.08em]', isDark ? 'text-white/50' : 'text-black/50')}>Creator</span>
+            <span className={cn('font-bold text-[9px] uppercase tracking-[0.08em]', isDark ? 'text-white/60' : 'text-black/60')}>Creator</span>
           </div>
           <div className="flex gap-[5px] overflow-x-auto py-px" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
             {creatorEvents.slice(0, 10).map((e, i) => {
@@ -1413,13 +1607,13 @@ const PriceChartAdvanced = memo(({ token, onCandleClick }) => {
                   target="_blank"
                   rel="noopener noreferrer"
                   className={cn(
-                    'inline-flex items-center gap-1 py-[3px] px-[7px] rounded-md border no-underline shrink-0 transition-all duration-200',
+                    'inline-flex items-center gap-1 py-[3px] px-[7px] rounded-md border no-underline shrink-0 transition-[opacity,transform,background-color,border-color] duration-200',
                     isDark ? 'bg-white/[0.04] border-white/[0.08] text-white hover:-translate-y-px hover:bg-white/[0.08] hover:border-[#3b82f6]' : 'bg-white border-black/[0.08] text-[#1a1a1a] hover:-translate-y-px hover:bg-[#f8fafc] hover:border-[#3b82f6]'
                   )}
                 >
                   <span className="font-extrabold text-[9px] uppercase" style={{ color: e.color }}>{short}</span>
                   {amt && <span className="font-mono text-[9px] font-semibold opacity-90">{amt}</span>}
-                  <span className="opacity-40 text-[8px] font-semibold">{ago}</span>
+                  <span className="opacity-60 text-[8px] font-semibold" suppressHydrationWarning>{ago}</span>
                 </a>
               );
             })}

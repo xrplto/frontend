@@ -17,7 +17,7 @@ const OverviewWrapper = ({ className, ...props }) => (
 );
 
 export default function Overview({ data }) {
-  const BASE_URL = 'https://api.xrpnft.com/api';
+  const BASE_URL = 'https://api.xrpl.to/api';
   const { darkMode } = useContext(ThemeContext);
   const { accountProfile } = useContext(WalletContext);
   const { openSnackbar } = useContext(AppContext);
@@ -36,7 +36,7 @@ export default function Overview({ data }) {
         return;
       }
 
-      // https://api.xrpnft.com/api/nfts/test1
+      // https://api.xrpl.to/api/nfts/test1
       api
         .get(`${BASE_URL}/nfts/${slug}?account=${accountLogin}`, {
           headers: { 'x-access-token': accountToken }
@@ -84,7 +84,7 @@ export async function getServerSideProps(ctx) {
   try {
     const slug = ctx.params.slug;
 
-    // https://api.xrpnft.com/api/nfts/test1
+    // https://api.xrpl.to/api/nfts/test1
     const res = await api.get(`${BASE_URL}/nfts/${slug}`);
 
     data = res.data;
@@ -107,7 +107,7 @@ export async function getServerSideProps(ctx) {
                 "featuredImage": "1662042748001_70910cc4c6134845bf84cf262e696d05.png",
                 "bannerImage": "1662042748002_b32b442dea454998aa29ab61c8fa0887.jpg",
                 "created": 1662042748016,
-                "creator": "xrpnft.com",
+                "creator": "xrpl.to",
                 "uuid": "bc80f29343bb43f09f73d8e5e290ee4a"
             }
         } */
@@ -116,10 +116,11 @@ export async function getServerSideProps(ctx) {
       data.collection;
 
     let ogp = {};
-    ogp.canonical = `https://xrpnft.com/nfts/${slug}`;
+    ogp.canonical = `https://xrpl.to/nfts/${slug}`;
     ogp.title = `${name} - Collection`;
-    ogp.url = `https://xrpnft.com/nfts/${slug}`;
-    ogp.imgUrl = `https://s1.xrpnft.com/nfts/${logoImage}`;
+    ogp.url = `https://xrpl.to/nfts/${slug}`;
+    ogp.imgUrl = `https://xrpl.to/api/og/collection/${encodeURIComponent(slug)}`;
+    ogp.imgType = 'image/png';
     ogp.desc = description
       ? description
       : `XRPL's largest NFT marketplace: Buy, sell, mint with ease. Experience exclusive NFT creation and trade.`;

@@ -109,7 +109,8 @@ export async function getServerSideProps() {
     ogp.canonical = 'https://xrpl.to/most-viewed';
     ogp.title = 'Most Viewed XRPL Tokens | Popular & Trending | XRP Ledger';
     ogp.url = 'https://xrpl.to/most-viewed';
-    ogp.imgUrl = 'https://s1.xrpl.to/ogp/most-viewed.webp';
+    ogp.imgUrl = 'https://xrpl.to/api/og/most-viewed';
+    ogp.imgType = 'image/png';
     ogp.desc =
       'Explore the most viewed XRPL tokens with highest community interest. Discover popular tokens getting the most attention on the XRP Ledger ecosystem.';
 

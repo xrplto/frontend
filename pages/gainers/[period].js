@@ -116,7 +116,8 @@ export async function getStaticProps({ params }) {
     ogp.canonical = `https://xrpl.to/gainers/${params.period}`;
     ogp.title = `${params.period.toUpperCase()} Gainers XRPL Tokens | Top Performers | XRP Ledger`;
     ogp.url = `https://xrpl.to/gainers/${params.period}`;
-    ogp.imgUrl = `https://s1.xrpl.to/ogp/${params.period}.webp`;
+    ogp.imgUrl = `https://xrpl.to/api/og/gainers/${params.period}`;
+    ogp.imgType = 'image/png';
     ogp.desc = `Discover the top performing XRPL tokens over the last ${params.period}. Track the biggest gainers and price increases on the XRP Ledger ecosystem.`;
 
     ogp.type = 'website';

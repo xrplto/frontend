@@ -66,7 +66,7 @@ const Pagination = ({
     <button
       onClick={onPrev}
       disabled={!hasPrev}
-      className="p-1.5 rounded-lg disabled:opacity-30 hover:bg-white/10 transition-colors"
+      className="p-1.5 rounded-lg disabled:opacity-30 hover:bg-white/10 transition-[background-color]"
     >
       <ChevronLeft size={16} />
     </button>
@@ -76,7 +76,7 @@ const Pagination = ({
     <button
       onClick={onNext}
       disabled={!hasNext}
-      className="p-1.5 rounded-lg disabled:opacity-30 hover:bg-white/10 transition-colors"
+      className="p-1.5 rounded-lg disabled:opacity-30 hover:bg-white/10 transition-[background-color]"
     >
       <ChevronRight size={16} />
     </button>
@@ -258,7 +258,7 @@ function AttributeFilter({ attrs, setFilterAttrs, activeFilters = [] }) {
               key={title}
               onClick={() => toggleTrait(title)}
               className={cn(
-                'inline-flex items-center gap-1.5 px-2 py-1 rounded-lg text-[11px] font-medium transition-all',
+                'inline-flex items-center gap-1.5 px-2 py-1 rounded-lg text-[11px] font-medium transition-[background-color,border-color]',
                 isExpanded
                   ? 'bg-primary text-white'
                   : selectedCount > 0
@@ -313,7 +313,7 @@ function AttributeFilter({ attrs, setFilterAttrs, activeFilters = [] }) {
                     key={key}
                     onClick={() => handleAttrChange(expandedTrait, key)}
                     className={cn(
-                      'inline-flex items-center gap-1 px-2 py-1 rounded-md text-[10px] transition-all',
+                      'inline-flex items-center gap-1 px-2 py-1 rounded-md text-[10px] transition-[background-color,border-color]',
                       isChecked
                         ? 'bg-primary text-white'
                         : isDark
@@ -367,11 +367,11 @@ const NFTCard = React.memo(
     return (
       <a
         href={`/nft/${NFTokenID}`}
-        className="block group [contain:layout_style_paint]"
+        className="block group [contain:layout_style_paint] [content-visibility:auto] [contain-intrinsic-size:auto_180px]"
       >
         <div
           className={cn(
-            'rounded-xl overflow-hidden border-[1.5px] transition-all duration-200',
+            'rounded-xl overflow-hidden border-[1.5px] transition-[border-color,box-shadow] duration-200',
             isDark
               ? 'border-white/[0.06] group-hover:border-primary/40 group-hover:shadow-[0_0_20px_rgba(66,133,244,0.15)]'
               : 'border-gray-200 group-hover:border-primary/40 group-hover:shadow-[0_4px_20px_rgba(66,133,244,0.12)]'
@@ -389,6 +389,7 @@ const NFTCard = React.memo(
                 className="object-cover transition-transform duration-300 group-hover:scale-105"
                 loading={priority ? 'eager' : 'lazy'}
                 priority={priority}
+                fetchPriority={priority ? 'high' : 'auto'}
                 unoptimized
               />
             ) : (
@@ -447,7 +448,7 @@ const NFTCard = React.memo(
                   {fNumber(listPrice)} XRP
                 </span>
               ) : (
-                <span className={cn('text-[10px]', isDark ? 'text-white/30' : 'text-gray-400')}>
+                <span className={cn('text-[10px]', isDark ? 'text-white/60' : 'text-gray-500')}>
                   Not listed
                 </span>
               )}
@@ -464,7 +465,7 @@ const NFTCard = React.memo(
 const VirtualGrid = React.memo(({ nfts, loading, hasMore, onLoadMore, gridCols, isDark }) => {
   const containerRef = useRef(null);
   const sentinelRef = useRef(null);
-  const [visibleRange, setVisibleRange] = useState({ start: 0, end: 60 });
+  const [visibleRange, setVisibleRange] = useState({ start: 0, end: 24 });
   const ITEM_HEIGHT = 180; // Approximate card height
   const BUFFER = 24; // Extra items to render above/below
 
@@ -505,7 +506,7 @@ const VirtualGrid = React.memo(({ nfts, loading, hasMore, onLoadMore, gridCols, 
 
   if (loading && nfts.length === 0) {
     return (
-      <div className={cn('grid gap-3', gridClass)}>
+      <div className={cn('grid gap-3', gridClass)} style={{ minHeight: ITEM_HEIGHT * 3 }}>
         {Array.from({ length: gridCols * 3 }).map((_, i) => (
           <NFTSkeleton key={i} isDark={isDark} />
         ))}
@@ -758,8 +759,9 @@ const NFTGrid = React.memo(
             {traits.length > 0 && (
               <button
                 onClick={() => setShowFilter(!showFilter)}
+                aria-label="Filter NFTs"
                 className={cn(
-                  'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border-[1.5px] text-[11px] font-medium transition-all',
+                  'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border-[1.5px] text-[11px] font-medium transition-[background-color,border-color]',
                   showFilter
                     ? 'border-primary bg-primary/10 text-primary'
                     : isDark
@@ -781,7 +783,7 @@ const NFTGrid = React.memo(
               <button
                 onClick={() => setShowSortDropdown(!showSortDropdown)}
                 className={cn(
-                  'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border-[1.5px] text-[11px] font-medium transition-all',
+                  'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border-[1.5px] text-[11px] font-medium transition-[background-color,border-color]',
                   isDark
                     ? 'border-white/[0.08] text-white/50 hover:border-primary/30'
                     : 'border-gray-200 text-gray-500 hover:border-primary/30'
@@ -808,7 +810,7 @@ const NFTGrid = React.memo(
                         setShowSortDropdown(false);
                       }}
                       className={cn(
-                        'px-2 py-1.5 rounded-md cursor-pointer text-[11px] transition-all',
+                        'px-2 py-1.5 rounded-md cursor-pointer text-[11px] transition-[background-color]',
                         sortBy === option.value
                           ? 'bg-primary/10 text-primary font-medium'
                           : isDark
@@ -828,7 +830,7 @@ const NFTGrid = React.memo(
               <button
                 onClick={() => setShowListedDropdown(!showListedDropdown)}
                 className={cn(
-                  'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border-[1.5px] text-[11px] font-medium transition-all',
+                  'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border-[1.5px] text-[11px] font-medium transition-[background-color,border-color]',
                   listed
                     ? 'border-primary bg-primary/10 text-primary'
                     : isDark
@@ -857,7 +859,7 @@ const NFTGrid = React.memo(
                         setShowListedDropdown(false);
                       }}
                       className={cn(
-                        'px-2 py-1.5 rounded-md cursor-pointer text-[11px] transition-all',
+                        'px-2 py-1.5 rounded-md cursor-pointer text-[11px] transition-[background-color]',
                         listed === option.value
                           ? 'bg-primary/10 text-primary font-medium'
                           : isDark
@@ -879,7 +881,7 @@ const NFTGrid = React.memo(
                   key={opt.value}
                   onClick={() => setGridCols(opt.value)}
                   className={cn(
-                    'w-7 h-7 rounded-md flex items-center justify-center text-[10px] font-medium transition-all',
+                    'w-7 h-7 rounded-md flex items-center justify-center text-[10px] font-medium transition-[background-color,border-color]',
                     gridCols === opt.value
                       ? 'bg-primary/10 text-primary border border-primary/30'
                       : isDark
@@ -900,7 +902,7 @@ const NFTGrid = React.memo(
             {/* Results Count */}
             {totalCount > 0 && (
               <span
-                className={cn('text-[10px] ml-auto', isDark ? 'text-white/30' : 'text-gray-400')}
+                className={cn('text-[10px] ml-auto', isDark ? 'text-white/60' : 'text-gray-500')}
               >
                 {nfts.length} of {fIntNumber(totalCount)}
               </span>
@@ -1014,7 +1016,7 @@ function CollectionCard({ collectionData, type, account, handleRemove }) {
     >
       <div
         className={cn(
-          'rounded-lg border-[1.5px] overflow-hidden cursor-pointer transition-all w-full aspect-[1/1.3]',
+          'rounded-lg border-[1.5px] overflow-hidden cursor-pointer transition-[border-color] w-full aspect-[1/1.3]',
           isDark
             ? 'border-white/[0.08] hover:border-primary/30'
             : 'border-gray-200 hover:border-primary/30'
@@ -1644,13 +1646,14 @@ const PriceChart = React.memo(({ slug }) => {
 
   return (
     <div className="w-full">
+      <div
+        className={cn(
+          'flex flex-wrap gap-x-3 gap-y-1.5 px-3 py-2 min-h-[36px]',
+          isDark ? 'text-white/80' : 'text-gray-700'
+        )}
+      >
       {legend && (
-        <div
-          className={cn(
-            'flex flex-wrap gap-x-3 gap-y-1.5 px-3 py-2',
-            isDark ? 'text-white/80' : 'text-gray-700'
-          )}
-        >
+        <>
           <span
             className={cn('text-[11px] font-medium', isDark ? 'text-white/50' : 'text-gray-500')}
           >
@@ -1667,7 +1670,7 @@ const PriceChart = React.memo(({ slug }) => {
             <span className="text-[12px] font-medium text-red-500">{legend.l?.toFixed(2)} XRP</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className={cn('text-[10px]', isDark ? 'text-white/40' : 'text-gray-400')}>
+            <span className={cn('text-[10px]', isDark ? 'text-white/60' : 'text-gray-500')}>
               Close
             </span>
             <span
@@ -1701,8 +1704,9 @@ const PriceChart = React.memo(({ slug }) => {
               Holders <span className="font-medium">{legend.ho}</span>
             </span>
           )}
-        </div>
+        </>
       )}
+      </div>
       <div className="relative w-full h-[350px]">
         <div ref={chartContainerRef} className="w-full h-full cursor-pointer" />
         {loading && (
@@ -1735,7 +1739,7 @@ const PriceChart = React.memo(({ slug }) => {
               >
                 {selectedDate}
               </span>
-              <span className={cn('text-[10px]', isDark ? 'text-white/40' : 'text-gray-400')}>
+              <span className={cn('text-[10px]', isDark ? 'text-white/60' : 'text-gray-500')}>
                 {salesData?.total || 0} sales
               </span>
               {salesData?.sales?.length > 0 && (
@@ -1793,7 +1797,7 @@ const PriceChart = React.memo(({ slug }) => {
                     <div
                       key={sale.NFTokenID || idx}
                       className={cn(
-                        'flex items-center gap-2 p-1.5 rounded-lg transition-colors',
+                        'flex items-center gap-2 p-1.5 rounded-lg transition-[background-color]',
                         isDark ? 'hover:bg-white/5' : 'hover:bg-gray-50'
                       )}
                     >
@@ -1878,7 +1882,7 @@ const PriceChart = React.memo(({ slug }) => {
                   >
                     <ChevronLeft size={14} />
                   </button>
-                  <span className={cn('text-[10px]', isDark ? 'text-white/40' : 'text-gray-400')}>
+                  <span className={cn('text-[10px]', isDark ? 'text-white/60' : 'text-gray-500')}>
                     {Math.floor(salesOffset / SALES_LIMIT) + 1}/
                     {Math.ceil(salesData.total / SALES_LIMIT)}
                   </span>
@@ -1896,7 +1900,7 @@ const PriceChart = React.memo(({ slug }) => {
               )}
             </>
           ) : (
-            <span className={cn('text-[10px]', isDark ? 'text-white/30' : 'text-gray-400')}>
+            <span className={cn('text-[10px]', isDark ? 'text-white/60' : 'text-gray-500')}>
               No sales
             </span>
           )}
@@ -2453,7 +2457,7 @@ const HoldersTab = React.memo(({ slug }) => {
               onClick={handleSearch}
               disabled={searching || !searchAddress.trim()}
               className={cn(
-                'px-3 py-1.5 rounded-lg border-[1.5px] text-[11px] font-medium transition-colors',
+                'px-3 py-1.5 rounded-lg border-[1.5px] text-[11px] font-medium transition-[background-color]',
                 searching || !searchAddress.trim()
                   ? 'opacity-50 cursor-not-allowed'
                   : 'hover:bg-primary/10 hover:border-primary/50',
@@ -2616,7 +2620,7 @@ const HoldersTab = React.memo(({ slug }) => {
                       <tr
                         key={holder.address}
                         className={cn(
-                          'transition-colors',
+                          'transition-[background-color]',
                           isDark
                             ? 'border-b border-white/5 hover:bg-white/5'
                             : 'border-b border-gray-100 hover:bg-gray-50'
@@ -2771,7 +2775,7 @@ const TradersTab = React.memo(({ slug }) => {
               key={i.key}
               onClick={() => setInterval(i.key)}
               className={cn(
-                'px-2.5 py-1 text-[11px] font-medium rounded-md transition-all',
+                'px-2.5 py-1 text-[11px] font-medium rounded-md transition-[background-color]',
                 interval === i.key
                   ? 'bg-primary text-white'
                   : isDark
@@ -2790,7 +2794,7 @@ const TradersTab = React.memo(({ slug }) => {
               key={s.key}
               onClick={() => setSortBy(s.key)}
               className={cn(
-                'px-2 py-1 text-[11px] font-medium rounded-md transition-all',
+                'px-2 py-1 text-[11px] font-medium rounded-md transition-[background-color]',
                 sortBy === s.key
                   ? isDark
                     ? 'bg-white/10 text-white'
@@ -2819,7 +2823,7 @@ const TradersTab = React.memo(({ slug }) => {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className={cn(
-              'h-7 w-40 rounded-md border pl-8 pr-7 text-[12px] outline-none transition-colors',
+              'h-7 w-40 rounded-md border pl-8 pr-7 text-[12px] outline-none transition-[background-color]',
               isDark
                 ? 'border-white/10 bg-white/5 text-white placeholder-white/40 focus:border-primary'
                 : 'border-gray-200 bg-white text-gray-900 placeholder-gray-400 focus:border-primary'
@@ -2962,7 +2966,7 @@ const TradersTab = React.memo(({ slug }) => {
                       href={`/address/${addr}`}
                       target="_blank"
                       className={cn(
-                        'text-[12px] font-mono hover:text-primary transition-colors',
+                        'text-[12px] font-mono hover:text-primary transition-[background-color]',
                         isDark ? 'text-white/80' : 'text-gray-700'
                       )}
                     >
@@ -3087,13 +3091,11 @@ export default function CollectionView({ collection }) {
   const [debugInfo, setDebugInfo] = useState(null);
   const [showVerifyModal, setShowVerifyModal] = useState(false);
   const [currentVerified, setCurrentVerified] = useState(null);
-  const [showChart, setShowChart] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('nft_show_chart');
-      return saved !== 'false';
-    }
-    return true;
-  });
+  const [showChart, setShowChart] = useState(true);
+  useEffect(() => {
+    const saved = localStorage.getItem('nft_show_chart');
+    if (saved === 'false') setShowChart(false);
+  }, []);
   const infoDropdownRef = useRef(null);
   const feesDropdownRef = useRef(null);
 
@@ -3394,7 +3396,7 @@ export default function CollectionView({ collection }) {
                   key={i}
                   href={`/nfts?tag=${encodeURIComponent(tag)}`}
                   className={cn(
-                    'px-2 py-0.5 text-[10px] rounded transition-colors',
+                    'px-2 py-0.5 text-[10px] rounded transition-[background-color]',
                     isDark
                       ? 'bg-white/5 text-white/50 hover:bg-white/10 hover:text-white/70'
                       : 'bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700'
@@ -3408,9 +3410,10 @@ export default function CollectionView({ collection }) {
                 href={`https://x.com/${twitter}`}
                 target="_blank"
                 rel="noopener noreferrer"
+                aria-label="X (Twitter)"
                 className={cn(
-                  'p-1 rounded transition-colors',
-                  isDark ? 'text-white/40 hover:text-primary' : 'text-gray-400 hover:text-primary'
+                  'p-1 rounded transition-[background-color]',
+                  isDark ? 'text-white/60 hover:text-primary' : 'text-gray-500 hover:text-primary'
                 )}
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
@@ -3423,9 +3426,10 @@ export default function CollectionView({ collection }) {
                 href={website.startsWith('http') ? website : `https://${website}`}
                 target="_blank"
                 rel="noopener noreferrer"
+                aria-label="Website"
                 className={cn(
-                  'p-1 rounded transition-colors',
-                  isDark ? 'text-white/40 hover:text-primary' : 'text-gray-400 hover:text-primary'
+                  'p-1 rounded transition-[background-color]',
+                  isDark ? 'text-white/60 hover:text-primary' : 'text-gray-500 hover:text-primary'
                 )}
               >
                 <svg
@@ -3446,7 +3450,7 @@ export default function CollectionView({ collection }) {
               <Link
                 href={`/token/${linkedToken}`}
                 className={cn(
-                  'flex items-center gap-1.5 px-2 py-1 rounded-lg text-[11px] font-medium transition-colors ml-2',
+                  'flex items-center gap-1.5 px-2 py-1 rounded-lg text-[11px] font-medium transition-[background-color] ml-2',
                   isDark
                     ? 'bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20'
                     : 'bg-blue-50 text-blue-600 border border-blue-200 hover:bg-blue-100'
@@ -3469,7 +3473,7 @@ export default function CollectionView({ collection }) {
               <button
                 onClick={() => setShowVerifyModal(true)}
                 className={cn(
-                  'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium transition-colors',
+                  'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium transition-[background-color]',
                   isDark
                     ? 'bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20'
                     : 'bg-blue-50 text-blue-600 border border-blue-200 hover:bg-blue-100'
@@ -3485,7 +3489,7 @@ export default function CollectionView({ collection }) {
               <button
                 onClick={() => setOpenInfo(!openInfo)}
                 className={cn(
-                  'px-3 py-1.5 rounded-lg text-[12px] font-medium transition-colors',
+                  'px-3 py-1.5 rounded-lg text-[12px] font-medium transition-[background-color]',
                   isDark
                     ? 'bg-white/5 text-white/70 hover:bg-white/10'
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
@@ -3528,7 +3532,7 @@ export default function CollectionView({ collection }) {
                         <span className="font-mono truncate max-w-[120px]">{account}</span>
                         <button
                           onClick={() => window.dispatchEvent(new CustomEvent('openDm', { detail: { user: account } }))}
-                          className={`p-1 rounded hover:bg-white/10 transition-colors ${isDark ? 'text-white/50 hover:text-white' : 'text-gray-400 hover:text-gray-600'}`}
+                          className={`p-1 rounded hover:bg-white/10 transition-[background-color] ${isDark ? 'text-white/50 hover:text-white' : 'text-gray-400 hover:text-gray-600'}`}
                           title="Message issuer"
                         >
                           <MessageCircle size={14} />
@@ -3562,7 +3566,7 @@ export default function CollectionView({ collection }) {
               <button
                 onClick={() => setOpenFees(!openFees)}
                 className={cn(
-                  'px-3 py-1.5 rounded-lg text-[12px] font-medium transition-colors',
+                  'px-3 py-1.5 rounded-lg text-[12px] font-medium transition-[background-color]',
                   isDark
                     ? 'bg-white/5 text-white/70 hover:bg-white/10'
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
@@ -3633,7 +3637,7 @@ export default function CollectionView({ collection }) {
               <Link
                 href={`/nfts/${slug}/edit`}
                 className={cn(
-                  'px-3 py-1.5 rounded-lg text-[12px] font-medium transition-colors',
+                  'px-3 py-1.5 rounded-lg text-[12px] font-medium transition-[background-color]',
                   isDark
                     ? 'bg-white/5 text-white/70 hover:bg-white/10'
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
@@ -3672,7 +3676,7 @@ export default function CollectionView({ collection }) {
                 {fNumber(typeof floor === 'number' ? floor : floor?.amount || 0)}
               </span>
               <span
-                className={cn('text-[13px]', isDark ? 'text-green-400/50' : 'text-green-600/50')}
+                className={cn('text-[13px]', isDark ? 'text-green-400/70' : 'text-green-600/70')}
               >
                 XRP
               </span>
@@ -3736,7 +3740,7 @@ export default function CollectionView({ collection }) {
               <div
                 className={cn(
                   'text-[10px] uppercase tracking-wide mb-0.5',
-                  isDark ? 'text-white/40' : 'text-gray-500'
+                  isDark ? 'text-white/60' : 'text-gray-500'
                 )}
               >
                 Top Offer
@@ -3747,7 +3751,7 @@ export default function CollectionView({ collection }) {
                 >
                   {fNumber(topOfferAmount)}
                 </span>
-                <span className={cn('text-[11px]', isDark ? 'text-white/30' : 'text-gray-400')}>
+                <span className={cn('text-[11px]', isDark ? 'text-white/60' : 'text-gray-500')}>
                   XRP
                 </span>
               </div>
@@ -3760,7 +3764,7 @@ export default function CollectionView({ collection }) {
               <div
                 className={cn(
                   'text-[10px] uppercase tracking-wide mb-0.5',
-                  isDark ? 'text-white/40' : 'text-gray-500'
+                  isDark ? 'text-white/60' : 'text-gray-500'
                 )}
               >
                 Listed
@@ -3775,7 +3779,7 @@ export default function CollectionView({ collection }) {
                   {fIntNumber(listedCount)}
                 </span>
                 {items > 0 && (
-                  <span className={cn('text-[10px]', isDark ? 'text-white/30' : 'text-gray-400')}>
+                  <span className={cn('text-[10px]', isDark ? 'text-white/60' : 'text-gray-500')}>
                     {((listedCount / items) * 100).toFixed(0)}%
                   </span>
                 )}
@@ -3789,7 +3793,7 @@ export default function CollectionView({ collection }) {
               <div
                 className={cn(
                   'text-[10px] uppercase tracking-wide mb-0.5',
-                  isDark ? 'text-white/40' : 'text-gray-500'
+                  isDark ? 'text-white/60' : 'text-gray-500'
                 )}
               >
                 Bids
@@ -3815,7 +3819,7 @@ export default function CollectionView({ collection }) {
                 <div
                   className={cn(
                     'text-[10px] uppercase tracking-wide mb-0.5',
-                    isDark ? 'text-white/40' : 'text-gray-500'
+                    isDark ? 'text-white/60' : 'text-gray-500'
                   )}
                 >
                   24h Activity
@@ -3830,7 +3834,7 @@ export default function CollectionView({ collection }) {
                     >
                       {fIntNumber(daily_txs)}{' '}
                       <span
-                        className={cn('text-[10px]', isDark ? 'text-white/30' : 'text-gray-400')}
+                        className={cn('text-[10px]', isDark ? 'text-white/60' : 'text-gray-500')}
                       >
                         txs
                       </span>
@@ -3845,7 +3849,7 @@ export default function CollectionView({ collection }) {
                     >
                       {fIntNumber(daily_users)}{' '}
                       <span
-                        className={cn('text-[10px]', isDark ? 'text-white/30' : 'text-gray-400')}
+                        className={cn('text-[10px]', isDark ? 'text-white/60' : 'text-gray-500')}
                       >
                         users
                       </span>
@@ -3863,7 +3867,7 @@ export default function CollectionView({ collection }) {
             <div
               className={cn(
                 'text-[10px] uppercase tracking-wide mb-0.5',
-                isDark ? 'text-white/40' : 'text-gray-500'
+                isDark ? 'text-white/60' : 'text-gray-500'
               )}
             >
               24h Vol
@@ -3874,7 +3878,7 @@ export default function CollectionView({ collection }) {
               >
                 {fVolume(totalVol24h)}
               </span>
-              <span className={cn('text-[11px]', isDark ? 'text-white/30' : 'text-gray-400')}>
+              <span className={cn('text-[11px]', isDark ? 'text-white/60' : 'text-gray-500')}>
                 XRP
               </span>
             </div>
@@ -3886,7 +3890,7 @@ export default function CollectionView({ collection }) {
               <div
                 className={cn(
                   'text-[10px] uppercase tracking-wide mb-0.5',
-                  isDark ? 'text-white/40' : 'text-gray-500'
+                  isDark ? 'text-white/60' : 'text-gray-500'
                 )}
               >
                 24h Sales
@@ -3906,7 +3910,7 @@ export default function CollectionView({ collection }) {
             <div
               className={cn(
                 'text-[10px] uppercase tracking-wide mb-0.5',
-                isDark ? 'text-white/40' : 'text-gray-500'
+                isDark ? 'text-white/60' : 'text-gray-500'
               )}
             >
               Total Vol
@@ -3917,7 +3921,7 @@ export default function CollectionView({ collection }) {
               >
                 {fVolume(totalVol)}
               </span>
-              <span className={cn('text-[11px]', isDark ? 'text-white/30' : 'text-gray-400')}>
+              <span className={cn('text-[11px]', isDark ? 'text-white/60' : 'text-gray-500')}>
                 XRP
               </span>
             </div>
@@ -3929,7 +3933,7 @@ export default function CollectionView({ collection }) {
               <div
                 className={cn(
                   'text-[10px] uppercase tracking-wide mb-0.5',
-                  isDark ? 'text-white/40' : 'text-gray-500'
+                  isDark ? 'text-white/60' : 'text-gray-500'
                 )}
               >
                 All Sales
@@ -3952,7 +3956,7 @@ export default function CollectionView({ collection }) {
                 <div
                   className={cn(
                     'text-[10px] uppercase tracking-wide mb-0.5',
-                    isDark ? 'text-white/40' : 'text-gray-500'
+                    isDark ? 'text-white/60' : 'text-gray-500'
                   )}
                 >
                   Mkt Cap
@@ -3976,7 +3980,7 @@ export default function CollectionView({ collection }) {
             <div
               className={cn(
                 'text-[10px] uppercase tracking-wide mb-0.5',
-                isDark ? 'text-white/40' : 'text-gray-500'
+                isDark ? 'text-white/60' : 'text-gray-500'
               )}
             >
               Supply
@@ -3993,7 +3997,7 @@ export default function CollectionView({ collection }) {
             <div
               className={cn(
                 'text-[10px] uppercase tracking-wide mb-0.5',
-                isDark ? 'text-white/40' : 'text-gray-500'
+                isDark ? 'text-white/60' : 'text-gray-500'
               )}
             >
               Owners
@@ -4024,7 +4028,7 @@ export default function CollectionView({ collection }) {
         <button
           onClick={() => setShowChart(!showChart)}
           className={cn(
-            'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium mb-2 transition-colors',
+            'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium mb-2 transition-[background-color]',
             isDark
               ? 'bg-white/5 hover:bg-white/10 text-white/70'
               : 'bg-gray-100 hover:bg-gray-200 text-gray-600'
@@ -4036,6 +4040,7 @@ export default function CollectionView({ collection }) {
         {showChart && (
           <div
             className={cn('rounded-[10px] overflow-hidden border', isDark ? 'border-white/[0.08]' : 'border-black/[0.08]')}
+            style={{ minHeight: 390 }}
           >
             <PriceChart slug={slug} />
           </div>
@@ -4059,13 +4064,13 @@ export default function CollectionView({ collection }) {
                   key={tab.id}
                   onClick={() => setValue(tab.id)}
                   className={cn(
-                    'flex items-center gap-2 px-4 py-2.5 text-[12px] font-medium tracking-wider rounded-md border transition-all',
+                    'flex items-center gap-2 px-4 py-2.5 text-[12px] font-medium tracking-wider rounded-md border transition-[background-color,border-color]',
                     value === tab.id
                       ? isDark
                         ? 'border-white/20 text-white'
                         : 'border-gray-300 text-gray-900'
                       : isDark
-                        ? 'border-white/10 text-white/40 hover:text-white/60 hover:border-white/15'
+                        ? 'border-white/10 text-white/60 hover:text-white/80 hover:border-white/15'
                         : 'border-gray-200 text-gray-500 hover:text-gray-700 hover:border-gray-300'
                   )}
                 >
@@ -4080,7 +4085,7 @@ export default function CollectionView({ collection }) {
                 onClick={handleRemoveAll}
                 disabled={deletingNfts.length === 0}
                 className={cn(
-                  'px-2 py-1 rounded-[6px] text-[11px] font-normal transition-all border-[1.5px] border-red-500/30 text-[#f44336]',
+                  'px-2 py-1 rounded-[6px] text-[11px] font-normal transition-[background-color,opacity] border-[1.5px] border-red-500/30 text-[#f44336]',
                   deletingNfts.length === 0
                     ? 'bg-transparent opacity-40 cursor-not-allowed'
                     : 'bg-red-500/10 opacity-100 cursor-pointer'

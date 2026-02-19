@@ -143,8 +143,8 @@ export async function getStaticProps() {
     ogp.canonical = 'https://xrpl.to';
     ogp.title = 'XRP Ledger Tokens - Live Prices, Charts & Trading Data | XRPL.to';
     ogp.url = 'https://xrpl.to/';
-    ogp.imgUrl = 'https://dev.xrpl.to/og/index.webp';
-    ogp.imgType = 'image/webp';
+    ogp.imgUrl = 'https://xrpl.to/api/og/index';
+    ogp.imgType = 'image/png';
     ogp.desc =
       'Discover XRP Ledger tokens with live prices, market cap, 24h volume & trading charts. Track XRPL DeFi tokens, compare performance & find new opportunities on XRP Ledger.';
 

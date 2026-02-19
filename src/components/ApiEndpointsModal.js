@@ -22,7 +22,7 @@ import api from 'src/utils/api';
 const StyledApiButton = ({ className, ...props }) => (
   <button
     className={cn(
-      'flex items-center font-medium transition-all duration-300 overflow-hidden relative',
+      'flex items-center font-medium transition-[background-color,border-color,opacity] duration-300 overflow-hidden relative',
       className
     )}
     {...props}

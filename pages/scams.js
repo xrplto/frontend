@@ -295,7 +295,8 @@ export async function getStaticProps() {
         canonical: 'https://xrpl.to/scams',
         title: 'Scam Alerts | Report & Track XRPL Scams',
         url: 'https://xrpl.to/scams',
-        imgUrl: 'https://xrpl.to/og/scams.webp',
+        imgUrl: 'https://xrpl.to/api/og/scams',
+        imgType: 'image/png',
         desc: 'Report and track scams on the XRP Ledger. Protect yourself from fraudulent tokens and accounts.'
       }
     }

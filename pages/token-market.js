@@ -32,7 +32,7 @@ const XrpValue = ({ value, format = fVolume, size = 'normal', showSymbol = true,
       {showSymbol && (
         <span
           className={cn(
-            'font-medium opacity-60 tracking-[0.02em]',
+            'font-medium tracking-[0.02em]',
             size === 'small' ? 'text-[9px]' : size === 'large' ? 'text-[12px]' : 'text-[10px]'
           )}
         >
@@ -46,32 +46,32 @@ const XrpValue = ({ value, format = fVolume, size = 'normal', showSymbol = true,
 const BASE_URL = 'https://api.xrpl.to/v1';
 
 const Container = ({ className, children, ...p }) => <div className={cn('max-w-[1920px] mx-auto px-4 py-6', className)} {...p}>{children}</div>;
-const Title = ({ darkMode, className, children, ...p }) => <h1 className={cn('text-[22px] font-normal mb-1', darkMode ? 'text-white' : 'text-[#212B36]', className)} {...p}>{children}</h1>;
-const Subtitle = ({ darkMode, className, children, ...p }) => <p className={cn('text-[13px] mb-6', darkMode ? 'text-white/50' : 'text-[#637381]', className)} {...p}>{children}</p>;
+const Title = ({ darkMode, className, children, ...p }) => <h1 className={cn('text-[22px] font-semibold tracking-[-0.02em] mb-1', darkMode ? 'text-white/95' : 'text-[#1a1a2e]', className)} {...p}>{children}</h1>;
+const Subtitle = ({ darkMode, className, children, ...p }) => <p className={cn('text-[13px] tracking-[0.01em] mb-6', darkMode ? 'text-white/60' : 'text-[#637381]', className)} {...p}>{children}</p>;
 const Grid = ({ className, children, ...p }) => <div className={cn('grid grid-cols-2 gap-3 mb-6 md:grid-cols-4 lg:grid-cols-6', className)} {...p}>{children}</div>;
 const StatCard = ({ darkMode, className, children, ...p }) => <div className={cn('p-4 rounded-xl border', darkMode ? 'border-white/[0.08] bg-white/[0.02]' : 'border-black/[0.06] bg-white', className)} {...p}>{children}</div>;
-const StatLabel = ({ darkMode, className, children, ...p }) => <p className={cn('text-[10px] uppercase tracking-[0.04em] mb-[6px] flex items-center gap-[6px]', darkMode ? 'text-white/40' : 'text-black/[0.45]', className)} {...p}>{children}</p>;
-const StatValue = ({ darkMode, className, children, ...p }) => <p className={cn('text-lg font-semibold mb-1', darkMode ? 'text-white' : 'text-[#212B36]', className)} {...p}>{children}</p>;
-const StatChange = ({ positive, className, children, ...p }) => <span className={cn('text-[11px] flex items-center gap-[2px]', positive ? 'text-[#10b981]' : 'text-[#ef4444]', className)} {...p}>{children}</span>;
+const StatLabel = ({ darkMode, className, children, ...p }) => <p className={cn('text-[10px] uppercase tracking-[0.06em] font-semibold mb-[6px] flex items-center gap-[6px]', darkMode ? 'text-white/60' : 'text-[#919EAB]', className)} {...p}>{children}</p>;
+const StatValue = ({ darkMode, className, children, ...p }) => <p className={cn('text-lg font-bold tracking-[-0.01em] mb-1', darkMode ? 'text-white/95' : 'text-[#1a1a2e]', className)} {...p}>{children}</p>;
+const StatChange = ({ positive, className, children, ...p }) => <span className={cn('text-[11px] font-medium flex items-center gap-[2px]', positive ? 'text-[#10b981]' : 'text-[#ef4444]', className)} {...p}>{children}</span>;
 const Section = ({ className, children, ...p }) => <div className={cn('mb-6', className)} {...p}>{children}</div>;
 const ChartCard = ({ darkMode, className, children, ...p }) => <div className={cn('rounded-xl border', darkMode ? 'border-white/[0.08] bg-white/[0.02]' : 'border-black/[0.06] bg-white', className)} {...p}>{children}</div>;
 const ChartHeader = ({ darkMode, className, children, ...p }) => <div className={cn('relative p-4 flex flex-wrap items-center justify-between gap-3 border-b z-10', darkMode ? 'border-white/[0.06]' : 'border-black/[0.06]', className)} {...p}>{children}</div>;
 const MetricSelect = ({ className, children, ...p }) => <div className={cn('relative inline-block', className)} {...p}>{children}</div>;
 const MetricButton = ({ darkMode, className, children, ...p }) => (
-  <button className={cn('flex items-center gap-[6px] py-2 px-[14px] text-[13px] font-medium rounded-lg border cursor-pointer transition-all duration-150 hover:border-[#3b82f6]', darkMode ? 'border-white/10 bg-white/[0.03] text-white' : 'border-black/10 bg-white text-[#212B36]', className)} {...p}>{children}</button>
+  <button className={cn('flex items-center gap-[6px] py-2 px-[14px] text-[13px] font-medium rounded-lg border cursor-pointer transition-[border-color,background-color] duration-150 hover:border-[#3b82f6]', darkMode ? 'border-white/10 bg-white/[0.03] text-white' : 'border-black/10 bg-white text-[#212B36]', className)} {...p}>{children}</button>
 );
 const MetricDropdown = ({ darkMode, className, children, ...p }) => (
   <div className={cn('absolute top-[calc(100%+4px)] left-0 min-w-[200px] p-[6px] rounded-[10px] border shadow-[0_8px_24px_rgba(0,0,0,0.15)] z-50', darkMode ? 'border-white/10 bg-[#1a1a1a]' : 'border-black/10 bg-white', className)} {...p}>{children}</div>
 );
 const MetricGroup = ({ darkMode, className, children, ...p }) => <div className={cn('[&:not(:last-child)]:border-b [&:not(:last-child)]:pb-[6px] [&:not(:last-child)]:mb-[6px]', darkMode ? '[&:not(:last-child)]:border-white/[0.06]' : '[&:not(:last-child)]:border-black/[0.06]', className)} {...p}>{children}</div>;
-const MetricGroupLabel = ({ darkMode, className, children, ...p }) => <div className={cn('text-[9px] font-semibold uppercase tracking-[0.05em] py-1 px-[10px]', darkMode ? 'text-white/[0.35]' : 'text-black/[0.35]', className)} {...p}>{children}</div>;
+const MetricGroupLabel = ({ darkMode, className, children, ...p }) => <div className={cn('text-[9px] font-bold uppercase tracking-[0.06em] py-1 px-[10px]', darkMode ? 'text-white/50' : 'text-black/30', className)} {...p}>{children}</div>;
 const MetricOption = ({ active, darkMode, className, children, ...p }) => (
-  <button className={cn('block w-full py-2 px-[10px] text-xs text-left border-none rounded-md cursor-pointer transition-all duration-100', active ? 'bg-[rgba(59,130,246,0.15)] text-[#3b82f6] hover:bg-[rgba(59,130,246,0.2)]' : cn(darkMode ? 'text-white' : 'text-[#212B36]', 'bg-transparent hover:bg-[rgba(59,130,246,0.08)]'), className)} {...p}>{children}</button>
+  <button className={cn('block w-full py-2 px-[10px] text-xs text-left border-none rounded-md cursor-pointer transition-[background-color] duration-100', active ? 'bg-[rgba(59,130,246,0.15)] text-[#3b82f6] hover:bg-[rgba(59,130,246,0.2)]' : cn(darkMode ? 'text-white' : 'text-[#212B36]', 'bg-transparent hover:bg-[rgba(59,130,246,0.08)]'), className)} {...p}>{children}</button>
 );
-const ChartTitle = ({ darkMode, className, children, ...p }) => <h3 className={cn('text-sm font-medium', darkMode ? 'text-white' : 'text-[#212B36]', className)} {...p}>{children}</h3>;
+const ChartTitle = ({ darkMode, className, children, ...p }) => <h3 className={cn('text-sm font-semibold tracking-[-0.01em]', darkMode ? 'text-white/90' : 'text-[#1a1a2e]', className)} {...p}>{children}</h3>;
 const ButtonGroup = ({ className, children, ...p }) => <div className={cn('flex gap-1', className)} {...p}>{children}</div>;
 const ToggleBtn = ({ active, darkMode, className, children, ...p }) => (
-  <button className={cn('py-[6px] px-3 text-[11px] font-medium rounded-md border-none cursor-pointer transition-all duration-150', active ? 'bg-[#3b82f6] text-white hover:bg-[#2563eb]' : darkMode ? 'bg-white/[0.05] text-white/60 hover:bg-[rgba(59,130,246,0.1)]' : 'bg-black/[0.05] text-black/60 hover:bg-[rgba(59,130,246,0.1)]', className)} {...p}>{children}</button>
+  <button className={cn('py-[6px] px-3 text-[11px] font-medium rounded-md border-none cursor-pointer transition-[background-color] duration-150', active ? 'bg-[#3b82f6] text-white hover:bg-[#2563eb]' : darkMode ? 'bg-white/[0.05] text-white hover:bg-[rgba(59,130,246,0.1)]' : 'bg-black/[0.05] text-black/60 hover:bg-[rgba(59,130,246,0.1)]', className)} {...p}>{children}</button>
 );
 const ChartArea = ({ className, children, ...p }) => <div className={cn('relative h-[280px] pt-5 px-4 pb-10', className)} {...p}>{children}</div>;
 const ChartSvg = ({ className, children, ...p }) => <svg className={cn('w-full h-full overflow-visible', className)} {...p}>{children}</svg>;
@@ -80,8 +80,8 @@ const Tooltip = ({ darkMode, className, children, ...p }) => (
 );
 const TableContainer = ({ darkMode, className, children, ...p }) => <div className={cn('rounded-xl border overflow-hidden', darkMode ? 'border-white/[0.08] bg-white/[0.02]' : 'border-black/[0.06] bg-white', className)} {...p}>{children}</div>;
 const Table = ({ className, children, ...p }) => <table className={cn('w-full border-collapse', className)} {...p}>{children}</table>;
-const Th = ({ darkMode, align, className, children, ...p }) => <th className={cn('text-[10px] font-medium uppercase tracking-[0.04em] py-3 px-4', darkMode ? 'text-white/40 border-b border-white/[0.06]' : 'text-black/[0.45] border-b border-black/[0.06]', className)} style={{ textAlign: align || 'left' }} {...p}>{children}</th>;
-const Td = ({ darkMode, align, className, children, ...p }) => <td className={cn('text-xs py-3 px-4', darkMode ? 'text-white border-b border-white/[0.04]' : 'text-[#212B36] border-b border-black/[0.04]', className)} style={{ textAlign: align || 'left' }} {...p}>{children}</td>;
+const Th = ({ darkMode, align, className, children, ...p }) => <th className={cn('text-[10px] font-semibold uppercase tracking-[0.06em] py-3 px-4', darkMode ? 'text-white/60 border-b border-white/[0.06]' : 'text-[#919EAB] border-b border-black/[0.06]', className)} style={{ textAlign: align || 'left' }} {...p}>{children}</th>;
+const Td = ({ darkMode, align, className, children, ...p }) => <td className={cn('text-xs tracking-[0.005em] py-3 px-4', darkMode ? 'text-white/88 border-b border-white/[0.04]' : 'text-[#1a1a2e] border-b border-black/[0.04]', className)} style={{ textAlign: align || 'left' }} {...p}>{children}</td>;
 const VolumeBar = ({ darkMode, className, children, ...p }) => <div className={cn('h-[6px] rounded-[3px] overflow-hidden mt-1', darkMode ? 'bg-white/10' : 'bg-black/10', className)} {...p}>{children}</div>;
 const VolumeFill = ({ className, ...p }) => <div className={cn('h-full bg-[#3b82f6] rounded-[3px]', className)} {...p} />;
 
@@ -419,7 +419,8 @@ export default function TokenMarketPage({ stats }) {
           </div>
           {stats.lastUpdated && (
             <div
-              className={cn('text-[11px] mt-[4px]', darkMode ? 'text-white/40' : 'text-black/40')}
+              className={cn('text-[11px] mt-[4px]', darkMode ? 'text-white/60' : 'text-black/40')}
+              suppressHydrationWarning
             >
               Updated {new Date(stats.lastUpdated).toLocaleString()}
             </div>
@@ -440,7 +441,7 @@ export default function TokenMarketPage({ stats }) {
                 {Math.abs(stats.volumePct || 0).toFixed(1)}%
               </StatChange>
               <span
-                className={cn('text-[10px]', darkMode ? 'text-white/40' : 'text-black/40')}
+                className={cn('text-[10px]', darkMode ? 'text-white/60' : 'text-black/40')}
               >
                 7d: <XrpValue value={stats.volume7d || 0} size="small" showSymbol={false} />
               </span>
@@ -458,7 +459,7 @@ export default function TokenMarketPage({ stats }) {
                 {Math.abs(stats.tradesPct || 0).toFixed(1)}%
               </StatChange>
               <span
-                className={cn('text-[10px]', darkMode ? 'text-white/40' : 'text-black/40')}
+                className={cn('text-[10px]', darkMode ? 'text-white/60' : 'text-black/40')}
               >
                 Avg: <XrpValue value={stats.avgTradeSize || 0} size="small" />
               </span>
@@ -478,7 +479,7 @@ export default function TokenMarketPage({ stats }) {
                 {Math.abs(stats.marketcapPct || 0).toFixed(1)}%
               </StatChange>
               <span
-                className={cn('text-[10px]', darkMode ? 'text-white/40' : 'text-black/40')}
+                className={cn('text-[10px]', darkMode ? 'text-white/60' : 'text-black/40')}
               >
                 {fNumber(stats.tokenCount || 0)} tokens
               </span>
@@ -560,7 +561,7 @@ export default function TokenMarketPage({ stats }) {
                 <div className="h-full bg-[#10b981] flex-1" />
               </div>
               <div
-                className={cn('flex justify-between mt-[4px] text-[10px]', darkMode ? 'text-white/40' : 'text-black/40')}
+                className={cn('flex justify-between mt-[4px] text-[10px]', darkMode ? 'text-white/60' : 'text-black/40')}
               >
                 <XrpValue value={stats.volumeAMM || 0} size="small" />
                 <XrpValue value={stats.volumeNonAMM || 0} size="small" />
@@ -575,12 +576,12 @@ export default function TokenMarketPage({ stats }) {
               <div className="flex items-center gap-[16px] flex-wrap">
                 <div>
                   <div
-                    className={cn('text-[10px] uppercase tracking-[0.04em] mb-[2px]', darkMode ? 'text-white/40' : 'text-black/[0.45]')}
+                    className={cn('text-[10px] uppercase tracking-[0.06em] font-semibold mb-[2px]', darkMode ? 'text-white/60' : 'text-[#919EAB]')}
                   >
                     {TIME_RANGES.find((r) => r.key === timeRange)?.label} Total
                   </div>
                   <div
-                    className={cn('text-[20px] font-semibold',
+                    className={cn('text-[20px] font-bold tracking-[-0.01em]',
                       metric === 'ammNetFlow'
                         ? periodTotal >= 0 ? 'text-[#10b981]' : 'text-[#ef4444]'
                         : metric === 'ammDeposits'
@@ -920,7 +921,7 @@ export default function TokenMarketPage({ stats }) {
                 </>
               )}
               <div
-                className={cn('absolute bottom-[8px] left-[16px] right-[16px] flex justify-between text-[10px]', darkMode ? 'text-white/30' : 'text-black/30')}
+                className={cn('absolute bottom-[8px] left-[16px] right-[16px] flex justify-between text-[10px]', darkMode ? 'text-white/50' : 'text-black/30')}
               >
                 <span>{chartData[0]?.date}</span>
                 <span>{chartData[chartData.length - 1]?.date}</span>
@@ -985,7 +986,7 @@ export default function TokenMarketPage({ stats }) {
             <div
               className={cn('py-[12px] px-[16px] flex justify-between items-center flex-wrap gap-[8px] border-b', darkMode ? 'border-white/[0.06]' : 'border-black/[0.06]')}
             >
-              <span className={cn('text-[12px] font-medium', darkMode ? 'text-white' : 'text-[#212B36]')}>
+              <span className={cn('text-[12px] font-semibold tracking-[-0.01em]', darkMode ? 'text-white/90' : 'text-[#1a1a2e]')}>
                 Trading Platform Stats
               </span>
               <div className="flex gap-[8px] flex-wrap">
@@ -1059,7 +1060,7 @@ export default function TokenMarketPage({ stats }) {
                           <Td
                             darkMode={darkMode}
                             colSpan={5}
-                            className={cn('text-center p-[24px]', darkMode ? 'text-white/40' : 'text-black/40')}
+                            className={cn('text-center p-[24px]', darkMode ? 'text-white/60' : 'text-black/40')}
                           >
                             No platform data available for this period
                           </Td>
@@ -1141,34 +1142,34 @@ export default function TokenMarketPage({ stats }) {
             >
               <div className="flex gap-[24px] flex-wrap">
                 <div>
-                  <span className={darkMode ? 'text-white/40' : 'text-black/40'}>
+                  <span className={darkMode ? 'text-white/50' : 'text-black/35'}>
                     Total Volume:{' '}
                   </span>
-                  <span className={cn('font-semibold', darkMode ? 'text-white' : 'text-[#212B36]')}>
+                  <span className={cn('font-bold', darkMode ? 'text-white/95' : 'text-[#1a1a2e]')}>
                     <XrpValue value={platformStats.reduce((s, p) => s + p.volume, 0)} />
                   </span>
                 </div>
                 <div>
-                  <span className={darkMode ? 'text-white/40' : 'text-black/40'}>
+                  <span className={darkMode ? 'text-white/50' : 'text-black/35'}>
                     Total Trades:{' '}
                   </span>
-                  <span className={cn('font-semibold', darkMode ? 'text-white' : 'text-[#212B36]')}>
+                  <span className={cn('font-bold', darkMode ? 'text-white/95' : 'text-[#1a1a2e]')}>
                     {fNumber(platformStats.reduce((s, p) => s + p.trades, 0))}
                   </span>
                 </div>
                 <div>
-                  <span className={darkMode ? 'text-white/40' : 'text-black/40'}>
+                  <span className={darkMode ? 'text-white/50' : 'text-black/35'}>
                     Total Fees:{' '}
                   </span>
-                  <span className={cn('font-semibold', darkMode ? 'text-white' : 'text-[#212B36]')}>
+                  <span className={cn('font-bold', darkMode ? 'text-white/95' : 'text-[#1a1a2e]')}>
                     <XrpValue value={platformStats.reduce((s, p) => s + p.fees, 0)} />
                   </span>
                 </div>
                 <div>
-                  <span className={darkMode ? 'text-white/40' : 'text-black/40'}>
+                  <span className={darkMode ? 'text-white/50' : 'text-black/35'}>
                     Platforms:{' '}
                   </span>
-                  <span className={cn('font-semibold', darkMode ? 'text-white' : 'text-[#212B36]')}>
+                  <span className={cn('font-bold', darkMode ? 'text-white/95' : 'text-[#1a1a2e]')}>
                     {platformStats.length}
                   </span>
                 </div>
@@ -1186,7 +1187,7 @@ export default function TokenMarketPage({ stats }) {
               >
                 <PiggyBank size={14} className="text-[#3b82f6]" />
                 <span
-                  className={cn('text-[12px] font-medium', darkMode ? 'text-white' : 'text-[#212B36]')}
+                  className={cn('text-[12px] font-semibold tracking-[-0.01em]', darkMode ? 'text-white/90' : 'text-[#1a1a2e]')}
                 >
                   Trader Balances
                 </span>
@@ -1196,17 +1197,17 @@ export default function TokenMarketPage({ stats }) {
                   className={cn('py-[14px] px-[16px] border-r', darkMode ? 'border-white/[0.04]' : 'border-black/[0.04]')}
                 >
                   <div
-                    className={cn('text-[10px] uppercase tracking-[0.04em] mb-[4px]', darkMode ? 'text-white/40' : 'text-black/[0.45]')}
+                    className={cn('text-[10px] uppercase tracking-[0.06em] font-semibold mb-[4px]', darkMode ? 'text-white/60' : 'text-[#919EAB]')}
                   >
                     24h Active
                   </div>
                   <div
-                    className={cn('text-[16px] font-semibold', darkMode ? 'text-white' : 'text-[#212B36]')}
+                    className={cn('text-[16px] font-bold tracking-[-0.01em]', darkMode ? 'text-white/95' : 'text-[#1a1a2e]')}
                   >
                     <XrpValue value={stats.traderBalances.balance24h || 0} />
                   </div>
                   <div
-                    className={cn('text-[10px] mt-[2px]', darkMode ? 'text-white/[0.35]' : 'text-black/[0.35]')}
+                    className={cn('text-[10px] tracking-[0.01em] mt-[2px]', darkMode ? 'text-white/50' : 'text-black/30')}
                   >
                     {fNumber(stats.traderBalances.traders24h || 0)} traders
                   </div>
@@ -1215,17 +1216,17 @@ export default function TokenMarketPage({ stats }) {
                   className={cn('py-[14px] px-[16px] border-r', darkMode ? 'border-white/[0.04]' : 'border-black/[0.04]')}
                 >
                   <div
-                    className={cn('text-[10px] uppercase tracking-[0.04em] mb-[4px]', darkMode ? 'text-white/40' : 'text-black/[0.45]')}
+                    className={cn('text-[10px] uppercase tracking-[0.06em] font-semibold mb-[4px]', darkMode ? 'text-white/60' : 'text-[#919EAB]')}
                   >
                     7d Active
                   </div>
                   <div
-                    className={cn('text-[16px] font-semibold', darkMode ? 'text-white' : 'text-[#212B36]')}
+                    className={cn('text-[16px] font-bold tracking-[-0.01em]', darkMode ? 'text-white/95' : 'text-[#1a1a2e]')}
                   >
                     <XrpValue value={stats.traderBalances.balance7d || 0} />
                   </div>
                   <div
-                    className={cn('text-[10px] mt-[2px]', darkMode ? 'text-white/[0.35]' : 'text-black/[0.35]')}
+                    className={cn('text-[10px] tracking-[0.01em] mt-[2px]', darkMode ? 'text-white/50' : 'text-black/30')}
                   >
                     {fNumber(stats.traderBalances.traders7d || 0)} traders
                   </div>
@@ -1234,34 +1235,34 @@ export default function TokenMarketPage({ stats }) {
                   className={cn('py-[14px] px-[16px] border-r', darkMode ? 'border-white/[0.04]' : 'border-black/[0.04]')}
                 >
                   <div
-                    className={cn('text-[10px] uppercase tracking-[0.04em] mb-[4px]', darkMode ? 'text-white/40' : 'text-black/[0.45]')}
+                    className={cn('text-[10px] uppercase tracking-[0.06em] font-semibold mb-[4px]', darkMode ? 'text-white/60' : 'text-[#919EAB]')}
                   >
                     30d Active
                   </div>
                   <div
-                    className={cn('text-[16px] font-semibold', darkMode ? 'text-white' : 'text-[#212B36]')}
+                    className={cn('text-[16px] font-bold tracking-[-0.01em]', darkMode ? 'text-white/95' : 'text-[#1a1a2e]')}
                   >
                     <XrpValue value={stats.traderBalances.balance30d || 0} />
                   </div>
                   <div
-                    className={cn('text-[10px] mt-[2px]', darkMode ? 'text-white/[0.35]' : 'text-black/[0.35]')}
+                    className={cn('text-[10px] tracking-[0.01em] mt-[2px]', darkMode ? 'text-white/50' : 'text-black/30')}
                   >
                     {fNumber(stats.traderBalances.traders30d || 0)} traders
                   </div>
                 </div>
                 <div className="py-[14px] px-[16px]">
                   <div
-                    className={cn('text-[10px] uppercase tracking-[0.04em] mb-[4px]', darkMode ? 'text-white/40' : 'text-black/[0.45]')}
+                    className={cn('text-[10px] uppercase tracking-[0.06em] font-semibold mb-[4px]', darkMode ? 'text-white/60' : 'text-[#919EAB]')}
                   >
                     All Time
                   </div>
                   <div
-                    className={cn('text-[16px] font-semibold', darkMode ? 'text-white' : 'text-[#212B36]')}
+                    className={cn('text-[16px] font-bold tracking-[-0.01em]', darkMode ? 'text-white/95' : 'text-[#1a1a2e]')}
                   >
                     <XrpValue value={stats.traderBalances.balanceAll || 0} />
                   </div>
                   <div
-                    className={cn('text-[10px] mt-[2px]', darkMode ? 'text-white/[0.35]' : 'text-black/[0.35]')}
+                    className={cn('text-[10px] tracking-[0.01em] mt-[2px]', darkMode ? 'text-white/50' : 'text-black/30')}
                   >
                     {fNumber(stats.traderBalances.tradersAll || 0)} traders
                   </div>
@@ -1277,7 +1278,7 @@ export default function TokenMarketPage({ stats }) {
             <div
               className={cn('py-[12px] px-[16px] flex justify-between items-center flex-wrap gap-[8px] border-b', darkMode ? 'border-white/[0.06]' : 'border-black/[0.06]')}
             >
-              <span className={cn('text-[12px] font-medium', darkMode ? 'text-white' : 'text-[#212B36]')}>
+              <span className={cn('text-[12px] font-semibold tracking-[-0.01em]', darkMode ? 'text-white/90' : 'text-[#1a1a2e]')}>
                 Market Summary
               </span>
               <ButtonGroup>
@@ -1302,56 +1303,56 @@ export default function TokenMarketPage({ stats }) {
               <div
                 className={cn('py-[14px] px-[16px] border-r border-b', darkMode ? 'border-white/[0.04]' : 'border-black/[0.04]')}
               >
-                <div className={cn('text-[10px] uppercase tracking-[0.04em] mb-[4px]', darkMode ? 'text-white/40' : 'text-black/[0.45]')}>
+                <div className={cn('text-[10px] uppercase tracking-[0.06em] font-semibold mb-[4px]', darkMode ? 'text-white/60' : 'text-[#919EAB]')}>
                   Volume
                 </div>
-                <div className={cn('text-[18px] font-semibold', darkMode ? 'text-white' : 'text-[#212B36]')}>
+                <div className={cn('text-[18px] font-bold tracking-[-0.01em]', darkMode ? 'text-white/95' : 'text-[#1a1a2e]')}>
                   <XrpValue value={summaryStats.volume} />
                 </div>
               </div>
               <div
                 className={cn('py-[14px] px-[16px] border-r border-b', darkMode ? 'border-white/[0.04]' : 'border-black/[0.04]')}
               >
-                <div className={cn('text-[10px] uppercase tracking-[0.04em] mb-[4px]', darkMode ? 'text-white/40' : 'text-black/[0.45]')}>
+                <div className={cn('text-[10px] uppercase tracking-[0.06em] font-semibold mb-[4px]', darkMode ? 'text-white/60' : 'text-[#919EAB]')}>
                   Trades
                 </div>
-                <div className={cn('text-[18px] font-semibold', darkMode ? 'text-white' : 'text-[#212B36]')}>
+                <div className={cn('text-[18px] font-bold tracking-[-0.01em]', darkMode ? 'text-white/95' : 'text-[#1a1a2e]')}>
                   {fNumber(summaryStats.trades)}
                 </div>
               </div>
               <div
                 className={cn('py-[14px] px-[16px] border-r border-b', darkMode ? 'border-white/[0.04]' : 'border-black/[0.04]')}
               >
-                <div className={cn('text-[10px] uppercase tracking-[0.04em] mb-[4px]', darkMode ? 'text-white/40' : 'text-black/[0.45]')}>
+                <div className={cn('text-[10px] uppercase tracking-[0.06em] font-semibold mb-[4px]', darkMode ? 'text-white/60' : 'text-[#919EAB]')}>
                   Avg Trade Size
                 </div>
-                <div className={cn('text-[18px] font-semibold', darkMode ? 'text-white' : 'text-[#212B36]')}>
+                <div className={cn('text-[18px] font-bold tracking-[-0.01em]', darkMode ? 'text-white/95' : 'text-[#1a1a2e]')}>
                   <XrpValue value={summaryStats.avgTrade} format={(v) => (v || 0).toFixed(0)} />
                 </div>
-                <div className={cn('text-[10px] mt-[2px]', darkMode ? 'text-white/[0.35]' : 'text-black/[0.35]')}>
+                <div className={cn('text-[10px] tracking-[0.01em] mt-[2px]', darkMode ? 'text-white/50' : 'text-black/30')}>
                   Volume / Trades
                 </div>
               </div>
               <div
                 className={cn('py-[14px] px-[16px] border-r border-b', darkMode ? 'border-white/[0.04]' : 'border-black/[0.04]')}
               >
-                <div className={cn('text-[10px] uppercase tracking-[0.04em] mb-[4px]', darkMode ? 'text-white/40' : 'text-black/[0.45]')}>
+                <div className={cn('text-[10px] uppercase tracking-[0.06em] font-semibold mb-[4px]', darkMode ? 'text-white/60' : 'text-[#919EAB]')}>
                   Fees Collected
                 </div>
-                <div className={cn('text-[18px] font-semibold', darkMode ? 'text-white' : 'text-[#212B36]')}>
+                <div className={cn('text-[18px] font-bold tracking-[-0.01em]', darkMode ? 'text-white/95' : 'text-[#1a1a2e]')}>
                   <XrpValue value={summaryStats.fees} />
                 </div>
               </div>
               <div
                 className={cn('py-[14px] px-[16px] border-r border-b', darkMode ? 'border-white/[0.04]' : 'border-black/[0.04]')}
               >
-                <div className={cn('text-[10px] uppercase tracking-[0.04em] mb-[4px]', darkMode ? 'text-white/40' : 'text-black/[0.45]')}>
+                <div className={cn('text-[10px] uppercase tracking-[0.06em] font-semibold mb-[4px]', darkMode ? 'text-white/60' : 'text-[#919EAB]')}>
                   AMM Volume
                 </div>
-                <div className="text-[18px] font-semibold text-[#8b5cf6]">
+                <div className="text-[18px] font-bold tracking-[-0.01em] text-[#8b5cf6]">
                   <XrpValue value={summaryStats.volumeAMM} />
                 </div>
-                <div className={cn('text-[10px] mt-[2px]', darkMode ? 'text-white/[0.35]' : 'text-black/[0.35]')}>
+                <div className={cn('text-[10px] tracking-[0.01em] mt-[2px]', darkMode ? 'text-white/50' : 'text-black/30')}>
                   {summaryStats.volume > 0
                     ? ((summaryStats.volumeAMM / summaryStats.volume) * 100).toFixed(1)
                     : 0}
@@ -1361,13 +1362,13 @@ export default function TokenMarketPage({ stats }) {
               <div
                 className={cn('py-[14px] px-[16px] border-b', darkMode ? 'border-white/[0.04]' : 'border-black/[0.04]')}
               >
-                <div className={cn('text-[10px] uppercase tracking-[0.04em] mb-[4px]', darkMode ? 'text-white/40' : 'text-black/[0.45]')}>
+                <div className={cn('text-[10px] uppercase tracking-[0.06em] font-semibold mb-[4px]', darkMode ? 'text-white/60' : 'text-[#919EAB]')}>
                   DEX Volume
                 </div>
-                <div className="text-[18px] font-semibold text-[#10b981]">
+                <div className="text-[18px] font-bold tracking-[-0.01em] text-[#10b981]">
                   <XrpValue value={summaryStats.volumeNonAMM} />
                 </div>
-                <div className={cn('text-[10px] mt-[2px]', darkMode ? 'text-white/[0.35]' : 'text-black/[0.35]')}>
+                <div className={cn('text-[10px] tracking-[0.01em] mt-[2px]', darkMode ? 'text-white/50' : 'text-black/30')}>
                   {summaryStats.volume > 0
                     ? ((summaryStats.volumeNonAMM / summaryStats.volume) * 100).toFixed(1)
                     : 0}
@@ -1377,7 +1378,7 @@ export default function TokenMarketPage({ stats }) {
             </div>
             {/* Period indicator */}
             <div
-              className={cn('py-[10px] px-[16px] text-[11px] border-t', darkMode ? 'border-white/[0.04] text-white/40' : 'border-black/[0.04] text-black/40')}
+              className={cn('py-[10px] px-[16px] text-[11px] border-t', darkMode ? 'border-white/[0.04] text-white/60' : 'border-black/[0.04] text-black/40')}
             >
               {summaryTimeRange === 'all'
                 ? `Based on ${summaryStats.days} days of data`
@@ -1392,7 +1393,7 @@ export default function TokenMarketPage({ stats }) {
             <div
               className={cn('py-[12px] px-[16px] flex justify-between items-center flex-wrap gap-[8px] border-b', darkMode ? 'border-white/[0.06]' : 'border-black/[0.06]')}
             >
-              <span className={cn('text-[12px] font-medium', darkMode ? 'text-white' : 'text-[#212B36]')}>
+              <span className={cn('text-[12px] font-semibold tracking-[-0.01em]', darkMode ? 'text-white/90' : 'text-[#1a1a2e]')}>
                 AMM vs DEX
               </span>
               <ButtonGroup>
@@ -1479,39 +1480,39 @@ export default function TokenMarketPage({ stats }) {
               </div>
               <div className="p-[16px]">
                 <div
-                  className={cn('text-[10px] uppercase tracking-[0.04em] mb-[16px]', darkMode ? 'text-white/40' : 'text-black/[0.45]')}
+                  className={cn('text-[10px] uppercase tracking-[0.06em] font-semibold mb-[16px]', darkMode ? 'text-white/60' : 'text-[#919EAB]')}
                 >
                   Pool Activity
                 </div>
                 <div className="grid grid-cols-3 gap-[16px]">
                   <div>
                     <div
-                      className={cn('text-[11px] mb-[4px]', darkMode ? 'text-white/50' : 'text-[#637381]')}
+                      className={cn('text-[11px] font-medium tracking-[0.01em] mb-[4px]', darkMode ? 'text-white/60' : 'text-[#919EAB]')}
                     >
                       Deposits
                     </div>
-                    <div className="text-[16px] font-semibold text-[#10b981]">
+                    <div className="text-[16px] font-bold tracking-[-0.01em] text-[#10b981]">
                       <XrpValue value={ammStats.ammDeposits} />
                     </div>
                   </div>
                   <div>
                     <div
-                      className={cn('text-[11px] mb-[4px]', darkMode ? 'text-white/50' : 'text-[#637381]')}
+                      className={cn('text-[11px] font-medium tracking-[0.01em] mb-[4px]', darkMode ? 'text-white/60' : 'text-[#919EAB]')}
                     >
                       Withdrawals
                     </div>
-                    <div className="text-[16px] font-semibold text-[#ef4444]">
+                    <div className="text-[16px] font-bold tracking-[-0.01em] text-[#ef4444]">
                       <XrpValue value={ammStats.ammWithdraws} />
                     </div>
                   </div>
                   <div>
                     <div
-                      className={cn('text-[11px] mb-[4px]', darkMode ? 'text-white/50' : 'text-[#637381]')}
+                      className={cn('text-[11px] font-medium tracking-[0.01em] mb-[4px]', darkMode ? 'text-white/60' : 'text-[#919EAB]')}
                     >
                       Net Flow
                     </div>
                     <div
-                      className={cn('text-[16px] font-semibold', ammStats.ammNetFlow >= 0 ? 'text-[#10b981]' : 'text-[#ef4444]')}
+                      className={cn('text-[16px] font-bold tracking-[-0.01em]', ammStats.ammNetFlow >= 0 ? 'text-[#10b981]' : 'text-[#ef4444]')}
                     >
                       {ammStats.ammNetFlow >= 0 ? '+' : ''}
                       <XrpValue value={ammStats.ammNetFlow} showSymbol={true} />
@@ -1521,7 +1522,7 @@ export default function TokenMarketPage({ stats }) {
                 {/* Visual comparison bar */}
                 <div className="mt-[16px]">
                   <div
-                    className={cn('flex justify-between text-[10px] mb-[4px]', darkMode ? 'text-white/40' : 'text-black/40')}
+                    className={cn('flex justify-between text-[10px] mb-[4px]', darkMode ? 'text-white/60' : 'text-black/40')}
                   >
                     <span>AMM vs DEX Volume Share</span>
                     <span>
@@ -1690,7 +1691,8 @@ export async function getServerSideProps() {
       canonical: 'https://xrpl.to/token-market',
       title: 'Token Market | XRPL Token Market Analytics',
       url: 'https://xrpl.to/token-market',
-      imgUrl: 'https://xrpl.to/og/token-market.webp',
+      imgUrl: 'https://xrpl.to/api/og/token-market',
+      imgType: 'image/png',
       desc: 'XRPL token market analytics with volume, trades, and market cap data.'
     } } };
   } catch (error) {
@@ -1699,7 +1701,8 @@ export async function getServerSideProps() {
       canonical: 'https://xrpl.to/token-market',
       title: 'Token Market | XRPL Token Market Analytics',
       url: 'https://xrpl.to/token-market',
-      imgUrl: 'https://xrpl.to/og/token-market.webp',
+      imgUrl: 'https://xrpl.to/api/og/token-market',
+      imgType: 'image/png',
       desc: 'XRPL token market analytics with volume, trades, and market cap data.'
     } } };
   }

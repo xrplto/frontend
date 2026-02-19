@@ -340,7 +340,7 @@ const AccountHistory = ({ account, compact = false }) => {
         )}>
           <div className="flex items-center gap-2">
             <Activity size={14} className={isDark ? 'text-white/50' : 'text-gray-500'} />
-            <p className={cn('text-[11px] font-semibold uppercase tracking-[0.15em]', isDark ? 'text-white/50' : 'text-gray-500')}>Recent Activity</p>
+            <p className={cn('text-xs font-semibold uppercase tracking-[0.15em]', isDark ? 'text-white/50' : 'text-gray-500')}>Recent Activity</p>
           </div>
         </div>
         {txLoading && recentTxs.length === 0 ? (
@@ -353,7 +353,7 @@ const AccountHistory = ({ account, compact = false }) => {
           </div>
         ) : (
           <>
-            <div className={cn('grid grid-cols-[1.3fr_1fr_1fr_1fr_1fr_1fr_1fr] gap-4 px-5 py-2 text-[9px] uppercase tracking-wider font-semibold border-b', isDark ? 'text-white/30 border-white/[0.06]' : 'text-gray-400 border-gray-100')}>
+            <div className={cn('hidden md:grid grid-cols-[1.3fr_1fr_1fr_1fr_1fr_1fr_1fr] gap-4 px-5 py-2 text-[10px] uppercase tracking-wider font-semibold border-b', isDark ? 'text-white/35 border-white/[0.06]' : 'text-gray-400 border-gray-100')}>
               <div>Transaction</div>
               <div className="text-left">Source</div>
               <div className="text-right">Spent</div>
@@ -365,119 +365,184 @@ const AccountHistory = ({ account, compact = false }) => {
             <div className={cn('divide-y', isDark ? 'divide-white/[0.04]' : 'divide-gray-50')}>
               {recentTxs.map((tx) => {
                 const parsed = parseTx(tx);
+                const txBadgeLabel = parsed.fromAmount && parsed.toAmount ? 'Swap' :
+                  parsed.txType === 'NFTokenAcceptOffer' ? 'NFT Trade' :
+                  parsed.txType === 'NFTokenCreateOffer' ? 'NFT Offer' :
+                  parsed.txType === 'NFTokenMint' ? 'NFT Mint' :
+                  parsed.txType === 'NFTokenBurn' ? 'NFT Burn' :
+                  parsed.txType === 'NFTokenCancelOffer' ? 'Cancel' :
+                  parsed.txType === 'TrustSet' ? 'Trustline' :
+                  parsed.txType === 'OfferCreate' ? 'DEX Order' :
+                  parsed.txType === 'OfferCancel' ? 'Cancel' :
+                  parsed.txType === 'Payment' ? 'Transfer' :
+                  parsed.txType || 'Tx';
+
+                // Mobile value display
+                const mobileValue = parsed.fromAmount && parsed.toAmount
+                  ? { from: parsed.fromAmount, to: parsed.toAmount }
+                  : parsed.amount && !parsed.amount.includes('Limit') && !parsed.amount.includes('offer')
+                    ? { single: parsed.amount, type: parsed.type }
+                    : null;
+
                 return (
                   <div
                     key={parsed.id}
-                    className={cn('grid grid-cols-[1.3fr_1fr_1fr_1fr_1fr_1fr_1fr] gap-4 px-5 py-2.5 items-center transition-colors', isDark ? 'hover:bg-white/[0.04]' : 'hover:bg-gray-50', (parsed.nftTokenId || parsed.tokenCurrency) && 'cursor-pointer')}
+                    className={cn(
+                      'transition-colors',
+                      isDark ? 'hover:bg-white/[0.04]' : 'hover:bg-gray-50',
+                      (parsed.nftTokenId || parsed.tokenCurrency) && 'cursor-pointer'
+                    )}
                     onClick={() => {
                       if (parsed.nftTokenId) window.open(`/nft/${parsed.nftTokenId}`, '_blank');
                       else if (parsed.tokenCurrency && parsed.tokenCurrency !== 'XRP' && parsed.tokenIssuer) window.open(`/token/${parsed.tokenIssuer}-${decodeCurrency(parsed.tokenCurrency)}`, '_blank');
                     }}
                   >
-                    <div className="flex items-center gap-3 min-w-0">
+                    {/* Desktop row */}
+                    <div className="hidden md:grid grid-cols-[1.3fr_1fr_1fr_1fr_1fr_1fr_1fr] gap-4 px-5 py-2.5 items-center">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <span className={cn(
+                          'w-[38px] text-center py-1 rounded-lg text-[10px] font-bold flex-shrink-0',
+                          parsed.type === 'failed' ? 'bg-amber-500/10 text-amber-500' :
+                            parsed.type === 'in' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'
+                        )}>
+                          {parsed.type === 'failed' ? 'Fail' : parsed.type === 'in' ? 'In' : 'Out'}
+                        </span>
+                        <div className="relative flex-shrink-0">
+                          {parsed.nftTokenId ? (
+                            <NftImage
+                              nftTokenId={parsed.nftTokenId}
+                              className="w-8 h-8 rounded-xl object-cover bg-white/5"
+                              fallback={<div className={cn('w-8 h-8 rounded-xl flex items-center justify-center', isDark ? 'bg-purple-500/10' : 'bg-purple-50')}><Image size={14} className="text-purple-400" /></div>}
+                            />
+                          ) : parsed.tokenCurrency ? (
+                            <img
+                              src={`https://s1.xrpl.to/token/${parsed.tokenCurrency === 'XRP' ? '84e5efeb89c4eae8f68188982dc290d8' : MD5(`${parsed.tokenIssuer}_${parsed.tokenCurrency}`).toString()}`}
+                              alt=""
+                              className="w-8 h-8 rounded-full object-cover bg-white/5"
+                              onError={(e) => { e.target.onerror = null; e.target.src = '/static/alt.webp'; }}
+                            />
+                          ) : (
+                            <div className={cn('w-8 h-8 rounded-full', isDark ? 'bg-white/5' : 'bg-gray-100')} />
+                          )}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <span className={cn('text-[13px] font-bold truncate block', isDark ? 'text-white' : 'text-gray-900')}>
+                            {parsed.label}
+                            {parsed.tokenCurrency && !parsed.nftTokenId && !parsed.fromAmount && (
+                              <span className={cn('ml-1 font-medium', isDark ? 'text-white/40' : 'text-gray-500')}>{decodeCurrency(parsed.tokenCurrency)}</span>
+                            )}
+                          </span>
+                          <div className="flex items-center gap-1.5 mt-0.5">
+                            <span className={cn('text-[9px] px-1 py-0.5 rounded font-medium',
+                              parsed.fromAmount && parsed.toAmount ? (isDark ? 'bg-purple-500/10 text-purple-400' : 'bg-purple-50 text-purple-600') :
+                              parsed.nftTokenId ? (isDark ? 'bg-pink-500/10 text-pink-400' : 'bg-pink-50 text-pink-600') :
+                              isDark ? 'bg-white/5 text-white/40' : 'bg-gray-100 text-gray-500'
+                            )}>
+                              {txBadgeLabel}
+                            </span>
+                            {parsed.nftTokenId && <Link href={`/nft/${parsed.nftTokenId}`} onClick={(e) => e.stopPropagation()} className={cn('text-[9px] font-mono truncate hover:text-blue-400', isDark ? 'text-white/25' : 'text-gray-400')}>{parsed.nftTokenId.slice(0,8)}...</Link>}
+                            {parsed.type === 'failed' && <span className="text-[9px] font-bold text-amber-500 uppercase">Failed</span>}
+                            {parsed.isDust && <span className="text-[9px] font-bold text-amber-500 uppercase">Dust</span>}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="min-w-0 text-left">
+                        {parsed.sourceTag ? (
+                          <div>
+                            <span className={cn('text-[9px] px-1.5 py-0.5 rounded font-bold inline-block', isDark ? 'bg-blue-500/10 text-blue-400' : 'bg-blue-50 text-blue-600')}>#{parsed.sourceTag}</span>
+                            {parsed.sourceTagName && <span className={cn('text-[9px] block mt-0.5 truncate', isDark ? 'text-white/25' : 'text-gray-400')}>{parsed.sourceTagName}</span>}
+                          </div>
+                        ) : parsed.counterparty && parsed.counterparty.startsWith('r') ? (
+                          <span className={cn('text-[10px] truncate block font-mono', isDark ? 'text-white/40' : 'text-gray-500')}>{parsed.counterparty.slice(0,6)}...{parsed.counterparty.slice(-4)}</span>
+                        ) : parsed.counterparty ? (
+                          <span className={cn('text-[9px] px-1.5 py-0.5 rounded font-medium inline-block', isDark ? 'bg-white/5 text-white/50' : 'bg-gray-100 text-gray-500')}>{parsed.counterparty}</span>
+                        ) : <span className={cn('text-[10px]', isDark ? 'text-white/20' : 'text-gray-300')}>{'\u2014'}</span>}
+                      </div>
+                      <div className="text-right">
+                        {parsed.fromAmount && parsed.toAmount ? (
+                          <span className="text-[10px] font-bold tabular-nums text-red-400">{parsed.fromAmount.split(' ')[0]} <span className={cn('text-[9px] font-medium', isDark ? 'text-white/30' : 'text-gray-400')}>{parsed.fromAmount.split(' ')[1] || 'XRP'}</span></span>
+                        ) : parsed.nftTokenId && parsed.txType !== 'NFTokenCancelOffer' && parsed.type === 'in' ? (
+                          <Link href={`/nft/${parsed.nftTokenId}`} onClick={(e) => e.stopPropagation()} className="text-[9px] font-mono text-red-400 hover:text-red-300">{parsed.nftTokenId.slice(0,8)}...</Link>
+                        ) : parsed.nftTokenId && parsed.txType !== 'NFTokenCancelOffer' && parsed.type === 'out' && parsed.amount ? (
+                          <span className="text-[10px] font-bold tabular-nums text-red-400">{parsed.amount.split(' ')[0]} <span className={cn('text-[9px] font-medium', isDark ? 'text-white/30' : 'text-gray-400')}>XRP</span></span>
+                        ) : parsed.type === 'out' && parsed.amount && !parsed.amount.includes('Limit') && !parsed.amount.includes('offer') ? (
+                          <span className="text-[10px] font-bold tabular-nums text-red-400">{parsed.amount.split(' ')[0]} <span className={cn('text-[9px] font-medium', isDark ? 'text-white/30' : 'text-gray-400')}>{parsed.tokenCurrency ? decodeCurrency(parsed.tokenCurrency) : 'XRP'}</span></span>
+                        ) : <span className={cn('text-[10px]', isDark ? 'text-white/20' : 'text-gray-300')}>{'\u2014'}</span>}
+                      </div>
+                      <div className="text-right">
+                        {parsed.fromAmount && parsed.toAmount ? (
+                          <span className="text-[10px] font-bold tabular-nums text-emerald-500">{parsed.toAmount.split(' ')[0]} <span className={cn('text-[9px] font-medium', isDark ? 'text-white/30' : 'text-gray-400')}>{parsed.toAmount.split(' ')[1] || 'XRP'}</span></span>
+                        ) : parsed.nftTokenId && parsed.txType !== 'NFTokenCancelOffer' && parsed.type === 'out' ? (
+                          <Link href={`/nft/${parsed.nftTokenId}`} onClick={(e) => e.stopPropagation()} className="text-[9px] font-mono text-emerald-500 hover:text-emerald-400">{parsed.nftTokenId.slice(0,8)}...</Link>
+                        ) : parsed.nftTokenId && parsed.txType !== 'NFTokenCancelOffer' && parsed.type === 'in' && parsed.amount ? (
+                          <span className="text-[10px] font-bold tabular-nums text-emerald-500">{parsed.amount.split(' ')[0]} <span className={cn('text-[9px] font-medium', isDark ? 'text-white/30' : 'text-gray-400')}>XRP</span></span>
+                        ) : parsed.type === 'in' && parsed.amount && !parsed.amount.includes('Limit') && !parsed.amount.includes('offer') ? (
+                          <span className="text-[10px] font-bold tabular-nums text-emerald-500">{parsed.amount.split(' ')[0]} <span className={cn('text-[9px] font-medium', isDark ? 'text-white/30' : 'text-gray-400')}>{parsed.tokenCurrency ? decodeCurrency(parsed.tokenCurrency) : 'XRP'}</span></span>
+                        ) : <span className={cn('text-[10px]', isDark ? 'text-white/20' : 'text-gray-300')}>{'\u2014'}</span>}
+                      </div>
+                      <div className={cn('text-right text-[9px] tabular-nums', parseFloat(parsed.fee) > 0.00005 ? 'text-red-400' : isDark ? 'text-white/30' : 'text-gray-400')}>
+                        {parsed.fee || '\u2014'}
+                      </div>
+                      <Link
+                        href={`/tx/${parsed.hash}`}
+                        target="_blank"
+                        onClick={(e) => e.stopPropagation()}
+                        className={cn('text-right text-[9px] font-mono transition-colors', isDark ? 'text-white/25 hover:text-blue-400' : 'text-gray-400 hover:text-blue-500')}
+                      >
+                        {parsed.hash?.slice(0,4)}...{parsed.hash?.slice(-4)}
+                      </Link>
+                      <div className={cn('text-right text-[10px] font-medium tabular-nums', isDark ? 'text-white/40' : 'text-gray-400')}>
+                        {timeAgo(parsed.time)}
+                      </div>
+                    </div>
+
+                    {/* Mobile row */}
+                    <div className="md:hidden grid grid-cols-[28px_24px_1fr_auto_auto] gap-2 items-center px-3 py-2.5">
                       <span className={cn(
-                        'w-[38px] text-center py-1 rounded-lg text-[10px] font-bold flex-shrink-0',
+                        'text-center py-0.5 rounded text-[9px] font-bold',
                         parsed.type === 'failed' ? 'bg-amber-500/10 text-amber-500' :
                           parsed.type === 'in' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'
                       )}>
                         {parsed.type === 'failed' ? 'Fail' : parsed.type === 'in' ? 'In' : 'Out'}
                       </span>
-                      <div className="relative flex-shrink-0">
-                        {parsed.nftTokenId ? (
-                          <NftImage
-                            nftTokenId={parsed.nftTokenId}
-                            className="w-8 h-8 rounded-xl object-cover bg-white/5"
-                            fallback={<div className={cn('w-8 h-8 rounded-xl flex items-center justify-center', isDark ? 'bg-purple-500/10' : 'bg-purple-50')}><Image size={14} className="text-purple-400" /></div>}
-                          />
-                        ) : parsed.tokenCurrency ? (
-                          <img
-                            src={`https://s1.xrpl.to/token/${parsed.tokenCurrency === 'XRP' ? '84e5efeb89c4eae8f68188982dc290d8' : MD5(`${parsed.tokenIssuer}_${parsed.tokenCurrency}`).toString()}`}
-                            alt=""
-                            className="w-8 h-8 rounded-full object-cover bg-white/5"
-                            onError={(e) => { e.target.onerror = null; e.target.src = '/static/alt.webp'; }}
-                          />
-                        ) : (
-                          <div className={cn('w-8 h-8 rounded-full', isDark ? 'bg-white/5' : 'bg-gray-100')} />
-                        )}
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <span className={cn('text-[12px] font-bold truncate block', isDark ? 'text-white' : 'text-gray-900')}>
-                          {parsed.label}
-                          {parsed.tokenCurrency && !parsed.nftTokenId && !parsed.fromAmount && (
-                            <span className={cn('ml-1 font-medium', isDark ? 'text-white/40' : 'text-gray-500')}>{decodeCurrency(parsed.tokenCurrency)}</span>
-                          )}
-                        </span>
-                        <div className="flex items-center gap-1.5 mt-0.5">
-                          <span className={cn('text-[8px] px-1 py-0.5 rounded font-medium',
-                            parsed.fromAmount && parsed.toAmount ? (isDark ? 'bg-purple-500/10 text-purple-400' : 'bg-purple-50 text-purple-600') :
-                            parsed.nftTokenId ? (isDark ? 'bg-pink-500/10 text-pink-400' : 'bg-pink-50 text-pink-600') :
-                            isDark ? 'bg-white/5 text-white/40' : 'bg-gray-100 text-gray-500'
-                          )}>
-                            {parsed.fromAmount && parsed.toAmount ? 'Swap' :
-                             parsed.txType === 'NFTokenAcceptOffer' ? 'NFT Trade' :
-                             parsed.txType === 'NFTokenCreateOffer' ? 'NFT Offer' :
-                             parsed.txType === 'NFTokenMint' ? 'NFT Mint' :
-                             parsed.txType === 'NFTokenBurn' ? 'NFT Burn' :
-                             parsed.txType === 'NFTokenCancelOffer' ? 'Cancel' :
-                             parsed.txType === 'TrustSet' ? 'Trustline' :
-                             parsed.txType === 'OfferCreate' ? 'DEX Order' :
-                             parsed.txType === 'OfferCancel' ? 'Cancel' :
-                             parsed.txType === 'Payment' ? 'Transfer' :
-                             parsed.txType || 'Tx'}
+                      {parsed.nftTokenId ? (
+                        <NftImage
+                          nftTokenId={parsed.nftTokenId}
+                          className="w-6 h-6 rounded object-cover bg-white/5"
+                          fallback={<div className={cn('w-6 h-6 rounded flex items-center justify-center', isDark ? 'bg-purple-500/10' : 'bg-purple-50')}><Image size={10} className="text-purple-400" /></div>}
+                        />
+                      ) : parsed.tokenCurrency ? (
+                        <img
+                          src={`https://s1.xrpl.to/token/${parsed.tokenCurrency === 'XRP' ? '84e5efeb89c4eae8f68188982dc290d8' : MD5(`${parsed.tokenIssuer}_${parsed.tokenCurrency}`).toString()}`}
+                          alt=""
+                          className="w-6 h-6 rounded-full object-cover bg-white/5"
+                          onError={(e) => { e.target.onerror = null; e.target.src = '/static/alt.webp'; }}
+                        />
+                      ) : (
+                        <div className={cn('w-6 h-6 rounded-full', isDark ? 'bg-white/5' : 'bg-gray-100')} />
+                      )}
+                      <span className="truncate">
+                        <span className={cn('text-[12px] font-bold', isDark ? 'text-white' : 'text-gray-900')}>{parsed.label}</span>
+                        <span className={cn('text-[9px] ml-1', isDark ? 'text-white/30' : 'text-gray-400')}>{parsed.tokenCurrency ? decodeCurrency(parsed.tokenCurrency) : (parsed.nftTokenId ? 'NFT' : 'XRP')}</span>
+                      </span>
+                      <span className="text-right">
+                        {mobileValue?.from ? (
+                          <span className="text-[10px] font-bold tabular-nums">
+                            <span className="text-red-400">{mobileValue.from.split(' ')[0]}</span>
+                            <ArrowRight size={8} className={cn('inline mx-0.5', isDark ? 'text-white/20' : 'text-gray-300')} />
+                            <span className="text-emerald-500">{mobileValue.to.split(' ')[0]}</span>
+                            <span className={cn('text-[9px] ml-0.5', isDark ? 'text-white/30' : 'text-gray-400')}>{mobileValue.to.split(' ')[1] || 'XRP'}</span>
                           </span>
-                          {parsed.nftTokenId && <Link href={`/nft/${parsed.nftTokenId}`} onClick={(e) => e.stopPropagation()} className={cn('text-[8px] font-mono truncate hover:text-blue-400', isDark ? 'text-white/25' : 'text-gray-400')}>{parsed.nftTokenId.slice(0,8)}...</Link>}
-                          {parsed.type === 'failed' && <span className="text-[8px] font-bold text-amber-500 uppercase">Failed</span>}
-                          {parsed.isDust && <span className="text-[8px] font-bold text-amber-500 uppercase">Dust</span>}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="min-w-0 text-left">
-                      {parsed.sourceTag ? (
-                        <div>
-                          <span className={cn('text-[9px] px-1.5 py-0.5 rounded font-bold inline-block', isDark ? 'bg-blue-500/10 text-blue-400' : 'bg-blue-50 text-blue-600')}>#{parsed.sourceTag}</span>
-                          {parsed.sourceTagName && <span className={cn('text-[8px] block mt-0.5 truncate', isDark ? 'text-white/25' : 'text-gray-400')}>{parsed.sourceTagName}</span>}
-                        </div>
-                      ) : parsed.counterparty && parsed.counterparty.startsWith('r') ? (
-                        <span className={cn('text-[10px] truncate block font-mono', isDark ? 'text-white/40' : 'text-gray-500')}>{parsed.counterparty.slice(0,6)}...{parsed.counterparty.slice(-4)}</span>
-                      ) : parsed.counterparty ? (
-                        <span className={cn('text-[9px] px-1.5 py-0.5 rounded font-medium inline-block', isDark ? 'bg-white/5 text-white/50' : 'bg-gray-100 text-gray-500')}>{parsed.counterparty}</span>
-                      ) : <span className={cn('text-[10px]', isDark ? 'text-white/20' : 'text-gray-300')}>{'\u2014'}</span>}
-                    </div>
-                    <div className="text-right">
-                      {parsed.fromAmount && parsed.toAmount ? (
-                        <span className="text-[10px] font-bold tabular-nums text-red-400">{parsed.fromAmount.split(' ')[0]} <span className={cn('text-[8px] font-medium', isDark ? 'text-white/30' : 'text-gray-400')}>{parsed.fromAmount.split(' ')[1] || 'XRP'}</span></span>
-                      ) : parsed.nftTokenId && parsed.txType !== 'NFTokenCancelOffer' && parsed.type === 'in' ? (
-                        <Link href={`/nft/${parsed.nftTokenId}`} onClick={(e) => e.stopPropagation()} className="text-[9px] font-mono text-red-400 hover:text-red-300">{parsed.nftTokenId.slice(0,8)}...</Link>
-                      ) : parsed.nftTokenId && parsed.txType !== 'NFTokenCancelOffer' && parsed.type === 'out' && parsed.amount ? (
-                        <span className="text-[10px] font-bold tabular-nums text-red-400">{parsed.amount.split(' ')[0]} <span className={cn('text-[8px] font-medium', isDark ? 'text-white/30' : 'text-gray-400')}>XRP</span></span>
-                      ) : parsed.type === 'out' && parsed.amount && !parsed.amount.includes('Limit') && !parsed.amount.includes('offer') ? (
-                        <span className="text-[10px] font-bold tabular-nums text-red-400">{parsed.amount.split(' ')[0]} <span className={cn('text-[8px] font-medium', isDark ? 'text-white/30' : 'text-gray-400')}>{parsed.tokenCurrency ? decodeCurrency(parsed.tokenCurrency) : 'XRP'}</span></span>
-                      ) : <span className={cn('text-[10px]', isDark ? 'text-white/20' : 'text-gray-300')}>{'\u2014'}</span>}
-                    </div>
-                    <div className="text-right">
-                      {parsed.fromAmount && parsed.toAmount ? (
-                        <span className="text-[10px] font-bold tabular-nums text-emerald-500">{parsed.toAmount.split(' ')[0]} <span className={cn('text-[8px] font-medium', isDark ? 'text-white/30' : 'text-gray-400')}>{parsed.toAmount.split(' ')[1] || 'XRP'}</span></span>
-                      ) : parsed.nftTokenId && parsed.txType !== 'NFTokenCancelOffer' && parsed.type === 'out' ? (
-                        <Link href={`/nft/${parsed.nftTokenId}`} onClick={(e) => e.stopPropagation()} className="text-[9px] font-mono text-emerald-500 hover:text-emerald-400">{parsed.nftTokenId.slice(0,8)}...</Link>
-                      ) : parsed.nftTokenId && parsed.txType !== 'NFTokenCancelOffer' && parsed.type === 'in' && parsed.amount ? (
-                        <span className="text-[10px] font-bold tabular-nums text-emerald-500">{parsed.amount.split(' ')[0]} <span className={cn('text-[8px] font-medium', isDark ? 'text-white/30' : 'text-gray-400')}>XRP</span></span>
-                      ) : parsed.type === 'in' && parsed.amount && !parsed.amount.includes('Limit') && !parsed.amount.includes('offer') ? (
-                        <span className="text-[10px] font-bold tabular-nums text-emerald-500">{parsed.amount.split(' ')[0]} <span className={cn('text-[8px] font-medium', isDark ? 'text-white/30' : 'text-gray-400')}>{parsed.tokenCurrency ? decodeCurrency(parsed.tokenCurrency) : 'XRP'}</span></span>
-                      ) : <span className={cn('text-[10px]', isDark ? 'text-white/20' : 'text-gray-300')}>{'\u2014'}</span>}
-                    </div>
-                    <div className={cn('text-right text-[9px] tabular-nums', parseFloat(parsed.fee) > 0.00005 ? 'text-red-400' : isDark ? 'text-white/30' : 'text-gray-400')}>
-                      {parsed.fee || '\u2014'}
-                    </div>
-                    <Link
-                      href={`/tx/${parsed.hash}`}
-                      target="_blank"
-                      onClick={(e) => e.stopPropagation()}
-                      className={cn('text-right text-[9px] font-mono transition-colors', isDark ? 'text-white/25 hover:text-blue-400' : 'text-gray-400 hover:text-blue-500')}
-                    >
-                      {parsed.hash?.slice(0,4)}...{parsed.hash?.slice(-4)}
-                    </Link>
-                    <div className={cn('text-right text-[10px] font-medium tabular-nums', isDark ? 'text-white/40' : 'text-gray-400')}>
-                      {timeAgo(parsed.time)}
+                        ) : mobileValue?.single ? (
+                          <span className={cn('text-[10px] font-bold tabular-nums', mobileValue.type === 'in' ? 'text-emerald-500' : mobileValue.type === 'failed' ? 'text-amber-500' : 'text-red-500')}>
+                            {mobileValue.type !== 'failed' && (mobileValue.type === 'in' ? '+' : '-')}{mobileValue.single.split(' ')[0]}
+                            <span className={cn('text-[9px] ml-0.5', isDark ? 'text-white/30' : 'text-gray-400')}>{parsed.tokenCurrency ? decodeCurrency(parsed.tokenCurrency) : 'XRP'}</span>
+                          </span>
+                        ) : (
+                          <span className={cn('text-[10px]', isDark ? 'text-white/20' : 'text-gray-300')}>{'\u2014'}</span>
+                        )}
+                      </span>
+                      <span className={cn('text-[9px] tabular-nums w-10 text-right', isDark ? 'text-white/30' : 'text-gray-400')}>{timeAgo(parsed.time)}</span>
                     </div>
                   </div>
                 );
@@ -492,7 +557,7 @@ const AccountHistory = ({ account, compact = false }) => {
   return (
     <>
       {/* History View Toggle */}
-      <div className="flex justify-start mb-5">
+      <div className="flex justify-start mb-4 sm:mb-5">
         <div className={cn(
           'flex items-center gap-1 p-1 rounded-xl border',
           isDark ? 'bg-white/[0.03] border-white/10' : 'bg-gray-100/50 border-gray-200'
@@ -505,7 +570,7 @@ const AccountHistory = ({ account, compact = false }) => {
               key={view.id}
               onClick={() => setHistoryView(view.id)}
               className={cn(
-                'flex items-center gap-2 px-4 py-2 rounded-lg text-[11px] font-bold transition-all duration-200',
+                'flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-lg text-xs font-bold transition-all duration-200',
                 historyView === view.id
                   ? cn(isDark ? 'bg-white/10 text-white shadow-[0_0_15px_rgba(255,255,255,0.05)]' : 'bg-white text-gray-900 shadow-sm')
                   : cn(isDark ? 'text-white/40 hover:text-white/70 hover:bg-white/[0.02]' : 'text-gray-500 hover:text-gray-700 hover:bg-white/50')
@@ -535,16 +600,16 @@ const AccountHistory = ({ account, compact = false }) => {
           >
             <div className="flex items-center gap-2">
               <Activity size={14} className={isDark ? 'text-white/50' : 'text-gray-500'} />
-              <p className={cn('text-[11px] font-semibold uppercase tracking-[0.15em]', isDark ? 'text-white/50' : 'text-gray-500')}>Transactions</p>
+              <p className={cn('text-xs font-semibold uppercase tracking-[0.15em]', isDark ? 'text-white/50' : 'text-gray-500')}>Transactions</p>
             </div>
 
-            <div className="flex items-center gap-1.5 flex-wrap">
+            <div className="flex items-center gap-1 sm:gap-1.5 flex-wrap">
               {['all', 'Payment', 'OfferCreate', 'TrustSet'].map(t => (
                 <button
                   key={t}
                   onClick={() => setTxTypeFilter(t)}
                   className={cn(
-                    'px-3.5 py-1.5 rounded-lg text-[10px] font-bold transition-all duration-200',
+                    'px-2.5 sm:px-3.5 py-1.5 rounded-lg text-[10px] sm:text-[11px] font-bold transition-all duration-200',
                     txTypeFilter === t
                       ? (isDark ? 'bg-white/10 text-white shadow-sm' : 'bg-gray-900 text-white shadow-sm')
                       : (isDark ? 'text-white/40 hover:text-white/70 hover:bg-white/5' : 'text-gray-400 hover:text-gray-900 hover:bg-gray-100')
@@ -574,7 +639,7 @@ const AccountHistory = ({ account, compact = false }) => {
           </div>
 
           {txHistory.length === 0 ? (
-            <div className={cn('p-16 text-center', isDark ? 'text-white/20' : 'text-gray-300')}>
+            <div className={cn('p-10 sm:p-16 text-center', isDark ? 'text-white/20' : 'text-gray-300')}>
               <div className="flex flex-col items-center gap-3">
                 <div className="w-12 h-12 rounded-full border-2 border-dashed border-current flex items-center justify-center opacity-40">
                   <Activity size={24} />
@@ -583,161 +648,224 @@ const AccountHistory = ({ account, compact = false }) => {
               </div>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className={cn('text-[10px] font-bold uppercase tracking-widest border-b', isDark ? 'text-white/30 border-white/[0.04]' : 'text-gray-400 border-gray-50')}>
-                    <th className="px-6 py-4 text-left">Asset</th>
-                    <th className="px-4 py-4 text-left">Type</th>
-                    <th className="px-4 py-4 text-left">Info</th>
-                    <th className="px-4 py-4 text-right">Value</th>
-                    <th className="px-4 py-4 text-right">Time</th>
-                    <th className="px-6 py-4 text-right w-[60px]"></th>
-                  </tr>
-                </thead>
-                <tbody className={cn('divide-y', isDark ? 'divide-white/[0.04]' : 'divide-gray-50')}>
-                  {txHistory.filter(tx => txTypeFilter === 'all' || (tx.tx_json || tx.tx || tx).TransactionType === txTypeFilter).map((tx) => {
-                    const parsed = parseTx(tx);
-                    return (
-                      <tr
-                        key={parsed.id}
-                        className={cn('group transition-all duration-200 relative cursor-pointer', isDark ? 'hover:bg-white/[0.05]' : 'hover:bg-gray-50')}
-                        onClick={() => window.open(`/tx/${parsed.hash}`, '_blank')}
-                      >
-                        <td className="px-6 py-3.5">
-                          <div className="flex items-center gap-3">
-                            <span className={cn(
-                              'w-10 text-center flex-shrink-0 py-1 rounded-lg text-[10px] font-bold transition-transform group-hover:scale-105',
-                              parsed.type === 'failed' ? 'bg-amber-500/10 text-amber-500' :
-                                parsed.type === 'in' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'
-                            )}>
-                              {parsed.type === 'failed' ? 'Fail' : parsed.type === 'in' ? 'In' : 'Out'}
-                            </span>
-                            {parsed.nftTokenId ? (
-                              <div className="relative group/nft w-9 h-9 flex-shrink-0">
-                                <NftImage
-                                  nftTokenId={parsed.nftTokenId}
-                                  className="w-9 h-9 rounded-xl object-cover bg-white/5 border border-white/10 shadow-sm"
-                                  fallback={
-                                    <div className={cn('w-9 h-9 rounded-xl flex items-center justify-center', isDark ? 'bg-purple-500/10' : 'bg-purple-50 border border-purple-100')}>
-                                      <Image size={16} className="text-purple-400" />
+            <>
+              {/* Desktop table */}
+              <div className="hidden md:block overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className={cn('text-[11px] font-bold uppercase tracking-widest border-b', isDark ? 'text-white/30 border-white/[0.04]' : 'text-gray-400 border-gray-50')}>
+                      <th className="px-6 py-4 text-left">Asset</th>
+                      <th className="px-4 py-4 text-left">Type</th>
+                      <th className="px-4 py-4 text-left">Info</th>
+                      <th className="px-4 py-4 text-right">Value</th>
+                      <th className="px-4 py-4 text-right">Time</th>
+                      <th className="px-6 py-4 text-right w-[60px]"></th>
+                    </tr>
+                  </thead>
+                  <tbody className={cn('divide-y', isDark ? 'divide-white/[0.04]' : 'divide-gray-50')}>
+                    {txHistory.filter(tx => txTypeFilter === 'all' || (tx.tx_json || tx.tx || tx).TransactionType === txTypeFilter).map((tx) => {
+                      const parsed = parseTx(tx);
+                      return (
+                        <tr
+                          key={parsed.id}
+                          className={cn('group transition-all duration-200 relative cursor-pointer', isDark ? 'hover:bg-white/[0.05]' : 'hover:bg-gray-50')}
+                          onClick={() => window.open(`/tx/${parsed.hash}`, '_blank')}
+                        >
+                          <td className="px-6 py-3.5">
+                            <div className="flex items-center gap-3">
+                              <span className={cn(
+                                'w-10 text-center flex-shrink-0 py-1 rounded-lg text-[10px] font-bold transition-transform group-hover:scale-105',
+                                parsed.type === 'failed' ? 'bg-amber-500/10 text-amber-500' :
+                                  parsed.type === 'in' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'
+                              )}>
+                                {parsed.type === 'failed' ? 'Fail' : parsed.type === 'in' ? 'In' : 'Out'}
+                              </span>
+                              {parsed.nftTokenId ? (
+                                <div className="relative group/nft w-9 h-9 flex-shrink-0">
+                                  <NftImage
+                                    nftTokenId={parsed.nftTokenId}
+                                    className="w-9 h-9 rounded-xl object-cover bg-white/5 border border-white/10 shadow-sm"
+                                    fallback={
+                                      <div className={cn('w-9 h-9 rounded-xl flex items-center justify-center', isDark ? 'bg-purple-500/10' : 'bg-purple-50 border border-purple-100')}>
+                                        <Image size={16} className="text-purple-400" />
+                                      </div>
+                                    }
+                                  />
+                                  {parsed.nftTokenId && (
+                                    <div className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-purple-500 rounded-full border-2 border-black flex items-center justify-center shadow-lg">
+                                      <Images size={8} className="text-white" />
                                     </div>
-                                  }
+                                  )}
+                                </div>
+                              ) : parsed.tokenCurrency ? (
+                                <img
+                                  src={`https://s1.xrpl.to/token/${parsed.tokenCurrency === 'XRP' ? '84e5efeb89c4eae8f68188982dc290d8' : MD5(`${parsed.tokenIssuer}_${parsed.tokenCurrency}`).toString()}`}
+                                  alt=""
+                                  className="w-9 h-9 flex-shrink-0 rounded-full object-cover bg-white/5 border border-white/10 shadow-sm"
+                                  onError={(e) => { e.target.onerror = null; e.target.src = '/static/alt.webp'; }}
                                 />
-                                {parsed.nftTokenId && (
-                                  <div className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-purple-500 rounded-full border-2 border-black flex items-center justify-center shadow-lg">
-                                    <Images size={8} className="text-white" />
-                                  </div>
+                              ) : (
+                                <div className={cn('w-9 h-9 flex-shrink-0 rounded-full border border-white/5', isDark ? 'bg-white/[0.03]' : 'bg-gray-100')} />
+                              )}
+                              <div className="flex flex-col">
+                                <span className={cn('text-[13px] font-bold tracking-tight', isDark ? 'text-white' : 'text-gray-900')}>
+                                  {parsed.tokenCurrency ? decodeCurrency(parsed.tokenCurrency) : (parsed.nftTokenId ? 'NFT' : 'XRP')}
+                                </span>
+                                {parsed.tokenIssuer && (
+                                  <span className={cn('text-[10px] font-medium opacity-40', isDark ? 'text-white' : 'text-gray-500')}>
+                                    {parsed.tokenIssuer.slice(0, 4)}...{parsed.tokenIssuer.slice(-4)}
+                                  </span>
                                 )}
                               </div>
-                            ) : parsed.tokenCurrency ? (
-                              <img
-                                src={`https://s1.xrpl.to/token/${parsed.tokenCurrency === 'XRP' ? '84e5efeb89c4eae8f68188982dc290d8' : MD5(`${parsed.tokenIssuer}_${parsed.tokenCurrency}`).toString()}`}
-                                alt=""
-                                className="w-9 h-9 flex-shrink-0 rounded-full object-cover bg-white/5 border border-white/10 shadow-sm"
-                                onError={(e) => { e.target.onerror = null; e.target.src = '/static/alt.webp'; }}
-                              />
-                            ) : (
-                              <div className={cn('w-9 h-9 flex-shrink-0 rounded-full border border-white/5', isDark ? 'bg-white/[0.03]' : 'bg-gray-100')} />
-                            )}
+                            </div>
+                          </td>
+                          <td className="px-4 py-3.5">
                             <div className="flex flex-col">
-                              <span className={cn('text-[13px] font-bold tracking-tight', isDark ? 'text-white' : 'text-gray-900')}>
+                              <span className={cn('text-[12px] font-bold', isDark ? 'text-white' : 'text-gray-900')}>{parsed.label}</span>
+                              <div className="flex items-center gap-1.5 mt-0.5">
+                                {parsed.type === 'failed' && <span className="text-[9px] font-bold text-amber-500 uppercase tracking-tighter">Failed</span>}
+                                {parsed.isDust && <span className="text-[9px] font-bold text-amber-500 uppercase tracking-tighter">Dust</span>}
+                                {parsed.sourceTag && (
+                                  <span className={cn('text-[9px] px-1.5 py-0.5 rounded-md font-bold', isDark ? 'bg-blue-500/10 text-blue-400' : 'bg-blue-50 text-blue-600')}>
+                                    #{parsed.sourceTag}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-4 py-3.5">
+                            <div className="flex flex-col">
+                              <span className={cn('text-[11px] font-bold opacity-80', isDark ? 'text-white/60' : 'text-gray-700')}>
+                                {parsed.counterparty ? (
+                                  parsed.counterparty.startsWith('r') ? (
+                                    <span className="hover:text-blue-500 transition-colors">
+                                      {parsed.counterparty.slice(0, 6)}...{parsed.counterparty.slice(-4)}
+                                    </span>
+                                  ) : parsed.counterparty
+                                ) : parsed.fromAmount ? 'DEX Swap' : '\u2014'}
+                              </span>
+                              {parsed.sourceTagName && (
+                                <span className="text-[9px] font-medium text-blue-400/80 mt-0.5">{parsed.sourceTagName}</span>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-4 py-3.5 text-right">
+                            <div className="flex flex-col items-end">
+                              {parsed.fromAmount && parsed.toAmount ? (
+                                <div className="flex items-center gap-1.5">
+                                  <span className="text-[12px] font-bold tabular-nums text-red-500">{parsed.fromAmount.split(' ')[0]}</span>
+                                  <span className="text-[10px] text-white/20">to</span>
+                                  <span className="text-[12px] font-bold tabular-nums text-emerald-500">{parsed.toAmount.split(' ')[0]}</span>
+                                </div>
+                              ) : parsed.amount ? (
+                                <span className={cn(
+                                  'text-[13px] font-bold tabular-nums',
+                                  parsed.type === 'failed' ? 'text-amber-500' :
+                                    parsed.type === 'in' ? 'text-emerald-500' : 'text-red-500'
+                                )}>
+                                  {parsed.type !== 'failed' && (parsed.type === 'in' ? '+' : '-')}{parsed.amount.replace(' XRP', '').replace(' NFT', '')}
+                                </span>
+                              ) : (
+                                <span className="opacity-20 text-[13px]">{'\u2014'}</span>
+                              )}
+                              <span className={cn('text-[10px] font-medium opacity-40 uppercase', isDark ? 'text-white' : 'text-gray-500')}>
                                 {parsed.tokenCurrency ? decodeCurrency(parsed.tokenCurrency) : (parsed.nftTokenId ? 'NFT' : 'XRP')}
                               </span>
-                              {parsed.tokenIssuer && (
-                                <span className={cn('text-[10px] font-medium opacity-40', isDark ? 'text-white' : 'text-gray-500')}>
-                                  {parsed.tokenIssuer.slice(0, 4)}...{parsed.tokenIssuer.slice(-4)}
-                                </span>
-                              )}
                             </div>
-                          </div>
-                        </td>
-                        <td className="px-4 py-3.5">
-                          <div className="flex flex-col">
-                            <span className={cn('text-[12px] font-bold', isDark ? 'text-white' : 'text-gray-900')}>{parsed.label}</span>
-                            <div className="flex items-center gap-1.5 mt-0.5">
-                              {parsed.type === 'failed' && <span className="text-[9px] font-bold text-amber-500 uppercase tracking-tighter">Failed</span>}
-                              {parsed.isDust && <span className="text-[9px] font-bold text-amber-500 uppercase tracking-tighter">Dust</span>}
-                              {parsed.sourceTag && (
-                                <span className={cn('text-[9px] px-1.5 py-0.5 rounded-md font-bold', isDark ? 'bg-blue-500/10 text-blue-400' : 'bg-blue-50 text-blue-600')}>
-                                  #{parsed.sourceTag}
-                                </span>
-                              )}
+                          </td>
+                          <td className="px-4 py-3.5 text-right">
+                            <span className={cn('text-[12px] tabular-nums font-bold tracking-tight', isDark ? 'text-white/50' : 'text-gray-500')}>
+                              {parsed.time ? new Date(parsed.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '\u2014'}
+                            </span>
+                            <span className={cn('block text-[9px] font-medium opacity-30 uppercase mt-0.5', isDark ? 'text-white' : 'text-gray-500')}>
+                              {parsed.time ? new Date(parsed.time).toLocaleDateString([], { month: 'short', day: 'numeric' }) : ''}
+                            </span>
+                          </td>
+                          <td className="px-6 py-3.5 text-right">
+                            <div className={cn('p-2 rounded-lg ml-auto w-fit transition-colors group-hover:bg-white/5', isDark ? 'text-white/20 group-hover:text-blue-400' : 'text-gray-300 group-hover:text-blue-500')}>
+                              <ExternalLink size={14} />
                             </div>
-                          </div>
-                        </td>
-                        <td className="px-4 py-3.5">
-                          <div className="flex flex-col">
-                            <span className={cn('text-[11px] font-bold opacity-80', isDark ? 'text-white/60' : 'text-gray-700')}>
-                              {parsed.counterparty ? (
-                                parsed.counterparty.startsWith('r') ? (
-                                  <span className="hover:text-blue-500 transition-colors">
-                                    {parsed.counterparty.slice(0, 6)}...{parsed.counterparty.slice(-4)}
-                                  </span>
-                                ) : parsed.counterparty
-                              ) : parsed.fromAmount ? 'DEX Swap' : '\u2014'}
-                            </span>
-                            {parsed.sourceTagName && (
-                              <span className="text-[9px] font-medium text-blue-400/80 mt-0.5">{parsed.sourceTagName}</span>
-                            )}
-                          </div>
-                        </td>
-                        <td className="px-4 py-3.5 text-right">
-                          <div className="flex flex-col items-end">
-                            {parsed.fromAmount && parsed.toAmount ? (
-                              <div className="flex items-center gap-1.5">
-                                <span className="text-[12px] font-bold tabular-nums text-red-500">{parsed.fromAmount.split(' ')[0]}</span>
-                                <span className="text-[10px] text-white/20">to</span>
-                                <span className="text-[12px] font-bold tabular-nums text-emerald-500">{parsed.toAmount.split(' ')[0]}</span>
-                              </div>
-                            ) : parsed.amount ? (
-                              <span className={cn(
-                                'text-[13px] font-bold tabular-nums',
-                                parsed.type === 'failed' ? 'text-amber-500' :
-                                  parsed.type === 'in' ? 'text-emerald-500' : 'text-red-500'
-                              )}>
-                                {parsed.type !== 'failed' && (parsed.type === 'in' ? '+' : '-')}{parsed.amount.replace(' XRP', '').replace(' NFT', '')}
-                              </span>
-                            ) : (
-                              <span className="opacity-20 text-[13px]">{'\u2014'}</span>
-                            )}
-                            <span className={cn('text-[10px] font-medium opacity-40 uppercase', isDark ? 'text-white' : 'text-gray-500')}>
-                              {parsed.tokenCurrency ? decodeCurrency(parsed.tokenCurrency) : (parsed.nftTokenId ? 'NFT' : 'XRP')}
-                            </span>
-                          </div>
-                        </td>
-                        <td className="px-4 py-3.5 text-right">
-                          <span className={cn('text-[12px] tabular-nums font-bold tracking-tight', isDark ? 'text-white/50' : 'text-gray-500')}>
-                            {parsed.time ? new Date(parsed.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '\u2014'}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Mobile list */}
+              <div className={cn('md:hidden divide-y', isDark ? 'divide-white/[0.04]' : 'divide-gray-50')}>
+                {txHistory.filter(tx => txTypeFilter === 'all' || (tx.tx_json || tx.tx || tx).TransactionType === txTypeFilter).map((tx) => {
+                  const parsed = parseTx(tx);
+                  return (
+                    <div
+                      key={parsed.id}
+                      className={cn('grid grid-cols-[28px_24px_1fr_auto_auto] gap-2 items-center px-3 py-2.5 cursor-pointer transition-colors', isDark ? 'hover:bg-white/[0.04]' : 'hover:bg-gray-50')}
+                      onClick={() => window.open(`/tx/${parsed.hash}`, '_blank')}
+                    >
+                      <span className={cn(
+                        'text-center py-0.5 rounded text-[9px] font-bold',
+                        parsed.type === 'failed' ? 'bg-amber-500/10 text-amber-500' :
+                          parsed.type === 'in' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'
+                      )}>
+                        {parsed.type === 'failed' ? 'Fail' : parsed.type === 'in' ? 'In' : 'Out'}
+                      </span>
+                      {parsed.nftTokenId ? (
+                        <NftImage
+                          nftTokenId={parsed.nftTokenId}
+                          className="w-6 h-6 rounded object-cover bg-white/5"
+                          fallback={<div className={cn('w-6 h-6 rounded flex items-center justify-center', isDark ? 'bg-purple-500/10' : 'bg-purple-50')}><Image size={10} className="text-purple-400" /></div>}
+                        />
+                      ) : parsed.tokenCurrency ? (
+                        <img
+                          src={`https://s1.xrpl.to/token/${parsed.tokenCurrency === 'XRP' ? '84e5efeb89c4eae8f68188982dc290d8' : MD5(`${parsed.tokenIssuer}_${parsed.tokenCurrency}`).toString()}`}
+                          alt=""
+                          className="w-6 h-6 rounded-full object-cover bg-white/5"
+                          onError={(e) => { e.target.onerror = null; e.target.src = '/static/alt.webp'; }}
+                        />
+                      ) : (
+                        <div className={cn('w-6 h-6 rounded-full', isDark ? 'bg-white/5' : 'bg-gray-100')} />
+                      )}
+                      <span className="truncate">
+                        <span className={cn('text-[12px] font-bold', isDark ? 'text-white' : 'text-gray-900')}>{parsed.label}</span>
+                        <span className={cn('text-[9px] ml-1', isDark ? 'text-white/30' : 'text-gray-400')}>{parsed.tokenCurrency ? decodeCurrency(parsed.tokenCurrency) : (parsed.nftTokenId ? 'NFT' : 'XRP')}</span>
+                      </span>
+                      <span className="text-right">
+                        {parsed.fromAmount && parsed.toAmount ? (
+                          <span className="text-[10px] font-bold tabular-nums">
+                            <span className="text-red-500">{parsed.fromAmount.split(' ')[0]}</span>
+                            <ArrowRight size={8} className={cn('inline mx-0.5', isDark ? 'text-white/20' : 'text-gray-300')} />
+                            <span className="text-emerald-500">{parsed.toAmount.split(' ')[0]}</span>
+                            <span className={cn('text-[9px] ml-0.5', isDark ? 'text-white/30' : 'text-gray-400')}>{parsed.toAmount.split(' ')[1] || 'XRP'}</span>
                           </span>
-                          <span className={cn('block text-[9px] font-medium opacity-30 uppercase mt-0.5', isDark ? 'text-white' : 'text-gray-500')}>
-                            {parsed.time ? new Date(parsed.time).toLocaleDateString([], { month: 'short', day: 'numeric' }) : ''}
+                        ) : parsed.amount ? (
+                          <span className={cn('text-[10px] font-bold tabular-nums', parsed.type === 'failed' ? 'text-amber-500' : parsed.type === 'in' ? 'text-emerald-500' : 'text-red-500')}>
+                            {parsed.type !== 'failed' && (parsed.type === 'in' ? '+' : '-')}{parsed.amount.replace(' XRP', '').replace(' NFT', '')}
+                            <span className={cn('text-[9px] ml-0.5', isDark ? 'text-white/30' : 'text-gray-400')}>{parsed.tokenCurrency ? decodeCurrency(parsed.tokenCurrency) : 'XRP'}</span>
                           </span>
-                        </td>
-                        <td className="px-6 py-3.5 text-right">
-                          <div className={cn('p-2 rounded-lg ml-auto w-fit transition-colors group-hover:bg-white/5', isDark ? 'text-white/20 group-hover:text-blue-400' : 'text-gray-300 group-hover:text-blue-500')}>
-                            <ExternalLink size={14} />
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+                        ) : (
+                          <span className={cn('text-[10px]', isDark ? 'text-white/20' : 'text-gray-300')}>{'\u2014'}</span>
+                        )}
+                      </span>
+                      <span className={cn('text-[9px] tabular-nums w-10 text-right', isDark ? 'text-white/30' : 'text-gray-400')}>{timeAgo(parsed.time)}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </>
           )}
           {txHasMore && (
             <button
               onClick={() => fetchTxHistory(txMarker)}
               disabled={txLoading}
               className={cn(
-                'w-full text-center py-4 text-[12px] font-bold uppercase tracking-widest border-t transition-all duration-200',
+                'w-full text-center py-3 sm:py-4 text-[11px] sm:text-[12px] font-bold uppercase tracking-widest border-t transition-all duration-200',
                 isDark
                   ? 'border-white/[0.08] text-white/40 hover:text-white/70 hover:bg-white/[0.02]'
                   : 'border-gray-100 text-gray-400 hover:text-gray-600 hover:bg-gray-50'
               )}
             >
-              {txLoading ? 'Loading...' : 'Load more transactions'}
+              {txLoading ? 'Loading...' : 'Load more'}
             </button>
           )}
         </div>
@@ -768,7 +896,7 @@ const AccountHistory = ({ account, compact = false }) => {
               >
                 <div className="flex items-center gap-2">
                   <Coins size={14} className={isDark ? 'text-white/50' : 'text-gray-500'} />
-                  <p className={cn('text-[11px] font-semibold uppercase tracking-[0.15em]', isDark ? 'text-white/50' : 'text-gray-500')}>Token Trades</p>
+                  <p className={cn('text-xs font-semibold uppercase tracking-[0.15em]', isDark ? 'text-white/50' : 'text-gray-500')}>Token Trades</p>
                 </div>
 
                 <div className="flex items-center gap-2">
@@ -781,7 +909,7 @@ const AccountHistory = ({ account, compact = false }) => {
                           setTokenHistoryPage(0);
                         }}
                         className={cn(
-                          'px-4 py-1.5 text-[10px] font-bold rounded-lg transition-all duration-200 capitalize',
+                          'px-4 py-1.5 text-[11px] font-bold rounded-lg transition-all duration-200 capitalize',
                           tokenHistoryType === t
                             ? (isDark ? 'bg-white/10 text-white shadow-sm' : 'bg-white text-gray-900 shadow-sm')
                             : (isDark ? 'text-white/40 hover:text-white/70' : 'text-gray-500 hover:text-gray-700')
@@ -795,153 +923,143 @@ const AccountHistory = ({ account, compact = false }) => {
               </div>
 
               {/* Table */}
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className={cn('text-[10px] font-bold uppercase tracking-widest border-b', isDark ? 'text-white/30 border-white/[0.04]' : 'text-gray-400 border-gray-50')}>
-                      <th className="px-6 py-4 text-left">Type</th>
-                      <th className="px-4 py-4 text-left">Assets Involved</th>
-                      <th className="px-4 py-4 text-right">Time</th>
-                      <th className="px-6 py-4 text-right w-[140px]">Hash</th>
-                    </tr>
-                  </thead>
-                  <tbody className={cn('divide-y', isDark ? 'divide-white/[0.04]' : 'divide-gray-50')}>
-                    {tokenHistoryLoading && tokenHistory.length === 0 ? (
-                      <tr>
-                        <td
-                          colSpan={4}
-                          className={cn(
-                            'px-4 py-8 text-center text-[13px]',
-                            isDark ? 'text-white/35' : 'text-gray-400'
-                          )}
-                        >
-                          Loading...
-                        </td>
-                      </tr>
-                    ) : paginatedHistory.length === 0 ? (
-                      <tr>
-                        <td
-                          colSpan={4}
-                          className={cn(
-                            'px-4 py-12 text-center text-[13px]',
-                            isDark ? 'text-white/35' : 'text-gray-400'
-                          )}
-                        >
-                          No transactions found
-                        </td>
-                      </tr>
-                    ) : (
-                      paginatedHistory.map((trade) => {
-                        const paidIsXRP = trade.paid?.currency === 'XRP';
-                        const gotIsXRP = trade.got?.currency === 'XRP';
-                        const isTokenToToken = !paidIsXRP && !gotIsXRP;
-                        const isBuy = paidIsXRP;
-                        const paidMd5 = getTokenMd5(trade.paid);
-                        const gotMd5 = getTokenMd5(trade.got);
+              {tokenHistoryLoading && tokenHistory.length === 0 ? (
+                <div className={cn('px-4 py-8 text-center text-[13px]', isDark ? 'text-white/35' : 'text-gray-400')}>Loading...</div>
+              ) : paginatedHistory.length === 0 ? (
+                <div className={cn('px-4 py-12 text-center text-[13px]', isDark ? 'text-white/35' : 'text-gray-400')}>No transactions found</div>
+              ) : (
+                <>
+                  {/* Desktop table */}
+                  <div className="hidden md:block overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className={cn('text-[11px] font-bold uppercase tracking-widest border-b', isDark ? 'text-white/30 border-white/[0.04]' : 'text-gray-400 border-gray-50')}>
+                          <th className="px-6 py-4 text-left">Type</th>
+                          <th className="px-4 py-4 text-left">Assets Involved</th>
+                          <th className="px-4 py-4 text-right">Time</th>
+                          <th className="px-6 py-4 text-right w-[140px]">Hash</th>
+                        </tr>
+                      </thead>
+                      <tbody className={cn('divide-y', isDark ? 'divide-white/[0.04]' : 'divide-gray-50')}>
+                        {paginatedHistory.map((trade) => {
+                          const paidIsXRP = trade.paid?.currency === 'XRP';
+                          const gotIsXRP = trade.got?.currency === 'XRP';
+                          const isTokenToToken = !paidIsXRP && !gotIsXRP;
+                          const isBuy = paidIsXRP;
+                          const paidMd5 = getTokenMd5(trade.paid);
+                          const gotMd5 = getTokenMd5(trade.got);
 
-                        return (
-                          <tr
-                            key={trade._id}
-                            className={cn(
-                              'group transition-all duration-300 relative overflow-hidden',
-                              isDark ? 'hover:bg-white/[0.04]' : 'hover:bg-gray-50'
-                            )}
+                          return (
+                            <tr
+                              key={trade._id}
+                              className={cn('group transition-all duration-300 relative overflow-hidden', isDark ? 'hover:bg-white/[0.04]' : 'hover:bg-gray-50')}
+                            >
+                              <td className="px-5 py-4">
+                                <div className="flex items-center gap-3.5">
+                                  <div className={cn('w-8 h-8 rounded-xl flex items-center justify-center shadow-sm', isTokenToToken ? 'bg-blue-500/10 text-blue-400' : isBuy ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400')}>
+                                    <span className="text-[10px] font-bold">{isTokenToToken ? 'Swap' : isBuy ? 'Buy' : 'Sell'}</span>
+                                  </div>
+                                  <div className="flex flex-col">
+                                    <p className={cn('text-[13px] font-bold tracking-tight', isDark ? 'text-white' : 'text-gray-900')}>
+                                      {isTokenToToken ? 'Token Swap' : isBuy ? 'Buy Order' : 'Sell Order'}
+                                    </p>
+                                    <p className={cn('text-[10px] font-bold uppercase tracking-wider opacity-30', isDark ? 'text-white' : 'text-gray-500')}>
+                                      {isTokenToToken ? 'DEX Swap' : 'AMM Trade'}
+                                    </p>
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="px-5 py-4">
+                                <div className="flex items-center gap-2">
+                                  <div className={cn('flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border', isDark ? 'bg-white/[0.02] border-white/5' : 'bg-gray-50 border-gray-100')}>
+                                    <div className="flex items-center gap-1.5">
+                                      {paidMd5 && <img src={`https://s1.xrpl.to/token/${paidMd5}`} className="w-4 h-4 rounded-full" onError={(e) => { e.target.style.display = 'none'; }} alt="" />}
+                                      <span className={cn('text-[12px] font-bold tabular-nums', isDark ? 'text-white/90' : 'text-gray-900')}>{fmtVal(trade.paid?.value)}</span>
+                                      <span className="text-[10px] font-bold opacity-40">{fmtCurrency(trade.paid?.currency)}</span>
+                                    </div>
+                                    <span className="mx-1 text-[10px] opacity-20">to</span>
+                                    <div className="flex items-center gap-1.5">
+                                      {gotMd5 && <img src={`https://s1.xrpl.to/token/${gotMd5}`} className="w-4 h-4 rounded-full" onError={(e) => { e.target.style.display = 'none'; }} alt="" />}
+                                      <span className={cn('text-[12px] font-bold tabular-nums', isBuy ? 'text-emerald-500' : isDark ? 'text-white/90' : 'text-gray-900')}>{fmtVal(trade.got?.value)}</span>
+                                      <span className="text-[10px] font-bold opacity-40">{fmtCurrency(trade.got?.currency)}</span>
+                                    </div>
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="px-4 py-4 text-right">
+                                <span className={cn('text-[12px] tabular-nums font-bold tracking-tight', isDark ? 'text-white/50' : 'text-gray-500')}>
+                                  {trade.time ? new Date(trade.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '\u2014'}
+                                </span>
+                                <span className={cn('block text-[9px] font-medium opacity-30 uppercase mt-0.5', isDark ? 'text-white' : 'text-gray-500')}>
+                                  {trade.time ? new Date(trade.time).toLocaleDateString([], { month: 'short', day: 'numeric' }) : ''}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4 text-right">
+                                <div className="flex items-center justify-end gap-1.5">
+                                  <Link href={`/tx/${trade.hash}`} target="_blank" className={cn('text-[11px] font-mono font-bold tracking-wider hover:text-blue-400 transition-colors', isDark ? 'text-white/20' : 'text-gray-400')}>
+                                    {trade.hash?.slice(0, 4)}...{trade.hash?.slice(-4)}
+                                  </Link>
+                                  <button onClick={() => navigator.clipboard.writeText(trade.hash)} className={cn('p-1.5 rounded-lg transition-all hover:scale-110', isDark ? 'text-white/20 hover:text-white/50 hover:bg-white/5' : 'text-gray-300 hover:text-gray-600 hover:bg-gray-100')}>
+                                    <Copy size={12} />
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Mobile list */}
+                  <div className={cn('md:hidden divide-y', isDark ? 'divide-white/[0.04]' : 'divide-gray-50')}>
+                    {paginatedHistory.map((trade) => {
+                      const paidIsXRP = trade.paid?.currency === 'XRP';
+                      const gotIsXRP = trade.got?.currency === 'XRP';
+                      const isTokenToToken = !paidIsXRP && !gotIsXRP;
+                      const isBuy = paidIsXRP;
+
+                      return (
+                        <div
+                          key={trade._id}
+                          className={cn('grid grid-cols-[32px_1fr_auto_auto] gap-2 items-center px-3 py-2.5 cursor-pointer transition-colors', isDark ? 'hover:bg-white/[0.04]' : 'hover:bg-gray-50')}
+                          onClick={() => window.open(`/tx/${trade.hash}`, '_blank')}
+                        >
+                          <span className={cn('text-center py-0.5 rounded text-[9px] font-bold', isTokenToToken ? 'bg-blue-500/10 text-blue-400' : isBuy ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400')}>
+                            {isTokenToToken ? 'Swap' : isBuy ? 'Buy' : 'Sell'}
+                          </span>
+                          <span className="text-[10px] font-bold tabular-nums truncate">
+                            <span className={cn(isDark ? 'text-white/80' : 'text-gray-900')}>{fmtVal(trade.paid?.value)}</span>
+                            <span className="opacity-40 mx-0.5">{fmtCurrency(trade.paid?.currency)}</span>
+                            <ArrowRight size={8} className={cn('inline mx-0.5', isDark ? 'text-white/20' : 'text-gray-300')} />
+                            <span className={cn(isBuy ? 'text-emerald-500' : isDark ? 'text-white/80' : 'text-gray-900')}>{fmtVal(trade.got?.value)}</span>
+                            <span className="opacity-40 ml-0.5">{fmtCurrency(trade.got?.currency)}</span>
+                          </span>
+                          <span className={cn('text-[9px] tabular-nums w-10 text-right', isDark ? 'text-white/30' : 'text-gray-400')}>{timeAgo(trade.time)}</span>
+                          <Link
+                            href={`/tx/${trade.hash}`}
+                            target="_blank"
+                            onClick={(e) => e.stopPropagation()}
+                            className={cn('text-[9px] font-mono w-12 text-right', isDark ? 'text-white/20 hover:text-blue-400' : 'text-gray-400 hover:text-blue-500')}
                           >
-                            <td className="px-5 py-4">
-                              <div className="flex items-center gap-3.5">
-                                <div
-                                  className={cn(
-                                    'w-8 h-8 rounded-xl flex items-center justify-center shadow-sm',
-                                    isTokenToToken
-                                      ? 'bg-blue-500/10 text-blue-400'
-                                      : isBuy
-                                        ? 'bg-emerald-500/10 text-emerald-400'
-                                        : 'bg-red-500/10 text-red-400'
-                                  )}
-                                >
-                                  <span className="text-[10px] font-bold">
-                                    {isTokenToToken ? 'Swap' : isBuy ? 'Buy' : 'Sell'}
-                                  </span>
-                                </div>
-                                <div className="flex flex-col">
-                                  <p className={cn('text-[13px] font-bold tracking-tight', isDark ? 'text-white' : 'text-gray-900')}>
-                                    {isTokenToToken ? 'Token Swap' : isBuy ? 'Buy Order' : 'Sell Order'}
-                                  </p>
-                                  <p className={cn('text-[10px] font-bold uppercase tracking-wider opacity-30', isDark ? 'text-white' : 'text-gray-500')}>
-                                    {isTokenToToken ? 'DEX Swap' : 'AMM Trade'}
-                                  </p>
-                                </div>
-                              </div>
-                            </td>
-                            <td className="px-5 py-4">
-                              <div className="flex items-center gap-2">
-                                <div className={cn('flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border', isDark ? 'bg-white/[0.02] border-white/5' : 'bg-gray-50 border-gray-100')}>
-                                  <div className="flex items-center gap-1.5">
-                                    {paidMd5 && (
-                                      <img src={`https://s1.xrpl.to/token/${paidMd5}`} className="w-4 h-4 rounded-full" onError={(e) => { e.target.style.display = 'none'; }} alt="" />
-                                    )}
-                                    <span className={cn('text-[12px] font-bold tabular-nums', isDark ? 'text-white/90' : 'text-gray-900')}>{fmtVal(trade.paid?.value)}</span>
-                                    <span className="text-[10px] font-bold opacity-40">{fmtCurrency(trade.paid?.currency)}</span>
-                                  </div>
-                                  <span className="mx-1 text-[10px] opacity-20">to</span>
-                                  <div className="flex items-center gap-1.5">
-                                    {gotMd5 && (
-                                      <img src={`https://s1.xrpl.to/token/${gotMd5}`} className="w-4 h-4 rounded-full" onError={(e) => { e.target.style.display = 'none'; }} alt="" />
-                                    )}
-                                    <span className={cn('text-[12px] font-bold tabular-nums', isBuy ? 'text-emerald-500' : isDark ? 'text-white/90' : 'text-gray-900')}>{fmtVal(trade.got?.value)}</span>
-                                    <span className="text-[10px] font-bold opacity-40">{fmtCurrency(trade.got?.currency)}</span>
-                                  </div>
-                                </div>
-                              </div>
-                            </td>
-                            <td className="px-4 py-4 text-right">
-                              <span className={cn('text-[12px] tabular-nums font-bold tracking-tight', isDark ? 'text-white/50' : 'text-gray-500')}>
-                                {trade.time ? new Date(trade.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '\u2014'}
-                              </span>
-                              <span className={cn('block text-[9px] font-medium opacity-30 uppercase mt-0.5', isDark ? 'text-white' : 'text-gray-500')}>
-                                {trade.time ? new Date(trade.time).toLocaleDateString([], { month: 'short', day: 'numeric' }) : ''}
-                              </span>
-                            </td>
-                            <td className="px-6 py-4 text-right">
-                              <div className="flex items-center justify-end gap-1.5">
-                                <Link
-                                  href={`/tx/${trade.hash}`}
-                                  target="_blank"
-                                  className={cn(
-                                    'text-[11px] font-mono font-bold tracking-wider hover:text-blue-400 transition-colors',
-                                    isDark ? 'text-white/20' : 'text-gray-400'
-                                  )}
-                                >
-                                  {trade.hash?.slice(0, 4)}...{trade.hash?.slice(-4)}
-                                </Link>
-                                <button
-                                  onClick={() => navigator.clipboard.writeText(trade.hash)}
-                                  className={cn(
-                                    'p-1.5 rounded-lg transition-all hover:scale-110',
-                                    isDark ? 'text-white/20 hover:text-white/50 hover:bg-white/5' : 'text-gray-300 hover:text-gray-600 hover:bg-gray-100'
-                                  )}
-                                >
-                                  <Copy size={12} />
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                        );
-                      })
-                    )}
-                  </tbody>
-                </table>
-              </div>
+                            {trade.hash?.slice(0, 3)}..{trade.hash?.slice(-3)}
+                          </Link>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
 
               {/* Pagination */}
               <div
                 className={cn(
-                  'px-6 py-4 flex flex-wrap items-center justify-between gap-4 border-t',
+                  'px-4 sm:px-6 py-3 sm:py-4 flex flex-wrap items-center justify-between gap-3 border-t',
                   isDark ? 'border-white/[0.06]' : 'border-gray-100'
                 )}
               >
-                <div className="flex items-center gap-3 opacity-40">
-                  <span className={cn('text-[11px] font-bold uppercase tracking-wider', isDark ? 'text-white' : 'text-gray-500')}>Items per page</span>
+                <div className="hidden sm:flex items-center gap-3 opacity-40">
+                  <span className={cn('text-xs font-bold uppercase tracking-wider', isDark ? 'text-white' : 'text-gray-500')}>Items per page</span>
                   <span className={cn('text-[12px] font-bold tabular-nums', isDark ? 'text-white' : 'text-gray-900')}>{ITEMS_PER_PAGE}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
@@ -1022,14 +1140,15 @@ const AccountHistory = ({ account, compact = false }) => {
               >
                 <div className="flex items-center gap-2">
                   <Images size={14} className={isDark ? 'text-white/50' : 'text-gray-500'} />
-                  <p className={cn('text-[11px] font-semibold uppercase tracking-[0.15em]', isDark ? 'text-white/50' : 'text-gray-500')}>NFT Trades</p>
-                  <span className={cn('text-[9px] px-2 py-0.5 rounded font-semibold uppercase tracking-wide', isDark ? 'bg-white/5 text-white/50 border border-white/[0.15]' : 'bg-gray-100 text-gray-500')}>{nftTrades.length}</span>
+                  <p className={cn('text-xs font-semibold uppercase tracking-[0.15em]', isDark ? 'text-white/50' : 'text-gray-500')}>NFT Trades</p>
+                  <span className={cn('text-[10px] px-2 py-0.5 rounded font-semibold uppercase tracking-wide', isDark ? 'bg-white/5 text-white/50 border border-white/[0.15]' : 'bg-gray-100 text-gray-500')}>{nftTrades.length}</span>
                 </div>
               </div>
-              <div className="overflow-x-auto">
+              {/* Desktop table */}
+              <div className="hidden md:block overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className={cn('text-[10px] font-bold uppercase tracking-widest border-b', isDark ? 'text-white/30 border-white/[0.04]' : 'text-gray-400 border-gray-50')}>
+                    <tr className={cn('text-[11px] font-bold uppercase tracking-widest border-b', isDark ? 'text-white/30 border-white/[0.04]' : 'text-gray-400 border-gray-50')}>
                       <th className="px-6 py-4 text-left">Type</th>
                       <th className="px-4 py-4 text-left">Price</th>
                       <th className="px-4 py-4 text-right">Time</th>
@@ -1047,10 +1166,7 @@ const AccountHistory = ({ account, compact = false }) => {
                         <tr key={trade._id} className={cn('group transition-all duration-200 hover:bg-white/[0.05]')}>
                           <td className="px-6 py-4">
                             <div className="flex items-center gap-3.5">
-                              <span className={cn(
-                                'px-2 py-1 rounded-lg text-[10px] font-bold',
-                                isSeller ? 'bg-emerald-500/10 text-emerald-400' : 'bg-blue-500/10 text-blue-400'
-                              )}>
+                              <span className={cn('px-2 py-1 rounded-lg text-[10px] font-bold', isSeller ? 'bg-emerald-500/10 text-emerald-400' : 'bg-blue-500/10 text-blue-400')}>
                                 {isSeller ? 'Sold' : 'Bought'}
                               </span>
                               <div className="flex flex-col">
@@ -1061,10 +1177,7 @@ const AccountHistory = ({ account, compact = false }) => {
                           </td>
                           <td className="px-4 py-4">
                             <div className="flex items-center gap-2">
-                              <span className={cn(
-                                'px-1.5 py-0.5 rounded-md text-[10px] font-bold',
-                                isSeller ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-500'
-                              )}>
+                              <span className={cn('px-1.5 py-0.5 rounded-md text-[10px] font-bold', isSeller ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-500')}>
                                 {isSeller ? '+' : '-'}
                               </span>
                               <span className={cn('text-[13px] font-bold tabular-nums', isDark ? 'text-white' : 'text-gray-900')}>{amtStr}</span>
@@ -1095,9 +1208,40 @@ const AccountHistory = ({ account, compact = false }) => {
                   </tbody>
                 </table>
               </div>
-              <div className={cn('px-6 py-4 flex items-center justify-between border-t', isDark ? 'border-white/[0.06]' : 'border-gray-100')}>
-                <div className="flex items-center gap-3 opacity-40">
-                  <span className={cn('text-[11px] font-bold uppercase tracking-wider', isDark ? 'text-white' : 'text-gray-500')}>Items per page</span>
+
+              {/* Mobile list */}
+              <div className={cn('md:hidden divide-y', isDark ? 'divide-white/[0.04]' : 'divide-gray-50')}>
+                {paginatedNftTrades.map((trade) => {
+                  const isSeller = trade.seller === account;
+                  const amt = trade.costXRP ?? trade.cost ?? 0;
+                  const currency = trade.currency || 'XRP';
+                  const amtStr = amt >= 1 ? amt.toFixed(2) : amt >= 0.01 ? amt.toFixed(4) : String(amt);
+                  return (
+                    <div
+                      key={trade._id}
+                      className={cn('grid grid-cols-[40px_1fr_auto_auto] gap-2 items-center px-3 py-2.5 cursor-pointer transition-colors', isDark ? 'hover:bg-white/[0.04]' : 'hover:bg-gray-50')}
+                      onClick={() => window.open(`/tx/${trade.hash}`, '_blank')}
+                    >
+                      <span className={cn('text-center py-0.5 rounded text-[9px] font-bold', isSeller ? 'bg-emerald-500/10 text-emerald-400' : 'bg-blue-500/10 text-blue-400')}>
+                        {isSeller ? 'Sold' : 'Buy'}
+                      </span>
+                      <span className={cn('text-[11px] font-bold truncate', isDark ? 'text-white' : 'text-gray-900')}>
+                        NFT
+                      </span>
+                      <span className="text-right">
+                        <span className={cn('text-[10px] font-bold tabular-nums', isSeller ? 'text-emerald-500' : 'text-red-500')}>
+                          {isSeller ? '+' : '-'}{amtStr}
+                        </span>
+                        <span className={cn('text-[9px] ml-0.5 opacity-40 uppercase')}>{currency}</span>
+                      </span>
+                      <span className={cn('text-[9px] tabular-nums w-10 text-right', isDark ? 'text-white/30' : 'text-gray-400')}>{timeAgo(trade.time)}</span>
+                    </div>
+                  );
+                })}
+              </div>
+              <div className={cn('px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between border-t', isDark ? 'border-white/[0.06]' : 'border-gray-100')}>
+                <div className="hidden sm:flex items-center gap-3 opacity-40">
+                  <span className={cn('text-xs font-bold uppercase tracking-wider', isDark ? 'text-white' : 'text-gray-500')}>Items per page</span>
                   <span className={cn('text-[12px] font-bold tabular-nums', isDark ? 'text-white' : 'text-gray-900')}>{ITEMS_PER_PAGE}</span>
                 </div>
                 <div className="flex items-center gap-1.5">

@@ -1,4 +1,4 @@
-import { useContext, useState, useEffect, useCallback, memo } from 'react';
+import { useContext, useState, useEffect, useLayoutEffect, useCallback, memo } from 'react';
 
 // Components
 import { ThemeContext } from 'src/context/AppContext';
@@ -10,7 +10,12 @@ const TokenDetail = memo(
   ({ token, onTransactionPanelToggle, transactionPanelOpen }) => {
     const { themeName } = useContext(ThemeContext);
     const isDark = themeName === 'XrplToDarkTheme';
-    const isMobile = typeof window !== 'undefined' && window.innerWidth < 960;
+    const [isMobile, setIsMobile] = useState(false);
+    // useLayoutEffect prevents CLS from layout flip before paint
+    const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
+    useIsomorphicLayoutEffect(() => {
+      setIsMobile(window.innerWidth < 960);
+    }, []);
 
     // Add current token to tabs on mount
     useEffect(() => {

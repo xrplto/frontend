@@ -170,7 +170,7 @@ export default function NFTActions({ nft }) {
       : rawNftName?.name || rawNftName?.family || '[No Name]';
   const floorPrice = cfloor?.amount || 0;
   const accountLogo = getHashIcon(account);
-  const shareUrl = `https://xrpnft.com/nft/${NFTokenID}`;
+  const shareUrl = `https://xrpl.to/nft/${NFTokenID}`;
   const shareTitle = nftName;
   const shareDesc = typeof meta?.description === 'string' ? meta.description : '';
   const isOwner = accountLogin === account;
@@ -940,8 +940,8 @@ export default function NFTActions({ nft }) {
       {/* Main Glass Panel */}
       <div
         className={cn(
-          'rounded-2xl p-5 border backdrop-blur-xl',
-          isDark ? 'border-gray-700/50 bg-black/60' : 'border-gray-200 bg-white/90'
+          'rounded-2xl p-5 border',
+          isDark ? 'border-gray-700/50 bg-black' : 'border-gray-200 bg-white backdrop-blur-xl'
         )}
       >
         <div className="space-y-5">
@@ -1607,20 +1607,20 @@ export default function NFTActions({ nft }) {
             {isOwner && (
               <div>
                 <div className="flex items-center gap-2 mb-3 px-1">
-                  <h3
+                  <p
                     className={cn(
                       'text-sm font-normal',
                       isDark ? 'text-gray-300' : 'text-gray-700'
                     )}
                   >
                     Sell Offers
-                  </h3>
+                  </p>
                   {sellOffers.length > 0 && (
                     <span
                       className={cn(
                         'min-w-[24px] h-6 flex items-center justify-center rounded text-[11px] font-normal border',
                         isDark
-                          ? 'border-gray-700/50 text-gray-500'
+                          ? 'border-gray-700/50 text-white/60'
                           : 'border-gray-300 text-gray-500'
                       )}
                     >
@@ -1692,7 +1692,7 @@ export default function NFTActions({ nft }) {
                                 {formatXRPAmount(amount.amount, false)} XRP
                               </span>
                               {offer.destination && (
-                                <span className="block text-[11px] text-gray-500 mt-0.5">
+                                <span className={cn('block text-[11px] mt-0.5', isDark ? 'text-white/60' : 'text-gray-500')}>
                                   {BROKER_ADDRESSES[offer.destination]?.name ||
                                     truncate(offer.destination, 10)}
                                 </span>
@@ -1725,7 +1725,7 @@ export default function NFTActions({ nft }) {
                       isDark ? 'border-gray-700/50 bg-white/[0.02]' : 'border-gray-300 bg-gray-50'
                     )}
                   >
-                    <p className="text-sm text-gray-500">
+                    <p className={cn('text-sm', isDark ? 'text-white/60' : 'text-gray-500')}>
                       {burnt ? 'NFT has been burned' : 'No active listings'}
                     </p>
                   </div>
@@ -1737,20 +1737,20 @@ export default function NFTActions({ nft }) {
             <div>
               <div className="flex items-center justify-between mb-3 px-1">
                 <div className="flex items-center gap-2">
-                  <h3
+                  <p
                     className={cn(
                       'text-sm font-normal',
                       isDark ? 'text-gray-300' : 'text-gray-700'
                     )}
                   >
                     Buy Offers
-                  </h3>
+                  </p>
                   {buyOffers.length > 0 && (
                     <span
                       className={cn(
                         'min-w-[24px] h-6 flex items-center justify-center rounded text-[11px] font-normal border',
                         isDark
-                          ? 'border-gray-700/50 text-gray-500'
+                          ? 'border-gray-700/50 text-white/60'
                           : 'border-gray-300 text-gray-500'
                       )}
                     >
@@ -1759,7 +1759,7 @@ export default function NFTActions({ nft }) {
                   )}
                 </div>
                 {lowestSellOffer && (
-                  <span className="text-[11px] text-gray-500">
+                  <span className={cn('text-[11px]', isDark ? 'text-white/60' : 'text-gray-500')}>
                     Ask: {fNumber(lowestSellOffer.baseAmount)} XRP
                   </span>
                 )}
@@ -1831,8 +1831,7 @@ export default function NFTActions({ nft }) {
                         className={cn(
                           'px-4 py-2.5',
                           !isLast &&
-                            (isDark ? 'border-b border-gray-700/30' : 'border-b border-gray-200'),
-                          !isFunded && 'opacity-60'
+                            (isDark ? 'border-b border-gray-700/30' : 'border-b border-gray-200')
                         )}
                       >
                         <div className="flex items-center justify-between gap-3">
@@ -1840,13 +1839,13 @@ export default function NFTActions({ nft }) {
                           <div className="flex items-center gap-2 min-w-0">
                             <Link
                               href={`/address/${offer.owner}`}
-                              className="text-[12px] font-mono text-gray-400 hover:text-gray-300 transition-colors"
+                              className={cn('text-[12px] font-mono transition-[background-color]', isDark ? 'text-white/60 hover:text-white' : 'text-gray-400 hover:text-gray-300')}
                             >
                               {truncate(offer.owner, 12)}
                             </Link>
                             <button
                               onClick={() => window.dispatchEvent(new CustomEvent('openDm', { detail: { user: offer.owner } }))}
-                              className="p-1 rounded hover:bg-white/10 text-gray-500 hover:text-[#650CD4] transition-colors"
+                              className={cn('p-1 rounded hover:bg-white/10 transition-[background-color]', isDark ? 'text-white/60 hover:text-[#650CD4]' : 'text-gray-500 hover:text-[#650CD4]')}
                               title="Message buyer"
                             >
                               <MessageCircle size={12} />
@@ -1854,13 +1853,13 @@ export default function NFTActions({ nft }) {
                             {offer.destination && (
                               <>
                                 <span className="text-gray-700">·</span>
-                                <span className="text-[11px] text-gray-500">
+                                <span className={cn('text-[11px]', isDark ? 'text-white/60' : 'text-gray-500')}>
                                   {BROKER_ADDRESSES[offer.destination]?.name || 'Broker'}
                                 </span>
                               </>
                             )}
                             {!isFunded && (
-                              <span className="px-1.5 py-0.5 rounded text-[9px] uppercase tracking-wide bg-red-500/20 text-red-400">
+                              <span className="px-1.5 py-0.5 rounded text-[9px] uppercase tracking-wide bg-red-500/20 text-red-300">
                                 Unfunded
                               </span>
                             )}
@@ -1879,7 +1878,7 @@ export default function NFTActions({ nft }) {
                               {askingPrice > 0 && (
                                 <div className="flex items-center gap-1.5">
                                   {isScamLevel && (
-                                    <span className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] bg-red-500/30 text-red-400 border border-red-500/40">
+                                    <span className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] bg-red-500/30 text-red-300 border border-red-500/40">
                                       <AlertTriangle size={10} />
                                       Suspicious
                                     </span>
@@ -1890,10 +1889,10 @@ export default function NFTActions({ nft }) {
                                       isScamLevel
                                         ? 'bg-red-500/30 text-red-300 border border-red-500/40'
                                         : isLowBall
-                                          ? 'bg-red-500/20 text-red-400'
+                                          ? 'bg-red-500/20 text-red-300'
                                           : isReasonable
-                                            ? 'bg-green-500/20 text-green-400'
-                                            : 'bg-white/10 text-gray-400'
+                                            ? 'bg-green-500/20 text-green-300'
+                                            : 'bg-white/10 text-white/60'
                                     )}
                                   >
                                     {displayPercent}%
@@ -1914,7 +1913,7 @@ export default function NFTActions({ nft }) {
                                     <div className="flex gap-1.5">
                                       <button
                                         onClick={() => setAcceptOffer(null)}
-                                        className="px-2 py-1 rounded text-[11px] border border-gray-700/50 text-gray-400"
+                                        className="px-2 py-1 rounded text-[11px] border border-gray-700/50 text-white/60"
                                       >
                                         No
                                       </button>
@@ -1975,21 +1974,21 @@ export default function NFTActions({ nft }) {
                     isDark ? 'border-gray-700/50' : 'border-gray-300 bg-gray-50'
                   )}
                 >
-                  <p className="text-sm text-gray-500">No buy offers yet</p>
+                  <p className={cn('text-sm', isDark ? 'text-white/60' : 'text-gray-500')}>No buy offers yet</p>
                 </div>
               )}
             </div>
 
             {/* History */}
             <div>
-              <h3
+              <p
                 className={cn(
                   'text-sm font-normal mb-3 px-1',
                   isDark ? 'text-gray-300' : 'text-gray-700'
                 )}
               >
                 History
-              </h3>
+              </p>
               <HistoryList nft={nft} />
             </div>
 

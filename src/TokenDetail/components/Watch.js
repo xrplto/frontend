@@ -58,7 +58,7 @@ export default function Watch({ token, className }) {
     <button
       onClick={onChangeWatchList}
       className={cn(
-        'flex items-center justify-center gap-1.5 rounded-lg border text-[11px] font-bold uppercase tracking-wider transition-all duration-200',
+        'flex items-center justify-center gap-1.5 rounded-lg border text-[11px] font-bold uppercase tracking-wider transition-[opacity,transform,background-color,border-color] duration-200',
         isActive
           ? 'border-amber-500/30 bg-amber-500/10 text-amber-500 hover:bg-amber-500/20'
           : isDark

@@ -1238,7 +1238,7 @@ function CreatePage() {
                       isDark ? 'bg-white/10' : 'bg-gray-100'
                     )}
                   >
-                    5 min window
+                    2 min window
                   </span>
                 </div>
                 <div
@@ -2431,16 +2431,6 @@ function CreatePage() {
                   </div>
                 )}
 
-                {launchStep === 'funding' && sessionData?.faucetUrl && (
-                  <a
-                    href={sessionData.faucetUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-center gap-2 text-[12px] text-[#3b82f6] hover:underline"
-                  >
-                    Get testnet XRP from faucet <ExternalLink size={12} />
-                  </a>
-                )}
 
               </div>
             )}
@@ -2489,7 +2479,7 @@ function CreatePage() {
                   <div className="flex justify-between">
                     <span className="opacity-60">Issuer</span>
                     <span className="font-mono text-[11px]">
-                      {sessionData.issuer?.slice(0, 8)}...{sessionData.issuer?.slice(-4)}
+                      {(sessionData.issuer || sessionData.issuerAddress)?.slice(0, 8)}...{(sessionData.issuer || sessionData.issuerAddress)?.slice(-4)}
                     </span>
                   </div>
                 </div>
@@ -3010,7 +3000,8 @@ export async function getStaticProps() {
         canonical: 'https://xrpl.to/launch',
         title: 'Token Launch | Launch Your Token on XRPL',
         url: 'https://xrpl.to/launch',
-        imgUrl: 'https://xrpl.to/og/launch.webp',
+        imgUrl: 'https://xrpl.to/api/og/launch',
+        imgType: 'image/png',
         desc: 'Launch your token on the XRP Ledger with automated trustline setup, AMM pool creation, and listing.'
       }
     }

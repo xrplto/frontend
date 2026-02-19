@@ -34,7 +34,7 @@ const XrpValue = ({ value, format = fVolume, size = 'normal', showSymbol = true,
       {showSymbol && (
         <span
           className={cn(
-            'font-medium opacity-60 tracking-[0.02em]',
+            'font-medium opacity-75 tracking-[0.02em]',
             size === 'small' ? 'text-[9px]' : size === 'large' ? 'text-[12px]' : 'text-[10px]'
           )}
         >
@@ -47,43 +47,43 @@ const XrpValue = ({ value, format = fVolume, size = 'normal', showSymbol = true,
 
 const BASE_URL = 'https://api.xrpl.to/v1';
 
-const Container = ({ className, children, ...p }) => <div className={cn('max-w-[1920px] mx-auto px-4 py-6', className)} {...p}>{children}</div>;
-const Title = ({ darkMode, className, children, ...p }) => <h1 className={cn('text-[22px] font-normal mb-1', darkMode ? 'text-white' : 'text-[#212B36]', className)} {...p}>{children}</h1>;
-const Subtitle = ({ darkMode, className, children, ...p }) => <p className={cn('text-[13px] mb-6', darkMode ? 'text-white/50' : 'text-[#637381]', className)} {...p}>{children}</p>;
-const Grid = ({ className, children, ...p }) => <div className={cn('grid grid-cols-2 gap-[10px] mb-5 sm:grid-cols-3 lg:grid-cols-6', className)} {...p}>{children}</div>;
-const StatCard = ({ darkMode, className, children, ...p }) => <div className={cn('p-4 rounded-xl border', darkMode ? 'border-white/[0.08] bg-white/[0.02]' : 'border-black/[0.06] bg-white', className)} {...p}>{children}</div>;
-const StatLabel = ({ darkMode, className, children, ...p }) => <p className={cn('text-[10px] uppercase tracking-[0.04em] mb-[6px] flex items-center gap-[6px]', darkMode ? 'text-white/40' : 'text-black/[0.45]', className)} {...p}>{children}</p>;
-const StatValue = ({ darkMode, className, children, ...p }) => <p className={cn('text-lg font-semibold mb-1', darkMode ? 'text-white' : 'text-[#212B36]', className)} {...p}>{children}</p>;
-const StatChange = ({ positive, className, children, ...p }) => <span className={cn('text-[11px] flex items-center gap-[2px]', positive ? 'text-[#10b981]' : 'text-[#ef4444]', className)} {...p}>{children}</span>;
+const Container = ({ className, children, ...p }) => <div className={cn('max-w-[1920px] mx-auto px-3 py-4 sm:px-4 sm:py-6', className)} {...p}>{children}</div>;
+const Title = ({ darkMode, className, children, ...p }) => <h1 className={cn('text-[22px] font-semibold tracking-[-0.02em] mb-1', darkMode ? 'text-white/95' : 'text-[#1a1a2e]', className)} {...p}>{children}</h1>;
+const Subtitle = ({ darkMode, className, children, ...p }) => <p className={cn('text-[13px] tracking-[0.01em] mb-6', darkMode ? 'text-white/60' : 'text-[#637381]', className)} {...p}>{children}</p>;
+const Grid = ({ className, children, ...p }) => <div className={cn('grid grid-cols-2 gap-2 mb-5 sm:grid-cols-3 sm:gap-[10px] lg:grid-cols-6', className)} {...p}>{children}</div>;
+const StatCard = ({ darkMode, className, children, ...p }) => <div className={cn('p-3 sm:p-4 rounded-xl border', darkMode ? 'border-white/[0.08] bg-white/[0.02]' : 'border-black/[0.06] bg-white', className)} {...p}>{children}</div>;
+const StatLabel = ({ darkMode, className, children, ...p }) => <p className={cn('text-[10px] uppercase tracking-[0.06em] font-semibold mb-[6px] flex items-center gap-[6px]', darkMode ? 'text-white/50' : 'text-[#919EAB]', className)} {...p}>{children}</p>;
+const StatValue = ({ darkMode, className, children, ...p }) => <p className={cn('text-lg font-bold tracking-[-0.01em] mb-1', darkMode ? 'text-white/95' : 'text-[#1a1a2e]', className)} {...p}>{children}</p>;
+const StatChange = ({ positive, className, children, ...p }) => <span className={cn('text-[11px] font-medium flex items-center gap-[2px]', positive ? 'text-[#10b981]' : 'text-[#ef4444]', className)} {...p}>{children}</span>;
 const Section = ({ className, children, ...p }) => <div className={cn('mb-6', className)} {...p}>{children}</div>;
 const ChartCard = ({ darkMode, className, children, ...p }) => <div className={cn('rounded-xl border', darkMode ? 'border-white/[0.08] bg-white/[0.02]' : 'border-black/[0.06] bg-white', className)} {...p}>{children}</div>;
 const ChartHeader = ({ darkMode, className, children, ...p }) => <div className={cn('relative p-4 flex flex-wrap items-center justify-between gap-3 border-b z-10', darkMode ? 'border-white/[0.06]' : 'border-black/[0.06]', className)} {...p}>{children}</div>;
-const ChartTitle = ({ darkMode, className, children, ...p }) => <h3 className={cn('text-sm font-medium', darkMode ? 'text-white' : 'text-[#212B36]', className)} {...p}>{children}</h3>;
+const ChartTitle = ({ darkMode, className, children, ...p }) => <h3 className={cn('text-sm font-semibold tracking-[-0.01em]', darkMode ? 'text-white/90' : 'text-[#1a1a2e]', className)} {...p}>{children}</h3>;
 const ButtonGroup = ({ className, children, ...p }) => <div className={cn('flex gap-1', className)} {...p}>{children}</div>;
 const ToggleBtn = ({ active, darkMode, className, children, ...p }) => (
-  <button className={cn('py-[6px] px-3 text-[11px] font-medium rounded-md border-none cursor-pointer transition-all duration-150', active ? 'bg-[#3b82f6] text-white hover:bg-[#2563eb]' : darkMode ? 'bg-white/[0.05] text-white/60 hover:bg-[rgba(59,130,246,0.1)]' : 'bg-black/[0.05] text-black/60 hover:bg-[rgba(59,130,246,0.1)]', className)} {...p}>{children}</button>
+  <button className={cn('py-[6px] px-3 text-[11px] font-medium rounded-md border-none cursor-pointer transition-[background-color] duration-150', active ? 'bg-[#3b82f6] text-white hover:bg-[#2563eb]' : darkMode ? 'bg-[#1a1a1a] text-[#e5e5e5] hover:bg-[rgba(59,130,246,0.1)]' : 'bg-black/[0.05] text-black/60 hover:bg-[rgba(59,130,246,0.1)]', className)} {...p}>{children}</button>
 );
 const MetricSelect = ({ className, children, ...p }) => <div className={cn('relative inline-block', className)} {...p}>{children}</div>;
 const MetricButton = ({ darkMode, className, children, ...p }) => (
-  <button className={cn('flex items-center gap-[6px] py-2 px-[14px] text-[13px] font-medium rounded-lg border cursor-pointer transition-all duration-150 hover:border-[#3b82f6]', darkMode ? 'border-white/10 bg-white/[0.03] text-white' : 'border-black/10 bg-white text-[#212B36]', className)} {...p}>{children}</button>
+  <button className={cn('flex items-center gap-[6px] py-2 px-[14px] text-[13px] font-medium rounded-lg border cursor-pointer transition-[background-color,border-color] duration-150 hover:border-[#3b82f6]', darkMode ? 'border-white/10 bg-white/[0.03] text-white' : 'border-black/10 bg-white text-[#212B36]', className)} {...p}>{children}</button>
 );
 const MetricDropdown = ({ darkMode, className, children, ...p }) => (
   <div className={cn('absolute top-[calc(100%+4px)] left-0 min-w-[200px] p-[6px] rounded-[10px] border shadow-[0_8px_24px_rgba(0,0,0,0.15)] z-50', darkMode ? 'border-white/10 bg-[#1a1a1a]' : 'border-black/10 bg-white', className)} {...p}>{children}</div>
 );
 const MetricGroup = ({ darkMode, className, children, ...p }) => <div className={cn('[&:not(:last-child)]:border-b [&:not(:last-child)]:pb-[6px] [&:not(:last-child)]:mb-[6px]', darkMode ? '[&:not(:last-child)]:border-white/[0.06]' : '[&:not(:last-child)]:border-black/[0.06]', className)} {...p}>{children}</div>;
-const MetricGroupLabel = ({ darkMode, className, children, ...p }) => <div className={cn('text-[9px] font-semibold uppercase tracking-[0.05em] py-1 px-[10px]', darkMode ? 'text-white/[0.35]' : 'text-black/[0.35]', className)} {...p}>{children}</div>;
+const MetricGroupLabel = ({ darkMode, className, children, ...p }) => <div className={cn('text-[9px] font-bold uppercase tracking-[0.06em] py-1 px-[10px]', darkMode ? 'text-white/50' : 'text-black/50', className)} {...p}>{children}</div>;
 const MetricOption = ({ active, darkMode, className, children, ...p }) => (
-  <button className={cn('block w-full py-2 px-[10px] text-xs text-left border-none rounded-md cursor-pointer transition-all duration-100', active ? 'bg-[rgba(59,130,246,0.15)] text-[#3b82f6] hover:bg-[rgba(59,130,246,0.2)]' : cn(darkMode ? 'text-white' : 'text-[#212B36]', 'bg-transparent hover:bg-[rgba(59,130,246,0.08)]'), className)} {...p}>{children}</button>
+  <button className={cn('block w-full py-2 px-[10px] text-xs text-left border-none rounded-md cursor-pointer transition-[background-color] duration-100', active ? 'bg-[rgba(59,130,246,0.15)] text-[#3b82f6] hover:bg-[rgba(59,130,246,0.2)]' : cn(darkMode ? 'text-white' : 'text-[#212B36]', 'bg-transparent hover:bg-[rgba(59,130,246,0.08)]'), className)} {...p}>{children}</button>
 );
-const ChartArea = ({ className, children, ...p }) => <div className={cn('relative h-[280px] pt-5 px-4 pb-10', className)} {...p}>{children}</div>;
+const ChartArea = ({ className, children, ...p }) => <div className={cn('relative h-[220px] sm:h-[280px] pt-4 px-3 pb-8 sm:pt-5 sm:px-4 sm:pb-10', className)} {...p}>{children}</div>;
 const ChartSvg = ({ className, children, ...p }) => <svg className={cn('w-full h-full overflow-visible', className)} {...p}>{children}</svg>;
 const Tooltip = ({ darkMode, className, children, ...p }) => (
   <div className={cn('absolute py-[10px] px-[14px] rounded-lg text-xs pointer-events-none z-20 shadow-[0_4px_12px_rgba(0,0,0,0.15)]', darkMode ? 'bg-black/90 border border-white/10 text-white' : 'bg-white/95 border border-black/10 text-[#212B36]', className)} {...p}>{children}</div>
 );
 const TableContainer = ({ darkMode, className, children, ...p }) => <div className={cn('rounded-xl border overflow-hidden', darkMode ? 'border-white/[0.08] bg-white/[0.02]' : 'border-black/[0.06] bg-white', className)} {...p}>{children}</div>;
 const Table = ({ className, children, ...p }) => <table className={cn('w-full border-collapse', className)} {...p}>{children}</table>;
-const Th = ({ darkMode, align, className, children, ...p }) => <th className={cn('text-[10px] font-medium uppercase tracking-[0.04em] py-3 px-4', darkMode ? 'text-white/40 border-b border-white/[0.06]' : 'text-black/[0.45] border-b border-black/[0.06]', className)} style={{ textAlign: align || 'left' }} {...p}>{children}</th>;
-const Td = ({ darkMode, align, className, children, ...p }) => <td className={cn('text-xs py-3 px-4', darkMode ? 'text-white border-b border-white/[0.04]' : 'text-[#212B36] border-b border-black/[0.04]', className)} style={{ textAlign: align || 'left' }} {...p}>{children}</td>;
+const Th = ({ darkMode, align, className, children, ...p }) => <th className={cn('text-[10px] font-semibold uppercase tracking-[0.06em] py-3 px-4', darkMode ? 'text-white/50 border-b border-white/[0.06]' : 'text-[#919EAB] border-b border-black/[0.06]', className)} style={{ textAlign: align || 'left' }} {...p}>{children}</th>;
+const Td = ({ darkMode, align, className, children, ...p }) => <td className={cn('text-xs tracking-[0.005em] py-3 px-4', darkMode ? 'text-white/88 border-b border-white/[0.04]' : 'text-[#1a1a2e] border-b border-black/[0.04]', className)} style={{ textAlign: align || 'left' }} {...p}>{children}</td>;
 const PlatformBar = ({ darkMode, className, children, ...p }) => <div className={cn('h-[6px] rounded-[3px] overflow-hidden mt-1', darkMode ? 'bg-white/10' : 'bg-black/10', className)} {...p}>{children}</div>;
 const PlatformFill = ({ className, ...p }) => <div className={cn('h-full bg-[#3b82f6] rounded-[3px]', className)} {...p} />;
 
@@ -204,11 +204,11 @@ export default function NFTMarketPage({ stats }) {
     });
     return Array.from(names).sort((a, b) => {
       const aTotal = chartData.reduce(
-        (sum, d) => sum + (d.volumeByPlatform?.[a]?.volume || d.volumeByPlatformFlat?.[a] || 0),
+        (sum, d) => sum + (d.volumeByPlatform?.[a]?.volume || 0),
         0
       );
       const bTotal = chartData.reduce(
-        (sum, d) => sum + (d.volumeByPlatform?.[b]?.volume || d.volumeByPlatformFlat?.[b] || 0),
+        (sum, d) => sum + (d.volumeByPlatform?.[b]?.volume || 0),
         0
       );
       return bTotal - aTotal;
@@ -459,12 +459,12 @@ export default function NFTMarketPage({ stats }) {
               <div className="flex items-center gap-[16px] flex-wrap">
                 <div>
                   <div
-                    className={cn('text-[10px] uppercase tracking-[0.04em] mb-[2px]', darkMode ? 'text-white/40' : 'text-black/[0.45]')}
+                    className={cn('text-[10px] uppercase tracking-[0.06em] font-semibold mb-[2px]', darkMode ? 'text-white/50' : 'text-[#919EAB]')}
                   >
                     {TIME_RANGES.find((r) => r.key === timeRange)?.label} Total
                   </div>
                   <div
-                    className={cn('text-[20px] font-semibold', darkMode ? 'text-white' : 'text-[#212B36]')}
+                    className={cn('text-[20px] font-bold tracking-[-0.01em]', darkMode ? 'text-white/95' : 'text-[#1a1a2e]')}
                   >
                     {['volume', 'royalties', 'brokerFees'].includes(metric) ? (
                       <XrpValue value={periodTotal} size="large" />
@@ -575,7 +575,7 @@ export default function NFTMarketPage({ stats }) {
                         let cumulative = 0;
                         platformNames.slice(0, platformNames.length - pIdx).forEach((p) => {
                           cumulative +=
-                            d.volumeByPlatform?.[p]?.volume || d.volumeByPlatformFlat?.[p] || 0;
+                            d.volumeByPlatform?.[p]?.volume || 0;
                         });
                         const y =
                           padding.top + chartHeight - (cumulative / stackedMax) * chartHeight;
@@ -614,7 +614,7 @@ export default function NFTMarketPage({ stats }) {
                   />
                   <Tooltip
                     darkMode={darkMode}
-                    style={{ left: Math.min(Math.max(hoverData.x - 80, 10), 300), top: 10 }}
+                    style={{ left: `clamp(8px, ${hoverData.x - 80}px, calc(100% - 180px))`, top: 10 }}
                   >
                     <div className="font-semibold mb-[6px] text-[11px] opacity-70">
                       {hoverData.date}
@@ -628,10 +628,7 @@ export default function NFTMarketPage({ stats }) {
                           </span>
                         </div>
                         {platformNames.map((p) => {
-                          const val =
-                            hoverData.volumeByPlatform?.[p]?.volume ||
-                            hoverData.volumeByPlatformFlat?.[p] ||
-                            0;
+                          const val = hoverData.volumeByPlatform?.[p]?.volume || 0;
                           if (val === 0) return null;
                           return (
                             <div
@@ -690,7 +687,7 @@ export default function NFTMarketPage({ stats }) {
                 </>
               )}
               <div
-                className={cn('absolute bottom-[8px] left-[16px] right-[16px] flex justify-between text-[10px]', darkMode ? 'text-white/30' : 'text-black/30')}
+                className={cn('absolute bottom-[8px] left-[16px] right-[16px] flex justify-between text-[10px]', darkMode ? 'text-white/50' : 'text-black/50')}
               >
                 <span>{chartData[0]?.date}</span>
                 <span>{chartData[chartData.length - 1]?.date}</span>
@@ -721,12 +718,12 @@ export default function NFTMarketPage({ stats }) {
         <Section>
           <TableContainer darkMode={darkMode}>
             <div
-              className={cn('py-[12px] px-[16px] flex justify-between items-center flex-wrap gap-[8px] border-b', darkMode ? 'border-white/[0.06]' : 'border-black/[0.06]')}
+              className={cn('py-3 px-3 sm:px-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 border-b', darkMode ? 'border-white/[0.06]' : 'border-black/[0.06]')}
             >
-              <span className={cn('text-[12px] font-medium', darkMode ? 'text-white' : 'text-[#212B36]')}>
+              <span className={cn('text-[12px] font-semibold tracking-[-0.01em]', darkMode ? 'text-white/90' : 'text-[#1a1a2e]')}>
                 Platform Stats
               </span>
-              <div className="flex gap-[8px] flex-wrap">
+              <div className="flex gap-2 flex-wrap">
                 <ButtonGroup>
                   {[
                     { key: '24h', label: '24H' },
@@ -882,29 +879,29 @@ export default function NFTMarketPage({ stats }) {
             )}
             {/* Period summary */}
             <div
-              className={cn('py-[12px] px-[16px] flex flex-wrap gap-[24px] text-[12px] border-t', darkMode ? 'border-white/[0.06]' : 'border-black/[0.06]')}
+              className={cn('py-3 px-3 sm:px-4 flex flex-wrap gap-3 sm:gap-6 text-[11px] sm:text-[12px] border-t', darkMode ? 'border-white/[0.06]' : 'border-black/[0.06]')}
             >
               <div>
-                <span className={darkMode ? 'text-white/40' : 'text-black/40'}>
+                <span className={darkMode ? 'text-white/50' : 'text-black/50'}>
                   Total Volume:{' '}
                 </span>
-                <span className={cn('font-semibold', darkMode ? 'text-white' : 'text-[#212B36]')}>
+                <span className={cn('font-bold', darkMode ? 'text-white/95' : 'text-[#1a1a2e]')}>
                   <XrpValue value={platformStats.reduce((s, p) => s + p.volume, 0)} />
                 </span>
               </div>
               <div>
-                <span className={darkMode ? 'text-white/40' : 'text-black/40'}>
+                <span className={darkMode ? 'text-white/50' : 'text-black/50'}>
                   Total Sales:{' '}
                 </span>
-                <span className={cn('font-semibold', darkMode ? 'text-white' : 'text-[#212B36]')}>
+                <span className={cn('font-bold', darkMode ? 'text-white/95' : 'text-[#1a1a2e]')}>
                   {fNumber(platformStats.reduce((s, p) => s + p.sales, 0))}
                 </span>
               </div>
               <div>
-                <span className={darkMode ? 'text-white/40' : 'text-black/40'}>
+                <span className={darkMode ? 'text-white/50' : 'text-black/50'}>
                   Platforms:{' '}
                 </span>
-                <span className={cn('font-semibold', darkMode ? 'text-white' : 'text-[#212B36]')}>
+                <span className={cn('font-bold', darkMode ? 'text-white/95' : 'text-[#1a1a2e]')}>
                   {platformStats.length}
                 </span>
               </div>
@@ -921,86 +918,37 @@ export default function NFTMarketPage({ stats }) {
               >
                 <PiggyBank size={14} className="text-[#3b82f6]" />
                 <span
-                  className={cn('text-[12px] font-medium', darkMode ? 'text-white' : 'text-[#212B36]')}
+                  className={cn('text-[12px] font-semibold tracking-[-0.01em]', darkMode ? 'text-white/90' : 'text-[#1a1a2e]')}
                 >
                   Trader Balances
                 </span>
               </div>
-              <div className="grid grid-cols-4">
-                <div
-                  className={cn('py-[14px] px-[16px] border-r', darkMode ? 'border-white/[0.04]' : 'border-black/[0.04]')}
-                >
+              <div className="grid grid-cols-2 sm:grid-cols-4">
+                {[
+                  { label: '24h Active', balance: stats.traderBalances.balance24h, traders: stats.traderBalances.traders24h },
+                  { label: '7d Active', balance: stats.traderBalances.balance7d, traders: stats.traderBalances.traders7d },
+                  { label: '30d Active', balance: stats.traderBalances.balance30d, traders: stats.traderBalances.traders30d },
+                  { label: 'All Time', balance: stats.traderBalances.balanceAll, traders: stats.traderBalances.tradersAll }
+                ].map((item, i) => (
                   <div
-                    className={cn('text-[10px] uppercase tracking-[0.04em] mb-[4px]', darkMode ? 'text-white/40' : 'text-black/[0.45]')}
+                    key={item.label}
+                    className={cn(
+                      'py-3 px-3 sm:py-[14px] sm:px-4',
+                      i < 3 && (darkMode ? 'border-r border-white/[0.04]' : 'border-r border-black/[0.04]'),
+                      i < 2 && (darkMode ? 'border-b sm:border-b-0 border-white/[0.04]' : 'border-b sm:border-b-0 border-black/[0.04]')
+                    )}
                   >
-                    24h Active
+                    <div className={cn('text-[10px] uppercase tracking-[0.06em] font-semibold mb-1', darkMode ? 'text-white/50' : 'text-[#919EAB]')}>
+                      {item.label}
+                    </div>
+                    <div className={cn('text-sm sm:text-[16px] font-bold tracking-[-0.01em]', darkMode ? 'text-white/95' : 'text-[#1a1a2e]')}>
+                      <XrpValue value={item.balance || 0} />
+                    </div>
+                    <div className={cn('text-[10px] tracking-[0.01em] mt-[2px]', darkMode ? 'text-white/50' : 'text-black/50')}>
+                      {fNumber(item.traders || 0)} traders
+                    </div>
                   </div>
-                  <div
-                    className={cn('text-[16px] font-semibold', darkMode ? 'text-white' : 'text-[#212B36]')}
-                  >
-                    <XrpValue value={stats.traderBalances.balance24h || 0} />
-                  </div>
-                  <div
-                    className={cn('text-[10px] mt-[2px]', darkMode ? 'text-white/[0.35]' : 'text-black/[0.35]')}
-                  >
-                    {fNumber(stats.traderBalances.traders24h || 0)} traders
-                  </div>
-                </div>
-                <div
-                  className={cn('py-[14px] px-[16px] border-r', darkMode ? 'border-white/[0.04]' : 'border-black/[0.04]')}
-                >
-                  <div
-                    className={cn('text-[10px] uppercase tracking-[0.04em] mb-[4px]', darkMode ? 'text-white/40' : 'text-black/[0.45]')}
-                  >
-                    7d Active
-                  </div>
-                  <div
-                    className={cn('text-[16px] font-semibold', darkMode ? 'text-white' : 'text-[#212B36]')}
-                  >
-                    <XrpValue value={stats.traderBalances.balance7d || 0} />
-                  </div>
-                  <div
-                    className={cn('text-[10px] mt-[2px]', darkMode ? 'text-white/[0.35]' : 'text-black/[0.35]')}
-                  >
-                    {fNumber(stats.traderBalances.traders7d || 0)} traders
-                  </div>
-                </div>
-                <div
-                  className={cn('py-[14px] px-[16px] border-r', darkMode ? 'border-white/[0.04]' : 'border-black/[0.04]')}
-                >
-                  <div
-                    className={cn('text-[10px] uppercase tracking-[0.04em] mb-[4px]', darkMode ? 'text-white/40' : 'text-black/[0.45]')}
-                  >
-                    30d Active
-                  </div>
-                  <div
-                    className={cn('text-[16px] font-semibold', darkMode ? 'text-white' : 'text-[#212B36]')}
-                  >
-                    <XrpValue value={stats.traderBalances.balance30d || 0} />
-                  </div>
-                  <div
-                    className={cn('text-[10px] mt-[2px]', darkMode ? 'text-white/[0.35]' : 'text-black/[0.35]')}
-                  >
-                    {fNumber(stats.traderBalances.traders30d || 0)} traders
-                  </div>
-                </div>
-                <div className="py-[14px] px-[16px]">
-                  <div
-                    className={cn('text-[10px] uppercase tracking-[0.04em] mb-[4px]', darkMode ? 'text-white/40' : 'text-black/[0.45]')}
-                  >
-                    All Time
-                  </div>
-                  <div
-                    className={cn('text-[16px] font-semibold', darkMode ? 'text-white' : 'text-[#212B36]')}
-                  >
-                    <XrpValue value={stats.traderBalances.balanceAll || 0} />
-                  </div>
-                  <div
-                    className={cn('text-[10px] mt-[2px]', darkMode ? 'text-white/[0.35]' : 'text-black/[0.35]')}
-                  >
-                    {fNumber(stats.traderBalances.tradersAll || 0)} traders
-                  </div>
-                </div>
+                ))}
               </div>
             </TableContainer>
           </Section>
@@ -1010,12 +958,12 @@ export default function NFTMarketPage({ stats }) {
         <Section>
           <TableContainer darkMode={darkMode}>
             <div
-              className={cn('py-[12px] px-[16px] flex justify-between items-center border-b', darkMode ? 'border-white/[0.06]' : 'border-black/[0.06]')}
+              className={cn('py-3 px-3 sm:px-4 flex justify-between items-center border-b', darkMode ? 'border-white/[0.06]' : 'border-black/[0.06]')}
             >
-              <span className={cn('text-[12px] font-medium', darkMode ? 'text-white' : 'text-[#212B36]')}>
+              <span className={cn('text-[12px] font-semibold tracking-[-0.01em]', darkMode ? 'text-white/90' : 'text-[#1a1a2e]')}>
                 Market Summary
               </span>
-              <div className="flex gap-[4px]">
+              <div className="flex gap-1">
                 {['24h', '7d', '30d', 'all'].map((range) => (
                   <button
                     key={range}
@@ -1025,8 +973,8 @@ export default function NFTMarketPage({ stats }) {
                       summaryTimeRange === range
                         ? 'bg-[#3b82f6] text-white'
                         : darkMode
-                          ? 'bg-white/[0.06] text-white/60'
-                          : 'bg-black/[0.04] text-black/50'
+                          ? 'bg-[#1a1a1a] text-[#e5e5e5]'
+                          : 'bg-black/[0.04] text-black/60'
                     )}
                   >
                     {range === 'all' ? 'All' : range.toUpperCase()}
@@ -1038,116 +986,55 @@ export default function NFTMarketPage({ stats }) {
               className={cn('grid grid-cols-2 border-b', darkMode ? 'border-white/[0.04]' : 'border-black/[0.04]')}
             >
               <div
-                className={cn('py-[12px] px-[16px] border-r', darkMode ? 'border-white/[0.04]' : 'border-black/[0.04]')}
+                className={cn('py-3 px-3 sm:py-[12px] sm:px-[16px] border-r', darkMode ? 'border-white/[0.04]' : 'border-black/[0.04]')}
               >
                 <div
-                  className={cn('text-[10px] uppercase tracking-[0.04em] mb-[4px]', darkMode ? 'text-white/40' : 'text-black/[0.45]')}
+                  className={cn('text-[10px] uppercase tracking-[0.06em] font-semibold mb-1', darkMode ? 'text-white/50' : 'text-[#919EAB]')}
                 >
                   Volume
                 </div>
                 <div
-                  className={cn('text-[16px] font-semibold', darkMode ? 'text-white' : 'text-[#212B36]')}
+                  className={cn('text-sm sm:text-[16px] font-bold tracking-[-0.01em]', darkMode ? 'text-white/95' : 'text-[#1a1a2e]')}
                 >
                   <XrpValue value={summaryStats.volume} />
                 </div>
               </div>
-              <div className="py-[12px] px-[16px]">
+              <div className="py-3 px-3 sm:py-[12px] sm:px-[16px]">
                 <div
-                  className={cn('text-[10px] uppercase tracking-[0.04em] mb-[4px]', darkMode ? 'text-white/40' : 'text-black/[0.45]')}
+                  className={cn('text-[10px] uppercase tracking-[0.06em] font-semibold mb-1', darkMode ? 'text-white/50' : 'text-[#919EAB]')}
                 >
                   Sales
                 </div>
                 <div
-                  className={cn('text-[16px] font-semibold', darkMode ? 'text-white' : 'text-[#212B36]')}
+                  className={cn('text-sm sm:text-[16px] font-bold tracking-[-0.01em]', darkMode ? 'text-white/95' : 'text-[#1a1a2e]')}
                 >
                   {fNumber(summaryStats.sales)}
                 </div>
               </div>
             </div>
-            <Table>
-              <tbody>
-                <tr>
-                  <Td
-                    darkMode={darkMode}
-                    className={darkMode ? 'text-white/50' : 'text-[#637381]'}
-                  >
-                    Buyers
-                  </Td>
-                  <Td darkMode={darkMode} align="right" className="font-medium">
-                    {fNumber(summaryStats.buyers)}
-                  </Td>
-                  <Td
-                    darkMode={darkMode}
-                    className={darkMode ? 'text-white/50' : 'text-[#637381]'}
-                  >
-                    Sellers
-                  </Td>
-                  <Td darkMode={darkMode} align="right" className="font-medium">
-                    {fNumber(summaryStats.sellers)}
-                  </Td>
-                </tr>
-                <tr>
-                  <Td
-                    darkMode={darkMode}
-                    className={darkMode ? 'text-white/50' : 'text-[#637381]'}
-                  >
-                    Royalties
-                  </Td>
-                  <Td darkMode={darkMode} align="right" className="font-medium">
-                    <XrpValue value={summaryStats.royalties} size="small" />
-                  </Td>
-                  <Td
-                    darkMode={darkMode}
-                    className={darkMode ? 'text-white/50' : 'text-[#637381]'}
-                  >
-                    Broker Fees
-                  </Td>
-                  <Td darkMode={darkMode} align="right" className="font-medium">
-                    <XrpValue value={summaryStats.brokerFees} size="small" />
-                  </Td>
-                </tr>
-                <tr>
-                  <Td
-                    darkMode={darkMode}
-                    className={darkMode ? 'text-white/50' : 'text-[#637381]'}
-                  >
-                    Mints
-                  </Td>
-                  <Td darkMode={darkMode} align="right" className="font-medium">
-                    {fNumber(summaryStats.mints)}
-                  </Td>
-                  <Td
-                    darkMode={darkMode}
-                    className={darkMode ? 'text-white/50' : 'text-[#637381]'}
-                  >
-                    Burns
-                  </Td>
-                  <Td darkMode={darkMode} align="right" className="font-medium">
-                    {fNumber(summaryStats.burns)}
-                  </Td>
-                </tr>
-                <tr>
-                  <Td
-                    darkMode={darkMode}
-                    className={darkMode ? 'text-white/50' : 'text-[#637381]'}
-                  >
-                    Transfers
-                  </Td>
-                  <Td darkMode={darkMode} align="right" className="font-medium">
-                    {fNumber(summaryStats.transfers)}
-                  </Td>
-                  <Td
-                    darkMode={darkMode}
-                    className={darkMode ? 'text-white/50' : 'text-[#637381]'}
-                  >
-                    Collections
-                  </Td>
-                  <Td darkMode={darkMode} align="right" className="font-medium">
-                    {fNumber(summaryStats.collections)}
-                  </Td>
-                </tr>
-              </tbody>
-            </Table>
+            <div className="grid grid-cols-2 sm:grid-cols-4">
+              {[
+                { label: 'Buyers', value: fNumber(summaryStats.buyers) },
+                { label: 'Sellers', value: fNumber(summaryStats.sellers) },
+                { label: 'Royalties', value: <XrpValue value={summaryStats.royalties} size="small" /> },
+                { label: 'Broker Fees', value: <XrpValue value={summaryStats.brokerFees} size="small" /> },
+                { label: 'Mints', value: fNumber(summaryStats.mints) },
+                { label: 'Burns', value: fNumber(summaryStats.burns) },
+                { label: 'Transfers', value: fNumber(summaryStats.transfers) },
+                { label: 'Collections', value: fNumber(summaryStats.collections) }
+              ].map((item) => (
+                <div
+                  key={item.label}
+                  className={cn(
+                    'flex justify-between sm:flex-col py-2.5 px-3 sm:py-3 sm:px-4 border-b',
+                    darkMode ? 'border-white/[0.04]' : 'border-black/[0.04]'
+                  )}
+                >
+                  <span className={cn('text-xs tracking-[0.01em]', darkMode ? 'text-white/60' : 'text-[#919EAB]')}>{item.label}</span>
+                  <span className={cn('text-xs font-semibold', darkMode ? 'text-white/88' : 'text-[#1a1a2e]')}>{item.value}</span>
+                </div>
+              ))}
+            </div>
           </TableContainer>
         </Section>
       </Container>
@@ -1169,14 +1056,58 @@ export async function getServerSideProps() {
     const aggregates = data.aggregates || {};
 
     const stats = {
-      // Daily history for charts
-      volumeHistory: (data.daily || []).map((d) => ({
-        ...d,
-        // Flatten volumeByPlatform for chart compatibility
-        volumeByPlatformFlat: Object.fromEntries(
-          Object.entries(d.volumeByPlatform || {}).map(([k, v]) => [k, v?.volume || v || 0])
-        )
-      })),
+      // Daily history for charts - trim fields and downsample old data
+      volumeHistory: (() => {
+        const daily = data.daily || [];
+        const r2 = (v) => Math.round((v || 0) * 100) / 100;
+        const trimDay = (d) => {
+          const vbp = d.volumeByPlatform
+            ? Object.fromEntries(Object.entries(d.volumeByPlatform).map(([k, v]) => [k, { volume: r2(v?.volume || v), sales: v?.sales || 0 }]))
+            : undefined;
+          const fbp = d.feesByPlatform
+            ? Object.fromEntries(Object.entries(d.feesByPlatform).map(([k, f]) => [k, { royalties: r2(f.royalties), brokerFees: r2(f.brokerFees) }]))
+            : undefined;
+          return {
+            date: d.date, volume: r2(d.volume), sales: d.sales || 0, avgPrice: r2(d.avgPrice),
+            uniqueBuyers: d.uniqueBuyers || 0, uniqueSellers: d.uniqueSellers || 0, uniqueCollections: d.uniqueCollections || 0,
+            mints: d.mints || 0, burns: d.burns || 0, transfers: d.transfers || 0,
+            buyOffers: d.buyOffers || 0, sellOffers: d.sellOffers || 0, cancelledOffers: d.cancelledOffers || 0,
+            royalties: r2(d.royalties), brokerFees: r2(d.brokerFees),
+            ...(vbp && { volumeByPlatform: vbp }), ...(fbp && { feesByPlatform: fbp })
+          };
+        };
+        // Keep last 365 days daily, aggregate older into weekly buckets
+        if (daily.length <= 365) return daily.map(trimDay);
+        const recentDays = daily.slice(-365).map(trimDay);
+        const oldDays = daily.slice(0, -365);
+        const SUM_KEYS = ['volume', 'sales', 'royalties', 'brokerFees', 'uniqueBuyers', 'uniqueSellers', 'uniqueCollections', 'mints', 'burns', 'transfers', 'buyOffers', 'sellOffers', 'cancelledOffers'];
+        const weeks = [];
+        for (let i = 0; i < oldDays.length; i += 7) {
+          const chunk = oldDays.slice(i, i + 7);
+          const agg = { date: chunk[0].date };
+          SUM_KEYS.forEach(k => { agg[k] = chunk.reduce((s, d) => s + (d[k] || 0), 0); });
+          agg.volume = r2(agg.volume); agg.royalties = r2(agg.royalties); agg.brokerFees = r2(agg.brokerFees);
+          agg.avgPrice = agg.sales > 0 ? r2(agg.volume / agg.sales) : 0;
+          // Merge platform breakdowns
+          const vbp = {}, fbp = {};
+          chunk.forEach(d => {
+            Object.entries(d.volumeByPlatform || {}).forEach(([p, v]) => {
+              if (!vbp[p]) vbp[p] = { volume: 0, sales: 0 };
+              vbp[p].volume += v?.volume || v || 0; vbp[p].sales += v?.sales || 0;
+            });
+            Object.entries(d.feesByPlatform || {}).forEach(([p, f]) => {
+              if (!fbp[p]) fbp[p] = { royalties: 0, brokerFees: 0 };
+              fbp[p].royalties += f.royalties || 0; fbp[p].brokerFees += f.brokerFees || 0;
+            });
+          });
+          Object.values(vbp).forEach(v => { v.volume = r2(v.volume); });
+          Object.values(fbp).forEach(f => { f.royalties = r2(f.royalties); f.brokerFees = r2(f.brokerFees); });
+          if (Object.keys(vbp).length) agg.volumeByPlatform = vbp;
+          if (Object.keys(fbp).length) agg.feesByPlatform = fbp;
+          weeks.push(agg);
+        }
+        return [...weeks, ...recentDays];
+      })(),
 
       // 24h stats from summary
       total24hVolume: summary.total24hVolume || aggregates['24h']?.volume || 0,
@@ -1207,8 +1138,16 @@ export async function getServerSideProps() {
       activeTraders7d: aggregates['7d']?.uniqueBuyers || 0,
       activeTraders30d: aggregates['30d']?.uniqueBuyers || 0,
 
-      // Platform stats
-      platformStatsAll: data.platformStatsAll || {},
+      // Platform stats - trim to needed fields
+      platformStatsAll: Object.fromEntries(
+        Object.entries(data.platformStatsAll || {}).map(([k, v]) => [k, {
+          volume: Math.round((v.volume || 0) * 100) / 100,
+          sales: v.sales || 0,
+          avgPrice: Math.round((v.avgPrice || 0) * 100) / 100,
+          royalties: Math.round((v.royalties || 0) * 100) / 100,
+          brokerFees: Math.round((v.brokerFees || 0) * 100) / 100
+        }])
+      ),
 
       // Trader balances
       traderBalances: data.traderBalances || {},
@@ -1221,7 +1160,8 @@ export async function getServerSideProps() {
       canonical: 'https://xrpl.to/nft-market',
       title: 'NFT Market | XRPL NFT Market Analytics',
       url: 'https://xrpl.to/nft-market',
-      imgUrl: 'https://xrpl.to/og/nft-market.webp',
+      imgUrl: 'https://xrpl.to/api/og/nft-market',
+      imgType: 'image/png',
       desc: 'XRPL NFT market analytics with volume, sales, and trader activity data.'
     } } };
   } catch (error) {
@@ -1230,7 +1170,8 @@ export async function getServerSideProps() {
       canonical: 'https://xrpl.to/nft-market',
       title: 'NFT Market | XRPL NFT Market Analytics',
       url: 'https://xrpl.to/nft-market',
-      imgUrl: 'https://xrpl.to/og/nft-market.webp',
+      imgUrl: 'https://xrpl.to/api/og/nft-market',
+      imgType: 'image/png',
       desc: 'XRPL NFT market analytics with volume, sales, and trader activity data.'
     } } };
   }

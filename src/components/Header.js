@@ -235,6 +235,10 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
   const isDark = themeName === 'XrplToDarkTheme';
   const availableXrp = accountBalance?.curr1?.value;
   const isAccountActivated = parseFloat(accountBalance?.curr2?.value || 0) > 0;
+  const [isMac, setIsMac] = useState(false);
+  useEffect(() => {
+    setIsMac(typeof navigator !== 'undefined' && navigator.platform?.includes('Mac'));
+  }, []);
 
   // Check if current path matches for active state
   const isActive = useCallback(
@@ -262,6 +266,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
   const isNftsActive =
     router.pathname.startsWith('/collection') || router.pathname.startsWith('/nft');
 
+  const [hasMounted, setHasMounted] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
   const [isTabletOrMobile, setIsTabletOrMobile] = useState(true);
   const [fullSearch, setFullSearch] = useState(false);
@@ -361,6 +366,8 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
       activeFiatCurrency === 'XRP' ? '✕' : currencySymbols[activeFiatCurrency]?.trim() || '$';
     return `${symbol}${formatMcapValue(value)}`;
   };
+
+  useEffect(() => { setHasMounted(true); }, []);
 
   // Load recent searches from localStorage
   useEffect(() => {
@@ -697,9 +704,15 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
     if (openTimeoutRef.current) {
       clearTimeout(openTimeoutRef.current);
     }
+    // Close sibling menu immediately
+    setNftsMenuOpen(false);
+    if (nftsCloseTimeoutRef.current) {
+      clearTimeout(nftsCloseTimeoutRef.current);
+      nftsCloseTimeoutRef.current = null;
+    }
     openTimeoutRef.current = setTimeout(() => {
       setTokensMenuOpen(true);
-    }, 80);
+    }, 50);
   }, []);
 
   const handleTokensClose = useCallback(() => {
@@ -709,7 +722,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
     }
     closeTimeoutRef.current = setTimeout(() => {
       setTokensMenuOpen(false);
-    }, 120);
+    }, 150);
   }, []);
 
   const handleNftsOpen = useCallback(() => {
@@ -720,9 +733,15 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
     if (nftsOpenTimeoutRef.current) {
       clearTimeout(nftsOpenTimeoutRef.current);
     }
+    // Close sibling menu immediately
+    setTokensMenuOpen(false);
+    if (closeTimeoutRef.current) {
+      clearTimeout(closeTimeoutRef.current);
+      closeTimeoutRef.current = null;
+    }
     nftsOpenTimeoutRef.current = setTimeout(() => {
       setNftsMenuOpen(true);
-    }, 80);
+    }, 50);
   }, []);
 
   const handleNftsClose = useCallback(() => {
@@ -732,7 +751,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
     }
     nftsCloseTimeoutRef.current = setTimeout(() => {
       setNftsMenuOpen(false);
-    }, 120);
+    }, 150);
   }, []);
 
   const handleSettingsToggle = useCallback(() => {
@@ -740,10 +759,10 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
   }, []);
 
   const handleTokenOptionSelect = useCallback((path) => {
-    window.location.href = path;
+    router.push(path);
     setTokensMenuOpen(false);
     setNftsMenuOpen(false);
-  }, []);
+  }, [router]);
 
   useEffect(() => {
     if (isProcessing === 1 && isClosed) {
@@ -820,7 +839,12 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                     onMouseEnter={handleTokensOpen}
                     onMouseLeave={handleTokensClose}
                     className={cn(
-                      'absolute left-0 top-full z-[2147483647] mt-1 w-[260px] overflow-hidden rounded-2xl border animate-in fade-in slide-in-from-top-1 duration-200',
+                      'absolute left-0 top-full z-[2147483647] pt-1 w-[260px]'
+                    )}
+                  >
+                  <div
+                    className={cn(
+                      'w-full overflow-hidden rounded-2xl border animate-in fade-in slide-in-from-top-1 duration-150',
                       isDark
                         ? 'bg-black/80 backdrop-blur-xl border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)]'
                         : 'bg-white/90 backdrop-blur-xl border-gray-100 shadow-[0_20px_50px_rgba(0,0,0,0.1)]'
@@ -872,6 +896,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       ))}
                     </div>
                   </div>
+                  </div>
                 )}
               </div>
 
@@ -911,7 +936,12 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                     onMouseEnter={handleNftsOpen}
                     onMouseLeave={handleNftsClose}
                     className={cn(
-                      'absolute left-0 top-full z-[2147483647] mt-1 w-[260px] overflow-hidden rounded-2xl border animate-in fade-in slide-in-from-top-1 duration-200',
+                      'absolute left-0 top-full z-[2147483647] pt-1 w-[260px]'
+                    )}
+                  >
+                  <div
+                    className={cn(
+                      'w-full overflow-hidden rounded-2xl border animate-in fade-in slide-in-from-top-1 duration-150',
                       isDark
                         ? 'bg-black/80 backdrop-blur-xl border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)]'
                         : 'bg-white/90 backdrop-blur-xl border-gray-100 shadow-[0_20px_50px_rgba(0,0,0,0.1)]'
@@ -962,6 +992,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                         </div>
                       ))}
                     </div>
+                  </div>
                   </div>
                 )}
               </div>
@@ -1068,7 +1099,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                         : 'bg-white border-gray-200 text-gray-400 shadow-sm'
                     )}
                   >
-                    {typeof navigator !== 'undefined' && navigator.platform?.includes('Mac') ? '⌘' : 'Ctrl'} K
+                    {isMac ? '⌘' : 'Ctrl'} K
                   </kbd>
                 </div>
               )}
@@ -2291,7 +2322,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                 <span className="relative z-10">Launch</span>
               </a>
 
-              {accountProfile ? (
+              {hasMounted && accountProfile ? (
                 <div
                   className={cn(
                     'relative flex h-8 items-center rounded-lg text-[13px] font-medium border overflow-hidden',
@@ -2400,7 +2431,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
           {!fullSearch && (
             <div className="lg:hidden flex items-center gap-1">
               {/* Mobile Wallet Button */}
-              {accountProfile ? (
+              {hasMounted && accountProfile ? (
                 <div
                   className={cn(
                     'flex h-8 items-center rounded-lg text-[12px] font-medium border overflow-hidden',
@@ -2553,10 +2584,9 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
 
               <nav className="space-y-1">
                 {/* Tokens Expandable */}
-                <button
-                  onClick={() => setTokensExpanded(!tokensExpanded)}
+                <div
                   className={cn(
-                    'flex w-full items-center justify-between rounded-lg px-3 py-2 text-[13px] font-medium transition-colors duration-100',
+                    'flex w-full items-center justify-between rounded-lg text-[13px] font-medium transition-colors duration-100',
                     isTokensActive
                       ? isDark
                         ? 'bg-white/[0.08] text-white'
@@ -2566,16 +2596,31 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                         : 'text-gray-700 hover:bg-gray-50'
                   )}
                 >
-                  Tokens
-                  <ChevronDown
-                    size={14}
+                  <a
+                    href="/"
+                    onClick={() => toggleDrawer(false)}
+                    className="flex-1 px-3 py-2"
+                  >
+                    Tokens
+                  </a>
+                  <button
+                    onClick={() => setTokensExpanded(!tokensExpanded)}
                     className={cn(
-                      'transition-transform duration-150',
-                      tokensExpanded && 'rotate-180',
-                      isDark ? 'text-white/60' : 'text-gray-400'
+                      'px-3 py-2 rounded-r-lg transition-colors duration-100',
+                      isDark ? 'hover:bg-white/[0.05]' : 'hover:bg-gray-100'
                     )}
-                  />
-                </button>
+                    aria-label="Expand tokens submenu"
+                  >
+                    <ChevronDown
+                      size={14}
+                      className={cn(
+                        'transition-transform duration-150',
+                        tokensExpanded && 'rotate-180',
+                        isDark ? 'text-white/60' : 'text-gray-400'
+                      )}
+                    />
+                  </button>
+                </div>
 
                 {tokensExpanded && (
                   <div className="mx-1 mt-1 flex flex-col gap-0.5">
@@ -2627,10 +2672,9 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                 )}
 
                 {/* NFTs Expandable */}
-                <button
-                  onClick={() => setNftsExpanded(!nftsExpanded)}
+                <div
                   className={cn(
-                    'flex w-full items-center justify-between rounded-lg px-3 py-2 text-[13px] font-medium transition-colors duration-100',
+                    'flex w-full items-center justify-between rounded-lg text-[13px] font-medium transition-colors duration-100',
                     isNftsActive
                       ? isDark
                         ? 'bg-white/[0.08] text-white'
@@ -2640,16 +2684,31 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                         : 'text-gray-700 hover:bg-gray-50'
                   )}
                 >
-                  NFTs
-                  <ChevronDown
-                    size={14}
+                  <a
+                    href="/nfts"
+                    onClick={() => toggleDrawer(false)}
+                    className="flex-1 px-3 py-2"
+                  >
+                    NFTs
+                  </a>
+                  <button
+                    onClick={() => setNftsExpanded(!nftsExpanded)}
                     className={cn(
-                      'transition-transform duration-150',
-                      nftsExpanded && 'rotate-180',
-                      isDark ? 'text-white/60' : 'text-gray-400'
+                      'px-3 py-2 rounded-r-lg transition-colors duration-100',
+                      isDark ? 'hover:bg-white/[0.05]' : 'hover:bg-gray-100'
                     )}
-                  />
-                </button>
+                    aria-label="Expand NFTs submenu"
+                  >
+                    <ChevronDown
+                      size={14}
+                      className={cn(
+                        'transition-transform duration-150',
+                        nftsExpanded && 'rotate-180',
+                        isDark ? 'text-white/60' : 'text-gray-400'
+                      )}
+                    />
+                  </button>
+                </div>
 
                 {nftsExpanded && (
                   <div className="mx-1 mt-1 flex flex-col gap-0.5">
@@ -2787,7 +2846,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
               />
 
               <div className="px-1">
-                {accountProfile ? (
+                {hasMounted && accountProfile ? (
                   <div
                     className={cn(
                       'flex w-full items-center rounded-lg text-[13px] font-medium border overflow-hidden',

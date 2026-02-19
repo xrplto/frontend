@@ -1,24 +1,35 @@
 import api from 'src/utils/api';
 import React, { memo, useCallback } from 'react';
-import { useState, useEffect, useContext } from 'react';
+import { useState, useEffect, useLayoutEffect, useContext } from 'react';
 import dynamic from 'next/dynamic';
+
+// useLayoutEffect on client (runs before paint, prevents CLS), useEffect on server (avoids SSR warning)
+const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
 // Context
 import { ThemeContext, WalletContext, AppContext } from 'src/context/AppContext';
 import { cn } from 'src/utils/cn';
 
 // Dynamic imports for heavy components (code splitting)
+// Skeleton must match real chart: padding 12/16px, header ~85px mobile (flex-col wrap) / ~45px desktop, chart min-h 400/450px
 const PriceChart = dynamic(() => import('./ohlc'), {
   loading: () => (
-    <div className="rounded-xl border border-white/[0.06] bg-white/[0.015] p-3.5">
-      <div className="flex justify-between mb-2">
-        <div className="h-4 w-32 animate-pulse bg-white/10 rounded" />
-        <div className="flex gap-1">
-          <div className="h-6 w-20 animate-pulse bg-white/10 rounded" />
-          <div className="h-6 w-28 animate-pulse bg-white/10 rounded" />
+    <div className="rounded-xl border border-white/[0.06] bg-white/[0.015] p-3 md:p-4">
+      {/* Header row 1: title + badges */}
+      <div className="flex flex-col max-[900px]:gap-2 min-[901px]:flex-row min-[901px]:justify-between min-[901px]:items-center mb-3 gap-3">
+        <div className="flex items-center gap-2">
+          <div className="h-4 w-32 animate-pulse bg-white/10 rounded" />
+          <div className="h-6 w-16 animate-pulse bg-white/10 rounded-lg" />
+          <div className="h-6 w-24 animate-pulse bg-white/10 rounded-lg" />
+        </div>
+        {/* Header row 2: chart type + timeframe buttons */}
+        <div className="flex items-center gap-2">
+          <div className="h-8 w-[180px] animate-pulse bg-white/[0.04] rounded-[10px]" />
+          <div className="h-8 w-[200px] md:w-[260px] animate-pulse bg-white/[0.04] rounded-[10px]" />
+          <div className="h-8 w-10 animate-pulse bg-white/[0.04] rounded-md" />
         </div>
       </div>
-      <div className="h-[360px] md:h-[570px] animate-pulse bg-white/5 rounded-lg" />
+      <div className="min-h-[400px] md:min-h-[450px] animate-pulse bg-white/5 rounded-xl" />
     </div>
   ),
   ssr: false
@@ -27,19 +38,39 @@ const TradingHistory = dynamic(() => import('./TradingHistory'), {
   loading: () => <div className="h-[300px] animate-pulse bg-white/5 rounded-xl" />,
   ssr: false
 });
-
-// Lighter components - static imports
-import PriceStatistics from './PriceStatistics';
-import Description from './Description';
-import TrendingTokens from './TrendingTokens';
-import Swap from './Swap';
+// Dynamic imports for below-fold / conditional components
+const Swap = dynamic(() => import('./Swap'), {
+  loading: () => <div className="h-[400px] animate-pulse bg-white/5 rounded-xl" />,
+  ssr: false
+});
+const OrderBook = dynamic(() => import('./OrderBook'), {
+  loading: () => <div className="h-[600px] animate-pulse bg-white/5 rounded-xl" />,
+  ssr: false
+});
+const PriceStatistics = dynamic(() => import('./PriceStatistics'), {
+  loading: () => <div className="h-[200px] animate-pulse bg-white/5 rounded-xl" />,
+  ssr: false
+});
+const Description = dynamic(() => import('./Description'), {
+  loading: () => <div className="h-[100px] animate-pulse bg-white/5 rounded-xl" />,
+  ssr: false
+});
+const TrendingTokens = dynamic(() => import('./TrendingTokens'), {
+  loading: () => <div className="h-[400px] animate-pulse bg-white/5 rounded-xl" />,
+  ssr: false
+});
+// Lightweight - keep static
 import TokenSummary from '../../components/TokenSummary';
-import OrderBook from './OrderBook';
 
 const Overview = memo(
   ({ token, onTransactionClick }) => {
-    const isMobile = typeof window !== 'undefined' && window.innerWidth < 640;
-    const isTablet = typeof window !== 'undefined' && window.innerWidth < 960;
+    const [isMobile, setIsMobile] = useState(false);
+    const [isTablet, setIsTablet] = useState(false);
+    // useLayoutEffect runs before browser paint, preventing CLS from desktop→mobile layout flip
+    useIsomorphicLayoutEffect(() => {
+      setIsMobile(window.innerWidth < 640);
+      setIsTablet(window.innerWidth < 960);
+    }, []);
     const BASE_URL = 'https://api.xrpl.to/v1';
     const { themeName } = useContext(ThemeContext);
     const { accountProfile } = useContext(WalletContext);
@@ -72,6 +103,7 @@ const Overview = memo(
     const [swapLimitPrice, setSwapLimitPrice] = useState(null);
     const [swapOrderType, setSwapOrderType] = useState('market');
     const [candleTimeFilter, setCandleTimeFilter] = useState(null);
+    const [chartTrackAddress, setChartTrackAddress] = useState(null);
 
     // Markdown parser removed for build simplicity
 
@@ -161,7 +193,7 @@ const Overview = memo(
             onLimitPriceChange={setSwapLimitPrice}
             onOrderTypeChange={setSwapOrderType}
           />
-          <PriceChart token={token} onCandleClick={setCandleTimeFilter} />
+          <PriceChart token={token} onCandleClick={setCandleTimeFilter} trackAddress={chartTrackAddress} />
           <Description
             token={token}
             showEditor={showEditor}
@@ -200,6 +232,7 @@ const Overview = memo(
             isMobile={true}
             candleTimeFilter={candleTimeFilter}
             onClearCandleFilter={() => setCandleTimeFilter(null)}
+            onTrackAddress={setChartTrackAddress}
           />
           <TrendingTokens token={token} />
         </div>
@@ -211,11 +244,11 @@ const Overview = memo(
         {/* Main content row */}
         <div className="flex flex-col md:flex-row items-stretch gap-2 mb-2">
           {/* Left column: Chart + OrderBook + Trading History */}
-          <div className="w-full md:flex-1 min-w-0 flex flex-col gap-2">
+          <div className="w-full md:flex-1 min-w-0 flex flex-col gap-2 order-2 md:order-1">
             <div className="flex gap-2 relative z-10">
               <section aria-label="Price Chart" className="flex-1 min-w-0">
                 <h2 className="sr-only">Price Chart</h2>
-                <PriceChart token={token} onCandleClick={setCandleTimeFilter} />
+                <PriceChart token={token} onCandleClick={setCandleTimeFilter} trackAddress={chartTrackAddress} />
               </section>
               {sidePanelVisible ? (
                 <section aria-label="Side Panel" className={`w-[300px] flex-shrink-0 hidden lg:flex lg:flex-col h-[800px] rounded-xl border ${isDark ? 'border-white/[0.08]' : 'border-black/[0.08]'} overflow-hidden`}>
@@ -224,10 +257,10 @@ const Overview = memo(
                       <button
                         key={tab}
                         onClick={() => setSidePanel(tab)}
-                        className={`flex-1 py-2.5 text-[11px] font-medium transition-colors ${
+                        className={`flex-1 py-2.5 text-[11px] font-medium transition-[background-color,border-color] ${
                           sidePanel === tab
                             ? `text-[#137DFE] ${isDark ? 'bg-white/[0.04]' : 'bg-black/[0.04]'}`
-                            : isDark ? 'text-white/50 hover:text-white/70' : 'text-black/50 hover:text-black/70'
+                            : isDark ? 'text-white/60 hover:text-white/80' : 'text-black/60 hover:text-black/80'
                         }`}
                       >
                         {tab === 'orderbook' ? 'Order Book' : 'Discover'}
@@ -235,7 +268,7 @@ const Overview = memo(
                     ))}
                     <button
                       onClick={() => setSidePanelVisible(false)}
-                      className={`px-2 text-[14px] ${isDark ? 'text-white/30 hover:text-white/50' : 'text-black/30 hover:text-black/50'}`}
+                      className={`px-2 text-[14px] ${isDark ? 'text-white/60 hover:text-white/80' : 'text-black/60 hover:text-black/80'}`}
                     >
                       ✕
                     </button>
@@ -250,7 +283,7 @@ const Overview = memo(
                   className={`hidden lg:flex items-center justify-center w-8 h-[800px] rounded-xl border ${isDark ? 'border-white/[0.08] hover:bg-white/[0.04]' : 'border-black/[0.08] hover:bg-black/[0.02]'}`}
                   title="Show panel"
                 >
-                  <span className={`text-[10px] ${isDark ? 'text-white/40' : 'text-black/40'}`} style={{ writingMode: 'vertical-rl' }}>Show Panel</span>
+                  <span className={`text-[10px] ${isDark ? 'text-white/60' : 'text-black/60'}`} style={{ writingMode: 'vertical-rl' }}>Show Panel</span>
                 </button>
               )}
             </div>
@@ -266,13 +299,14 @@ const Overview = memo(
                 isMobile={isTablet}
                 candleTimeFilter={candleTimeFilter}
                 onClearCandleFilter={() => setCandleTimeFilter(null)}
+                onTrackAddress={setChartTrackAddress}
               />
             </section>
           </div>
 
           {/* Right sidebar: TokenSummary, Swap, Stats, Description */}
           <aside
-            className="w-full md:w-[560px] md:flex-shrink-0 flex flex-col gap-2"
+            className="w-full md:w-[560px] md:flex-shrink-0 flex flex-col gap-2 order-1 md:order-2"
             aria-label="Trading Tools"
           >
             <TokenSummary token={token} />

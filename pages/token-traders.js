@@ -5,30 +5,30 @@ import { ThemeContext } from 'src/context/AppContext';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import ScrollToTop from 'src/components/ScrollToTop';
-import { ChevronsLeft, ChevronsRight, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronsLeft, ChevronsRight, ChevronLeft, ChevronRight, ArrowDownUp } from 'lucide-react';
 import { fNumber, fVolume, formatDistanceToNowStrict } from 'src/utils/formatters';
 import Link from 'next/link';
 import { cn } from 'src/utils/cn';
 
 const BASE_URL = 'https://api.xrpl.to/v1';
 
-const Container = ({ className, children, ...p }) => <div className={cn('max-w-[1920px] mx-auto px-4 py-6', className)} {...p}>{children}</div>;
+const Container = ({ className, children, ...p }) => <div className={cn('max-w-[1920px] mx-auto px-2.5 py-4 md:px-4 md:py-6', className)} {...p}>{children}</div>;
 
-const Title = ({ darkMode, className, children, ...p }) => <h1 className={cn('text-[22px] font-normal mb-1', darkMode ? 'text-white' : 'text-[#212B36]', className)} {...p}>{children}</h1>;
+const Title = ({ darkMode, className, children, ...p }) => <h1 className={cn('text-[22px] font-semibold tracking-[-0.02em] mb-1', darkMode ? 'text-white/95' : 'text-[#1a1a2e]', className)} {...p}>{children}</h1>;
 
-const Subtitle = ({ darkMode, className, children, ...p }) => <p className={cn('text-[13px] mb-6', darkMode ? 'text-white/50' : 'text-[#637381]', className)} {...p}>{children}</p>;
+const Subtitle = ({ darkMode, className, children, ...p }) => <p className={cn('text-[13px] tracking-[0.01em] mb-6', darkMode ? 'text-white/60' : 'text-[#637381]', className)} {...p}>{children}</p>;
 
 const TableContainer = ({ darkMode, className, children, ...p }) => <div className={cn('overflow-x-auto scrollbar-none bg-transparent rounded-xl backdrop-blur-[12px] border-[1.5px]', darkMode ? 'border-white/10' : 'border-black/[0.06]', className)} style={{ scrollbarWidth: 'none' }} {...p}>{children}</div>;
 
-const StyledTable = ({ className, children, ...p }) => <table className={cn('w-full border-collapse table-fixed', className)} {...p}>{children}</table>;
+const StyledTable = ({ className, children, ...p }) => <table className={cn('w-full border-collapse table-fixed hidden md:table', className)} {...p}>{children}</table>;
 
 const StyledTableHead = ({ darkMode, className, children, ...p }) => <thead className={cn('sticky top-0 z-10 bg-transparent backdrop-blur-[12px]', className)} {...p}>{children}</thead>;
 
 const StyledTh = ({ darkMode, align, width, sortable, className, children, ...p }) => (
   <th
     className={cn(
-      'font-medium text-[11px] tracking-[0.04em] uppercase py-4 px-3 whitespace-nowrap font-[inherit] transition-colors duration-150',
-      darkMode ? 'text-white/40 border-b-[1.5px] border-white/10' : 'text-black/[0.45] border-b-[1.5px] border-black/[0.06]',
+      'font-semibold text-[10px] tracking-[0.06em] uppercase py-4 px-3 whitespace-nowrap transition-none',
+      darkMode ? 'text-white/60 border-b-[1.5px] border-white/10' : 'text-[#919EAB] border-b-[1.5px] border-black/[0.06]',
       sortable ? 'cursor-pointer' : 'cursor-default',
       sortable && 'hover:text-[#3b82f6]',
       className
@@ -41,13 +41,13 @@ const StyledTh = ({ darkMode, align, width, sortable, className, children, ...p 
 );
 
 const StyledTbody = ({ darkMode, className, children, ...p }) => (
-  <tbody className={cn('[&_tr]:border-b-[1.5px] [&_tr]:transition-all [&_tr]:duration-150', darkMode ? '[&_tr]:border-white/10 [&_tr:hover]:bg-white/[0.02]' : '[&_tr]:border-black/[0.06] [&_tr:hover]:bg-black/[0.01]', className)} {...p}>{children}</tbody>
+  <tbody className={cn('[&_tr]:border-b-[1.5px] [&_tr]:transition-[border-color,background-color] [&_tr]:duration-150', darkMode ? '[&_tr]:border-white/10 [&_tr:hover]:bg-white/[0.02]' : '[&_tr]:border-black/[0.06] [&_tr:hover]:bg-black/[0.01]', className)} {...p}>{children}</tbody>
 );
 
 const StyledTd = ({ darkMode, color, align, className, children, ...p }) => (
   <td
-    className={cn('py-[18px] px-3 text-[13px] tracking-[0.01em] align-middle whitespace-nowrap', className)}
-    style={{ color: color || (darkMode ? '#fff' : '#212B36'), textAlign: align || 'left' }}
+    className={cn('py-[18px] px-3 text-[13px] tracking-[0.005em] align-middle whitespace-nowrap', className)}
+    style={{ color: color || (darkMode ? 'rgba(255,255,255,0.88)' : '#1a1a2e'), textAlign: align || 'left' }}
     {...p}
   >
     {children}
@@ -64,14 +64,14 @@ const SortIndicator = ({ direction, className, children, ...p }) => (
   </span>
 );
 
-const TraderLink = ({ className, children, ...p }) => <Link className={cn('text-[#3b82f6] no-underline font-medium transition-colors duration-150 hover:text-[#60a5fa] hover:underline', className)} {...p}>{children}</Link>;
+const TraderLink = ({ className, children, ...p }) => <Link className={cn('text-[#3b82f6] no-underline font-semibold tracking-[0.01em] hover:text-[#60a5fa] hover:underline', className)} {...p}>{children}</Link>;
 
 const PaginationContainer = ({ darkMode, className, children, ...p }) => <div className={cn('flex items-center justify-center gap-1 mt-4 px-[10px] py-[6px] min-h-[36px] rounded-xl bg-transparent border-[1.5px]', darkMode ? 'border-white/10' : 'border-black/[0.06]', className)} {...p}>{children}</div>;
 
 const NavButton = ({ darkMode, className, children, ...p }) => (
   <button
     className={cn(
-      'w-[26px] h-[26px] rounded-xl border-[1.5px] bg-transparent cursor-pointer flex items-center justify-center transition-all duration-150',
+      'w-[26px] h-[26px] rounded-xl border-[1.5px] bg-transparent cursor-pointer flex items-center justify-center transition-[border-color,background-color] duration-150',
       darkMode ? 'border-white/10 text-white hover:not-disabled:border-white/[0.15] hover:not-disabled:bg-white/[0.02]' : 'border-black/[0.06] text-[#212B36] hover:not-disabled:border-black/10 hover:not-disabled:bg-black/[0.01]',
       'disabled:opacity-30 disabled:cursor-not-allowed',
       className
@@ -85,7 +85,7 @@ const NavButton = ({ darkMode, className, children, ...p }) => (
 const PageButton = ({ selected, darkMode, className, children, ...p }) => (
   <button
     className={cn(
-      'min-w-[22px] h-[22px] rounded-xl border-[1.5px] cursor-pointer text-[11px] px-1 transition-all duration-150',
+      'min-w-[22px] h-[22px] rounded-xl border-[1.5px] cursor-pointer text-[11px] px-1 transition-[border-color,background-color] duration-150',
       selected
         ? 'border-[#4285f4] bg-[#4285f4] text-white font-medium hover:not-disabled:border-[#1976D2] hover:not-disabled:bg-[#1976D2]'
         : darkMode
@@ -101,17 +101,17 @@ const PageButton = ({ selected, darkMode, className, children, ...p }) => (
 
 const EmptyState = ({ darkMode, className, children, ...p }) => <div className={cn('text-center py-16 px-4 rounded-xl border-[1.5px] border-dashed', darkMode ? 'border-white/20' : 'border-black/20', className)} {...p}>{children}</div>;
 
-const PaginationInfo = ({ darkMode, className, children, ...p }) => <span className={cn('text-[11px] mx-2', darkMode ? 'text-white/40' : 'text-black/40', className)} {...p}>{children}</span>;
+const PaginationInfo = ({ darkMode, className, children, ...p }) => <span className={cn('text-[11px] font-medium tracking-[0.02em] mx-2', darkMode ? 'text-white/50' : 'text-black/35', className)} {...p}>{children}</span>;
 
 const StatsGrid = ({ className, children, ...p }) => <div className={cn('grid grid-cols-4 gap-3 mb-6 max-md:grid-cols-2', className)} {...p}>{children}</div>;
 
-const StatCard = ({ darkMode, className, children, ...p }) => <div className={cn('p-4 rounded-xl bg-transparent border-[1.5px] transition-all duration-150', darkMode ? 'border-white/10 hover:border-white/[0.15] hover:bg-white/[0.02]' : 'border-black/[0.06] hover:border-black/10 hover:bg-black/[0.01]', className)} {...p}>{children}</div>;
+const StatCard = ({ darkMode, className, children, ...p }) => <div className={cn('p-4 rounded-xl bg-transparent border-[1.5px] transition-[border-color,background-color] duration-150', darkMode ? 'border-white/10 hover:border-white/[0.15] hover:bg-white/[0.02]' : 'border-black/[0.06] hover:border-black/10 hover:bg-black/[0.01]', className)} {...p}>{children}</div>;
 
-const StatLabel = ({ darkMode, className, children, ...p }) => <div className={cn('text-[10px] uppercase tracking-[0.05em] mb-[6px]', darkMode ? 'text-white/40' : 'text-black/[0.45]', className)} {...p}>{children}</div>;
+const StatLabel = ({ darkMode, className, children, ...p }) => <div className={cn('text-[10px] uppercase tracking-[0.06em] font-semibold mb-[6px]', darkMode ? 'text-white/50' : 'text-[#919EAB]', className)} {...p}>{children}</div>;
 
-const StatValue = ({ darkMode, className, children, ...p }) => <div className={cn('text-lg font-semibold', darkMode ? 'text-white' : 'text-[#212B36]', className)} {...p}>{children}</div>;
+const StatValue = ({ darkMode, className, children, ...p }) => <div className={cn('text-lg font-bold tracking-[-0.01em]', darkMode ? 'text-white/95' : 'text-[#1a1a2e]', className)} {...p}>{children}</div>;
 
-const StatSub = ({ darkMode, className, children, ...p }) => <div className={cn('text-[11px] mt-1', darkMode ? 'text-white/[0.35]' : 'text-black/40', className)} {...p}>{children}</div>;
+const StatSub = ({ darkMode, className, children, ...p }) => <div className={cn('text-[11px] tracking-[0.01em] mt-1', darkMode ? 'text-white/50' : 'text-black/35', className)} {...p}>{children}</div>;
 
 const TABLE_HEAD = [
   { id: 'rank', label: '#', align: 'center', width: '32px' },
@@ -236,7 +236,7 @@ export default function TokenTradersPage({ traders = [], pagination = {}, trader
                 {fVolume(traderBalances.balance24h || 0)} XRP
               </StatValue>
               <StatSub darkMode={darkMode}>
-                {fNumber(traderBalances.traders24h || 0)} traders
+                {fNumber(traderBalances.traders24h || 0)} funded of {fNumber(totalTraders)} traders
               </StatSub>
             </StatCard>
             <StatCard darkMode={darkMode}>
@@ -245,7 +245,7 @@ export default function TokenTradersPage({ traders = [], pagination = {}, trader
                 {fVolume(traderBalances.balance7d || 0)} XRP
               </StatValue>
               <StatSub darkMode={darkMode}>
-                {fNumber(traderBalances.traders7d || 0)} traders
+                {fNumber(traderBalances.traders7d || 0)} funded of {fNumber(totalTraders)} traders
               </StatSub>
             </StatCard>
             <StatCard darkMode={darkMode}>
@@ -254,7 +254,7 @@ export default function TokenTradersPage({ traders = [], pagination = {}, trader
                 {fVolume(traderBalances.balance30d || 0)} XRP
               </StatValue>
               <StatSub darkMode={darkMode}>
-                {fNumber(traderBalances.traders30d || 0)} traders
+                {fNumber(traderBalances.traders30d || 0)} funded of {fNumber(totalTraders)} traders
               </StatSub>
             </StatCard>
             <StatCard darkMode={darkMode}>
@@ -263,7 +263,7 @@ export default function TokenTradersPage({ traders = [], pagination = {}, trader
                 {fVolume(traderBalances.balanceAll || 0)} XRP
               </StatValue>
               <StatSub darkMode={darkMode}>
-                {fNumber(traderBalances.tradersAll || 0)} traders
+                {fNumber(traderBalances.tradersAll || 0)} funded of {fNumber(totalTraders)} traders
               </StatSub>
             </StatCard>
           </StatsGrid>
@@ -316,16 +316,39 @@ export default function TokenTradersPage({ traders = [], pagination = {}, trader
               </div>
             </div>
             <div
-              className={cn('text-xs font-medium tracking-[0.1em] mb-1', darkMode ? 'text-white/80' : 'text-[#4b5563]')}
+              className={cn('text-[11px] font-bold tracking-[0.12em] mb-1', darkMode ? 'text-white/60' : 'text-[#4b5563]')}
             >
               NO TRADERS DATA
             </div>
-            <div className={cn('text-[11px]', darkMode ? 'text-white/30' : 'text-[#9ca3af]')}>
+            <div className={cn('text-[11px] tracking-[0.01em]', darkMode ? 'text-white/25' : 'text-[#9ca3af]')}>
               Trader data will appear here when available
             </div>
           </EmptyState>
         ) : (
           <>
+            {/* Mobile sort chips */}
+            <div className="md:hidden mb-3 flex items-center gap-2 overflow-x-auto scrollbar-none pb-1" style={{ scrollbarWidth: 'none' }}>
+              <div className={cn('flex items-center gap-1 shrink-0 pl-0.5', darkMode ? 'text-white/40' : 'text-black/[0.45]')}>
+                <ArrowDownUp size={12} />
+              </div>
+              {TABLE_HEAD.filter(c => c.sortable).map(c => (
+                <button
+                  key={c.id}
+                  onClick={() => handleSortChange(c.id)}
+                  className={cn(
+                    'shrink-0 text-[11px] tracking-[0.02em] py-[5px] px-2.5 rounded-full border-[1.5px] transition-[border-color,background-color] duration-150 cursor-pointer whitespace-nowrap',
+                    sortBy === c.id
+                      ? 'border-[#3b82f6] bg-[#3b82f6]/10 text-[#3b82f6] font-medium'
+                      : darkMode
+                        ? 'border-white/10 bg-transparent text-white/50 hover:border-white/20 hover:text-white/70'
+                        : 'border-black/[0.06] bg-transparent text-black/40 hover:border-black/10 hover:text-black/60'
+                  )}
+                >
+                  {c.label}
+                </button>
+              ))}
+            </div>
+
             <TableContainer darkMode={darkMode}>
               <StyledTable>
                 <StyledTableHead darkMode={darkMode}>
@@ -367,7 +390,7 @@ export default function TokenTradersPage({ traders = [], pagination = {}, trader
                         <StyledTd
                           align="center"
                           darkMode={darkMode}
-                          color={darkMode ? 'rgba(255,255,255,0.4)' : '#919EAB'}
+                          color={darkMode ? 'rgba(255,255,255,0.6)' : '#919EAB'}
                         >
                           {rank}
                         </StyledTd>
@@ -458,6 +481,7 @@ export default function TokenTradersPage({ traders = [], pagination = {}, trader
                           darkMode={darkMode}
                           color={darkMode ? 'rgba(255,255,255,0.5)' : '#637381'}
                           className="text-[11px]"
+                          suppressHydrationWarning
                         >
                           {getLastActive(trader)}
                         </StyledTd>
@@ -466,6 +490,55 @@ export default function TokenTradersPage({ traders = [], pagination = {}, trader
                   })}
                 </StyledTbody>
               </StyledTable>
+
+              {/* Mobile card layout */}
+              <div className="md:hidden divide-y divide-white/10">
+                {traders.map((trader, idx) => {
+                  const addr = trader.address;
+                  const tp = trader.totalProfit || 0;
+                  const roi = trader.avgROI || 0;
+                  const rank = (currentPage - 1) * ROWS_PER_PAGE + idx + 1;
+
+                  return (
+                    <div key={addr || idx} className={cn('px-3 py-3', darkMode ? 'border-white/10' : 'border-black/[0.06]', idx > 0 && 'border-t-[1.5px]')}>
+                      {/* Row 1: Rank + Trader + P/L */}
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span className={cn('text-[11px] w-5 text-center shrink-0', darkMode ? 'text-white/60' : 'text-[#919EAB]')}>{rank}</span>
+                          <TraderLink href={`/address/${addr}`} className="text-[13px]">
+                            {addr ? `${addr.slice(0, 6)}...${addr.slice(-4)}` : '-'}
+                          </TraderLink>
+                        </div>
+                        <span className="font-semibold text-[13px] shrink-0 ml-2" style={{ color: tp >= 0 ? '#10b981' : '#ef4444' }}>
+                          {tp >= 0 ? '+' : ''}{fVolume(tp)}
+                        </span>
+                      </div>
+
+                      {/* Row 2: Key stats grid */}
+                      <div className="grid grid-cols-4 gap-x-3 gap-y-1.5 ml-7">
+                        <div>
+                          <div className={cn('text-[9px] uppercase tracking-[0.06em] font-semibold', darkMode ? 'text-white/50' : 'text-black/30')}>Vol</div>
+                          <div className={cn('text-[12px] font-medium', darkMode ? 'text-white/85' : 'text-[#1a1a2e]')}>{fVolume(trader.totalVolume || 0)}</div>
+                        </div>
+                        <div>
+                          <div className={cn('text-[9px] uppercase tracking-[0.06em] font-semibold', darkMode ? 'text-white/50' : 'text-black/30')}>Trades</div>
+                          <div className={cn('text-[12px] font-medium', darkMode ? 'text-white/85' : 'text-[#1a1a2e]')}>{fNumber(trader.totalTrades || 0)}</div>
+                        </div>
+                        <div>
+                          <div className={cn('text-[9px] uppercase tracking-[0.06em] font-semibold', darkMode ? 'text-white/50' : 'text-black/30')}>ROI</div>
+                          <div className="text-[12px]" style={{ color: roi >= 0 ? '#10b981' : '#ef4444' }}>
+                            {roi >= 0 ? '+' : ''}{roi.toFixed(1)}%
+                          </div>
+                        </div>
+                        <div>
+                          <div className={cn('text-[9px] uppercase tracking-[0.06em] font-semibold', darkMode ? 'text-white/50' : 'text-black/30')}>Win</div>
+                          <div className={cn('text-[12px] font-medium', darkMode ? 'text-white/85' : 'text-[#1a1a2e]')}>{(trader.winRate || 0).toFixed(0)}%</div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </TableContainer>
 
             {totalPages > 1 && (
@@ -474,6 +547,7 @@ export default function TokenTradersPage({ traders = [], pagination = {}, trader
                   darkMode={darkMode}
                   onClick={() => navigateToPage(1)}
                   disabled={currentPage === 1}
+                  aria-label="First page"
                 >
                   <ChevronsLeft size={12} />
                 </NavButton>
@@ -481,6 +555,7 @@ export default function TokenTradersPage({ traders = [], pagination = {}, trader
                   darkMode={darkMode}
                   onClick={() => navigateToPage(currentPage - 1)}
                   disabled={currentPage === 1}
+                  aria-label="Previous page"
                 >
                   <ChevronLeft size={12} />
                 </NavButton>
@@ -507,6 +582,7 @@ export default function TokenTradersPage({ traders = [], pagination = {}, trader
                   darkMode={darkMode}
                   onClick={() => navigateToPage(currentPage + 1)}
                   disabled={currentPage === totalPages}
+                  aria-label="Next page"
                 >
                   <ChevronRight size={12} />
                 </NavButton>
@@ -514,6 +590,7 @@ export default function TokenTradersPage({ traders = [], pagination = {}, trader
                   darkMode={darkMode}
                   onClick={() => navigateToPage(totalPages)}
                   disabled={currentPage === totalPages}
+                  aria-label="Last page"
                 >
                   <ChevronsRight size={12} />
                 </NavButton>
@@ -543,7 +620,23 @@ export async function getServerSideProps({ query }) {
       ),
       api.get(`${BASE_URL}/token/analytics/traders/summary`)
     ]);
-    const traders = tradersRes.data.data || [];
+    const rawTraders = tradersRes.data.data || [];
+    const traders = rawTraders.map(t => ({
+      address: t.address,
+      xrpBalance: t.xrpBalance || 0,
+      totalVolume: t.totalVolume || 0,
+      totalTrades: t.totalTrades || 0,
+      buyVolume: t.buyVolume || 0,
+      sellVolume: t.sellVolume || 0,
+      totalProfit: t.totalProfit || 0,
+      avgROI: t.avgROI || 0,
+      winRate: t.winRate || 0,
+      dexVolume: t.dexVolume || 0,
+      ammVolume: t.ammVolume || 0,
+      sourceTagStats: t.sourceTagStats || [],
+      washTradingScore: t.washTradingScore || 0,
+      lastTradeDate: t.lastTradeDate || null
+    }));
     const pagination = tradersRes.data.pagination || {};
     const traderBalances = summaryRes.data.traderBalances || {};
 
@@ -551,7 +644,8 @@ export async function getServerSideProps({ query }) {
       canonical: 'https://xrpl.to/token-traders',
       title: 'Token Traders | Top XRPL Token Traders',
       url: 'https://xrpl.to/token-traders',
-      imgUrl: 'https://xrpl.to/og/token-traders.webp',
+      imgUrl: 'https://xrpl.to/api/og/token-traders',
+      imgType: 'image/png',
       desc: 'Discover the top token traders on the XRP Ledger. Track profits, volume, and trading activity.'
     } } };
   } catch (error) {
@@ -560,7 +654,8 @@ export async function getServerSideProps({ query }) {
       canonical: 'https://xrpl.to/token-traders',
       title: 'Token Traders | Top XRPL Token Traders',
       url: 'https://xrpl.to/token-traders',
-      imgUrl: 'https://xrpl.to/og/token-traders.webp',
+      imgUrl: 'https://xrpl.to/api/og/token-traders',
+      imgType: 'image/png',
       desc: 'Discover the top token traders on the XRP Ledger. Track profits, volume, and trading activity.'
     } } };
   }

@@ -262,7 +262,8 @@ export async function getStaticProps() {
         canonical: 'https://xrpl.to/faucet',
         title: 'Faucet | Get Testnet XRP',
         url: 'https://xrpl.to/faucet',
-        imgUrl: 'https://xrpl.to/og/faucet.webp',
+        imgUrl: 'https://xrpl.to/api/og/faucet',
+        imgType: 'image/png',
         desc: 'Get free testnet XRP for development and testing on the XRP Ledger.'
       }
     }

@@ -110,7 +110,8 @@ export async function getStaticProps() {
     ogp.canonical = 'https://xrpl.to/new';
     ogp.title = 'New XRPL Tokens | Latest Launches | XRP Ledger';
     ogp.url = 'https://xrpl.to/new';
-    ogp.imgUrl = 'https://xrpl.to/og/new.webp';
+    ogp.imgUrl = 'https://xrpl.to/api/og/new';
+    ogp.imgType = 'image/png';
     ogp.desc =
       'Discover the newest XRPL tokens and latest launches on the XRP Ledger. Stay updated with fresh token listings and emerging projects in the XRP ecosystem.';
 

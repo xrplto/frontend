@@ -744,7 +744,7 @@ export default function EditCollection({ collection }) {
           placeholder="my-xrpl-nfts"
           type="EDIT_COLLECTION_SLUG"
           uuid={collection.uuid}
-          startText="https://xrpnft.com/nfts/"
+          startText="https://xrpl.to/nfts/"
           value={slug}
           setValid={setValid2}
           onChange={(e) => {

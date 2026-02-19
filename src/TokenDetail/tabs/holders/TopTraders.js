@@ -288,7 +288,7 @@ export default function TopTraders({ token, walletLabels: walletLabelsProp = {},
                   key={period.key}
                   onClick={() => handlePeriodChange(period.key)}
                   className={cn(
-                    'px-2.5 py-1 text-[11px] font-medium rounded-md transition-all',
+                    'px-2.5 py-1 text-[11px] font-medium rounded-md transition-[opacity,transform,background-color,border-color]',
                     timePeriod === period.key
                       ? 'bg-primary text-white'
                       : isDark
@@ -310,7 +310,7 @@ export default function TopTraders({ token, walletLabels: walletLabelsProp = {},
                     key={option.key}
                     onClick={() => handleSortChange(option.key)}
                     className={cn(
-                      'px-2 py-1 text-[11px] font-medium rounded-md transition-all',
+                      'px-2 py-1 text-[11px] font-medium rounded-md transition-[opacity,transform,background-color,border-color]',
                       sortType === option.key
                         ? isDark
                           ? 'bg-white/10 text-white'
@@ -341,7 +341,7 @@ export default function TopTraders({ token, walletLabels: walletLabelsProp = {},
                     value={searchAddress}
                     onChange={(e) => setSearchAddress(e.target.value)}
                     className={cn(
-                      'h-7 w-40 rounded-md border pl-8 pr-7 text-[12px] outline-none transition-colors',
+                      'h-7 w-40 rounded-md border pl-8 pr-7 text-[12px] outline-none transition-[background-color,border-color]',
                       isDark
                         ? 'border-white/10 bg-white/5 text-white placeholder-white/40 focus:border-primary'
                         : 'border-gray-200 bg-white text-gray-900 placeholder-gray-400 focus:border-primary'
@@ -517,7 +517,7 @@ export default function TopTraders({ token, walletLabels: walletLabelsProp = {},
                                 href={`/address/${trader.address}`}
                                 target="_blank"
                                 className={cn(
-                                  'text-[12px] font-mono hover:text-primary transition-colors',
+                                  'text-[12px] font-mono hover:text-primary transition-[background-color,border-color]',
                                   walletLabels[trader.address] ? 'text-primary' : isDark ? 'text-white/80' : 'text-gray-700'
                                 )}
                                 title={trader.address}
@@ -643,7 +643,7 @@ export default function TopTraders({ token, walletLabels: walletLabelsProp = {},
               disabled={!hasPrev}
               aria-label="Previous page"
               className={cn(
-                'p-1.5 rounded-md transition-colors',
+                'p-1.5 rounded-md transition-[background-color,border-color]',
                 !hasPrev ? 'opacity-30 cursor-not-allowed' : 'hover:bg-white/10',
                 isDark ? 'text-white/50' : 'text-gray-500'
               )}
@@ -664,7 +664,7 @@ export default function TopTraders({ token, walletLabels: walletLabelsProp = {},
               disabled={!hasNext}
               aria-label="Next page"
               className={cn(
-                'p-1.5 rounded-md transition-colors',
+                'p-1.5 rounded-md transition-[background-color,border-color]',
                 !hasNext ? 'opacity-30 cursor-not-allowed' : 'hover:bg-white/10',
                 isDark ? 'text-white/50' : 'text-gray-500'
               )}

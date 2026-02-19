@@ -1,13 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <!-- Main Pages -->
   <url>
     <loc>https://xrpl.to/</loc>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
-
-  <!-- Core Trading Pages -->
   <url>
     <loc>https://xrpl.to/trending</loc>
     <changefreq>hourly</changefreq>
@@ -49,6 +46,11 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://xrpl.to/gainers/30d</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://xrpl.to/swap</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
@@ -63,20 +65,31 @@
     <changefreq>hourly</changefreq>
     <priority>0.8</priority>
   </url>
-
-  <!-- Market Data Pages -->
   <url>
     <loc>https://xrpl.to/rsi-analysis</loc>
     <changefreq>hourly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://xrpl.to/token-market</loc>
+    <changefreq>hourly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://xrpl.to/token-traders</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://xrpl.to/nft-traders</loc>
     <changefreq>daily</changefreq>
     <priority>0.7</priority>
   </url>
-
-  <!-- NFT and Collections -->
+  <url>
+    <loc>https://xrpl.to/nft-market</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
   <url>
     <loc>https://xrpl.to/collections</loc>
     <changefreq>daily</changefreq>
@@ -92,15 +105,11 @@
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
-
-  <!-- User Features -->
   <url>
     <loc>https://xrpl.to/watchlist</loc>
     <changefreq>daily</changefreq>
     <priority>0.7</priority>
   </url>
-
-  <!-- Information Pages -->
   <url>
     <loc>https://xrpl.to/about</loc>
     <changefreq>monthly</changefreq>
@@ -116,15 +125,11 @@
     <changefreq>daily</changefreq>
     <priority>0.7</priority>
   </url>
-
-  <!-- Business Pages -->
   <url>
     <loc>https://xrpl.to/advertise</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
-
-  <!-- XRPL Ledger Pages -->
   <url>
     <loc>https://xrpl.to/ledger</loc>
     <changefreq>daily</changefreq>

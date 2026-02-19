@@ -49,7 +49,7 @@ export default function Overview({ collection }) {
         {collectionName} NFT Collection
       </h1>
 
-      <div id="back-to-top-anchor" className="px-2 sm:px-4 mt-4">
+      <div id="back-to-top-anchor" className="px-2 sm:px-4 mt-4 min-h-[calc(100vh-120px)]">
         <Collection collection={collection} />
       </div>
 
@@ -131,7 +131,7 @@ export async function getServerSideProps(ctx) {
       canonical: `https://xrpl.to/nfts/${slug}`,
       title: `${name} | XRPL NFT Collection`,
       url: `https://xrpl.to/nfts/${slug}`,
-      imgUrl: `https://xrpl.to/api/og/collection/${encodeURIComponent(slug)}?name=${encodeURIComponent(name)}${collectionImage ? `&image=${encodeURIComponent(collectionImage)}` : ''}`,
+      imgUrl: `https://xrpl.to/api/og/collection/${encodeURIComponent(slug)}`,
       imgType: 'image/png',
       imgWidth: 1200,
       imgHeight: 630,

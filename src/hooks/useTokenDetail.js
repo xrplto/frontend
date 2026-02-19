@@ -78,7 +78,7 @@ export function useTokenDetail({
         console.warn('[TokenDetail WS] Connection limit reached - will not reconnect');
       }
     },
-    onError: (e) => console.error('[TokenDetail WS] Error:', e?.message || e),
+    onError: () => {},
     // Don't reconnect on: 4011=max connections, 4020/4021=custom auth errors
     shouldReconnect: (e) => ![4011, 4020, 4021].includes(e.code),
     reconnectAttempts: 5,

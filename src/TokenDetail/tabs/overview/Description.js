@@ -1,5 +1,6 @@
 import React, { useState, useContext, useRef, useEffect } from 'react';
-import ReactMarkdown from 'react-markdown';
+import dynamic from 'next/dynamic';
+const ReactMarkdown = dynamic(() => import('react-markdown'), { ssr: false });
 import { Edit, X, FileText, ChevronDown, ChevronUp } from 'lucide-react';
 import { ThemeContext, WalletContext } from 'src/context/AppContext';
 import { CompactSocialLinks, CompactTags } from './PriceStatistics';
@@ -116,7 +117,7 @@ export default function Description({
   return (
     <div
       className={cn(
-        'rounded-2xl w-full overflow-hidden transition-all duration-200 backdrop-blur-[8px]',
+        'rounded-2xl w-full overflow-hidden transition-[opacity,transform,background-color,border-color] duration-200 backdrop-blur-[8px]',
         effectiveIsDark ? 'bg-[rgba(10,10,10,0.5)] border border-white/[0.08]' : 'bg-[rgba(255,255,255,0.5)] border border-black/[0.06] shadow-[0_1px_3px_rgba(0,0,0,0.02)]'
       )}
     >
@@ -141,7 +142,7 @@ export default function Description({
           <button
             title={showEditor ? 'Save & close' : 'Edit'}
             className={cn(
-              'rounded-lg p-[5px] bg-transparent cursor-pointer flex items-center transition-all duration-150',
+              'rounded-lg p-[5px] bg-transparent cursor-pointer flex items-center transition-[opacity,transform,background-color,border-color] duration-150',
               'hover:bg-[rgba(59,130,246,0.08)] hover:text-[#3b82f6]',
               showEditor && 'hover:bg-[rgba(239,68,68,0.08)] hover:text-[#ef4444]'
             )}
@@ -180,7 +181,7 @@ export default function Description({
           {needsReadMore && (
             <button
               className={cn(
-                'bg-transparent border-none text-[#3b82f6] text-xs font-semibold cursor-pointer px-4 py-2 flex items-center gap-1 w-full justify-center transition-all duration-200 -mt-2',
+                'bg-transparent border-none text-[#3b82f6] text-xs font-semibold cursor-pointer px-4 py-2 flex items-center gap-1 w-full justify-center transition-[opacity,transform,background-color,border-color] duration-200 -mt-2',
                 'hover:text-[#2563eb]'
               )}
               onClick={() => setIsExpanded(!isExpanded)}

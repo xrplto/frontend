@@ -32,7 +32,7 @@ export default function OffersList({ nft, offers, handleAcceptOffer, handleCance
       )}
     >
       {offers && offers.length === 0 && (
-        <div className="my-4 text-center text-[13px] font-normal text-gray-500">
+        <div className={cn("my-4 text-center text-[13px] font-normal", isDark ? 'text-white/60' : 'text-gray-500')}>
           No offers available at the moment
         </div>
       )}
@@ -84,7 +84,7 @@ export default function OffersList({ nft, offers, handleAcceptOffer, handleCance
                       {offer.owner !== accountLogin && (
                         <button
                           onClick={() => window.dispatchEvent(new CustomEvent('openDm', { detail: { user: offer.owner } }))}
-                          className={cn('p-0.5 rounded hover:bg-white/10', isDark ? 'text-white/40 hover:text-[#650CD4]' : 'text-gray-400 hover:text-[#650CD4]')}
+                          className={cn('p-0.5 rounded hover:bg-white/10', isDark ? 'text-white/60 hover:text-[#650CD4]' : 'text-gray-400 hover:text-[#650CD4]')}
                           title="Message"
                         >
                           <MessageCircle size={10} />
@@ -102,7 +102,7 @@ export default function OffersList({ nft, offers, handleAcceptOffer, handleCance
 
               {offer.destination && (
                 <div className="mt-2 flex items-center gap-2">
-                  <Repeat size={14} className={isDark ? 'text-white/40' : 'text-gray-400'} />
+                  <Repeat size={14} className={isDark ? 'text-white/60' : 'text-gray-400'} />
                   <div
                     className={cn(
                       'text-[11px] font-normal',
@@ -116,7 +116,7 @@ export default function OffersList({ nft, offers, handleAcceptOffer, handleCance
 
               {offer.expiration && (
                 <div className="mt-2 flex items-center gap-2">
-                  <Clock size={14} className={isDark ? 'text-white/40' : 'text-gray-400'} />
+                  <Clock size={14} className={isDark ? 'text-white/60' : 'text-gray-400'} />
                   <div
                     className={cn(
                       'text-[11px] font-normal',

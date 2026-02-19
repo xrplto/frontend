@@ -36,10 +36,11 @@ const StyledTableBody = ({ darkMode, className, children, ...p }) => (
 const StyledRow = ({ darkMode, className, children, ...p }) => (
   <tr
     className={cn(
-      'border-b-[1.5px] cursor-pointer transition-all duration-150',
+      'border-b-[1.5px] cursor-pointer transition-[background-color] duration-150',
       darkMode ? 'border-white/10 hover:bg-white/[0.02]' : 'border-black/[0.06] hover:bg-black/[0.01]',
       className
     )}
+    style={{ contentVisibility: 'auto', containIntrinsicSize: 'auto 65px' }}
     {...p}
   >{children}</tr>
 );
@@ -54,7 +55,7 @@ const StyledCell = ({ isCollectionColumn, align, fontWeight, color, darkMode, wi
     style={{
       textAlign: align || 'left',
       fontWeight: fontWeight || 400,
-      color: color || (darkMode ? 'rgba(255,255,255,0.9)' : '#1a1a1a'),
+      color: color || (darkMode ? 'rgba(255,255,255,0.85)' : '#1a1a2e'),
       width: width || 'auto'
     }}
     {...p}
@@ -65,10 +66,11 @@ const StyledCell = ({ isCollectionColumn, align, fontWeight, color, darkMode, wi
 const MobileCollectionCard = ({ darkMode, className, children, ...p }) => (
   <div
     className={cn(
-      'flex w-full py-[10px] px-3 border-b-[1.5px] cursor-pointer box-border items-center transition-all duration-150',
+      'flex w-full py-[10px] px-3 border-b-[1.5px] cursor-pointer box-border items-center transition-[background-color] duration-150',
       darkMode ? 'border-white/10 hover:bg-white/[0.02]' : 'border-black/[0.06] hover:bg-black/[0.01]',
       className
     )}
+    style={{ contentVisibility: 'auto', containIntrinsicSize: 'auto 49px' }}
     {...p}
   >{children}</div>
 );
@@ -80,7 +82,7 @@ const MobileCollectionInfo = ({ className, children, ...p }) => (
 const MobileCell = ({ flex, align, fontWeight, color, darkMode, minWidth, wordBreak, lineHeight, className, children, ...p }) => (
   <div
     className={cn('px-[6px] text-sm font-mono tabular-nums', className)}
-    style={{ flex: flex || 1, textAlign: align || 'right', fontWeight: fontWeight || 400, color: color || (darkMode ? 'rgba(255,255,255,0.9)' : '#1a1a1a'), minWidth: minWidth || 'auto', wordBreak: wordBreak || 'normal', lineHeight: lineHeight || 'normal' }}
+    style={{ flex: flex || 1, textAlign: align || 'right', fontWeight: fontWeight || 400, color: color || (darkMode ? 'rgba(255,255,255,0.85)' : '#1a1a2e'), minWidth: minWidth || 'auto', wordBreak: wordBreak || 'normal', lineHeight: lineHeight || 'normal' }}
     {...p}
   >{children}</div>
 );
@@ -99,7 +101,7 @@ const CollectionDetails = ({ className, children, ...p }) => (
 
 const CollectionName = ({ isMobile, darkMode, className, children, ...p }) => (
   <span
-    className={cn('font-medium overflow-hidden text-ellipsis whitespace-nowrap block leading-[1.4] font-sans', darkMode ? 'text-white' : 'text-[#1a1a1a]', className)}
+    className={cn('font-semibold overflow-hidden text-ellipsis whitespace-nowrap block leading-[1.4] font-sans tracking-[-0.01em]', darkMode ? 'text-white/95' : 'text-[#1a1a2e]', className)}
     style={{ fontSize: isMobile ? '14px' : '15px', maxWidth: isMobile ? '120px' : '180px' }}
     {...p}
   >{children}</span>
@@ -107,8 +109,8 @@ const CollectionName = ({ isMobile, darkMode, className, children, ...p }) => (
 
 const CollectionSubtext = ({ isMobile, darkMode, className, children, ...p }) => (
   <span
-    className={cn('font-normal block overflow-hidden text-ellipsis whitespace-nowrap leading-[1.3] uppercase font-sans', darkMode ? 'text-white/45' : 'text-black/50', className)}
-    style={{ fontSize: isMobile ? '12px' : '13px', maxWidth: isMobile ? '120px' : '180px' }}
+    className={cn('font-medium block overflow-hidden text-ellipsis whitespace-nowrap leading-[1.3] uppercase tracking-[0.02em] font-sans', darkMode ? 'text-white/35' : 'text-black/40', className)}
+    style={{ fontSize: isMobile ? '11px' : '12px', maxWidth: isMobile ? '120px' : '180px' }}
     {...p}
   >{children}</span>
 );
@@ -135,7 +137,7 @@ const RowsSelector = ({ className, children, ...p }) => (
 
 const Text = ({ darkMode, fontWeight, className, children, ...p }) => (
   <span
-    className={cn('text-[11px] tabular-nums', darkMode ? 'text-white/60' : 'text-[#212B36]/60', className)}
+    className={cn('text-[11px] tabular-nums font-medium tracking-[0.01em]', darkMode ? 'text-white/40' : 'text-[#212B36]/50', className)}
     style={{ fontWeight: fontWeight || 400 }}
     {...p}
   >{children}</span>
@@ -144,7 +146,7 @@ const Text = ({ darkMode, fontWeight, className, children, ...p }) => (
 const NavButton = ({ darkMode, className, children, ...p }) => (
   <button
     className={cn(
-      'w-[26px] h-[26px] rounded-xl border-[1.5px] bg-transparent cursor-pointer inline-flex items-center justify-center p-0 transition-all duration-150',
+      'w-[26px] h-[26px] rounded-xl border-[1.5px] bg-transparent cursor-pointer inline-flex items-center justify-center p-0 transition-[background-color,border-color] duration-150',
       'disabled:cursor-not-allowed',
       darkMode
         ? 'border-white/10 text-white hover:enabled:border-white/[0.15] hover:enabled:bg-white/[0.02] disabled:text-white/30'
@@ -158,7 +160,7 @@ const NavButton = ({ darkMode, className, children, ...p }) => (
 const PageButton = ({ selected, darkMode, className, children, ...p }) => (
   <button
     className={cn(
-      'min-w-[22px] h-[22px] rounded-xl border-[1.5px] cursor-pointer inline-flex items-center justify-center px-1 m-0 text-[11px] tabular-nums transition-all duration-150',
+      'min-w-[22px] h-[22px] rounded-xl border-[1.5px] cursor-pointer inline-flex items-center justify-center px-1 m-0 text-[11px] tabular-nums transition-[background-color,border-color] duration-150',
       'disabled:cursor-not-allowed disabled:opacity-30',
       selected
         ? 'border-[#4285f4] bg-[#4285f4] text-white font-medium hover:enabled:border-[#1976D2] hover:enabled:bg-[#1976D2]'
@@ -213,12 +215,12 @@ const StyledTableHead = ({ scrollTopLength, className, children, ...p }) => (
 const StyledTableCell = ({ darkMode, isCollectionColumn, align, width, sortable, className, children, ...p }) => (
   <th
     className={cn(
-      'font-medium text-[11px] tracking-[0.05em] uppercase py-[14px] px-2 border-b-[1.5px] box-border font-[inherit] transition-all duration-150',
+      'font-semibold text-[10px] tracking-[0.06em] uppercase py-[14px] px-2 border-b-[1.5px] box-border',
       'first-of-type:pl-3 last-of-type:pr-3',
       isCollectionColumn ? 'whitespace-normal' : 'whitespace-nowrap',
       sortable ? 'cursor-pointer' : 'cursor-default',
-      darkMode ? 'text-white/50 border-white/10' : 'text-black/55 border-black/[0.06]',
-      sortable && (darkMode ? 'hover:text-white/80' : 'hover:text-black/80'),
+      darkMode ? 'text-white/30 border-white/10' : 'text-[#919EAB] border-black/[0.06]',
+      sortable && (darkMode ? 'hover:text-white/60' : 'hover:text-black/60'),
       className
     )}
     style={{ textAlign: align || 'left', width: width || 'auto', minWidth: isCollectionColumn ? '200px' : (width || 'auto') }}
@@ -228,7 +230,7 @@ const StyledTableCell = ({ darkMode, isCollectionColumn, align, width, sortable,
 
 const SortIndicator = ({ active, darkMode, direction, className, children, ...p }) => (
   <span
-    className={cn('inline-block ml-[6px] text-[8px] transition-all duration-150', className)}
+    className={cn('inline-block ml-[6px] text-[8px] transition-[opacity,transform] duration-150', className)}
     style={{
       color: active ? '#4285f4' : (darkMode ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.25)'),
       transform: direction === 'asc' ? 'rotate(180deg)' : 'rotate(0deg)',
@@ -248,8 +250,8 @@ const MobileContainer = ({ darkMode, className, children, ...p }) => (
 const StyledMobileHeader = ({ isDark, className, children, ...p }) => (
   <div
     className={cn(
-      'flex w-full py-3 px-4 bg-transparent backdrop-blur-[12px] border-b-[1.5px] text-[11px] font-medium uppercase tracking-[0.05em] sticky top-0 z-10 box-border',
-      isDark ? 'border-white/10 text-white/50' : 'border-black/[0.06] text-black/55',
+      'flex w-full py-3 px-4 bg-transparent backdrop-blur-[12px] border-b-[1.5px] text-[10px] font-semibold uppercase tracking-[0.06em] sticky top-0 z-10 box-border',
+      isDark ? 'border-white/10 text-white/30' : 'border-black/[0.06] text-[#919EAB]',
       className
     )}
     {...p}
@@ -259,7 +261,7 @@ const StyledMobileHeader = ({ isDark, className, children, ...p }) => (
 const StyledHeaderCell = ({ flex, align, sortable, isDark, className, children, ...p }) => (
   <div
     className={cn(
-      'px-[6px] transition-[color] duration-150',
+      'px-[6px]',
       sortable ? 'cursor-pointer' : 'cursor-default',
       sortable && (isDark ? 'hover:text-white/80' : 'hover:text-black/80'),
       className
@@ -421,7 +423,7 @@ const ListHead = memo(
 
     // Render label with badge style for time periods
     const renderLabel = (headCell) => {
-      const badgeClass = 'opacity-50 text-[10px]';
+      const badgeClass = 'text-[9px] font-bold text-white/40';
 
       switch (headCell.id) {
         case 'totalVol24h':
@@ -513,6 +515,10 @@ const OptimizedImage = memo(
         <img
           src={imgSrc}
           alt={alt}
+          width={size}
+          height={size}
+          loading="lazy"
+          decoding="async"
           onError={handleError}
           className="w-full h-full object-cover block"
         />
@@ -635,7 +641,7 @@ const DesktopCollectionRow = ({ collection, idx, darkMode, handleRowClick }) => 
         darkMode={darkMode}
         className="w-10 min-w-[40px] max-w-[40px]"
       >
-        <span className={cn('font-normal text-[13px]', darkMode ? 'text-white/40' : 'text-black/40')}>
+        <span className={cn('font-medium text-[13px]', darkMode ? 'text-white/35' : 'text-black/40')}>
           {idx + 1}
         </span>
       </StyledCell>
@@ -690,7 +696,7 @@ const DesktopCollectionRow = ({ collection, idx, darkMode, handleRowClick }) => 
       </StyledCell>
 
       <StyledCell align="right" darkMode={darkMode} fontWeight={400}>
-        <span className={cn('text-[13px]', darkMode ? 'text-white/60' : 'text-black/60')}>
+        <span className={cn('text-[13px]', darkMode ? 'text-white/40' : 'text-black/45')}>
           {strDateTime}
         </span>
       </StyledCell>
@@ -720,7 +726,7 @@ const DesktopCollectionRow = ({ collection, idx, darkMode, handleRowClick }) => 
       </StyledCell>
 
       <StyledCell align="right" darkMode={darkMode} fontWeight={400} className="pr-4">
-        <span className={cn('font-sans', darkMode ? 'text-white/70' : 'text-black/70')}>
+        <span className={cn('font-sans font-medium', darkMode ? 'text-white/45' : 'text-black/50')}>
           {origin || 'XRPL'}
         </span>
       </StyledCell>
@@ -859,7 +865,7 @@ const ListToolbar = memo(function ListToolbar({ rows, setRows, page, setPage, to
           disabled={!hasPrev}
           aria-label="Previous page"
           className={cn(
-            'p-1.5 rounded-xl border-[1.5px] transition-all',
+            'p-1.5 rounded-xl border-[1.5px] transition-[background-color,border-color]',
             !hasPrev ? 'opacity-30 cursor-not-allowed' : '',
             darkMode
               ? 'text-white/50 border-white/10 hover:border-white/[0.15] hover:bg-white/[0.02]'
@@ -871,7 +877,7 @@ const ListToolbar = memo(function ListToolbar({ rows, setRows, page, setPage, to
         <span
           className={cn(
             'text-[11px] px-2 tabular-nums',
-            darkMode ? 'text-white/40' : 'text-gray-500'
+            darkMode ? 'text-white/60' : 'text-gray-500'
           )}
         >
           {currentPage} / {totalPages}
@@ -882,7 +888,7 @@ const ListToolbar = memo(function ListToolbar({ rows, setRows, page, setPage, to
           disabled={!hasNext}
           aria-label="Next page"
           className={cn(
-            'p-1.5 rounded-xl border-[1.5px] transition-all',
+            'p-1.5 rounded-xl border-[1.5px] transition-[background-color,border-color]',
             !hasNext ? 'opacity-30 cursor-not-allowed' : '',
             darkMode
               ? 'text-white/50 border-white/10 hover:border-white/[0.15] hover:bg-white/[0.02]'
@@ -910,7 +916,7 @@ export default function CollectionList({
   const darkMode = themeName === 'XrplToDarkTheme';
 
   const [page, setPage] = useState(0);
-  const [rows, setRows] = useState(50);
+  const [rows, setRows] = useState(20);
   const [order, setOrder] = useState('desc');
   const [orderBy, setOrderBy] = useState('totalVol24h');
 
@@ -944,7 +950,7 @@ export default function CollectionList({
       page === 0 &&
       order === 'desc' &&
       orderBy === 'totalVol24h' &&
-      rows === 50 &&
+      rows === 20 &&
       !tag &&
       initialCollections.length > 0
     ) {

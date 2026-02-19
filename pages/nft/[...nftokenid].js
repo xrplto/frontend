@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useContext, useEffect } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import api from 'src/utils/api';
 import { cn } from 'src/utils/cn';
 
@@ -11,14 +11,17 @@ import Footer from 'src/components/Footer';
 import ScrollToTop from 'src/components/ScrollToTop';
 import TokenTabs from 'src/TokenDetail/components/TokenTabs';
 import { addTokenToTabs } from 'src/hooks/useTokenTabs';
-const NFTDetail = lazy(() => import('src/nft'));
+import NFTDetail from 'src/nft';
 
 import { ThemeContext } from 'src/context/AppContext';
 
 export default function Overview({ nft }) {
   const { themeName } = useContext(ThemeContext);
   const isDark = themeName === 'XrplToDarkTheme';
-  const isMobile = typeof window !== 'undefined' && window.innerWidth < 960;
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    setIsMobile(window.innerWidth < 960);
+  }, []);
 
   const nftName = nft?.nft?.meta?.name || nft?.nft?.meta?.Name || 'No Name';
   const nftTokenId = nft?.nft?.NFTokenID;
@@ -28,6 +31,7 @@ export default function Overview({ nft }) {
   const collectionName = typeof rawCollection === 'string' ? rawCollection : rawCollection?.name;
   const nftThumbnail =
     nft?.nft?.files?.[0]?.thumbnail?.small || nft?.nft?.files?.[0]?.thumbnail?.medium;
+  const nftCoverUrl = nft?.nft ? getNftCoverUrl(nft.nft, 'small', 'image') : null;
 
   // Add current NFT to tabs on mount
   useEffect(() => {
@@ -37,11 +41,12 @@ export default function Overview({ nft }) {
         name: nftName,
         type: 'nft',
         thumbnail: nftThumbnail,
+        coverUrl: nftCoverUrl,
         collectionSlug,
         collectionName
       });
     }
-  }, [nftTokenId, nftName, nftThumbnail, collectionSlug, collectionName]);
+  }, [nftTokenId, nftName, nftThumbnail, nftCoverUrl, collectionSlug, collectionName]);
 
   // Also add collection to tabs - fetch logoImage from collection API
   useEffect(() => {
@@ -81,21 +86,8 @@ export default function Overview({ nft }) {
 
       {!isMobile && <TokenTabs currentMd5={nftTokenId} />}
 
-      <div id="back-to-top-anchor" className="mx-auto max-w-7xl flex-1 px-4 mt-4">
-        <Suspense
-          fallback={
-            <div className="flex min-h-[400px] items-center justify-center">
-              <div
-                className={cn(
-                  'h-10 w-10 animate-spin rounded-full border-4 border-t-transparent',
-                  isDark ? 'border-primary' : 'border-primary'
-                )}
-              />
-            </div>
-          }
-        >
-          <NFTDetail nft={nft.nft} />
-        </Suspense>
+      <div id="back-to-top-anchor" className="mx-auto max-w-7xl flex-1 px-4 mt-4 min-h-[calc(100vh-120px)]">
+        <NFTDetail nft={nft.nft} />
       </div>
 
       <ScrollToTop />
@@ -134,7 +126,7 @@ export async function getServerSideProps(ctx) {
     ogp.title = cname ? `${name} - ${cname}` : `${name}`;
     ogp.url = `https://xrpl.to/nft/${NFTokenID}`;
     const nftImage = getNftCoverUrl(nft, '', 'image') || getNftCoverUrl(nft, '', 'animation');
-    ogp.imgUrl = `https://xrpl.to/api/og/nft/${NFTokenID}?name=${encodeURIComponent(name)}${cname ? `&collection=${encodeURIComponent(cname)}` : ''}${nftImage ? `&image=${encodeURIComponent(nftImage)}` : ''}`;
+    ogp.imgUrl = `https://xrpl.to/api/og/nft/${NFTokenID}`;
     ogp.imgType = 'image/png';
     ogp.imgWidth = 1200;
     ogp.imgHeight = 630;

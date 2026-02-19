@@ -176,6 +176,9 @@ function TokenListComponent({
   const exchRate =
     metrics[activeFiatCurrency] || (activeFiatCurrency === 'CNH' ? metrics.CNY : null) || 1;
   const [isMobile, setIsMobile] = useState(false);
+  const [hasMounted, setHasMounted] = useState(false);
+
+  useEffect(() => { setHasMounted(true); }, []);
 
   useEffect(() => {
     const checkMobile = () => {
@@ -1029,7 +1032,7 @@ function TokenListComponent({
                 exchRate={exchRate}
                 darkMode={darkMode}
                 isMobile={true}
-                isLoggedIn={!!accountProfile?.account}
+                isLoggedIn={hasMounted && !!accountProfile?.account}
                 viewMode={viewMode}
                 rows={rows}
                 customColumns={customColumns}
@@ -1049,7 +1052,7 @@ function TokenListComponent({
                 tokens={tokens}
                 darkMode={darkMode}
                 isMobile={isMobile}
-                isLoggedIn={!!accountProfile?.account}
+                isLoggedIn={hasMounted && !!accountProfile?.account}
                 viewMode={viewMode}
                 customColumns={customColumns}
               />
@@ -1069,7 +1072,7 @@ function TokenListComponent({
                     exchRate={exchRate}
                     darkMode={darkMode}
                     isMobile={isMobile}
-                    isLoggedIn={!!accountProfile?.account}
+                    isLoggedIn={hasMounted && !!accountProfile?.account}
                     viewMode={viewMode}
                     customColumns={customColumns}
                     rows={rows}

@@ -46,12 +46,12 @@ const SentimentChart = memo(({ data, period, onPeriodChange, onHover, hoverIdx, 
   const totalNeutral = (data.neutral || []).reduce((a, b) => a + b, 0);
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
+    <div className="flex flex-col gap-6 min-w-0">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h3 className={cn("text-[13px] font-black uppercase tracking-widest opacity-40", isDark ? "text-white" : "text-black")}>
+          <h2 className={cn("text-[13px] font-black uppercase tracking-widest opacity-70", isDark ? "text-white" : "text-black")}>
             Market Sentiment
-          </h3>
+          </h2>
           <div className="flex items-center gap-2 mt-1">
             <span className={cn(
               "inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-widest",
@@ -73,12 +73,12 @@ const SentimentChart = memo(({ data, period, onPeriodChange, onHover, hoverIdx, 
               key={p}
               onClick={() => onPeriodChange(p)}
               className={cn(
-                'rounded-lg px-3 py-1.5 text-[11px] font-black transition-all',
+                'rounded-lg px-3.5 py-2 sm:px-3 sm:py-1.5 text-[11px] font-black transition-[background-color,box-shadow]',
                 period === p
-                  ? 'bg-primary text-white shadow-lg shadow-primary/20'
+                  ? 'bg-[#0a5cc5] text-white shadow-lg shadow-primary/20'
                   : isDark
-                    ? 'text-gray-500 hover:text-white'
-                    : 'text-gray-400 hover:text-black'
+                    ? 'text-gray-300 hover:text-white'
+                    : 'text-gray-500 hover:text-black'
               )}
             >
               {p === 'all' ? 'ALL' : `${p}D`}
@@ -87,10 +87,10 @@ const SentimentChart = memo(({ data, period, onPeriodChange, onHover, hoverIdx, 
         </div>
       </div>
 
-      <div className="relative rounded-xl">
+      <div className="relative rounded-xl overflow-hidden">
         <svg
           viewBox={`0 0 ${w} ${h}`}
-          className="w-full h-[120px] overflow-visible"
+          className="w-full h-[120px]"
           preserveAspectRatio="none"
           onMouseLeave={() => onHover(null)}
         >
@@ -154,10 +154,12 @@ const SentimentChart = memo(({ data, period, onPeriodChange, onHover, hoverIdx, 
         {hoverIdx !== null && data.labels[hoverIdx] && (
           <div
             className={cn(
-              'absolute top-2 -translate-x-1/2 px-3 py-1.5 rounded-xl border backdrop-blur-md pointer-events-none z-20',
+              'absolute top-2 px-3 py-1.5 rounded-xl border backdrop-blur-md pointer-events-none z-20',
               isDark ? 'bg-black/80 border-white/10' : 'bg-white/80 border-black/10'
             )}
-            style={{ left: `${(hoverIdx / (pts - 1)) * 100}%` }}
+            style={{
+              left: `clamp(0px, calc(${(hoverIdx / (pts - 1)) * 100}% - 50px), calc(100% - 100px))`
+            }}
           >
             <div className="text-[10px] font-black opacity-40 mb-1">{data.labels[hoverIdx]}</div>
             <div className="flex gap-4">
@@ -169,21 +171,21 @@ const SentimentChart = memo(({ data, period, onPeriodChange, onHover, hoverIdx, 
         )}
       </div>
 
-      <div className="flex items-center gap-8 justify-center pt-2">
+      <div className="flex items-center gap-4 sm:gap-8 justify-center pt-2 flex-wrap">
         <div className="flex items-center gap-2">
           <div className="h-1.5 w-1.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
-          <span className={cn('text-[11px] font-black tracking-widest opacity-40', isDark ? 'text-white' : 'text-black')}>BULLISH</span>
+          <span className={cn('text-[11px] font-black tracking-widest opacity-70', isDark ? 'text-white' : 'text-black')}>BULLISH</span>
           <span className="text-sm font-black text-green-500 tabular-nums">{totalBull.toLocaleString()}</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="h-1.5 w-1.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]" />
-          <span className={cn('text-[11px] font-black tracking-widest opacity-40', isDark ? 'text-white' : 'text-black')}>BEARISH</span>
+          <span className={cn('text-[11px] font-black tracking-widest opacity-70', isDark ? 'text-white' : 'text-black')}>BEARISH</span>
           <span className="text-sm font-black text-red-500 tabular-nums">{totalBear.toLocaleString()}</span>
         </div>
         {totalNeutral > 0 && (
           <div className="flex items-center gap-2">
             <div className="h-1.5 w-1.5 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]" />
-            <span className={cn('text-[11px] font-black tracking-widest opacity-40', isDark ? 'text-white' : 'text-black')}>NEUTRAL</span>
+            <span className={cn('text-[11px] font-black tracking-widest opacity-70', isDark ? 'text-white' : 'text-black')}>NEUTRAL</span>
             <span className="text-sm font-black text-amber-500 tabular-nums">{totalNeutral.toLocaleString()}</span>
           </div>
         )}
@@ -204,17 +206,17 @@ const SourcesMenu = memo(({ sources, selectedSource, onSourceSelect, isMobile, i
   const hiddenCount = sortedSources.length - displayLimit;
 
   return (
-    <div className="mb-8">
-      <div className="flex flex-wrap items-center gap-2">
+    <div className="mb-6 sm:mb-8">
+      <div className="flex flex-nowrap sm:flex-wrap items-center gap-2 overflow-x-auto pb-2 sm:pb-0 scrollbar-hide">
         <button
           onClick={() => onSourceSelect(null)}
           className={cn(
-            'rounded-xl px-4 py-2 text-[11px] font-black uppercase tracking-widest transition-all',
+            'rounded-xl px-4 py-2 text-[11px] font-black uppercase tracking-widest transition-[background-color,box-shadow] shrink-0',
             !selectedSource
-              ? 'bg-primary text-white shadow-lg shadow-primary/20'
+              ? 'bg-[#0a5cc5] text-white shadow-lg shadow-primary/20'
               : isDark
-                ? 'text-gray-500 bg-white/5 hover:bg-white/10'
-                : 'text-gray-400 bg-black/5 hover:bg-black/10'
+                ? 'text-gray-300 bg-white/5 hover:bg-white/10'
+                : 'text-gray-500 bg-black/5 hover:bg-black/10'
           )}
         >
           All
@@ -226,11 +228,11 @@ const SourcesMenu = memo(({ sources, selectedSource, onSourceSelect, isMobile, i
               key={source}
               onClick={() => onSourceSelect(source)}
               className={cn(
-                'group flex items-center gap-2 rounded-xl px-4 py-2 text-[11px] font-bold transition-all',
+                'group flex items-center gap-2 rounded-xl px-4 py-2 text-[11px] font-bold transition-[background-color,box-shadow] shrink-0',
                 isSelected
                   ? 'bg-primary text-white shadow-lg shadow-primary/20'
                   : isDark
-                    ? 'text-gray-400 bg-white/5 hover:bg-white/10 hover:text-white'
+                    ? 'text-gray-300 bg-white/5 hover:bg-white/10 hover:text-white'
                     : 'text-gray-500 bg-black/5 hover:bg-black/10 hover:text-black'
               )}
             >
@@ -242,8 +244,8 @@ const SourcesMenu = memo(({ sources, selectedSource, onSourceSelect, isMobile, i
               })()}
               {source}
               <span className={cn(
-                'tabular-nums opacity-30',
-                isSelected && 'opacity-70'
+                'tabular-nums opacity-80',
+                isSelected && 'opacity-90'
               )}>
                 {data.count}
               </span>
@@ -254,7 +256,7 @@ const SourcesMenu = memo(({ sources, selectedSource, onSourceSelect, isMobile, i
           <button
             onClick={() => setShowAll(!showAll)}
             className={cn(
-              'px-4 py-2 text-[11px] font-bold opacity-40 hover:opacity-100 transition-opacity',
+              'px-4 py-2 text-[11px] font-bold opacity-60 hover:opacity-100 transition-opacity',
               isDark ? 'text-white' : 'text-black'
             )}
           >
@@ -273,20 +275,30 @@ const NewsArticle = memo(({ article, isDark, extractTitle }) => (
     target="_blank"
     rel="noopener noreferrer"
     className={cn(
-      'group relative flex gap-4 rounded-[20px] p-5 transition-all duration-300',
+      'group relative flex flex-col sm:flex-row gap-3 sm:gap-4 rounded-[16px] sm:rounded-[20px] p-4 sm:p-5 transition-[background-color,border-color] duration-300 active:scale-[0.99] min-w-0 overflow-hidden',
       isDark
         ? 'bg-white/[0.02] hover:bg-white/[0.04] border border-white/5'
         : 'bg-[#fcfcfc] border border-black/[0.03] hover:border-primary/20'
     )}
   >
-    <div className="flex flex-col gap-3 flex-1 min-w-0">
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-2">
-          <span className={cn('text-[12px] font-black uppercase tracking-wider', isDark ? 'text-white/40' : 'text-black/30')}>
+    {article.articleImage && (
+      <div className="sm:hidden shrink-0 w-full h-[160px] rounded-xl overflow-hidden -mt-0.5">
+        <img
+          src={article.articleImage}
+          alt=""
+          className="w-full h-full object-cover"
+          loading="lazy"
+        />
+      </div>
+    )}
+    <div className="flex flex-col gap-2 sm:gap-3 flex-1 min-w-0">
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2 min-w-0">
+          <span className={cn('text-[11px] sm:text-[12px] font-black uppercase tracking-wider truncate', isDark ? 'text-white/60' : 'text-black/50')}>
             {article.sourceName}
           </span>
-          <div className={cn('h-1 w-1 rounded-full', isDark ? 'bg-white/10' : 'bg-black/5')} />
-          <span className={cn('text-[10px] font-bold opacity-40', isDark ? 'text-white' : 'text-black')}>
+          <div className={cn('h-1 w-1 rounded-full shrink-0', isDark ? 'bg-white/10' : 'bg-black/5')} />
+          <span className={cn('text-[10px] font-bold opacity-60 shrink-0', isDark ? 'text-white' : 'text-black')}>
             {formatDistanceToNow(new Date(article.pubDate), { addSuffix: true })}
           </span>
         </div>
@@ -302,21 +314,21 @@ const NewsArticle = memo(({ article, isDark, extractTitle }) => (
         </span>
       </div>
 
-      <h3 className={cn(
-        'text-[15px] font-bold leading-tight transition-colors group-hover:text-primary',
+      <h2 className={cn(
+        'text-[14px] sm:text-[15px] font-bold leading-snug transition-colors group-hover:text-primary',
         isDark ? 'text-white' : 'text-black'
       )}>
         {article.normalizedTitle || extractTitle(article.title)}
-      </h3>
+      </h2>
 
       <p className={cn(
-        'line-clamp-2 text-[13px] leading-relaxed opacity-50',
+        'line-clamp-2 text-[12px] sm:text-[13px] leading-relaxed opacity-50',
         isDark ? 'text-white' : 'text-black'
       )}>
         {article.summary}
       </p>
 
-      <div className="pt-2 flex items-center gap-1.5 text-[11px] font-black text-primary uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">
+      <div className="pt-1 sm:pt-2 flex items-center gap-1.5 text-[11px] font-black text-primary uppercase tracking-widest sm:opacity-0 sm:group-hover:opacity-100 opacity-70 transition-opacity">
         Read Story <ArrowRight size={14} />
       </div>
     </div>
@@ -351,8 +363,9 @@ const Pagination = memo(({ currentPage, totalPages, onPageChange, isDark }) => {
       <button
         onClick={() => onPageChange(null, currentPage - 1)}
         disabled={currentPage === 1}
+        aria-label="Previous page"
         className={cn(
-          'flex h-9 w-9 items-center justify-center rounded-xl border transition-all disabled:opacity-30',
+          'flex h-9 w-9 items-center justify-center rounded-xl border transition-[background-color,border-color] disabled:opacity-30',
           isDark
             ? 'bg-white/[0.02] border-white/5 hover:border-white/20 hover:bg-white/10'
             : 'bg-white border-black/[0.05] hover:border-black/20 hover:bg-black/[0.02]'
@@ -364,7 +377,7 @@ const Pagination = memo(({ currentPage, totalPages, onPageChange, isDark }) => {
         p === '...' ? (
           <span
             key={`e${i}`}
-            className={cn('px-2 text-[12px] font-bold opacity-30', isDark ? 'text-white' : 'text-black')}
+            className={cn('px-2 text-[12px] font-bold opacity-60', isDark ? 'text-white' : 'text-black')}
           >
             ...
           </span>
@@ -373,7 +386,7 @@ const Pagination = memo(({ currentPage, totalPages, onPageChange, isDark }) => {
             key={p}
             onClick={() => onPageChange(null, p)}
             className={cn(
-              'flex h-9 min-w-[36px] items-center justify-center rounded-xl text-[12px] font-bold tabular-nums border transition-all duration-300',
+              'flex h-9 min-w-[36px] items-center justify-center rounded-xl text-[12px] font-bold tabular-nums border transition-[background-color,border-color,box-shadow,transform] duration-300',
               p === currentPage
                 ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20 scale-105'
                 : isDark
@@ -388,8 +401,9 @@ const Pagination = memo(({ currentPage, totalPages, onPageChange, isDark }) => {
       <button
         onClick={() => onPageChange(null, currentPage + 1)}
         disabled={currentPage === totalPages}
+        aria-label="Next page"
         className={cn(
-          'flex h-9 w-9 items-center justify-center rounded-xl border transition-all disabled:opacity-30',
+          'flex h-9 w-9 items-center justify-center rounded-xl border transition-[background-color,border-color] disabled:opacity-30',
           isDark
             ? 'bg-white/[0.02] border-white/5 hover:border-white/20 hover:bg-white/10'
             : 'bg-white border-black/[0.05] hover:border-black/20 hover:bg-black/[0.02]'
@@ -577,7 +591,7 @@ function NewsPage({
   }, [chartPeriod]);
 
   return (
-    <div className={cn('flex min-h-screen flex-col', isDark ? 'bg-transparent' : 'bg-white')}>
+    <div className={cn('flex min-h-screen flex-col overflow-x-hidden', isDark ? 'bg-transparent' : 'bg-white')}>
       <Header
         notificationPanelOpen={notificationPanelOpen}
         onNotificationPanelToggle={setNotificationPanelOpen}
@@ -585,25 +599,25 @@ function NewsPage({
       <h1 className="sr-only">XRPL News & Updates</h1>
       <div
         className={cn(
-          'flex-1 mt-4 pb-4 sm:pb-6',
-          notificationPanelOpen ? 'px-4' : 'mx-auto max-w-[1920px] px-4'
+          'flex-1 mt-4 pb-4 sm:pb-6 min-w-0',
+          notificationPanelOpen ? 'px-4' : 'mx-auto max-w-[1920px] px-4 w-full'
         )}
       >
         {error ? (
           <p className="py-8 text-center text-red-500">Error: {error}</p>
         ) : (
           <>
-            <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div className="mb-6 sm:mb-8 flex flex-col gap-3 sm:gap-4 sm:flex-row sm:items-end sm:justify-between">
               <div>
                 <div className="flex items-baseline gap-3">
-                  <h1 className={cn('text-2xl font-black tracking-tight', isDark ? 'text-white' : 'text-black')}>
+                  <h1 className={cn('text-xl sm:text-2xl font-black tracking-tight', isDark ? 'text-white' : 'text-black')}>
                     News
                   </h1>
-                  <span className={cn('text-[11px] font-black tabular-nums opacity-30', isDark ? 'text-white' : 'text-black')}>
+                  <span className={cn('text-[11px] font-black tabular-nums opacity-60', isDark ? 'text-white' : 'text-black')}>
                     {totalCount.toLocaleString()} articles
                   </span>
                 </div>
-                <p className={cn('text-[12px] font-bold opacity-40', isDark ? 'text-white' : 'text-black')}>
+                <p className={cn('text-[12px] font-bold opacity-60 hidden sm:block', isDark ? 'text-white' : 'text-black')}>
                   Discover the latest pulse of the XRP Ledger ecosystem
                 </p>
               </div>
@@ -611,7 +625,7 @@ function NewsPage({
                 <form
                   onSubmit={handleSearch}
                   className={cn(
-                    'group relative flex items-center gap-2 rounded-lg border px-2.5 py-1.5 transition-all duration-300 w-full sm:w-[320px]',
+                    'group relative flex items-center gap-2 rounded-lg border px-2.5 py-2 sm:py-1.5 transition-[background-color,border-color,box-shadow] duration-300 w-full sm:w-[320px]',
                     isDark
                       ? 'bg-white/[0.02] border-white/10 focus-within:border-primary focus-within:bg-white/[0.05]'
                       : 'bg-white border-black/[0.05] focus-within:border-primary focus-within:shadow-[0_4px_20px_rgba(37,99,235,0.08)]'
@@ -624,7 +638,7 @@ function NewsPage({
                     value={searchInput}
                     onChange={(e) => setSearchInput(e.target.value)}
                     className={cn(
-                      'w-full bg-transparent text-[13px] font-bold focus:outline-none',
+                      'w-full bg-transparent text-[14px] sm:text-[13px] font-bold focus:outline-none',
                       isDark ? 'text-white placeholder:text-white/20' : 'text-black placeholder:text-black/20'
                     )}
                   />
@@ -632,7 +646,8 @@ function NewsPage({
                     <button
                       type="button"
                       onClick={handleClearSearch}
-                      className="opacity-40 hover:opacity-100 transition-opacity"
+                      aria-label="Clear search"
+                      className="p-1 opacity-60 hover:opacity-100 transition-opacity"
                     >
                       <X size={16} />
                     </button>
@@ -646,13 +661,13 @@ function NewsPage({
 
             <div
               className={cn(
-                'mb-10 overflow-hidden rounded-[24px] border transition-all',
+                'mb-8 sm:mb-10 overflow-hidden rounded-[16px] sm:rounded-[24px] border transition-[border-color]',
                 isDark
                   ? 'bg-[#0a0a0a] border-white/5'
                   : 'bg-white border-black/[0.03]'
               )}
             >
-              <div className="p-8">
+              <div className="p-4 sm:p-8">
                 <SentimentChart
                   data={chartData}
                   period={chartPeriod}
@@ -674,20 +689,20 @@ function NewsPage({
                   { period: 'ALL', stats: sentimentStats.all }
                 ].map((item) => (
                   <div key={item.period} className={cn(
-                    "p-6 flex flex-col gap-3 group transition-colors",
+                    "p-4 sm:p-6 flex flex-col gap-2 sm:gap-3 group transition-[background-color]",
                     isDark ? "hover:bg-white/[0.02]" : "hover:bg-black/[0.01]",
                     "border-l first:border-l-0",
                     isDark ? "border-white/5" : "border-black/[0.03]",
                     "max-sm:border-l-0 max-sm:even:border-l max-sm:[&:nth-child(n+3)]:border-t"
                   )}>
-                    <span className={cn('text-[11px] font-black uppercase tracking-widest opacity-30', isDark ? 'text-white' : 'text-black')}>
+                    <span className={cn('text-[11px] font-black uppercase tracking-widest opacity-60', isDark ? 'text-white' : 'text-black')}>
                       {item.period}
                     </span>
 
                     <div className="space-y-2">
                       <div className="flex items-center justify-between text-[11px] font-black">
                         <span className="text-green-500">{item.stats?.bullish || 0}%</span>
-                        <span className="text-amber-500 opacity-60">{item.stats?.neutral || 0}%</span>
+                        <span className="text-amber-400">{item.stats?.neutral || 0}%</span>
                         <span className="text-red-500">{item.stats?.bearish || 0}%</span>
                       </div>
                       <div className={cn(
@@ -717,7 +732,7 @@ function NewsPage({
                   "px-8 py-3 border-t flex items-center justify-between",
                   isDark ? "bg-primary/5 border-white/5" : "bg-primary/[0.01] border-black/[0.03]"
                 )}>
-                  <span className={cn("text-[11px] font-bold opacity-40", isDark ? "text-white" : "text-black")}>
+                  <span className={cn("text-[11px] font-bold opacity-60", isDark ? "text-white" : "text-black")}>
                     Search Sentiment Score for <span className="text-primary italic">"{searchQuery}"</span>
                   </span>
                   <span className="text-sm font-black text-primary tabular-nums">
@@ -735,7 +750,7 @@ function NewsPage({
               isDark={isDark}
             />
 
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-3 sm:gap-5 min-w-0">
               {news.length === 0 ? (
                 <div className={cn(
                   "col-span-full py-24 rounded-[32px] border border-dashed flex flex-col items-center justify-center text-center",
@@ -844,8 +859,8 @@ export async function getServerSideProps({ query }) {
           canonical: 'https://xrpl.to/news',
           title: 'XRPL News - Latest Crypto & XRP Ledger Updates',
           url: 'https://xrpl.to/news',
-          imgUrl: 'https://s1.xrpl.to/ogp/news.webp',
-          imgType: 'image/webp',
+          imgUrl: 'https://xrpl.to/api/og/news',
+          imgType: 'image/png',
           imgWidth: '1200',
           imgHeight: '630',
           imgAlt: 'XRPL.to News - Latest cryptocurrency and XRP Ledger news',
@@ -867,8 +882,8 @@ export async function getServerSideProps({ query }) {
           canonical: 'https://xrpl.to/news',
           title: 'XRPL News - Latest Crypto & XRP Ledger Updates',
           url: 'https://xrpl.to/news',
-          imgUrl: 'https://s1.xrpl.to/ogp/news.webp',
-          imgType: 'image/webp',
+          imgUrl: 'https://xrpl.to/api/og/news',
+          imgType: 'image/png',
           imgWidth: '1200',
           imgHeight: '630',
           imgAlt: 'XRPL.to News - Latest cryptocurrency and XRP Ledger news',

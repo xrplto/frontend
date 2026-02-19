@@ -47,7 +47,7 @@
     "dev": "next dev -p 3002",
     "build": "next build",
     "builds": "next build && next export",
-    "start": "next start -p 3001",
+    "start": "next start -p 3002",
     "analyze": "cross-env ANALYZE=true next build --webpack",
     "production": "next start -p 80",
     "export": "next export",

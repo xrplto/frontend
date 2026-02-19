@@ -81,7 +81,7 @@ const AccountInfoDetails = ({ accountInfo, isDark, data }) => {
     )}>
       {details.map((d, i) => (
         <div key={i} className="flex items-center gap-1">
-          <span className={cn(isDark ? 'text-white/25' : 'text-gray-400')}>{d.label}</span>
+          <span className={cn(isDark ? 'text-white/50' : 'text-gray-400')}>{d.label}</span>
           <span className={cn('font-semibold', isDark ? 'text-white/50' : 'text-gray-500')}>{d.value}</span>
         </div>
       ))}
@@ -135,7 +135,7 @@ const TradingStat = ({ label, value, color, isDark }) => (
     'flex flex-col items-center justify-center flex-1 px-2 border-r last:border-0 border-dashed',
     isDark ? 'border-white/10' : 'border-gray-200'
   )}>
-    <p className={cn('text-[9px] uppercase font-bold tracking-widest mb-0.5 opacity-40', isDark ? 'text-white' : 'text-black')}>
+    <p className={cn('text-[9px] uppercase font-bold tracking-widest mb-0.5 opacity-60', isDark ? 'text-white' : 'text-black')}>
       {label}
     </p>
     <p className={cn('text-[14px] font-black tabular-nums tracking-tight', color)}>
@@ -589,70 +589,76 @@ const OverView = ({ account }) => {
         <div className="h-0" id="back-to-top-anchor" />
         <Header />
         {!isMobile && <TokenTabs currentMd5={account} />}
-        <div className="mx-auto max-w-[1920px] w-full px-4 mt-4 flex-1">
-          <div className="flex flex-col gap-4">
-            {/* Header skeleton */}
-            <div className="flex items-center gap-3">
-              <div
-                className={cn(
-                  'h-6 w-48 rounded animate-pulse',
-                  isDark ? 'bg-white/10' : 'bg-gray-200'
-                )}
-              />
-              <div
-                className={cn(
-                  'h-5 w-5 rounded animate-pulse',
-                  isDark ? 'bg-white/5' : 'bg-gray-100'
-                )}
-              />
-            </div>
-            {/* Metrics skeleton */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="space-y-2">
-                  <div
-                    className={cn(
-                      'h-3 w-16 rounded animate-pulse',
-                      isDark ? 'bg-white/5' : 'bg-gray-100'
-                    )}
-                  />
-                  <div
-                    className={cn(
-                      'h-7 w-24 rounded animate-pulse',
-                      isDark ? 'bg-white/10' : 'bg-gray-200'
-                    )}
-                  />
-                  <div
-                    className={cn(
-                      'h-3 w-20 rounded animate-pulse',
-                      isDark ? 'bg-white/5' : 'bg-gray-100'
-                    )}
-                  />
+        <h1 className="sr-only">
+          {account} Profile on XRPL
+        </h1>
+        <div className="mx-auto max-w-[1920px] w-full px-4 mt-6 flex-1">
+          <div className="flex flex-col">
+            <div className="w-full">
+              {/* Account Header - real content for LCP */}
+              <div className={cn('mb-6 p-6 rounded-2xl border-[1.5px]', isDark ? 'border-white/[0.06] bg-white/[0.02]' : 'border-gray-200 bg-gray-50/50')}>
+                <div className="flex flex-col gap-5">
+                  <div className="flex items-start gap-5">
+                    <div className="relative shrink-0">
+                      <div
+                        className={cn(
+                          'w-24 h-24 rounded-2xl border flex items-center justify-center',
+                          isDark ? 'border-white/10' : 'border-gray-200'
+                        )}
+                        style={{
+                          background: isDark
+                            ? `#${account.slice(2, 8)}22`
+                            : `#${account.slice(2, 8)}15`
+                        }}
+                      >
+                        <User size={36} className={isDark ? 'text-white/30' : 'text-gray-300'} strokeWidth={1.5} />
+                      </div>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-3 flex-wrap">
+                        <h2
+                          className={cn(
+                            'text-xl md:text-2xl font-bold tracking-tight font-mono',
+                            isDark ? 'text-white' : 'text-gray-900'
+                          )}
+                        >
+                          <span className="md:hidden">
+                            {account.substring(0, 8)}...{account.substring(account.length - 6)}
+                          </span>
+                          <span className="hidden md:inline">{account}</span>
+                        </h2>
+                      </div>
+                    </div>
+                  </div>
+                  {/* Skeleton stat cards */}
+                  <div className="grid grid-cols-4 gap-2 lg:gap-3">
+                    {[1, 2, 3, 4].map((i) => (
+                      <div key={i} className={cn('p-2.5 lg:p-4 rounded-lg lg:rounded-xl border text-center', isDark ? 'bg-white/[0.02] border-white/[0.06]' : 'bg-gray-50/50 border-gray-100')}>
+                        <div className={cn('h-2 w-12 mx-auto rounded animate-pulse mb-2', isDark ? 'bg-white/5' : 'bg-gray-100')} />
+                        <div className={cn('h-5 lg:h-7 w-16 mx-auto rounded animate-pulse', isDark ? 'bg-white/10' : 'bg-gray-200')} />
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              ))}
-            </div>
-            {/* Holdings skeleton */}
-            <div
-              className={cn(
-                'rounded-xl border p-4',
-                isDark ? 'border-white/10' : 'border-gray-200'
-              )}
-            >
-              <div
-                className={cn(
-                  'h-4 w-32 rounded animate-pulse mb-3',
-                  isDark ? 'bg-white/10' : 'bg-gray-200'
-                )}
-              />
-              {[1, 2, 3].map((i) => (
-                <div
-                  key={i}
-                  className={cn(
-                    'h-10 rounded animate-pulse mb-2',
-                    isDark ? 'bg-white/5' : 'bg-gray-100'
-                  )}
-                />
-              ))}
+              </div>
+              {/* Two-column skeleton matching final layout */}
+              <div className="grid md:grid-cols-2 gap-4 mb-6">
+                {[1, 2].map((i) => (
+                  <div key={i} className={cn('p-4 rounded-2xl border h-[200px]', isDark ? 'bg-white/[0.03] border-white/10' : 'bg-white border-gray-200')}>
+                    <div className={cn('h-4 w-32 rounded animate-pulse mb-4', isDark ? 'bg-white/10' : 'bg-gray-200')} />
+                    <div className={cn('h-3 w-full rounded animate-pulse mb-3', isDark ? 'bg-white/5' : 'bg-gray-100')} />
+                    <div className={cn('h-3 w-3/4 rounded animate-pulse mb-3', isDark ? 'bg-white/5' : 'bg-gray-100')} />
+                    <div className={cn('h-3 w-1/2 rounded animate-pulse', isDark ? 'bg-white/5' : 'bg-gray-100')} />
+                  </div>
+                ))}
+              </div>
+              {/* Holdings skeleton */}
+              <div className={cn('rounded-xl border p-4', isDark ? 'border-white/10' : 'border-gray-200')}>
+                <div className={cn('h-4 w-32 rounded animate-pulse mb-3', isDark ? 'bg-white/10' : 'bg-gray-200')} />
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className={cn('h-10 rounded animate-pulse mb-2', isDark ? 'bg-white/5' : 'bg-gray-100')} />
+                ))}
+              </div>
             </div>
           </div>
         </div>
@@ -820,7 +826,7 @@ const OverView = ({ account }) => {
                     {/* Tier, Rank & Badges */}
                     <div className="flex items-center gap-2.5 flex-wrap mt-2">
                       {(userPerks?.groups?.length > 0 || userProfile?.armyRank || typeof data?.washTradingScore === 'number' || data?.isAMM || isBlackholed) && (
-                        <span className={cn('text-[10px] uppercase font-bold tracking-widest', isDark ? 'text-white/20' : 'text-gray-300')}>Tier</span>
+                        <span className={cn('text-[10px] uppercase font-bold tracking-widest', isDark ? 'text-white/50' : 'text-gray-400')}>Tier</span>
                       )}
                       {typeof data?.washTradingScore === 'number' && (
                         <div
@@ -902,12 +908,12 @@ const OverView = ({ account }) => {
                             {accountInfo && (
                               <div className={cn('mt-3 pt-3 border-t space-y-2', isDark ? 'border-white/10' : 'border-gray-100')}>
                                 <div className="flex justify-between items-center">
-                                  <span className={cn('text-[10px] uppercase font-bold', isDark ? 'text-white/30' : 'text-gray-400')}>Current Balance</span>
+                                  <span className={cn('text-[10px] uppercase font-bold', isDark ? 'text-white/50' : 'text-gray-400')}>Current Balance</span>
                                   <span className={cn('font-bold tabular-nums', isDark ? 'text-white' : 'text-gray-900')}>{accountInfo.total?.toLocaleString()} XRP</span>
                                 </div>
                                 {accountInfo.rank && (
                                   <div className="flex justify-between items-center">
-                                    <span className={cn('text-[10px] uppercase font-bold', isDark ? 'text-white/30' : 'text-gray-400')}>Global Rank</span>
+                                    <span className={cn('text-[10px] uppercase font-bold', isDark ? 'text-white/50' : 'text-gray-400')}>Global Rank</span>
                                     <span className={cn('font-bold tabular-nums', isDark ? 'text-white' : 'text-gray-900')}>#{accountInfo.rank.toLocaleString()}</span>
                                   </div>
                                 )}
@@ -922,7 +928,7 @@ const OverView = ({ account }) => {
                       )}
                       {/* Badges */}
                       {displayBadges.available.filter(b => b.startsWith('badge:')).length > 0 && (
-                        <span className={cn('text-[10px] uppercase font-bold tracking-widest', isDark ? 'text-white/20' : 'text-gray-300')}>Badges</span>
+                        <span className={cn('text-[10px] uppercase font-bold tracking-widest', isDark ? 'text-white/50' : 'text-gray-400')}>Badges</span>
                       )}
                       {displayBadges.available.filter(b => b.startsWith('badge:')).map(badgeId => {
                         const name = badgeId.split(':')[1];
@@ -943,24 +949,24 @@ const OverView = ({ account }) => {
                   {(data || nftStats || holdings) && (
                     <div className="hidden lg:grid grid-cols-4 gap-3 flex-1">
                       <div className={cn('p-4 rounded-xl border text-center', isDark ? 'bg-white/[0.02] border-white/[0.06]' : 'bg-gray-50/50 border-gray-100')}>
-                        <p className={cn('text-[9px] uppercase font-bold tracking-widest mb-1.5', isDark ? 'text-white/30' : 'text-gray-400')}>Balance</p>
+                        <p className={cn('text-[9px] uppercase font-bold tracking-widest mb-1.5', isDark ? 'text-white/50' : 'text-gray-400')}>Balance</p>
                         <p className={cn('text-[20px] font-black tabular-nums tracking-tight leading-none', isDark ? 'text-white' : 'text-gray-900')}>{fCurrency5(holdings?.accountData?.total || holdings?.xrp?.value || 0)}</p>
-                        <p className={cn('text-[10px] mt-1.5 font-medium', isDark ? 'text-white/25' : 'text-gray-400')}>{accountInfo?.rank ? `#${accountInfo.rank.toLocaleString()} Rank` : 'XRP'}</p>
+                        <p className={cn('text-[10px] mt-1.5 font-medium', isDark ? 'text-white/50' : 'text-gray-400')}>{accountInfo?.rank ? `#${accountInfo.rank.toLocaleString()} Rank` : 'XRP'}</p>
                       </div>
                       <div className={cn('p-4 rounded-xl border text-center', isDark ? 'bg-white/[0.02] border-white/[0.06]' : 'bg-gray-50/50 border-gray-100')}>
-                        <p className={cn('text-[9px] uppercase font-bold tracking-widest mb-1.5', isDark ? 'text-white/30' : 'text-gray-400')}>Total P&L</p>
+                        <p className={cn('text-[9px] uppercase font-bold tracking-widest mb-1.5', isDark ? 'text-white/50' : 'text-gray-400')}>Total P&L</p>
                         <p className={cn('text-[20px] font-black tabular-nums tracking-tight leading-none', totalPnL + (nftStats?.combinedProfit || 0) >= 0 ? 'text-emerald-500' : 'text-red-500')}>{totalPnL + (nftStats?.combinedProfit || 0) >= 0 ? '+' : ''}{fCurrency5(totalPnL + (nftStats?.combinedProfit || 0))}</p>
-                        <p className={cn('text-[10px] mt-1.5 font-medium', isDark ? 'text-white/25' : 'text-gray-400')}>{data?.totalRoi != null ? `${data.totalRoi >= 0 ? '+' : ''}${data.totalRoi.toFixed(1)}% ROI` : 'XRP'}</p>
+                        <p className={cn('text-[10px] mt-1.5 font-medium', isDark ? 'text-white/50' : 'text-gray-400')}>{data?.totalRoi != null ? `${data.totalRoi >= 0 ? '+' : ''}${data.totalRoi.toFixed(1)}% ROI` : 'XRP'}</p>
                       </div>
                       <div className={cn('p-4 rounded-xl border text-center', isDark ? 'bg-white/[0.02] border-white/[0.06]' : 'bg-gray-50/50 border-gray-100')}>
-                        <p className={cn('text-[9px] uppercase font-bold tracking-widest mb-1.5', isDark ? 'text-white/30' : 'text-gray-400')}>Trades</p>
+                        <p className={cn('text-[9px] uppercase font-bold tracking-widest mb-1.5', isDark ? 'text-white/50' : 'text-gray-400')}>Trades</p>
                         <p className={cn('text-[20px] font-black tabular-nums tracking-tight leading-none', isDark ? 'text-white' : 'text-gray-900')}>{fCurrency5((data?.totalTrades || 0) + (nftStats?.totalTrades || 0))}</p>
-                        <p className={cn('text-[10px] mt-1.5 font-medium', isDark ? 'text-white/25' : 'text-gray-400')}>{totalTokensTraded > 0 ? `${winningTokens}W / ${losingTokens}L` : 'Total'}</p>
+                        <p className={cn('text-[10px] mt-1.5 font-medium', isDark ? 'text-white/50' : 'text-gray-400')}>{totalTokensTraded > 0 ? `${winningTokens}W / ${losingTokens}L` : 'Total'}</p>
                       </div>
                       <div className={cn('p-4 rounded-xl border text-center', isDark ? 'bg-white/[0.02] border-white/[0.06]' : 'bg-gray-50/50 border-gray-100')}>
-                        <p className={cn('text-[9px] uppercase font-bold tracking-widest mb-1.5', isDark ? 'text-white/30' : 'text-gray-400')}>Volume</p>
+                        <p className={cn('text-[9px] uppercase font-bold tracking-widest mb-1.5', isDark ? 'text-white/50' : 'text-gray-400')}>Volume</p>
                         <p className={cn('text-[20px] font-black tabular-nums tracking-tight leading-none', isDark ? 'text-white' : 'text-gray-900')}>{fCurrency5((data?.dexVolume || 0) + (data?.ammVolume || 0) + (nftStats?.totalVolume || 0))}</p>
-                        <p className={cn('text-[10px] mt-1.5 font-medium', isDark ? 'text-white/25' : 'text-gray-400')}>XRP</p>
+                        <p className={cn('text-[10px] mt-1.5 font-medium', isDark ? 'text-white/50' : 'text-gray-400')}>XRP</p>
                       </div>
                     </div>
                   )}
@@ -969,19 +975,19 @@ const OverView = ({ account }) => {
                 {(data || nftStats || holdings) && (
                   <div className={cn('grid grid-cols-4 gap-2 lg:hidden')}>
                     <div className={cn('p-2.5 rounded-lg border text-center', isDark ? 'bg-white/[0.02] border-white/[0.06]' : 'bg-gray-50/50 border-gray-100')}>
-                      <p className={cn('text-[8px] uppercase font-bold tracking-widest mb-0.5', isDark ? 'text-white/30' : 'text-gray-400')}>Balance</p>
+                      <p className={cn('text-[8px] uppercase font-bold tracking-widest mb-0.5', isDark ? 'text-white/50' : 'text-gray-400')}>Balance</p>
                       <p className={cn('text-[14px] font-black tabular-nums tracking-tight leading-none', isDark ? 'text-white' : 'text-gray-900')}>{fCurrency5(holdings?.accountData?.total || holdings?.xrp?.value || 0)}</p>
                     </div>
                     <div className={cn('p-2.5 rounded-lg border text-center', isDark ? 'bg-white/[0.02] border-white/[0.06]' : 'bg-gray-50/50 border-gray-100')}>
-                      <p className={cn('text-[8px] uppercase font-bold tracking-widest mb-0.5', isDark ? 'text-white/30' : 'text-gray-400')}>P&L</p>
+                      <p className={cn('text-[8px] uppercase font-bold tracking-widest mb-0.5', isDark ? 'text-white/50' : 'text-gray-400')}>P&L</p>
                       <p className={cn('text-[14px] font-black tabular-nums tracking-tight leading-none', totalPnL + (nftStats?.combinedProfit || 0) >= 0 ? 'text-emerald-500' : 'text-red-500')}>{totalPnL + (nftStats?.combinedProfit || 0) >= 0 ? '+' : ''}{fCurrency5(totalPnL + (nftStats?.combinedProfit || 0))}</p>
                     </div>
                     <div className={cn('p-2.5 rounded-lg border text-center', isDark ? 'bg-white/[0.02] border-white/[0.06]' : 'bg-gray-50/50 border-gray-100')}>
-                      <p className={cn('text-[8px] uppercase font-bold tracking-widest mb-0.5', isDark ? 'text-white/30' : 'text-gray-400')}>Trades</p>
+                      <p className={cn('text-[8px] uppercase font-bold tracking-widest mb-0.5', isDark ? 'text-white/50' : 'text-gray-400')}>Trades</p>
                       <p className={cn('text-[14px] font-black tabular-nums tracking-tight leading-none', isDark ? 'text-white' : 'text-gray-900')}>{fCurrency5((data?.totalTrades || 0) + (nftStats?.totalTrades || 0))}</p>
                     </div>
                     <div className={cn('p-2.5 rounded-lg border text-center', isDark ? 'bg-white/[0.02] border-white/[0.06]' : 'bg-gray-50/50 border-gray-100')}>
-                      <p className={cn('text-[8px] uppercase font-bold tracking-widest mb-0.5', isDark ? 'text-white/30' : 'text-gray-400')}>Volume</p>
+                      <p className={cn('text-[8px] uppercase font-bold tracking-widest mb-0.5', isDark ? 'text-white/50' : 'text-gray-400')}>Volume</p>
                       <p className={cn('text-[14px] font-black tabular-nums tracking-tight leading-none', isDark ? 'text-white' : 'text-gray-900')}>{fCurrency5((data?.dexVolume || 0) + (data?.ammVolume || 0) + (nftStats?.totalVolume || 0))}</p>
                     </div>
                   </div>
@@ -1281,12 +1287,10 @@ const OverView = ({ account }) => {
                 {/* Token Trading */}
                 <div
                   className={cn(
-                    'p-4 rounded-2xl border transition-all duration-300 h-full flex flex-col relative overflow-hidden',
+                    'p-4 rounded-2xl border transition-all duration-300 h-full flex flex-col',
                     isDark ? 'bg-white/[0.03] border-white/10 shadow-lg' : 'bg-white border-gray-200 shadow-sm'
                   )}
                 >
-                  {/* Background Accent */}
-                  <div className={cn('absolute -top-24 -right-24 w-48 h-48 rounded-full blur-[100px] opacity-20', isDark ? 'bg-[#137DFE]' : 'bg-blue-400')} />
                   {data && !data.error ? (
                     <>
                       <div className="flex items-center justify-between mb-3">
@@ -1337,7 +1341,7 @@ const OverView = ({ account }) => {
                       {totalTokensTraded > 0 && (
                         <div className={cn('mb-3 px-1')}>
                           <div className="flex items-center justify-between mb-1.5">
-                            <span className={cn('text-[9px] font-bold uppercase tracking-widest opacity-40', isDark ? 'text-white' : 'text-black')}>Token Win Rate</span>
+                            <span className={cn('text-[9px] font-bold uppercase tracking-widest opacity-60', isDark ? 'text-white' : 'text-black')}>Token Win Rate</span>
                             <span className={cn('text-[10px] font-bold tabular-nums', isDark ? 'text-white/70' : 'text-gray-600')}>
                               {winningTokens}W / {losingTokens}L{totalTokensTraded - winningTokens - losingTokens > 0 ? ` / ${totalTokensTraded - winningTokens - losingTokens}BE` : ''}
                             </span>
@@ -1358,7 +1362,7 @@ const OverView = ({ account }) => {
                           'flex items-center justify-between py-2 px-1 text-[10px] font-bold',
                           isDark ? 'border-t border-white/[0.06]' : 'border-t border-gray-100'
                         )}>
-                          <span className="opacity-40">Holding Value</span>
+                          <span className="opacity-60">Holding Value</span>
                           <span className={cn('tabular-nums', isDark ? 'text-[#137DFE]' : 'text-blue-600')}>
                             {fCurrency5(holdingValue)} XRP
                           </span>
@@ -1372,13 +1376,13 @@ const OverView = ({ account }) => {
                       >
                         <div className="flex items-center gap-4">
                           <span className="flex items-baseline gap-1.5">
-                            <span className="opacity-40">DEX:</span>
+                            <span className="opacity-60">DEX:</span>
                             <span className={cn('tabular-nums', (data.dexProfit || 0) >= 0 ? 'text-emerald-500' : 'text-red-500')}>
                               {(data.dexProfit || 0) >= 0 ? '+' : ''}{fCurrency5(data.dexProfit || 0)}
                             </span>
                           </span>
                           <span className="flex items-baseline gap-1.5">
-                            <span className="opacity-40">AMM:</span>
+                            <span className="opacity-60">AMM:</span>
                             <span className={cn('tabular-nums', (data.ammProfit || 0) >= 0 ? 'text-emerald-500' : 'text-red-500')}>
                               {(data.ammProfit || 0) >= 0 ? '+' : ''}{fCurrency5(data.ammProfit || 0)}
                             </span>
@@ -1391,7 +1395,7 @@ const OverView = ({ account }) => {
                             { label: '30D', value: data.profit30d || 0 },
                           ].map((p) => (
                             <span key={p.label} className="flex items-baseline gap-1">
-                              <span className="opacity-30">{p.label}:</span>
+                              <span className="opacity-50">{p.label}:</span>
                               <span className={cn('tabular-nums', p.value >= 0 ? 'text-emerald-500' : 'text-red-500')}>
                                 {p.value >= 0 ? '+' : ''}{fCurrency5(p.value)}
                               </span>
@@ -1419,12 +1423,10 @@ const OverView = ({ account }) => {
                 {/* NFT Trading */}
                 <div
                   className={cn(
-                    'p-4 rounded-2xl border transition-all duration-300 h-full flex flex-col relative overflow-hidden',
+                    'p-4 rounded-2xl border transition-all duration-300 h-full flex flex-col',
                     isDark ? 'bg-white/[0.03] border-white/10 shadow-lg' : 'bg-white border-gray-200 shadow-sm'
                   )}
                 >
-                  {/* Background Accent */}
-                  <div className={cn('absolute -top-24 -right-24 w-48 h-48 rounded-full blur-[100px] opacity-20', isDark ? 'bg-[#137DFE]' : 'bg-blue-400')} />
                   {nftStats && (nftStats.totalVolume > 0 || nftStats.holdingsCount > 0) ? (
                     <>
                       <div className="flex items-center justify-between mb-3">
@@ -1488,13 +1490,13 @@ const OverView = ({ account }) => {
                       >
                         <div className="flex items-center gap-4">
                           <span className="flex items-baseline gap-1.5">
-                            <span className="opacity-40">FLIPS:</span>
+                            <span className="opacity-60">FLIPS:</span>
                             <span className={cn('tabular-nums', isDark ? 'text-white/80' : 'text-gray-900')}>
                               {nftStats.flips || 0}
                             </span>
                           </span>
                           <span className="flex items-baseline gap-1.5">
-                            <span className="opacity-40">AVG HOLD:</span>
+                            <span className="opacity-60">AVG HOLD:</span>
                             <span className={cn('tabular-nums', isDark ? 'text-white/80' : 'text-gray-900')}>
                               {(() => {
                                 if (nftStats.avgHoldingDays > 0) return `${nftStats.avgHoldingDays.toFixed(0)}d`;
@@ -1513,7 +1515,7 @@ const OverView = ({ account }) => {
                             { label: '7D', value: nftStats.profit7d || 0 },
                           ].map((p) => (
                             <span key={p.label} className="flex items-baseline gap-1">
-                              <span className="opacity-30">{p.label}:</span>
+                              <span className="opacity-50">{p.label}:</span>
                               <span className={cn('tabular-nums', p.value >= 0 ? 'text-emerald-500' : 'text-red-500')}>
                                 {p.value >= 0 ? '+' : ''}{fCurrency5(p.value)}
                               </span>
@@ -1562,7 +1564,7 @@ const OverView = ({ account }) => {
                     'flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold rounded-lg transition-all duration-200',
                     activeTab === tab.id
                       ? cn(isDark ? 'bg-white/10 text-white' : 'bg-white text-gray-900 shadow-sm')
-                      : cn(isDark ? 'text-white/40 hover:text-white/70' : 'text-gray-500 hover:text-gray-700')
+                      : cn(isDark ? 'text-white/50 hover:text-white/70' : 'text-gray-500 hover:text-gray-700')
                   )}
                 >
                   <tab.icon size={13} />
@@ -1572,7 +1574,7 @@ const OverView = ({ account }) => {
                       'text-[9px] px-1 py-0.5 rounded font-bold min-w-[16px] text-center',
                       activeTab === tab.id
                         ? isDark ? 'bg-white/10 text-white/70' : 'bg-gray-200 text-gray-600'
-                        : isDark ? 'bg-white/5 text-white/30' : 'bg-gray-200/50 text-gray-400'
+                        : isDark ? 'bg-white/5 text-white/40' : 'bg-gray-200/50 text-gray-400'
                     )}>
                       {tab.count}
                     </span>
@@ -1637,7 +1639,7 @@ const OverView = ({ account }) => {
                               <span className={cn('text-[14px] font-black tabular-nums tracking-tighter', isDark ? 'text-white' : 'text-gray-900')}>
                                 {fCurrency5(totalValue + (holdings.accountData?.total || holdings.xrp?.value || 0))}
                               </span>
-                              <span className={cn('text-[9px] font-bold opacity-40', isDark ? 'text-white' : 'text-gray-500')}>XRP</span>
+                              <span className={cn('text-[9px] font-bold opacity-60', isDark ? 'text-white' : 'text-gray-500')}>XRP</span>
                             </div>
                           </div>
                         )}
@@ -1646,7 +1648,7 @@ const OverView = ({ account }) => {
                         {(filteredLines.length > 0 || holdings.accountData?.total > 0 || holdings.xrp?.value > 0) ? (
                           <table className="w-full">
                             <thead>
-                              <tr className={cn('text-[9px] font-black uppercase tracking-widest opacity-40', isDark ? 'text-white' : 'text-gray-500')}>
+                              <tr className={cn('text-[9px] font-black uppercase tracking-widest opacity-60', isDark ? 'text-white' : 'text-gray-500')}>
                                 <th className="px-4 py-2 text-left">Asset</th>
                                 <th className="px-4 py-2 text-right">Balance</th>
                                 <th className="px-4 py-2 text-right">Value (XRP)</th>
@@ -1670,7 +1672,7 @@ const OverView = ({ account }) => {
                                         isDark ? 'bg-black border-white/10' : 'bg-white border-gray-100'
                                       )}>
                                         <img
-                                          src="https://s1.xrpl.to/token/84e5efeb89c4eae8f68188982dc290d8"
+                                          src="https://s1.xrpl.to/thumb/84e5efeb89c4eae8f68188982dc290d8_32"
                                           className="w-full h-full object-contain rounded-lg"
                                           alt="XRP"
                                         />
@@ -1732,9 +1734,9 @@ const OverView = ({ account }) => {
                                           isDark ? 'bg-black border-white/10' : 'bg-white border-gray-100'
                                         )}>
                                           <img
-                                            src={`https://s1.xrpl.to/token/${line.token?.md5}`}
+                                            src={`https://s1.xrpl.to/thumb/${line.token?.md5}_32`}
                                             className="w-full h-full object-contain rounded-lg"
-                                            onError={(e) => { e.target.src = 'https://s1.xrpl.to/token/84e5efeb89c4eae8f68188982dc290d8'; }}
+                                            onError={(e) => { e.target.src = 'https://s1.xrpl.to/thumb/84e5efeb89c4eae8f68188982dc290d8_32'; }}
                                             alt=""
                                           />
                                           <VerificationBadge verified={line.token?.verified} size="sm" isDark={isDark} />
@@ -1806,13 +1808,14 @@ const OverView = ({ account }) => {
                               isDark ? 'border-white/[0.06]' : 'border-gray-50'
                             )}
                           >
-                            <p className={cn('text-[9px] font-bold opacity-30 uppercase tracking-widest', isDark ? 'text-white' : 'text-gray-500')}>
+                            <p className={cn('text-[9px] font-bold opacity-50 uppercase tracking-widest', isDark ? 'text-white' : 'text-gray-500')}>
                               Page {holdingsPage + 1} of {Math.ceil(((holdings.total || holdings.lines?.length || 0) + ((holdings.accountData?.total > 0 || holdings.xrp?.value > 0) ? 1 : 0)) / 10)}
                             </p>
                             <div className="flex items-center gap-1.5">
                               <button
                                 onClick={() => setHoldingsPage(Math.max(0, holdingsPage - 1))}
                                 disabled={holdingsPage === 0}
+                                aria-label="Previous page"
                                 className={cn(
                                   'w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-200',
                                   holdingsPage === 0
@@ -1827,6 +1830,7 @@ const OverView = ({ account }) => {
                               <button
                                 onClick={() => setHoldingsPage(holdingsPage + 1)}
                                 disabled={holdingsPage >= Math.ceil(((holdings.total || holdings.lines?.length || 0) + ((holdings.accountData?.total > 0 || holdings.xrp?.value > 0) ? 1 : 0)) / 10) - 1}
+                                aria-label="Next page"
                                 className={cn(
                                   'w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-200',
                                   holdingsPage >= Math.ceil(((holdings.total || holdings.lines?.length || 0) + ((holdings.accountData?.total > 0 || holdings.xrp?.value > 0) ? 1 : 0)) / 10) - 1
@@ -1871,7 +1875,7 @@ const OverView = ({ account }) => {
                   <div className="overflow-x-auto">
                     <table className="w-full">
                       <thead>
-                        <tr className={cn('text-[9px] font-black uppercase tracking-widest opacity-40', isDark ? 'text-white' : 'text-gray-500')}>
+                        <tr className={cn('text-[9px] font-black uppercase tracking-widest opacity-60', isDark ? 'text-white' : 'text-gray-500')}>
                           <th className="px-4 py-2 text-left">Token</th>
                           <th className="px-4 py-2 text-right">Supply</th>
                           <th className="px-4 py-2 text-right">Holders</th>
@@ -1894,7 +1898,7 @@ const OverView = ({ account }) => {
                                   isDark ? 'bg-black border-white/10' : 'bg-white border-gray-100'
                                 )}>
                                   <img
-                                    src={`https://s1.xrpl.to/token/${token.md5}`}
+                                    src={`https://s1.xrpl.to/thumb/${token.md5}_32`}
                                     className="w-full h-full object-contain rounded-lg"
                                     onError={(e) => { e.target.style.display = 'none'; }}
                                     alt=""
@@ -1973,6 +1977,7 @@ const OverView = ({ account }) => {
                               setTradingPerfSort(e.target.value);
                               setTradingPerfOffset(0);
                             }}
+                            aria-label="Sort trading performance by"
                             className={cn(
                               'text-[10px] px-2 py-1.5 rounded-lg border-none outline-none cursor-pointer font-bold',
                               isDark
@@ -2012,13 +2017,13 @@ const OverView = ({ account }) => {
                       <div className="overflow-x-auto">
                         <table className="w-full">
                           <thead>
-                            <tr className={cn('text-[9px] font-black uppercase tracking-widest opacity-40', isDark ? 'text-white' : 'text-gray-500')}>
+                            <tr className={cn('text-[9px] font-black uppercase tracking-widest opacity-60', isDark ? 'text-white' : 'text-gray-500')}>
                               <th className="px-4 py-2 text-left">Token</th>
                               <th className="px-2 py-2 text-right">Volume</th>
                               <th className="px-2 py-2 text-right">Trades</th>
-                              <th className="px-2 py-2 text-right text-emerald-500/80">Bought</th>
-                              <th className="px-2 py-2 text-right text-red-500/80">Sold</th>
-                              <th className="px-2 py-2 text-right text-blue-500/80">Held</th>
+                              <th className="px-2 py-2 text-right text-emerald-300">Bought</th>
+                              <th className="px-2 py-2 text-right text-red-300">Sold</th>
+                              <th className="px-2 py-2 text-right text-blue-300">Held</th>
                               <th className="px-2 py-2 text-right">ROI</th>
                               <th className="px-2 py-2 text-right">PNL</th>
                               <th className="px-2 py-2 text-right pr-4">Period</th>
@@ -2054,7 +2059,7 @@ const OverView = ({ account }) => {
                                         )}
                                       >
                                         <img
-                                          src={`https://s1.xrpl.to/token/${token.tokenId}`}
+                                          src={`https://s1.xrpl.to/thumb/${token.tokenId}_32`}
                                           className="w-full h-full object-contain rounded-lg"
                                           onError={(e) => {
                                             e.target.parentElement.style.display = 'none';
@@ -2096,7 +2101,7 @@ const OverView = ({ account }) => {
                                       <div
                                         className={cn(
                                           'text-[8px]',
-                                          isDark ? 'text-white/20' : 'text-gray-400'
+                                          isDark ? 'text-white/50' : 'text-gray-400'
                                         )}
                                       >
                                         @{token.avgBuyPrice < 0.001
@@ -2113,7 +2118,7 @@ const OverView = ({ account }) => {
                                       <div
                                         className={cn(
                                           'text-[8px]',
-                                          isDark ? 'text-white/20' : 'text-gray-400'
+                                          isDark ? 'text-white/50' : 'text-gray-400'
                                         )}
                                       >
                                         @{token.avgSellPrice < 0.001
@@ -2207,13 +2212,14 @@ const OverView = ({ account }) => {
                             isDark ? 'border-white/[0.08]' : 'border-gray-100'
                           )}
                         >
-                          <span className={cn('text-[10px] tabular-nums', isDark ? 'text-white/30' : 'text-gray-400')}>
+                          <span className={cn('text-[10px] tabular-nums', isDark ? 'text-white/50' : 'text-gray-400')}>
                             {tradingPerfOffset + 1}-{Math.min(tradingPerfOffset + TRADING_PERF_LIMIT, totalCount)} of {totalCount}
                           </span>
                           <div className="flex items-center gap-1">
                             <button
                               onClick={() => setTradingPerfOffset(Math.max(0, tradingPerfOffset - TRADING_PERF_LIMIT))}
                               disabled={tradingPerfOffset === 0 || tradingPerfLoading}
+                              aria-label="Previous page"
                               className={cn(
                                 'p-1 rounded transition-colors',
                                 tradingPerfOffset === 0 || tradingPerfLoading
@@ -2223,12 +2229,13 @@ const OverView = ({ account }) => {
                             >
                               <ChevronLeft className="w-4 h-4" />
                             </button>
-                            <span className={cn('text-[10px] tabular-nums min-w-[60px] text-center', isDark ? 'text-white/40' : 'text-gray-500')}>
+                            <span className={cn('text-[10px] tabular-nums min-w-[60px] text-center', isDark ? 'text-white/50' : 'text-gray-500')}>
                               {currentPage + 1} / {totalPages}
                             </span>
                             <button
                               onClick={() => setTradingPerfOffset(tradingPerfOffset + TRADING_PERF_LIMIT)}
                               disabled={!hasMore || tradingPerfLoading}
+                              aria-label="Next page"
                               className={cn(
                                 'p-1 rounded transition-colors',
                                 !hasMore || tradingPerfLoading
@@ -2665,7 +2672,7 @@ const OverView = ({ account }) => {
                   <div className="overflow-x-auto">
                     <table className="w-full">
                       <thead>
-                        <tr className={cn('text-[10px] font-black uppercase tracking-widest opacity-40', isDark ? 'text-white' : 'text-gray-500')}>
+                        <tr className={cn('text-[10px] font-black uppercase tracking-widest opacity-60', isDark ? 'text-white' : 'text-gray-500')}>
                           <th className="px-5 py-4 text-left">Collection</th>
                           <th className="px-5 py-4 text-right">Volume</th>
                           <th className="px-5 py-4 text-right">P/L</th>
@@ -3025,7 +3032,8 @@ export async function getServerSideProps(ctx) {
       canonical: `https://xrpl.to/address/${account}`,
       title: `Profile - ${account.substring(0, 8)}...${account.substring(account.length - 6)}`,
       url: `https://xrpl.to/address/${account}`,
-      imgUrl: 'https://xrpl.to/og/address.webp',
+      imgUrl: `https://xrpl.to/api/og/address/${account}`,
+      imgType: 'image/png',
       desc: `View portfolio, NFT collections, and trading activity for XRP Ledger account ${account.substring(0, 12)}...`
     };
 

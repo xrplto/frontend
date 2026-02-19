@@ -9,6 +9,7 @@ import { useSelector } from 'react-redux';
 import { selectMetrics } from 'src/redux/statusSlice';
 import { fNumber } from 'src/utils/formatters';
 import Decimal from 'decimal.js-light';
+import { ArrowDownUp } from 'lucide-react';
 import { cn } from 'src/utils/cn';
 
 const currencySymbols = {
@@ -32,7 +33,7 @@ const MobileButtonGrid = ({ className, children, ...p }) => <div className={cn('
 const Button = ({ darkMode, className, children, ...p }) => (
   <button
     className={cn(
-      'py-2 px-4 border-none rounded-lg cursor-pointer text-[13px] font-normal transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed',
+      'py-2 px-4 border-none rounded-lg cursor-pointer text-[13px] font-normal transition-[background-color] duration-150 disabled:opacity-40 disabled:cursor-not-allowed',
       darkMode ? 'bg-white/[0.06] text-white/70 hover:not-disabled:bg-white/10 hover:not-disabled:text-white' : 'bg-black/[0.04] text-black/60 hover:not-disabled:bg-black/[0.08] hover:not-disabled:text-[#333]',
       className
     )}
@@ -45,7 +46,7 @@ const Button = ({ darkMode, className, children, ...p }) => (
 const Select = ({ darkMode, className, children, ...p }) => (
   <select
     className={cn(
-      'py-2 pl-[14px] pr-[30px] rounded-lg border text-[13px] font-normal cursor-pointer appearance-none bg-no-repeat bg-[length:14px] bg-[position:right_8px_center] transition-all duration-150 focus:outline-none focus:border-[#3b82f6]',
+      'py-2 pl-[14px] pr-[30px] rounded-lg border text-[13px] font-normal cursor-pointer appearance-none bg-no-repeat bg-[length:14px] bg-[position:right_8px_center] transition-[border-color] duration-150 focus:outline-none focus:border-[#3b82f6]',
       darkMode ? 'border-white/[0.08] bg-white/[0.03] text-white/80 hover:border-white/[0.15]' : 'border-black/[0.08] bg-black/[0.02] text-black/70 hover:border-black/[0.15]',
       className
     )}
@@ -56,25 +57,25 @@ const Select = ({ darkMode, className, children, ...p }) => (
   </select>
 );
 
-const Label = ({ darkMode, className, children, ...p }) => <span className={cn('text-[13px] font-normal whitespace-nowrap', darkMode ? 'text-white/70' : 'text-black/70', className)} {...p}>{children}</span>;
+const Label = ({ darkMode, className, children, ...p }) => <span className={cn('text-[13px] font-medium tracking-[0.01em] whitespace-nowrap', darkMode ? 'text-white/40' : 'text-black/40', className)} {...p}>{children}</span>;
 
 const SummaryGrid = ({ className, children, ...p }) => <div className={cn('grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4 mt-5 mb-5 max-md:mt-4', className)} {...p}>{children}</div>;
 
-const SummaryCard = ({ darkMode, className, children, ...p }) => <div className={cn('p-4 rounded-xl border transition-all duration-200', darkMode ? 'bg-white/[0.02] border-white/[0.08] hover:border-white/[0.15] hover:bg-white/[0.04]' : 'bg-black/[0.02] border-black/[0.08] hover:border-black/[0.15] hover:bg-black/[0.04]', className)} {...p}>{children}</div>;
+const SummaryCard = ({ darkMode, className, children, ...p }) => <div className={cn('p-4 rounded-xl border transition-[border-color,background-color] duration-200', darkMode ? 'bg-white/[0.02] border-white/[0.08] hover:border-white/[0.15] hover:bg-white/[0.04]' : 'bg-black/[0.02] border-black/[0.08] hover:border-black/[0.15] hover:bg-black/[0.04]', className)} {...p}>{children}</div>;
 
-const SummaryLabel = ({ darkMode, className, children, ...p }) => <div className={cn('text-xs mb-2 uppercase tracking-[0.5px]', darkMode ? 'text-white/60' : 'text-black/60', className)} {...p}>{children}</div>;
+const SummaryLabel = ({ darkMode, className, children, ...p }) => <div className={cn('text-[10px] mb-2 font-semibold uppercase tracking-[0.06em]', darkMode ? 'text-white/60' : 'text-[#919EAB]', className)} {...p}>{children}</div>;
 
-const SummaryValue = ({ darkMode, className, children, ...p }) => <div className={cn('text-xl font-semibold', darkMode ? 'text-white' : 'text-black', className)} {...p}>{children}</div>;
+const SummaryValue = ({ darkMode, className, children, ...p }) => <div className={cn('text-xl font-bold tracking-[-0.01em]', darkMode ? 'text-white/95' : 'text-[#1a1a2e]', className)} {...p}>{children}</div>;
 
 const TableWrapper = ({ darkMode, className, children, ...p }) => <div className={cn('overflow-x-auto rounded-xl border w-full', darkMode ? 'border-white/[0.08] bg-white/[0.02]' : 'border-black/[0.08] bg-black/[0.02]', className)} {...p}>{children}</div>;
 
-const Table = ({ className, children, ...p }) => <table className={cn('w-full border-collapse min-w-full table-auto', className)} {...p}>{children}</table>;
+const Table = ({ className, children, ...p }) => <table className={cn('w-full border-collapse min-w-full table-auto hidden md:table', className)} {...p}>{children}</table>;
 
 const Th = ({ darkMode, align, sortable, className, children, ...p }) => (
   <th
     className={cn(
-      'py-[10px] px-2 font-medium text-[0.65rem] uppercase tracking-[0.03em] whitespace-nowrap font-[inherit]',
-      darkMode ? 'text-white/[0.45] bg-white/[0.02] border-b border-white/[0.05]' : 'text-black/40 bg-black/[0.01] border-b border-black/[0.05]',
+      'py-[10px] px-2 font-semibold text-[10px] uppercase tracking-[0.06em] whitespace-nowrap font-[inherit]',
+      darkMode ? 'text-white/60 bg-white/[0.02] border-b border-white/[0.05]' : 'text-[#919EAB] bg-black/[0.01] border-b border-black/[0.05]',
       sortable ? 'cursor-pointer' : 'cursor-default',
       sortable && (darkMode ? 'hover:text-white/70' : 'hover:text-black/60'),
       className
@@ -89,7 +90,7 @@ const Th = ({ darkMode, align, sortable, className, children, ...p }) => (
 const Tr = ({ darkMode, className, children, ...p }) => (
   <tr
     className={cn(
-      'border-b cursor-pointer transition-all duration-200 last:border-b-0',
+      'border-b cursor-pointer transition-[border-color,background-color] duration-200 last:border-b-0',
       darkMode ? 'border-white/[0.05] hover:bg-white/[0.04]' : 'border-black/[0.05] hover:bg-black/[0.02]',
       className
     )}
@@ -101,7 +102,7 @@ const Tr = ({ darkMode, className, children, ...p }) => (
 
 const Td = ({ darkMode, align, className, children, ...p }) => (
   <td
-    className={cn('py-[14px] px-4 text-sm', darkMode ? 'text-white' : 'text-[#333]', className)}
+    className={cn('py-[14px] px-4 text-sm tracking-[0.005em]', darkMode ? 'text-white/[0.88]' : 'text-[#1a1a2e]', className)}
     style={{ textAlign: align || 'left' }}
     {...p}
   >
@@ -111,18 +112,21 @@ const Td = ({ darkMode, align, className, children, ...p }) => (
 
 const PoolInfo = ({ className, children, ...p }) => <div className={cn('flex flex-col gap-1', className)} {...p}>{children}</div>;
 
-const PoolPair = ({ darkMode, className, children, ...p }) => <div className={cn('flex items-center gap-2 font-semibold text-sm', darkMode ? 'text-white' : 'text-black', className)} {...p}>{children}</div>;
+const PoolPair = ({ darkMode, className, children, ...p }) => <div className={cn('flex items-center gap-2 font-semibold text-sm tracking-[-0.01em]', darkMode ? 'text-white/95' : 'text-[#1a1a2e]', className)} {...p}>{children}</div>;
 
 const TokenIconPair = ({ className, children, ...p }) => <div className={cn('flex mr-2', className)} {...p}>{children}</div>;
 
 const TokenImage = ({ darkMode, className, ...p }) => (
   <img
     className={cn('w-6 h-6 rounded-full object-cover border-2 last:-ml-2', darkMode ? 'border-[#1a1a1a]' : 'border-white', className)}
+    width={24}
+    height={24}
+    decoding="async"
     {...p}
   />
 );
 
-const PoolAccount = ({ darkMode, className, children, ...p }) => <div className={cn('text-[11px] font-mono', darkMode ? 'text-[#bbb]' : 'text-[#666]', className)} {...p}>{children}</div>;
+const PoolAccount = ({ darkMode, className, children, ...p }) => <div className={cn('text-[11px] font-mono tracking-[0.02em]', darkMode ? 'text-white/60' : 'text-black/40', className)} {...p}>{children}</div>;
 
 const APYBadge = ({ bg, color, border, className, children, ...p }) => (
   <span
@@ -137,7 +141,7 @@ const APYBadge = ({ bg, color, border, className, children, ...p }) => (
 const StatusBadge = ({ active, className, children, ...p }) => (
   <span
     className={cn(
-      'inline-flex items-center justify-center py-1 px-[10px] rounded-md font-normal text-xs uppercase border-[1.5px]',
+      'inline-flex items-center justify-center py-1 px-[10px] rounded-md font-bold text-[9px] uppercase tracking-[0.05em] border-[1.5px]',
       active ? 'bg-[rgba(76,175,80,0.1)] text-[#4caf50] border-[rgba(76,175,80,0.3)]' : 'bg-[rgba(158,158,158,0.1)] text-[#9e9e9e] border-[rgba(158,158,158,0.3)]',
       className
     )}
@@ -308,7 +312,7 @@ function AMMPoolsPage({ data, initialQuery }) {
         AMM Pools - XRPL Automated Market Maker Analytics
       </h1>
 
-      <div id="back-to-top-anchor" className="mx-auto max-w-[1920px] px-4 mt-4">
+      <div id="back-to-top-anchor" className="mx-auto max-w-[1920px] px-2.5 md:px-4 mt-4">
         {summary && (
           <SummaryGrid>
             <SummaryCard darkMode={darkMode}>
@@ -317,7 +321,7 @@ function AMMPoolsPage({ data, initialQuery }) {
                 {formatCurrency(summary.totalLiquidity)} XRP
               </SummaryValue>
               {(summary.xrpTokenLiquidity || summary.tokenTokenLiquidity) && (
-                <div className={cn('text-[11px] mt-1', darkMode ? 'text-white/50' : 'text-black/50')}>
+                <div className={cn('text-[11px] mt-1 tracking-[0.01em]', darkMode ? 'text-white/50' : 'text-black/35')}>
                   {summary.xrpTokenLiquidity && (
                     <span>XRP Pools: {formatCurrency(summary.xrpTokenLiquidity)}</span>
                   )}
@@ -359,7 +363,31 @@ function AMMPoolsPage({ data, initialQuery }) {
           </SummaryGrid>
         )}
 
-        <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
+        {/* Mobile sort chips */}
+        <div className="md:hidden mb-3 flex items-center gap-2 overflow-x-auto scrollbar-none pb-1" style={{ scrollbarWidth: 'none' }}>
+          <div className={cn('flex items-center gap-1 shrink-0 pl-0.5', darkMode ? 'text-white/40' : 'text-black/[0.45]')}>
+            <ArrowDownUp size={12} />
+          </div>
+          {sortOptions.map((opt) => (
+            <button
+              key={opt.value}
+              onClick={() => updateParam('sortBy', opt.value)}
+              className={cn(
+                'shrink-0 text-[11px] tracking-[0.02em] py-[5px] px-2.5 rounded-full border-[1.5px] transition-[border-color,background-color] duration-150 cursor-pointer whitespace-nowrap',
+                params.sortBy === opt.value
+                  ? 'border-[#3b82f6] bg-[#3b82f6]/10 text-[#3b82f6] font-medium'
+                  : darkMode
+                    ? 'border-white/10 bg-transparent text-white/50 hover:border-white/20 hover:text-white/70'
+                    : 'border-black/[0.06] bg-transparent text-black/40 hover:border-black/10 hover:text-black/60'
+              )}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Desktop sort controls */}
+        <div className="hidden md:flex items-center justify-between gap-3 mb-4 flex-wrap">
           <div className="flex items-center gap-2 flex-wrap">
             {sortOptions.map((opt) => (
               <button
@@ -378,6 +406,7 @@ function AMMPoolsPage({ data, initialQuery }) {
           </div>
           <select
             value={params.limit}
+            aria-label="Results per page"
             onChange={(e) => updateParam('limit', e.target.value)}
             className={cn(
               'py-2 pl-3 pr-8 rounded-lg border-[1.5px] text-[13px] cursor-pointer appearance-none bg-no-repeat bg-[length:14px] bg-[position:right_8px_center]',
@@ -445,13 +474,13 @@ function AMMPoolsPage({ data, initialQuery }) {
                         <PoolPair darkMode={darkMode}>
                           <TokenIconPair>
                             <TokenImage
-                              src={`https://s1.xrpl.to/token/${pool.asset1.md5 || '84e5efeb89c4eae8f68188982dc290d8'}`}
+                              src={`https://s1.xrpl.to/thumb/${pool.asset1.md5 || '84e5efeb89c4eae8f68188982dc290d8'}_32`}
                               alt=""
                               loading="lazy"
                               darkMode={darkMode}
                             />
                             <TokenImage
-                              src={`https://s1.xrpl.to/token/${pool.asset2.md5}`}
+                              src={`https://s1.xrpl.to/thumb/${pool.asset2.md5}_32`}
                               alt=""
                               loading="lazy"
                               darkMode={darkMode}
@@ -502,6 +531,72 @@ function AMMPoolsPage({ data, initialQuery }) {
               })}
             </tbody>
           </Table>
+
+          {/* Mobile card layout */}
+          <div className="md:hidden divide-y divide-white/10">
+            {pools.map((pool, idx) => {
+              const apy24h = pool.apy24h?.apy || 0;
+              const apy7d = pool.apy7d?.apy || 0;
+              const apyColors7d = getAPYColor(apy7d);
+              const liquidityXRP = pool.apy7d?.liquidity || pool.currentLiquidity?.asset1Amount || 0;
+              const liquidityFiat = new Decimal(liquidityXRP).div(exchRate).toNumber();
+
+              return (
+                <div
+                  key={pool._id}
+                  onClick={() => router.push(`/amm/${pool.ammAccount}`)}
+                  className={cn('px-3 py-3 cursor-pointer transition-[background-color] duration-150', darkMode ? 'border-white/[0.05] hover:bg-white/[0.04]' : 'border-black/[0.05] hover:bg-black/[0.02]', idx > 0 && 'border-t-[1.5px]')}
+                >
+                  {/* Row 1: Rank + Pool pair + APY badge */}
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className={cn('text-[11px] w-5 text-center shrink-0', darkMode ? 'text-white/60' : 'text-[#919EAB]')}>{idx + 1}</span>
+                      <TokenIconPair>
+                        <TokenImage
+                          src={`https://s1.xrpl.to/thumb/${pool.asset1.md5 || '84e5efeb89c4eae8f68188982dc290d8'}_32`}
+                          alt="" loading="lazy" darkMode={darkMode}
+                        />
+                        <TokenImage
+                          src={`https://s1.xrpl.to/thumb/${pool.asset2.md5}_32`}
+                          alt="" loading="lazy" darkMode={darkMode}
+                        />
+                      </TokenIconPair>
+                      <span className={cn('text-[13px] font-semibold tracking-[-0.01em]', darkMode ? 'text-white/95' : 'text-[#1a1a2e]')}>
+                        {formatPair(pool)}
+                      </span>
+                    </div>
+                    <APYBadge {...apyColors7d} className="text-[11px] py-1 px-2 min-w-0">
+                      {apy7d > 0 ? `${apy7d.toFixed(1)}%` : '-'}
+                    </APYBadge>
+                  </div>
+
+                  {/* Row 2: Key stats grid */}
+                  <div className="grid grid-cols-4 gap-x-3 gap-y-1.5 ml-7">
+                    <div>
+                      <div className={cn('text-[9px] uppercase tracking-[0.06em] font-semibold', darkMode ? 'text-white/50' : 'text-black/30')}>Liq</div>
+                      <div className={cn('text-[12px] font-medium', darkMode ? 'text-white/85' : 'text-[#1a1a2e]')}>
+                        {currencySymbols[activeFiatCurrency]}{formatCurrency(liquidityFiat)}
+                      </div>
+                    </div>
+                    <div>
+                      <div className={cn('text-[9px] uppercase tracking-[0.06em] font-semibold', darkMode ? 'text-white/50' : 'text-black/30')}>Vol 7d</div>
+                      <div className={cn('text-[12px] font-medium', darkMode ? 'text-white/85' : 'text-[#1a1a2e]')}>{formatCurrency(pool.apy7d?.volume || 0)}</div>
+                    </div>
+                    <div>
+                      <div className={cn('text-[9px] uppercase tracking-[0.06em] font-semibold', darkMode ? 'text-white/50' : 'text-black/30')}>Fees 7d</div>
+                      <div className={cn('text-[12px] font-medium', darkMode ? 'text-white/85' : 'text-[#1a1a2e]')}>{formatCurrency(pool.apy7d?.fees || 0)}</div>
+                    </div>
+                    <div>
+                      <div className={cn('text-[9px] uppercase tracking-[0.06em] font-semibold', darkMode ? 'text-white/50' : 'text-black/30')}>Fee</div>
+                      <div className={cn('text-[12px] font-medium', darkMode ? 'text-white/85' : 'text-[#1a1a2e]')}>
+                        {pool.tradingFee ? `${(pool.tradingFee / 1000).toFixed(2)}%` : '-'}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </TableWrapper>
 
         {totalPages > 1 && (
@@ -513,7 +608,7 @@ function AMMPoolsPage({ data, initialQuery }) {
             >
               Previous
             </Button>
-            <span className={cn('py-[10px] px-[18px]', darkMode ? 'text-white' : 'text-[#333]')}>
+            <span className={cn('py-[10px] px-[18px] font-medium tracking-[0.02em]', darkMode ? 'text-white/60' : 'text-black/35')}>
               Page {currentPage + 1} of {totalPages}
             </span>
             <Button
@@ -559,7 +654,8 @@ export async function getServerSideProps({ query }) {
           canonical: 'https://xrpl.to/amm-pools',
           title: 'AMM Pools | XRPL Automated Market Maker Analytics',
           url: 'https://xrpl.to/amm-pools',
-          imgUrl: 'https://xrpl.to/og/amm-pools.webp',
+          imgUrl: 'https://xrpl.to/api/og/amm-pools',
+          imgType: 'image/png',
           desc: 'Explore XRPL AMM pools with real-time liquidity, volume, fees, and APY analytics',
           keywords: 'AMM pools, XRPL, automated market maker, liquidity pools, DEX, APY'
         }
@@ -575,7 +671,8 @@ export async function getServerSideProps({ query }) {
           canonical: 'https://xrpl.to/amm-pools',
           title: 'AMM Pools | XRPL Automated Market Maker Analytics',
           url: 'https://xrpl.to/amm-pools',
-          imgUrl: 'https://xrpl.to/og/amm-pools.webp',
+          imgUrl: 'https://xrpl.to/api/og/amm-pools',
+          imgType: 'image/png',
           desc: 'Explore XRPL AMM pools with real-time liquidity, volume, fees, and APY analytics',
           keywords: 'AMM pools, XRPL, automated market maker, liquidity pools, DEX, APY'
         }

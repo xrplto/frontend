@@ -38,7 +38,7 @@ const Grid = ({ className, children, ...p }) => (
 const MetricBox = ({ isDark, className, children, ...p }) => (
   <div
     className={cn(
-      'py-3 px-[14px] h-[82px] flex flex-col justify-between items-start rounded-xl bg-transparent border-[1.5px] transition-all duration-150',
+      'py-3 px-[14px] h-[82px] flex flex-col justify-between items-start rounded-xl bg-transparent border-[1.5px] transition-[background-color,border-color] duration-150',
       'max-sm:py-[10px] max-sm:px-3 max-sm:h-[68px] max-sm:flex-none max-sm:min-w-[95px]',
       isDark ? 'border-white/10 hover:border-white/[0.15] hover:bg-white/[0.02]' : 'border-black/[0.06] hover:border-black/10 hover:bg-black/[0.01]',
       className
@@ -67,7 +67,7 @@ const PercentageChange = ({ isPositive, className, children, ...p }) => (
 );
 
 const VolumePercentage = ({ isDark, className, children, ...p }) => (
-  <span className={cn('text-[0.58rem] font-normal max-sm:text-[0.5rem]', isDark ? 'text-white/45' : 'text-[#212B36]/45', className)} {...p}>{children}</span>
+  <span className={cn('text-[0.58rem] font-normal max-sm:text-[0.5rem]', isDark ? 'text-white/60' : 'text-[#212B36]/60', className)} {...p}>{children}</span>
 );
 
 const ChartMetricBox = ({ isDark, className, children, ...p }) => (
@@ -527,7 +527,7 @@ const AllButtonWrapper = ({ className, children, ...p }) => (
 const TagChip = ({ selected, isDark, className, children, ...p }) => (
   <button
     className={cn(
-      'inline-flex items-center gap-[3px] px-2 rounded-[6px] border text-[0.68rem] cursor-pointer whitespace-nowrap h-6 shrink-0 transition-all duration-150',
+      'inline-flex items-center gap-[3px] px-2 rounded-[6px] border text-[0.68rem] cursor-pointer whitespace-nowrap h-6 shrink-0 transition-[background-color,border-color] duration-150',
       selected
         ? 'border-blue-500/30 bg-blue-500/10 text-blue-500 font-medium hover:bg-blue-500/[0.15]'
         : cn(
@@ -542,7 +542,7 @@ const TagChip = ({ selected, isDark, className, children, ...p }) => (
 const AllTagsButton = ({ isDark, className, children, ...p }) => (
   <button
     className={cn(
-      'inline-flex items-center gap-1 px-3 border-none rounded-2xl text-blue-500 text-[0.7rem] font-medium cursor-pointer whitespace-nowrap h-[26px] shrink-0 ml-auto transition-all duration-150 hover:bg-blue-500/20',
+      'inline-flex items-center gap-1 px-3 border-none rounded-2xl text-blue-500 text-[0.7rem] font-medium cursor-pointer whitespace-nowrap h-[26px] shrink-0 ml-auto transition-[background-color] duration-150 hover:bg-blue-500/20',
       'max-sm:text-[0.68rem] max-sm:h-6 max-sm:px-2 max-sm:gap-[3px]',
       isDark ? 'bg-blue-500/[0.15]' : 'bg-blue-500/10',
       className
@@ -581,7 +581,7 @@ const DrawerTitle = ({ isDark, className, children, ...p }) => (
 const DrawerClose = ({ isDark, className, children, ...p }) => (
   <button
     className={cn(
-      'w-8 h-8 border-[1.5px] rounded-lg bg-transparent cursor-pointer flex items-center justify-center transition-all duration-150',
+      'w-8 h-8 border-[1.5px] rounded-lg bg-transparent cursor-pointer flex items-center justify-center transition-[background-color,border-color] duration-150',
       'hover:border-blue-400/50 hover:text-[#4285f4]',
       isDark ? 'border-white/10 text-white/40' : 'border-black/10 text-black/40',
       className
@@ -633,7 +633,7 @@ const TagsGrid = ({ className, children, ...p }) => (
 const TagButton = ({ isDark, className, children, ...p }) => (
   <button
     className={cn(
-      'inline-flex items-center justify-center py-1 px-3 border rounded-lg bg-transparent text-xs font-normal cursor-pointer font-[inherit] whitespace-nowrap h-7 shrink-0 transition-all duration-200',
+      'inline-flex items-center justify-center py-1 px-3 border rounded-lg bg-transparent text-xs font-normal cursor-pointer font-[inherit] whitespace-nowrap h-7 shrink-0 transition-[background-color,border-color] duration-200',
       'hover:bg-blue-500/[0.08] hover:border-blue-500/30 hover:text-blue-500',
       'max-sm:h-8 max-sm:py-1 max-sm:px-[14px] max-sm:text-[0.8rem]',
       isDark ? 'border-white/[0.08] text-white/70' : 'border-black/[0.08] text-[#212B36]/70',
@@ -654,7 +654,7 @@ const formatNumberWithDecimals = (num) => {
   if (num >= 1e9) return `${(num / 1e9).toFixed(1)}B`;
   if (num >= 1e6) return `${(num / 1e6).toFixed(1)}M`;
   if (num >= 1e3) return `${(num / 1e3).toFixed(0)}K`;
-  return Math.round(num).toLocaleString();
+  return Math.round(num).toLocaleString('en-US');
 };
 
 function Collections({
@@ -672,7 +672,14 @@ function Collections({
   const [tagSearch, setTagSearch] = useState('');
   const [selectedTag, setSelectedTag] = useState(router.query.tag || null);
   const [copied, setCopied] = useState(false);
-  const isMobile = typeof window !== 'undefined' && window.innerWidth < 600;
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 600);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Sync selectedTag with URL query
   useEffect(() => {
@@ -893,7 +900,7 @@ function Collections({
                           >
                             {sentiment}
                           </span>
-                          <span className={cn('text-[0.5rem]', isDark ? 'text-white/40' : 'text-black/40')}>
+                          <span className={cn('text-[0.5rem]', isDark ? 'text-white/60' : 'text-black/60')}>
                             Sentiment
                           </span>
                         </div>
@@ -925,7 +932,7 @@ function Collections({
                           >
                             {rsi}
                           </span>
-                          <span className={cn('text-[0.5rem]', isDark ? 'text-white/40' : 'text-black/40')}>
+                          <span className={cn('text-[0.5rem]', isDark ? 'text-white/60' : 'text-black/60')}>
                             RSI
                           </span>
                         </div>
@@ -962,7 +969,7 @@ function Collections({
                           >
                             {formatNumberWithDecimals(today)}
                           </span>
-                          <span className={cn('text-[0.5rem]', isDark ? 'text-white/40' : 'text-black/40')}>
+                          <span className={cn('text-[0.5rem]', isDark ? 'text-white/60' : 'text-black/60')}>
                             today
                           </span>
                           <span
@@ -1018,7 +1025,7 @@ function Collections({
                         <span className={cn('text-[0.75rem] font-semibold', isDark ? 'text-white' : 'text-[#212B36]')}>
                           {formatNumberWithDecimals(today)}
                         </span>
-                        <span className={cn('text-[0.45rem]', isDark ? 'text-white/40' : 'text-black/40')}>
+                        <span className={cn('text-[0.45rem]', isDark ? 'text-white/60' : 'text-black/60')}>
                           today
                         </span>
                         <span className="text-[0.6rem]" style={{ color: isUp ? '#10b981' : '#ef4444' }}>

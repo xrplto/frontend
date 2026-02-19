@@ -13,7 +13,6 @@ const Container = ({ darkMode, className, children, ...p }) => (
   <div
     className={cn(
       'st-container flex flex-col gap-2 rounded-xl border-[1.5px] backdrop-blur-[12px] py-[10px] px-[14px] relative box-border overflow-hidden',
-      'before:content-[""] before:absolute before:-top-[60px] before:-right-[60px] before:w-[180px] before:h-[180px] before:rounded-full before:bg-[#137DFE]/20 before:blur-[40px] before:pointer-events-none before:z-0',
       '[&>*]:relative [&>*]:z-[1]',
       'max-sm:py-[6px] max-sm:px-2 max-sm:gap-[6px]',
       darkMode ? 'border-white/[0.08] bg-[rgba(10,10,10,0.5)]' : 'border-black/[0.06] bg-white/50',
@@ -146,14 +145,14 @@ const ButtonGroup = ({ darkMode, hideOnMobile, className, children, ...p }) => (
 
 const LaunchpadGroup = ({ darkMode, className, children, ...p }) => (
   <div
-    className={cn('st-lp-group inline-flex items-center gap-[2px] py-[3px] pl-2 pr-[6px] rounded-[6px] border ml-2', darkMode ? 'bg-white/[0.03] border-white/[0.06]' : 'bg-black/[0.03] border-black/[0.06]', className)}
+    className={cn('st-lp-group inline-flex items-center gap-[2px] py-[3px] pl-2 pr-[6px] rounded-[6px] border ml-2', darkMode ? 'bg-white/[0.06] border-white/[0.12]' : 'bg-black/[0.04] border-black/[0.1]', className)}
     {...p}
   >{children}</div>
 );
 
 const LaunchpadLabel = ({ darkMode, className, children, ...p }) => (
   <span
-    className={cn('st-lp-label text-[0.6rem] font-semibold uppercase tracking-[0.05em] mr-1', darkMode ? 'text-white/[0.35]' : 'text-black/[0.35]', className)}
+    className={cn('st-lp-label text-[0.6rem] font-semibold uppercase tracking-[0.05em] mr-1', darkMode ? 'text-white/60' : 'text-black/60', className)}
     {...p}
   >{children}</span>
 );

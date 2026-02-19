@@ -9,6 +9,7 @@ import {
   Code,
   Search,
   Loader2,
+  ChevronLeft,
   ChevronRight,
   ChevronDown,
   Zap,
@@ -85,7 +86,7 @@ const ApiDocsPage = ({ apiDocs, ogp }) => {
 
   // Dynamic data from API with fallbacks
   const docs = {
-    version: apiDocs?.version || '2.0',
+    version: apiDocs?.version || '1.0',
     baseUrl: apiDocs?.baseUrl || 'https://api.xrpl.to/v1',
     tiers: apiDocs?.tiers || [
       { name: 'Free', price: '$0/mo', credits: '1M', rate: '10 req/sec' },
@@ -100,7 +101,7 @@ const ApiDocsPage = ({ apiDocs, ogp }) => {
       { pack: 'mega', price: '$250', credits: '100M' }
     ],
     caching: apiDocs?.reference?.caching || {
-      default: '5 seconds',
+      default: 'Live (no caching)',
       platformStatus: '30 seconds',
       news: '5 minutes',
       cumulativeStats: '10 minutes'
@@ -185,6 +186,12 @@ const ApiDocsPage = ({ apiDocs, ogp }) => {
   const toggleGroup = (name) => {
     setExpandedGroups((prev) => ({ ...prev, [name]: !prev[name] }));
   };
+
+  // Flat list of all sections for prev/next navigation
+  const allSections = sidebarGroups.flatMap((group) => group.items);
+  const currentIndex = allSections.findIndex((s) => s.id === currentSection);
+  const prevSection = currentIndex > 0 ? allSections[currentIndex - 1] : null;
+  const nextSection = currentIndex < allSections.length - 1 ? allSections[currentIndex + 1] : null;
 
   const pageAnchors = {
     overview: [
@@ -384,12 +391,10 @@ GET /traders/token-traders/{id} - Get top traders with P&L stats (sort: volume|p
     market: `## Market Data API
 Base URL: https://api.xrpl.to/v1
 
-GET /ohlc/{md5} - OHLC candlestick data from ohlc_v1 database
+GET /ohlc/{md5} - OHLC candlestick data
 Params: range (1D|5D|1M|3M|1Y|5Y|ALL), interval (1m|5m|15m|30m|1h|4h|1d|1w - auto-selected if omitted), vs_currency (XRP|USD|EUR|JPY|CNH)
-Default intervals: 1D→5m, 5D→15m, 1M→1h, 3M→4h, 1Y→1d, 5Y/ALL→1w
-Cache: 1D→5s, 7D→1min, 1M→2min, 3M→5min, 1Y+→10min
 Example: GET /v1/ohlc/0413ca7cfc258dfaf698c02fe304e607?range=1M&vs_currency=USD
-Response: { result, source, took, length, range, interval, interval_seconds, vs_currency, ohlc: [[time, o, h, l, c, vol]] }
+Response: { result, took, length, range, interval, interval_seconds, vs_currency, ohlc: [[time, o, h, l, c, vol]] }
 
 GET /sparkline/{id} - Sparkline price data for mini charts
 Params: period (24h|7d, default:7d), lightweight (bool), max_points (int, default:20, alias: maxPoints)
@@ -427,7 +432,7 @@ Example: GET /v1/amm/info?asset=XRP&asset2=0413ca7cfc258dfaf698c02fe304e607
 GET /amm/liquidity-chart - Historical TVL chart
 Params: token (md5/slug/issuer_currency)
 
-POST /dex/quote - Swap quote via ripple_path_find
+POST /dex/quote - Get swap quote for token exchange
 Body: { source_token, destination_token (md5/slug/issuer_currency), source_amount, destination_account }
 
 GET /pairs/{md5} - Trading pairs for token
@@ -482,20 +487,20 @@ GET /nft/pin/status/{hash} - Get IPFS pin status`,
 Base URL: https://api.xrpl.to/v1
 Token identifiers: Orderbook accepts md5/slug/issuer_currency via base/quote params
 
-GET /orderbook - Live orderbook (rippled: book_offers)
+GET /orderbook - Live DEX orderbook
 Params (recommended): base, quote (md5/slug/issuer_currency or "XRP"), limit (default:20, max:400)
 Params (legacy): base_currency, base_issuer, quote_currency, quote_issuer
 Example: GET /v1/orderbook?base=XRP&quote=0413ca7cfc258dfaf698c02fe304e607
 Response: { success, pair, base, quote, bids[], asks[], ledger_index }
 
-GET /tx/{account} - Paginated transaction history (rippled: tx)
-Params: limit (default:200, max:400), marker (JSON string), ledger_index_min/max, tx_type, forward (bool)
+GET /account/tx/{account} - Full transaction history
+Params: limit (default:200, max:5000), marker (JSON string), types, forward (bool)
 
-GET /trustlines/{account} - Account trustlines with token info (rippled: account_lines)
-Params: page, limit (default:10, max:50), format (raw|default|full), sortByValue (bool)
+GET /trustlines/{account} - Account trustlines with token values
+Params: offset, limit (default:10, max:50), format (raw|default|full), sort_by_value (bool)
 
-GET /tx/{hash} - Transaction by hash (rippled: tx)
-POST /account/path-find - Find payment paths (rippled: path_find)`,
+GET /tx/{hash} - Transaction by hash
+POST /account/path-find - Find payment paths`,
 
     analytics: `## Analytics API
 Base URL: https://api.xrpl.to/v1
@@ -519,23 +524,17 @@ Base URL: https://api.xrpl.to/v1
 
 POST /launch-token - Initialize token launch
 Body: { currencyCode (1-20 chars, not "XRP"), tokenSupply (max ~10^16), ammXrpAmount (min 1), name, origin, user, userAddress (required if userCheckAmount>0), userCheckAmount (max 95%), antiSnipe (bool), domain, description, telegram, twitter, imageData (base64) }
-Costs: platformFee 5-30 XRP (0-30% dev → 5-20 XRP, 30-95% dev → 20-30 XRP), baseReserve 1 XRP, ownerReserve 0.2 XRP/object
-Typical: 10-50 XRP (breakdown: issuer(1) + fee(5-30) + holder(1) + AMM liquidity + tx fees(~1.8))
-Response: { success, sessionId, status, issuerAddress, holderAddress, requiredFunding, fundingBreakdown }
+Typical cost: 6-20 XRP depending on configuration
+Response: { success, sessionId, status, issuerAddress, requiredFunding, fundingBreakdown }
 
-GET /launch-token/status/{sessionId} - Poll status (every 3s)
-Statuses: initializing → awaiting_funding → partial_funding → funded → configuring_issuer → registering_token → creating_trustline → sending_tokens → creating_checks → creating_amm → scheduling_blackhole → success/completed/failed/cancelled
-
-DELETE /launch-token/{sessionId} - Cancel and refund (allowed before creating_amm)
-POST /launch-token/{sessionId}/cancel - Cancel alternative
-POST /launch-token/authorize - Request trustline auth (anti-snipe: issuer, currency, account)
+GET /launch-token/status/{sessionId} - Poll launch status (every 3s recommended)
+POST /launch-token/authorize - Request trustline authorization (anti-snipe mode)
 GET /launch-token/queue-status/{sessionId} - Auth queue status
 GET /launch-token/auth-info/{issuer}/{currency} - Token auth info
 GET /launch-token/check-auth/{issuer}/{currency}/{address} - Check authorization
-GET /launch-token/calculate-funding - Calculate XRP required (ticketCount, antiSnipeMode)
-
-Anti-Snipe Mode: Enables RequireAuth flag, 250 pre-created tickets, 5min auth window after AMM created, then RequireAuth removed and issuer blackholed
-Final State: issuer ~1 XRP locked (blackholed), holder ~1.4 XRP locked (base + LP token reserve, blackholed)`,
+GET /launch-token/calculate-funding - Calculate required XRP funding
+GET /launch-token/my-launches - User launch history (API key required)
+POST /launch-token/{sessionId}/image - Upload token image (base64, max 500KB)`,
 
     tools: `## Tools API
 Base URL: https://api.xrpl.to/v1
@@ -565,7 +564,7 @@ Patterns:
 - NFTokenID: ^[A-Fa-f0-9]{64}$
 - txHash: ^[A-Fa-f0-9]{64}$
 
-Caching: Default Live (5s), platformStatus 30s, News Live (5min), Cumulative Stats Live (10min), OHLC varies by range
+Caching: Default Live (no caching), platformStatus 30s, News 5min, Cumulative Stats 10min, OHLC varies by range
 Rate Limits: Anonymous (1 req/sec, 100K credits/mo), Free (10 req/sec, 1M credits/mo), Developer (50 req/sec, 10M credits/mo), Business (200 req/sec, 100M credits/mo), Professional (500 req/sec, 200M credits/mo)`
   };
 
@@ -799,7 +798,7 @@ Rate Limits: Anonymous (1 req/sec, 100K credits/mo), Free (10 req/sec, 1M credit
             >
               <div className="flex items-center gap-2 mb-3">
                 <Server size={16} className="text-primary" />
-                <h3 className="text-[15px] font-medium">Base URL</h3>
+                <h2 className="text-[15px] font-medium">Base URL</h2>
               </div>
               <div
                 className={cn(
@@ -932,14 +931,14 @@ Rate Limits: Anonymous (1 req/sec, 100K credits/mo), Free (10 req/sec, 1M credit
               >
                 <div className="flex items-center justify-between">
                   <span className="text-[15px] font-medium">Platform Trading Fee</span>
-                  <span className="text-2xl font-medium text-primary">1.5%</span>
+                  <span className="text-2xl font-medium text-primary">1%</span>
                 </div>
               </div>
               <div
                 className={cn('space-y-3 text-[13px]', isDark ? 'text-white/60' : 'text-gray-600')}
               >
                 <p>
-                  A <span className="text-primary font-medium">1.5% fee</span> is applied to all
+                  A <span className="text-primary font-medium">1% fee</span> is applied to all
                   trades executed through the XRPL.to swap interface. This fee helps maintain and
                   improve the platform.
                 </p>
@@ -947,7 +946,7 @@ Rate Limits: Anonymous (1 req/sec, 100K credits/mo), Free (10 req/sec, 1M credit
                   <div className="font-medium mb-2">Example</div>
                   <div>Swapping 1,000 XRP worth of tokens:</div>
                   <div className="mt-1">
-                    Fee: <span className="text-primary">15 XRP</span> (1.5% of 1,000)
+                    Fee: <span className="text-primary">10 XRP</span> (1% of 1,000)
                   </div>
                 </div>
                 <p className={cn('text-[12px]', isDark ? 'text-white/40' : 'text-gray-500')}>
@@ -1020,7 +1019,7 @@ Rate Limits: Anonymous (1 req/sec, 100K credits/mo), Free (10 req/sec, 1M credit
                       }
                     >
                       <td className="px-4 py-3 font-medium">Platform Fee</td>
-                      <td className="px-4 py-3 text-primary">5 - 30 XRP</td>
+                      <td className="px-4 py-3 text-primary">2 - 12 XRP</td>
                       <td className={cn('px-4 py-3', isDark ? 'text-white/60' : 'text-gray-600')}>
                         Scales with developer allocation %
                       </td>
@@ -1058,7 +1057,7 @@ Rate Limits: Anonymous (1 req/sec, 100K credits/mo), Free (10 req/sec, 1M credit
               <div className={cn('rounded-lg p-4', isDark ? 'bg-white/5' : 'bg-gray-50')}>
                 <div className="font-medium mb-2 text-[13px]">Typical Total Cost</div>
                 <div className="flex items-center gap-2">
-                  <span className="text-2xl font-medium text-primary">10 - 50 XRP</span>
+                  <span className="text-2xl font-medium text-primary">6 - 20 XRP</span>
                   <span className={cn('text-[12px]', isDark ? 'text-white/40' : 'text-gray-500')}>
                     depending on configuration
                   </span>
@@ -1383,7 +1382,7 @@ Rate Limits: Anonymous (1 req/sec, 100K credits/mo), Free (10 req/sec, 1M credit
                     'Top traders with P&L (sortBy: volume|pnl|trades)'
                   ]
                 ].map(([method, path, desc]) => (
-                  <div key={path} className="flex items-center gap-3">
+                  <div key={path} className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
                     <span
                       className={cn(
                         'px-1.5 py-0.5 text-[10px] font-medium rounded',
@@ -1548,7 +1547,7 @@ Rate Limits: Anonymous (1 req/sec, 100K credits/mo), Free (10 req/sec, 1M credit
                   ['GET', '/v1/news', 'XRPL news with sentiment'],
                   ['GET', '/v1/news/search?q={query}', 'Search news articles']
                 ].map(([method, path, desc]) => (
-                  <div key={path} className="flex items-center gap-3">
+                  <div key={path} className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
                     <span
                       className={cn(
                         'px-1.5 py-0.5 text-[10px] font-medium rounded',
@@ -1715,11 +1714,11 @@ Rate Limits: Anonymous (1 req/sec, 100K credits/mo), Free (10 req/sec, 1M credit
                     'TVL history (token: md5/slug/issuer_currency)'
                   ]
                 ].map(([method, path, desc]) => (
-                  <div key={path} className="flex items-start gap-3">
+                  <div key={path} className="flex flex-wrap items-start gap-x-2 gap-y-0.5">
                     <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-emerald-500/10 text-emerald-500 shrink-0 mt-0.5">
                       {method}
                     </span>
-                    <code className="font-mono text-[12px] shrink-0">{path}</code>
+                    <code className="font-mono text-[12px]">{path}</code>
                     <span className={isDark ? 'text-white/40' : 'text-gray-500'}>- {desc}</span>
                   </div>
                 ))}
@@ -1756,7 +1755,7 @@ Rate Limits: Anonymous (1 req/sec, 100K credits/mo), Free (10 req/sec, 1M credit
                 <code className="text-[15px] font-mono">/v1/dex/quote</code>
               </div>
               <p className={cn('text-[13px] mb-3', isDark ? 'text-white/60' : 'text-gray-600')}>
-                Get swap quote via ripple_path_find. Supports md5/slug/issuer_currency for tokens.
+                Get swap quote for token exchange. Supports md5/slug/issuer_currency for tokens.
               </p>
               <div
                 className={cn(
@@ -1838,7 +1837,7 @@ Rate Limits: Anonymous (1 req/sec, 100K credits/mo), Free (10 req/sec, 1M credit
                     'Exchange rates (token1, token2: md5/slug/issuer_currency)'
                   ]
                 ].map(([method, path, desc]) => (
-                  <div key={path} className="flex items-center gap-3">
+                  <div key={path} className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
                     <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-emerald-500/10 text-emerald-500">
                       {method}
                     </span>
@@ -1890,12 +1889,12 @@ Rate Limits: Anonymous (1 req/sec, 100K credits/mo), Free (10 req/sec, 1M credit
                   [
                     'GET',
                     '/v1/account/info/{account}',
-                    'Pair balance info (curr1, issuer1, curr2, issuer2)'
+                    'Account info (balance, reserves, domain, inception)'
                   ],
                   [
                     'GET',
                     '/v1/account/tx/{account}',
-                    'Trade history by pair (curr1, issuer1, curr2, issuer2)'
+                    'Full transaction history (limit, marker, types, forward)'
                   ],
                   [
                     'GET',
@@ -1906,7 +1905,7 @@ Rate Limits: Anonymous (1 req/sec, 100K credits/mo), Free (10 req/sec, 1M credit
                   ['GET', '/v1/watchlist?account={account}', 'User watchlist'],
                   ['POST', '/v1/watchlist', 'Add/remove token (body: { account, md5, action })']
                 ].map(([method, path, desc]) => (
-                  <div key={path} className="flex items-center gap-3">
+                  <div key={path} className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
                     <span
                       className={cn(
                         'px-1.5 py-0.5 text-[10px] font-medium rounded',
@@ -1939,7 +1938,7 @@ Rate Limits: Anonymous (1 req/sec, 100K credits/mo), Free (10 req/sec, 1M credit
                 <code className="text-[15px] font-mono">/v1/tx/{'{account}'}</code>
               </div>
               <p className={cn('text-[13px] mb-3', isDark ? 'text-white/60' : 'text-gray-600')}>
-                Get paginated transaction history (rippled: tx)
+                Full transaction history with pagination
               </p>
               <div
                 className={cn(
@@ -2045,7 +2044,7 @@ Rate Limits: Anonymous (1 req/sec, 100K credits/mo), Free (10 req/sec, 1M credit
                   ['GET', '/v1/nft/{NFTokenID}/offers', 'Buy/sell offers for NFT'],
                   ['GET', '/v1/nft', 'List NFTs (cid, issuer, page, limit, sort)']
                 ].map(([method, path, desc]) => (
-                  <div key={path} className="flex items-center gap-3">
+                  <div key={path} className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
                     <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-emerald-500/10 text-emerald-500">
                       {method}
                     </span>
@@ -2083,7 +2082,7 @@ Rate Limits: Anonymous (1 req/sec, 100K credits/mo), Free (10 req/sec, 1M credit
                   ['GET', '/v1/nft/collections/{slug}/metrics', 'Collection metrics'],
                   ['GET', '/v1/nft/collections/{slug}/ownership', 'Ownership distribution']
                 ].map(([method, path, desc]) => (
-                  <div key={path} className="flex items-center gap-3">
+                  <div key={path} className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
                     <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-emerald-500/10 text-emerald-500">
                       {method}
                     </span>
@@ -2121,7 +2120,7 @@ Rate Limits: Anonymous (1 req/sec, 100K credits/mo), Free (10 req/sec, 1M credit
                   ['POST', '/v1/nft/pin', 'Pin NFT metadata to IPFS'],
                   ['GET', '/v1/nft/pin/status/{hash}', 'Get IPFS pin status']
                 ].map(([method, path, desc]) => (
-                  <div key={path} className="flex items-center gap-3">
+                  <div key={path} className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
                     <span
                       className={cn(
                         'px-1.5 py-0.5 text-[10px] font-medium rounded',
@@ -2180,7 +2179,7 @@ Rate Limits: Anonymous (1 req/sec, 100K credits/mo), Free (10 req/sec, 1M credit
                 <code className="text-[15px] font-mono">/v1/orderbook</code>
               </div>
               <p className={cn('text-[13px] mb-3', isDark ? 'text-white/60' : 'text-gray-600')}>
-                Live orderbook (rippled: book_offers). Supports{' '}
+                Live DEX orderbook. Supports{' '}
                 <span className="text-primary">md5/slug/issuer_currency</span> for tokens.
               </p>
               <div
@@ -2286,10 +2285,10 @@ Rate Limits: Anonymous (1 req/sec, 100K credits/mo), Free (10 req/sec, 1M credit
               </div>
               <div className="space-y-2 text-[13px]">
                 {[
-                  ['GET', '/v1/tx/{hash}', 'Transaction by hash (rippled: tx)'],
+                  ['GET', '/v1/tx/{hash}', 'Transaction by hash'],
                   ['POST', '/v1/account/path-find', 'Find payment paths']
                 ].map(([method, path, desc]) => (
-                  <div key={path} className="flex items-center gap-3">
+                  <div key={path} className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
                     <span
                       className={cn(
                         'px-1.5 py-0.5 text-[10px] font-medium rounded',
@@ -2351,7 +2350,7 @@ Rate Limits: Anonymous (1 req/sec, 100K credits/mo), Free (10 req/sec, 1M credit
                   ['GET', '/v1/token/analytics/trader/{account}/trades', 'Trader trade history'],
                   ['GET', '/v1/token/analytics/traders/summary', 'Trader balance summary']
                 ].map(([method, path, desc]) => (
-                  <div key={path} className="flex items-center gap-3">
+                  <div key={path} className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
                     <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-emerald-500/10 text-emerald-500">
                       {method}
                     </span>
@@ -2461,18 +2460,16 @@ Rate Limits: Anonymous (1 req/sec, 100K credits/mo), Free (10 req/sec, 1M credit
                 <div className="font-medium mb-2">Costs</div>
                 <div className={cn('space-y-1', isDark ? 'text-white/60' : 'text-gray-600')}>
                   <div>
-                    Platform fee: <span className="text-primary">5-30 XRP</span> (0-30% dev → 5-20
-                    XRP, 30-95% dev → 20-30 XRP)
+                    Platform fee: <span className="text-primary">2-12 XRP</span> (varies by configuration)
                   </div>
                   <div>
-                    Base reserve: <span className="text-primary">1 XRP</span>, Owner reserve:{' '}
-                    <span className="text-primary">0.2 XRP</span>/object
-                  </div>
-                  <div>
-                    Breakdown: issuer(1) + fee(5-30) + holder(1) + AMM liquidity + tx fees(~1.8)
+                    XRPL reserves and transaction fees apply
                   </div>
                   <div className="mt-2">
-                    Typical total: <span className="text-primary font-medium">10-50 XRP</span>
+                    Typical total: <span className="text-primary font-medium">6-20 XRP</span>
+                  </div>
+                  <div className={cn('text-[11px] mt-1', isDark ? 'text-white/40' : 'text-gray-400')}>
+                    Use <code>/calculate-funding</code> for exact cost breakdown
                   </div>
                 </div>
               </div>
@@ -2489,9 +2486,7 @@ Rate Limits: Anonymous (1 req/sec, 100K credits/mo), Free (10 req/sec, 1M credit
                     isDark ? 'text-white/60' : 'text-gray-600'
                   )}
                 >
-                  initializing → awaiting_funding → partial_funding → funded → configuring_issuer →
-                  registering_token → creating_trustline → sending_tokens → creating_checks →
-                  creating_amm → scheduling_blackhole → success/completed
+                  initializing → awaiting_funding → funded → configuring → creating_amm → success/completed
                 </div>
               </div>
               <div
@@ -2502,10 +2497,9 @@ Rate Limits: Anonymous (1 req/sec, 100K credits/mo), Free (10 req/sec, 1M credit
               >
                 <div className="font-medium mb-2">Anti-Snipe Mode</div>
                 <div className={cn('space-y-1', isDark ? 'text-white/60' : 'text-gray-600')}>
-                  <div>Enables RequireAuth flag preventing unauthorized trustlines</div>
-                  <div>250 pre-created tickets (XRPL max) for fast parallel authorization</div>
-                  <div>5-minute auth window after AMM created</div>
-                  <div>After window: RequireAuth removed → issuer blackholed</div>
+                  <div>Prevents unauthorized trustlines during launch</div>
+                  <div>Controlled authorization window after AMM pool is created</div>
+                  <div>Issuer account is permanently locked after launch completes</div>
                 </div>
               </div>
               <div
@@ -2516,8 +2510,7 @@ Rate Limits: Anonymous (1 req/sec, 100K credits/mo), Free (10 req/sec, 1M credit
               >
                 <div className="font-medium mb-2">Final State</div>
                 <div className={isDark ? 'text-white/60' : 'text-gray-600'}>
-                  Issuer: ~1 XRP locked (blackholed) | Holder: ~1.4 XRP locked (base + LP token
-                  reserve, blackholed)
+                  Issuer account is permanently locked after launch, ensuring token supply cannot be modified.
                 </div>
               </div>
             </div>
@@ -2543,18 +2536,12 @@ Rate Limits: Anonymous (1 req/sec, 100K credits/mo), Free (10 req/sec, 1M credit
                   [
                     'GET',
                     '/v1/launch-token/status/{sessionId}',
-                    'Poll status (every 3s recommended)'
+                    'Poll launch status (every 3s recommended)'
                   ],
-                  [
-                    'DELETE',
-                    '/v1/launch-token/{sessionId}',
-                    'Cancel and refund (allowed before creating_amm)'
-                  ],
-                  ['POST', '/v1/launch-token/{sessionId}/cancel', 'Cancel alternative'],
                   [
                     'POST',
                     '/v1/launch-token/authorize',
-                    'Request trustline auth (anti-snipe: issuer, currency, account)'
+                    'Request trustline authorization (anti-snipe mode)'
                   ],
                   ['GET', '/v1/launch-token/queue-status/{sessionId}', 'Auth queue status'],
                   ['GET', '/v1/launch-token/auth-info/{issuer}/{currency}', 'Token auth info'],
@@ -2566,10 +2553,20 @@ Rate Limits: Anonymous (1 req/sec, 100K credits/mo), Free (10 req/sec, 1M credit
                   [
                     'GET',
                     '/v1/launch-token/calculate-funding',
-                    'Calculate XRP required (ticketCount, antiSnipeMode)'
+                    'Calculate required XRP funding'
+                  ],
+                  [
+                    'GET',
+                    '/v1/launch-token/my-launches',
+                    'User launch history (API key required)'
+                  ],
+                  [
+                    'POST',
+                    '/v1/launch-token/{sessionId}/image',
+                    'Upload token image (base64, max 500KB)'
                   ]
                 ].map(([method, path, desc]) => (
-                  <div key={path} className="flex items-center gap-3">
+                  <div key={path} className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
                     <span
                       className={cn(
                         'px-1.5 py-0.5 text-[10px] font-medium rounded',
@@ -2612,7 +2609,7 @@ Rate Limits: Anonymous (1 req/sec, 100K credits/mo), Free (10 req/sec, 1M credit
                   ['GET', '/v1/docs', 'API documentation JSON'],
                   ['GET', '/v1/testnet/{address}', 'Get XRP balance on testnet']
                 ].map(([method, path, desc]) => (
-                  <div key={path} className="flex items-center gap-3">
+                  <div key={path} className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
                     <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-emerald-500/10 text-emerald-500">
                       {method}
                     </span>
@@ -2642,12 +2639,12 @@ Rate Limits: Anonymous (1 req/sec, 100K credits/mo), Free (10 req/sec, 1M credit
             >
               <h3 className={cn('text-[14px] font-medium mb-3', isDark ? 'text-white' : 'text-gray-900')}>Endpoints</h3>
               <div className="space-y-2 text-[13px]">
-                <div className="flex items-center gap-3">
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
                   <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-emerald-500/10 text-emerald-500">GET</span>
                   <code className="font-mono text-[12px]">/v1/faucet</code>
                   <span className={isDark ? 'text-white/40' : 'text-gray-500'}>- Get faucet status & balance</span>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
                   <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-amber-500/10 text-amber-500">POST</span>
                   <code className="font-mono text-[12px]">/v1/faucet</code>
                   <span className={isDark ? 'text-white/40' : 'text-gray-500'}>- Request testnet XRP</span>
@@ -2757,7 +2754,7 @@ curl -X POST https://api.xrpl.to/v1/faucet \\
             >
               <div className="space-y-2 text-[13px]">
                 {docs.bridge.map((ep) => (
-                  <div key={ep.path} className="flex items-center gap-3">
+                  <div key={ep.path} className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
                     <span
                       className={cn(
                         'px-1.5 py-0.5 text-[10px] font-medium rounded',
@@ -2790,7 +2787,7 @@ curl -X POST https://api.xrpl.to/v1/faucet \\
             >
               <div className="space-y-2 text-[13px]">
                 {docs.verify.map((ep) => (
-                  <div key={ep.path} className="flex items-center gap-3">
+                  <div key={ep.path} className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
                     <span
                       className={cn(
                         'px-1.5 py-0.5 text-[10px] font-medium rounded',
@@ -2823,7 +2820,7 @@ curl -X POST https://api.xrpl.to/v1/faucet \\
             >
               <div className="space-y-2 text-[13px]">
                 {docs.boost.map((ep) => (
-                  <div key={ep.path} className="flex items-center gap-3">
+                  <div key={ep.path} className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
                     <span
                       className={cn(
                         'px-1.5 py-0.5 text-[10px] font-medium rounded',
@@ -2855,7 +2852,7 @@ curl -X POST https://api.xrpl.to/v1/faucet \\
               )}
             >
               <div className="space-y-3 text-[13px]">
-                <div className="flex items-start gap-3">
+                <div className="flex flex-wrap items-start gap-x-2 gap-y-0.5">
                   <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-amber-500/10 text-amber-500 shrink-0 mt-0.5">POST</span>
                   <div>
                     <code className="font-mono text-[12px]">/v1/tweet/verify</code>
@@ -2865,14 +2862,14 @@ curl -X POST https://api.xrpl.to/v1/faucet \\
                     </div>
                   </div>
                 </div>
-                <div className="flex items-start gap-3">
+                <div className="flex flex-wrap items-start gap-x-2 gap-y-0.5">
                   <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-emerald-500/10 text-emerald-500 shrink-0 mt-0.5">GET</span>
                   <div>
                     <code className="font-mono text-[12px]">/v1/tweet/token/{'{id}'}</code>
                     <span className={cn('ml-2', isDark ? 'text-white/40' : 'text-gray-500')}>- Get tweet verifications for a token</span>
                   </div>
                 </div>
-                <div className="flex items-start gap-3">
+                <div className="flex flex-wrap items-start gap-x-2 gap-y-0.5">
                   <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-emerald-500/10 text-emerald-500 shrink-0 mt-0.5">GET</span>
                   <div>
                     <code className="font-mono text-[12px]">/v1/tweet/account/{'{account}'}</code>
@@ -2908,7 +2905,7 @@ curl -X POST https://api.xrpl.to/v1/faucet \\
               >
                 Token Identifiers
               </div>
-              <div className="space-y-2 text-[13px]">
+              <div className="space-y-2 text-[13px] break-all">
                 <div>
                   <code className="text-primary">md5</code>{' '}
                   <span className={isDark ? 'text-white/60' : 'text-gray-600'}>
@@ -2948,7 +2945,7 @@ curl -X POST https://api.xrpl.to/v1/faucet \\
               </div>
               <div
                 className={cn(
-                  'rounded-lg p-3 font-mono text-[12px]',
+                  'rounded-lg p-3 font-mono text-[12px] break-all',
                   isDark ? 'bg-black/40' : 'bg-gray-50'
                 )}
               >
@@ -2981,7 +2978,7 @@ curl -X POST https://api.xrpl.to/v1/faucet \\
               </div>
               <div
                 className={cn(
-                  'rounded-lg p-3 font-mono text-[12px]',
+                  'rounded-lg p-3 font-mono text-[12px] break-all',
                   isDark ? 'bg-black/40' : 'bg-gray-50'
                 )}
               >
@@ -3755,10 +3752,10 @@ GET /v1/keys/:wallet/subscription
                   ['creator', '/ws/creator/:identifier', 'Creator activity stream (md5 or address)'],
                   ['chat', '/ws/chat', 'Real-time chat messages']
                 ].map(([name, path, desc]) => (
-                  <div key={name} className="flex items-start gap-3">
+                  <div key={name} className="flex flex-wrap items-start gap-x-2 gap-y-0.5">
                     <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-purple-500/10 text-purple-500 shrink-0">WS</span>
                     <div>
-                      <code className="font-mono text-[12px] text-primary">{path}</code>
+                      <code className="font-mono text-[12px] text-primary break-all">{path}</code>
                       <span className={cn('ml-2', isDark ? 'text-white/40' : 'text-gray-500')}>- {desc}</span>
                     </div>
                   </div>
@@ -3894,21 +3891,37 @@ syncWs.onopen = () => {
 
       <Header />
 
-      <div className={cn('min-h-dvh scroll-smooth', isDark ? 'bg-black' : 'bg-white')}>
-        <div className="flex">
-          {/* Mobile menu button */}
+      <div className={cn('min-h-dvh scroll-smooth overflow-x-hidden', isDark ? 'bg-black' : 'bg-white')}>
+        {/* Mobile top bar */}
+        <div className={cn(
+          'md:hidden sticky top-0 z-50 flex items-center justify-between px-4 py-2.5 border-b',
+          isDark
+            ? 'bg-black/95 backdrop-blur-md border-white/10'
+            : 'bg-white/95 backdrop-blur-md border-black/10'
+        )}>
+          <div className="flex items-center gap-2 min-w-0">
+            <div className={cn('w-1.5 h-1.5 rounded-full shrink-0', 'bg-primary')} />
+            <span className={cn('text-[13px] font-medium truncate', isDark ? 'text-white/80' : 'text-gray-700')}>
+              {allSections.find(s => s.id === currentSection)?.title || 'Documentation'}
+            </span>
+          </div>
           <button
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
             className={cn(
-              'md:hidden fixed top-20 right-4 z-50 p-2.5 rounded-xl backdrop-blur-sm transition-all duration-200',
-              isDark
-                ? 'bg-white/5 border border-white/10 hover:bg-white/10 active:scale-95'
-                : 'bg-black/5 border border-black/10 hover:bg-black/10 active:scale-95'
+              'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[12px] font-medium shrink-0',
+              isSidebarOpen
+                ? 'bg-primary/10 text-primary'
+                : isDark
+                  ? 'text-white/60 hover:text-white hover:bg-white/5'
+                  : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'
             )}
           >
-            {isSidebarOpen ? <X size={20} /> : <Menu size={20} />}
+            {isSidebarOpen ? <X size={15} /> : <Menu size={15} />}
+            {isSidebarOpen ? 'Close' : 'Menu'}
           </button>
+        </div>
 
+        <div className="flex">
           {/* Mobile sidebar overlay */}
           {isSidebarOpen && (
             <div
@@ -3920,34 +3933,34 @@ syncWs.onopen = () => {
           {/* Sidebar */}
           <div
             className={cn(
-              'w-[240px] border-r overflow-y-auto transition-all duration-300 pt-4',
+              'w-[240px] border-r overflow-y-auto scrollbar-hide transition-all duration-300 pt-4',
               'fixed md:sticky top-0 h-dvh z-40',
               isDark
-                ? 'bg-[rgba(59,130,246,0.01)] border-[rgba(59,130,246,0.08)]'
-                : 'bg-[rgba(59,130,246,0.02)] border-[rgba(59,130,246,0.15)]',
+                ? 'bg-black border-white/10'
+                : 'bg-white border-[rgba(59,130,246,0.15)]',
               isSidebarOpen ? 'block' : 'hidden md:block'
             )}
           >
             <div className="px-4 pb-4">
               {/* Search */}
               <div className="relative mb-6">
-                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 opacity-40" />
+                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 opacity-50" />
                 <input
                   type="text"
                   placeholder="Search docs..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className={cn(
-                    'w-full pl-9 pr-12 py-2.5 rounded-xl border-[1.5px] text-[13px] transition-all duration-200',
+                    'w-full pl-9 pr-12 py-2.5 rounded-xl border-[1.5px] text-[13px] transition-[border-color] duration-200',
                     'focus:outline-none focus:ring-2 focus:ring-primary/20',
                     isDark
-                      ? 'bg-white/[0.02] border-white/10 placeholder:text-white/30 focus:border-primary/40'
-                      : 'bg-black/[0.02] border-black/10 placeholder:text-black/30 focus:border-primary/40'
+                      ? 'bg-white/[0.02] border-white/10 placeholder:text-white/50 focus:border-primary/40'
+                      : 'bg-black/[0.02] border-black/10 placeholder:text-black/50 focus:border-primary/40'
                   )}
                 />
                 <kbd className={cn(
                   'absolute right-2.5 top-1/2 -translate-y-1/2 px-1.5 py-0.5 rounded text-[10px] font-medium',
-                  isDark ? 'bg-white/10 text-white/40' : 'bg-black/5 text-black/40'
+                  isDark ? 'bg-white/10 text-white/60' : 'bg-black/5 text-black/60'
                 )}>
                   ⌘K
                 </kbd>
@@ -3962,7 +3975,7 @@ syncWs.onopen = () => {
                     setCurrentSection('overview');
                   }}
                   className={cn(
-                    'flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] transition-all duration-200 relative',
+                    'flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] transition-[background-color] duration-200 relative',
                     currentSection === 'overview'
                       ? 'text-primary bg-primary/10 font-medium'
                       : isDark
@@ -3983,7 +3996,7 @@ syncWs.onopen = () => {
                     setCurrentSection('endpoint-reference');
                   }}
                   className={cn(
-                    'flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] transition-all duration-200 relative',
+                    'flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] transition-[background-color] duration-200 relative',
                     currentSection === 'endpoint-reference'
                       ? 'text-primary bg-primary/10 font-medium'
                       : isDark
@@ -4012,10 +4025,10 @@ syncWs.onopen = () => {
                       <button
                         onClick={() => toggleGroup(group.name)}
                         className={cn(
-                          'w-full flex items-center justify-between text-[10px] font-semibold uppercase tracking-wider mb-2 px-1 py-1 rounded transition-colors',
+                          'w-full flex items-center justify-between text-[10px] font-semibold uppercase tracking-wider mb-2 px-1 py-1 rounded',
                           isDark
-                            ? 'text-white/40 hover:text-white/60'
-                            : 'text-gray-500 hover:text-gray-700'
+                            ? 'text-white/60 hover:text-white/80'
+                            : 'text-gray-600 hover:text-gray-700'
                         )}
                       >
                         {group.name}
@@ -4040,7 +4053,7 @@ syncWs.onopen = () => {
                                   setIsSidebarOpen(false);
                                 }}
                                 className={cn(
-                                  'w-full text-left px-3 py-2 rounded-xl text-[13px] flex items-center gap-2.5 transition-all duration-200 relative',
+                                  'w-full text-left px-3 py-2 rounded-xl text-[13px] flex items-center gap-2.5 transition-[background-color] duration-200 relative',
                                   isActive
                                     ? 'text-primary bg-primary/10 font-medium'
                                     : isDark
@@ -4053,7 +4066,7 @@ syncWs.onopen = () => {
                                 )}
                                 <Icon
                                   size={14}
-                                  className={cn('transition-colors', isActive ? 'text-primary' : 'opacity-40')}
+                                  className={cn(isActive ? 'text-primary' : 'opacity-40')}
                                 />
                                 {section.title}
                               </button>
@@ -4076,7 +4089,7 @@ syncWs.onopen = () => {
                 <div
                   className={cn(
                     'text-[10px] font-semibold uppercase tracking-wider mb-3 px-1',
-                    isDark ? 'text-white/40' : 'text-gray-500'
+                    isDark ? 'text-white/60' : 'text-gray-600'
                   )}
                 >
                   Support
@@ -4087,7 +4100,7 @@ syncWs.onopen = () => {
                     target="_blank"
                     rel="noopener noreferrer"
                     className={cn(
-                      'flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] transition-all duration-200',
+                      'flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] transition-[background-color] duration-200',
                       isDark
                         ? 'text-white/60 hover:text-white hover:bg-white/5'
                         : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
@@ -4102,7 +4115,7 @@ syncWs.onopen = () => {
                   <a
                     href="mailto:hello@xrpl.to"
                     className={cn(
-                      'flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] transition-all duration-200',
+                      'flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] transition-[background-color] duration-200',
                       isDark
                         ? 'text-white/60 hover:text-white hover:bg-white/5'
                         : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
@@ -4116,7 +4129,7 @@ syncWs.onopen = () => {
                     target="_blank"
                     rel="noopener noreferrer"
                     className={cn(
-                      'flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] transition-all duration-200',
+                      'flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] transition-[background-color] duration-200',
                       isDark
                         ? 'text-white/60 hover:text-white hover:bg-white/5'
                         : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
@@ -4132,9 +4145,50 @@ syncWs.onopen = () => {
           </div>
 
           {/* Main content */}
-          <div className="flex-1 min-h-dvh">
+          <div className="flex-1 min-w-0 min-h-dvh">
             <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-12">
               {renderContent()}
+
+              {/* Prev/next navigation */}
+              <div className={cn(
+                'mt-12 pt-6 border-t flex items-stretch gap-2 sm:gap-3',
+                isDark ? 'border-white/10' : 'border-black/10'
+              )}>
+                {prevSection ? (
+                  <button
+                    onClick={() => { setCurrentSection(prevSection.id); window.scrollTo(0, 0); }}
+                    className={cn(
+                      'flex-1 min-w-0 flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-3 sm:py-4 rounded-xl border-[1.5px] text-left transition-[border-color,background-color] duration-200',
+                      isDark
+                        ? 'border-white/10 hover:border-primary/40 hover:bg-primary/5'
+                        : 'border-black/10 hover:border-primary/40 hover:bg-primary/5'
+                    )}
+                  >
+                    <ChevronLeft size={14} className="text-primary shrink-0" />
+                    <div className="min-w-0">
+                      <div className={cn('text-[10px] sm:text-[11px] uppercase tracking-wider mb-0.5', isDark ? 'text-white/60' : 'text-gray-500')}>Prev</div>
+                      <div className={cn('text-[12px] sm:text-[13px] font-medium truncate', isDark ? 'text-white/80' : 'text-gray-700')}>{prevSection.title}</div>
+                    </div>
+                  </button>
+                ) : <div className="flex-1" />}
+                {nextSection ? (
+                  <button
+                    onClick={() => { setCurrentSection(nextSection.id); window.scrollTo(0, 0); }}
+                    className={cn(
+                      'flex-1 min-w-0 flex items-center justify-end gap-2 sm:gap-3 px-3 sm:px-4 py-3 sm:py-4 rounded-xl border-[1.5px] text-right transition-[border-color,background-color] duration-200',
+                      isDark
+                        ? 'border-white/10 hover:border-primary/40 hover:bg-primary/5'
+                        : 'border-black/10 hover:border-primary/40 hover:bg-primary/5'
+                    )}
+                  >
+                    <div className="min-w-0">
+                      <div className={cn('text-[10px] sm:text-[11px] uppercase tracking-wider mb-0.5', isDark ? 'text-white/60' : 'text-gray-500')}>Next</div>
+                      <div className={cn('text-[12px] sm:text-[13px] font-medium truncate', isDark ? 'text-white/80' : 'text-gray-700')}>{nextSection.title}</div>
+                    </div>
+                    <ChevronRight size={14} className="text-primary shrink-0" />
+                  </button>
+                ) : <div className="flex-1" />}
+              </div>
             </div>
           </div>
 
@@ -4149,7 +4203,7 @@ syncWs.onopen = () => {
               <div
                 className={cn(
                   'text-[11px] font-semibold uppercase tracking-wider mb-4 flex items-center gap-2',
-                  isDark ? 'text-white/50' : 'text-gray-500'
+                  isDark ? 'text-white/60' : 'text-gray-500'
                 )}
               >
                 <div className={cn('w-1 h-3 rounded-full', isDark ? 'bg-primary/60' : 'bg-primary/40')} />
@@ -4161,10 +4215,10 @@ syncWs.onopen = () => {
                     key={anchor.id}
                     href={`#${anchor.id}`}
                     className={cn(
-                      'block text-left text-[12px] py-1.5 transition-all duration-200 hover:translate-x-0.5',
+                      'block text-left text-[12px] py-1.5 transition-transform duration-200 hover:translate-x-0.5',
                       isDark
-                        ? 'text-white/40 hover:text-primary'
-                        : 'text-gray-400 hover:text-primary'
+                        ? 'text-white/60 hover:text-primary'
+                        : 'text-gray-500 hover:text-primary'
                     )}
                   >
                     {anchor.label}
@@ -4305,7 +4359,8 @@ export async function getStaticProps() {
     title: 'API Documentation - XRPL.to',
     desc: 'Complete API reference for XRPL.to - Access XRP Ledger token data, trading, NFT, and analytics endpoints.',
     url: 'https://xrpl.to/docs',
-    imgUrl: 'https://xrpl.to/og/docs.webp'
+    imgUrl: 'https://xrpl.to/api/og/docs',
+    imgType: 'image/png'
   };
 
   return {

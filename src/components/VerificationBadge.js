@@ -49,7 +49,7 @@ export default function VerificationBadge({ verified, size = 'md', isDark }) {
   return (
     <div
       className={cn(
-        'absolute -bottom-1 -right-1 rounded-full animate-in fade-in duration-300',
+        'absolute -bottom-1 -right-1 rounded-full transition-opacity duration-300',
         s.padding,
         s.ring,
         isDark ? 'ring-[#0a0a0a]' : 'ring-white',

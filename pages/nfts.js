@@ -58,13 +58,20 @@ export async function getStaticProps() {
 
   try {
     const response = await fetch(
-      `${BASE_URL}/nft/collections?page=0&limit=50&sortBy=totalVol24h&order=desc&includeGlobalMetrics=true`
+      `${BASE_URL}/nft/collections?page=0&limit=20&sortBy=totalVol24h&order=desc&includeGlobalMetrics=true`
     );
     const data = await response.json();
 
     collections = data.collections || [];
     total = data.pagination?.total || data.count || 0;
-    globalMetrics = data.globalMetrics || null;
+    const gm = data.globalMetrics || null;
+    if (gm) {
+      // Strip massive arrays to reduce page payload (~3MB → ~30KB)
+      // volumeHistory (759KB, 1200 items) is never used by the frontend
+      // daily (2.2MB, 1200 items) is only used as fallback for collectionCreation, and only last 30 items
+      const { volumeHistory, daily, ...rest } = gm;
+      globalMetrics = { ...rest, daily: (daily || []).slice(-30) };
+    }
     tags = data.tags || [];
     collectionCreation = data.collectionCreation || [];
   } catch (error) {
@@ -75,7 +82,7 @@ export async function getStaticProps() {
     canonical: 'https://xrpl.to/nfts',
     title: 'NFT Collections | XRPL.to',
     url: 'https://xrpl.to/nfts',
-    imgUrl: 'https://xrpl.to/og/collections.webp',
+    imgUrl: 'https://xrpl.to/api/og/collections',
     desc: 'Browse NFT collections on the XRP Ledger. Discover, trade, and collect digital art and collectibles. Community-centered marketplace for XRPL NFTs.'
   };
 

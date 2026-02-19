@@ -20,3 +20,7 @@ yarn-error.log*
 
 package-lock.json
 yarn.lock
+
+# Generated sitemaps (built by /usr/src/sitemap)
+public/sitemap.xml
+public/sitemap-*.xml

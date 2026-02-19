@@ -43,7 +43,7 @@ function SwapPage({ data }) {
   const [notificationPanelOpen, setNotificationPanelOpen] = useState(false);
 
   return (
-    <div className="flex flex-col h-dvh overflow-hidden fixed top-0 left-0 right-0 bottom-0">
+    <div className="flex flex-col h-dvh overflow-hidden fixed top-0 left-0 right-0 bottom-0" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
       <Header
         notificationPanelOpen={notificationPanelOpen}
         onNotificationPanelToggle={setNotificationPanelOpen}
@@ -64,7 +64,10 @@ function SwapPage({ data }) {
         Swap XRPL Tokens
       </h1>
 
-      <div className="flex-1 flex items-center justify-center overflow-hidden px-4">
+      {/* Spacer for fixed header (52px) */}
+      <div className="flex-shrink-0 h-[52px]" />
+
+      <div className="flex-1 flex items-start sm:items-center justify-center overflow-y-auto overflow-x-hidden px-4 py-2 sm:py-4">
         <Swap pair={pair} setPair={setPair} revert={revert} setRevert={setRevert} />
       </div>
 
@@ -139,7 +142,8 @@ export async function getStaticProps({ params }) {
     canonical: 'https://xrpl.to/swap',
     title: 'Easily Swap XRP for Any Token on the XRPL',
     url: 'https://xrpl.to/swap/',
-    imgUrl: 'https://xrpl.to/og/swap.webp',
+    imgUrl: 'https://xrpl.to/api/og/swap',
+    imgType: 'image/png',
     desc: 'Effortlessly Exchange Tokens on the XRP Ledger with Our Seamless Swap Tool.'
   };
 

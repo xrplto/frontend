@@ -775,7 +775,7 @@ export default function ImportCollection() {
           id="id_collection_slug"
           placeholder="my-xrpl-nfts"
           type="COLLECTION_SLUG"
-          startText="https://xrpnft.com/nfts/"
+          startText="https://xrpl.to/nfts/"
           value={slug}
           setValid={setValid2}
           onChange={(e) => {
@@ -948,7 +948,7 @@ export default function ImportCollection() {
         </p>
 
         <a
-          href="https://xrpnft.com/discord"
+          href="https://xrpl.to/discord"
           className="inline-block text-[#137DFE] hover:underline text-xs mt-3"
           target="_blank"
           rel="noreferrer noopener nofollow"

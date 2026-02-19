@@ -128,9 +128,8 @@ export async function getServerSideProps(ctx) {
       canonical: `https://xrpl.to/nfts/${slug}`,
       title: `${name} | XRPL NFT Collection`,
       url: `https://xrpl.to/nfts/${slug}`,
-      imgUrl: logoImage
-        ? `https://s1.xrpl.to/nft-collection/${logoImage}`
-        : '/logo/xrpl-to-logo-black.svg',
+      imgUrl: `https://xrpl.to/api/og/collection/${encodeURIComponent(slug)}`,
+      imgType: 'image/png',
       desc:
         description ||
         `Explore ${name} on XRPL's largest NFT marketplace. Buy, sell, and trade unique digital assets.`,

@@ -42,11 +42,11 @@ const BearEmptyState = ({ isDark, title, subtitle }) => (
 // Constants
 const getTokenImageUrl = (issuer, currency) => {
   if (currency === 'XRP') {
-    return 'https://s1.xrpl.to/token/84e5efeb89c4eae8f68188982dc290d8';
+    return 'https://s1.xrpl.to/thumb/84e5efeb89c4eae8f68188982dc290d8_32';
   }
   const tokenIdentifier = issuer + '_' + currency;
   const md5Hash = MD5(tokenIdentifier).toString();
-  return `https://s1.xrpl.to/token/${md5Hash}`;
+  return `https://s1.xrpl.to/thumb/${md5Hash}_32`;
 };
 const decodeCurrency = (currency) => {
   if (currency === 'XRP') return 'XRP';
@@ -328,7 +328,7 @@ const RichList = ({ token, walletLabels: walletLabelsProp = {}, onLabelsChange }
         onClick={handleSearch}
         disabled={searchInput.length > 0 && searchInput.length < 3}
         className={cn(
-          'rounded-lg border px-3 py-1.5 text-[12px] font-medium transition-colors disabled:opacity-40',
+          'rounded-lg border px-3 py-1.5 text-[12px] font-medium transition-[background-color,border-color] disabled:opacity-40',
           isDark
             ? 'border-white/10 hover:border-primary hover:bg-primary/5'
             : 'border-gray-200 hover:border-primary hover:bg-primary/5'
@@ -548,7 +548,7 @@ const RichList = ({ token, walletLabels: walletLabelsProp = {}, onLabelsChange }
                           <Link
                             href={`/address/${holder.account}`}
                             className={cn(
-                              'text-[12px] font-mono hover:text-primary transition-colors min-w-[80px]',
+                              'text-[12px] font-mono hover:text-primary transition-[background-color,border-color] min-w-[80px]',
                               walletLabels[holder.account] ? 'text-primary' : isDark ? 'text-white/80' : 'text-gray-700'
                             )}
                             title={holder.account}
@@ -762,7 +762,7 @@ const RichList = ({ token, walletLabels: walletLabelsProp = {}, onLabelsChange }
             disabled={page === 1}
             aria-label="Previous page"
             className={cn(
-              'p-1.5 rounded-md transition-colors',
+              'p-1.5 rounded-md transition-[background-color,border-color]',
               page === 1 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-white/10',
               isDark ? 'text-white/50' : 'text-gray-500'
             )}
@@ -783,7 +783,7 @@ const RichList = ({ token, walletLabels: walletLabelsProp = {}, onLabelsChange }
             disabled={page === totalPages}
             aria-label="Next page"
             className={cn(
-              'p-1.5 rounded-md transition-colors',
+              'p-1.5 rounded-md transition-[background-color,border-color]',
               page === totalPages ? 'opacity-30 cursor-not-allowed' : 'hover:bg-white/10',
               isDark ? 'text-white/50' : 'text-gray-500'
             )}

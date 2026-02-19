@@ -197,6 +197,8 @@ function Footer() {
           <Group items={PRODUCTS} isDark={isDark} />
         </Box>
       </Container>
+      {/* Spacer so footer content isn't hidden behind the fixed Shoutbox button on mobile */}
+      <div className="hidden max-sm:block h-12" />
     </Root>
   );
 }

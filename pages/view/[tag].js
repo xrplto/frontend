@@ -101,7 +101,8 @@ export async function getServerSideProps(ctx) {
     ogp.canonical = `https://xrpl.to/view/${tag}`;
     ogp.title = `Discover the Most Traded ${data.tagName} XRPL Tokens by Volume`;
     ogp.url = `https://xrpl.to/view/${tag}`;
-    ogp.imgUrl = 'https://xrpl.to/og/view.webp';
+    ogp.imgUrl = `https://xrpl.to/api/og/view/${tag}`;
+    ogp.imgType = 'image/png';
     ogp.desc = `Access today's ${data.tagName} token prices ranked by volume, featuring 24-hour price changes, trading volume, and much more for an insightful overview.`;
 
     // JSON-LD structured data for tag/category pages

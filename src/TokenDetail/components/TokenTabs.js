@@ -1,5 +1,5 @@
-import { memo, useContext, useState, useRef, useEffect, useCallback } from 'react';
-import { X, Plus, Search, Trash2, ChevronLeft, Check, Star, Sparkles } from 'lucide-react';
+import { memo, useContext, useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import { X, Plus, Search, Trash2, ChevronLeft } from 'lucide-react';
 import api from 'src/utils/api';
 import VerificationBadge from 'src/components/VerificationBadge';
 import { ThemeContext } from 'src/context/AppContext';
@@ -31,8 +31,33 @@ const TokenTabs = memo(({ currentMd5 }) => {
   const [results, setResults] = useState({ tokens: [], collections: [] });
   const [suggested, setSuggested] = useState({ tokens: [], collections: [] });
   const [loading, setLoading] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(-1);
   const searchRef = useRef(null);
   const inputRef = useRef(null);
+  const debounceRef = useRef(null);
+
+  const closeSearch = useCallback(() => {
+    setSearchOpen(false);
+    setQuery('');
+    setActiveIndex(-1);
+  }, []);
+
+  // Cmd+K global shortcut
+  useEffect(() => {
+    const handleGlobalKey = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        if (searchOpen) {
+          closeSearch();
+        } else {
+          setSearchOpen(true);
+          setTimeout(() => inputRef.current?.focus(), 50);
+        }
+      }
+    };
+    window.addEventListener('keydown', handleGlobalKey);
+    return () => window.removeEventListener('keydown', handleGlobalKey);
+  }, [searchOpen, closeSearch]);
 
   // Load suggested when modal opens
   useEffect(() => {
@@ -45,18 +70,21 @@ const TokenTabs = memo(({ currentMd5 }) => {
           collections: res.data?.collections?.slice(0, 3) || []
         })
       )
-      .catch(() => { });
+      .catch(() => {});
   }, [searchOpen]);
 
-  // Search API
+  // Debounced search API
   useEffect(() => {
     if (!query || !searchOpen) {
       setResults({ tokens: [], collections: [] });
+      setLoading(false);
       return;
     }
-    const controller = new AbortController();
     setLoading(true);
-    (async () => {
+    setActiveIndex(-1);
+    clearTimeout(debounceRef.current);
+    const controller = new AbortController();
+    debounceRef.current = setTimeout(async () => {
       try {
         const res = await api.post(
           `${BASE_URL}/search`,
@@ -67,11 +95,21 @@ const TokenTabs = memo(({ currentMd5 }) => {
           tokens: res.data?.tokens?.slice(0, 5) || [],
           collections: res.data?.collections?.slice(0, 3) || []
         });
-      } catch { }
+      } catch {}
       setLoading(false);
-    })();
-    return () => controller.abort();
+    }, 250);
+    return () => {
+      clearTimeout(debounceRef.current);
+      controller.abort();
+    };
   }, [query, searchOpen]);
+
+  // Flat list of all selectable items for keyboard nav
+  const flatItems = useMemo(() => {
+    const tokens = (query ? results.tokens : suggested.tokens).map((t) => ({ type: 'token', data: t }));
+    const collections = (query ? results.collections : suggested.collections).map((c) => ({ type: 'collection', data: c }));
+    return [...tokens, ...collections];
+  }, [query, results, suggested]);
 
   const handleSelectToken = useCallback((token) => {
     addTokenToTabs({
@@ -83,6 +121,7 @@ const TokenTabs = memo(({ currentMd5 }) => {
     });
     setSearchOpen(false);
     setQuery('');
+    setActiveIndex(-1);
     window.location.href = `/token/${token.slug}`;
   }, []);
 
@@ -99,16 +138,44 @@ const TokenTabs = memo(({ currentMd5 }) => {
     });
     setSearchOpen(false);
     setQuery('');
+    setActiveIndex(-1);
     window.location.href = `/nfts/${col.slug}`;
   }, []);
+
+  // Keyboard navigation inside search modal
+  const handleSearchKeyDown = useCallback(
+    (e) => {
+      if (e.key === 'Escape') {
+        closeSearch();
+        return;
+      }
+      if (flatItems.length === 0) return;
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setActiveIndex((i) => (i + 1) % flatItems.length);
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setActiveIndex((i) => (i <= 0 ? flatItems.length - 1 : i - 1));
+      } else if (e.key === 'Enter' && activeIndex >= 0 && activeIndex < flatItems.length) {
+        e.preventDefault();
+        const item = flatItems[activeIndex];
+        if (item.type === 'token') handleSelectToken(item.data);
+        else handleSelectCollection(item.data);
+      }
+    },
+    [flatItems, activeIndex, closeSearch, handleSelectToken, handleSelectCollection]
+  );
 
   const openSearch = useCallback(() => {
     setSearchOpen(true);
     setTimeout(() => inputRef.current?.focus(), 50);
   }, []);
 
+  // Track flat index offset for collections
+  const tokenCount = (query ? results.tokens : suggested.tokens).length;
+
   return (
-    <div className="flex items-center gap-1.5 px-2 h-9 overflow-x-auto scrollbar-hide -mx-2 sm:-mx-4 mb-4 select-none">
+    <div className="flex items-center gap-1 px-2 h-10 overflow-x-auto scrollbar-hide -mx-2 sm:-mx-4 mb-3 select-none">
       {/* Back navigation / Context breadcrumb */}
       {(isNftWithCollection || isCollection || isToken) && (
         <div className="flex items-center gap-1.5 shrink-0">
@@ -121,9 +188,9 @@ const TokenTabs = memo(({ currentMd5 }) => {
                   : '/'
             }
             className={cn(
-              'group flex items-center gap-1 px-2.5 h-7 rounded-lg text-[11px] font-bold uppercase tracking-wider transition-all border',
+              'group flex items-center gap-1 px-2 h-9 rounded-md text-[10px] font-bold uppercase tracking-wider transition-[opacity,transform,background-color,border-color] border',
               isDark
-                ? 'text-white/40 border-white/[0.05] hover:text-white hover:bg-white/[0.05] hover:border-white/10'
+                ? 'text-white/60 border-white/[0.05] hover:text-white hover:bg-white/[0.05] hover:border-white/10'
                 : 'text-gray-400 border-black/[0.05] hover:text-gray-700 hover:bg-gray-100/50'
             )}
           >
@@ -140,7 +207,7 @@ const TokenTabs = memo(({ currentMd5 }) => {
         </div>
       )}
 
-      <div className="flex items-center gap-1.5">
+      <div className="flex items-center gap-1">
         {[...tabs]
           .filter(
             (t) =>
@@ -172,12 +239,12 @@ const TokenTabs = memo(({ currentMd5 }) => {
             const imgSrc = isAccount
               ? getHashIcon(tab.slug)
               : isNft
-                ? `https://s1.xrpl.to/nft/${tab.thumbnail || tab.slug}`
+                ? tab.coverUrl || (tab.thumbnail ? `https://s1.xrpl.to/nft/${tab.thumbnail}` : '/static/alt.webp')
                 : isCollection
                   ? tab.logoImage
                     ? `https://s1.xrpl.to/nft-collection/${tab.logoImage}`
                     : '/static/alt.webp'
-                  : `https://s1.xrpl.to/token/${tab.md5}`;
+                  : `https://s1.xrpl.to/thumb/${tab.md5}_48`;
 
             const tabName =
               typeof tab.name === 'object' && tab.name !== null
@@ -197,13 +264,13 @@ const TokenTabs = memo(({ currentMd5 }) => {
                 href={href}
                 onClick={(e) => isActive && e.preventDefault()}
                 className={cn(
-                  'group flex items-center gap-2 px-2.5 h-7 rounded-lg text-[11px] font-bold transition-all shrink-0 border relative',
+                  'group flex items-center gap-1 px-1.5 h-9 rounded-md text-[10px] font-bold transition-[opacity,transform,background-color,border-color] shrink-0 border relative',
                   isActive
                     ? isDark
                       ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
                       : 'bg-emerald-50 text-emerald-600 border-emerald-200'
                     : isDark
-                      ? 'text-white/40 hover:text-white/80 bg-white/[0.02] border-white/10 hover:border-white/20'
+                      ? 'text-white/60 hover:text-white/80 bg-white/[0.02] border-white/10 hover:border-white/20'
                       : 'text-gray-500 hover:text-gray-900 bg-white border-black/[0.04] hover:border-black/10'
                 )}
               >
@@ -211,24 +278,25 @@ const TokenTabs = memo(({ currentMd5 }) => {
                   src={imgSrc}
                   alt=""
                   className={cn(
-                    'w-4 h-4 shrink-0 object-cover shadow-sm',
+                    'w-3.5 h-3.5 shrink-0 object-cover shadow-sm',
                     isCollection || isNft ? 'rounded' : 'rounded-full'
                   )}
                   onError={(e) => (e.target.src = '/static/alt.webp')}
                   suppressHydrationWarning={isAccount}
                 />
-                <span className="max-w-[100px] truncate tracking-tight">{label}</span>
+                <span className="max-w-[68px] truncate tracking-tight">{label}</span>
                 <button
+                  aria-label="Close tab"
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
                     removeTab(tabId);
                   }}
                   className={cn(
-                    'flex items-center justify-center w-4 h-4 rounded-md transition-all ml-0.5',
+                    'flex items-center justify-center w-4 h-4 rounded transition-[opacity,transform,background-color,border-color]',
                     isActive
                       ? isDark ? 'hover:bg-emerald-500/20 text-emerald-400/50 hover:text-emerald-400' : 'hover:bg-emerald-100 text-emerald-600/50 hover:text-emerald-600'
-                      : isDark ? 'opacity-0 group-hover:opacity-100 hover:bg-white/10 text-white/40 hover:text-white' : 'opacity-0 group-hover:opacity-100 hover:bg-black/5 text-gray-400 hover:text-gray-900'
+                      : isDark ? 'opacity-0 group-hover:opacity-100 hover:bg-white/10 text-white/60 hover:text-white' : 'opacity-0 group-hover:opacity-100 hover:bg-black/5 text-gray-400 hover:text-gray-900'
                   )}
                 >
                   <X size={10} strokeWidth={3} />
@@ -246,14 +314,20 @@ const TokenTabs = memo(({ currentMd5 }) => {
           onClick={openSearch}
           title="Search tokens (Cmd+K)"
           className={cn(
-            'flex items-center gap-1.5 px-2.5 h-7 rounded-lg transition-all border font-bold text-[10px] uppercase tracking-widest',
+            'flex items-center gap-1.5 px-2 h-9 rounded-md transition-[opacity,transform,background-color,border-color] border font-bold text-[10px] uppercase tracking-widest',
             isDark
-              ? 'bg-white/[0.05] border-white/10 text-white/40 hover:text-white hover:border-white/20'
+              ? 'bg-white/[0.05] border-white/10 text-white/55 hover:text-white hover:border-white/20'
               : 'bg-gray-50 border-black/[0.05] text-gray-400 hover:text-gray-700 hover:border-black/10'
           )}
         >
           <Search size={12} strokeWidth={3} />
           <span className="hidden sm:inline">Add</span>
+          <kbd className={cn(
+            'hidden sm:inline-flex items-center px-1 py-0.5 rounded text-[9px] font-bold border ml-1',
+            isDark ? 'border-white/10 text-white/30' : 'border-black/5 text-gray-300'
+          )}>
+            {typeof navigator !== 'undefined' && /Mac/.test(navigator.userAgent) ? '\u2318' : 'Ctrl+'}K
+          </kbd>
         </button>
 
         {tabs.length > 1 && (
@@ -261,9 +335,9 @@ const TokenTabs = memo(({ currentMd5 }) => {
             onClick={clearOthers}
             title="Clear other tabs"
             className={cn(
-              'flex items-center justify-center w-7 h-7 rounded-lg transition-all border',
+              'flex items-center justify-center w-9 h-9 rounded-md transition-[opacity,transform,background-color,border-color] border',
               isDark
-                ? 'bg-white/[0.02] border-white/10 text-white/30 hover:text-red-400 hover:border-red-400/30'
+                ? 'bg-white/[0.02] border-white/10 text-white/55 hover:text-red-400 hover:border-red-400/30'
                 : 'bg-white border-black/[0.05] text-gray-400 hover:text-red-500 hover:border-red-200'
             )}
           >
@@ -276,10 +350,8 @@ const TokenTabs = memo(({ currentMd5 }) => {
       {searchOpen && (
         <div
           className="fixed inset-0 z-[10000] flex items-start justify-center pt-[10dvh] px-4 max-sm:h-dvh"
-          onClick={() => {
-            setSearchOpen(false);
-            setQuery('');
-          }}
+          onClick={closeSearch}
+          onKeyDown={handleSearchKeyDown}
         >
           <div
             className={cn(
@@ -291,7 +363,7 @@ const TokenTabs = memo(({ currentMd5 }) => {
             ref={searchRef}
             onClick={(e) => e.stopPropagation()}
             className={cn(
-              'relative w-full max-w-xl rounded-2xl border transition-all animate-in slide-in-from-top-4 duration-300 overflow-hidden shadow-2xl',
+              'relative w-full max-w-xl rounded-2xl border transition-[opacity,transform,background-color,border-color] animate-in slide-in-from-top-4 duration-300 overflow-hidden shadow-2xl',
               isDark
                 ? 'bg-[#111111]/90 border-white/[0.08] shadow-black/80'
                 : 'bg-white/90 border-black/[0.06] shadow-gray-200'
@@ -303,11 +375,12 @@ const TokenTabs = memo(({ currentMd5 }) => {
                 isDark ? 'border-white/10' : 'border-gray-100'
               )}
             >
-              <Search size={20} strokeWidth={2.5} className={isDark ? 'text-emerald-500' : 'text-emerald-500'} />
+              <Search size={20} strokeWidth={2.5} className="text-emerald-500" />
               <input
                 ref={inputRef}
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
+                onKeyDown={handleSearchKeyDown}
                 placeholder="Search tokens, collections, or addresses..."
                 className={cn(
                   'flex-1 bg-transparent text-[16px] font-medium outline-none',
@@ -319,16 +392,13 @@ const TokenTabs = memo(({ currentMd5 }) => {
               <div className="flex items-center gap-2">
                 <span className={cn(
                   'hidden sm:flex items-center justify-center px-1.5 py-0.5 rounded text-[10px] font-bold border uppercase tracking-tighter',
-                  isDark ? 'border-white/10 text-white/30' : 'border-black/5 text-gray-400'
+                  isDark ? 'border-white/10 text-white/55' : 'border-black/5 text-gray-400'
                 )}>
                   ESC
                 </span>
                 <button
-                  onClick={() => {
-                    setSearchOpen(false);
-                    setQuery('');
-                  }}
-                  className={cn('p-1.5 rounded-lg transition-colors', isDark ? 'hover:bg-white/10 text-white/40' : 'hover:bg-gray-100 text-gray-400')}
+                  onClick={closeSearch}
+                  className={cn('p-1.5 rounded-lg transition-[background-color,border-color]', isDark ? 'hover:bg-white/10 text-white/55' : 'hover:bg-gray-100 text-gray-400')}
                 >
                   <X size={18} />
                 </button>
@@ -348,22 +418,25 @@ const TokenTabs = memo(({ currentMd5 }) => {
                 <div className="mb-2">
                   <div className={cn(
                     'px-5 py-2 text-[10px] font-black uppercase tracking-[0.15em]',
-                    isDark ? 'text-white/30' : 'text-gray-400'
+                    isDark ? 'text-white/55' : 'text-gray-400'
                   )}>
                     Top Tokens
                   </div>
-                  {(query ? results.tokens : suggested.tokens).map((token) => (
+                  {(query ? results.tokens : suggested.tokens).map((token, idx) => (
                     <div
                       key={token.md5}
                       onClick={() => handleSelectToken(token)}
+                      onMouseEnter={() => setActiveIndex(idx)}
                       className={cn(
-                        'flex items-center gap-4 px-5 py-3 cursor-pointer transition-all mx-2 rounded-xl group hover:scale-[1.01]',
-                        isDark ? 'hover:bg-white/[0.04]' : 'hover:bg-gray-50'
+                        'flex items-center gap-4 px-5 py-3 cursor-pointer transition-[opacity,transform,background-color,border-color] mx-2 rounded-xl group',
+                        activeIndex === idx
+                          ? isDark ? 'bg-white/[0.06]' : 'bg-gray-100/80'
+                          : isDark ? 'hover:bg-white/[0.04]' : 'hover:bg-gray-50'
                       )}
                     >
                       <div className="relative">
                         <img
-                          src={`https://s1.xrpl.to/token/${token.md5}`}
+                          src={`https://s1.xrpl.to/thumb/${token.md5}_48`}
                           className="w-10 h-10 rounded-full object-cover shadow-sm bg-black/5"
                           alt=""
                           onError={(e) => (e.target.src = '/static/alt.webp')}
@@ -384,7 +457,8 @@ const TokenTabs = memo(({ currentMd5 }) => {
                         </p>
                       </div>
                       <div className={cn(
-                        'opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 text-[11px] font-bold',
+                        'transition-opacity flex items-center gap-1 text-[11px] font-bold',
+                        activeIndex === idx ? 'opacity-100' : 'opacity-0 group-hover:opacity-100',
                         isDark ? 'text-emerald-400' : 'text-emerald-600'
                       )}>
                         VIEW <Plus size={12} strokeWidth={3} />
@@ -399,40 +473,53 @@ const TokenTabs = memo(({ currentMd5 }) => {
                 <div className="mb-2">
                   <div className={cn(
                     'px-5 py-2 text-[10px] font-black uppercase tracking-[0.15em] border-t mt-2 pt-4',
-                    isDark ? 'text-white/30 border-white/5' : 'text-gray-400 border-gray-100'
+                    isDark ? 'text-white/55 border-white/5' : 'text-gray-400 border-gray-100'
                   )}>
                     NFT Collections
                   </div>
-                  {(query ? results.collections : suggested.collections).map((col) => (
-                    <div
-                      key={col.slug}
-                      onClick={() => handleSelectCollection(col)}
-                      className={cn(
-                        'flex items-center gap-4 px-5 py-3 cursor-pointer transition-all mx-2 rounded-xl group hover:scale-[1.01]',
-                        isDark ? 'hover:bg-white/[0.04]' : 'hover:bg-gray-50'
-                      )}
-                    >
-                      <div className="relative">
-                        <img
-                          src={`https://s1.xrpl.to/nft-collection/${col.logoImage}`}
-                          className="w-10 h-10 rounded-xl object-cover shadow-sm bg-black/5"
-                          alt=""
-                          onError={(e) => (e.target.src = '/static/alt.webp')}
-                        />
-                        <VerificationBadge verified={col.verified === 'yes' ? 4 : col.verified} size="sm" isDark={isDark} />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className={cn('text-[15px] font-bold', isDark ? 'text-white' : 'text-gray-900')}>
-                            {typeof col.name === 'object' ? col.name?.collection_name : col.name}
-                          </span>
+                  {(query ? results.collections : suggested.collections).map((col, idx) => {
+                    const flatIdx = tokenCount + idx;
+                    return (
+                      <div
+                        key={col.slug}
+                        onClick={() => handleSelectCollection(col)}
+                        onMouseEnter={() => setActiveIndex(flatIdx)}
+                        className={cn(
+                          'flex items-center gap-4 px-5 py-3 cursor-pointer transition-[opacity,transform,background-color,border-color] mx-2 rounded-xl group',
+                          activeIndex === flatIdx
+                            ? isDark ? 'bg-white/[0.06]' : 'bg-gray-100/80'
+                            : isDark ? 'hover:bg-white/[0.04]' : 'hover:bg-gray-50'
+                        )}
+                      >
+                        <div className="relative">
+                          <img
+                            src={`https://s1.xrpl.to/nft-collection/${col.logoImage}`}
+                            className="w-10 h-10 rounded-xl object-cover shadow-sm bg-black/5"
+                            alt=""
+                            onError={(e) => (e.target.src = '/static/alt.webp')}
+                          />
+                          <VerificationBadge verified={col.verified === 'yes' ? 4 : col.verified} size="sm" isDark={isDark} />
                         </div>
-                        <p className={cn('text-[11px] font-mono opacity-30 truncate', isDark ? 'text-white' : 'text-gray-500')}>
-                          {col.account}
-                        </p>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className={cn('text-[15px] font-bold', isDark ? 'text-white' : 'text-gray-900')}>
+                              {typeof col.name === 'object' ? col.name?.collection_name : col.name}
+                            </span>
+                          </div>
+                          <p className={cn('text-[11px] font-mono opacity-30 truncate', isDark ? 'text-white' : 'text-gray-500')}>
+                            {col.account}
+                          </p>
+                        </div>
+                        <div className={cn(
+                          'transition-opacity flex items-center gap-1 text-[11px] font-bold',
+                          activeIndex === flatIdx ? 'opacity-100' : 'opacity-0 group-hover:opacity-100',
+                          isDark ? 'text-emerald-400' : 'text-emerald-600'
+                        )}>
+                          VIEW <Plus size={12} strokeWidth={3} />
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
 
@@ -444,8 +531,8 @@ const TokenTabs = memo(({ currentMd5 }) => {
                     <div className={cn('w-12 h-12 rounded-full flex items-center justify-center border-2 border-dashed', isDark ? 'border-white/10 text-white/10' : 'border-black/5 text-black/5')}>
                       <Search size={24} />
                     </div>
-                    <p className={cn('text-[14px] font-medium', isDark ? 'text-white/30' : 'text-gray-400')}>
-                      No results found for "{query}"
+                    <p className={cn('text-[14px] font-medium', isDark ? 'text-white/55' : 'text-gray-400')}>
+                      No results found for &ldquo;{query}&rdquo;
                     </p>
                   </div>
                 )}

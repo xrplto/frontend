@@ -1372,7 +1372,8 @@ export async function getStaticProps() {
         canonical: 'https://xrpl.to/ledger',
         title: 'Ledger | XRPL Ledger Explorer',
         url: 'https://xrpl.to/ledger',
-        imgUrl: 'https://xrpl.to/og/ledger.webp',
+        imgUrl: 'https://xrpl.to/api/og/ledger',
+        imgType: 'image/png',
         desc: 'Explore the XRP Ledger in real-time. View transactions, accounts, and network activity.'
       }
     }

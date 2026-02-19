@@ -527,7 +527,8 @@ export async function getServerSideProps() {
         canonical: 'https://xrpl.to/bridge',
         title: 'Bridge | Cross-Chain Token Bridge',
         url: 'https://xrpl.to/bridge',
-        imgUrl: 'https://xrpl.to/og/bridge.webp',
+        imgUrl: 'https://xrpl.to/api/og/bridge',
+        imgType: 'image/png',
         desc: 'Bridge tokens across chains to and from the XRP Ledger.'
       }
     }

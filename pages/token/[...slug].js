@@ -216,18 +216,13 @@ export async function getStaticProps({ params }) {
       seoTitle = `${name}: ${priceDisplay}${changeDisplay ? ` ${changeDisplay}` : ''}`;
     }
 
-    // Pre-generated OG image (static file)
-    const getOptimalImage = () => {
-      return {
-        url: `https://xrpl.to/og/token/${md5}.webp`,
-        width: 1200,
-        height: 630,
-        type: 'image/webp',
-        alt: `${name} price chart on XRPL.to`
-      };
+    const imageData = {
+      url: `https://xrpl.to/api/og/token/${slug || md5}`,
+      width: 1200,
+      height: 630,
+      type: 'image/png',
+      alt: `${name} price chart on XRPL.to`
     };
-
-    const imageData = getOptimalImage();
 
     // Use human-readable slug for canonical URL (SEO best practice: descriptive URLs)
     const canonicalSlug = slug || md5;

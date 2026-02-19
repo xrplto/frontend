@@ -264,13 +264,15 @@ const securityUtils = {
 
   // Rate limiting for password attempts (persisted in sessionStorage to survive page refresh)
   rateLimiter: {
-    maxAttempts: 5,
-    lockoutMs: 30000, // 30 seconds
+    // Escalating lockout tiers (ms) indexed by attempt count
+    // Attempts 1-4: no lockout, 5: 60s, 6: 5m, 7: 15m, 8: 1h, 9+: 2h
+    _lockoutTiers: [0, 0, 0, 0, 0, 60000, 300000, 900000, 3600000, 7200000],
 
     _getRecord(key) {
       if (typeof window === 'undefined') return null;
       try {
-        const data = sessionStorage.getItem(`rl_${key}`);
+        // Try IndexedDB-persisted record first (survives session close)
+        const data = localStorage.getItem(`rl_${key}`);
         return data ? JSON.parse(data) : null;
       } catch { return null; }
     },
@@ -278,13 +280,13 @@ const securityUtils = {
     _setRecord(key, record) {
       if (typeof window === 'undefined') return;
       try {
-        sessionStorage.setItem(`rl_${key}`, JSON.stringify(record));
-      } catch { /* sessionStorage full or unavailable */ }
+        localStorage.setItem(`rl_${key}`, JSON.stringify(record));
+      } catch { /* storage full or unavailable */ }
     },
 
     _deleteRecord(key) {
       if (typeof window === 'undefined') return;
-      try { sessionStorage.removeItem(`rl_${key}`); } catch {}
+      try { localStorage.removeItem(`rl_${key}`); } catch {}
     },
 
     check(key) {
@@ -300,7 +302,10 @@ const securityUtils = {
 
       if (record.lockedUntil) {
         const remaining = Math.ceil((record.lockedUntil - now) / 1000);
-        return { allowed: false, error: `Too many attempts. Try again in ${remaining}s` };
+        const mins = Math.floor(remaining / 60);
+        const secs = remaining % 60;
+        const display = mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
+        return { allowed: false, error: `Too many attempts. Try again in ${display}` };
       }
       return { allowed: true };
     },
@@ -311,8 +316,10 @@ const securityUtils = {
       record.count++;
       record.lastAttempt = now;
 
-      if (record.count >= this.maxAttempts) {
-        record.lockedUntil = now + this.lockoutMs;
+      const tierIndex = Math.min(record.count, this._lockoutTiers.length - 1);
+      const lockoutMs = this._lockoutTiers[tierIndex];
+      if (lockoutMs > 0) {
+        record.lockedUntil = now + lockoutMs;
       }
       this._setRecord(key, record);
     },
@@ -692,7 +699,7 @@ export class UnifiedWalletStorage {
     );
   }
 
-  async encryptData(data, pin) {
+  async encryptData(data, pin, { deviceBound = true } = {}) {
     const salt = crypto.getRandomValues(new Uint8Array(16));
     const iv = crypto.getRandomValues(new Uint8Array(12));
     const key = await this.deriveKey(pin, salt);
@@ -700,16 +707,23 @@ export class UnifiedWalletStorage {
     const encoder = new TextEncoder();
     const plaintext = encoder.encode(JSON.stringify(data));
 
-    // AES-GCM includes authentication tag for integrity
-    const encrypted = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, plaintext);
+    const params = { name: 'AES-GCM', iv };
+    let version;
 
-    // GCM mode automatically includes a 16-byte authentication tag
-    // No need for separate HMAC as GCM provides authenticated encryption
+    if (deviceBound) {
+      // v3: device-bind ciphertext via AES-GCM AAD (prevents cross-device decryption)
+      const deviceId = deviceFingerprint._cachedDeviceId || await deviceFingerprint.getDeviceId();
+      params.additionalData = encoder.encode(deviceId || '');
+      version = 3;
+    } else {
+      // v1: portable encryption (for QR sync, cross-device transfers)
+      version = 1;
+    }
 
-    // Return as base64 string with version prefix for future migrations
-    const version = new Uint8Array([1]); // Version 1
+    const encrypted = await crypto.subtle.encrypt(params, key, plaintext);
+
     const combinedBuffer = new Uint8Array(1 + salt.length + iv.length + encrypted.byteLength);
-    combinedBuffer.set(version, 0);
+    combinedBuffer.set(new Uint8Array([version]), 0);
     combinedBuffer.set(salt, 1);
     combinedBuffer.set(iv, 1 + salt.length);
     combinedBuffer.set(new Uint8Array(encrypted), 1 + salt.length + iv.length);
@@ -724,16 +738,27 @@ export class UnifiedWalletStorage {
         .map((char) => char.charCodeAt(0))
     );
 
-    // Version 1 format: version(1) + salt(16) + iv(12) + data
-    if (combinedBuffer[0] !== 1) {
+    const version = combinedBuffer[0];
+    if (version !== 1 && version !== 3) {
       throw new Error('Invalid format - clear browser data and create new wallet');
     }
+
+    // Both v1 and v3 share same layout: version(1) + salt(16) + iv(12) + data
     const salt = combinedBuffer.slice(1, 17);
     const iv = combinedBuffer.slice(17, 29);
     const encrypted = combinedBuffer.slice(29);
 
     const key = await this.deriveKey(pin, salt);
-    const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, encrypted);
+
+    // v3: include device fingerprint as AAD (device-bound)
+    // v1: no AAD (legacy, backward compatible)
+    const params = { name: 'AES-GCM', iv };
+    if (version === 3) {
+      const deviceId = deviceFingerprint._cachedDeviceId || await deviceFingerprint.getDeviceId();
+      params.additionalData = new TextEncoder().encode(deviceId || '');
+    }
+
+    const decrypted = await crypto.subtle.decrypt(params, key, encrypted);
 
     return JSON.parse(new TextDecoder().decode(decrypted));
   }
@@ -1621,8 +1646,8 @@ export class UnifiedWalletStorage {
       t: Date.now() + 300000 // Expires in 5 minutes
     };
 
-    // Encrypt with same password
-    const encrypted = await this.encryptData(payload, password);
+    // Encrypt portable (no device binding — QR sync is cross-device by design)
+    const encrypted = await this.encryptData(payload, password, { deviceBound: false });
 
     // Return as compact string for QR (using XRPLTO: prefix to avoid Xaman hijacking)
     return `XRPLTO:${encrypted}`;

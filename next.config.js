@@ -47,18 +47,8 @@ const config = {
       },
       {
         protocol: 'https',
-        hostname: 's1.xrpnft.com',
-        pathname: '/**'
-      },
-      {
-        protocol: 'https',
         hostname: 'ipfs.io',
-        pathname: '/**'
-      },
-      {
-        protocol: 'https',
-        hostname: 'ipfs.filebase.io',
-        pathname: '/**'
+        pathname: '/ipfs/**'
       }
     ]
   },
@@ -81,7 +71,7 @@ const config = {
       "default-src 'self'",
       "script-src 'self' 'unsafe-inline' 'unsafe-eval'", // unsafe-eval needed for some charting libs
       "style-src 'self' 'unsafe-inline'", // emotion/styled-jsx needs inline styles
-      "img-src 'self' data: blob: https://s1.xrpl.to https://xrpl.to https://s1.xrpnft.com https://ipfs.io https://ipfs.filebase.io",
+      "img-src 'self' data: blob: https://s1.xrpl.to https://xrpl.to https://ipfs.io/ipfs/ https://content-api.changenow.io",
       "font-src 'self' data:",
       "connect-src 'self' https://api.xrpl.to https://xrpl.to wss://api.xrpl.to wss://xrplcluster.com wss://s1.ripple.com wss://xrpl.ws",
       "frame-src 'self'",

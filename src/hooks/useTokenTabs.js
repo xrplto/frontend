@@ -128,6 +128,7 @@ export function addTokenToTabs(item) {
       type: item.type || 'token',
       logoImage: item.logoImage || null,
       thumbnail: item.thumbnail || null,
+      coverUrl: item.coverUrl || null,
       collectionSlug: item.collectionSlug || null,
       collectionName: normalizeName(item.collectionName) || null
     };

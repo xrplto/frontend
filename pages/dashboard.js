@@ -43,6 +43,8 @@ const DashboardPage = () => {
   const { themeName } = useContext(ThemeContext);
   const { accountProfile, setOpenWalletModal } = useContext(WalletContext);
   const isDark = themeName === 'XrplToDarkTheme';
+  const [hydrated, setHydrated] = useState(false);
+  useEffect(() => { setHydrated(true); }, []);
 
   const [apiKeys, setApiKeys] = useState([]);
   const [usage, setUsage] = useState(null);
@@ -854,20 +856,22 @@ const DashboardPage = () => {
             isDark ? 'bg-black' : 'bg-gray-50'
           )}
         >
-          <div
-            className={cn(
-              'text-center p-8 rounded-xl border-[1.5px]',
-              isDark ? 'border-white/10 bg-white/[0.02]' : 'border-gray-200 bg-white'
-            )}
-          >
-            <Key size={48} className="mx-auto mb-4 opacity-20" />
-            <h2 className={cn('text-xl font-medium mb-2', isDark ? 'text-white' : 'text-gray-900')}>
-              Sign in Required
-            </h2>
-            <p className={cn('text-[14px]', isDark ? 'text-white/60' : 'text-gray-600')}>
-              Connect your wallet to manage API keys
-            </p>
-          </div>
+          {hydrated && (
+            <div
+              className={cn(
+                'text-center p-8 rounded-xl border-[1.5px]',
+                isDark ? 'border-white/10 bg-white/[0.02]' : 'border-gray-200 bg-white'
+              )}
+            >
+              <Key size={48} className="mx-auto mb-4 opacity-20" />
+              <h2 className={cn('text-xl font-medium mb-2', isDark ? 'text-white' : 'text-gray-900')}>
+                Sign in Required
+              </h2>
+              <p className={cn('text-[14px]', isDark ? 'text-white/60' : 'text-gray-600')}>
+                Connect your wallet to manage API keys
+              </p>
+            </div>
+          )}
         </div>
         <Footer />
       </div>
@@ -883,10 +887,29 @@ const DashboardPage = () => {
 
       <Header />
 
-      <div className={cn('flex-1 flex', isDark ? 'bg-black' : 'bg-gray-50')}>
-        {/* Sidebar */}
+      <div className={cn('flex-1 flex flex-col md:flex-row', isDark ? 'bg-black' : 'bg-gray-50')}>
+        {/* Mobile Nav */}
+        <div className={cn('md:hidden flex overflow-x-auto border-b shrink-0 px-1 no-scrollbar', isDark ? 'border-white/10 bg-[#0d0d0d]' : 'border-gray-200 bg-white')}>
+          {navItems.map((item) => (
+            <button
+              key={item.id}
+              onClick={() => { setActiveSection(item.id); if (item.id.startsWith('admin-')) fetchAdminData(item.id.replace('admin-', '')); }}
+              className={cn(
+                'flex items-center gap-1 px-1.5 py-1 text-[10px] whitespace-nowrap shrink-0 border-b-2 transition-colors',
+                activeSection === item.id
+                  ? 'border-primary text-primary'
+                  : cn('border-transparent', isDark ? 'text-white/50' : 'text-gray-500')
+              )}
+            >
+              <item.icon size={12} />
+              {item.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Sidebar - desktop only */}
         <div className={cn(
-          'w-52 shrink-0 border-r flex flex-col',
+          'w-52 shrink-0 border-r hidden md:flex flex-col',
           isDark ? 'border-white/10 bg-[#0d0d0d]' : 'border-gray-200 bg-white'
         )}>
           <div className="p-4">
@@ -958,7 +981,7 @@ const DashboardPage = () => {
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 p-8 overflow-y-auto">
+        <div className="flex-1 p-4 md:p-8 overflow-y-auto">
           <div className="max-w-[1400px]">
             {/* Alerts */}
             {error && (
@@ -1007,7 +1030,7 @@ const DashboardPage = () => {
             {activeSection === 'overview' && (
               <div className="space-y-8">
                 {/* Header Cards - Two Column Symmetrical */}
-                <div className="grid grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                   {/* Current Plan Card */}
                   <div className={cn('p-6 rounded-xl border-[1.5px]', isDark ? 'border-white/10 bg-white/[0.02]' : 'border-gray-200 bg-white')}>
                     <div className={cn('text-[12px] uppercase tracking-wide mb-2', isDark ? 'text-white/40' : 'text-gray-500')}>Current Plan</div>
@@ -1047,7 +1070,7 @@ const DashboardPage = () => {
                 {/* Core Services Section */}
                 <div>
                   <h2 className={cn('text-xl font-semibold mb-5', isDark ? 'text-white' : 'text-gray-900')}>Core Services</h2>
-                  <div className="grid grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                     {/* API Keys Card */}
                     <div className={cn('p-6 rounded-xl border-[1.5px] flex flex-col', isDark ? 'border-white/10 bg-white/[0.02]' : 'border-gray-200 bg-white')}>
                       <div className="flex items-center gap-3 mb-3">
@@ -1116,12 +1139,12 @@ const DashboardPage = () => {
             {/* API Keys Section */}
             {activeSection === 'keys' && (
               <div className="space-y-6">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div>
-                    <h1 className={cn('text-2xl font-medium mb-1', isDark ? 'text-white' : 'text-gray-900')}>API Keys</h1>
-                    <p className={cn('text-[14px]', isDark ? 'text-white/60' : 'text-gray-600')}>Manage your API keys for programmatic access</p>
+                    <h1 className={cn('text-xl md:text-2xl font-medium mb-1', isDark ? 'text-white' : 'text-gray-900')}>API Keys</h1>
+                    <p className={cn('text-[13px] md:text-[14px]', isDark ? 'text-white/60' : 'text-gray-600')}>Manage your API keys for programmatic access</p>
                   </div>
-                  <button onClick={() => setShowCreateForm(true)} className="flex items-center gap-2 px-4 py-2 rounded-lg text-[13px] font-medium bg-primary text-white hover:bg-primary/90">
+                  <button onClick={() => setShowCreateForm(true)} className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-[13px] font-medium bg-primary text-white hover:bg-primary/90 shrink-0">
                     <Plus size={16} />Create Key
                   </button>
                 </div>
@@ -1137,16 +1160,16 @@ const DashboardPage = () => {
                   ) : (
                     <div className="divide-y divide-white/10">
                       {apiKeys.map((key) => (
-                        <div key={key.id || key._id} className={cn('px-5 py-4 flex items-center gap-4', isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-gray-50')}>
-                          <div className={cn('p-2 rounded-lg', isDark ? 'bg-white/5' : 'bg-gray-100')}><Key size={18} className="opacity-60" /></div>
+                        <div key={key.id || key._id} className={cn('px-3 md:px-5 py-3 md:py-4 flex items-center gap-2 md:gap-4', isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-gray-50')}>
+                          <div className={cn('p-2 rounded-lg hidden sm:block', isDark ? 'bg-white/5' : 'bg-gray-100')}><Key size={18} className="opacity-60" /></div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2">
-                              <span className={cn('text-[14px] font-medium', isDark ? 'text-white' : 'text-gray-900')}>{key.name}</span>
-                              <span className={cn('text-[11px] px-2 py-0.5 rounded-full', isDark ? 'bg-white/10 text-white/40' : 'bg-gray-100 text-gray-500')}>{key.tier || 'free'}</span>
+                              <span className={cn('text-[13px] md:text-[14px] font-medium truncate', isDark ? 'text-white' : 'text-gray-900')}>{key.name}</span>
+                              <span className={cn('text-[11px] px-2 py-0.5 rounded-full shrink-0', isDark ? 'bg-white/10 text-white/40' : 'bg-gray-100 text-gray-500')}>{key.tier || 'free'}</span>
                             </div>
-                            <div className={cn('text-[12px] mt-0.5 font-mono', isDark ? 'text-white/40' : 'text-gray-500')}>{key.keyPrefix}••••••••</div>
+                            <div className={cn('text-[11px] md:text-[12px] mt-0.5 font-mono', isDark ? 'text-white/40' : 'text-gray-500')}>{key.keyPrefix}••••••••</div>
                           </div>
-                          <div className={cn('text-[12px] text-right', isDark ? 'text-white/40' : 'text-gray-500')}>
+                          <div className={cn('text-[12px] text-right hidden md:block', isDark ? 'text-white/40' : 'text-gray-500')}>
                             <div>Created {formatDate(key.createdAt)}</div>
                           </div>
                           <button onClick={() => copyToClipboard(key.keyPrefix, key.id)} className={cn('p-2 rounded-lg', isDark ? 'hover:bg-white/10' : 'hover:bg-gray-100')}>
@@ -1265,7 +1288,7 @@ const DashboardPage = () => {
                 {credits?.billingCycle && (
                   <div className={cn('p-5 rounded-xl border-[1.5px]', isDark ? 'border-white/10 bg-white/[0.02]' : 'border-gray-200 bg-white')}>
                     <h3 className={cn('text-[14px] font-medium mb-4', isDark ? 'text-white' : 'text-gray-900')}>Billing Cycle</h3>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <div className={cn('text-[11px] uppercase tracking-wide mb-1', isDark ? 'text-white/40' : 'text-gray-500')}>Days Remaining</div>
                         <div className={cn('text-xl font-medium', isDark ? 'text-white' : 'text-gray-900')}>{credits.billingCycle.daysRemaining}</div>
@@ -1296,7 +1319,7 @@ const DashboardPage = () => {
                     </h2>
                     <p className={cn('text-[13px] mt-1', isDark ? 'text-white/50' : 'text-gray-500')}>One-time credit purchases for extra usage</p>
                   </div>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
                     {packages.map((pkg, idx) => {
                       const gradients = [
                         'from-emerald-400 to-green-500',
@@ -1348,19 +1371,19 @@ const DashboardPage = () => {
 
                 {/* Subscription Plans */}
                 <div>
-                  <div className="flex items-center justify-between mb-6">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
                     <div>
-                      <h2 className={cn('text-lg font-medium', isDark ? 'text-white' : 'text-gray-900')}>Simple pricing for teams of any scale</h2>
+                      <h2 className={cn('text-base md:text-lg font-medium', isDark ? 'text-white' : 'text-gray-900')}>Simple pricing for teams of any scale</h2>
                       <p className={cn('text-[13px] mt-1', isDark ? 'text-white/50' : 'text-gray-500')}>Choose the plan that fits your needs</p>
                     </div>
-                    <div className={cn('flex items-center gap-1 p-1 rounded-xl border-[1.5px]', isDark ? 'bg-white/[0.02] border-white/10' : 'bg-gray-50 border-gray-200')}>
+                    <div className={cn('flex items-center gap-1 p-1 rounded-xl border-[1.5px] self-start', isDark ? 'bg-white/[0.02] border-white/10' : 'bg-gray-50 border-gray-200')}>
                       <button onClick={() => setBillingPeriod('monthly')} className={cn('px-4 py-1.5 rounded-lg text-[12px] font-medium transition-all', billingPeriod === 'monthly' ? 'bg-primary text-white shadow-sm' : isDark ? 'text-white/50 hover:text-white' : 'text-gray-500 hover:text-gray-900')}>Monthly</button>
                       <button onClick={() => setBillingPeriod('yearly')} className={cn('px-4 py-1.5 rounded-lg text-[12px] font-medium flex items-center gap-1.5 transition-all', billingPeriod === 'yearly' ? 'bg-primary text-white shadow-sm' : isDark ? 'text-white/50 hover:text-white' : 'text-gray-500 hover:text-gray-900')}>
                         Yearly<span className={cn('px-1.5 py-0.5 rounded text-[10px] font-semibold', billingPeriod === 'yearly' ? 'bg-white/20' : 'bg-emerald-500/20 text-emerald-500')}>2 months free</span>
                       </button>
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
                     {tiers.map((tier) => {
                       const price = billingPeriod === 'yearly' ? tier.yearly : tier.monthly;
                       const monthlyEquiv = billingPeriod === 'yearly' && tier.yearly ? Math.round(tier.yearly / 12) : null;
@@ -1520,12 +1543,12 @@ const DashboardPage = () => {
             {/* Admin: All Users */}
             {activeSection === 'admin-users' && isAdmin && (
               <div className="space-y-6">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div>
-                    <h1 className={cn('text-2xl font-medium mb-1 flex items-center gap-2', isDark ? 'text-white' : 'text-gray-900')}>
+                    <h1 className={cn('text-xl md:text-2xl font-medium mb-1 flex items-center gap-2', isDark ? 'text-white' : 'text-gray-900')}>
                       <Shield size={24} className="text-primary" />All Users
                     </h1>
-                    <p className={cn('text-[14px]', isDark ? 'text-white/60' : 'text-gray-600')}>Manage all API keys across users</p>
+                    <p className={cn('text-[13px] md:text-[14px]', isDark ? 'text-white/60' : 'text-gray-600')}>Manage all API keys across users</p>
                   </div>
                   <div className="flex gap-2">
                     <button onClick={() => setShowAdminCreateKey(true)} className="flex items-center gap-2 px-3 py-2 rounded-lg text-[12px] font-medium bg-primary text-white hover:bg-primary/90">
@@ -1551,15 +1574,15 @@ const DashboardPage = () => {
                         Total: {adminUsage?.summary?.totalUsers || getDataArray(adminUsage, 'users', 'keys', 'data').length} users
                       </div>
                       {getDataArray(adminUsage, 'users', 'keys', 'data').filter(k => !adminSearchQuery || k.wallet?.toLowerCase().includes(adminSearchQuery.toLowerCase())).map((key, idx) => (
-                        <div key={key.id || key._id || idx} className={cn('px-5 py-4 flex items-center justify-between', isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-gray-50')}>
-                          <div>
+                        <div key={key.id || key._id || idx} className={cn('px-3 md:px-5 py-3 md:py-4 flex items-center justify-between gap-2', isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-gray-50')}>
+                          <div className="min-w-0">
                             <div className="flex items-center gap-2">
-                              <span className={cn('text-[13px] font-medium', isDark ? 'text-white' : 'text-gray-900')}>{key.name || 'Unnamed'}</span>
-                              <span className={cn('text-[11px] px-2 py-0.5 rounded-full', isDark ? 'bg-white/10' : 'bg-gray-200')}>{key.tier || 'free'}</span>
+                              <span className={cn('text-[13px] font-medium truncate', isDark ? 'text-white' : 'text-gray-900')}>{key.name || 'Unnamed'}</span>
+                              <span className={cn('text-[11px] px-2 py-0.5 rounded-full shrink-0', isDark ? 'bg-white/10' : 'bg-gray-200')}>{key.tier || 'free'}</span>
                             </div>
-                            <div className={cn('text-[11px] font-mono mt-0.5', isDark ? 'text-white/40' : 'text-gray-500')}>{key.wallet}</div>
+                            <div className={cn('text-[11px] font-mono mt-0.5 truncate', isDark ? 'text-white/40' : 'text-gray-500')}>{key.wallet}</div>
                           </div>
-                          <div className="text-right">
+                          <div className="text-right shrink-0">
                             <div className={cn('text-[13px]', isDark ? 'text-white' : 'text-gray-900')}>{key.usage?.today?.toLocaleString() || 0} today</div>
                             <div className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-gray-500')}>{key.usage?.total?.toLocaleString() || 0} total</div>
                           </div>
@@ -1600,8 +1623,8 @@ const DashboardPage = () => {
                         Total: {adminCredits?.summary?.totalAccounts || getDataArray(adminCredits, 'accounts', 'wallets', 'data').length} accounts
                       </div>
                       {getDataArray(adminCredits, 'accounts', 'wallets', 'data').filter(w => !adminSearchQuery || w.wallet?.toLowerCase().includes(adminSearchQuery.toLowerCase())).map((wallet, idx) => (
-                        <div key={wallet.wallet || idx} className={cn('px-5 py-4 flex items-center justify-between', isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-gray-50')}>
-                          <div className="font-mono text-[12px]">{wallet.wallet}</div>
+                        <div key={wallet.wallet || idx} className={cn('px-3 md:px-5 py-3 md:py-4 flex items-center justify-between gap-2', isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-gray-50')}>
+                          <div className="font-mono text-[11px] md:text-[12px] truncate min-w-0">{wallet.wallet}</div>
                           <div className="flex items-center gap-3">
                             <div className={cn('text-[14px] font-medium', isDark ? 'text-white' : 'text-gray-900')}>
                               {wallet.balance === -1 ? <span className="flex items-center gap-1 text-primary"><Infinity size={16} />Unlimited</span> : formatCredits(wallet.balance)}
@@ -1703,8 +1726,8 @@ const DashboardPage = () => {
 
       {/* Modals */}
       {showCreateForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 max-sm:h-dvh">
-          <div className={cn('w-full max-w-md mx-4 p-6 rounded-xl border-[1.5px]', isDark ? 'bg-black border-white/10' : 'bg-white border-gray-200')}>
+        <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/50">
+          <div className={cn('w-full max-w-md sm:mx-4 p-5 pb-20 sm:pb-5 md:p-6 rounded-t-2xl sm:rounded-xl border-[1.5px]', isDark ? 'bg-black border-white/10' : 'bg-white border-gray-200')}>
             <h3 className={cn('text-lg font-medium mb-4', isDark ? 'text-white' : 'text-gray-900')}>Create API Key</h3>
             <input type="text" placeholder="Key name (e.g., Production Bot)" value={newKeyName} onChange={(e) => setNewKeyName(e.target.value)} className={cn('w-full px-4 py-3 rounded-lg border-[1.5px] text-[14px] mb-4', isDark ? 'bg-white/[0.02] border-white/10' : 'bg-gray-50 border-gray-200')} autoFocus />
             <div className="flex gap-3">
@@ -1718,8 +1741,8 @@ const DashboardPage = () => {
       )}
 
       {showAdminCreateKey && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 max-sm:h-dvh">
-          <div className={cn('w-full max-w-md mx-4 p-6 rounded-xl border-[1.5px]', isDark ? 'bg-black border-white/10' : 'bg-white border-gray-200')}>
+        <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/50">
+          <div className={cn('w-full max-w-md sm:mx-4 p-5 pb-20 sm:pb-5 md:p-6 rounded-t-2xl sm:rounded-xl border-[1.5px]', isDark ? 'bg-black border-white/10' : 'bg-white border-gray-200')}>
             <h3 className={cn('text-lg font-medium mb-4', isDark ? 'text-white' : 'text-gray-900')}>Create Partner API Key</h3>
             <div className="space-y-3">
               <input type="text" placeholder="Wallet address (rXXX...)" value={adminFormData.wallet || ''} onChange={(e) => setAdminFormData({ ...adminFormData, wallet: e.target.value })} className={cn('w-full px-4 py-3 rounded-lg border-[1.5px] text-[14px] font-mono', isDark ? 'bg-white/[0.02] border-white/10' : 'bg-gray-50 border-gray-200')} />
@@ -1745,8 +1768,8 @@ const DashboardPage = () => {
       )}
 
       {showAdminAddCredits && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 max-sm:h-dvh">
-          <div className={cn('w-full max-w-md mx-4 p-6 rounded-xl border-[1.5px]', isDark ? 'bg-black border-white/10' : 'bg-white border-gray-200')}>
+        <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/50">
+          <div className={cn('w-full max-w-md sm:mx-4 p-5 pb-20 sm:pb-5 md:p-6 rounded-t-2xl sm:rounded-xl border-[1.5px]', isDark ? 'bg-black border-white/10' : 'bg-white border-gray-200')}>
             <h3 className={cn('text-lg font-medium mb-4', isDark ? 'text-white' : 'text-gray-900')}>Add Credits to Wallet</h3>
             <div className="space-y-3">
               <input type="text" placeholder="Wallet address (rXXX...)" value={adminFormData.wallet || ''} onChange={(e) => setAdminFormData({ ...adminFormData, wallet: e.target.value })} className={cn('w-full px-4 py-3 rounded-lg border-[1.5px] text-[14px] font-mono', isDark ? 'bg-white/[0.02] border-white/10' : 'bg-gray-50 border-gray-200')} />
@@ -1765,8 +1788,8 @@ const DashboardPage = () => {
       )}
 
       {showAdminChatAccess && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 max-sm:h-dvh">
-          <div className={cn('w-full max-w-md mx-4 p-6 rounded-xl border-[1.5px]', isDark ? 'bg-black border-white/10' : 'bg-white border-gray-200')}>
+        <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/50">
+          <div className={cn('w-full max-w-md sm:mx-4 p-5 pb-20 sm:pb-5 md:p-6 rounded-t-2xl sm:rounded-xl border-[1.5px]', isDark ? 'bg-black border-white/10' : 'bg-white border-gray-200')}>
             <h3 className={cn('text-lg font-medium mb-4', isDark ? 'text-white' : 'text-gray-900')}>Manage Chat Access</h3>
             <div className="space-y-3">
               <input type="text" placeholder="Wallet address (rXXX...)" value={adminFormData.wallet || ''} onChange={(e) => setAdminFormData({ ...adminFormData, wallet: e.target.value })} className={cn('w-full px-4 py-3 rounded-lg border-[1.5px] text-[14px] font-mono', isDark ? 'bg-white/[0.02] border-white/10' : 'bg-gray-50 border-gray-200')} />
@@ -1787,8 +1810,8 @@ const DashboardPage = () => {
       )}
 
       {showAdminPlatformKey && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 max-sm:h-dvh">
-          <div className={cn('w-full max-w-md mx-4 p-6 rounded-xl border-[1.5px]', isDark ? 'bg-black border-white/10' : 'bg-white border-gray-200')}>
+        <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/50">
+          <div className={cn('w-full max-w-md sm:mx-4 p-5 pb-20 sm:pb-5 md:p-6 rounded-t-2xl sm:rounded-xl border-[1.5px]', isDark ? 'bg-black border-white/10' : 'bg-white border-gray-200')}>
             <h3 className={cn('text-lg font-medium mb-4', isDark ? 'text-white' : 'text-gray-900')}>Create Platform API Key</h3>
             <div className="space-y-3">
               <input type="text" placeholder="Wallet address (rXXX...)" value={adminFormData.wallet || ''} onChange={(e) => setAdminFormData({ ...adminFormData, wallet: e.target.value })} className={cn('w-full px-4 py-3 rounded-lg border-[1.5px] text-[14px] font-mono', isDark ? 'bg-white/[0.02] border-white/10' : 'bg-gray-50 border-gray-200')} />
@@ -1814,8 +1837,8 @@ const DashboardPage = () => {
       )}
 
       {xrpPayment && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 max-sm:h-dvh">
-          <div className={cn('w-full max-w-md mx-4 p-6 rounded-xl border-[1.5px]', isDark ? 'bg-black border-white/10' : 'bg-white border-gray-200')}>
+        <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/50">
+          <div className={cn('w-full max-w-md sm:mx-4 p-5 pb-20 sm:pb-5 md:p-6 rounded-t-2xl sm:rounded-xl border-[1.5px]', isDark ? 'bg-black border-white/10' : 'bg-white border-gray-200')}>
             <div className="flex items-center justify-between mb-4">
               <h3 className={cn('text-lg font-medium', isDark ? 'text-white' : 'text-gray-900')}>Pay with XRP - {xrpPayment.name}</h3>
               <button onClick={() => { setXrpPayment(null); setTxHash(''); }} className="opacity-40 hover:opacity-100"><X size={20} /></button>
@@ -1890,7 +1913,8 @@ export async function getStaticProps() {
         canonical: 'https://xrpl.to/dashboard',
         title: 'Dashboard | XRPL.to Portfolio Overview',
         url: 'https://xrpl.to/dashboard',
-        imgUrl: 'https://xrpl.to/og/dashboard.webp',
+        imgUrl: 'https://xrpl.to/api/og/dashboard',
+        imgType: 'image/png',
         desc: 'Track your XRPL portfolio with real-time token balances, NFTs, and trading activity.'
       }
     }

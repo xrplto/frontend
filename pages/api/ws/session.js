@@ -23,10 +23,7 @@ export default function handler(req, res) {
     return res.status(400).json({ error: 'Missing type parameter' });
   }
 
-  // Use the request host for WebSocket URLs so they resolve from the browser
-  const host = req.headers.host || 'api.xrpl.to';
-  const wsHost = host.startsWith('dev.') ? host : 'api.xrpl.to';
-  const endpoints = makeEndpoints(wsHost);
+  const endpoints = makeEndpoints('api.xrpl.to');
 
   const builder = endpoints[type];
   if (!builder) {

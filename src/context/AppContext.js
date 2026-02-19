@@ -8,19 +8,17 @@ import { configureRedux } from 'src/redux/store';
 // Loader
 import { PuffLoader } from 'src/components/Spinners';
 
-// Encrypted storage for sensitive data
-import { EncryptedWalletStorage } from 'src/utils/encryptedWalletStorage';
-
 // Split contexts for performance — consumers only re-render when their slice changes
 export const ThemeContext = createContext({});
 export const WalletContext = createContext({});
 export const WalletUIContext = createContext({});
 export const AppContext = createContext({});
 
-// Module-level singleton to prevent re-initialization on every render
+// Lazy-loaded singleton — keeps EncryptedWalletStorage + crypto-js out of the initial bundle
 let _walletStorageSingleton = null;
-const getWalletStorage = () => {
+const getWalletStorage = async () => {
   if (!_walletStorageSingleton) {
+    const { EncryptedWalletStorage } = await import('src/utils/encryptedWalletStorage');
     _walletStorageSingleton = new EncryptedWalletStorage();
   }
   return _walletStorageSingleton;
@@ -37,7 +35,6 @@ const stripSeedArray = (profiles) => profiles.map(stripSeed);
 function ContextProviderInner({ children, data, openSnackbar }) {
   const dispatch = useDispatch();
   const BASE_URL = 'https://api.xrpl.to/v1';
-  const walletStorage = useMemo(() => getWalletStorage(), []);
 
   // Define constants first before using them
   const KEY_ACCOUNT_PROFILE = 'account_profile_2';
@@ -200,6 +197,8 @@ function ContextProviderInner({ children, data, openSnackbar }) {
   useEffect(() => {
     const loadStoredData = async () => {
       try {
+        const walletStorage = await getWalletStorage();
+
         // Handle encrypted profile migration (if exists)
         const encryptedProfile = localStorage.getItem(KEY_ACCOUNT_PROFILE + '_enc');
         if (encryptedProfile) {
@@ -300,6 +299,7 @@ function ContextProviderInner({ children, data, openSnackbar }) {
       !profileWithTimestamp.seed
     ) {
       try {
+        const walletStorage = await getWalletStorage();
         const walletId = `${profileWithTimestamp.provider}_${profileWithTimestamp.provider_id}`;
         const storedPassword = await walletStorage.getSecureItem(`wallet_pwd_${walletId}`);
 
@@ -343,7 +343,7 @@ function ContextProviderInner({ children, data, openSnackbar }) {
     setProfiles(safeProfiles);
   };
 
-  const doLogOut = () => {
+  const doLogOut = async () => {
     // CRITICAL: Preserve keys that must survive logout
     // Without entropy, encrypted data in IndexedDB becomes unrecoverable
     // Without device_key_id, stored credentials in IndexedDB become orphaned
@@ -352,7 +352,7 @@ function ContextProviderInner({ children, data, openSnackbar }) {
     const deviceKeyId = localStorage.getItem('device_key_id');
 
     // Clear credential cache (seeds in memory)
-    try { walletStorage.lockWallet(); } catch (e) { /* ignore */ }
+    try { (await getWalletStorage()).lockWallet(); } catch (e) { /* ignore */ }
 
     // Clear everything - wallets + passwords in IndexedDB are safe
     localStorage.clear();
@@ -383,6 +383,7 @@ function ContextProviderInner({ children, data, openSnackbar }) {
     setProfiles(newProfiles);
     // Clean up encrypted wallet data and backup flag
     try {
+      const walletStorage = await getWalletStorage();
       await walletStorage.deleteWallet(account);
       localStorage.removeItem(`wallet_needs_backup_${account}`);
     } catch (err) {

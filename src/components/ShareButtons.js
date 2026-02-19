@@ -63,7 +63,7 @@ export function ShareDropdown({ url, title, buttonLabel = 'Share' }) {
       <button
         onClick={() => setOpen(!open)}
         className={cn(
-          'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-[11px] font-medium transition-all duration-200',
+          'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-[11px] font-medium transition-[background-color,border-color] duration-200',
           isDark
             ? 'border-white/10 hover:border-white/20 bg-white/[0.03] hover:bg-white/[0.06] text-white/60 hover:text-white/80'
             : 'border-gray-200 hover:border-gray-300 bg-gray-50 hover:bg-gray-100 text-gray-500 hover:text-gray-700'
@@ -90,7 +90,7 @@ export function ShareDropdown({ url, title, buttonLabel = 'Share' }) {
                   if (!opt.action) setOpen(false);
                 }}
                 className={cn(
-                  'w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-[12px] text-left transition-colors',
+                  'w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-[12px] text-left transition-[background-color]',
                   isDark ? 'hover:bg-white/10 text-white/80' : 'hover:bg-gray-100 text-gray-700'
                 )}
               >
@@ -220,7 +220,7 @@ export const ShareButton = ({
     <button
       onClick={handleShare}
       aria-label={`Share on ${platform}`}
-      className="p-2 rounded-lg transition-colors"
+      className="p-2 rounded-lg transition-[background-color]"
       style={{ color: iconColor, backgroundColor: bgColor }}
       {...props}
     >
@@ -434,7 +434,7 @@ export function TokenShareModal({ token, className }) {
       >
         <div className="flex items-center justify-between px-6 py-4">
           <span className={cn('text-sm font-bold uppercase tracking-widest opacity-40', isDark ? 'text-white' : 'text-gray-900')}>Share Token</span>
-          <button onClick={() => setOpen(false)} className={cn("p-1.5 rounded-xl transition-colors", isDark ? "hover:bg-white/10 text-white/40" : "hover:bg-gray-100 text-gray-400")}>
+          <button onClick={() => setOpen(false)} className={cn("p-1.5 rounded-xl transition-[background-color]", isDark ? "hover:bg-white/10 text-white/40" : "hover:bg-gray-100 text-gray-400")}>
             <X size={20} />
           </button>
         </div>
@@ -470,7 +470,7 @@ export function TokenShareModal({ token, className }) {
       <button
         onClick={() => setOpen(true)}
         className={cn(
-          'flex items-center justify-center gap-1.5 rounded-lg border text-[11px] font-bold uppercase tracking-wider transition-all duration-200',
+          'flex items-center justify-center gap-1.5 rounded-lg border text-[11px] font-bold uppercase tracking-wider transition-[background-color,border-color] duration-200',
           isDark
             ? 'border-white/10 bg-white/[0.03] hover:bg-white/[0.06] text-white/60 hover:text-white/80'
             : 'border-gray-200 bg-gray-50 hover:bg-gray-100 text-gray-500 hover:text-gray-700',
@@ -513,7 +513,7 @@ export function NFTShareModal({ name, imageUrl, url }) {
     <>
       <button
         onClick={() => setOpen(true)}
-        className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-[11px] font-medium transition-all duration-200 ${isDark
+        className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-[11px] font-medium transition-[background-color,border-color] duration-200 ${isDark
           ? 'border-white/10 hover:border-white/20 bg-white/[0.03] hover:bg-white/[0.06] text-white/60 hover:text-white/80'
           : 'border-gray-200 hover:border-gray-300 bg-gray-50 hover:bg-gray-100 text-gray-500 hover:text-gray-700'
           }`}
@@ -579,7 +579,7 @@ export function NFTShareModal({ name, imageUrl, url }) {
                   </span>
                   <button
                     onClick={handleCopy}
-                    className={`p-2 rounded-lg transition-colors ${isDark
+                    className={`p-2 rounded-lg transition-[background-color] ${isDark
                       ? 'bg-white/10 hover:bg-white/15 text-white/60'
                       : 'bg-gray-100 hover:bg-gray-200 text-gray-500'
                       }`}
@@ -626,7 +626,7 @@ export function TxShareModal({ hash, type }) {
     <>
       <button
         onClick={() => setOpen(true)}
-        className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-[11px] font-medium transition-all duration-200 ${isDark
+        className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-[11px] font-medium transition-[background-color,border-color] duration-200 ${isDark
           ? 'border-white/10 hover:border-white/20 bg-white/[0.03] hover:bg-white/[0.06] text-white/60 hover:text-white/80'
           : 'border-gray-200 hover:border-gray-300 bg-gray-50 hover:bg-gray-100 text-gray-500 hover:text-gray-700'
           }`}
@@ -693,7 +693,7 @@ export function TxShareModal({ hash, type }) {
                   </span>
                   <button
                     onClick={handleCopy}
-                    className={`p-2 rounded-lg transition-colors ${isDark
+                    className={`p-2 rounded-lg transition-[background-color] ${isDark
                       ? 'bg-white/10 hover:bg-white/15 text-white/60'
                       : 'bg-gray-100 hover:bg-gray-200 text-gray-500'
                       }`}

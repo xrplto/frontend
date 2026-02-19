@@ -378,19 +378,15 @@ export async function getStaticProps() {
     // var dt = (t2 - t1).toFixed(2);
     // console.log(`2. getStaticProps fiats: ${data.fiats.length} took: ${dt}ms`);
   } catch (e) {}
-  let ret = {};
-  if (data) {
-    let ogp = {};
 
-    ogp.title = 'About XRPL.to | Premier XRP Ledger Analytics Platform';
-    ogp.url = 'https://xrpl.to/about';
-    ogp.canonical = 'https://xrpl.to/about';
-    ogp.imgUrl = 'https://xrpl.to/og/about.webp';
-    ogp.desc =
-      'XRPL.to tracks 19,000+ tokens with 40,000+ monthly users. Comprehensive XRP Ledger analytics, DEX trading, NFT marketplace, and real-time price data.';
-
-    // FAQPage structured data
-    const faqSchema = {
+  const ogp = {
+    title: 'About XRPL.to | Premier XRP Ledger Analytics Platform',
+    url: 'https://xrpl.to/about',
+    canonical: 'https://xrpl.to/about',
+    imgUrl: 'https://xrpl.to/api/og/about',
+    imgType: 'image/png',
+    desc: 'XRPL.to tracks 19,000+ tokens with 40,000+ monthly users. Comprehensive XRP Ledger analytics, DEX trading, NFT marketplace, and real-time price data.',
+    jsonLd: {
       '@context': 'https://schema.org',
       '@type': 'FAQPage',
       mainEntity: [
@@ -427,17 +423,11 @@ export async function getStaticProps() {
           }
         }
       ]
-    };
-    ogp.jsonLd = faqSchema;
-
-    ret = { data, ogp };
-  }
+    }
+  };
 
   return {
-    props: ret, // will be passed to the page component as props
-    // Next.js will attempt to re-generate the page:
-    // - When a request comes in
-    // - At most once every 10 seconds
-    revalidate: 10 // In seconds
+    props: { data, ogp },
+    revalidate: 10
   };
 }

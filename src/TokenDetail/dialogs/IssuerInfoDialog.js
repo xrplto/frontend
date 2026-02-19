@@ -16,7 +16,7 @@ export default function IssuerInfoDialog({ open, setOpen, token }) {
 
   const { issuer, name, user, currency, md5, ext, issuer_info } = token;
 
-  const imgUrl = `https://s1.xrpl.to/token/${md5}`;
+  const imgUrl = `https://s1.xrpl.to/thumb/${md5}_48`;
 
   const info = issuer_info || {};
 
@@ -62,7 +62,7 @@ export default function IssuerInfoDialog({ open, setOpen, token }) {
           <button
             onClick={handleClose}
             className={cn(
-              'flex h-8 w-8 items-center justify-center rounded-lg transition-colors',
+              'flex h-8 w-8 items-center justify-center rounded-lg transition-[background-color,border-color]',
               isDark ? 'text-white/60 hover:text-white' : 'text-gray-500 hover:text-gray-700'
             )}
           >
@@ -83,7 +83,7 @@ export default function IssuerInfoDialog({ open, setOpen, token }) {
               <a
                 href={`/address/${issuer}`}
                 className={cn(
-                  'flex-1 font-mono text-[13px] px-2 py-1 rounded truncate transition-colors',
+                  'flex-1 font-mono text-[13px] px-2 py-1 rounded truncate transition-[background-color,border-color]',
                   isDark
                     ? 'bg-white/5 text-white/60 hover:text-primary'
                     : 'bg-gray-100 text-gray-600 hover:text-primary'
@@ -94,7 +94,7 @@ export default function IssuerInfoDialog({ open, setOpen, token }) {
               <button
                 onClick={() => copyToClipboard(issuer, 'Address')}
                 className={cn(
-                  'flex-shrink-0 p-1 rounded transition-colors',
+                  'flex-shrink-0 p-1 rounded transition-[background-color,border-color]',
                   isDark ? 'hover:bg-white/10' : 'hover:bg-gray-200'
                 )}
                 title="Copy address"
@@ -104,7 +104,7 @@ export default function IssuerInfoDialog({ open, setOpen, token }) {
               <button
                 onClick={() => window.dispatchEvent(new CustomEvent('openDm', { detail: { user: issuer } }))}
                 className={cn(
-                  'flex-shrink-0 p-1 rounded transition-colors',
+                  'flex-shrink-0 p-1 rounded transition-[background-color,border-color]',
                   isDark ? 'hover:bg-white/10 text-white/60 hover:text-[#650CD4]' : 'hover:bg-gray-200 text-gray-500 hover:text-[#650CD4]'
                 )}
                 title="Message issuer"
@@ -133,7 +133,7 @@ export default function IssuerInfoDialog({ open, setOpen, token }) {
               <button
                 onClick={() => copyToClipboard(currency, 'Currency code')}
                 className={cn(
-                  'p-1 rounded transition-colors',
+                  'p-1 rounded transition-[background-color,border-color]',
                   isDark ? 'hover:bg-white/10' : 'hover:bg-gray-200'
                 )}
                 title="Copy currency code"

@@ -1,4 +1,4 @@
-import { useState, useContext, useEffect, useRef } from 'react';
+import { useState, useContext, useEffect, useRef, useMemo, useCallback, startTransition, Fragment } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import { useSelector } from 'react-redux';
@@ -67,7 +67,8 @@ import {
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import Link from 'next/link';
-import QRCode from 'react-qr-code';
+import dynamic from 'next/dynamic';
+const QRCode = dynamic(() => import('react-qr-code'), { ssr: false });
 import AccountHistory from 'src/components/AccountHistory';
 
 const BASE_URL = 'https://api.xrpl.to';
@@ -128,6 +129,10 @@ export default function WalletPage() {
   const currencySymbols = { USD: '$', EUR: '€', JPY: '¥', CNH: '¥', XRP: '✕' };
   const accountLogin = accountProfile?.account;
   const address = accountLogin;
+
+  // Prevent flash of "Connect Wallet" during SSR hydration
+  const [hydrated, setHydrated] = useState(false);
+  useEffect(() => { setHydrated(true); }, []);
 
   const [activeTab, setActiveTab] = useState(initialTab || 'overview');
   const [copied, setCopied] = useState(false);
@@ -222,43 +227,41 @@ export default function WalletPage() {
 
   const getAlgorithmFromSeed = (seed) => seed.startsWith('sEd') ? 'ed25519' : 'secp256k1';
 
+  // Centralized seed retrieval — single source of truth for all signing operations
+  const getSigningWallet = async () => {
+    const { EncryptedWalletStorage, deviceFingerprint } = await import('src/utils/encryptedWalletStorage');
+    const storage = new EncryptedWalletStorage();
+    let password = null;
+
+    if (accountProfile.wallet_type === 'oauth' || accountProfile.wallet_type === 'social') {
+      const walletId = `${accountProfile.provider}_${accountProfile.provider_id}`;
+      password = await storage.getSecureItem(`wallet_pwd_${walletId}`);
+    } else if (accountProfile.wallet_type === 'device') {
+      const deviceKeyId = await deviceFingerprint.getDeviceId();
+      if (deviceKeyId) password = await storage.getWalletCredential(deviceKeyId);
+    }
+
+    if (!password) return null;
+    const walletData = await storage.getWallet(accountProfile.account, password);
+    if (!walletData?.seed) return null;
+
+    const wallet = XRPLWallet.fromSeed(walletData.seed, { algorithm: getAlgorithmFromSeed(walletData.seed) });
+    return wallet;
+  };
+
   const handleRemoveTrustline = async (token) => {
     if (!token.currency || !token.issuer) return;
     setRemovingTrustline(token.currency + token.issuer);
     const toastId = toast.loading(`Removing ${token.symbol}...`, { description: 'Connecting to XRPL' });
 
     try {
-      let seed = null;
-
-      if (accountProfile.wallet_type === 'oauth' || accountProfile.wallet_type === 'social') {
-        const { EncryptedWalletStorage } = await import('src/utils/encryptedWalletStorage');
-        const walletStorage = new EncryptedWalletStorage();
-        const walletId = `${accountProfile.provider}_${accountProfile.provider_id}`;
-        const storedPassword = await walletStorage.getSecureItem(`wallet_pwd_${walletId}`);
-        if (storedPassword) {
-          const walletData = await walletStorage.getWallet(accountProfile.account, storedPassword);
-          seed = walletData?.seed;
-        }
-      } else if (accountProfile.wallet_type === 'device') {
-        const { EncryptedWalletStorage, deviceFingerprint } = await import('src/utils/encryptedWalletStorage');
-        const walletStorage = new EncryptedWalletStorage();
-        const deviceKeyId = await deviceFingerprint.getDeviceId();
-        if (deviceKeyId) {
-          const storedPassword = await walletStorage.getWalletCredential(deviceKeyId);
-          if (storedPassword) {
-            const walletData = await walletStorage.getWallet(accountProfile.account, storedPassword);
-            seed = walletData?.seed;
-          }
-        }
-      }
-
-      if (!seed) {
+      const wallet = await getSigningWallet();
+      if (!wallet) {
         toast.error('Authentication failed', { id: toastId, description: 'Could not retrieve wallet credentials' });
         return;
       }
 
       toast.loading(`Removing ${token.symbol}...`, { id: toastId, description: 'Checking account flags' });
-      const wallet = XRPLWallet.fromSeed(seed, { algorithm: getAlgorithmFromSeed(seed) });
 
       // Check account's defaultRipple flag via API
       const infoRes = await apiFetch(`https://api.xrpl.to/v1/account/info/${address}`).then(r => r.json());
@@ -303,37 +306,13 @@ export default function WalletPage() {
     const toastId = toast.loading('Cancelling offer...', { description: 'Connecting to XRPL' });
 
     try {
-      let seed = null;
-
-      if (accountProfile.wallet_type === 'oauth' || accountProfile.wallet_type === 'social') {
-        const { EncryptedWalletStorage } = await import('src/utils/encryptedWalletStorage');
-        const walletStorage = new EncryptedWalletStorage();
-        const walletId = `${accountProfile.provider}_${accountProfile.provider_id}`;
-        const storedPassword = await walletStorage.getSecureItem(`wallet_pwd_${walletId}`);
-        if (storedPassword) {
-          const walletData = await walletStorage.getWallet(accountProfile.account, storedPassword);
-          seed = walletData?.seed;
-        }
-      } else if (accountProfile.wallet_type === 'device') {
-        const { EncryptedWalletStorage, deviceFingerprint } = await import('src/utils/encryptedWalletStorage');
-        const walletStorage = new EncryptedWalletStorage();
-        const deviceKeyId = await deviceFingerprint.getDeviceId();
-        if (deviceKeyId) {
-          const storedPassword = await walletStorage.getWalletCredential(deviceKeyId);
-          if (storedPassword) {
-            const walletData = await walletStorage.getWallet(accountProfile.account, storedPassword);
-            seed = walletData?.seed;
-          }
-        }
-      }
-
-      if (!seed) {
+      const wallet = await getSigningWallet();
+      if (!wallet) {
         toast.error('Authentication failed', { id: toastId, description: 'Could not retrieve wallet credentials' });
         return;
       }
 
       toast.loading('Cancelling offer...', { id: toastId, description: 'Signing transaction' });
-      const wallet = XRPLWallet.fromSeed(seed, { algorithm: getAlgorithmFromSeed(seed) });
 
       const tx = {
         TransactionType: 'OfferCancel',
@@ -458,37 +437,14 @@ export default function WalletPage() {
     const toastId = toast.loading(`Burning ${token.symbol}...`, { description: 'Connecting to XRPL' });
 
     try {
-      let seed = null;
-      if (accountProfile.wallet_type === 'oauth' || accountProfile.wallet_type === 'social') {
-        const { EncryptedWalletStorage } = await import('src/utils/encryptedWalletStorage');
-        const walletStorage = new EncryptedWalletStorage();
-        const walletId = `${accountProfile.provider}_${accountProfile.provider_id}`;
-        const storedPassword = await walletStorage.getSecureItem(`wallet_pwd_${walletId}`);
-        if (storedPassword) {
-          const walletData = await walletStorage.getWallet(accountProfile.account, storedPassword);
-          seed = walletData?.seed;
-        }
-      } else if (accountProfile.wallet_type === 'device') {
-        const { EncryptedWalletStorage, deviceFingerprint } = await import('src/utils/encryptedWalletStorage');
-        const walletStorage = new EncryptedWalletStorage();
-        const deviceKeyId = await deviceFingerprint.getDeviceId();
-        if (deviceKeyId) {
-          const storedPassword = await walletStorage.getWalletCredential(deviceKeyId);
-          if (storedPassword) {
-            const walletData = await walletStorage.getWallet(accountProfile.account, storedPassword);
-            seed = walletData?.seed;
-          }
-        }
-      }
-
-      if (!seed) {
+      const wallet = await getSigningWallet();
+      if (!wallet) {
         toast.error('Authentication failed', { id: toastId, description: 'Could not retrieve wallet credentials' });
         setBurning(null);
         return;
       }
 
       toast.loading(`Burning ${token.symbol}...`, { id: toastId, description: 'Checking issuer...' });
-      const wallet = XRPLWallet.fromSeed(seed, { algorithm: getAlgorithmFromSeed(seed) });
 
       // Check issuer flags via API (lsfRequireDestTag = 0x00020000)
       const issuerInfo = await apiFetch(`https://api.xrpl.to/v1/account/info/${token.issuer}`).then(r => r.json());
@@ -542,37 +498,14 @@ export default function WalletPage() {
     const toastId = toast.loading('Creating sell offer...', { description: 'Connecting...' });
 
     try {
-      let seed = null;
-      if (accountProfile.wallet_type === 'oauth' || accountProfile.wallet_type === 'social') {
-        const { EncryptedWalletStorage } = await import('src/utils/encryptedWalletStorage');
-        const walletStorage = new EncryptedWalletStorage();
-        const walletId = `${accountProfile.provider}_${accountProfile.provider_id}`;
-        const storedPassword = await walletStorage.getSecureItem(`wallet_pwd_${walletId}`);
-        if (storedPassword) {
-          const walletData = await walletStorage.getWallet(accountProfile.account, storedPassword);
-          seed = walletData?.seed;
-        }
-      } else if (accountProfile.wallet_type === 'device') {
-        const { EncryptedWalletStorage, deviceFingerprint } = await import('src/utils/encryptedWalletStorage');
-        const walletStorage = new EncryptedWalletStorage();
-        const deviceKeyId = await deviceFingerprint.getDeviceId();
-        if (deviceKeyId) {
-          const storedPassword = await walletStorage.getWalletCredential(deviceKeyId);
-          if (storedPassword) {
-            const walletData = await walletStorage.getWallet(accountProfile.account, storedPassword);
-            seed = walletData?.seed;
-          }
-        }
-      }
-
-      if (!seed) {
+      const wallet = await getSigningWallet();
+      if (!wallet) {
         toast.error('Authentication failed', { id: toastId, description: 'Could not retrieve wallet credentials' });
         setCreatingSellOffer(false);
         return;
       }
 
       toast.loading('Creating sell offer...', { id: toastId, description: 'Signing transaction...' });
-      const wallet = XRPLWallet.fromSeed(seed, { algorithm: getAlgorithmFromSeed(seed) });
       const priceInDrops = String(Math.floor(parseFloat(nftSellPrice) * 1000000));
       const tx = {
         TransactionType: 'NFTokenCreateOffer',
@@ -611,37 +544,14 @@ export default function WalletPage() {
     const toastId = toast.loading('Cancelling offer...', { description: 'Connecting...' });
 
     try {
-      let seed = null;
-      if (accountProfile.wallet_type === 'oauth' || accountProfile.wallet_type === 'social') {
-        const { EncryptedWalletStorage } = await import('src/utils/encryptedWalletStorage');
-        const walletStorage = new EncryptedWalletStorage();
-        const walletId = `${accountProfile.provider}_${accountProfile.provider_id}`;
-        const storedPassword = await walletStorage.getSecureItem(`wallet_pwd_${walletId}`);
-        if (storedPassword) {
-          const walletData = await walletStorage.getWallet(accountProfile.account, storedPassword);
-          seed = walletData?.seed;
-        }
-      } else if (accountProfile.wallet_type === 'device') {
-        const { EncryptedWalletStorage, deviceFingerprint } = await import('src/utils/encryptedWalletStorage');
-        const walletStorage = new EncryptedWalletStorage();
-        const deviceKeyId = await deviceFingerprint.getDeviceId();
-        if (deviceKeyId) {
-          const storedPassword = await walletStorage.getWalletCredential(deviceKeyId);
-          if (storedPassword) {
-            const walletData = await walletStorage.getWallet(accountProfile.account, storedPassword);
-            seed = walletData?.seed;
-          }
-        }
-      }
-
-      if (!seed) {
+      const wallet = await getSigningWallet();
+      if (!wallet) {
         toast.error('Authentication failed', { id: toastId, description: 'Could not retrieve wallet credentials' });
         setCancellingNftOffer(null);
         return;
       }
 
       toast.loading('Cancelling offer...', { id: toastId, description: 'Signing transaction...' });
-      const wallet = XRPLWallet.fromSeed(seed, { algorithm: getAlgorithmFromSeed(seed) });
       const tx = {
         TransactionType: 'NFTokenCancelOffer',
         Account: address,
@@ -670,37 +580,14 @@ export default function WalletPage() {
     const toastId = toast.loading(`Trading ${tradeModal.symbol}...`, { description: 'Connecting to XRPL' });
 
     try {
-      let seed = null;
-      if (accountProfile.wallet_type === 'oauth' || accountProfile.wallet_type === 'social') {
-        const { EncryptedWalletStorage } = await import('src/utils/encryptedWalletStorage');
-        const walletStorage = new EncryptedWalletStorage();
-        const walletId = `${accountProfile.provider}_${accountProfile.provider_id}`;
-        const storedPassword = await walletStorage.getSecureItem(`wallet_pwd_${walletId}`);
-        if (storedPassword) {
-          const walletData = await walletStorage.getWallet(accountProfile.account, storedPassword);
-          seed = walletData?.seed;
-        }
-      } else if (accountProfile.wallet_type === 'device') {
-        const { EncryptedWalletStorage, deviceFingerprint } = await import('src/utils/encryptedWalletStorage');
-        const walletStorage = new EncryptedWalletStorage();
-        const deviceKeyId = await deviceFingerprint.getDeviceId();
-        if (deviceKeyId) {
-          const storedPassword = await walletStorage.getWalletCredential(deviceKeyId);
-          if (storedPassword) {
-            const walletData = await walletStorage.getWallet(accountProfile.account, storedPassword);
-            seed = walletData?.seed;
-          }
-        }
-      }
-
-      if (!seed) {
+      const wallet = await getSigningWallet();
+      if (!wallet) {
         toast.error('Authentication failed', { id: toastId, description: 'Could not retrieve wallet credentials' });
         setTrading(false);
         return;
       }
 
       toast.loading(`Trading ${tradeModal.symbol}...`, { id: toastId, description: 'Executing swap...' });
-      const wallet = XRPLWallet.fromSeed(seed, { algorithm: getAlgorithmFromSeed(seed) });
       const slippage = tradeSlippage / 100;
       let tx;
 
@@ -785,40 +672,15 @@ export default function WalletPage() {
     const toastId = toast.loading(`Sending ${sendAmount} ${selectedToken}...`, { description: 'Preparing transaction' });
 
     try {
-      let seed = null;
-
-      if (accountProfile.wallet_type === 'oauth' || accountProfile.wallet_type === 'social') {
-        const { EncryptedWalletStorage } = await import('src/utils/encryptedWalletStorage');
-        const walletStorage = new EncryptedWalletStorage();
-        const walletId = `${accountProfile.provider}_${accountProfile.provider_id}`;
-        const storedPassword = await walletStorage.getSecureItem(`wallet_pwd_${walletId}`);
-        if (storedPassword) {
-          const walletData = await walletStorage.getWallet(accountProfile.account, storedPassword);
-          seed = walletData?.seed;
-        }
-      } else if (accountProfile.wallet_type === 'device') {
-        const { EncryptedWalletStorage, deviceFingerprint } = await import('src/utils/encryptedWalletStorage');
-        const walletStorage = new EncryptedWalletStorage();
-        const deviceKeyId = await deviceFingerprint.getDeviceId();
-        if (deviceKeyId) {
-          const storedPassword = await walletStorage.getWalletCredential(deviceKeyId);
-          if (storedPassword) {
-            const walletData = await walletStorage.getWallet(accountProfile.account, storedPassword);
-            seed = walletData?.seed;
-          }
-        }
-      }
-
-      if (!seed) {
+      const wallet = await getSigningWallet();
+      if (!wallet) {
         toast.error('Authentication failed', { id: toastId, description: 'Could not retrieve wallet credentials' });
         setSending(false);
         return;
       }
 
-      const wallet = XRPLWallet.fromSeed(seed, { algorithm: getAlgorithmFromSeed(seed) });
-
       let tx;
-      const token = allTokens.find(t => t.symbol === selectedToken);
+      const token = activeToken;
 
       if (selectedToken === 'XRP') {
         const drops = Math.floor(amount * 1000000);
@@ -881,36 +743,11 @@ export default function WalletPage() {
     const toastId = toast.loading(`Clearing ${token.symbol} dust...`, { description: method === 'dex' ? 'Selling on DEX' : 'Sending to issuer' });
 
     try {
-      let seed = null;
-
-      if (accountProfile.wallet_type === 'oauth' || accountProfile.wallet_type === 'social') {
-        const { EncryptedWalletStorage } = await import('src/utils/encryptedWalletStorage');
-        const walletStorage = new EncryptedWalletStorage();
-        const walletId = `${accountProfile.provider}_${accountProfile.provider_id}`;
-        const storedPassword = await walletStorage.getSecureItem(`wallet_pwd_${walletId}`);
-        if (storedPassword) {
-          const walletData = await walletStorage.getWallet(accountProfile.account, storedPassword);
-          seed = walletData?.seed;
-        }
-      } else if (accountProfile.wallet_type === 'device') {
-        const { EncryptedWalletStorage, deviceFingerprint } = await import('src/utils/encryptedWalletStorage');
-        const walletStorage = new EncryptedWalletStorage();
-        const deviceKeyId = await deviceFingerprint.getDeviceId();
-        if (deviceKeyId) {
-          const storedPassword = await walletStorage.getWalletCredential(deviceKeyId);
-          if (storedPassword) {
-            const walletData = await walletStorage.getWallet(accountProfile.account, storedPassword);
-            seed = walletData?.seed;
-          }
-        }
-      }
-
-      if (!seed) {
+      const wallet = await getSigningWallet();
+      if (!wallet) {
         toast.error('Authentication failed', { id: toastId, description: 'Could not retrieve wallet credentials' });
         return;
       }
-
-      const wallet = XRPLWallet.fromSeed(seed, { algorithm: getAlgorithmFromSeed(seed) });
 
       if (method === 'dex') {
         const offerTx = {
@@ -965,6 +802,10 @@ export default function WalletPage() {
 
   const [tokenDropdownOpen, setTokenDropdownOpen] = useState(false);
   const [tokenSearch, setTokenSearch] = useState('');
+  const [sendTokenSearch, setSendTokenSearch] = useState('');
+  const sendSearchRef = useRef(null);
+  const [allTokensLoaded, setAllTokensLoaded] = useState(false);
+  const [loadingAllTokens, setLoadingAllTokens] = useState(false);
   const [nftToTransfer, setNftToTransfer] = useState(null);
   const [nftRecipient, setNftRecipient] = useState('');
   const [nftToSell, setNftToSell] = useState(null);
@@ -1148,6 +989,9 @@ export default function WalletPage() {
       setIsInactive(false);
       setTokens([]);
       setTokenOffset(0);
+      setAllTokensLoaded(false);
+      setSendTokens([]);
+      sendTokensRef.current = [];
       try {
         const res = await apiFetch(
           `${BASE_URL}/api/trustlines/${address}?format=full&sortByValue=true&includeZero=true&limit=${TOKEN_LIMIT}&offset=0`,
@@ -1199,6 +1043,37 @@ export default function WalletPage() {
       fetchMore();
     }
   }, [tokenPage, tokens.length, tokenOffset, tokenTotal, loadingMore, address]);
+
+  // Load all tokens for send dropdown (triggered when dropdown opens with many tokens)
+  const sendTokensRef = useRef([]);
+  const [sendTokens, setSendTokens] = useState([]);
+  const loadAllTokensForSend = async () => {
+    if (allTokensLoaded || loadingAllTokens || !address || tokens.length >= tokenTotal) {
+      setAllTokensLoaded(true);
+      return;
+    }
+    setLoadingAllTokens(true);
+    try {
+      let offset = tokens.length;
+      while (offset < tokenTotal) {
+        const res = await apiFetch(`${BASE_URL}/api/trustlines/${address}?format=full&sortByValue=true&includeZero=true&limit=200&offset=${offset}`);
+        const data = await res.json();
+        if (!data.success || !data.lines?.length) break;
+        const chunk = data.lines.map(parseTokenLine);
+        offset += data.lines.length;
+        sendTokensRef.current = [...sendTokensRef.current, ...chunk];
+        // Low-priority update — won't block typing/interactions
+        startTransition(() => {
+          setSendTokens([...sendTokensRef.current]);
+        });
+      }
+      setAllTokensLoaded(true);
+    } catch (e) {
+      console.error('Failed to load all tokens:', e);
+    } finally {
+      setLoadingAllTokens(false);
+    }
+  };
 
   // Load withdrawals from IndexedDB
   useEffect(() => {
@@ -1811,26 +1686,12 @@ export default function WalletPage() {
     setWalletPayStatus('signing');
     setProfileError('');
     try {
-      const { EncryptedWalletStorage, deviceFingerprint } = await import('src/utils/encryptedWalletStorage');
-      const walletStorage = new EncryptedWalletStorage();
-      const deviceKeyId = await deviceFingerprint.getDeviceId();
-      const storedPassword = await walletStorage.getWalletCredential(deviceKeyId);
-
-      if (!storedPassword) {
+      const wallet = await getSigningWallet();
+      if (!wallet) {
         setProfileError('Wallet locked. Please unlock your wallet first.');
         setWalletPayStatus(null);
         return;
       }
-
-      const walletData = await walletStorage.getWallet(address, storedPassword);
-      if (!walletData?.seed) {
-        setProfileError('Could not retrieve wallet credentials');
-        setWalletPayStatus(null);
-        return;
-      }
-
-      const algorithm = walletData.seed.startsWith('sEd') ? 'ed25519' : 'secp256k1';
-      const wallet = XRPLWallet.fromSeed(walletData.seed, { algorithm });
 
       setWalletPayStatus('submitting');
       const payment = {
@@ -1997,31 +1858,37 @@ export default function WalletPage() {
   };
 
   // Computed tokens list with XRP at top
-  const xrpToken = xrpData
-    ? (() => {
-      const x = xrpData.xrp || {};
-      const bal = parseFloat(x.balance || xrpData.balance || 0);
-      const change = x.pro24h ?? 0;
-      return {
-        symbol: 'XRP',
-        name: 'XRP',
-        amount: formatBalance(bal),
-        rawAmount: bal,
-        value: `${formatBalance(bal)} XRP`,
-        rawValue: x.value || bal,
-        change: change ? `${change >= 0 ? '+' : ''}${change.toFixed(1)}%` : '',
-        positive: change >= 0,
-        color: '#23292F',
-        icon: '◎',
-        slug: 'xrpl-xrp',
-        md5: x.md5 || '84e5efeb89c4eae8f68188982dc290d8',
-        vol24h: x.vol24hxrp || 0,
-        holders: x.holders || 0
-      };
-    })()
-    : null;
-  const allTokens = xrpToken ? [xrpToken, ...tokens] : tokens;
-  const totalValue = allTokens.reduce((sum, t) => sum + (t.rawValue || 0), 0);
+  const xrpToken = useMemo(() => {
+    if (!xrpData) return null;
+    const x = xrpData.xrp || {};
+    const bal = parseFloat(x.balance || xrpData.balance || 0);
+    const change = x.pro24h ?? 0;
+    return {
+      symbol: 'XRP',
+      name: 'XRP',
+      amount: formatBalance(bal),
+      rawAmount: bal,
+      value: `${formatBalance(bal)} XRP`,
+      rawValue: x.value || bal,
+      change: change ? `${change >= 0 ? '+' : ''}${change.toFixed(1)}%` : '',
+      positive: change >= 0,
+      color: '#23292F',
+      icon: '◎',
+      slug: 'xrpl-xrp',
+      md5: x.md5 || '84e5efeb89c4eae8f68188982dc290d8',
+      vol24h: x.vol24hxrp || 0,
+      holders: x.holders || 0
+    };
+  }, [xrpData]);
+  const allTokens = useMemo(() => xrpToken ? [xrpToken, ...tokens] : tokens, [xrpToken, tokens]);
+  const tokenBySymbol = useMemo(() => {
+    const map = new Map();
+    for (const t of allTokens) map.set(t.symbol, t);
+    for (const t of sendTokens) if (!map.has(t.symbol)) map.set(t.symbol, t);
+    return map;
+  }, [allTokens, sendTokens]);
+  const activeToken = tokenBySymbol.get(selectedToken) || null;
+  const totalValue = useMemo(() => allTokens.reduce((sum, t) => sum + (t.rawValue || 0), 0), [allTokens]);
 
   // XRP price in fiat for conversions (from API)
   const xrpUsdPrice = xrpData?.xrp?.usd ? parseFloat(xrpData.xrp.usd) : 1;
@@ -2048,7 +1915,9 @@ export default function WalletPage() {
 
       <Header />
 
-      {!address ? (
+      {!hydrated ? (
+        <div className={cn('min-h-[calc(100dvh-64px)]', isDark ? 'bg-black' : 'bg-gray-50')} />
+      ) : !address ? (
         <div
           className={cn(
             'min-h-[calc(100dvh-64px)] flex items-center justify-center',
@@ -2059,7 +1928,7 @@ export default function WalletPage() {
             className={cn(
               'text-center p-10 rounded-xl max-w-md',
               isDark
-                ? 'bg-white/[0.04] border border-white/[0.15]'
+                ? 'bg-white/[0.06] border border-white/[0.15]'
                 : 'bg-white border border-gray-200'
             )}
           >
@@ -2072,25 +1941,25 @@ export default function WalletPage() {
               <Wallet size={36} className="text-[#137DFE]" />
             </div>
             <h2
-              className={cn('text-xl font-medium mb-3', isDark ? 'text-white/90' : 'text-gray-900')}
+              className={cn('text-xl font-medium mb-3', isDark ? 'text-white' : 'text-gray-900')}
             >
               Connect Wallet
             </h2>
             <p
               className={cn(
                 'text-[13px] mb-8 leading-relaxed',
-                isDark ? 'text-white/50' : 'text-gray-500'
+                isDark ? 'text-white/60' : 'text-gray-500'
               )}
             >
               Manage your tokens, NFTs, offers, and transaction history all in one place
             </p>
             <button
               onClick={() => setOpenWalletModal(true)}
-              className="w-full py-4 rounded-lg text-[13px] font-medium bg-[#137DFE] text-white hover:bg-[#137DFE]/90 transition-colors"
+              className="w-full py-4 rounded-lg text-[13px] font-medium bg-[#1070E0] text-white hover:bg-[#0D62C8] transition-colors"
             >
               Connect Wallet
             </button>
-            <p className={cn('text-[11px] mt-4', isDark ? 'text-white/25' : 'text-gray-400')}>
+            <p className={cn('text-[11px] mt-4', isDark ? 'text-white/50' : 'text-gray-500')}>
               Secure • Non-custodial • Encrypted locally
             </p>
           </div>
@@ -2146,96 +2015,81 @@ export default function WalletPage() {
             </div>
 
             {/* Tabs */}
-            <div className={cn(
-              "flex items-center gap-1 p-1 mb-6 overflow-x-auto no-scrollbar rounded-xl border transition-colors",
-              isDark ? "bg-white/[0.03] border-white/10" : "bg-gray-100 border-gray-200"
-            )}>
+            <div className="flex gap-2 mb-6 overflow-x-auto no-scrollbar max-sm:w-full max-sm:gap-[6px]">
               {tabs.map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => handleTabChange(tab.id)}
                   className={cn(
-                    'flex items-center gap-2 px-4 py-2 text-[11px] font-bold tracking-tight rounded-lg transition-all duration-200 whitespace-nowrap uppercase',
+                    'inline-flex items-center justify-center gap-2 text-xs font-medium tracking-[0.05em] py-[10px] px-4 bg-transparent border rounded-[6px] cursor-pointer transition-[opacity,transform,background-color,border-color] duration-150 whitespace-nowrap shrink-0 uppercase',
+                    'max-sm:flex-1 max-sm:py-2 max-sm:px-1 max-sm:text-[10px] max-sm:gap-[3px] max-sm:[&_svg]:w-[14px] max-sm:[&_svg]:h-[14px]',
                     activeTab === tab.id
-                      ? cn(isDark ? 'bg-[#137DFE] text-white shadow-lg shadow-blue-500/20' : 'bg-white text-[#137DFE] shadow-sm')
-                      : cn(
-                        isDark
-                          ? 'text-white/40 hover:text-white/70 hover:bg-white/5'
-                          : 'text-gray-500 hover:text-gray-900 hover:bg-white/50'
-                      )
+                      ? isDark ? 'border-white/20 text-white' : 'border-black/20 text-[#1a1a1a]'
+                      : isDark ? 'border-white/10 text-white/60' : 'border-black/10 text-black/60',
+                    activeTab !== tab.id && (isDark ? 'hover:enabled:border-white/[0.15] hover:enabled:text-white/70' : 'hover:enabled:border-black/[0.15] hover:enabled:text-black/60'),
+                    activeTab !== tab.id && 'max-sm:[&>span]:hidden'
                   )}
                 >
                   <tab.icon size={14} strokeWidth={2} />
-                  {tab.label}
+                  <span>{tab.label}</span>
                 </button>
               ))}
             </div>
 
             {/* Send/Receive Modal */}
             {showPanel && (
-              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 max-sm:h-dvh">
+              <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4">
                 {/* Backdrop */}
                 <div
-                  className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                  className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
                   onClick={() => setShowPanel(null)}
                 />
 
-                {/* Modal */}
+                {/* Modal - slides up on mobile, centered on desktop */}
                 <div
                   className={cn(
-                    'relative w-full max-w-md rounded-2xl overflow-hidden',
+                    'relative w-full sm:max-w-[420px] rounded-t-2xl sm:rounded-2xl overflow-hidden animate-in slide-in-from-bottom-4 duration-200',
                     isDark
-                      ? 'bg-[#09090b] border-[1.5px] border-white/15'
+                      ? 'bg-[#0c0c0e] border-[1.5px] border-white/10'
                       : 'bg-white border border-gray-200'
                   )}
                 >
-                  {/* Header with Tabs */}
-                  <div
-                    className={cn(
-                      'flex items-center justify-between p-4 border-b',
-                      isDark ? 'border-white/[0.08]' : 'border-gray-100'
-                    )}
-                  >
-                    <div
-                      className={cn(
-                        'flex p-1 rounded-lg',
-                        isDark ? 'bg-white/[0.03]' : 'bg-gray-100'
-                      )}
-                    >
+                  {/* Drag handle - mobile only */}
+                  <div className="flex justify-center pt-3 pb-1 sm:hidden">
+                    <div className={cn('w-10 h-1 rounded-full', isDark ? 'bg-white/15' : 'bg-gray-300')} />
+                  </div>
+
+                  {/* Header */}
+                  <div className="flex items-center justify-between px-5 pt-3 sm:pt-5 pb-4">
+                    <div className={cn('flex p-0.5 rounded-xl', isDark ? 'bg-white/[0.04]' : 'bg-gray-100')}>
                       <button
                         onClick={() => setShowPanel('send')}
                         className={cn(
-                          'flex items-center gap-1.5 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200',
+                          'flex items-center gap-2 px-5 py-2.5 rounded-[10px] text-sm font-semibold transition-all duration-200',
                           showPanel === 'send'
                             ? 'bg-[#137DFE] text-white'
-                            : isDark
-                              ? 'text-white/50 hover:text-white/80'
-                              : 'text-gray-500 hover:text-gray-700'
+                            : isDark ? 'text-white/40 hover:text-white/70' : 'text-gray-400 hover:text-gray-600'
                         )}
                       >
-                        <ArrowUpRight size={15} /> Send
+                        <ArrowUpRight size={16} /> Send
                       </button>
                       <button
                         onClick={() => setShowPanel('receive')}
                         className={cn(
-                          'flex items-center gap-1.5 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200',
+                          'flex items-center gap-2 px-5 py-2.5 rounded-[10px] text-sm font-semibold transition-all duration-200',
                           showPanel === 'receive'
-                            ? 'bg-emerald-500 text-white'
-                            : isDark
-                              ? 'text-white/50 hover:text-white/80'
-                              : 'text-gray-500 hover:text-gray-700'
+                            ? 'bg-[#08AA09] text-white'
+                            : isDark ? 'text-white/40 hover:text-white/70' : 'text-gray-400 hover:text-gray-600'
                         )}
                       >
-                        <ArrowDownLeft size={15} /> Receive
+                        <ArrowDownLeft size={16} /> Receive
                       </button>
                     </div>
                     <button
                       onClick={() => setShowPanel(null)}
                       className={cn(
-                        'p-2 rounded-lg transition-colors',
-                        isDark
-                          ? 'text-white/40 hover:text-white/70 hover:bg-white/5'
-                          : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
+                        'p-2 rounded-xl transition-colors',
+                        isDark ? 'text-white/30 hover:text-white/60 hover:bg-white/5' : 'text-gray-300 hover:text-gray-500 hover:bg-gray-100'
                       )}
                     >
                       <X size={18} />
@@ -2244,211 +2098,267 @@ export default function WalletPage() {
 
                   {/* Content */}
                   {showPanel === 'send' ? (
-                    <div className="p-6">
-                      {/* Amount Section */}
+                    <div className="px-5 pb-5">
+                      {/* Token selector + amount in one card */}
                       <div className={cn(
-                        "rounded-2xl p-4 mb-6 border transition-all",
-                        isDark ? "bg-white/[0.02] border-white/5" : "bg-gray-50 border-gray-100"
+                        "rounded-xl p-4 mb-4",
+                        isDark ? "bg-white/[0.03] border border-white/[0.06]" : "bg-gray-50 border border-gray-100"
                       )}>
-                        <div className="flex justify-between items-center mb-4">
+                        {/* Token selector row */}
+                        <div className="flex items-center justify-between mb-3">
                           <button
                             type="button"
-                            onClick={() => setTokenDropdownOpen(!tokenDropdownOpen)}
+                            onClick={() => { const opening = !tokenDropdownOpen; setTokenDropdownOpen(opening); setSendTokenSearch(''); if (opening && tokenTotal > tokens.length) loadAllTokensForSend(); }}
                             className={cn(
-                              "flex items-center gap-2 px-3 py-1.5 rounded-xl border transition-all",
-                              isDark ? "bg-white/5 border-white/10 hover:border-white/20" : "bg-white border-gray-200 hover:border-gray-300"
+                              "flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all",
+                              isDark ? "bg-white/[0.04] border-white/[0.08] hover:border-white/20" : "bg-white border-gray-200 hover:border-gray-300"
                             )}
                           >
-                            {(() => {
-                              const t = allTokens.find((t) => t.symbol === selectedToken);
-                              return t?.md5 ? (
-                                <img src={`https://s1.xrpl.to/token/${t.md5}`} alt="" className="w-5 h-5 rounded-full" />
-                              ) : (
-                                <div className="w-5 h-5 rounded-full bg-[#137DFE] flex items-center justify-center text-[8px] font-black text-white">{selectedToken[0]}</div>
-                              );
-                            })()}
-                            <span className={cn("text-xs font-black", isDark ? "text-white" : "text-gray-900")}>{selectedToken}</span>
-                            <ChevronDown size={14} className={cn("transition-transform", tokenDropdownOpen && "rotate-180")} />
-                          </button>
-                          <div className="text-right">
-                            <p className={cn("text-[9px] font-bold uppercase tracking-widest opacity-40")}>Balance</p>
-                            <p className={cn("text-xs font-black tabular-nums")}>{allTokens.find((t) => t.symbol === selectedToken)?.amount || '0'}</p>
-                          </div>
-                        </div>
-
-                        {tokenDropdownOpen && (
-                          <div className={cn(
-                            "mb-4 max-h-[160px] overflow-y-auto no-scrollbar rounded-xl border divide-y transition-all",
-                            isDark ? "bg-black border-white/10 divide-white/5" : "bg-white border-gray-200 divide-gray-50"
-                          )}>
-                            {allTokens.map((t) => (
-                              <button
-                                key={t.symbol}
-                                onClick={() => { setSelectedToken(t.symbol); setTokenDropdownOpen(false); }}
-                                className={cn(
-                                  "w-full px-4 py-2.5 flex items-center justify-between text-left hover:bg-[#137DFE]/5 transition-colors",
-                                  selectedToken === t.symbol && (isDark ? "bg-white/5" : "bg-gray-50")
-                                )}
-                              >
-                                <div className="flex items-center gap-2">
-                                  {t.md5 ? <img src={`https://s1.xrpl.to/token/${t.md5}`} alt="" className="w-6 h-6 rounded-full" /> : <div className="w-6 h-6 rounded-full bg-gray-500 flex items-center justify-center text-[10px] font-black text-white">{t.symbol[0]}</div>}
-                                  <span className={cn("text-xs font-bold", isDark ? "text-white" : "text-gray-900")}>{t.symbol}</span>
-                                </div>
-                                <span className={cn("text-[10px] font-bold tabular-nums opacity-40")}>{t.amount}</span>
-                              </button>
-                            ))}
-                          </div>
-                        )}
-
-                        <div className="relative">
-                          <input
-                            type="text"
-                            inputMode="decimal"
-                            value={sendAmount}
-                            onChange={(e) => setSendAmount(e.target.value.replace(/[^0-9.]/g, ''))}
-                            placeholder="0.00"
-                            className={cn(
-                              "w-full text-5xl font-black bg-transparent outline-none tabular-nums text-center py-4 tracking-tighter",
-                              isDark ? "text-white placeholder:text-white/5" : "text-gray-900 placeholder:text-gray-200"
+                            {activeToken?.md5 ? (
+                              <img src={`https://s1.xrpl.to/token/${activeToken.md5}`} alt="" className="w-6 h-6 rounded-full" />
+                            ) : (
+                              <div className="w-6 h-6 rounded-full bg-[#137DFE] flex items-center justify-center text-[9px] font-bold text-white">{selectedToken[0]}</div>
                             )}
-                          />
-                          {(() => {
-                            const amt = parseFloat(sendAmount) || 0;
-                            const token = allTokens.find((t) => t.symbol === selectedToken);
-                            const pricePerToken = token?.rawAmount > 0 ? token.rawValue / token.rawAmount : 0;
-                            const valueInXrp = amt * pricePerToken;
-                            const displayValue = activeFiatCurrency === 'XRP' ? valueInXrp : valueInXrp * xrpUsdPrice;
-                            return (
-                              <p className={cn("text-[11px] font-bold text-center opacity-40 uppercase tracking-widest")}>
-                                ≈ {currencySymbols[activeFiatCurrency] || '$'}{displayValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {activeFiatCurrency}
-                              </p>
-                            );
-                          })()}
+                            <span className={cn("text-sm font-semibold", isDark ? "text-white" : "text-gray-900")}>{selectedToken}</span>
+                            <ChevronDown size={14} className={cn("opacity-40 transition-transform", tokenDropdownOpen && "rotate-180")} />
+                          </button>
+                          <button
+                            onClick={() => {
+                              const maxAmt = activeToken?.rawAmount || 0;
+                              setSendAmount(maxAmt.toFixed(6).replace(/\.?0+$/, ''));
+                            }}
+                            className={cn("text-right group cursor-pointer")}
+                          >
+                            <p className={cn("text-[11px] font-medium uppercase tracking-wider mb-0.5", isDark ? "text-white/30" : "text-gray-400")}>Available</p>
+                            <p className={cn("text-sm font-semibold tabular-nums group-hover:text-[#137DFE] transition-colors", isDark ? "text-white/70" : "text-gray-700")}>{activeToken?.amount || '0'}</p>
+                          </button>
                         </div>
 
-                        {/* Quick Percentages */}
-                        <div className="flex items-center justify-center gap-2 mt-6">
+                        {/* Token dropdown */}
+                        {tokenDropdownOpen && (() => {
+                          const dropdownTokens = sendTokens.length > 0 ? [...allTokens, ...sendTokens] : allTokens;
+                          const q = sendTokenSearch.toLowerCase();
+                          const filtered = q
+                            ? dropdownTokens.filter(t => t.symbol.toLowerCase().includes(q) || t.name.toLowerCase().includes(q) || (t.currency && t.currency.toLowerCase().includes(q)))
+                            : dropdownTokens;
+                          const visible = filtered.slice(0, 50);
+                          return (
+                            <div className={cn(
+                              "mb-3 rounded-lg border overflow-hidden",
+                              isDark ? "bg-black/50 border-white/[0.08]" : "bg-white border-gray-200"
+                            )}>
+                              {/* Search input */}
+                              <div className={cn("px-2.5 py-2 border-b", isDark ? "border-white/[0.06]" : "border-gray-100")}>
+                                <div className="relative">
+                                  <Search size={13} className={cn("absolute left-2.5 top-1/2 -translate-y-1/2", isDark ? "text-white/20" : "text-gray-300")} />
+                                  <input
+                                    ref={sendSearchRef}
+                                    autoFocus
+                                    type="text"
+                                    value={sendTokenSearch}
+                                    onChange={(e) => {
+                                      const v = e.target.value;
+                                      startTransition(() => setSendTokenSearch(v));
+                                    }}
+                                    placeholder={`Search ${dropdownTokens.length} tokens...`}
+                                    className={cn(
+                                      "w-full pl-8 pr-3 py-2 rounded-md text-[13px] outline-none",
+                                      isDark ? "bg-white/[0.04] text-white placeholder:text-white/20" : "bg-gray-50 text-gray-900 placeholder:text-gray-400"
+                                    )}
+                                  />
+                                  {sendTokenSearch && (
+                                    <button onClick={() => setSendTokenSearch('')} className={cn("absolute right-2 top-1/2 -translate-y-1/2", isDark ? "text-white/20 hover:text-white/40" : "text-gray-300 hover:text-gray-500")}>
+                                      <X size={12} />
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+                              {/* Token list */}
+                              <div className="max-h-[200px] overflow-y-auto no-scrollbar">
+                                {visible.length === 0 ? (
+                                  <p className={cn("text-center py-4 text-xs", isDark ? "text-white/20" : "text-gray-400")}>No tokens found</p>
+                                ) : visible.map((t) => (
+                                  <button
+                                    key={`${t.currency}_${t.issuer || 'xrp'}`}
+                                    onClick={() => { setSelectedToken(t.symbol); setTokenDropdownOpen(false); setSendTokenSearch(''); }}
+                                    className={cn(
+                                      "w-full px-3 py-2 flex items-center justify-between text-left transition-colors border-b last:border-b-0",
+                                      isDark ? "border-white/[0.04]" : "border-gray-50",
+                                      selectedToken === t.symbol
+                                        ? (isDark ? "bg-[#137DFE]/10" : "bg-blue-50")
+                                        : "hover:bg-[#137DFE]/5"
+                                    )}
+                                  >
+                                    <div className="flex items-center gap-2.5 min-w-0">
+                                      {t.md5 ? <img src={`https://s1.xrpl.to/token/${t.md5}`} alt="" className="w-6 h-6 rounded-full shrink-0" loading="lazy" /> : <div className="w-6 h-6 rounded-full bg-gray-500 flex items-center justify-center text-[9px] font-bold text-white shrink-0">{t.symbol[0]}</div>}
+                                      <span className={cn("text-[13px] font-semibold truncate", isDark ? "text-white" : "text-gray-900")}>{t.symbol}</span>
+                                    </div>
+                                    <span className={cn("text-xs tabular-nums shrink-0 ml-2", isDark ? "text-white/30" : "text-gray-400")}>{t.amount}</span>
+                                  </button>
+                                ))}
+                                {filtered.length > 50 && (
+                                  <p className={cn("text-center py-2 text-[11px]", isDark ? "text-white/15" : "text-gray-300")}>Search to find {filtered.length - 50} more</p>
+                                )}
+                                {loadingAllTokens && (
+                                  <div className={cn("flex items-center justify-center gap-2 py-2", isDark ? "text-white/20" : "text-gray-400")}>
+                                    <Loader2 size={12} className="animate-spin" />
+                                    <span className="text-[11px]">Loading tokens...</span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })()}
+
+                        {/* Amount input */}
+                        <input
+                          type="text"
+                          inputMode="decimal"
+                          value={sendAmount}
+                          onChange={(e) => setSendAmount(e.target.value.replace(/[^0-9.]/g, ''))}
+                          placeholder="0.00"
+                          className={cn(
+                            "w-full text-4xl font-bold bg-transparent outline-none tabular-nums text-center py-3 tracking-tight",
+                            isDark ? "text-white placeholder:text-white/10" : "text-gray-900 placeholder:text-gray-200"
+                          )}
+                        />
+
+                        {/* Fiat equivalent */}
+                        {(() => {
+                          const amt = parseFloat(sendAmount) || 0;
+                          const pricePerToken = activeToken?.rawAmount > 0 ? activeToken.rawValue / activeToken.rawAmount : 0;
+                          const valueInXrp = amt * pricePerToken;
+                          const displayValue = activeFiatCurrency === 'XRP' ? valueInXrp : valueInXrp * xrpUsdPrice;
+                          return displayValue > 0 ? (
+                            <p className={cn("text-[13px] text-center tabular-nums", isDark ? "text-white/25" : "text-gray-400")}>
+                              {currencySymbols[activeFiatCurrency] || '$'}{displayValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {activeFiatCurrency}
+                            </p>
+                          ) : null;
+                        })()}
+
+                        {/* Quick amount buttons */}
+                        <div className="flex items-center justify-center gap-1.5 mt-3">
                           {[25, 50, 75, 100].map((pct) => (
                             <button
                               key={pct}
                               onClick={() => {
-                                const maxAmt = allTokens.find((t) => t.symbol === selectedToken)?.rawAmount || 0;
+                                const maxAmt = activeToken?.rawAmount || 0;
                                 setSendAmount(((maxAmt * pct) / 100).toFixed(6).replace(/\.?0+$/, ''));
                               }}
                               className={cn(
-                                "px-3 py-1.5 rounded-lg text-[10px] font-black transition-all border uppercase tracking-widest",
-                                isDark ? "bg-white/5 border-white/5 text-white/40 hover:text-white hover:border-white/20" : "bg-white border-gray-100 text-gray-400 hover:text-[#137DFE] hover:border-[#137DFE]/30"
+                                "px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all",
+                                isDark ? "bg-white/[0.04] text-white/30 hover:text-white/70 hover:bg-white/[0.08]" : "bg-gray-100 text-gray-400 hover:text-[#137DFE] hover:bg-blue-50"
                               )}
                             >
-                              {pct === 100 ? 'MAX' : `${pct}%`}
+                              {pct === 100 ? 'Max' : `${pct}%`}
                             </button>
                           ))}
                         </div>
                       </div>
 
                       {/* Recipient */}
-                      <div className="space-y-4">
+                      <div className="space-y-3">
                         <div className="relative">
-                          <p className={cn("text-[10px] font-black uppercase tracking-[0.2em] mb-2 ml-1 opacity-40")}>Recipient</p>
+                          <label className={cn("text-xs font-medium mb-1.5 block", isDark ? "text-white/30" : "text-gray-400")}>Recipient</label>
                           <input
                             type="text"
                             value={sendTo}
                             onChange={(e) => setSendTo(e.target.value)}
                             onFocus={() => setShowAddressSuggestions(true)}
                             onBlur={() => setTimeout(() => setShowAddressSuggestions(false), 150)}
-                            placeholder="Wallet Address (r...)"
+                            placeholder="r..."
                             className={cn(
-                              "w-full px-4 py-3.5 rounded-2xl text-sm font-bold font-mono outline-none border transition-all",
-                              isDark ? "bg-white/[0.02] border-white/10 text-white focus:border-[#137DFE]/50" : "bg-gray-50 border-gray-200 text-gray-900 focus:border-[#137DFE]"
+                              "w-full px-3.5 py-3 rounded-xl text-sm font-mono outline-none border transition-all",
+                              isDark ? "bg-white/[0.03] border-white/[0.08] text-white focus:border-[#137DFE]/40 placeholder:text-white/15" : "bg-gray-50 border-gray-200 text-gray-900 focus:border-[#137DFE] placeholder:text-gray-300"
                             )}
                           />
                           {showAddressSuggestions && withdrawals.length > 0 && (
                             <div className={cn(
-                              "absolute bottom-full left-0 right-0 mb-2 rounded-2xl border overflow-hidden z-10 shadow-2xl animate-in fade-in slide-in-from-bottom-2",
-                              isDark ? "bg-[#0a0a0a] border-white/10" : "bg-white border-gray-200"
+                              "absolute bottom-full left-0 right-0 mb-1.5 rounded-xl border overflow-hidden z-10",
+                              isDark ? "bg-[#0c0c0e] border-white/[0.08]" : "bg-white border-gray-200 shadow-lg"
                             )}>
-                              {withdrawals.slice(0, 5).map((w) => (
+                              {withdrawals.slice(0, 4).map((w) => (
                                 <button
                                   key={w.id}
                                   onClick={() => { setSendTo(w.address); if (w.tag) setSendTag(w.tag); setShowAddressSuggestions(false); }}
-                                  className={cn("w-full px-4 py-3 text-left hover:bg-[#137DFE]/5 flex items-center justify-between", isDark ? "border-b border-white/5" : "border-b border-gray-50")}
+                                  className={cn("w-full px-3.5 py-2.5 text-left flex items-center justify-between transition-colors", isDark ? "hover:bg-white/[0.03] border-b border-white/[0.04]" : "hover:bg-gray-50 border-b border-gray-50")}
                                 >
                                   <div>
-                                    <p className={cn("text-xs font-black", isDark ? "text-white" : "text-gray-900")}>{w.name}</p>
-                                    <p className={cn("text-[10px] font-bold opacity-40")}>{w.address.slice(0, 12)}...</p>
+                                    <p className={cn("text-[13px] font-semibold", isDark ? "text-white/80" : "text-gray-900")}>{w.name}</p>
+                                    <p className={cn("text-[11px] font-mono", isDark ? "text-white/25" : "text-gray-400")}>{w.address.slice(0, 16)}...</p>
                                   </div>
-                                  <ArrowRight size={14} className="opacity-20" />
+                                  <ArrowRight size={12} className="opacity-20" />
                                 </button>
                               ))}
                             </div>
                           )}
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <p className={cn("text-[10px] font-black uppercase tracking-[0.2em] mb-2 ml-1 opacity-40")}>Tag <span className="opacity-50 font-medium">(Optional)</span></p>
+                        {/* Tag + Fee row */}
+                        <div className="flex gap-3">
+                          <div className="flex-1">
+                            <label className={cn("text-xs font-medium mb-1.5 block", isDark ? "text-white/30" : "text-gray-400")}>Tag <span className="opacity-50">(optional)</span></label>
                             <input
                               type="text"
                               value={sendTag}
                               onChange={(e) => setSendTag(e.target.value.replace(/\D/g, ''))}
-                              placeholder="123456"
+                              placeholder="—"
                               className={cn(
-                                "w-full px-4 py-3.5 rounded-2xl text-sm font-bold font-mono outline-none border transition-all",
-                                isDark ? "bg-white/[0.02] border-white/10 text-white focus:border-[#137DFE]/50" : "bg-gray-50 border-gray-200 text-gray-900 focus:border-[#137DFE]"
+                                "w-full px-3.5 py-3 rounded-xl text-sm font-mono outline-none border transition-all",
+                                isDark ? "bg-white/[0.03] border-white/[0.08] text-white focus:border-[#137DFE]/40 placeholder:text-white/15" : "bg-gray-50 border-gray-200 text-gray-900 focus:border-[#137DFE] placeholder:text-gray-300"
                               )}
                             />
                           </div>
-                          <div className={cn(
-                            "flex flex-col justify-center px-4 py-3.5 rounded-2xl border",
-                            isDark ? "bg-white/[0.01] border-white/5" : "bg-gray-50/50 border-gray-100"
-                          )}>
-                            <p className={cn("text-[9px] font-black uppercase tracking-widest opacity-30")}>Network Fee</p>
-                            <p className={cn("text-xs font-black tabular-nums", isDark ? "text-white/60" : "text-gray-600")}>0.000012 XRP</p>
+                          <div className="flex flex-col justify-end pb-[3px]">
+                            <p className={cn("text-[11px]", isDark ? "text-white/20" : "text-gray-400")}>Fee</p>
+                            <p className={cn("text-[13px] font-mono tabular-nums", isDark ? "text-white/40" : "text-gray-500")}>0.000012 XRP</p>
                           </div>
                         </div>
 
+                        {/* Send button */}
                         <button
                           onClick={handleSend}
                           disabled={sending || !sendTo || !sendAmount || !sendTo.startsWith('r')}
                           className={cn(
-                            "w-full py-4 rounded-2xl text-[15px] font-black uppercase tracking-widest transition-all duration-300 flex items-center justify-center gap-3",
+                            "w-full py-3.5 rounded-xl text-[15px] font-semibold transition-all duration-200 flex items-center justify-center gap-2 mt-1",
                             !sending && sendTo && sendAmount && sendTo.startsWith('r')
-                              ? "bg-[#137DFE] text-white shadow-xl shadow-blue-500/20 hover:scale-[1.02] active:scale-[0.98]"
-                              : "bg-white/5 text-white/20 border border-white/5 cursor-not-allowed"
+                              ? "bg-[#137DFE] text-white hover:bg-[#1070E0] active:scale-[0.98]"
+                              : isDark ? "bg-white/[0.04] text-white/15 cursor-not-allowed" : "bg-gray-100 text-gray-300 cursor-not-allowed"
                           )}
                         >
                           {sending ? (
-                            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                            <Loader2 size={16} className="animate-spin" />
                           ) : (
                             <>
-                              <Send size={18} strokeWidth={3} />
-                              Confirm Send
+                              <Send size={15} />
+                              Send {selectedToken}
                             </>
                           )}
                         </button>
                       </div>
                     </div>
                   ) : (
-                    <div className="p-5">
+                    <div className="px-5 pb-5">
                       <div className="flex flex-col items-center">
-                        {/* QR Code */}
-                        <div className="p-3 bg-white rounded-xl mb-4">
-                          <QRCode value={address} size={160} />
+                        {/* QR Code with themed border */}
+                        <div className={cn(
+                          "p-4 rounded-xl mb-4",
+                          isDark ? "bg-white" : "bg-white border border-gray-100"
+                        )}>
+                          <QRCode value={address} size={180} />
                         </div>
 
-                        {/* Address Display */}
+                        {/* Address */}
                         <div
                           className={cn(
-                            'w-full rounded-xl p-3 mb-4',
-                            isDark ? 'bg-white/[0.03]' : 'bg-gray-50'
+                            'w-full rounded-xl px-4 py-3 mb-4',
+                            isDark ? 'bg-white/[0.03] border border-white/[0.06]' : 'bg-gray-50 border border-gray-100'
                           )}
                         >
-                          <p
-                            className={cn(
-                              'font-mono text-[11px] text-center break-all leading-relaxed',
-                              isDark ? 'text-white/70' : 'text-gray-600'
-                            )}
-                          >
+                          <p className={cn(
+                            'font-mono text-[13px] text-center break-all leading-relaxed select-all',
+                            isDark ? 'text-white/60' : 'text-gray-500'
+                          )}>
                             {address}
                           </p>
                         </div>
@@ -2458,14 +2368,14 @@ export default function WalletPage() {
                           <button
                             onClick={() => handleCopy(address)}
                             className={cn(
-                              'flex-1 py-2.5 rounded-xl text-sm font-medium flex items-center justify-center gap-2 transition-all duration-200',
+                              'flex-1 py-3 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-all duration-200',
                               copied
-                                ? 'bg-emerald-500/10 text-[#08AA09] border border-emerald-500/20'
-                                : 'bg-[#08AA09] text-white hover:bg-[#08AA09]/90'
+                                ? 'bg-[#08AA09]/10 text-[#08AA09]'
+                                : 'bg-[#08AA09] text-white hover:bg-[#079A08] active:scale-[0.98]'
                             )}
                           >
-                            {copied ? <Check size={15} /> : <Copy size={15} />}{' '}
-                            {copied ? 'Copied!' : 'Copy Address'}
+                            {copied ? <Check size={15} /> : <Copy size={15} />}
+                            {copied ? 'Copied' : 'Copy Address'}
                           </button>
                           <button
                             onClick={() => {
@@ -2476,26 +2386,16 @@ export default function WalletPage() {
                               }
                             }}
                             className={cn(
-                              'px-4 py-2.5 rounded-xl text-sm font-medium transition-colors',
+                              'px-4 py-3 rounded-xl transition-colors',
                               isDark
-                                ? 'bg-white/[0.05] text-white/60 hover:bg-white/[0.08]'
-                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                ? 'bg-white/[0.04] text-white/40 hover:bg-white/[0.08] hover:text-white/60'
+                                : 'bg-gray-100 text-gray-400 hover:bg-gray-200 hover:text-gray-600'
                             )}
                           >
-                            <ExternalLink size={15} />
+                            <Share2 size={16} />
                           </button>
                         </div>
                       </div>
-                    </div>
-                  )}
-
-                  {/* Debug Info */}
-                  {debugInfo && (
-                    <div className={cn('px-4 py-3 border-t text-[10px] font-mono', isDark ? 'border-white/[0.08] text-white/40' : 'border-gray-100 text-gray-400')}>
-                      <div>wallet_type: <span className="text-[#137DFE]">{debugInfo.wallet_type || 'undefined'}</span></div>
-                      <div>account: <span className="opacity-70">{debugInfo.account || 'undefined'}</span></div>
-                      <div>walletKeyId: <span className={debugInfo.walletKeyId ? 'text-[#08AA09]' : 'text-red-400'}>{debugInfo.walletKeyId || 'undefined'}</span></div>
-                      <div>seed: <span className="text-[#08AA09] break-all">{debugInfo.seed}</span></div>
                     </div>
                   )}
                 </div>
@@ -2518,7 +2418,7 @@ export default function WalletPage() {
                       isDark ? 'bg-white/[0.02] border-white/10' : 'bg-white border-gray-200 shadow-sm'
                     )}>
                       {/* Portfolio Row */}
-                      <div className="flex flex-col lg:flex-row lg:items-center p-5 gap-6">
+                      <div className="flex flex-col lg:flex-row lg:items-center p-3 sm:p-5 gap-4 sm:gap-6">
                         {/* User Identity */}
                         {profileUser && (
                           <div className="flex items-center gap-3 min-w-0">
@@ -2545,7 +2445,7 @@ export default function WalletPage() {
                         )}
 
                         {/* Total Portfolio */}
-                        <div className="flex flex-col gap-1 min-w-[200px]">
+                        <div className="flex flex-col gap-1 lg:min-w-[200px]">
                           <span className={cn('text-[10px] font-bold uppercase tracking-widest', isDark ? 'text-white/30' : 'text-gray-400')}>Total Portfolio</span>
                           <div className="flex items-baseline gap-1.5">
                             <span className={cn('text-3xl font-black tabular-nums tracking-tight', isDark ? 'text-white' : 'text-gray-900')}>
@@ -2563,7 +2463,7 @@ export default function WalletPage() {
                         <div className={cn('hidden lg:block w-px h-10', isDark ? 'bg-white/10' : 'bg-gray-100')} />
 
                         {/* Stats Grid */}
-                        <div className="flex flex-wrap items-center gap-x-8 gap-y-4 flex-1">
+                        <div className="grid grid-cols-3 gap-2 w-full lg:w-auto lg:flex lg:flex-wrap lg:items-center lg:gap-x-8 lg:gap-y-4 lg:flex-1">
                           {/* XRP */}
                           <div className="flex flex-col gap-0.5">
                             <span className={cn('text-[10px] font-bold uppercase tracking-widest', isDark ? 'text-white/30' : 'text-gray-400')}>XRP Balance</span>
@@ -2576,7 +2476,7 @@ export default function WalletPage() {
                           <div className="flex flex-col gap-0.5">
                             <div className="flex items-center gap-1.5">
                               <span className={cn('text-[10px] font-bold uppercase tracking-widest', isDark ? 'text-white/30' : 'text-gray-400')}>Tokens</span>
-                              <span className={cn('text-[9px] px-1.5 py-0.5 rounded font-bold leading-none', isDark ? 'bg-white/5 text-white/50' : 'bg-gray-100 text-gray-500')}>{allTokens.length}</span>
+                              <span className={cn('text-[9px] px-1.5 py-0.5 rounded font-bold leading-none', isDark ? 'bg-white/5 text-white/50' : 'bg-gray-100 text-gray-500')}>{tokenTotal || tokens.length}</span>
                             </div>
                             <span className={cn('text-base font-bold tabular-nums', isDark ? 'text-white/90' : 'text-gray-800')}>
                               {activeFiatCurrency !== 'XRP' && currencySymbols[activeFiatCurrency]}{(activeFiatCurrency === 'XRP' ? tokensOnlyValue : tokensOnlyValue * xrpUsdPrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
@@ -2608,90 +2508,83 @@ export default function WalletPage() {
                       </div>
 
                       {/* Account Stats Strip */}
-                      {accountInfo && (
-                        <div className={cn(
-                          'flex flex-wrap items-center gap-x-4 gap-y-2 px-5 py-3 rounded-b-2xl border-t transition-colors',
-                          isDark ? 'bg-white/[0.01] border-white/5 text-white/40' : 'bg-gray-50/50 border-gray-100 text-gray-500'
-                        )}>
-                          {/* Account Creation */}
-                          <div className="flex items-center gap-1.5">
-                            <Clock size={12} className="opacity-50" />
-                            <span className="text-[11px]">Born <span className={cn('font-bold', isDark ? 'text-white/70' : 'text-gray-700')}>{new Date(accountInfo.inception).toLocaleDateString()}</span></span>
+                      {accountInfo && (() => {
+                        const bornDate = (() => { const d = new Date(accountInfo.inception); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; })();
+                        const pnlVal = accountInfo.pnl || accountInfo.dex_profit || 0;
+                        const pnlPositive = pnlVal >= 0;
+                        const hasPnl = accountInfo.pnl !== undefined || accountInfo.dex_profit !== undefined;
+                        return (
+                          <div suppressHydrationWarning className={cn(
+                            'px-4 py-2.5 rounded-b-2xl border-t transition-colors',
+                            isDark ? 'bg-white/[0.01] border-white/5 text-white/40' : 'bg-gray-50/50 border-gray-100 text-gray-500'
+                          )}>
+                            {/* Row 1: Born | Reserve | Objects | XRP Rank | DEX Rank | NFT Rank */}
+                            <div className="flex items-center justify-between lg:justify-start lg:gap-x-4">
+                              <span className="text-[10px] lg:text-[11px]"><span className="flex flex-col items-center leading-tight lg:flex-row lg:gap-1"><span className="hidden lg:inline">Account Born</span><span className="lg:hidden">Born</span> <span className={cn('font-bold', isDark ? 'text-white/70' : 'text-gray-700')}>{bornDate}</span></span></span>
+                              <span className={cn('text-[10px]', isDark ? 'opacity-20' : 'opacity-30')}>|</span>
+                              <span className="text-[10px] lg:text-[11px]"><span className="hidden lg:inline">XRP Reserve</span><span className="lg:hidden">Reserve</span> <span className={cn('font-bold', isDark ? 'text-white/70' : 'text-gray-700')}>{accountInfo.reserve}</span></span>
+                              <span className={cn('text-[10px]', isDark ? 'opacity-20' : 'opacity-30')}>|</span>
+                              <span className="text-[10px] lg:text-[11px]"><span className="hidden lg:inline">Objects</span><span className="lg:hidden">Obj</span> <span className={cn('font-bold', isDark ? 'text-white/70' : 'text-gray-700')}>{accountInfo.ownerCount}</span></span>
+                              {accountInfo.rank && (
+                                <>
+                                  <span className={cn('text-[10px]', isDark ? 'opacity-20' : 'opacity-30')}>|</span>
+                                  <span className="text-[10px] lg:text-[11px]"><span className="hidden lg:inline">XRP Rank</span><span className="lg:hidden">XRP</span> <span className={cn('font-bold', isDark ? 'text-white/70' : 'text-gray-700')}>#{accountInfo.rank.toLocaleString()}</span></span>
+                                </>
+                              )}
+                              {accountInfo.tradingRank && (
+                                <>
+                                  <span className={cn('text-[10px]', isDark ? 'opacity-20' : 'opacity-30')}>|</span>
+                                  <span className="text-[10px] lg:text-[11px]"><span className="hidden lg:inline">DEX Rank</span><span className="lg:hidden">DEX</span> <span className={cn('font-bold', isDark ? 'text-white/70' : 'text-gray-700')}>#{accountInfo.tradingRank.toLocaleString()}</span></span>
+                                </>
+                              )}
+                              {nftStats?.rank && (
+                                <>
+                                  <span className={cn('text-[10px]', isDark ? 'opacity-20' : 'opacity-30')}>|</span>
+                                  <span className="text-[10px] lg:text-[11px]"><span className="hidden lg:inline">NFT Rank</span><span className="lg:hidden">NFT</span> <span className={cn('font-bold', isDark ? 'text-white/70' : 'text-gray-700')}>#{nftStats.rank.toLocaleString()}</span></span>
+                                </>
+                              )}
+                              {/* Desktop-only: P&L + Share inline */}
+                              {hasPnl && (
+                                <>
+                                  <span className={cn('hidden lg:inline text-[10px]', isDark ? 'opacity-20' : 'opacity-30')}>|</span>
+                                  <span className={cn('hidden lg:inline text-[11px] font-bold', pnlPositive ? 'text-emerald-500' : 'text-red-500')}>
+                                    P&L {pnlPositive ? '+' : ''}{pnlVal.toLocaleString(undefined, { maximumFractionDigits: 0 })} XRP
+                                  </span>
+                                </>
+                              )}
+                              <button
+                                onClick={() => setShowPLCard(true)}
+                                className={cn(
+                                  'hidden lg:flex ml-auto items-center gap-1 px-2.5 py-1 rounded-md text-[9px] font-bold transition-all uppercase tracking-wider',
+                                  isDark ? 'bg-[#137DFE]/10 text-[#137DFE] hover:bg-[#137DFE]/20' : 'bg-blue-50 text-blue-600 hover:bg-blue-100'
+                                )}
+                              >
+                                <Share2 size={10} /> Share
+                              </button>
+                            </div>
+                            {/* Row 2 (mobile only): P&L + Share */}
+                            <div className="lg:hidden flex items-center justify-center gap-3 mt-1.5">
+                              {hasPnl && (
+                                <div className="flex items-center gap-1">
+                                  <Zap size={11} className={cn('shrink-0', pnlPositive ? 'text-emerald-500' : 'text-red-500')} />
+                                  <span className={cn('text-[10px] font-bold', pnlPositive ? 'text-emerald-500' : 'text-red-500')}>
+                                    P&L {pnlPositive ? '+' : ''}{pnlVal.toLocaleString(undefined, { maximumFractionDigits: 0 })} XRP
+                                  </span>
+                                </div>
+                              )}
+                              <button
+                                onClick={() => setShowPLCard(true)}
+                                className={cn(
+                                  'flex items-center gap-1 px-2.5 py-1 rounded-md text-[9px] font-bold transition-all uppercase tracking-wider',
+                                  isDark ? 'bg-[#137DFE]/10 text-[#137DFE] hover:bg-[#137DFE]/20' : 'bg-blue-50 text-blue-600 hover:bg-blue-100'
+                                )}
+                              >
+                                <Share2 size={10} /> Share
+                              </button>
+                            </div>
                           </div>
-
-                          <span className="opacity-20">|</span>
-
-                          {/* Reserve */}
-                          <div className="flex items-center gap-1.5">
-                            <Shield size={12} className="opacity-50" />
-                            <span className="text-[11px]">Reserve <span className={cn('font-bold', isDark ? 'text-white/70' : 'text-gray-700')}>{accountInfo.reserve} XRP</span></span>
-                          </div>
-
-                          <span className="opacity-20">|</span>
-
-                          {/* Objects */}
-                          <div className="flex items-center gap-1.5">
-                            <Layers size={12} className="opacity-50" />
-                            <span className="text-[11px]">Objects <span className={cn('font-bold', isDark ? 'text-white/70' : 'text-gray-700')}>{accountInfo.ownerCount}</span></span>
-                          </div>
-
-                          {/* XRP Rank */}
-                          {accountInfo.rank && (
-                            <>
-                              <span className="opacity-20">|</span>
-                              <div className="flex items-center gap-1.5">
-                                <Coins size={12} className="text-amber-500 opacity-70" />
-                                <span className="text-[11px]">XRP Rank <span className={cn('font-bold', isDark ? 'text-white/70' : 'text-gray-700')}>#{accountInfo.rank.toLocaleString()}</span></span>
-                              </div>
-                            </>
-                          )}
-
-                          {/* DEX Trading Section */}
-                          {accountInfo.tradingRank && (
-                            <>
-                              <span className="opacity-20">|</span>
-                              <div className="flex items-center gap-1.5">
-                                <TrendingUp size={12} className="text-[#137DFE] opacity-70" />
-                                <span className="text-[11px]">DEX Rank <span className={cn('font-bold', isDark ? 'text-white/70' : 'text-gray-700')}>#{accountInfo.tradingRank.toLocaleString()}</span></span>
-                              </div>
-                            </>
-                          )}
-
-                          {/* NFT Rank */}
-                          {nftStats?.rank && (
-                            <>
-                              <span className="opacity-20">|</span>
-                              <div className="flex items-center gap-1.5">
-                                <Image size={12} className="text-purple-500 opacity-70" />
-                                <span className="text-[11px]">NFT Rank <span className={cn('font-bold', isDark ? 'text-white/70' : 'text-gray-700')}>#{nftStats.rank.toLocaleString()}</span></span>
-                              </div>
-                            </>
-                          )}
-
-                          {/* P&L */}
-                          {(accountInfo.pnl !== undefined || accountInfo.dex_profit !== undefined) && (
-                            <>
-                              <span className="opacity-20">|</span>
-                              <div className="flex items-center gap-1.5">
-                                <Zap size={12} className={((accountInfo.pnl || accountInfo.dex_profit || 0) >= 0) ? 'text-emerald-500' : 'text-red-500'} />
-                                <span className="text-[11px]">P&L <span className={cn('font-bold', ((accountInfo.pnl || accountInfo.dex_profit || 0) >= 0) ? 'text-emerald-500' : 'text-red-500')}>
-                                  {((accountInfo.pnl || accountInfo.dex_profit || 0) >= 0 ? '+' : '')}{(accountInfo.pnl || accountInfo.dex_profit || 0).toLocaleString(undefined, { maximumFractionDigits: 0 })} XRP
-                                </span></span>
-                              </div>
-                            </>
-                          )}
-
-                                                    <button
-                                                      onClick={() => setShowPLCard(true)}
-                                                      className={cn(
-                                                        'ml-auto flex items-center gap-1.5 px-3 py-1 rounded-lg text-[10px] font-bold transition-all uppercase tracking-wider',
-                                                        isDark ? 'bg-[#137DFE]/10 text-[#137DFE] hover:bg-[#137DFE]/20' : 'bg-blue-50 text-blue-600 hover:bg-blue-100'
-                                                      )}
-                                                    >
-                                                      <Share2 size={12} /> Share Performance
-                                                    </button>
-                                                  </div>
-                                                )}
+                        );
+                      })()}
                                               </div>
                                             );
                                           })()}
@@ -2708,19 +2601,19 @@ export default function WalletPage() {
                           : 'bg-white border border-gray-200'
                       )}
                     >
-                      <div className={cn("flex items-center justify-between px-3 py-2 border-b", isDark ? "border-b-white/[0.08]" : "border-b-gray-100")}>
-                        <div className="flex items-center gap-1.5">
-                          <div className={cn("w-1 h-1 rounded-full", isDark ? "bg-[#137DFE]" : "bg-blue-500")} />
-                          <p className={cn('text-[10px] font-bold uppercase tracking-wider', isDark ? 'text-white/70' : 'text-gray-600')}>
+                      <div className={cn("flex items-center justify-between px-4 py-2.5 border-b", isDark ? "border-b-white/[0.08]" : "border-b-gray-100")}>
+                        <div className="flex items-center gap-2">
+                          <div className={cn("w-1.5 h-1.5 rounded-full", isDark ? "bg-[#137DFE]" : "bg-blue-500")} />
+                          <p className={cn('text-xs font-bold uppercase tracking-wider', isDark ? 'text-white/70' : 'text-gray-600')}>
                             Top Assets
                           </p>
-                          <span className={cn('text-[9px] px-1 py-px rounded font-bold leading-none', isDark ? 'bg-white/5 text-white/50' : 'bg-gray-100 text-gray-500')}>
-                            {allTokens.length}
+                          <span className={cn('text-[10px] px-1.5 py-0.5 rounded font-bold leading-none', isDark ? 'bg-white/5 text-white/50' : 'bg-gray-100 text-gray-500')}>
+                            {tokenTotal || tokens.length}
                           </span>
                         </div>
                         <button
                           onClick={() => handleTabChange('tokens')}
-                          className={cn('text-[10px] font-semibold uppercase tracking-wide', isDark ? 'text-[#137DFE] hover:text-blue-400' : 'text-[#137DFE] hover:text-blue-600')}
+                          className={cn('text-xs font-semibold uppercase tracking-wide', isDark ? 'text-[#137DFE] hover:text-blue-400' : 'text-[#137DFE] hover:text-blue-600')}
                         >
                           View All
                         </button>
@@ -2729,18 +2622,18 @@ export default function WalletPage() {
                         <div className={cn('flex-1 flex items-center justify-center py-8', isDark ? 'text-white/40' : 'text-gray-400')}>
                           <div className="animate-pulse flex items-center gap-2">
                             <div className="w-1.5 h-1.5 rounded-full bg-[#137DFE]" />
-                            <span className="text-[10px] uppercase tracking-widest font-medium">Loading Assets</span>
+                            <span className="text-xs uppercase tracking-widest font-medium">Loading Assets</span>
                           </div>
                         </div>
                       ) : allTokens.length === 0 ? (
                         <div className={cn('p-6 text-center', isDark ? 'text-white/35' : 'text-gray-400')}>
-                          <Coins size={18} className={cn("mx-auto mb-2", isDark ? "text-white/20" : "text-gray-300")} />
-                          <p className={cn('text-[10px] font-semibold mb-1', isDark ? 'text-white/50' : 'text-gray-500')}>No Tokens Yet</p>
-                          <a href="/" className="text-[10px] font-bold text-[#137DFE] hover:text-blue-400">Browse Market</a>
+                          <Coins size={22} className={cn("mx-auto mb-2", isDark ? "text-white/20" : "text-gray-300")} />
+                          <p className={cn('text-xs font-semibold mb-1', isDark ? 'text-white/50' : 'text-gray-500')}>No Tokens Yet</p>
+                          <a href="/" className="text-xs font-bold text-[#137DFE] hover:text-blue-400">Browse Market</a>
                         </div>
                       ) : (
                         <>
-                          <div className={cn("grid grid-cols-[1.4fr_0.8fr_0.6fr_0.8fr_0.6fr_0.5fr] gap-3 px-4 py-2 text-[9px] font-bold uppercase tracking-wider", isDark ? "text-white/30 border-b border-white/[0.05]" : "text-gray-400 border-b border-gray-50")}>
+                          <div className={cn("grid grid-cols-[1.4fr_0.8fr_0.6fr_0.8fr_0.6fr_0.5fr] gap-3 px-4 py-2 text-[10px] font-bold uppercase tracking-wider", isDark ? "text-white/35 border-b border-white/[0.05]" : "text-gray-400 border-b border-gray-50")}>
                             <span>Asset</span>
                             <span className="text-right">Balance</span>
                             <span className="text-right">Price</span>
@@ -2750,34 +2643,34 @@ export default function WalletPage() {
                           </div>
                           <div className={cn("divide-y", isDark ? "divide-white/[0.04]" : "divide-gray-50")}>
                             {allTokens.slice(0, 5).map((token, idx) => (
-                              <div key={token.symbol} className={cn("grid grid-cols-[1.4fr_0.8fr_0.6fr_0.8fr_0.6fr_0.5fr] gap-3 items-center px-4 py-2 transition-colors", isDark ? "hover:bg-white/[0.03]" : "hover:bg-gray-50/50")}>
+                              <div key={token.symbol} className={cn("grid grid-cols-[1.4fr_0.8fr_0.6fr_0.8fr_0.6fr_0.5fr] gap-3 items-center px-4 py-2.5 transition-colors", isDark ? "hover:bg-white/[0.03]" : "hover:bg-gray-50/50")}>
                                 <Link href={`/token/${token.slug || token.md5 || MD5(`${token.issuer}_${token.currency}`).toString()}`} className="flex items-center gap-2.5 min-w-0 group">
                                   <div className="relative flex-shrink-0">
                                     <img
                                       src={`https://s1.xrpl.to/token/${token.md5 || MD5(`${token.issuer}_${token.currency}`).toString()}`}
                                       alt=""
-                                      className="w-7 h-7 rounded-full object-cover bg-white/10 ring-1 ring-white/10"
+                                      className="w-8 h-8 rounded-full object-cover bg-white/10 ring-1 ring-white/10"
                                       onError={(e) => { e.target.onerror = null; e.target.src = '/static/alt.webp'; }}
                                     />
-                                    <span className={cn("absolute -bottom-0.5 -right-0.5 text-[7px] font-bold w-3.5 h-3.5 rounded-full flex items-center justify-center", isDark ? "bg-white/10 text-white/50" : "bg-gray-100 text-gray-500")}>{idx + 1}</span>
+                                    <span className={cn("absolute -bottom-0.5 -right-0.5 text-[8px] font-bold w-4 h-4 rounded-full flex items-center justify-center", isDark ? "bg-white/10 text-white/50" : "bg-gray-100 text-gray-500")}>{idx + 1}</span>
                                   </div>
                                   <div className="min-w-0">
-                                    <p className={cn("text-[11px] font-bold truncate group-hover:text-[#137DFE] transition-colors", isDark ? "text-white/95" : "text-gray-900")}>{token.symbol}</p>
-                                    <p className={cn("text-[9px] truncate", isDark ? "text-white/30" : "text-gray-400")}>{token.name}</p>
+                                    <p className={cn("text-[13px] font-bold truncate group-hover:text-[#137DFE] transition-colors", isDark ? "text-white/95" : "text-gray-900")}>{token.symbol}</p>
+                                    <p className={cn("text-[11px] truncate", isDark ? "text-white/35" : "text-gray-400")}>{token.name}</p>
                                   </div>
                                 </Link>
-                                <p className={cn("text-[10px] tabular-nums text-right truncate", isDark ? "text-white/60" : "text-gray-600")}>{token.amount}</p>
-                                <p className={cn("text-[9px] tabular-nums text-right", isDark ? "text-white/40" : "text-gray-500")}>
+                                <p className={cn("text-xs tabular-nums text-right truncate", isDark ? "text-white/60" : "text-gray-600")}>{token.amount}</p>
+                                <p className={cn("text-[11px] tabular-nums text-right", isDark ? "text-white/45" : "text-gray-500")}>
                                   {token.symbol === 'XRP' ? (activeFiatCurrency === 'XRP' ? '--' : <>{currencySymbols[activeFiatCurrency]}{xrpUsdPrice.toFixed(2)}</>) : (typeof token.priceDisplay === 'object' && token.priceDisplay.compact ? <>0.0<sub>{token.priceDisplay.zeros}</sub>{token.priceDisplay.significant}</> : token.priceDisplay || '--')}
                                 </p>
-                                <p className={cn("text-[10px] font-bold tabular-nums text-right", isDark ? "text-white/90" : "text-gray-900")}>
+                                <p className={cn("text-xs font-bold tabular-nums text-right", isDark ? "text-white/90" : "text-gray-900")}>
                                   {activeFiatCurrency === 'XRP' ? token.value : <>{currencySymbols[activeFiatCurrency]}{((token.rawValue || 0) * xrpUsdPrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</>}
                                 </p>
                                 {/* P&L */}
-                                <p className={cn("text-[10px] tabular-nums text-right font-bold", (() => { const pnl = tokenPnlMap.get(token.md5 || MD5(`${token.issuer}_${token.currency}`).toString()); return pnl && pnl.profit !== 0 ? (pnl.profit > 0 ? "text-[#08AA09]" : "text-red-400") : (isDark ? "text-white/25" : "text-gray-400"); })())}>
+                                <p className={cn("text-xs tabular-nums text-right font-bold", (() => { const pnl = tokenPnlMap.get(token.md5 || MD5(`${token.issuer}_${token.currency}`).toString()); return pnl && pnl.profit !== 0 ? (pnl.profit > 0 ? "text-[#08AA09]" : "text-red-400") : (isDark ? "text-white/25" : "text-gray-400"); })())}>
                                   {(() => { const pnl = tokenPnlMap.get(token.md5 || MD5(`${token.issuer}_${token.currency}`).toString()); if (!pnl) return '--'; const p = pnl.profit; if (p === 0) return '--'; const a = Math.abs(p); const formatted = a >= 1000000 ? `${(a/1000000).toFixed(1)}M` : a >= 1000 ? `${(a/1000).toFixed(1)}K` : a.toFixed(1); return p > 0 ? `+${formatted}` : `-${formatted}`; })()}
                                 </p>
-                                <p className={cn("text-[10px] tabular-nums text-right font-bold", token.positive ? "text-[#08AA09]" : "text-red-400")}>
+                                <p className={cn("text-xs tabular-nums text-right font-bold", token.positive ? "text-[#08AA09]" : "text-red-400")}>
                                   {token.change}
                                 </p>
                               </div>
@@ -2799,19 +2692,19 @@ export default function WalletPage() {
                           : 'bg-white border border-gray-200'
                       )}
                     >
-                      <div className={cn("flex items-center justify-between px-3 py-2 border-b", isDark ? "border-b-white/[0.08]" : "border-b-gray-100")}>
-                        <div className="flex items-center gap-1.5">
-                          <div className={cn("w-1 h-1 rounded-full", isDark ? "bg-purple-500" : "bg-purple-600")} />
-                          <p className={cn('text-[10px] font-bold uppercase tracking-wider', isDark ? 'text-white/70' : 'text-gray-600')}>
+                      <div className={cn("flex items-center justify-between px-4 py-2.5 border-b", isDark ? "border-b-white/[0.08]" : "border-b-gray-100")}>
+                        <div className="flex items-center gap-2">
+                          <div className={cn("w-1.5 h-1.5 rounded-full", isDark ? "bg-purple-500" : "bg-purple-600")} />
+                          <p className={cn('text-xs font-bold uppercase tracking-wider', isDark ? 'text-white/70' : 'text-gray-600')}>
                             NFT Portfolio
                           </p>
-                          <span className={cn('text-[9px] px-1 py-px rounded font-bold leading-none', isDark ? 'bg-white/5 text-white/50' : 'bg-gray-100 text-gray-500')}>
+                          <span className={cn('text-[10px] px-1.5 py-0.5 rounded font-bold leading-none', isDark ? 'bg-white/5 text-white/50' : 'bg-gray-100 text-gray-500')}>
                             {collections.length}
                           </span>
                         </div>
                         <button
                           onClick={() => handleTabChange('nfts')}
-                          className={cn('text-[10px] font-semibold uppercase tracking-wide', isDark ? 'text-[#137DFE] hover:text-blue-400' : 'text-[#137DFE] hover:text-blue-600')}
+                          className={cn('text-xs font-semibold uppercase tracking-wide', isDark ? 'text-[#137DFE] hover:text-blue-400' : 'text-[#137DFE] hover:text-blue-600')}
                         >
                           View All
                         </button>
@@ -2820,18 +2713,18 @@ export default function WalletPage() {
                         <div className={cn('flex-1 flex items-center justify-center py-8', isDark ? 'text-white/40' : 'text-gray-400')}>
                           <div className="animate-pulse flex items-center gap-2">
                             <div className="w-1.5 h-1.5 rounded-full bg-purple-500" />
-                            <span className="text-[10px] uppercase tracking-widest font-medium">Loading NFTs</span>
+                            <span className="text-xs uppercase tracking-widest font-medium">Loading NFTs</span>
                           </div>
                         </div>
                       ) : collections.length === 0 ? (
                         <div className={cn('p-6 text-center', isDark ? 'text-white/35' : 'text-gray-400')}>
-                          <Image size={18} className={cn("mx-auto mb-2", isDark ? "text-white/20" : "text-gray-300")} />
-                          <p className={cn('text-[10px] font-semibold mb-1', isDark ? 'text-white/50' : 'text-gray-500')}>No NFTs Yet</p>
-                          <a href="/nfts" className="text-[10px] font-bold text-[#137DFE] hover:text-blue-400">Browse Marketplace</a>
+                          <Image size={22} className={cn("mx-auto mb-2", isDark ? "text-white/20" : "text-gray-300")} />
+                          <p className={cn('text-xs font-semibold mb-1', isDark ? 'text-white/50' : 'text-gray-500')}>No NFTs Yet</p>
+                          <a href="/nfts" className="text-xs font-bold text-[#137DFE] hover:text-blue-400">Browse Marketplace</a>
                         </div>
                       ) : (
                         <>
-                          <div className={cn("grid grid-cols-[1.4fr_0.6fr_0.6fr_0.8fr_0.6fr_0.5fr] gap-3 px-4 py-2 text-[9px] font-bold uppercase tracking-wider", isDark ? "text-white/30 border-b border-white/[0.05]" : "text-gray-400 border-b border-gray-50")}>
+                          <div className={cn("grid grid-cols-[1.4fr_0.6fr_0.6fr_0.8fr_0.6fr_0.5fr] gap-3 px-4 py-2 text-[10px] font-bold uppercase tracking-wider", isDark ? "text-white/35 border-b border-white/[0.05]" : "text-gray-400 border-b border-gray-50")}>
                             <span>Collection</span>
                             <span className="text-right">Items</span>
                             <span className="text-right">Floor</span>
@@ -2848,30 +2741,30 @@ export default function WalletPage() {
                               <button
                                 key={col.id}
                                 onClick={() => { setSelectedCollection(col.name); handleTabChange('nfts'); }}
-                                className={cn("w-full grid grid-cols-[1.4fr_0.6fr_0.6fr_0.8fr_0.6fr_0.5fr] gap-3 items-center px-4 py-2 text-left transition-colors", isDark ? "hover:bg-white/[0.03]" : "hover:bg-gray-50/50")}
+                                className={cn("w-full grid grid-cols-[1.4fr_0.6fr_0.6fr_0.8fr_0.6fr_0.5fr] gap-3 items-center px-4 py-2.5 text-left transition-colors", isDark ? "hover:bg-white/[0.03]" : "hover:bg-gray-50/50")}
                               >
                                 <div className="flex items-center gap-2.5 min-w-0 group">
                                   <div className="relative flex-shrink-0">
                                     {col.logo ? (
-                                      <img src={col.logo} alt="" className="w-7 h-7 rounded-full object-cover bg-white/10 ring-1 ring-white/10" onError={(e) => { e.target.onerror = null; e.target.src = '/static/alt.webp'; }} />
+                                      <img src={col.logo} alt="" className="w-8 h-8 rounded-full object-cover bg-white/10 ring-1 ring-white/10" onError={(e) => { e.target.onerror = null; e.target.src = '/static/alt.webp'; }} />
                                     ) : (
-                                      <div className={cn("w-7 h-7 rounded-full flex items-center justify-center text-[8px] font-bold", isDark ? "bg-white/10 text-white/30" : "bg-gray-100 text-gray-400")}>NFT</div>
+                                      <div className={cn("w-8 h-8 rounded-full flex items-center justify-center text-[9px] font-bold", isDark ? "bg-white/10 text-white/30" : "bg-gray-100 text-gray-400")}>NFT</div>
                                     )}
-                                    <span className={cn("absolute -bottom-0.5 -right-0.5 text-[7px] font-bold w-3.5 h-3.5 rounded-full flex items-center justify-center", isDark ? "bg-white/10 text-white/50" : "bg-gray-100 text-gray-500")}>{idx + 1}</span>
+                                    <span className={cn("absolute -bottom-0.5 -right-0.5 text-[8px] font-bold w-4 h-4 rounded-full flex items-center justify-center", isDark ? "bg-white/10 text-white/50" : "bg-gray-100 text-gray-500")}>{idx + 1}</span>
                                   </div>
                                   <div className="min-w-0">
-                                    <p className={cn("text-[11px] font-bold truncate group-hover:text-[#137DFE] transition-colors", isDark ? "text-white/95" : "text-gray-900")}>{col.name}</p>
-                                    <p className={cn("text-[9px] truncate", isDark ? "text-white/30" : "text-gray-400")}>{col.slug || 'Collection'}</p>
+                                    <p className={cn("text-[13px] font-bold truncate group-hover:text-[#137DFE] transition-colors", isDark ? "text-white/95" : "text-gray-900")}>{col.name}</p>
+                                    <p className={cn("text-[11px] truncate", isDark ? "text-white/35" : "text-gray-400")}>{col.slug || 'Collection'}</p>
                                   </div>
                                 </div>
-                                <p className={cn("text-[10px] tabular-nums text-right", isDark ? "text-white/60" : "text-gray-600")}>{col.count}</p>
-                                <p className={cn("text-[9px] tabular-nums text-right", isDark ? "text-white/40" : "text-gray-500")}>{col.floor}</p>
-                                <p className={cn("text-[10px] font-bold tabular-nums text-right", isDark ? "text-white/90" : "text-gray-900")}>{col.value.toLocaleString()}</p>
+                                <p className={cn("text-xs tabular-nums text-right", isDark ? "text-white/60" : "text-gray-600")}>{col.count}</p>
+                                <p className={cn("text-[11px] tabular-nums text-right", isDark ? "text-white/45" : "text-gray-500")}>{col.floor}</p>
+                                <p className={cn("text-xs font-bold tabular-nums text-right", isDark ? "text-white/90" : "text-gray-900")}>{col.value.toLocaleString()}</p>
                                 {/* P&L */}
-                                <p className={cn("text-[10px] tabular-nums text-right font-bold", (() => { return colPnl && colPnl.profit !== 0 ? (colPnl.profit > 0 ? "text-[#08AA09]" : "text-red-400") : (isDark ? "text-white/25" : "text-gray-400"); })())}>
+                                <p className={cn("text-xs tabular-nums text-right font-bold", (() => { return colPnl && colPnl.profit !== 0 ? (colPnl.profit > 0 ? "text-[#08AA09]" : "text-red-400") : (isDark ? "text-white/25" : "text-gray-400"); })())}>
                                   {(() => { if (!colPnl) return '--'; const p = colPnl.profit; if (p === 0) return '--'; const a = Math.abs(p); const formatted = a >= 1000000 ? `${(a/1000000).toFixed(1)}M` : a >= 1000 ? `${(a/1000).toFixed(1)}K` : a.toFixed(1); return p > 0 ? `+${formatted}` : `-${formatted}`; })()}
                                 </p>
-                                <p className={cn("text-[10px] tabular-nums text-right font-bold", floorChange === 0 ? (isDark ? "text-white/25" : "text-gray-400") : (floorPositive ? "text-[#08AA09]" : "text-red-400"))}>
+                                <p className={cn("text-xs tabular-nums text-right font-bold", floorChange === 0 ? (isDark ? "text-white/25" : "text-gray-400") : (floorPositive ? "text-[#08AA09]" : "text-red-400"))}>
                                   {floorChange !== 0 ? `${floorPositive ? '+' : ''}${floorChange.toFixed(1)}%` : '--'}
                                 </p>
                               </button>
@@ -3215,12 +3108,12 @@ export default function WalletPage() {
                     >
                       <div className="p-4 border-b border-gray-500/20 flex items-center gap-2">
                         <RotateCcw
-                          size={14}
+                          size={15}
                           className={isDark ? 'text-white/50' : 'text-gray-500'}
                         />
                         <p
                           className={cn(
-                            'text-[11px] font-semibold uppercase tracking-[0.15em]',
+                            'text-xs font-semibold uppercase tracking-[0.15em]',
                             isDark ? 'text-white/50' : 'text-gray-500'
                           )}
                         >
@@ -3228,7 +3121,7 @@ export default function WalletPage() {
                         </p>
                         <span
                           className={cn(
-                            'ml-auto text-[9px] px-2 py-0.5 rounded font-semibold uppercase tracking-wide',
+                            'ml-auto text-[10px] px-2 py-0.5 rounded font-semibold uppercase tracking-wide',
                             isDark
                               ? 'bg-white/5 text-white/50 border border-white/[0.15]'
                               : 'bg-gray-100 text-gray-500'
@@ -3240,7 +3133,7 @@ export default function WalletPage() {
                       {tokenOffers.length === 0 ? (
                         <div className={cn('p-6 text-center', isDark ? 'text-white/35' : 'text-gray-400')}>
                           <BearIcon />
-                          <p className={cn('text-[10px] font-medium tracking-wider', isDark ? 'text-white/60' : 'text-gray-500')}>
+                          <p className={cn('text-[11px] font-medium tracking-wider', isDark ? 'text-white/60' : 'text-gray-500')}>
                             NO OPEN DEX OFFERS
                           </p>
                         </div>
@@ -3249,7 +3142,7 @@ export default function WalletPage() {
                           {/* Header row */}
                           <div
                             className={cn(
-                              'grid grid-cols-[1fr_24px_1fr_1fr_80px_70px_32px] gap-3 px-4 py-2 text-[10px] font-medium uppercase tracking-wider',
+                              'grid grid-cols-[1fr_24px_1fr_1fr_80px_70px_32px] gap-3 px-4 py-2 text-[11px] font-medium uppercase tracking-wider',
                               isDark ? 'text-white/30' : 'text-gray-400'
                             )}
                           >
@@ -3272,7 +3165,7 @@ export default function WalletPage() {
                               <div className="flex items-center gap-2 min-w-0">
                                 <span
                                   className={cn(
-                                    'px-2 py-0.5 rounded text-[10px] font-semibold shrink-0',
+                                    'px-2 py-0.5 rounded text-[11px] font-semibold shrink-0',
                                     offer.type === 'buy' ? 'bg-emerald-500/10 text-[#08AA09]' : 'bg-red-500/10 text-red-400'
                                   )}
                                 >
@@ -3280,7 +3173,7 @@ export default function WalletPage() {
                                 </span>
                                 <span
                                   className={cn(
-                                    'text-[12px] font-medium truncate',
+                                    'text-[13px] font-medium truncate',
                                     isDark ? 'text-white/90' : 'text-gray-900'
                                   )}
                                 >
@@ -3288,11 +3181,11 @@ export default function WalletPage() {
                                 </span>
                               </div>
                               <span
-                                className={cn('text-[10px] shrink-0', isDark ? 'text-white/20' : 'text-gray-300')}
+                                className={cn('text-[11px] shrink-0', isDark ? 'text-white/20' : 'text-gray-300')}
                               >to</span>
                               <span
                                 className={cn(
-                                  'text-[12px] font-medium truncate',
+                                  'text-[13px] font-medium truncate',
                                   isDark ? 'text-white/90' : 'text-gray-900'
                                 )}
                               >
@@ -3301,7 +3194,7 @@ export default function WalletPage() {
                               <div className="flex flex-col gap-0.5">
                                 <span
                                   className={cn(
-                                    'text-[11px] truncate',
+                                    'text-xs truncate',
                                     isDark ? 'text-white/50' : 'text-gray-500'
                                   )}
                                 >
@@ -3310,7 +3203,7 @@ export default function WalletPage() {
                                 {offer.distPct != null && (
                                   <span
                                     className={cn(
-                                      'text-[9px] font-medium',
+                                      'text-[10px] font-medium',
                                       Math.abs(offer.distPct) < 1
                                         ? 'text-[#08AA09]'
                                         : Math.abs(offer.distPct) < 5
@@ -3326,26 +3219,26 @@ export default function WalletPage() {
                                 {offer.expire ? (
                                   (() => {
                                     const diff = offer.expire - Date.now();
-                                    if (diff <= 0) return <span className={cn("text-[9px] font-medium", "text-red-400")}>Expired</span>;
+                                    if (diff <= 0) return <span className={cn("text-[10px] font-medium", "text-red-400")}>Expired</span>;
                                     const days = Math.floor(diff / 86400000);
                                     const hours = Math.floor((diff % 86400000) / 3600000);
                                     const mins = Math.floor((diff % 3600000) / 60000);
                                     const label = days > 0 ? `${days}d ${hours}h` : hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
                                     return (
-                                      <span className={cn("text-[9px] font-medium", diff < 86400000 ? "text-[#F6AF01]" : isDark ? "text-white/40" : "text-gray-500")} title={new Date(offer.expire).toLocaleString()}>
+                                      <span className={cn("text-[10px] font-medium", diff < 86400000 ? "text-[#F6AF01]" : isDark ? "text-white/40" : "text-gray-500")} title={new Date(offer.expire).toLocaleString()}>
                                         {label}
                                       </span>
                                     );
                                   })()
                                 ) : (
-                                  <span className={cn("text-[9px]", isDark ? "text-white/20" : "text-gray-300")}>--</span>
+                                  <span className={cn("text-[10px]", isDark ? "text-white/20" : "text-gray-300")}>--</span>
                                 )}
                               </div>
                               <div className="flex justify-end">
                                 {!offer.funded ? (
                                   <span
                                     className={cn(
-                                      'text-[9px] px-1.5 py-0.5 rounded font-medium',
+                                      'text-[10px] px-1.5 py-0.5 rounded font-medium',
                                       isDark
                                         ? 'bg-amber-500/10 text-[#F6AF01]'
                                         : 'bg-amber-100 text-amber-600'
@@ -3356,7 +3249,7 @@ export default function WalletPage() {
                                 ) : (
                                   <span
                                     className={cn(
-                                      'text-[9px] px-1.5 py-0.5 rounded font-medium',
+                                      'text-[10px] px-1.5 py-0.5 rounded font-medium',
                                       isDark
                                         ? 'bg-emerald-500/10 text-[#08AA09]'
                                         : 'bg-emerald-100 text-emerald-600'
@@ -3370,7 +3263,7 @@ export default function WalletPage() {
                                 onClick={() => handleCancelOffer(offer)}
                                 disabled={cancellingOffer === offer.seq}
                                 className={cn(
-                                  'w-6 h-6 rounded flex items-center justify-center transition-colors',
+                                  'w-7 h-7 rounded flex items-center justify-center transition-colors',
                                   cancellingOffer === offer.seq
                                     ? 'opacity-50 cursor-not-allowed'
                                     : isDark
@@ -3394,18 +3287,18 @@ export default function WalletPage() {
                     {/* NFT Offers */}
                     <div className={cn('rounded-xl', isDark ? 'bg-black/50 backdrop-blur-sm border border-white/[0.15]' : 'bg-white border border-gray-200')}>
                       <div className="p-4 border-b border-gray-500/20 flex items-center gap-2">
-                        <Image size={14} className={isDark ? 'text-white/50' : 'text-gray-500'} />
-                        <p className={cn('text-[11px] font-semibold uppercase tracking-[0.15em]', isDark ? 'text-white/50' : 'text-gray-500')}>NFT Offers</p>
-                        <span className={cn('ml-auto text-[9px] px-2 py-0.5 rounded font-semibold uppercase tracking-wide', isDark ? 'bg-white/5 text-white/50 border border-white/[0.15]' : 'bg-gray-100 text-gray-500')}>{nftOffers.length}</span>
+                        <Image size={15} className={isDark ? 'text-white/50' : 'text-gray-500'} />
+                        <p className={cn('text-xs font-semibold uppercase tracking-[0.15em]', isDark ? 'text-white/50' : 'text-gray-500')}>NFT Offers</p>
+                        <span className={cn('ml-auto text-[10px] px-2 py-0.5 rounded font-semibold uppercase tracking-wide', isDark ? 'bg-white/5 text-white/50 border border-white/[0.15]' : 'bg-gray-100 text-gray-500')}>{nftOffers.length}</span>
                       </div>
                       {nftOffers.length === 0 ? (
                         <div className={cn('p-6 text-center', isDark ? 'text-white/35' : 'text-gray-400')}>
                           <BearIcon />
-                          <p className={cn('text-[10px] font-medium tracking-wider', isDark ? 'text-white/60' : 'text-gray-500')}>NO NFT OFFERS</p>
+                          <p className={cn('text-[11px] font-medium tracking-wider', isDark ? 'text-white/60' : 'text-gray-500')}>NO NFT OFFERS</p>
                         </div>
                       ) : (
                         <div className="divide-y divide-blue-500/5">
-                          <div className={cn('grid grid-cols-[1fr_1fr_1fr_70px_32px] gap-3 px-4 py-2 text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/30' : 'text-gray-400')}>
+                          <div className={cn('grid grid-cols-[1fr_1fr_1fr_70px_32px] gap-3 px-4 py-2 text-[11px] font-medium uppercase tracking-wider', isDark ? 'text-white/30' : 'text-gray-400')}>
                             <span>NFT</span>
                             <span>Price</span>
                             <span>vs Floor</span>
@@ -3419,30 +3312,30 @@ export default function WalletPage() {
                             >
                               <Link href={`/nft/${offer.nftId}`} className="flex items-center gap-2 min-w-0">
                                 {offer.image ? (
-                                  <img src={offer.image} alt={offer.name} className="w-7 h-7 rounded-md object-cover shrink-0" />
+                                  <img src={offer.image} alt={offer.name} className="w-8 h-8 rounded-md object-cover shrink-0" />
                                 ) : (
-                                  <div className={cn('w-7 h-7 rounded-md flex items-center justify-center shrink-0', isDark ? 'bg-white/5' : 'bg-gray-100')}>
+                                  <div className={cn('w-8 h-8 rounded-md flex items-center justify-center shrink-0', isDark ? 'bg-white/5' : 'bg-gray-100')}>
                                     <Image size={12} className={isDark ? 'text-white/30' : 'text-gray-400'} />
                                   </div>
                                 )}
                                 <div className="min-w-0">
-                                  <p className={cn('text-[12px] font-medium truncate', isDark ? 'text-white/90' : 'text-gray-900')}>{offer.name}</p>
-                                  <p className={cn('text-[9px] truncate', isDark ? 'text-white/40' : 'text-gray-400')}>{offer.collection}</p>
+                                  <p className={cn('text-[13px] font-medium truncate', isDark ? 'text-white/90' : 'text-gray-900')}>{offer.name}</p>
+                                  <p className={cn('text-[10px] truncate', isDark ? 'text-white/40' : 'text-gray-400')}>{offer.collection}</p>
                                 </div>
                               </Link>
-                              <span className={cn('text-[12px] font-medium tabular-nums', isDark ? 'text-white/90' : 'text-gray-900')}>{offer.price > 0 ? <>{offer.price.toLocaleString(undefined, { maximumFractionDigits: offer.price >= 100 ? 0 : 2 })} <span className={cn('text-[9px] font-normal', isDark ? 'text-white/30' : 'text-gray-400')}>XRP</span></> : '--'}</span>
+                              <span className={cn('text-[13px] font-medium tabular-nums', isDark ? 'text-white/90' : 'text-gray-900')}>{offer.price > 0 ? <>{offer.price.toLocaleString(undefined, { maximumFractionDigits: offer.price >= 100 ? 0 : 2 })} <span className={cn('text-[10px] font-normal', isDark ? 'text-white/30' : 'text-gray-400')}>XRP</span></> : '--'}</span>
                               <div className="flex flex-col">
                                 {offer.floor > 0 ? (
                                   <>
-                                    <span className={cn('text-[11px] font-medium tabular-nums', offer.floorDiffPct >= 0 ? 'text-[#08AA09]' : 'text-red-400')}>{offer.floorDiffPct >= 0 ? '+' : ''}{offer.floorDiffPct.toFixed(0)}%</span>
-                                    <span className={cn('text-[9px] tabular-nums', isDark ? 'text-white/30' : 'text-gray-400')}>{offer.floor.toLocaleString(undefined, { maximumFractionDigits: offer.floor >= 100 ? 0 : 1 })} XRP</span>
+                                    <span className={cn('text-xs font-medium tabular-nums', offer.floorDiffPct >= 0 ? 'text-[#08AA09]' : 'text-red-400')}>{offer.floorDiffPct >= 0 ? '+' : ''}{offer.floorDiffPct.toFixed(0)}%</span>
+                                    <span className={cn('text-[10px] tabular-nums', isDark ? 'text-white/30' : 'text-gray-400')}>{offer.floor.toLocaleString(undefined, { maximumFractionDigits: offer.floor >= 100 ? 0 : 1 })} XRP</span>
                                   </>
                                 ) : (
-                                  <span className={cn('text-[11px]', isDark ? 'text-white/30' : 'text-gray-400')}>--</span>
+                                  <span className={cn('text-xs', isDark ? 'text-white/30' : 'text-gray-400')}>--</span>
                                 )}
                               </div>
                               <div className="flex justify-end">
-                                <span className={cn('text-[10px] px-2 py-0.5 rounded font-medium', offer.type === 'sell' ? 'bg-red-500/10 text-red-400' : 'bg-emerald-500/10 text-[#08AA09]')}>
+                                <span className={cn('text-[11px] px-2 py-0.5 rounded font-medium', offer.type === 'sell' ? 'bg-red-500/10 text-red-400' : 'bg-emerald-500/10 text-[#08AA09]')}>
                                   {offer.type === 'sell' ? 'Sell' : 'Buy'}
                                 </span>
                               </div>
@@ -3450,7 +3343,7 @@ export default function WalletPage() {
                                 <button
                                   onClick={() => handleCancelNftOffer(offer)}
                                   disabled={cancellingNftOffer === offer.id}
-                                  className={cn('w-6 h-6 rounded flex items-center justify-center transition-colors', cancellingNftOffer === offer.id ? 'opacity-50 cursor-not-allowed' : isDark ? 'text-white/30 hover:text-red-400 hover:bg-red-500/10' : 'text-gray-400 hover:text-red-500 hover:bg-red-50')}
+                                  className={cn('w-7 h-7 rounded flex items-center justify-center transition-colors', cancellingNftOffer === offer.id ? 'opacity-50 cursor-not-allowed' : isDark ? 'text-white/30 hover:text-red-400 hover:bg-red-500/10' : 'text-gray-400 hover:text-red-500 hover:bg-red-50')}
                                   title="Cancel offer"
                                 >
                                   {cancellingNftOffer === offer.id ? <div className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" /> : <X size={14} />}
@@ -3829,7 +3722,7 @@ export default function WalletPage() {
               <div className="space-y-4">
                 {referralLoading ? (
                   <div className={cn('rounded-xl p-12 text-center', isDark ? 'bg-black/50 border-[1.5px] border-white/10' : 'bg-white border-[1.5px] border-gray-200')}>
-                    <p className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-gray-400')}>Loading...</p>
+                    <p className={cn('text-sm', isDark ? 'text-white/40' : 'text-gray-400')}>Loading...</p>
                   </div>
                 ) : referralUser ? (
                   <div className="space-y-4">
@@ -3837,12 +3730,12 @@ export default function WalletPage() {
                     <div className={cn('rounded-xl p-5', isDark ? 'bg-black/40 border-[1.5px] border-white/10' : 'bg-white border-[1.5px] border-gray-200')}>
                       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-5">
                         <div>
-                          <p className={cn('text-[10px] uppercase tracking-[0.15em] font-semibold mb-1', isDark ? 'text-white/30' : 'text-gray-400')}>Current Rank</p>
+                          <p className={cn('text-[11px] uppercase tracking-[0.15em] font-semibold mb-1', isDark ? 'text-white/30' : 'text-gray-400')}>Current Rank</p>
                           <div className="flex items-baseline gap-3">
-                            <h3 className={cn('text-[22px] font-black leading-none', isDark ? 'text-white' : 'text-gray-900')}>
+                            <h3 className={cn('text-2xl font-black leading-none', isDark ? 'text-white' : 'text-gray-900')}>
                               {referralUser.tier || 'Recruit'}
                             </h3>
-                            <span className={cn('text-[13px] font-bold', isDark ? 'text-[#08AA09]' : 'text-green-600')}>
+                            <span className={cn('text-sm font-bold', isDark ? 'text-[#08AA09]' : 'text-green-600')}>
                               {((referralUser.share || 0.2) * 100).toFixed(0)}% share
                             </span>
                           </div>
@@ -3850,12 +3743,12 @@ export default function WalletPage() {
 
                         <div className="flex gap-6">
                           <div className="text-left sm:text-right">
-                            <p className={cn('text-[22px] font-black leading-none', isDark ? 'text-white' : 'text-gray-900')}>{referralUser.recruits || 0}</p>
-                            <p className={cn('text-[10px] uppercase tracking-wider font-semibold mt-0.5', isDark ? 'text-[#137DFE]' : 'text-[#137DFE]')}>Total Recruits</p>
+                            <p className={cn('text-2xl font-black leading-none', isDark ? 'text-white' : 'text-gray-900')}>{referralUser.recruits || 0}</p>
+                            <p className={cn('text-[11px] uppercase tracking-wider font-semibold mt-1', isDark ? 'text-[#137DFE]' : 'text-[#137DFE]')}>Total Recruits</p>
                           </div>
                           <div className="text-left sm:text-right">
-                            <p className={cn('text-[22px] font-black leading-none', isDark ? 'text-[#08AA09]' : 'text-green-600')}>${(referralUser.earnings || 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
-                            <p className={cn('text-[10px] uppercase tracking-wider font-semibold mt-0.5', isDark ? 'text-[#08AA09]/70' : 'text-green-500')}>Total Earned</p>
+                            <p className={cn('text-2xl font-black leading-none', isDark ? 'text-[#08AA09]' : 'text-green-600')}>${(referralUser.earnings || 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+                            <p className={cn('text-[11px] uppercase tracking-wider font-semibold mt-1', isDark ? 'text-[#08AA09]/70' : 'text-green-500')}>Total Earned</p>
                           </div>
                         </div>
                       </div>
@@ -3864,21 +3757,21 @@ export default function WalletPage() {
                       {referralUser.nextTier && (
                         <div className="space-y-2">
                           <div className="flex items-center justify-between">
-                            <span className={cn('text-[11px] font-semibold', isDark ? 'text-white/50' : 'text-gray-500')}>
+                            <span className={cn('text-xs font-semibold', isDark ? 'text-white/50' : 'text-gray-500')}>
                               Next: <span className={isDark ? 'text-white/80' : 'text-gray-700'}>{referralUser.nextTier.name}</span>
                               <span className={cn('ml-1.5', isDark ? 'text-white/30' : 'text-gray-400')}>({(referralUser.nextTier.share * 100).toFixed(0)}% share)</span>
                             </span>
-                            <span className={cn('text-[11px] font-bold tabular-nums', isDark ? 'text-white/70' : 'text-gray-600')}>
+                            <span className={cn('text-xs font-bold tabular-nums', isDark ? 'text-white/70' : 'text-gray-600')}>
                               {referralUser.recruits || 0} / {referralUser.nextTier.min}
                             </span>
                           </div>
-                          <div className={cn('h-2 rounded-full overflow-hidden', isDark ? 'bg-white/5' : 'bg-gray-100')}>
+                          <div className={cn('h-2.5 rounded-full overflow-hidden', isDark ? 'bg-white/5' : 'bg-gray-100')}>
                             <div
                               className="h-full bg-[#137DFE] rounded-full transition-all duration-1000"
                               style={{ width: `${Math.min(100, ((referralUser.recruits || 0) / (referralUser.nextTier.min || 1)) * 100)}%` }}
                             />
                           </div>
-                          <p className={cn('text-[10px]', isDark ? 'text-white/25' : 'text-gray-400')}>
+                          <p className={cn('text-[11px]', isDark ? 'text-white/25' : 'text-gray-400')}>
                             {referralUser.nextTier.needed} more recruit{referralUser.nextTier.needed !== 1 ? 's' : ''} needed to rank up
                           </p>
                         </div>
@@ -3888,24 +3781,24 @@ export default function WalletPage() {
                     {/* Secondary Stats Row */}
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                       <div className={cn('rounded-xl p-4', isDark ? 'bg-white/5 border-[1.5px] border-white/10' : 'bg-white border-[1.5px] border-gray-200')}>
-                        <p className={cn('text-[20px] font-bold leading-none mb-1', isDark ? 'text-white' : 'text-gray-900')}>{referralStats?.streaks?.current || referralUser.streak || 0}</p>
-                        <p className={cn('text-[10px] uppercase tracking-wider font-semibold', isDark ? 'text-white/30' : 'text-gray-400')}>Day Streak</p>
-                        <div className={cn('mt-2 pt-2 text-[10px] font-medium', isDark ? 'border-t border-white/5 text-white/20' : 'border-t border-gray-100 text-gray-300')}>Best: {referralStats?.streaks?.max || referralUser.maxStreak || 0}</div>
+                        <p className={cn('text-xl font-bold leading-none mb-1.5', isDark ? 'text-white' : 'text-gray-900')}>{referralStats?.streaks?.current || referralUser.streak || 0}</p>
+                        <p className={cn('text-[11px] uppercase tracking-wider font-semibold', isDark ? 'text-white/30' : 'text-gray-400')}>Day Streak</p>
+                        <div className={cn('mt-2.5 pt-2.5 text-[11px] font-medium', isDark ? 'border-t border-white/5 text-white/20' : 'border-t border-gray-100 text-gray-300')}>Best: {referralStats?.streaks?.max || referralUser.maxStreak || 0}</div>
                       </div>
                       <div className={cn('rounded-xl p-4', isDark ? 'bg-white/5 border-[1.5px] border-white/10' : 'bg-white border-[1.5px] border-gray-200')}>
-                        <p className={cn('text-[20px] font-bold leading-none mb-1', isDark ? 'text-white' : 'text-gray-900')}>{referralStats?.recruits?.whales || referralUser.whales || 0}</p>
-                        <p className={cn('text-[10px] uppercase tracking-wider font-semibold', isDark ? 'text-white/30' : 'text-gray-400')}>Whale Recruits</p>
-                        <div className={cn('mt-2 pt-2 text-[10px] font-medium', isDark ? 'border-t border-white/5 text-white/20' : 'border-t border-gray-100 text-gray-300')}>High-value referrals</div>
+                        <p className={cn('text-xl font-bold leading-none mb-1.5', isDark ? 'text-white' : 'text-gray-900')}>{referralStats?.recruits?.whales || referralUser.whales || 0}</p>
+                        <p className={cn('text-[11px] uppercase tracking-wider font-semibold', isDark ? 'text-white/30' : 'text-gray-400')}>Whale Recruits</p>
+                        <div className={cn('mt-2.5 pt-2.5 text-[11px] font-medium', isDark ? 'border-t border-white/5 text-white/20' : 'border-t border-gray-100 text-gray-300')}>High-value referrals</div>
                       </div>
                       <div className={cn('rounded-xl p-4', isDark ? 'bg-white/5 border-[1.5px] border-white/10' : 'bg-white border-[1.5px] border-gray-200')}>
-                        <p className={cn('text-[20px] font-bold leading-none mb-1', isDark ? 'text-white' : 'text-gray-900')}>{referralStats?.recruits?.tier2 || referralUser.tier2 || 0}</p>
-                        <p className={cn('text-[10px] uppercase tracking-wider font-semibold', isDark ? 'text-white/30' : 'text-gray-400')}>Tier 2 Recruits</p>
-                        <div className={cn('mt-2 pt-2 text-[10px] font-medium', isDark ? 'border-t border-white/5 text-white/20' : 'border-t border-gray-100 text-gray-300')}>Indirect referrals</div>
+                        <p className={cn('text-xl font-bold leading-none mb-1.5', isDark ? 'text-white' : 'text-gray-900')}>{referralStats?.recruits?.tier2 || referralUser.tier2 || 0}</p>
+                        <p className={cn('text-[11px] uppercase tracking-wider font-semibold', isDark ? 'text-white/30' : 'text-gray-400')}>Tier 2 Recruits</p>
+                        <div className={cn('mt-2.5 pt-2.5 text-[11px] font-medium', isDark ? 'border-t border-white/5 text-white/20' : 'border-t border-gray-100 text-gray-300')}>Indirect referrals</div>
                       </div>
                       <div className={cn('rounded-xl p-4', isDark ? 'bg-white/5 border-[1.5px] border-white/10' : 'bg-white border-[1.5px] border-gray-200')}>
-                        <p className={cn('text-[20px] font-bold leading-none mb-1', isDark ? 'text-white' : 'text-gray-900')}>{referralStats?.season?.recruits || referralUser.seasonRecruits || 0}</p>
-                        <p className={cn('text-[10px] uppercase tracking-wider font-semibold', isDark ? 'text-white/30' : 'text-gray-400')}>This Season</p>
-                        <div className={cn('mt-2 pt-2 text-[10px] font-medium', isDark ? 'border-t border-white/5 text-white/20' : 'border-t border-gray-100 text-gray-300')}>Current period</div>
+                        <p className={cn('text-xl font-bold leading-none mb-1.5', isDark ? 'text-white' : 'text-gray-900')}>{referralStats?.season?.recruits || referralUser.seasonRecruits || 0}</p>
+                        <p className={cn('text-[11px] uppercase tracking-wider font-semibold', isDark ? 'text-white/30' : 'text-gray-400')}>This Season</p>
+                        <div className={cn('mt-2.5 pt-2.5 text-[11px] font-medium', isDark ? 'border-t border-white/5 text-white/20' : 'border-t border-gray-100 text-gray-300')}>Current period</div>
                       </div>
                     </div>
 
@@ -3914,9 +3807,9 @@ export default function WalletPage() {
                       {/* Badges Column */}
                       <div className={cn('rounded-xl p-5', isDark ? 'bg-black/40 border-[1.5px] border-white/10' : 'bg-white border-[1.5px] border-gray-200')}>
                         <div className="flex items-center justify-between mb-4">
-                          <h4 className={cn('text-[11px] font-bold uppercase tracking-widest', isDark ? 'text-white/40' : 'text-gray-500')}>Badges</h4>
+                          <h4 className={cn('text-xs font-bold uppercase tracking-widest', isDark ? 'text-white/40' : 'text-gray-500')}>Badges</h4>
                           {referralStats?.badges && (
-                            <span className={cn('text-[11px] font-bold tabular-nums', isDark ? 'text-[#137DFE]' : 'text-blue-600')}>{referralStats.badges.done} of {referralStats.badges.total} earned</span>
+                            <span className={cn('text-xs font-bold tabular-nums', isDark ? 'text-[#137DFE]' : 'text-blue-600')}>{referralStats.badges.done} of {referralStats.badges.total} earned</span>
                           )}
                         </div>
 
@@ -3948,22 +3841,22 @@ export default function WalletPage() {
                                 const done = progress[key]?.done ?? earned.includes(key);
                                 const pct = progress[key]?.pct || (done ? 100 : 0);
                                 return (
-                                  <div key={key} className="flex items-center gap-2.5">
-                                    <div className={cn('w-7 h-7 rounded-lg flex items-center justify-center shrink-0 border-[1.5px]',
+                                  <div key={key} className="flex items-center gap-3">
+                                    <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center shrink-0 border-[1.5px]',
                                       done ? 'border-transparent' : isDark ? 'border-white/10' : 'border-gray-200'
                                     )} style={{ backgroundColor: done ? `${cfg.color}20` : isDark ? 'rgba(255,255,255,0.03)' : '#f9fafb' }}>
-                                      <Icon size={13} style={{ color: done ? cfg.color : isDark ? 'rgba(255,255,255,0.2)' : '#d1d5db' }} />
+                                      <Icon size={15} style={{ color: done ? cfg.color : isDark ? 'rgba(255,255,255,0.2)' : '#d1d5db' }} />
                                     </div>
                                     <div className="flex-1 min-w-0">
                                       <div className="flex items-center justify-between mb-0.5">
-                                        <span className={cn('text-[10px] font-semibold capitalize truncate', done ? (isDark ? 'text-white' : 'text-gray-900') : isDark ? 'text-white/30' : 'text-gray-400')}>{cfg.label}</span>
+                                        <span className={cn('text-[11px] font-semibold capitalize truncate', done ? (isDark ? 'text-white' : 'text-gray-900') : isDark ? 'text-white/30' : 'text-gray-400')}>{cfg.label}</span>
                                         {!done && progress[key]?.req && (
-                                          <span className={cn('text-[9px] font-mono shrink-0 ml-2', isDark ? 'text-white/20' : 'text-gray-300')}>{progress[key].cur}/{progress[key].req}</span>
+                                          <span className={cn('text-[10px] font-mono shrink-0 ml-2', isDark ? 'text-white/20' : 'text-gray-300')}>{progress[key].cur}/{progress[key].req}</span>
                                         )}
-                                        {done && <Check size={10} style={{ color: cfg.color }} />}
+                                        {done && <Check size={12} style={{ color: cfg.color }} />}
                                       </div>
                                       {!done && (
-                                        <div className={cn('h-1 rounded-full overflow-hidden', isDark ? 'bg-white/5' : 'bg-gray-100')}>
+                                        <div className={cn('h-1.5 rounded-full overflow-hidden', isDark ? 'bg-white/5' : 'bg-gray-100')}>
                                           <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: cfg.color }} />
                                         </div>
                                       )}
@@ -3973,7 +3866,7 @@ export default function WalletPage() {
                               })}
                             </div>
                           ) : (
-                            <p className={cn('text-[11px] italic', isDark ? 'text-white/20' : 'text-gray-400')}>No badges yet</p>
+                            <p className={cn('text-xs italic', isDark ? 'text-white/20' : 'text-gray-400')}>No badges yet</p>
                           );
                         })()}
                       </div>
@@ -3981,31 +3874,31 @@ export default function WalletPage() {
                       {/* Referral Code Column */}
                       <div className={cn('rounded-xl p-5 flex flex-col', isDark ? 'bg-black/40 border-[1.5px] border-white/10' : 'bg-white border-[1.5px] border-gray-200')}>
                         <div className="flex items-center justify-between mb-4">
-                          <h4 className={cn('text-[11px] font-bold uppercase tracking-widest', isDark ? 'text-white/40' : 'text-gray-500')}>Your Referral Link</h4>
-                          <button onClick={() => { setEditingCode(true); setNewReferralCode(referralUser.referralCode); }} className={cn('text-[10px] font-medium hover:underline', isDark ? 'text-[#137DFE]' : 'text-blue-600')}>Edit Code</button>
+                          <h4 className={cn('text-xs font-bold uppercase tracking-widest', isDark ? 'text-white/40' : 'text-gray-500')}>Your Referral Link</h4>
+                          <button onClick={() => { setEditingCode(true); setNewReferralCode(referralUser.referralCode); }} className={cn('text-[11px] font-medium hover:underline', isDark ? 'text-[#137DFE]' : 'text-blue-600')}>Edit Code</button>
                         </div>
 
                         {/* Code highlight */}
                         <div className={cn('mb-3 px-4 py-3 rounded-xl text-center border-[1.5px]', isDark ? 'bg-white/[0.03] border-white/10' : 'bg-gray-50 border-gray-200')}>
-                          <p className={cn('text-[10px] uppercase tracking-wider font-semibold mb-1', isDark ? 'text-white/25' : 'text-gray-400')}>Your Code</p>
-                          <p className={cn('text-[18px] font-black font-mono tracking-wide', isDark ? 'text-white' : 'text-gray-900')}>{referralUser.referralCode}</p>
+                          <p className={cn('text-[11px] uppercase tracking-wider font-semibold mb-1', isDark ? 'text-white/25' : 'text-gray-400')}>Your Code</p>
+                          <p className={cn('text-xl font-black font-mono tracking-wide', isDark ? 'text-white' : 'text-gray-900')}>{referralUser.referralCode}</p>
                         </div>
 
                         {/* Full link + copy */}
                         <div className="flex items-center gap-2 mb-4">
-                          <div className={cn('flex-1 px-3 py-2.5 rounded-xl text-[11px] font-mono truncate border-[1.5px]', isDark ? 'bg-white/5 border-white/10 text-white/40' : 'bg-gray-50 border-gray-200 text-gray-400')}>
+                          <div className={cn('flex-1 px-3 py-2.5 rounded-xl text-xs font-mono truncate border-[1.5px]', isDark ? 'bg-white/5 border-white/10 text-white/40' : 'bg-gray-50 border-gray-200 text-gray-400')}>
                             {`${window.location.origin}/signup?ref=${referralUser.referralCode}`}
                           </div>
                           <button
                             onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/signup?ref=${referralUser.referralCode}`); setReferralCopied(true); setTimeout(() => setReferralCopied(false), 2000); }}
-                            className={cn('shrink-0 px-4 h-[38px] flex items-center justify-center rounded-xl text-[11px] font-bold transition-all', referralCopied ? 'bg-[#08AA09] text-white' : 'bg-[#137DFE] text-white hover:bg-blue-600')}
+                            className={cn('shrink-0 px-5 h-[40px] flex items-center justify-center rounded-xl text-xs font-bold transition-all', referralCopied ? 'bg-[#08AA09] text-white' : 'bg-[#137DFE] text-white hover:bg-blue-600')}
                           >
                             {referralCopied ? 'Copied' : 'Copy'}
                           </button>
                         </div>
 
                         {referralUser.referrer && (
-                          <div className={cn('mb-4 px-3 py-2 rounded-lg text-[10px] flex items-center gap-1.5', isDark ? 'bg-white/[0.03] text-white/40' : 'bg-gray-50 text-gray-500')}>
+                          <div className={cn('mb-4 px-3.5 py-2.5 rounded-lg text-[11px] flex items-center gap-2', isDark ? 'bg-white/[0.03] text-white/40' : 'bg-gray-50 text-gray-500')}>
                             <div className="w-1.5 h-1.5 rounded-full bg-[#08AA09] shrink-0" />
                             Referred by {referralUser.referrer.slice(0, 6)}...{referralUser.referrer.slice(-4)}
                           </div>
@@ -4013,7 +3906,7 @@ export default function WalletPage() {
 
                         {/* Tier Ladder */}
                         <div className={cn('mt-auto pt-4', isDark ? 'border-t border-white/5' : 'border-t border-gray-100')}>
-                          <h5 className={cn('text-[10px] font-bold uppercase tracking-widest mb-3', isDark ? 'text-white/25' : 'text-gray-400')}>Rank Progression</h5>
+                          <h5 className={cn('text-[11px] font-bold uppercase tracking-widest mb-3', isDark ? 'text-white/25' : 'text-gray-400')}>Rank Progression</h5>
                           <div className="space-y-1.5">
                             {[
                               { name: 'Recruit', min: 0, share: 20 },
@@ -4028,7 +3921,7 @@ export default function WalletPage() {
                               const isCurrent = referralUser.tierData?.name === t.name || referralUser.tier === t.name;
                               const isReached = (referralUser.recruits || 0) >= t.min;
                               return (
-                                <div key={t.name} className={cn('flex items-center justify-between py-1.5 px-2.5 rounded-lg text-[10px] transition-colors',
+                                <div key={t.name} className={cn('flex items-center justify-between py-2 px-3 rounded-lg text-[11px] transition-colors',
                                   isCurrent ? (isDark ? 'bg-[#137DFE]/10 border-[1.5px] border-[#137DFE]/30' : 'bg-blue-50 border-[1.5px] border-blue-200') : ''
                                 )}>
                                   <span className={cn('font-semibold', isCurrent ? 'text-[#137DFE]' : isReached ? (isDark ? 'text-white/60' : 'text-gray-600') : isDark ? 'text-white/20' : 'text-gray-300')}>
@@ -4050,27 +3943,27 @@ export default function WalletPage() {
                     {editingCode && (
                       <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm max-sm:h-dvh" onClick={() => setEditingCode(false)}>
                         <div className={cn('w-full max-w-sm rounded-xl p-6', isDark ? 'bg-[#0a0a0a] border-[1.5px] border-white/10' : 'bg-white border-[1.5px] border-gray-200')} onClick={e => e.stopPropagation()}>
-                          <h3 className={cn('text-[16px] font-bold mb-1', isDark ? 'text-white' : 'text-gray-900')}>Edit Referral Code</h3>
-                          <p className={cn('text-[11px] mb-5', isDark ? 'text-white/30' : 'text-gray-400')}>Choose a custom code for your referral link. 3-20 characters, letters, numbers, and underscores only.</p>
+                          <h3 className={cn('text-lg font-bold mb-1', isDark ? 'text-white' : 'text-gray-900')}>Edit Referral Code</h3>
+                          <p className={cn('text-sm mb-5', isDark ? 'text-white/30' : 'text-gray-400')}>Choose a custom code for your referral link. 3-20 characters, letters, numbers, and underscores only.</p>
                           <div className="space-y-4">
                             <div>
-                              <label className={cn('text-[10px] font-bold uppercase tracking-wider mb-1.5 block', isDark ? 'text-white/40' : 'text-gray-500')}>Referral Code</label>
+                              <label className={cn('text-[11px] font-bold uppercase tracking-wider mb-1.5 block', isDark ? 'text-white/40' : 'text-gray-500')}>Referral Code</label>
                               <input
                                 type="text"
                                 value={newReferralCode}
                                 onChange={(e) => setNewReferralCode(e.target.value.replace(/[^a-zA-Z0-9_]/g, '').slice(0, 20))}
-                                className={cn('w-full px-4 py-3 rounded-xl text-[14px] font-mono outline-none border-[1.5px] transition-all', isDark ? 'bg-white/5 border-white/10 text-white focus:border-[#137DFE]/50' : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-blue-500')}
+                                className={cn('w-full px-4 py-3 rounded-xl text-sm font-mono outline-none border-[1.5px] transition-all', isDark ? 'bg-white/5 border-white/10 text-white focus:border-[#137DFE]/50' : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-blue-500')}
                               />
                               {newReferralCode && (
-                                <p className={cn('text-[10px] mt-1.5 font-mono', isDark ? 'text-white/20' : 'text-gray-400')}>
+                                <p className={cn('text-[11px] mt-1.5 font-mono', isDark ? 'text-white/20' : 'text-gray-400')}>
                                   Link preview: ...signup?ref={newReferralCode}
                                 </p>
                               )}
                             </div>
-                            {referralError && <p className="text-[11px] text-red-400">{referralError}</p>}
+                            {referralError && <p className="text-xs text-red-400">{referralError}</p>}
                             <div className="flex gap-3">
-                              <button onClick={() => setEditingCode(false)} className={cn('flex-1 py-3 rounded-xl text-[13px] font-medium transition-colors', isDark ? 'bg-white/5 text-white/70 hover:bg-white/10' : 'bg-gray-100 text-gray-600 hover:bg-gray-200')}>Cancel</button>
-                              <button onClick={handleUpdateReferralCode} disabled={referralLoading || newReferralCode.length < 3} className="flex-1 py-3 rounded-xl text-[13px] font-bold bg-[#137DFE] text-white hover:bg-blue-600 transition-colors disabled:opacity-50">Save Changes</button>
+                              <button onClick={() => setEditingCode(false)} className={cn('flex-1 py-3 rounded-xl text-sm font-medium transition-colors', isDark ? 'bg-white/5 text-white/70 hover:bg-white/10' : 'bg-gray-100 text-gray-600 hover:bg-gray-200')}>Cancel</button>
+                              <button onClick={handleUpdateReferralCode} disabled={referralLoading || newReferralCode.length < 3} className="flex-1 py-3 rounded-xl text-sm font-bold bg-[#137DFE] text-white hover:bg-blue-600 transition-colors disabled:opacity-50">Save Changes</button>
                             </div>
                           </div>
                         </div>
@@ -4082,42 +3975,42 @@ export default function WalletPage() {
                     {/* Hero Section */}
                     <div className={cn('rounded-xl p-8', isDark ? 'bg-black/40 border-[1.5px] border-white/10' : 'bg-white border-[1.5px] border-gray-200')}>
                       <div className="max-w-md mx-auto text-center">
-                        <h3 className={cn('text-[24px] font-black mb-2 tracking-tight', isDark ? 'text-white' : 'text-gray-900')}>Join the XRP Army</h3>
-                        <p className={cn('text-[13px] mb-6', isDark ? 'text-white/40' : 'text-gray-500')}>
+                        <h3 className={cn('text-2xl font-black mb-2 tracking-tight', isDark ? 'text-white' : 'text-gray-900')}>Join the XRP Army</h3>
+                        <p className={cn('text-sm mb-6', isDark ? 'text-white/40' : 'text-gray-500')}>
                           Share your referral link, recruit new members, and earn a percentage of every trade they make. The more you recruit, the higher your rank and share.
                         </p>
 
                         {/* Start vs Max */}
                         <div className="grid grid-cols-2 gap-3 mb-6">
                           <div className={cn('p-4 rounded-xl border-[1.5px]', isDark ? 'bg-white/[0.03] border-white/10' : 'bg-gray-50 border-gray-200')}>
-                            <p className={cn('text-[10px] font-bold uppercase tracking-widest mb-1', isDark ? 'text-[#08AA09]' : 'text-green-600')}>Starting Share</p>
-                            <p className={cn('text-[20px] font-black', isDark ? 'text-white' : 'text-gray-900')}>20%</p>
+                            <p className={cn('text-[11px] font-bold uppercase tracking-widest mb-1', isDark ? 'text-[#08AA09]' : 'text-green-600')}>Starting Share</p>
+                            <p className={cn('text-xl font-black', isDark ? 'text-white' : 'text-gray-900')}>20%</p>
                           </div>
                           <div className={cn('p-4 rounded-xl border-[1.5px]', isDark ? 'bg-white/[0.03] border-white/10' : 'bg-gray-50 border-gray-200')}>
-                            <p className={cn('text-[10px] font-bold uppercase tracking-widest mb-1', isDark ? 'text-[#F6AF01]' : 'text-amber-600')}>Max Share</p>
-                            <p className={cn('text-[20px] font-black', isDark ? 'text-white' : 'text-gray-900')}>50%</p>
+                            <p className={cn('text-[11px] font-bold uppercase tracking-widest mb-1', isDark ? 'text-[#F6AF01]' : 'text-amber-600')}>Max Share</p>
+                            <p className={cn('text-xl font-black', isDark ? 'text-white' : 'text-gray-900')}>50%</p>
                           </div>
                         </div>
 
                         {/* Enlist Form */}
                         <div className="space-y-3 max-w-sm mx-auto">
                           <div>
-                            <label className={cn('text-[10px] font-bold uppercase tracking-wider mb-1.5 block text-left', isDark ? 'text-white/30' : 'text-gray-400')}>Choose Your Code (optional)</label>
+                            <label className={cn('text-[11px] font-bold uppercase tracking-wider mb-1.5 block text-left', isDark ? 'text-white/30' : 'text-gray-400')}>Choose Your Code (optional)</label>
                             <input
                               type="text"
                               value={referralForm.referralCode}
                               onChange={(e) => setReferralForm(f => ({ ...f, referralCode: e.target.value.replace(/[^a-zA-Z0-9_]/g, '').slice(0, 20) }))}
                               placeholder="Leave empty for auto-generated code"
-                              className={cn('w-full px-4 py-3.5 rounded-xl text-[13px] font-mono outline-none border-[1.5px] transition-all', isDark ? 'bg-white/5 border-white/10 text-white placeholder:text-white/20 focus:border-[#137DFE]/50' : 'bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-300 focus:border-blue-400')}
+                              className={cn('w-full px-4 py-3.5 rounded-xl text-sm font-mono outline-none border-[1.5px] transition-all', isDark ? 'bg-white/5 border-white/10 text-white placeholder:text-white/20 focus:border-[#137DFE]/50' : 'bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-300 focus:border-blue-400')}
                             />
                           </div>
 
-                          {referralError && <p className="text-[11px] text-red-400 text-left">{referralError}</p>}
+                          {referralError && <p className="text-xs text-red-400 text-left">{referralError}</p>}
 
                           <button
                             onClick={handleReferralRegister}
                             disabled={referralLoading}
-                            className="w-full py-4 rounded-xl text-[14px] font-black bg-[#137DFE] text-white hover:bg-blue-600 transition-colors disabled:opacity-50"
+                            className="w-full py-4 rounded-xl text-[15px] font-black bg-[#137DFE] text-white hover:bg-blue-600 transition-colors disabled:opacity-50"
                           >
                             {referralLoading ? 'Enlisting...' : 'Get Started'}
                           </button>
@@ -4127,9 +4020,9 @@ export default function WalletPage() {
 
                     {/* Rank Progression Table */}
                     <div className={cn('rounded-xl p-5', isDark ? 'bg-black/40 border-[1.5px] border-white/10' : 'bg-white border-[1.5px] border-gray-200')}>
-                      <h4 className={cn('text-[11px] font-bold uppercase tracking-widest mb-4', isDark ? 'text-white/40' : 'text-gray-500')}>Rank Progression</h4>
+                      <h4 className={cn('text-xs font-bold uppercase tracking-widest mb-4', isDark ? 'text-white/40' : 'text-gray-500')}>Rank Progression</h4>
                       <div className={cn('rounded-xl overflow-hidden border-[1.5px]', isDark ? 'border-white/10' : 'border-gray-200')}>
-                        <div className={cn('grid grid-cols-3 text-[10px] font-bold uppercase tracking-wider px-4 py-2.5', isDark ? 'bg-white/[0.03] text-white/30' : 'bg-gray-50 text-gray-400')}>
+                        <div className={cn('grid grid-cols-3 text-[11px] font-bold uppercase tracking-wider px-4 py-3', isDark ? 'bg-white/[0.03] text-white/30' : 'bg-gray-50 text-gray-400')}>
                           <span>Rank</span>
                           <span className="text-center">Recruits</span>
                           <span className="text-right">Revenue Share</span>
@@ -4144,7 +4037,7 @@ export default function WalletPage() {
                           { name: 'General', min: '10,000', share: '46%' },
                           { name: 'Supreme', min: '25,000', share: '50%' },
                         ].map((t, i) => (
-                          <div key={t.name} className={cn('grid grid-cols-3 text-[11px] px-4 py-2.5', isDark ? (i % 2 === 0 ? 'bg-transparent' : 'bg-white/[0.02]') : (i % 2 === 0 ? 'bg-transparent' : 'bg-gray-50/50'))}>
+                          <div key={t.name} className={cn('grid grid-cols-3 text-xs px-4 py-3', isDark ? (i % 2 === 0 ? 'bg-transparent' : 'bg-white/[0.02]') : (i % 2 === 0 ? 'bg-transparent' : 'bg-gray-50/50'))}>
                             <span className={cn('font-semibold', isDark ? 'text-white/60' : 'text-gray-700')}>{t.name}</span>
                             <span className={cn('text-center tabular-nums', isDark ? 'text-white/30' : 'text-gray-400')}>{t.min}</span>
                             <span className={cn('text-right font-bold tabular-nums', isDark ? 'text-[#08AA09]' : 'text-green-600')}>{t.share}</span>
@@ -4162,7 +4055,7 @@ export default function WalletPage() {
               <div className="space-y-4">
                 {profileLoading ? (
                   <div className={cn('rounded-xl p-12 text-center', isDark ? 'bg-black/50 border border-white/[0.15]' : 'bg-white border border-gray-200')}>
-                    <p className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-gray-400')}>Loading...</p>
+                    <p className={cn('text-sm', isDark ? 'text-white/40' : 'text-gray-400')}>Loading...</p>
                   </div>
                 ) : profileUser ? (
                   <div className={cn('rounded-xl p-6 relative', isDark ? 'bg-black/50 border-[1.5px] border-white/10' : 'bg-white border-[1.5px] border-gray-200')}>
@@ -4254,17 +4147,17 @@ export default function WalletPage() {
                           <button
                             onClick={() => handleCopy(address)}
                             className={cn(
-                              'flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px] font-mono transition-all',
+                              'flex items-center gap-2 px-3.5 py-2 rounded-full text-xs font-mono transition-all',
                               isDark ? 'bg-white/5 text-white/40 hover:bg-white/10 hover:text-white/60' : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
                             )}
                           >
-                            <Wallet size={12} />
+                            <Wallet size={14} />
                             {address?.slice(0, 12)}...{address?.slice(-8)}
-                            <Copy size={10} className="ml-1 opacity-40" />
+                            <Copy size={12} className="ml-1 opacity-40" />
                           </button>
 
-                          <div className={cn('px-3 py-1.5 rounded-full text-[11px] font-medium flex items-center gap-2', isDark ? 'bg-white/5 text-white/40' : 'bg-gray-50 text-gray-500')}>
-                            <Clock size={12} />
+                          <div className={cn('px-3.5 py-2 rounded-full text-xs font-medium flex items-center gap-2', isDark ? 'bg-white/5 text-white/40' : 'bg-gray-50 text-gray-500')}>
+                            <Clock size={14} />
                             Joined {profileUser.createdAt ? formatDistanceToNow(new Date(profileUser.createdAt), { addSuffix: true }) : 'Recently'}
                           </div>
                         </div>
@@ -4278,8 +4171,8 @@ export default function WalletPage() {
                             const config = tc[tierName] || { icon: Trophy, bg: isDark ? 'bg-white/5' : 'bg-gray-100', text: isDark ? 'text-white/50' : 'text-gray-500', border: isDark ? 'border-white/10' : 'border-gray-200' };
                             const Icon = config.icon;
                             return (
-                              <span key={tierName} className={cn('px-2.5 py-1 rounded-full text-[10px] font-bold tracking-tight flex items-center gap-1.5 border backdrop-blur-md whitespace-nowrap', config.bg, config.border)}>
-                                {Icon && <Icon size={10} className={config.gradient ? 'text-[#FFD700]' : config.text} />}
+                              <span key={tierName} className={cn('px-3 py-1.5 rounded-full text-[11px] font-bold tracking-tight flex items-center gap-1.5 border backdrop-blur-md whitespace-nowrap', config.bg, config.border)}>
+                                {Icon && <Icon size={12} className={config.gradient ? 'text-[#FFD700]' : config.text} />}
                                 <span className={cn(config.gradient ? 'bg-gradient-to-r from-[#FFD700] via-[#FF6B9D] to-[#00FFFF] bg-clip-text text-transparent' : config.text)}>{tierName.toUpperCase()}</span>
                               </span>
                             );
@@ -4292,8 +4185,8 @@ export default function WalletPage() {
                           const config = ac[name] || defaultCfg;
                           const Icon = config.icon;
                           return (
-                            <span key={badgeId} className={cn('px-2 py-0.5 rounded text-[9px] font-semibold tracking-wide flex items-center gap-1 border', config.bg, config.border)}>
-                              {Icon && <Icon size={9} className={config.text} />}
+                            <span key={badgeId} className={cn('px-2.5 py-1 rounded-md text-[10px] font-semibold tracking-wide flex items-center gap-1.5 border', config.bg, config.border)}>
+                              {Icon && <Icon size={11} className={config.text} />}
                               <span className={config.text}>{config.label || name.replace(/_/g, ' ').toUpperCase()}</span>
                             </span>
                           );
@@ -4304,20 +4197,20 @@ export default function WalletPage() {
                     {/* Stats Grid */}
                     <div className={cn('grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 pt-6 border-t', isDark ? 'border-white/5' : 'border-gray-100')}>
                       <div className="text-center md:text-left">
-                        <p className={cn('text-[10px] uppercase tracking-[0.1em] font-bold mb-1', isDark ? 'text-white/20' : 'text-gray-400')}>Membership</p>
-                        <p className={cn('text-[13px] font-medium capitalize', isDark ? 'text-white/80' : 'text-gray-700')}>{profileUser.tier || userPerks?.tier || 'Member'}</p>
+                        <p className={cn('text-[11px] uppercase tracking-[0.1em] font-bold mb-1.5', isDark ? 'text-white/25' : 'text-gray-400')}>Membership</p>
+                        <p className={cn('text-sm font-semibold capitalize', isDark ? 'text-white/80' : 'text-gray-700')}>{profileUser.tier || userPerks?.tier || 'Member'}</p>
                       </div>
                       <div className="text-center md:text-left">
-                        <p className={cn('text-[10px] uppercase tracking-[0.1em] font-bold mb-1', isDark ? 'text-white/20' : 'text-gray-400')}>Army Rank</p>
-                        <p className={cn('text-[13px] font-medium', isDark ? 'text-white/80' : 'text-gray-700')}>{profileUser.armyRank || 'Unranked'}</p>
+                        <p className={cn('text-[11px] uppercase tracking-[0.1em] font-bold mb-1.5', isDark ? 'text-white/25' : 'text-gray-400')}>Army Rank</p>
+                        <p className={cn('text-sm font-semibold', isDark ? 'text-white/80' : 'text-gray-700')}>{profileUser.armyRank || 'Unranked'}</p>
                       </div>
                       <div className="text-center md:text-left">
-                        <p className={cn('text-[10px] uppercase tracking-[0.1em] font-bold mb-1', isDark ? 'text-white/20' : 'text-gray-400')}>Recruits</p>
-                        <p className={cn('text-[13px] font-medium', isDark ? 'text-white/80' : 'text-gray-700')}>{profileUser.armyRecruits ?? 0}</p>
+                        <p className={cn('text-[11px] uppercase tracking-[0.1em] font-bold mb-1.5', isDark ? 'text-white/25' : 'text-gray-400')}>Recruits</p>
+                        <p className={cn('text-sm font-semibold', isDark ? 'text-white/80' : 'text-gray-700')}>{profileUser.armyRecruits ?? 0}</p>
                       </div>
                       <div className="text-center md:text-left">
-                        <p className={cn('text-[10px] uppercase tracking-[0.1em] font-bold mb-1', isDark ? 'text-white/20' : 'text-gray-400')}>Last Update</p>
-                        <p className={cn('text-[13px] font-medium', isDark ? 'text-white/60' : 'text-gray-600')}>{profileUser.updatedAt ? formatDistanceToNow(new Date(profileUser.updatedAt), { addSuffix: true }) : 'Never'}</p>
+                        <p className={cn('text-[11px] uppercase tracking-[0.1em] font-bold mb-1.5', isDark ? 'text-white/25' : 'text-gray-400')}>Last Update</p>
+                        <p className={cn('text-sm font-semibold', isDark ? 'text-white/60' : 'text-gray-600')}>{profileUser.updatedAt ? formatDistanceToNow(new Date(profileUser.updatedAt), { addSuffix: true }) : 'Never'}</p>
                       </div>
                     </div>
 
@@ -4331,7 +4224,7 @@ export default function WalletPage() {
                           <div className="flex items-center justify-between mb-5">
                             <div>
                               <h3 className={cn('text-lg font-bold', isDark ? 'text-white' : 'text-gray-900')}>Select NFT Avatar</h3>
-                              <p className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-gray-500')}>Choose an NFT from your wallet</p>
+                              <p className={cn('text-sm', isDark ? 'text-white/40' : 'text-gray-500')}>Choose an NFT from your wallet</p>
                             </div>
                             <button onClick={() => setShowAvatarPicker(false)} className={cn('p-2 rounded-xl transition-colors', isDark ? 'hover:bg-white/10 text-white/50' : 'hover:bg-gray-100 text-gray-500')}>
                               <X size={20} />
@@ -4341,13 +4234,13 @@ export default function WalletPage() {
                           {avatarNftsLoading ? (
                             <div className="py-12 text-center animate-pulse">
                               <div className={cn('w-12 h-12 rounded-full mx-auto mb-4 bg-white/5')} />
-                              <p className={cn('text-[11px] font-medium', isDark ? 'text-white/40' : 'text-gray-400')}>Loading your NFTs...</p>
+                              <p className={cn('text-sm font-medium', isDark ? 'text-white/40' : 'text-gray-400')}>Loading your NFTs...</p>
                             </div>
                           ) : avatarNfts.length === 0 ? (
                             <div className="py-12 text-center">
                               <Image size={32} className={cn('mx-auto mb-3 opacity-20', isDark ? 'text-white' : 'text-gray-300')} />
-                              <p className={cn('text-[11px] font-medium mb-1', isDark ? 'text-white/60' : 'text-gray-500')}>No NFTs Available</p>
-                              <p className={cn('text-[9px]', isDark ? 'text-white/30' : 'text-gray-400')}>Own an NFT to set it as your profile image</p>
+                              <p className={cn('text-sm font-medium mb-1', isDark ? 'text-white/60' : 'text-gray-500')}>No NFTs Available</p>
+                              <p className={cn('text-xs', isDark ? 'text-white/30' : 'text-gray-400')}>Own an NFT to set it as your profile image</p>
                             </div>
                           ) : (
                             <div className="grid grid-cols-4 gap-3 max-h-[320px] overflow-y-auto pr-2 custom-scrollbar">
@@ -4385,7 +4278,7 @@ export default function WalletPage() {
                     )}
 
                     {profileError && (
-                      <div className={cn('flex items-center gap-2 p-3 rounded-xl text-[11px] mt-4 animate-in fade-in slide-in-from-top-2', isDark ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-red-50 text-red-600 border border-red-100')}>
+                      <div className={cn('flex items-center gap-2 p-3 rounded-xl text-xs mt-4 animate-in fade-in slide-in-from-top-2', isDark ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-red-50 text-red-600 border border-red-100')}>
                         <AlertTriangle size={14} className="shrink-0" />
                         {profileError}
                       </div>
@@ -4398,25 +4291,25 @@ export default function WalletPage() {
                         <User size={18} className="text-[#137DFE]" />
                       </div>
                       <div>
-                        <h3 className={cn('text-[14px] font-medium', isDark ? 'text-white' : 'text-gray-900')}>Create Profile</h3>
-                        <p className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-gray-500')}>Claim a unique username</p>
+                        <h3 className={cn('text-base font-semibold', isDark ? 'text-white' : 'text-gray-900')}>Create Profile</h3>
+                        <p className={cn('text-sm', isDark ? 'text-white/40' : 'text-gray-500')}>Claim a unique username</p>
                       </div>
                     </div>
 
                     <div className="space-y-3">
                       <div>
-                        <label className={cn('text-[10px] uppercase tracking-wider mb-1.5 block', isDark ? 'text-white/40' : 'text-gray-500')}>Username <span className={isDark ? 'text-white/20' : 'text-gray-300'}>(optional)</span></label>
+                        <label className={cn('text-[11px] uppercase tracking-wider mb-1.5 block', isDark ? 'text-white/40' : 'text-gray-500')}>Username <span className={isDark ? 'text-white/20' : 'text-gray-300'}>(optional)</span></label>
                         <input
                           type="text"
                           value={newUsername}
                           onChange={(e) => setNewUsername(e.target.value.replace(/[^a-zA-Z0-9_]/g, '').toLowerCase().slice(0, 14))}
                           placeholder="2-14 characters"
-                          className={cn('w-full px-4 py-3 rounded-xl text-[13px] outline-none transition-colors', isDark ? 'bg-white/[0.04] text-white border border-white/[0.15] placeholder:text-white/25 focus:border-[#137DFE]/40' : 'bg-gray-50 border border-gray-200 placeholder:text-gray-400 focus:border-[#137DFE]')}
+                          className={cn('w-full px-4 py-3 rounded-xl text-sm outline-none transition-colors', isDark ? 'bg-white/[0.04] text-white border border-white/[0.15] placeholder:text-white/25 focus:border-[#137DFE]/40' : 'bg-gray-50 border border-gray-200 placeholder:text-gray-400 focus:border-[#137DFE]')}
                         />
                       </div>
 
                       {profileError && (
-                        <div className={cn('flex items-center gap-2 p-3 rounded-lg text-[11px]', isDark ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-red-50 text-red-600 border border-red-100')}>
+                        <div className={cn('flex items-center gap-2 p-3 rounded-lg text-xs', isDark ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-red-50 text-red-600 border border-red-100')}>
                           <AlertTriangle size={14} />
                           {profileError}
                         </div>
@@ -4425,7 +4318,7 @@ export default function WalletPage() {
                       <button
                         onClick={() => handleCreateProfile(newUsername.length >= 2 ? newUsername : null)}
                         disabled={profileLoading}
-                        className="w-full py-3 rounded-xl text-[13px] font-medium bg-[#137DFE] text-white hover:bg-[#137DFE]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full py-3 rounded-xl text-sm font-semibold bg-[#137DFE] text-white hover:bg-[#137DFE]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         {profileLoading ? 'Creating...' : 'Create Profile'}
                       </button>
@@ -4435,7 +4328,7 @@ export default function WalletPage() {
 
                 {/* Wallet Labels Section - Available to all users */}
                 <div className={cn('rounded-xl p-4', isDark ? 'bg-black/50 border border-white/[0.15]' : 'bg-white border border-gray-200')}>
-                  <p className={cn('text-[10px] uppercase tracking-wider mb-3', isDark ? 'text-white/30' : 'text-gray-400')}>Wallet Labels</p>
+                  <p className={cn('text-[11px] uppercase tracking-wider font-bold mb-3', isDark ? 'text-white/30' : 'text-gray-400')}>Wallet Labels</p>
 
                   {/* Add new label */}
                   <div className="flex flex-col sm:flex-row gap-2 mb-3">
@@ -4447,7 +4340,7 @@ export default function WalletPage() {
                         if (val === '' || /^r[a-zA-Z0-9]*$/.test(val)) setNewLabelWallet(val.slice(0, 35));
                       }}
                       placeholder="rAddress..."
-                      className={cn('flex-1 px-3 py-2 rounded-xl text-[12px] font-mono outline-none', isDark ? 'bg-white/[0.04] text-white border border-white/[0.15] placeholder:text-white/25' : 'bg-white text-gray-900 border border-gray-200 placeholder:text-gray-400')}
+                      className={cn('flex-1 px-3 py-2.5 rounded-xl text-[13px] font-mono outline-none', isDark ? 'bg-white/[0.04] text-white border border-white/[0.15] placeholder:text-white/25' : 'bg-white text-gray-900 border border-gray-200 placeholder:text-gray-400')}
                     />
                     <div className="flex gap-2">
                       <input
@@ -4455,12 +4348,12 @@ export default function WalletPage() {
                         value={newLabelName}
                         onChange={(e) => setNewLabelName(e.target.value.slice(0, 30))}
                         placeholder="Label"
-                        className={cn('flex-1 sm:w-36 px-3 py-2 rounded-xl text-[12px] outline-none', isDark ? 'bg-white/[0.04] text-white border border-white/[0.15] placeholder:text-white/25' : 'bg-white text-gray-900 border border-gray-200 placeholder:text-gray-400')}
+                        className={cn('flex-1 sm:w-36 px-3 py-2.5 rounded-xl text-[13px] outline-none', isDark ? 'bg-white/[0.04] text-white border border-white/[0.15] placeholder:text-white/25' : 'bg-white text-gray-900 border border-gray-200 placeholder:text-gray-400')}
                       />
                       <button
                         onClick={handleAddLabel}
                         disabled={labelsLoading || !newLabelWallet || newLabelWallet.length < 25 || !newLabelName}
-                        className="px-3 py-2 rounded-xl text-[11px] font-medium bg-[#137DFE] text-white disabled:opacity-50 transition-colors hover:bg-[#137DFE]/90"
+                        className="px-3.5 py-2.5 rounded-xl text-xs font-medium bg-[#137DFE] text-white disabled:opacity-50 transition-colors hover:bg-[#137DFE]/90"
                       >
                         <Plus size={14} />
                       </button>
@@ -4469,23 +4362,23 @@ export default function WalletPage() {
 
                   {/* Labels list */}
                   {labelsLoading && walletLabels.length === 0 ? (
-                    <p className={cn('text-[11px] text-center py-2', isDark ? 'text-white/30' : 'text-gray-400')}>Loading...</p>
+                    <p className={cn('text-xs text-center py-3', isDark ? 'text-white/30' : 'text-gray-400')}>Loading...</p>
                   ) : walletLabels.length === 0 ? (
-                    <p className={cn('text-[11px] text-center py-2', isDark ? 'text-white/30' : 'text-gray-400')}>No labels yet</p>
+                    <p className={cn('text-xs text-center py-3', isDark ? 'text-white/30' : 'text-gray-400')}>No labels yet</p>
                   ) : (
                     <div className="space-y-1.5 max-h-48 overflow-y-auto">
                       {walletLabels.map((item) => (
-                        <div key={item.wallet} className={cn('flex items-center justify-between gap-2 px-2 py-1.5 rounded-lg', isDark ? 'bg-white/[0.02]' : 'bg-white')}>
+                        <div key={item.wallet} className={cn('flex items-center justify-between gap-2 px-3 py-2 rounded-lg', isDark ? 'bg-white/[0.02]' : 'bg-white')}>
                           <div className="flex-1 min-w-0">
-                            <p className={cn('text-[12px] font-medium truncate', isDark ? 'text-white/80' : 'text-gray-700')}>{item.label}</p>
-                            <p className={cn('text-[10px] font-mono truncate', isDark ? 'text-white/30' : 'text-gray-400')}>{item.wallet}</p>
+                            <p className={cn('text-[13px] font-medium truncate', isDark ? 'text-white/80' : 'text-gray-700')}>{item.label}</p>
+                            <p className={cn('text-[11px] font-mono truncate', isDark ? 'text-white/30' : 'text-gray-400')}>{item.wallet}</p>
                           </div>
                           <button
                             onClick={() => handleDeleteLabel(item.wallet)}
                             disabled={deletingLabel === item.wallet}
-                            className={cn('p-1 rounded transition-colors', isDark ? 'text-white/30 hover:text-red-400 hover:bg-red-500/10' : 'text-gray-400 hover:text-red-500 hover:bg-red-50')}
+                            className={cn('p-1.5 rounded transition-colors', isDark ? 'text-white/30 hover:text-red-400 hover:bg-red-500/10' : 'text-gray-400 hover:text-red-500 hover:bg-red-50')}
                           >
-                            <Trash2 size={12} />
+                            <Trash2 size={14} />
                           </button>
                         </div>
                       ))}
@@ -4499,7 +4392,7 @@ export default function WalletPage() {
                   {displayBadges.available.filter(b => b.startsWith('tier:')).length > 1 && (
                     <div className={cn('px-4 py-3 border-b', isDark ? 'border-white/[0.08]' : 'border-gray-100')}>
                       <div className="flex items-center justify-between">
-                        <p className={cn('text-[10px] font-semibold uppercase tracking-wider', isDark ? 'text-white/30' : 'text-gray-400')}>Active Badge</p>
+                        <p className={cn('text-[11px] font-semibold uppercase tracking-wider', isDark ? 'text-white/30' : 'text-gray-400')}>Active Badge</p>
                         <div className="flex flex-wrap items-center justify-end gap-1.5">
                           {displayBadges.available.filter(b => b.startsWith('tier:')).map(badgeId => {
                             const name = badgeId.split(':')[1];
@@ -4519,14 +4412,14 @@ export default function WalletPage() {
                                 onClick={() => handleSetDisplayBadge(badgeId)}
                                 disabled={settingBadge}
                                 className={cn(
-                                  'px-2.5 py-1 rounded-full text-[10px] font-bold tracking-tight flex items-center gap-1.5 border transition-all duration-300',
+                                  'px-3 py-1.5 rounded-full text-[11px] font-bold tracking-tight flex items-center gap-1.5 border transition-all duration-300',
                                   isSelected
                                     ? cn(config.bg, config.border, 'ring-1 ring-white/20 scale-105')
                                     : 'bg-transparent border-transparent opacity-40 hover:opacity-100 grayscale hover:grayscale-0',
                                   settingBadge && 'cursor-wait'
                                 )}
                               >
-                                {Icon && <Icon size={10} className={config.gradient ? 'text-[#FFD700]' : config.text} />}
+                                {Icon && <Icon size={12} className={config.gradient ? 'text-[#FFD700]' : config.text} />}
                                 <span className={cn(config.gradient ? 'bg-gradient-to-r from-[#FFD700] via-[#FF6B9D] to-[#00FFFF] bg-clip-text text-transparent' : config.text)}>
                                   {name.toUpperCase()}
                                 </span>
@@ -4554,22 +4447,22 @@ export default function WalletPage() {
                           </button>
                         </div>
                         <div className={cn('rounded-xl p-4 mb-4 text-center', isDark ? 'bg-[#137DFE]/5 border border-[#137DFE]/20' : 'bg-blue-50 border border-blue-100')}>
-                          <p className={cn('text-[10px] uppercase tracking-wider mb-1', isDark ? 'text-white/40' : 'text-gray-400')}>Amount Due</p>
+                          <p className={cn('text-[11px] uppercase tracking-wider mb-1', isDark ? 'text-white/40' : 'text-gray-400')}>Amount Due</p>
                           <p className={cn('text-3xl font-bold', isDark ? 'text-white' : 'text-gray-900')}>{xrpInvoice.amount} <span className="text-[#137DFE]">XRP</span></p>
                         </div>
                         <div className={cn('rounded-xl p-4 mb-4', isDark ? 'bg-white/[0.02] border border-white/[0.08]' : 'bg-gray-50 border border-gray-100')}>
-                          <p className={cn('text-[10px] uppercase tracking-wider mb-2', isDark ? 'text-white/40' : 'text-gray-400')}>Send to address</p>
-                          <p className={cn('text-[12px] font-mono break-all', isDark ? 'text-white/80' : 'text-gray-700')}>{xrpInvoice.destination}</p>
+                          <p className={cn('text-[11px] uppercase tracking-wider mb-2', isDark ? 'text-white/40' : 'text-gray-400')}>Send to address</p>
+                          <p className={cn('text-[13px] font-mono break-all', isDark ? 'text-white/80' : 'text-gray-700')}>{xrpInvoice.destination}</p>
                           {xrpInvoice.destinationTag && (
                             <div className={cn('mt-3 pt-3 border-t', isDark ? 'border-white/[0.08]' : 'border-gray-200')}>
-                              <p className={cn('text-[10px] uppercase tracking-wider mb-1', isDark ? 'text-white/40' : 'text-gray-400')}>Destination Tag</p>
-                              <p className={cn('text-[14px] font-mono font-semibold', isDark ? 'text-white' : 'text-gray-900')}>{xrpInvoice.destinationTag}</p>
+                              <p className={cn('text-[11px] uppercase tracking-wider mb-1', isDark ? 'text-white/40' : 'text-gray-400')}>Destination Tag</p>
+                              <p className={cn('text-[15px] font-mono font-semibold', isDark ? 'text-white' : 'text-gray-900')}>{xrpInvoice.destinationTag}</p>
                             </div>
                           )}
                         </div>
                         {/* Destination Tag Warning */}
                         {xrpInvoice.destinationTag && (
-                          <div className={cn('text-[10px] p-2.5 rounded-xl mb-4 flex items-start gap-2', isDark ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : 'bg-amber-50 text-amber-600 border border-amber-200')}>
+                          <div className={cn('text-xs p-3 rounded-xl mb-4 flex items-start gap-2', isDark ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : 'bg-amber-50 text-amber-600 border border-amber-200')}>
                             <AlertTriangle size={14} className="flex-shrink-0 mt-0.5" />
                             <span>Important: Include the Destination Tag or payment may be lost</span>
                           </div>
@@ -4579,7 +4472,7 @@ export default function WalletPage() {
                           <button
                             onClick={handleWalletPayTier}
                             disabled={walletPayStatus || verifyingPayment}
-                            className={cn('w-full py-3 rounded-xl text-[13px] font-semibold text-white mb-2 flex items-center justify-center gap-2 transition-colors disabled:opacity-50', 'bg-[#137DFE] hover:bg-[#137DFE]/90')}
+                            className={cn('w-full py-3 rounded-xl text-sm font-semibold text-white mb-2 flex items-center justify-center gap-2 transition-colors disabled:opacity-50', 'bg-[#137DFE] hover:bg-[#137DFE]/90')}
                           >
                             {walletPayStatus === 'signing' ? (
                               <><Loader2 size={16} className="animate-spin" /> Signing...</>
@@ -4596,14 +4489,14 @@ export default function WalletPage() {
                         {(accountProfile?.wallet_type === 'device' || accountProfile?.wallet_type === 'oauth') && (
                           <div className="flex items-center gap-3 mb-2">
                             <div className={cn('flex-1 h-px', isDark ? 'bg-white/[0.08]' : 'bg-gray-200')} />
-                            <span className={cn('text-[10px] font-medium', isDark ? 'text-white/30' : 'text-gray-400')}>or pay manually</span>
+                            <span className={cn('text-[11px] font-medium', isDark ? 'text-white/30' : 'text-gray-400')}>or pay manually</span>
                             <div className={cn('flex-1 h-px', isDark ? 'bg-white/[0.08]' : 'bg-gray-200')} />
                           </div>
                         )}
                         <button
                           onClick={() => handleCopy(`${xrpInvoice.destination}${xrpInvoice.destinationTag ? `:${xrpInvoice.destinationTag}` : ''}`)}
                           disabled={walletPayStatus}
-                          className={cn('w-full py-2.5 rounded-xl text-[12px] font-medium mb-2 flex items-center justify-center gap-2 transition-colors disabled:opacity-50', isDark ? 'bg-white/[0.05] text-white/70 hover:bg-white/10 border border-white/[0.08]' : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200')}
+                          className={cn('w-full py-2.5 rounded-xl text-[13px] font-medium mb-2 flex items-center justify-center gap-2 transition-colors disabled:opacity-50', isDark ? 'bg-white/[0.05] text-white/70 hover:bg-white/10 border border-white/[0.08]' : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200')}
                         >
                           <Copy size={14} />
                           Copy Address
@@ -4611,12 +4504,12 @@ export default function WalletPage() {
                         <button
                           onClick={handleVerifyXrpPayment}
                           disabled={verifyingPayment || walletPayStatus}
-                          className={cn('w-full py-2.5 rounded-xl text-[12px] font-medium flex items-center justify-center gap-2 transition-colors disabled:opacity-50', isDark ? 'bg-white/[0.05] text-white/70 hover:bg-white/10 border border-white/[0.08]' : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200')}
+                          className={cn('w-full py-2.5 rounded-xl text-[13px] font-medium flex items-center justify-center gap-2 transition-colors disabled:opacity-50', isDark ? 'bg-white/[0.05] text-white/70 hover:bg-white/10 border border-white/[0.08]' : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200')}
                         >
                           {verifyingPayment ? 'Verifying...' : 'I have paid manually'}
                         </button>
                         {profileError && (
-                          <p className={cn('text-[11px] mt-3 text-center', 'text-red-400')}>{profileError}</p>
+                          <p className={cn('text-xs mt-3 text-center', 'text-red-400')}>{profileError}</p>
                         )}
                       </div>
                     </div>
@@ -4624,9 +4517,9 @@ export default function WalletPage() {
 
                   <div className="p-4">
                     {tiersLoading ? (
-                      <p className={cn('text-[11px] text-center py-6', isDark ? 'text-white/30' : 'text-gray-400')}>Loading tiers...</p>
+                      <p className={cn('text-sm text-center py-6', isDark ? 'text-white/30' : 'text-gray-400')}>Loading tiers...</p>
                     ) : Object.keys(tiers).length === 0 ? (
-                      <p className={cn('text-[11px] text-center py-6', isDark ? 'text-white/30' : 'text-gray-400')}>No tiers available</p>
+                      <p className={cn('text-sm text-center py-6', isDark ? 'text-white/30' : 'text-gray-400')}>No tiers available</p>
                     ) : (
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         {Object.entries(tiers).filter(([name]) => name !== 'member').map(([name, tier]) => {
@@ -4651,7 +4544,7 @@ export default function WalletPage() {
                               )}
                             >
                               {isCurrentTier && (
-                                <div className={cn('absolute top-0 right-0 px-2.5 py-1 text-[9px] font-bold rounded-bl-xl bg-gradient-to-r text-white z-10', config.gradient)}>
+                                <div className={cn('absolute top-0 right-0 px-3 py-1.5 text-[10px] font-bold rounded-bl-xl bg-gradient-to-r text-white z-10', config.gradient)}>
                                   CURRENT
                                 </div>
                               )}
@@ -4662,15 +4555,15 @@ export default function WalletPage() {
                                     <TierIcon size={20} className={isCurrentTier ? 'text-white' : config.text} />
                                   </div>
                                   <div className="flex-1">
-                                    <h4 className={cn('text-[15px] font-bold capitalize', isDark ? 'text-white' : 'text-gray-900')}>
+                                    <h4 className={cn('text-base font-bold capitalize', isDark ? 'text-white' : 'text-gray-900')}>
                                       {name}
                                     </h4>
                                     <div className="flex items-baseline gap-1">
-                                      <span className={cn('text-lg font-black', isDark ? 'text-white/90' : 'text-gray-900')}>
+                                      <span className={cn('text-xl font-black', isDark ? 'text-white/90' : 'text-gray-900')}>
                                         ${tier.price}
                                       </span>
                                       {tier.billing && (
-                                        <span className={cn('text-[10px] font-medium opacity-40', isDark ? 'text-white' : 'text-gray-500')}>
+                                        <span className={cn('text-[11px] font-medium opacity-40', isDark ? 'text-white' : 'text-gray-500')}>
                                           {tier.billing === 'lifetime' ? 'once' : '/' + tier.billing}
                                         </span>
                                       )}
@@ -4682,26 +4575,26 @@ export default function WalletPage() {
                                   <div className="space-y-2 mb-6 flex-1">
                                     <div className="flex items-center gap-2">
                                       <div className={cn('w-1 h-1 rounded-full', isCurrentTier ? 'bg-white' : config.text)} />
-                                      <span className={cn('text-[11px] font-medium', isDark ? 'text-white/50' : 'text-gray-500')}>{tier.perks.privateMessageLimit?.toLocaleString()} messages</span>
+                                      <span className={cn('text-xs font-medium', isDark ? 'text-white/50' : 'text-gray-500')}>{tier.perks.privateMessageLimit?.toLocaleString()} messages</span>
                                     </div>
                                     {tier.perks.canChangeUsername && (
                                       <div className="flex items-center gap-2">
-                                        <div className={cn('w-1 h-1 rounded-full', isCurrentTier ? 'bg-white' : config.text)} />
-                                        <span className={cn('text-[11px] font-medium', isDark ? 'text-white/50' : 'text-gray-500')}>Custom username</span>
+                                        <div className={cn('w-1.5 h-1.5 rounded-full', isCurrentTier ? 'bg-white' : config.text)} />
+                                        <span className={cn('text-xs font-medium', isDark ? 'text-white/50' : 'text-gray-500')}>Custom username</span>
                                       </div>
                                     )}
                                     {tier.perks.verifiedBadge && (
                                       <div className="flex items-center gap-2">
-                                        <div className={cn('w-1 h-1 rounded-full', isCurrentTier ? 'bg-white' : config.text)} />
-                                        <span className={cn('text-[11px] font-medium', isDark ? 'text-white/50' : 'text-gray-500')}>Verified badge</span>
+                                        <div className={cn('w-1.5 h-1.5 rounded-full', isCurrentTier ? 'bg-white' : config.text)} />
+                                        <span className={cn('text-xs font-medium', isDark ? 'text-white/50' : 'text-gray-500')}>Verified badge</span>
                                       </div>
                                     )}
                                   </div>
                                 )}
 
                                 {/* Chat Name Preview */}
-                                <div className={cn('flex items-center gap-2 mb-4 p-2 rounded-lg', isDark ? 'bg-black/20' : 'bg-gray-100/50')}>
-                                  <span className={cn('text-[10px] font-bold uppercase truncate max-w-[80px]',
+                                <div className={cn('flex items-center gap-2 mb-4 p-2.5 rounded-lg', isDark ? 'bg-black/20' : 'bg-gray-100/50')}>
+                                  <span className={cn('text-[11px] font-bold uppercase truncate max-w-[80px]',
                                     name === 'verified' ? 'bg-gradient-to-r from-[#FFD700] via-[#FF6B9D] to-[#00FFFF] bg-clip-text text-transparent' :
                                       name === 'vip' ? 'text-emerald-400' :
                                         name === 'nova' ? 'text-amber-400' :
@@ -4709,7 +4602,7 @@ export default function WalletPage() {
                                   )}>
                                     {profileUser?.username || 'User'}
                                   </span>
-                                  <span className={cn('text-[10px] opacity-40 italic', isDark ? 'text-white' : 'text-gray-500')}>Chat preview</span>
+                                  <span className={cn('text-[11px] opacity-40 italic', isDark ? 'text-white' : 'text-gray-500')}>Chat preview</span>
                                 </div>
 
                                 {!isCurrentTier && tier.price > 0 && (
@@ -4718,22 +4611,22 @@ export default function WalletPage() {
                                       onClick={() => handlePurchaseTierXRP(name)}
                                       disabled={purchaseLoading === name}
                                       className={cn(
-                                        'flex-1 py-2 rounded-xl border-[1.5px] flex items-center justify-center gap-1.5 text-[11px] font-bold transition-all',
+                                        'flex-1 py-2.5 rounded-xl border-[1.5px] flex items-center justify-center gap-2 text-xs font-bold transition-all',
                                         isDark ? 'border-white/[0.06] text-white/40 hover:bg-white/[0.04]' : 'border-gray-100 text-gray-400 hover:bg-gray-50'
                                       )}
                                     >
-                                      {purchaseLoading === name ? <Loader2 size={12} className="animate-spin" /> : <Wallet size={12} />}
+                                      {purchaseLoading === name ? <Loader2 size={14} className="animate-spin" /> : <Wallet size={14} />}
                                       XRP
                                     </button>
                                     <button
                                       onClick={() => handlePurchaseTierStripe(name)}
                                       disabled={purchaseLoading === name}
                                       className={cn(
-                                        'flex-1 py-2 rounded-xl border-[1.5px] flex items-center justify-center gap-1.5 text-[11px] font-bold transition-all',
+                                        'flex-1 py-2.5 rounded-xl border-[1.5px] flex items-center justify-center gap-2 text-xs font-bold transition-all',
                                         isDark ? 'border-white/[0.06] text-white/40 hover:bg-white/[0.04]' : 'border-gray-100 text-gray-400 hover:bg-gray-50'
                                       )}
                                     >
-                                      {purchaseLoading === name ? <Loader2 size={12} className="animate-spin" /> : <CreditCard size={12} />}
+                                      {purchaseLoading === name ? <Loader2 size={14} className="animate-spin" /> : <CreditCard size={14} />}
                                       Card / Crypto
                                     </button>
                                   </div>
@@ -5972,7 +5865,8 @@ export async function getStaticProps() {
         canonical: 'https://xrpl.to/wallet',
         title: 'Wallet | Manage Your XRPL Wallet',
         url: 'https://xrpl.to/wallet',
-        imgUrl: 'https://xrpl.to/og/wallet.webp',
+        imgUrl: 'https://xrpl.to/api/og/wallet',
+        imgType: 'image/png',
         desc: 'Manage your XRP Ledger wallet. View balances, send payments, and trade tokens.'
       }
     }

@@ -36,7 +36,8 @@ export async function getStaticProps() {
         canonical: 'https://xrpl.to/signup',
         title: 'Sign Up | Create Your XRPL.to Account',
         url: 'https://xrpl.to/signup',
-        imgUrl: 'https://xrpl.to/og/signup.webp',
+        imgUrl: 'https://xrpl.to/api/og/signup',
+        imgType: 'image/png',
         desc: 'Create your XRPL.to account to track tokens, manage watchlists, and trade on the XRP Ledger.'
       }
     }

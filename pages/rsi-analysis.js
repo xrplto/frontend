@@ -58,7 +58,7 @@ const SearchInput = ({ darkMode, className, ...p }) => (
 const Button = ({ selected, darkMode, className, children, ...p }) => (
   <button
     className={cn(
-      'py-2 px-[14px] border-[1.5px] rounded-lg cursor-pointer text-[13px] font-normal transition-all duration-150',
+      'py-2 px-[14px] border-[1.5px] rounded-lg cursor-pointer text-[13px] font-normal transition-[border-color,background-color] duration-150',
       selected
         ? 'border-[rgba(59,130,246,0.25)] bg-[rgba(59,130,246,0.08)] text-[#3b82f6] hover:border-[rgba(59,130,246,0.35)] hover:bg-[rgba(59,130,246,0.12)]'
         : darkMode
@@ -75,7 +75,7 @@ const Button = ({ selected, darkMode, className, children, ...p }) => (
 const Select = ({ selected, darkMode, className, children, ...p }) => (
   <select
     className={cn(
-      'py-2 pl-[14px] pr-[30px] border-[1.5px] rounded-lg text-[13px] font-normal cursor-pointer appearance-none bg-no-repeat bg-[length:14px] bg-[position:right_8px_center] transition-all duration-150',
+      'py-2 pl-[14px] pr-[30px] border-[1.5px] rounded-lg text-[13px] font-normal cursor-pointer appearance-none bg-no-repeat bg-[length:14px] bg-[position:right_8px_center] transition-[border-color] duration-150',
       selected
         ? 'border-[rgba(59,130,246,0.25)] bg-[rgba(59,130,246,0.08)] text-[#3b82f6] hover:border-[rgba(59,130,246,0.35)]'
         : darkMode
@@ -93,7 +93,7 @@ const Select = ({ selected, darkMode, className, children, ...p }) => (
 const FilterInput = ({ darkMode, className, ...p }) => (
   <input
     className={cn(
-      'py-2 px-3 border-[1.5px] rounded-lg text-[13px] w-[100px] transition-all duration-150 focus:outline-none focus:border-[rgba(59,130,246,0.35)]',
+      'py-2 px-3 border-[1.5px] rounded-lg text-[13px] w-[100px] transition-[border-color] duration-150 focus:outline-none focus:border-[rgba(59,130,246,0.35)]',
       darkMode ? 'border-white/10 bg-white/[0.04] text-white/90 placeholder:text-white/[0.35]' : 'border-black/10 bg-[rgba(255,255,255,0.95)] text-black/80 placeholder:text-black/[0.35]',
       className
     )}
@@ -101,7 +101,7 @@ const FilterInput = ({ darkMode, className, ...p }) => (
   />
 );
 
-const Label = ({ darkMode, className, children, ...p }) => <span className={cn('text-[11px] font-medium uppercase tracking-[0.5px] whitespace-nowrap', darkMode ? 'text-white/[0.45]' : 'text-black/[0.45]', className)} {...p}>{children}</span>;
+const Label = ({ darkMode, className, children, ...p }) => <span className={cn('text-[11px] font-semibold uppercase tracking-[0.06em] whitespace-nowrap', darkMode ? 'text-white/60' : 'text-[#919EAB]', className)} {...p}>{children}</span>;
 
 const HeatMap = ({ darkMode, className, children, ...p }) => <div className={cn('w-full h-[320px] rounded-xl border mb-5 relative overflow-hidden transition-[border-color] duration-200', darkMode ? 'bg-white/[0.02] border-white/[0.08] hover:border-white/[0.15]' : 'bg-black/[0.02] border-black/[0.08] hover:border-black/[0.15]', className)} {...p}>{children}</div>;
 
@@ -111,13 +111,13 @@ const CustomTooltip = ({ darkMode, className, children, ...p }) => <div classNam
 
 const TableWrapper = ({ darkMode, className, children, ...p }) => <div className={cn('overflow-x-auto rounded-xl border w-full', darkMode ? 'border-white/[0.08] bg-white/[0.02]' : 'border-black/[0.08] bg-black/[0.02]', className)} {...p}>{children}</div>;
 
-const Table = ({ className, children, ...p }) => <table className={cn('w-full border-collapse min-w-full table-auto', className)} {...p}>{children}</table>;
+const Table = ({ className, children, ...p }) => <table className={cn('w-full border-collapse min-w-full table-auto hidden md:table', className)} {...p}>{children}</table>;
 
 const Th = ({ darkMode, align, sortable, className, children, ...p }) => (
   <th
     className={cn(
-      'py-[14px] px-4 font-medium text-[11px] uppercase tracking-[0.5px] whitespace-nowrap',
-      darkMode ? 'text-white/50 bg-white/[0.02] border-b border-white/[0.06]' : 'text-black/50 bg-black/[0.02] border-b border-black/[0.06]',
+      'py-[14px] px-4 font-semibold text-[10px] uppercase tracking-[0.06em] whitespace-nowrap',
+      darkMode ? 'text-white/60 bg-white/[0.02] border-b border-white/[0.06]' : 'text-[#919EAB] bg-black/[0.02] border-b border-black/[0.06]',
       sortable ? 'cursor-pointer' : 'cursor-default',
       sortable && (darkMode ? 'hover:text-white/80' : 'hover:text-black/80'),
       className
@@ -132,7 +132,7 @@ const Th = ({ darkMode, align, sortable, className, children, ...p }) => (
 const Tr = ({ darkMode, className, children, ...p }) => (
   <tr
     className={cn(
-      'border-b cursor-pointer transition-all duration-200 last:border-b-0',
+      'border-b cursor-pointer transition-[border-color,background-color] duration-200 last:border-b-0',
       darkMode ? 'border-white/[0.05] hover:bg-white/[0.04]' : 'border-black/[0.05] hover:bg-black/[0.02]',
       className
     )}
@@ -144,7 +144,7 @@ const Tr = ({ darkMode, className, children, ...p }) => (
 
 const Td = ({ darkMode, align, className, children, ...p }) => (
   <td
-    className={cn('py-[14px] px-4 text-sm', darkMode ? 'text-white' : 'text-[#333]', className)}
+    className={cn('py-[14px] px-4 text-sm tracking-[0.005em]', darkMode ? 'text-white/88' : 'text-[#1a1a2e]', className)}
     style={{ textAlign: align || 'left' }}
     {...p}
   >
@@ -154,13 +154,13 @@ const Td = ({ darkMode, align, className, children, ...p }) => (
 
 const TokenInfo = ({ className, children, ...p }) => <div className={cn('flex items-center gap-3', className)} {...p}>{children}</div>;
 
-const TokenImage = ({ darkMode, className, ...p }) => <img className={cn('w-8 h-8 rounded-full border-2', darkMode ? 'border-white/10' : 'border-black/10', className)} {...p} />;
+const TokenImage = ({ darkMode, className, ...p }) => <img className={cn('w-8 h-8 rounded-full border-2 object-cover', darkMode ? 'border-white/10' : 'border-black/10', className)} loading="lazy" decoding="async" width={32} height={32} {...p} />;
 
 const TokenDetails = ({ className, children, ...p }) => <div className={cn('flex flex-col', className)} {...p}>{children}</div>;
 
-const TokenName = ({ darkMode, className, children, ...p }) => <div className={cn('font-semibold text-sm', darkMode ? 'text-white' : 'text-black', className)} {...p}>{children}</div>;
+const TokenName = ({ darkMode, className, children, ...p }) => <div className={cn('font-semibold text-sm tracking-[-0.01em]', darkMode ? 'text-white/95' : 'text-[#1a1a2e]', className)} {...p}>{children}</div>;
 
-const TokenSymbol = ({ darkMode, className, children, ...p }) => <div className={cn('text-xs uppercase', darkMode ? 'text-[#bbb]' : 'text-[#666]', className)} {...p}>{children}</div>;
+const TokenSymbol = ({ darkMode, className, children, ...p }) => <div className={cn('text-[11px] uppercase font-medium tracking-[0.02em]', darkMode ? 'text-white/60' : 'text-black/40', className)} {...p}>{children}</div>;
 
 const RSIBadge = ({ bg, color, className, children, ...p }) => (
   <span
@@ -172,7 +172,7 @@ const RSIBadge = ({ bg, color, className, children, ...p }) => (
   </span>
 );
 
-const PriceChange = ({ positive, className, children, ...p }) => <span className={cn('font-medium text-[13px]', positive ? 'text-[#22c55e]' : 'text-[#ef4444]', className)} {...p}>{children}</span>;
+const PriceChange = ({ positive, className, children, ...p }) => <span className={cn('font-semibold text-[13px]', positive ? 'text-[#22c55e]' : 'text-[#ef4444]', className)} {...p}>{children}</span>;
 
 function RSIAnalysisPage({ data }) {
   const { themeName } = useContext(ThemeContext);
@@ -647,7 +647,7 @@ function RSIAnalysisPage({ data }) {
         RSI Analysis for XRPL Tokens
       </h1>
 
-      <div id="back-to-top-anchor" className="mx-auto max-w-[1920px] px-4 mt-4">
+      <div id="back-to-top-anchor" className="mx-auto max-w-[1920px] px-2.5 md:px-4 mt-4">
         <Controls darkMode={darkMode}>
           <ControlRow>
             <MobileButtonGrid>
@@ -672,6 +672,7 @@ function RSIAnalysisPage({ data }) {
                 darkMode={darkMode}
                 value={params.limit}
                 onChange={(e) => updateParam('limit', e.target.value)}
+                aria-label="Results per page"
               >
                 <option value="25">25</option>
                 <option value="50">50</option>
@@ -694,6 +695,7 @@ function RSIAnalysisPage({ data }) {
                 selected={!!params.tag}
                 value={params.tag}
                 onChange={(e) => updateParam('tag', e.target.value)}
+                aria-label="Filter by tag"
               >
                 <option value="">All Tags</option>
                 <option value="Memes">Memes</option>
@@ -707,6 +709,7 @@ function RSIAnalysisPage({ data }) {
                 selected={!!params.origin}
                 value={params.origin}
                 onChange={(e) => updateParam('origin', e.target.value)}
+                aria-label="Filter by origin"
               >
                 <option value="">All Origins</option>
                 <option value="FirstLedger">FirstLedger</option>
@@ -779,7 +782,7 @@ function RSIAnalysisPage({ data }) {
           />
           <div className="absolute top-3 left-5 right-5 flex justify-between items-center">
             <span
-              className={cn('text-sm font-medium', darkMode ? 'text-white/70' : 'text-black/70')}
+              className={cn('text-sm font-semibold tracking-[-0.01em]', darkMode ? 'text-white/60' : 'text-black/60')}
             >
               RSI Heatmap · {params.timeframe.toUpperCase()}
             </span>
@@ -891,8 +894,8 @@ function RSIAnalysisPage({ data }) {
                       <TokenInfo>
                         <TokenImage
                           darkMode={darkMode}
-                          src={`https://s1.xrpl.to/token/${token.md5}`}
-                          alt={token.name}
+                          src={`https://s1.xrpl.to/thumb/${token.md5}_48`}
+                          alt=""
                           onError={(e) => (e.target.style.display = 'none')}
                         />
                         <TokenDetails>
@@ -948,6 +951,74 @@ function RSIAnalysisPage({ data }) {
               })}
             </tbody>
           </Table>
+
+          {/* Mobile card layout */}
+          <div className="md:hidden divide-y divide-white/10">
+            {tokens.map((token, idx) => {
+              const rsi = getRSIValue(token);
+              const rsiColors = getRSIColor(rsi);
+              const marketCapFiat = new Decimal(token.marketcap || 0).div(exchRate).toNumber();
+              const volumeFiat = new Decimal(token.vol24hxrp || 0).div(exchRate).toNumber();
+              const priceFiat = new Decimal(token.exch || 0).div(exchRate).toNumber();
+
+              return (
+                <div
+                  key={token.md5}
+                  onClick={() => router.push(`/token/${token.slug}`)}
+                  className={cn('px-3 py-3 cursor-pointer transition-colors duration-150', darkMode ? 'border-white/[0.05] hover:bg-white/[0.04]' : 'border-black/[0.05] hover:bg-black/[0.02]', idx > 0 && 'border-t-[1.5px]')}
+                >
+                  {/* Row 1: Rank + Token + RSI badge */}
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className={cn('text-[11px] w-5 text-center shrink-0', darkMode ? 'text-white/60' : 'text-[#919EAB]')}>{params.start + idx + 1}</span>
+                      <TokenImage
+                        darkMode={darkMode}
+                        src={`https://s1.xrpl.to/thumb/${token.md5}_32`}
+                        alt=""
+                        onError={(e) => (e.target.style.display = 'none')}
+                        className="!w-6 !h-6"
+                      />
+                      <div className="min-w-0">
+                        <div className={cn('text-[13px] font-semibold tracking-[-0.01em] truncate', darkMode ? 'text-white/95' : 'text-[#1a1a2e]')}>{token.name}</div>
+                        <div className={cn('text-[10px] uppercase font-medium tracking-[0.02em]', darkMode ? 'text-white/60' : 'text-black/40')}>{token.user}</div>
+                      </div>
+                    </div>
+                    <RSIBadge {...rsiColors} className="shrink-0 ml-2 text-[11px] py-1 px-2 min-w-0">
+                      {rsi ? rsi.toFixed(1) : '-'}
+                    </RSIBadge>
+                  </div>
+
+                  {/* Row 2: Key stats grid */}
+                  <div className="grid grid-cols-4 gap-x-3 gap-y-1.5 ml-7">
+                    <div>
+                      <div className={cn('text-[9px] uppercase tracking-[0.06em] font-semibold', darkMode ? 'text-white/50' : 'text-black/30')}>Price</div>
+                      <div className={cn('text-[12px] font-medium', darkMode ? 'text-white/85' : 'text-[#1a1a2e]')}>
+                        {currencySymbols[activeFiatCurrency]}{fCurrency5(priceFiat)}
+                      </div>
+                    </div>
+                    <div>
+                      <div className={cn('text-[9px] uppercase tracking-[0.06em] font-semibold', darkMode ? 'text-white/50' : 'text-black/30')}>24h</div>
+                      <div className="text-[12px] font-semibold" style={{ color: token.pro24h >= 0 ? '#22c55e' : '#ef4444' }}>
+                        {token.pro24h >= 0 ? '+' : ''}{token.pro24h?.toFixed(2) || '0.00'}%
+                      </div>
+                    </div>
+                    <div>
+                      <div className={cn('text-[9px] uppercase tracking-[0.06em] font-semibold', darkMode ? 'text-white/50' : 'text-black/30')}>MCap</div>
+                      <div className={cn('text-[12px] font-medium', darkMode ? 'text-white/85' : 'text-[#1a1a2e]')}>
+                        {marketCapFiat >= 1e6 ? `${(marketCapFiat / 1e6).toFixed(1)}M` : marketCapFiat >= 1e3 ? `${(marketCapFiat / 1e3).toFixed(1)}K` : fNumber(marketCapFiat)}
+                      </div>
+                    </div>
+                    <div>
+                      <div className={cn('text-[9px] uppercase tracking-[0.06em] font-semibold', darkMode ? 'text-white/50' : 'text-black/30')}>Vol</div>
+                      <div className={cn('text-[12px] font-medium', darkMode ? 'text-white/85' : 'text-[#1a1a2e]')}>
+                        {volumeFiat >= 1e6 ? `${(volumeFiat / 1e6).toFixed(1)}M` : volumeFiat >= 1e3 ? `${(volumeFiat / 1e3).toFixed(1)}K` : fNumber(volumeFiat)}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </TableWrapper>
 
         {tokens.length > 0 && (
@@ -1005,7 +1076,8 @@ export async function getStaticProps() {
           canonical: 'https://xrpl.to/rsi-analysis',
           title: 'RSI Analysis | XRPL Token Technical Indicators',
           url: 'https://xrpl.to/rsi-analysis',
-          imgUrl: 'https://xrpl.to/og/rsi-analysis.webp',
+          imgUrl: 'https://xrpl.to/api/og/rsi-analysis',
+          imgType: 'image/png',
           desc: 'Advanced RSI analysis for XRPL tokens with overbought/oversold detection',
           keywords: 'RSI analysis, XRPL tokens, technical indicators, crypto RSI'
         }

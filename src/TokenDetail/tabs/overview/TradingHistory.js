@@ -14,8 +14,9 @@ import { MD5 } from 'crypto-js';
 import { useSelector } from 'react-redux';
 import { toast } from 'sonner';
 import { configureMemos } from 'src/utils/parseUtils';
-import TopTraders from 'src/TokenDetail/tabs/holders/TopTraders';
-import RichList from 'src/TokenDetail/tabs/holders/RichList';
+import dynamic from 'next/dynamic';
+const TopTraders = dynamic(() => import('src/TokenDetail/tabs/holders/TopTraders'), { ssr: false, loading: () => <div className="h-[400px] animate-pulse bg-white/5 rounded-xl" /> });
+const RichList = dynamic(() => import('src/TokenDetail/tabs/holders/RichList'), { ssr: false, loading: () => <div className="h-[400px] animate-pulse bg-white/5 rounded-xl" /> });
 import { WalletContext, AppContext } from 'src/context/AppContext';
 import { selectMetrics } from 'src/redux/statusSlice';
 import {
@@ -42,7 +43,8 @@ import {
   Filter,
   CheckCircle,
   AlertTriangle,
-  Search
+  Search,
+  CandlestickChart
 } from 'lucide-react';
 import { cn } from 'src/utils/cn';
 
@@ -78,7 +80,7 @@ const BearEmptyState = ({ isDark, title, subtitle }) => (
         </div>
       </div>
       <span className={cn('text-[11px] font-medium tracking-[0.05em] uppercase mb-1', isDark ? 'text-white/50' : 'text-black/50')}>{title}</span>
-      <span className={cn('text-[10px]', isDark ? 'text-white/30' : 'text-black/30')}>{subtitle}</span>
+      <span className={cn('text-[10px]', isDark ? 'text-white/60' : 'text-black/60')}>{subtitle}</span>
     </div>
   </div>
 );
@@ -137,12 +139,12 @@ const MiniSparkline = memo(
 const getTokenImageUrl = (issuer, currency) => {
   // XRP has a special MD5
   if (currency === 'XRP') {
-    return 'https://s1.xrpl.to/token/84e5efeb89c4eae8f68188982dc290d8';
+    return 'https://s1.xrpl.to/thumb/84e5efeb89c4eae8f68188982dc290d8_32';
   }
   // Calculate MD5 for the token
   const tokenIdentifier = issuer + '_' + currency;
   const md5Hash = MD5(tokenIdentifier).toString();
-  return `https://s1.xrpl.to/token/${md5Hash}`;
+  return `https://s1.xrpl.to/thumb/${md5Hash}_32`;
 };
 const SOURCE_TAGS = {
   111: 'Horizon',
@@ -592,7 +594,7 @@ const TierHelpIcon = ({ isDark }) => (
     <span
       className={cn(
         'text-[9px] w-[12px] h-[12px] rounded-full border inline-flex items-center justify-center',
-        isDark ? 'border-white/30 text-white/40' : 'border-black/30 text-black/40'
+        isDark ? 'border-white/30 text-white/60' : 'border-black/30 text-black/60'
       )}
     >
       ?
@@ -610,6 +612,184 @@ const TierHelpIcon = ({ isDark }) => (
     <style>{`.tier-help:hover .tier-tooltip { opacity: 1 !important; visibility: visible !important; }`}</style>
   </span>
 );
+
+// Trader tooltip - shows stats on hover over address
+const traderStatsCache = new Map();
+const TRADER_CACHE_TTL = 120_000;
+
+const TraderTooltip = memo(({ address, tokenId, isDark, currency, children }) => {
+  const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [visible, setVisible] = useState(false);
+  const [pos, setPos] = useState({ top: 0, left: 0 });
+  const enterTimer = useRef(null);
+  const leaveTimer = useRef(null);
+  const anchorRef = useRef(null);
+  const overTooltip = useRef(false);
+
+  const fetchStats = useCallback(async () => {
+    if (!address || !tokenId) return;
+    const cacheKey = `${tokenId}:${address}`;
+    const cached = traderStatsCache.get(cacheKey);
+    if (cached && Date.now() - cached.ts < TRADER_CACHE_TTL) {
+      setStats(cached.data);
+      return;
+    }
+    setLoading(true);
+    try {
+      const res = await fetch(`https://api.xrpl.to/api/traders/token-traders/${tokenId}?search=${address}&limit=1`);
+      const json = await res.json();
+      const trader = json?.traders?.[0] || null;
+      traderStatsCache.set(cacheKey, { data: trader, ts: Date.now() });
+      if (traderStatsCache.size > 200) {
+        const oldest = traderStatsCache.keys().next().value;
+        traderStatsCache.delete(oldest);
+      }
+      setStats(trader);
+    } catch {
+      setStats(null);
+    } finally {
+      setLoading(false);
+    }
+  }, [address, tokenId]);
+
+  const show = useCallback(() => {
+    clearTimeout(leaveTimer.current);
+    if (!anchorRef.current) return;
+    const rect = anchorRef.current.getBoundingClientRect();
+    let top = rect.top - 8;
+    let left = rect.left + rect.width / 2;
+    const tw = 220;
+    if (left - tw / 2 < 8) left = tw / 2 + 8;
+    if (left + tw / 2 > window.innerWidth - 8) left = window.innerWidth - tw / 2 - 8;
+    setPos({ top, left });
+    setVisible(true);
+    fetchStats();
+  }, [fetchStats]);
+
+  const scheduleHide = useCallback(() => {
+    leaveTimer.current = setTimeout(() => {
+      if (!overTooltip.current) setVisible(false);
+    }, 150);
+  }, []);
+
+  const handleAnchorEnter = useCallback(() => {
+    clearTimeout(leaveTimer.current);
+    enterTimer.current = setTimeout(show, 300);
+  }, [show]);
+
+  const handleAnchorLeave = useCallback(() => {
+    clearTimeout(enterTimer.current);
+    scheduleHide();
+  }, [scheduleHide]);
+
+  const handleTipEnter = useCallback(() => {
+    overTooltip.current = true;
+    clearTimeout(leaveTimer.current);
+  }, []);
+
+  const handleTipLeave = useCallback(() => {
+    overTooltip.current = false;
+    scheduleHide();
+  }, [scheduleHide]);
+
+  useEffect(() => () => { clearTimeout(enterTimer.current); clearTimeout(leaveTimer.current); }, []);
+
+  const tier = stats ? (TIER_CONFIG.find(t => (stats.xrpBought || 0) + (stats.xrpSold || 0) < t.max * 2) || TIER_CONFIG[5]) : null;
+  const TierIconComp = tier?.Icon;
+  const sym = currency ? decodeCurrency(currency) : 'TOKEN';
+
+  const fv = (v) => {
+    if (v == null || !Number.isFinite(v)) return '0';
+    const a = Math.abs(v);
+    if (a >= 1e6) return (v / 1e6).toFixed(1) + 'M';
+    if (a >= 1e3) return (v / 1e3).toFixed(1) + 'K';
+    if (a >= 1) return v.toFixed(2);
+    return v.toFixed(4);
+  };
+
+  const since = (ts) => {
+    if (!ts) return '-';
+    const d = Math.floor((Date.now() - ts) / 86400000);
+    if (d < 1) return '<1d';
+    if (d < 30) return `${d}d`;
+    if (d < 365) return `${Math.floor(d / 30)}mo`;
+    return `${(d / 365).toFixed(1)}y`;
+  };
+
+  return (
+    <span
+      ref={anchorRef}
+      onMouseEnter={handleAnchorEnter}
+      onMouseLeave={handleAnchorLeave}
+      className="inline-flex items-center"
+    >
+      {children}
+      {visible && createPortal(
+        <div
+          onMouseEnter={handleTipEnter}
+          onMouseLeave={handleTipLeave}
+          className={cn(
+            'fixed z-[9999] rounded-lg border py-2 px-3 text-[11px]',
+            isDark
+              ? 'bg-[#141414] border-white/[0.12] text-white/80'
+              : 'bg-white border-black/[0.08] text-black/80 shadow-[0_4px_16px_rgba(0,0,0,0.12)]'
+          )}
+          style={{
+            top: pos.top,
+            left: pos.left,
+            transform: 'translate(-50%, -100%)',
+            minWidth: 210,
+            maxWidth: 280
+          }}
+        >
+          {loading && !stats ? (
+            <div className="flex items-center justify-center py-2">
+              <Loader2 className="animate-spin" size={14} />
+            </div>
+          ) : stats ? (
+            <div className="flex flex-col gap-[6px]">
+              <div className="flex items-center gap-2 pb-[4px] border-b" style={{ borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)' }}>
+                {TierIconComp && <TierIconComp color={tier.color} />}
+                <span className={cn('font-semibold text-[10px] uppercase tracking-wider', isDark ? 'text-white/50' : 'text-black/50')}>
+                  {tier?.name}
+                </span>
+              </div>
+              <div className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-[3px]">
+                <span className={isDark ? 'text-white/60' : 'text-black/60'}>Bought</span>
+                <span className="text-right font-mono font-semibold text-[#22c55e]">
+                  {fv(stats.tokensBought)} <span className={isDark ? 'text-white/60' : 'text-black/60'}>{sym}</span>
+                  <span className={cn('ml-1 text-[9px] font-normal', isDark ? 'text-white/25' : 'text-black/25')}>{fv(stats.xrpBought)} XRP</span>
+                </span>
+                <span className={isDark ? 'text-white/60' : 'text-black/60'}>Sold</span>
+                <span className="text-right font-mono font-semibold text-[#ef4444]">
+                  {fv(stats.tokensSold)} <span className={isDark ? 'text-white/60' : 'text-black/60'}>{sym}</span>
+                  <span className={cn('ml-1 text-[9px] font-normal', isDark ? 'text-white/25' : 'text-black/25')}>{fv(stats.xrpSold)} XRP</span>
+                </span>
+                <span className={isDark ? 'text-white/60' : 'text-black/60'}>PnL</span>
+                <span className={cn('text-right font-mono font-semibold', (stats.totalPnl || 0) >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]')}>
+                  {(stats.totalPnl || 0) >= 0 ? '+' : ''}{fv(stats.totalPnl)} <span className={isDark ? 'text-white/60' : 'text-black/60'}>XRP</span>
+                </span>
+                <span className={isDark ? 'text-white/60' : 'text-black/60'}>Holds</span>
+                <span className="text-right font-mono font-semibold">
+                  {fv(stats.actualBalance)} <span className={isDark ? 'text-white/60' : 'text-black/60'}>{sym}</span>
+                  {stats.holdingValue > 0 && <span className={cn('ml-1 text-[9px] font-normal', isDark ? 'text-white/25' : 'text-black/25')}>{fv(stats.holdingValue)} XRP</span>}
+                </span>
+                <span className={isDark ? 'text-white/60' : 'text-black/60'}>Since</span>
+                <span className="text-right font-mono">{since(stats.firstTradeDate)}</span>
+                <span className={isDark ? 'text-white/60' : 'text-black/60'}>Trades</span>
+                <span className="text-right font-mono">{stats.tradesAll || 0}</span>
+              </div>
+            </div>
+          ) : (
+            <span className={isDark ? 'text-white/60' : 'text-black/60'}>No data</span>
+          )}
+        </div>,
+        document.body
+      )}
+    </span>
+  );
+});
 
 // Define the highlight animation with softer colors
 const highlightAnimation = (isDark) => `
@@ -644,7 +824,7 @@ const LiveCircle = ({ className, ...p }) => (
 const Card = ({ isDark, isNew, className, children, ...p }) => (
   <div
     className={cn(
-      'bg-transparent border-b relative transition-all duration-200 last:border-b-0',
+      'bg-transparent border-b relative transition-[opacity,transform,background-color,border-color] duration-200 last:border-b-0',
       'max-sm:px-3',
       isDark ? 'border-white/[0.05] hover:bg-white/[0.03]' : 'border-black/[0.04] hover:bg-black/[0.02]',
       className
@@ -700,7 +880,7 @@ const BarCell = ({ barWidth, isCreate, isLP, isBuy, isDark, className, children,
 
 const RefreshIcon = ({ isDark, className, children, ...p }) => (
   <button
-    className={cn('bg-transparent border-none p-1 cursor-pointer flex items-center justify-center transition-[color] duration-150 hover:text-blue-500', isDark ? 'text-white/40' : 'text-black/40', className)}
+    className={cn('bg-transparent border-none p-1 cursor-pointer flex items-center justify-center transition-[color] duration-150 hover:text-blue-500', isDark ? 'text-white/60' : 'text-black/60', className)}
     {...p}
   >{children}</button>
 );
@@ -712,10 +892,10 @@ const Pagination = ({ className, children, ...p }) => (
 const PaginationButton = ({ isDark, className, children, ...p }) => (
   <button
     className={cn(
-      'flex items-center justify-center rounded-lg p-[6px] cursor-pointer border transition-all duration-200',
+      'flex items-center justify-center rounded-lg p-[6px] cursor-pointer border transition-[opacity,transform,background-color,border-color] duration-200',
       'hover:enabled:text-blue-500 hover:enabled:border-blue-500/40',
       'disabled:opacity-25 disabled:cursor-default',
-      isDark ? 'text-white/45 bg-white/[0.03] border-white/[0.08] hover:enabled:bg-white/[0.08]' : 'text-black/45 bg-black/[0.03] border-black/[0.08] hover:enabled:bg-black/[0.06]',
+      isDark ? 'text-white/60 bg-white/[0.03] border-white/[0.08] hover:enabled:bg-white/[0.08]' : 'text-black/60 bg-black/[0.03] border-black/[0.08] hover:enabled:bg-black/[0.06]',
       className
     )}
     {...p}
@@ -734,7 +914,7 @@ const TableHeader = ({ isDark, className, children, ...p }) => (
   <div
     className={cn(
       'flex py-2 border-b',
-      isDark ? 'border-white/[0.06] [&>div]:text-white/[0.35]' : 'border-black/[0.06] [&>div]:text-black/40',
+      isDark ? 'border-white/[0.06] [&>div]:text-white/[0.35]' : 'border-black/[0.06] [&>div]:text-black/60',
       '[&>div]:text-[9px] [&>div]:font-normal [&>div]:uppercase [&>div]:tracking-[0.04em]',
       className
     )}
@@ -791,9 +971,10 @@ const Tooltip = ({ title, children, arrow }) => {
   );
 };
 
-const IconButton = ({ isDark, className, children, ...p }) => (
+const IconButton = ({ isDark, className, children, 'aria-label': ariaLabel, ...p }) => (
   <button
-    className={cn('p-1 bg-transparent border-none rounded-lg cursor-pointer inline-flex items-center justify-center transition-[color] duration-150 hover:text-blue-500', isDark ? 'text-white/40' : 'text-black/40', className)}
+    aria-label={ariaLabel}
+    className={cn('p-1 bg-transparent border-none rounded-lg cursor-pointer inline-flex items-center justify-center transition-[color] duration-150 hover:text-blue-500', isDark ? 'text-white/60' : 'text-black/60', className)}
     {...p}
   >{children}</button>
 );
@@ -812,11 +993,11 @@ const Tabs = ({ isDark, className, children, ...p }) => (
 const Tab = ({ selected, isDark, className, children, ...p }) => (
   <button
     className={cn(
-      'inline-flex items-center justify-center gap-2 text-xs font-medium tracking-[0.05em] py-[10px] px-4 bg-transparent border rounded-[6px] cursor-pointer transition-all duration-150 whitespace-nowrap shrink-0 uppercase',
+      'inline-flex items-center justify-center gap-2 text-xs font-medium tracking-[0.05em] py-[10px] px-4 bg-transparent border rounded-[6px] cursor-pointer transition-[opacity,transform,background-color,border-color] duration-150 whitespace-nowrap shrink-0 uppercase',
       'max-sm:flex-1 max-sm:py-2 max-sm:px-1 max-sm:text-[10px] max-sm:gap-[3px] max-sm:[&_svg]:w-[14px] max-sm:[&_svg]:h-[14px]',
       selected
         ? isDark ? 'border-white/20 text-white' : 'border-black/20 text-[#1a1a1a]'
-        : isDark ? 'border-white/10 text-white/40' : 'border-black/10 text-black/40',
+        : isDark ? 'border-white/10 text-white/60' : 'border-black/10 text-black/60',
       !selected && (isDark ? 'hover:enabled:border-white/[0.15] hover:enabled:text-white/70' : 'hover:enabled:border-black/[0.15] hover:enabled:text-black/60'),
       !selected && 'max-sm:[&>span]:hidden',
       className
@@ -828,7 +1009,7 @@ const Tab = ({ selected, isDark, className, children, ...p }) => (
 const Button = ({ size, isDark, className, children, ...p }) => (
   <button
     className={cn(
-      'text-[11px] font-normal rounded-[6px] border bg-transparent cursor-pointer inline-flex items-center gap-1 transition-all duration-150',
+      'text-[11px] font-normal rounded-[6px] border bg-transparent cursor-pointer inline-flex items-center gap-1 transition-[opacity,transform,background-color,border-color] duration-150',
       isDark ? 'border-white/10 text-white/60 hover:border-white/25 hover:text-white/90' : 'border-black/[0.08] text-black/60 hover:border-black/25 hover:text-black/80',
       className
     )}
@@ -1011,11 +1192,11 @@ const parseValue = (value) => {
 const SubTab = ({ selected, isDark, className, children, ...p }) => (
   <button
     className={cn(
-      'text-[11px] font-semibold py-2 px-4 border-none cursor-pointer uppercase tracking-[0.05em] rounded-lg transition-all duration-200',
+      'text-[11px] font-semibold py-2 px-4 border-none cursor-pointer uppercase tracking-[0.05em] rounded-lg transition-[opacity,transform,background-color,border-color] duration-200',
       'max-sm:py-[6px] max-sm:px-[10px] max-sm:text-[10px] max-sm:flex-1',
       selected
         ? isDark ? 'bg-white/[0.08] text-white' : 'bg-black/[0.05] text-[#1a1a1a]'
-        : isDark ? 'bg-transparent text-white/40' : 'bg-transparent text-black/50',
+        : isDark ? 'bg-transparent text-white/60' : 'bg-transparent text-black/50',
       isDark ? 'hover:bg-white/[0.04] hover:text-white/80' : 'hover:bg-black/[0.03] hover:text-black/70',
       className
     )}
@@ -1035,7 +1216,7 @@ const StatItem = ({ isDark, className, children, ...p }) => (
 );
 
 const Label = ({ isDark, className, children, ...p }) => (
-  <span className={cn('text-[10px] font-medium uppercase tracking-[0.05em]', isDark ? 'text-white/40' : 'text-black/40', className)} {...p}>{children}</span>
+  <span className={cn('text-[10px] font-medium uppercase tracking-[0.05em]', isDark ? 'text-white/60' : 'text-black/60', className)} {...p}>{children}</span>
 );
 
 const Value = ({ isDark, className, children, ...p }) => (
@@ -1044,14 +1225,14 @@ const Value = ({ isDark, className, children, ...p }) => (
 
 const OfferCard = ({ isDark, className, children, ...p }) => (
   <div
-    className={cn('border rounded-xl p-3 transition-all duration-200', isDark ? 'bg-white/[0.02] border-white/[0.06] hover:border-white/[0.12] hover:bg-white/[0.03]' : 'bg-black/[0.01] border-black/[0.06] hover:border-black/[0.12] hover:bg-black/[0.02]', className)}
+    className={cn('border rounded-xl p-3 transition-[opacity,transform,background-color,border-color] duration-200', isDark ? 'bg-white/[0.02] border-white/[0.06] hover:border-white/[0.12] hover:bg-white/[0.03]' : 'bg-black/[0.01] border-black/[0.06] hover:border-black/[0.12] hover:bg-black/[0.02]', className)}
     {...p}
   >{children}</div>
 );
 
 const CancelButton = ({ isDark, className, children, ...p }) => (
   <button
-    className={cn('text-[10px] font-semibold py-[6px] px-3 bg-transparent border rounded-[6px] text-red-500 cursor-pointer uppercase tracking-[0.02em] transition-all duration-200 hover:bg-red-500/[0.08] hover:border-red-500', isDark ? 'border-red-500/20' : 'border-red-500/30', className)}
+    className={cn('text-[10px] font-semibold py-[6px] px-3 bg-transparent border rounded-[6px] text-red-500 cursor-pointer uppercase tracking-[0.02em] transition-[opacity,transform,background-color,border-color] duration-200 hover:bg-red-500/[0.08] hover:border-red-500', isDark ? 'border-red-500/20' : 'border-red-500/30', className)}
     {...p}
   >{children}</button>
 );
@@ -1292,11 +1473,11 @@ const MyActivityTab = memo(({ token, isDark, isMobile, onTransactionClick }) => 
         <Wallet
           size={20}
           strokeWidth={1.5}
-          className={cn(isDark ? 'text-white/40' : 'text-black/40')}
+          className={cn(isDark ? 'text-white/60' : 'text-black/60')}
         />
       </div>
       <span
-        className={cn('text-[13px] font-medium', isDark ? 'text-white/40' : 'text-black/50')}
+        className={cn('text-[13px] font-medium', isDark ? 'text-white/60' : 'text-black/50')}
       >
         Connect wallet to view activity
       </span>
@@ -1348,7 +1529,7 @@ const MyActivityTab = memo(({ token, isDark, isMobile, onTransactionClick }) => 
             </div>
           ) : !tokenAssets ? (
             <div className={cn('text-center p-8 rounded-[12px] border border-dashed', isDark ? 'border-white/10 bg-white/[0.01]' : 'border-black/10 bg-black/[0.01]')}>
-              <span className={cn('text-[13px] font-medium', isDark ? 'text-white/40' : 'text-black/40')}>No position in this token</span>
+              <span className={cn('text-[13px] font-medium', isDark ? 'text-white/60' : 'text-black/60')}>No position in this token</span>
             </div>
           ) : (
             <>
@@ -1358,7 +1539,7 @@ const MyActivityTab = memo(({ token, isDark, isMobile, onTransactionClick }) => 
                   <Label isDark={isDark}>Portfolio Balance</Label>
                   <div className="flex justify-between items-end">
                     <div className={cn('text-[24px] font-bold', isDark ? 'text-white' : 'text-[#1a1a1a]')}>
-                      {formatTradeDisplay(tokenAssets.balance)} <span className="text-[14px] font-medium opacity-40">{tokenCurrency}</span>
+                      {formatTradeDisplay(tokenAssets.balance)} <span className="text-[14px] font-medium opacity-60">{tokenCurrency}</span>
                     </div>
                     <div className={cn('text-[16px] font-semibold mb-1', isDark ? 'text-white/70' : 'text-black/70')}>
                       ≈ {(tokenAssets.totalValue || 0).toFixed(2)} <span className="text-[11px] font-medium opacity-60">XRP</span>
@@ -1378,7 +1559,7 @@ const MyActivityTab = memo(({ token, isDark, isMobile, onTransactionClick }) => 
                       </span>
                     </div>
                   ) : (
-                    <span className={cn('text-[14px] font-medium', isDark ? 'text-white/30' : 'text-black/30')}>—</span>
+                    <span className={cn('text-[14px] font-medium', isDark ? 'text-white/60' : 'text-black/60')}>—</span>
                   )}
                 </StatItem>
 
@@ -1389,7 +1570,7 @@ const MyActivityTab = memo(({ token, isDark, isMobile, onTransactionClick }) => 
                       {tokenAssets.realizedPnl >= 0 ? '+' : ''}{tokenAssets.realizedPnl.toFixed(2)} <span className="text-[11px] font-semibold">XRP</span>
                     </span>
                   ) : (
-                    <span className={cn('text-[14px] font-medium', isDark ? 'text-white/30' : 'text-black/30')}>—</span>
+                    <span className={cn('text-[14px] font-medium', isDark ? 'text-white/60' : 'text-black/60')}>—</span>
                   )}
                 </StatItem>
 
@@ -1397,10 +1578,10 @@ const MyActivityTab = memo(({ token, isDark, isMobile, onTransactionClick }) => 
                   <Label isDark={isDark}>Avg Buy Price</Label>
                   {tokenAssets.avgBuyPrice != null ? (
                     <Value isDark={isDark} className="font-mono !text-[14px]">
-                      {formatPrice(tokenAssets.avgBuyPrice)} <span className="text-[10px] opacity-40">XRP</span>
+                      {formatPrice(tokenAssets.avgBuyPrice)} <span className="text-[10px] opacity-60">XRP</span>
                     </Value>
                   ) : (
-                    <span className={cn('text-[14px] font-medium', isDark ? 'text-white/30' : 'text-black/30')}>—</span>
+                    <span className={cn('text-[14px] font-medium', isDark ? 'text-white/60' : 'text-black/60')}>—</span>
                   )}
                 </StatItem>
 
@@ -1411,7 +1592,7 @@ const MyActivityTab = memo(({ token, isDark, isMobile, onTransactionClick }) => 
                       {tokenAssets.totalRoi >= 0 ? '+' : ''}{tokenAssets.totalRoi.toFixed(2)}%
                     </span>
                   ) : (
-                    <span className={cn('text-[14px] font-medium', isDark ? 'text-white/30' : 'text-black/30')}>—</span>
+                    <span className={cn('text-[14px] font-medium', isDark ? 'text-white/60' : 'text-black/60')}>—</span>
                   )}
                 </StatItem>
               </StatGrid>
@@ -1427,14 +1608,14 @@ const MyActivityTab = memo(({ token, isDark, isMobile, onTransactionClick }) => 
                     <Label isDark={isDark} className="text-[9px] mb-[2px] block text-[#22c55e]">Bought</Label>
                     <div className="text-[11px] font-medium">
                       {formatTradeDisplay(tokenAssets.totalBought)} {tokenCurrency}
-                      <span className="opacity-40 ml-1">({formatTradeDisplay(tokenAssets.totalSpentXRP)} XRP)</span>
+                      <span className="opacity-60 ml-1">({formatTradeDisplay(tokenAssets.totalSpentXRP)} XRP)</span>
                     </div>
                   </div>
                   <div className="flex-[2]">
                     <Label isDark={isDark} className="text-[9px] mb-[2px] block text-[#ef4444]">Sold</Label>
                     <div className="text-[11px] font-medium">
                       {formatTradeDisplay(tokenAssets.totalSold)} {tokenCurrency}
-                      <span className="opacity-40 ml-1">({formatTradeDisplay(tokenAssets.totalReceivedXRP)} XRP)</span>
+                      <span className="opacity-60 ml-1">({formatTradeDisplay(tokenAssets.totalReceivedXRP)} XRP)</span>
                     </div>
                   </div>
                 </div>
@@ -1449,7 +1630,7 @@ const MyActivityTab = memo(({ token, isDark, isMobile, onTransactionClick }) => 
                   </span>
                 </div>
                 {tokenAssets.limitAmount > 0 && (
-                  <span className={cn('text-[10px] font-medium', isDark ? 'text-white/30' : 'text-black/40')}>
+                  <span className={cn('text-[10px] font-medium', isDark ? 'text-white/60' : 'text-black/60')}>
                     Limit: {abbreviateNumber(tokenAssets.limitAmount)}
                   </span>
                 )}
@@ -1468,12 +1649,12 @@ const MyActivityTab = memo(({ token, isDark, isMobile, onTransactionClick }) => 
             </div>
           ) : myTrades.length === 0 ? (
             <div className={cn('text-center p-8 rounded-[12px] border border-dashed', isDark ? 'border-white/10 bg-white/[0.01]' : 'border-black/10 bg-black/[0.01]')}>
-              <span className={cn('text-[13px] font-medium', isDark ? 'text-white/40' : 'text-black/40')}>No trade history found</span>
+              <span className={cn('text-[13px] font-medium', isDark ? 'text-white/60' : 'text-black/60')}>No trade history found</span>
             </div>
           ) : (
             <div className="flex flex-col">
               {!isMobile && (
-                <div className={cn('flex px-3 pb-2 border-b text-[9px] font-semibold uppercase tracking-[0.05em]', isDark ? 'border-white/[0.06] text-white/30' : 'border-black/[0.06] text-black/40')}>
+                <div className={cn('flex px-3 pb-2 border-b text-[9px] font-semibold uppercase tracking-[0.05em]', isDark ? 'border-white/[0.06] text-white/60' : 'border-black/[0.06] text-black/60')}>
                   <div className="flex-[0.6]">Time</div>
                   <div className="flex-[0.4]">Action</div>
                   <div className="flex-[1.2]">Amount</div>
@@ -1492,48 +1673,48 @@ const MyActivityTab = memo(({ token, isDark, isMobile, onTransactionClick }) => 
                   return (
                     <div 
                       key={trade._id || trade.hash || idx} 
-                      className={cn('py-[10px] px-3 border-b flex items-center transition-colors duration-200 cursor-default', isDark ? 'border-white/[0.04] hover:bg-white/[0.02]' : 'border-black/[0.04] hover:bg-black/[0.01]')}
+                      className={cn('py-[10px] px-3 border-b flex items-center transition-[background-color,border-color] duration-200 cursor-default', isDark ? 'border-white/[0.04] hover:bg-white/[0.02]' : 'border-black/[0.04] hover:bg-black/[0.01]')}
                     >
                       {isMobile ? (
                         <div className="flex w-full justify-between items-center">
                           <div className="flex flex-col gap-[2px]">
                             <div className="flex items-center gap-[6px]">
                               <span className={cn('text-[11px] font-bold', isBuy ? 'text-[#22c55e]' : 'text-[#ef4444]')}>{isBuy ? 'BUY' : 'SELL'}</span>
-                              <span className={cn('text-[10px]', isDark ? 'text-white/30' : 'text-black/40')}>
+                              <span suppressHydrationWarning className={cn('text-[10px]', isDark ? 'text-white/60' : 'text-black/60')}>
                                 {formatRelativeTime(trade.time)}
                               </span>
                             </div>
                             <span className={cn('text-[13px] font-semibold', isDark ? 'text-white' : 'text-[#1a1a1a]')}>
-                              {formatTradeDisplay(tokenAmount?.value)} <span className="text-[10px] opacity-40">{tokenCurrency}</span>
+                              {formatTradeDisplay(tokenAmount?.value)} <span className="text-[10px] opacity-60">{tokenCurrency}</span>
                             </span>
                           </div>
                           <div className="flex flex-col items-end gap-[2px]">
                             <span className="text-[12px] font-medium font-mono">
-                              {formatPrice(price)} <span className="text-[9px] opacity-40">XRP</span>
+                              {formatPrice(price)} <span className="text-[9px] opacity-60">XRP</span>
                             </span>
-                            <span className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-black/50')}>
+                            <span className={cn('text-[11px]', isDark ? 'text-white/60' : 'text-black/50')}>
                               {formatTradeDisplay(xrpAmount?.value)} XRP
                             </span>
                           </div>
                         </div>
                       ) : (
                         <>
-                          <span className={cn('flex-[0.6] text-[11px]', isDark ? 'text-white/40' : 'text-black/50')}>
+                          <span suppressHydrationWarning className={cn('flex-[0.6] text-[11px]', isDark ? 'text-white/60' : 'text-black/50')}>
                             {formatRelativeTime(trade.time)}
                           </span>
                           <span className={cn('flex-[0.4] text-[11px] font-bold', isBuy ? 'text-[#22c55e]' : 'text-[#ef4444]')}>
                             {isBuy ? 'BUY' : 'SELL'}
                           </span>
                           <span className="flex-[1.2] text-[13px] font-semibold">
-                            {formatTradeDisplay(tokenAmount?.value)} <span className="text-[10px] opacity-40 font-medium">{tokenCurrency}</span>
+                            {formatTradeDisplay(tokenAmount?.value)} <span className="text-[10px] opacity-60 font-medium">{tokenCurrency}</span>
                           </span>
                           <span className="flex-1 text-[12px] font-mono font-medium">
                             {formatPrice(price)}
                           </span>
                           <span className={cn('flex-[0.8] text-[12px] font-medium', isDark ? 'text-white/70' : 'text-black/70')}>
-                            {formatTradeDisplay(xrpAmount?.value)} <span className="text-[10px] opacity-40">XRP</span>
+                            {formatTradeDisplay(xrpAmount?.value)} <span className="text-[10px] opacity-60">XRP</span>
                           </span>
-                          <IconButton onClick={() => onTransactionClick && onTransactionClick(trade.hash)} isDark={isDark} className="w-6">
+                          <IconButton aria-label="View transaction" onClick={() => onTransactionClick && onTransactionClick(trade.hash)} isDark={isDark} className="w-6">
                             <ExternalLink size={12} strokeWidth={2} />
                           </IconButton>
                         </>
@@ -1547,7 +1728,7 @@ const MyActivityTab = memo(({ token, isDark, isMobile, onTransactionClick }) => 
                   onClick={() => fetchMyTrades(true)}
                   disabled={tradesLoading}
                   className={cn(
-                    'mt-3 p-[10px] text-[11px] font-semibold uppercase tracking-[0.05em] rounded-lg border w-full transition-all duration-200',
+                    'mt-3 p-[10px] text-[11px] font-semibold uppercase tracking-[0.05em] rounded-lg border w-full transition-[opacity,transform,background-color,border-color] duration-200',
                     tradesLoading ? 'cursor-not-allowed' : 'cursor-pointer',
                     isDark ? 'bg-white/[0.04] border-white/[0.06] text-white/50 hover:enabled:bg-white/[0.08]' : 'bg-black/[0.03] border-black/[0.06] text-black/50 hover:enabled:bg-black/[0.05]'
                   )}
@@ -1571,7 +1752,7 @@ const MyActivityTab = memo(({ token, isDark, isMobile, onTransactionClick }) => 
             <div
               className={cn('text-center p-8 rounded-[12px] border border-dashed', isDark ? 'border-white/10 bg-white/[0.01]' : 'border-black/10 bg-black/[0.01]')}
             >
-              <span className={cn('text-[13px] font-medium', isDark ? 'text-white/40' : 'text-black/40')}>No open offers</span>
+              <span className={cn('text-[13px] font-medium', isDark ? 'text-white/60' : 'text-black/60')}>No open offers</span>
             </div>
           ) : (
             <div className="flex flex-col gap-2">
@@ -1622,9 +1803,9 @@ const MyActivityTab = memo(({ token, isDark, isMobile, onTransactionClick }) => 
                         <div className="flex flex-col">
                           <span className="text-[14px] font-semibold">
                             {formatTradeDisplay(tokenAmount)}{' '}
-                            <span className="text-[10px] opacity-40">{tokenCurrency}</span>
+                            <span className="text-[10px] opacity-60">{tokenCurrency}</span>
                           </span>
-                          <span className={cn('text-[11px] font-mono', isDark ? 'text-white/40' : 'text-black/50')}>
+                          <span className={cn('text-[11px] font-mono', isDark ? 'text-white/60' : 'text-black/50')}>
                             @ {formatPrice(price)} XRP
                           </span>
                         </div>
@@ -1632,18 +1813,18 @@ const MyActivityTab = memo(({ token, isDark, isMobile, onTransactionClick }) => 
 
                       <div className="flex items-center gap-4">
                         {expiryLabel && (
-                          <div className={cn(
+                          <div suppressHydrationWarning className={cn(
                             'text-[10px] font-medium py-[3px] px-[6px] rounded whitespace-nowrap',
-                            expiryLabel === 'Expired' ? 'text-[#ef4444] bg-[rgba(239,68,68,0.08)]' : isDark ? 'text-white/45 bg-white/[0.04]' : 'text-black/45 bg-black/[0.04]'
+                            expiryLabel === 'Expired' ? 'text-[#ef4444] bg-[rgba(239,68,68,0.08)]' : isDark ? 'text-white/60 bg-white/[0.04]' : 'text-black/60 bg-black/[0.04]'
                           )}>
                             {expiryLabel === 'Expired' ? 'Expired' : `Expires ${expiryLabel}`}
                           </div>
                         )}
                         <div className={cn('text-right', isMobile ? 'hidden' : 'block')}>
                           <span className="text-[13px] font-semibold">
-                            {formatXRPAmount(total)} <span className="text-[10px] opacity-40">XRP</span>
+                            {formatXRPAmount(total)} <span className="text-[10px] opacity-60">XRP</span>
                           </span>
-                          <span className={cn('text-[9px] block uppercase', isDark ? 'text-white/30' : 'text-black/40')}>
+                          <span className={cn('text-[9px] block uppercase', isDark ? 'text-white/60' : 'text-black/60')}>
                             Total Value
                           </span>
                         </div>
@@ -1668,7 +1849,7 @@ const MyActivityTab = memo(({ token, isDark, isMobile, onTransactionClick }) => 
               >
                 <ChevronLeft size={14} />
               </button>
-              <span className={cn('text-[11px] font-semibold', isDark ? 'text-white/40' : 'text-black/50')}>
+              <span className={cn('text-[11px] font-semibold', isDark ? 'text-white/60' : 'text-black/50')}>
                 {offersPage + 1} <span className="opacity-50">/</span> {Math.ceil(offersTotal / offersLimit)}
               </span>
               <button
@@ -1687,7 +1868,7 @@ const MyActivityTab = memo(({ token, isDark, isMobile, onTransactionClick }) => 
 });
 
 // Inline Expandable Trade Details Component
-const TradeDetails = ({ trade, account, isDark, onClose, walletLabel }) => {
+const TradeDetails = ({ trade, account, isDark, onClose, walletLabel, onTrackAddress, isMobilePanel = false }) => {
   const [txData, setTxData] = useState(null);
   const [profileData, setProfileData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -1746,11 +1927,9 @@ const TradeDetails = ({ trade, account, isDark, onClose, walletLabel }) => {
   const dropsToXrp = (drops) =>
     (Number(drops) / 1000000).toLocaleString(undefined, { maximumFractionDigits: 6 });
 
-  const isMobilePanel = typeof window !== 'undefined' && window.innerWidth < 960;
-
   return (
     <div
-      className={cn('border-b animate-[expandIn_0.15s_ease-out]', isMobilePanel ? 'py-2 px-2' : 'py-3 px-2', isDark ? 'bg-black/40 border-white/10' : 'bg-[rgba(128,128,128,0.1)] border-black/10')}
+      className={cn('border-b animate-[expandIn_0.15s_ease-out] py-3 px-2 max-lg:py-2', isDark ? 'bg-black/40 border-white/10' : 'bg-[rgba(128,128,128,0.1)] border-black/10')}
     >
       <style>{`@keyframes expandIn { from { opacity: 0; max-height: 0; } to { opacity: 1; max-height: 400px; } }`}</style>
       {loading ? (
@@ -1764,16 +1943,30 @@ const TradeDetails = ({ trade, account, isDark, onClose, walletLabel }) => {
             {/* Trader Info */}
             {account && (
               <div className="overflow-hidden">
-                <div className={cn('text-[9px]', isDark ? 'text-white/40' : 'text-black/40')}>
+                <div className={cn('text-[9px]', isDark ? 'text-white/60' : 'text-black/60')}>
                   Trader
                 </div>
-                <a
-                  href={`/address/${account}`}
-                  className={cn('font-mono text-[#3b82f6] no-underline block overflow-hidden text-ellipsis whitespace-nowrap', isMobilePanel ? 'text-[10px]' : 'text-[11px]')}
-                  title={account}
-                >
-                  {walletLabel || `${account.slice(0, 6)}...${account.slice(-4)}`}
-                </a>
+                <div className="flex items-center gap-1">
+                  <a
+                    href={`/address/${account}`}
+                    className={cn('font-mono text-[#3b82f6] no-underline overflow-hidden text-ellipsis whitespace-nowrap', isMobilePanel ? 'text-[10px]' : 'text-[11px]')}
+                    title={account}
+                  >
+                    {walletLabel || `${account.slice(0, 6)}...${account.slice(-4)}`}
+                  </a>
+                  {onTrackAddress && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); onTrackAddress(account); }}
+                      title="Track on chart"
+                      className={cn(
+                        'p-[3px] rounded cursor-pointer border-none transition-[background-color,border-color] flex-shrink-0',
+                        isDark ? 'text-white/25 hover:text-[#3b82f6] hover:bg-white/[0.06]' : 'text-black/25 hover:text-[#3b82f6] hover:bg-black/[0.04]'
+                      )}
+                    >
+                      <CandlestickChart size={12} />
+                    </button>
+                  )}
+                </div>
                 {(profileData?.balance ||
                   profileData?.Balance ||
                   profileData?.account_data?.Balance) && (
@@ -1792,7 +1985,7 @@ const TradeDetails = ({ trade, account, isDark, onClose, walletLabel }) => {
             {txData && (
               <>
                 <div>
-                  <div className={cn('text-[9px]', isDark ? 'text-white/40' : 'text-black/40')}>
+                  <div className={cn('text-[9px]', isDark ? 'text-white/60' : 'text-black/60')}>
                     Status
                   </div>
                   <span
@@ -1805,7 +1998,7 @@ const TradeDetails = ({ trade, account, isDark, onClose, walletLabel }) => {
                   </span>
                 </div>
                 <div>
-                  <div className={cn('text-[9px]', isDark ? 'text-white/40' : 'text-black/40')}>
+                  <div className={cn('text-[9px]', isDark ? 'text-white/60' : 'text-black/60')}>
                     Fee
                   </div>
                   <div className={cn('text-[11px]', isDark ? 'text-white' : 'text-[#1a1a1a]')}>
@@ -1813,7 +2006,7 @@ const TradeDetails = ({ trade, account, isDark, onClose, walletLabel }) => {
                   </div>
                 </div>
                 <div>
-                  <div className={cn('text-[9px]', isDark ? 'text-white/40' : 'text-black/40')}>
+                  <div className={cn('text-[9px]', isDark ? 'text-white/60' : 'text-black/60')}>
                     Ledger
                   </div>
                   <div className={cn('text-[11px]', isDark ? 'text-white' : 'text-[#1a1a1a]')}>
@@ -1843,7 +2036,7 @@ const TradeDetails = ({ trade, account, isDark, onClose, walletLabel }) => {
               const data = memo?.MemoData ? decodeMemo(memo.MemoData) : null;
               return data ? (
                 <div className={cn(isMobilePanel ? 'max-w-full' : 'min-w-[120px] max-w-[200px]')}>
-                  <div className={cn('text-[9px]', isDark ? 'text-white/40' : 'text-black/40')}>
+                  <div className={cn('text-[9px]', isDark ? 'text-white/60' : 'text-black/60')}>
                     Memo
                   </div>
                   <div className={cn('text-[10px] overflow-hidden text-ellipsis whitespace-nowrap', isDark ? 'text-white/70' : 'text-black/70')}>
@@ -1867,7 +2060,7 @@ const TradeDetails = ({ trade, account, isDark, onClose, walletLabel }) => {
               onClick={explainWithAI}
               disabled={aiLoading || aiExplanation}
               className={cn(
-                'flex items-center gap-1.5 rounded-lg border font-medium transition-all duration-200',
+                'flex items-center gap-1.5 rounded-lg border font-medium transition-[opacity,transform,background-color,border-color] duration-200',
                 isMobilePanel ? 'px-2 py-[5px] text-[10px]' : 'px-3 py-1.5 text-[12px]',
                 aiLoading || aiExplanation
                   ? isDark
@@ -1891,7 +2084,7 @@ const TradeDetails = ({ trade, account, isDark, onClose, walletLabel }) => {
             >
               <X
                 size={14}
-                className={cn(isDark ? 'text-white/50' : 'text-black/40')}
+                className={cn(isDark ? 'text-white/50' : 'text-black/60')}
               />
             </button>
           </div>
@@ -1933,7 +2126,7 @@ const TradeDetails = ({ trade, account, isDark, onClose, walletLabel }) => {
                 <div className="text-[9px] font-bold uppercase py-[2px] px-[6px] rounded bg-[rgba(139,92,246,0.2)] text-[#a78bfa] tracking-[0.05em]">
                   {aiExplanation.extracted?.type || 'Analysis'}
                 </div>
-                <div className={cn('text-[11px] font-medium', isDark ? 'text-white/40' : 'text-black/40')}>
+                <div className={cn('text-[11px] font-medium', isDark ? 'text-white/60' : 'text-black/60')}>
                   AI Insight
                 </div>
               </div>
@@ -1946,7 +2139,7 @@ const TradeDetails = ({ trade, account, isDark, onClose, walletLabel }) => {
 
               {keyPoints.length > 0 && (
                 <div>
-                  <div className={cn('text-[10px] font-semibold uppercase tracking-[0.05em] mb-[8px] flex items-center gap-[6px]', isDark ? 'text-white/40' : 'text-black/50')}>
+                  <div className={cn('text-[10px] font-semibold uppercase tracking-[0.05em] mb-[8px] flex items-center gap-[6px]', isDark ? 'text-white/60' : 'text-black/50')}>
                     <div className={cn('w-3 h-px', isDark ? 'bg-white/20' : 'bg-black/10')} />
                     Key Points
                   </div>
@@ -1979,7 +2172,8 @@ const TradingHistory = ({
   isDark = false,
   isMobile: isMobileProp = false,
   candleTimeFilter,
-  onClearCandleFilter
+  onClearCandleFilter,
+  onTrackAddress
 }) => {
   // Use internal mobile detection for reliability
   const [isMobileState, setIsMobileState] = useState(isMobileProp);
@@ -2467,9 +2661,7 @@ const TradingHistory = ({
       }
     };
 
-    ws.onerror = (e) => {
-      console.error('[History WS] Error:', e);
-    };
+    ws.onerror = () => {};
 
     ws.onclose = (ev) => {
           if (wsPingRef.current) {
@@ -3509,7 +3701,7 @@ const TradingHistory = ({
             <CardContent className="!py-[6px] !px-0">
               <div className="grid grid-cols-[52px_36px_1fr_1fr_24px] gap-2 items-center">
                 {/* Time */}
-                <span className={cn('text-[10px] font-semibold tabular-nums', isDark ? 'text-white/45' : 'text-black/45')}>
+                <span suppressHydrationWarning className={cn('text-[10px] font-semibold tabular-nums', isDark ? 'text-white/60' : 'text-black/60')}>
                   {formatRelativeTime(trade.time)}
                 </span>
 
@@ -3535,7 +3727,7 @@ const TradingHistory = ({
                 >
                   <span className={cn('text-[11px] font-semibold font-mono', isDark ? 'text-white' : 'text-[#1a1a1a]')}>
                     {formatTradeDisplay(amountData.value)}{' '}
-                    <span className="opacity-40 text-[9px] font-normal">
+                    <span className="opacity-60 text-[9px] font-normal">
                       {decodeCurrency(amountData.currency)}
                     </span>
                   </span>
@@ -3552,7 +3744,7 @@ const TradingHistory = ({
                 >
                   <span className={cn('text-[11px] font-semibold font-mono', isDark ? 'text-white' : 'text-[#1a1a1a]')}>
                     {formatTradeDisplay(totalData.value)}{' '}
-                    <span className="opacity-40 text-[9px] font-normal">
+                    <span className="opacity-60 text-[9px] font-normal">
                       {decodeCurrency(totalData.currency)}
                     </span>
                   </span>
@@ -3560,6 +3752,7 @@ const TradingHistory = ({
 
                 {/* Link */}
                 <IconButton
+                  aria-label="View trade details"
                   onClick={() => setExpandedTradeId(expandedTradeId === (trade._id || trade.id) ? null : trade._id || trade.id)}
                   isDark={isDark}
                   className="p-1 bg-transparent"
@@ -3575,6 +3768,8 @@ const TradingHistory = ({
                 isDark={isDark}
                 onClose={() => setExpandedTradeId(null)}
                 walletLabel={walletLabels[addressToShow]}
+                onTrackAddress={onTrackAddress}
+                isMobilePanel
               />
             )}
           </Card>
@@ -3594,7 +3789,7 @@ const TradingHistory = ({
           <CardContent className="!py-[6px] !px-0">
             <div
               className="grid gap-2 items-center cursor-pointer"
-              style={{ gridTemplateColumns: `70px 50px 90px 1fr 1fr ${activeFiatCurrency !== 'XRP' ? '70px ' : ''}95px 70px 40px` }}
+              style={{ gridTemplateColumns: `66px 46px 88px 1fr 1fr ${activeFiatCurrency !== 'XRP' ? '68px ' : ''}115px 58px 36px` }}
               onClick={() =>
                 setExpandedTradeId(
                   expandedTradeId === (trade._id || trade.id) ? null : trade._id || trade.id
@@ -3602,7 +3797,7 @@ const TradingHistory = ({
               }
             >
               {/* Time */}
-              <span className={cn('text-[11px] font-semibold tabular-nums', isDark ? 'text-white/45' : 'text-black/45')}>
+              <span suppressHydrationWarning className={cn('text-[11px] font-semibold tabular-nums', isDark ? 'text-white/60' : 'text-black/60')}>
                 {formatRelativeTime(trade.time, true)}
               </span>
 
@@ -3634,7 +3829,7 @@ const TradingHistory = ({
               >
                 <span className={cn('text-[12px] font-mono', isDark ? 'text-white' : 'text-[#1a1a1a]')}>
                   {formatTradeDisplay(amountData.value)}{' '}
-                  <span className="opacity-40 text-[10px] font-normal">
+                  <span className="opacity-60 text-[10px] font-normal">
                     {decodeCurrency(amountData.currency)}
                   </span>
                 </span>
@@ -3650,7 +3845,7 @@ const TradingHistory = ({
               >
                 <span className={cn('text-[12px] font-mono', isDark ? 'text-white' : 'text-[#1a1a1a]')}>
                   {formatTradeDisplay(totalData.value)}{' '}
-                  <span className="opacity-40 text-[10px] font-normal">
+                  <span className="opacity-60 text-[10px] font-normal">
                     {decodeCurrency(totalData.currency)}
                   </span>
                 </span>
@@ -3669,32 +3864,48 @@ const TradingHistory = ({
               )}
 
               {/* Trader Address */}
-              <a
-                href={`/address/${addressToShow}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={(e) => e.stopPropagation()}
-                className={cn(
-                  'inline-flex items-center gap-2 px-2 py-1 rounded-md border transition-all duration-200 text-[11px] font-mono no-underline whitespace-nowrap overflow-hidden text-ellipsis max-w-[95px]',
-                  isDark
-                    ? 'bg-white/[0.03] border-white/[0.06] hover:bg-white/[0.08] hover:border-white/[0.12] text-white/50 hover:text-white/80'
-                    : 'bg-black/[0.02] border-black/[0.04] hover:bg-black/[0.04] hover:border-black/[0.08] text-gray-500 hover:text-gray-900'
+              <div className="flex items-center gap-1 overflow-hidden">
+                <TraderTooltip address={addressToShow} tokenId={tokenId} isDark={isDark} currency={token?.currency}>
+                  <a
+                    href={`/address/${addressToShow}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    className={cn(
+                      'inline-flex items-center gap-2 px-2 py-1 rounded-md border transition-[opacity,transform,background-color,border-color] duration-200 text-[11px] font-mono no-underline whitespace-nowrap overflow-hidden text-ellipsis',
+                      isDark
+                        ? 'bg-white/[0.03] border-white/[0.06] hover:bg-white/[0.08] hover:border-white/[0.12] text-white/50 hover:text-white/80'
+                        : 'bg-black/[0.02] border-black/[0.04] hover:bg-black/[0.04] hover:border-black/[0.08] text-gray-500 hover:text-gray-900'
+                    )}
+                    title={addressToShow}
+                  >
+                    {dotColor && (
+                      <span
+                        className="w-[5px] h-[5px] rounded-full shrink-0"
+                        style={{ background: dotColor, boxShadow: `0 0 6px ${dotColor}80` }}
+                      />
+                    )}
+                    {walletLabels[addressToShow] ? (
+                      <span className="font-semibold text-[#3b82f6]">{walletLabels[addressToShow]}</span>
+                    ) : addressToShow ? `${addressToShow.slice(0, 4)}...${addressToShow.slice(-4)}` : '-'}
+                  </a>
+                </TraderTooltip>
+                {onTrackAddress && addressToShow && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); onTrackAddress(addressToShow); }}
+                    title="Track on chart"
+                    className={cn(
+                      'p-[3px] rounded cursor-pointer border-none transition-[background-color,border-color] flex-shrink-0',
+                      isDark ? 'text-white/25 hover:text-[#3b82f6] hover:bg-white/[0.06]' : 'text-black/25 hover:text-[#3b82f6] hover:bg-black/[0.04]'
+                    )}
+                  >
+                    <CandlestickChart size={12} />
+                  </button>
                 )}
-                title={addressToShow}
-              >
-                {dotColor && (
-                  <span
-                    className="w-[5px] h-[5px] rounded-full shrink-0"
-                    style={{ background: dotColor, boxShadow: `0 0 6px ${dotColor}80` }}
-                  />
-                )}
-                {walletLabels[addressToShow] ? (
-                  <span className="font-semibold text-[#3b82f6]">{walletLabels[addressToShow]}</span>
-                ) : addressToShow ? `${addressToShow.slice(0, 4)}...${addressToShow.slice(-4)}` : '-'}
-              </a>
+              </div>
 
               {/* Source */}
-              <span className={cn('text-[10px] font-medium overflow-hidden text-ellipsis whitespace-nowrap uppercase tracking-[0.02em]', isDark ? 'text-white/35' : 'text-black/40')}>
+              <span className={cn('text-[10px] font-medium overflow-hidden text-ellipsis whitespace-nowrap uppercase tracking-[0.02em]', isDark ? 'text-white/55' : 'text-black/60')}>
                 {getSourceTagName(trade.sourceTag) || (isLiquidity ? 'AMM' : '')}
               </span>
 
@@ -3712,6 +3923,7 @@ const TradingHistory = ({
               isDark={isDark}
               onClose={() => setExpandedTradeId(null)}
               walletLabel={walletLabels[addressToShow]}
+              onTrackAddress={onTrackAddress}
             />
           )}
         </Card>
@@ -3727,7 +3939,9 @@ const TradingHistory = ({
     isDark,
     expandedTradeId,
     activeFiatCurrency,
-    exchRate
+    exchRate,
+    tokenId,
+    walletLabels
   ]);
 
   if (loading) {
@@ -3752,23 +3966,23 @@ const TradingHistory = ({
     <div className="flex flex-col gap-2 w-full flex-1 relative z-0">
       <div className="flex items-center justify-between flex-wrap gap-2">
         <Tabs isDark={isDark}>
-          <Tab selected={tabValue === 0} onClick={(e) => handleTabChange(e, 0)} isDark={isDark}>
+          <Tab selected={tabValue === 0} onClick={(e) => handleTabChange(e, 0)} isDark={isDark} aria-label="Trades">
             <Activity size={14} />
             <span>Trades</span>
           </Tab>
-          <Tab selected={tabValue === 1} onClick={(e) => handleTabChange(e, 1)} isDark={isDark}>
+          <Tab selected={tabValue === 1} onClick={(e) => handleTabChange(e, 1)} isDark={isDark} aria-label="Pools">
             <Droplets size={14} />
             <span>Pools</span>
           </Tab>
-          <Tab selected={tabValue === 2} onClick={(e) => handleTabChange(e, 2)} isDark={isDark}>
+          <Tab selected={tabValue === 2} onClick={(e) => handleTabChange(e, 2)} isDark={isDark} aria-label="Traders">
             <Users size={14} />
             <span>Traders</span>
           </Tab>
-          <Tab selected={tabValue === 3} onClick={(e) => handleTabChange(e, 3)} isDark={isDark}>
+          <Tab selected={tabValue === 3} onClick={(e) => handleTabChange(e, 3)} isDark={isDark} aria-label="Holders">
             <PieChart size={14} />
             <span>Holders</span>
           </Tab>
-          <Tab selected={tabValue === 4} onClick={(e) => handleTabChange(e, 4)} isDark={isDark}>
+          <Tab selected={tabValue === 4} onClick={(e) => handleTabChange(e, 4)} isDark={isDark} aria-label="My Activity">
             <Wallet size={14} />
             <span>My Activity</span>
           </Tab>
@@ -3779,19 +3993,20 @@ const TradingHistory = ({
               <button
                 onClick={() => onClearCandleFilter?.()}
                 className={cn(
-                  'flex items-center gap-[6px] py-[5px] px-2.5 text-[11px] font-semibold rounded-[6px] border transition-colors',
+                  'flex items-center gap-[6px] py-[5px] px-2.5 text-[11px] font-semibold rounded-[6px] border transition-[background-color,border-color]',
                   'border-[#f59e0b] text-[#f59e0b]',
                   isDark ? 'bg-[rgba(245,158,11,0.12)] hover:bg-[rgba(245,158,11,0.2)]' : 'bg-[rgba(245,158,11,0.08)] hover:bg-[rgba(245,158,11,0.15)]'
                 )}
               >
                 <Filter size={12} />
-                <span>
+                <span suppressHydrationWarning>
                   {new Date(candleTimeFilter.startTime).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'America/New_York' })}
                 </span>
                 <X size={12} className="opacity-60" />
               </button>
             )}
             <select
+              aria-label="Filter by pair type"
               value={pairType}
               onChange={(e) => { setPairType(e.target.value); if (e.target.value === 'token') setXrpAmount(''); }}
               className={cn(
@@ -3813,6 +4028,7 @@ const TradingHistory = ({
               </option>
             </select>
             <select
+              aria-label="Filter by transaction type"
               value={historyType}
               onChange={(e) => {
                 const newType = e.target.value;
@@ -3842,6 +4058,7 @@ const TradingHistory = ({
             </select>
             {historyType === 'liquidity' && (
               <select
+                aria-label="Filter by liquidity event type"
                 value={liquidityType}
                 onChange={(e) => setLiquidityType(e.target.value)}
                 className={cn(
@@ -3868,6 +4085,7 @@ const TradingHistory = ({
             )}
             {pairType !== 'token' && (
             <select
+              aria-label="Minimum XRP trade size"
               value={xrpAmount}
               onChange={(e) => setXrpAmount(e.target.value)}
               className={cn(
@@ -3922,13 +4140,13 @@ const TradingHistory = ({
         <button
           onClick={() => onClearCandleFilter?.()}
           className={cn(
-            'flex items-center gap-[6px] py-[5px] px-2.5 text-[11px] font-semibold rounded-[6px] border transition-colors self-start',
+            'flex items-center gap-[6px] py-[5px] px-2.5 text-[11px] font-semibold rounded-[6px] border transition-[background-color,border-color] self-start',
             'border-[#f59e0b] text-[#f59e0b]',
             isDark ? 'bg-[rgba(245,158,11,0.12)] hover:bg-[rgba(245,158,11,0.2)]' : 'bg-[rgba(245,158,11,0.08)] hover:bg-[rgba(245,158,11,0.15)]'
           )}
         >
           <Filter size={12} />
-          <span>
+          <span suppressHydrationWarning>
             {new Date(candleTimeFilter.startTime).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'America/New_York' })}
           </span>
           <X size={12} className="opacity-60" />
@@ -3941,35 +4159,35 @@ const TradingHistory = ({
           {!isMobile && (
             <div
               className={cn('grid gap-2 py-3 sticky top-0 z-10 backdrop-blur-[8px] border-b', isDark ? 'bg-[rgba(10,10,10,0.8)] border-white/[0.08]' : 'bg-[rgba(255,255,255,0.8)] border-black/[0.08]')}
-              style={{ gridTemplateColumns: `70px 50px 90px 1fr 1fr ${activeFiatCurrency !== 'XRP' ? '70px ' : ''}95px 70px 40px` }}
+              style={{ gridTemplateColumns: `66px 46px 88px 1fr 1fr ${activeFiatCurrency !== 'XRP' ? '68px ' : ''}115px 58px 36px` }}
             >
-              <div className={cn('text-[11px] font-semibold uppercase tracking-[0.08em] flex items-center gap-[6px]', isDark ? 'text-white/40' : 'text-black/40')}>
+              <div className={cn('text-[11px] font-semibold uppercase tracking-[0.08em] flex items-center gap-[6px]', isDark ? 'text-white/60' : 'text-black/60')}>
                 Time
                 <LiveIndicator isDark={isDark}>
                   <LiveCircle />
                 </LiveIndicator>
               </div>
-              <div className={cn('text-[11px] font-semibold uppercase tracking-[0.08em]', isDark ? 'text-white/40' : 'text-black/40')}>
+              <div className={cn('text-[11px] font-semibold uppercase tracking-[0.08em]', isDark ? 'text-white/60' : 'text-black/60')}>
                 Type
               </div>
-              <div className={cn('text-[11px] font-semibold uppercase tracking-[0.08em]', isDark ? 'text-white/40' : 'text-black/40')}>
+              <div className={cn('text-[11px] font-semibold uppercase tracking-[0.08em]', isDark ? 'text-white/60' : 'text-black/60')}>
                 Price
               </div>
-              <div className={cn('text-[11px] font-semibold uppercase tracking-[0.08em] pl-[10px]', isDark ? 'text-white/40' : 'text-black/40')}>
+              <div className={cn('text-[11px] font-semibold uppercase tracking-[0.08em] pl-[10px]', isDark ? 'text-white/60' : 'text-black/60')}>
                 Amount
               </div>
-              <div className={cn('text-[11px] font-semibold uppercase tracking-[0.08em] pl-[10px]', isDark ? 'text-white/40' : 'text-black/40')}>
+              <div className={cn('text-[11px] font-semibold uppercase tracking-[0.08em] pl-[10px]', isDark ? 'text-white/60' : 'text-black/60')}>
                 Value
               </div>
               {activeFiatCurrency !== 'XRP' && (
-                <div className={cn('text-[11px] font-semibold uppercase tracking-[0.08em] text-right', isDark ? 'text-white/40' : 'text-black/40')}>
+                <div className={cn('text-[11px] font-semibold uppercase tracking-[0.08em] text-right', isDark ? 'text-white/60' : 'text-black/60')}>
                   {activeFiatCurrency}
                 </div>
               )}
-              <div className={cn('text-[11px] font-semibold uppercase tracking-[0.08em]', isDark ? 'text-white/40' : 'text-black/40')}>
+              <div className={cn('text-[11px] font-semibold uppercase tracking-[0.08em]', isDark ? 'text-white/60' : 'text-black/60')}>
                 Trader
               </div>
-              <div className={cn('text-[11px] font-semibold uppercase tracking-[0.08em]', isDark ? 'text-white/40' : 'text-black/40')}>
+              <div className={cn('text-[11px] font-semibold uppercase tracking-[0.08em]', isDark ? 'text-white/60' : 'text-black/60')}>
                 Source
               </div>
               <div></div>
@@ -3979,10 +4197,10 @@ const TradingHistory = ({
           {/* Mobile header with column labels */}
           {isMobile && (
             <div className={cn('grid grid-cols-[52px_36px_1fr_1fr_24px] gap-[6px] items-center px-3 py-1 mb-1 border-b', isDark ? 'border-white/[0.06]' : 'border-black/[0.06]')}>
-              <span className={cn('text-[9px] font-medium uppercase', isDark ? 'text-white/40' : 'text-black/40')}>Time</span>
-              <span className={cn('text-[9px] font-medium uppercase', isDark ? 'text-white/40' : 'text-black/40')}>Type</span>
-              <span className={cn('text-[9px] font-medium uppercase', isDark ? 'text-white/40' : 'text-black/40')}>Amount</span>
-              <span className={cn('text-[9px] font-medium uppercase', isDark ? 'text-white/40' : 'text-black/40')}>Total</span>
+              <span className={cn('text-[9px] font-medium uppercase', isDark ? 'text-white/60' : 'text-black/60')}>Time</span>
+              <span className={cn('text-[9px] font-medium uppercase', isDark ? 'text-white/60' : 'text-black/60')}>Type</span>
+              <span className={cn('text-[9px] font-medium uppercase', isDark ? 'text-white/60' : 'text-black/60')}>Amount</span>
+              <span className={cn('text-[9px] font-medium uppercase', isDark ? 'text-white/60' : 'text-black/60')}>Total</span>
               <span></span>
             </div>
           )}
@@ -4015,7 +4233,7 @@ const TradingHistory = ({
                 >
                   <ChevronLeft size={14} />
                 </PaginationButton>
-                <PageInfo isDark={isDark}>
+                <PageInfo isDark={isDark} suppressHydrationWarning>
                   {currentPage.toLocaleString()}
                   <span className="opacity-50">/</span>
                   {Math.ceil(totalRecords / limit).toLocaleString()}
@@ -4058,10 +4276,10 @@ const TradingHistory = ({
                     key={value}
                     onClick={() => setPoolTypeFilter(value)}
                     className={cn(
-                      'py-[6px] px-3 text-[11px] font-semibold rounded-lg border-none cursor-pointer transition-all duration-200 whitespace-nowrap',
+                      'py-[6px] px-3 text-[11px] font-semibold rounded-lg border-none cursor-pointer transition-[opacity,transform,background-color,border-color] duration-200 whitespace-nowrap',
                       poolTypeFilter === value
                         ? cn(isDark ? 'bg-white/[0.08] text-white' : 'bg-white text-[#1a1a1a] shadow-[0_1px_3px_rgba(0,0,0,0.1)]')
-                        : cn('bg-transparent', isDark ? 'text-white/45' : 'text-black/50')
+                        : cn('bg-transparent', isDark ? 'text-white/60' : 'text-black/50')
                     )}
                   >
                     {label}
@@ -4075,9 +4293,10 @@ const TradingHistory = ({
                   <div className="flex items-center gap-1 pl-[10px] pr-2">
                     <Filter
                       size={12}
-                      className={cn(isDark ? 'text-white/30' : 'text-black/30')}
+                      className={cn(isDark ? 'text-white/60' : 'text-black/60')}
                     />
                     <select
+                      aria-label="Sort AMM pools by"
                       value={poolSortBy}
                       onChange={(e) => setPoolSortBy(e.target.value)}
                       className={cn('py-[6px] px-1 text-[11px] font-semibold border-none bg-transparent cursor-pointer outline-none appearance-none', isDark ? 'text-white/80' : 'text-black/80')}
@@ -4091,7 +4310,7 @@ const TradingHistory = ({
                   <button
                     onClick={() => setPoolSortDir((prev) => (prev === 'desc' ? 'asc' : 'desc'))}
                     className={cn(
-                      'w-7 h-7 rounded-lg border-none cursor-pointer flex items-center justify-center transition-all duration-200',
+                      'w-7 h-7 rounded-lg border-none cursor-pointer flex items-center justify-center transition-[opacity,transform,background-color,border-color] duration-200',
                       isDark ? 'bg-white/5 text-white' : 'bg-white text-[#1a1a1a] shadow-[0_1px_2px_rgba(0,0,0,0.05)]'
                     )}
                     title={poolSortDir === 'desc' ? 'Highest first' : 'Lowest first'}
@@ -4101,7 +4320,7 @@ const TradingHistory = ({
                 </div>
                 <button
                   onClick={() => handleOpenCreatePool()}
-                  className="flex items-center gap-[5px] py-[7px] px-[14px] text-[11px] font-semibold rounded-[10px] border-none bg-[#137DFE] text-white cursor-pointer transition-all duration-150 whitespace-nowrap"
+                  className="flex items-center gap-[5px] py-[7px] px-[14px] text-[11px] font-semibold rounded-[10px] border-none bg-[#137DFE] text-white cursor-pointer transition-[opacity,transform,background-color,border-color] duration-150 whitespace-nowrap"
                 >
                   <Plus size={13} />
                   Create Pool
@@ -4121,7 +4340,7 @@ const TradingHistory = ({
               </div>
               <button
                 onClick={() => handleOpenCreatePool({ currency: 'XRP' })}
-                className="flex items-center gap-1 py-[5px] px-3 text-[11px] font-semibold rounded-lg border-none bg-[#137DFE] text-white cursor-pointer whitespace-nowrap transition-all duration-150"
+                className="flex items-center gap-1 py-[5px] px-3 text-[11px] font-semibold rounded-lg border-none bg-[#137DFE] text-white cursor-pointer whitespace-nowrap transition-[opacity,transform,background-color,border-color] duration-150"
               >
                 <Plus size={12} />
                 Create XRP Pool
@@ -4138,7 +4357,7 @@ const TradingHistory = ({
               <BearEmptyState isDark={isDark} title="No pools found" subtitle="Be the first to create a liquidity pool for this token" />
               <button
                 onClick={() => handleOpenCreatePool({ currency: 'XRP' })}
-                className="flex items-center gap-[6px] py-[10px] px-5 text-[13px] font-semibold rounded-[10px] border-none bg-[#137DFE] text-white cursor-pointer transition-all duration-150"
+                className="flex items-center gap-[6px] py-[10px] px-5 text-[13px] font-semibold rounded-[10px] border-none bg-[#137DFE] text-white cursor-pointer transition-[opacity,transform,background-color,border-color] duration-150"
               >
                 <Plus size={15} />
                 Create {token?.currency === 'XRP' ? '' : decodeCurrency(token?.currency) + ' / '}XRP Pool
@@ -4172,7 +4391,7 @@ const TradingHistory = ({
                   <div
                     key={pool._id}
                     className={cn(
-                      'rounded-[14px] overflow-hidden transition-all duration-200 border',
+                      'rounded-[14px] overflow-hidden transition-[opacity,transform,background-color,border-color] duration-200 border',
                       isDark ? 'bg-white/[0.03]' : 'bg-black/[0.02]',
                       isMainPool ? 'border-[#3b82f6]' : isDark ? 'border-white/[0.06]' : 'border-black/[0.06]'
                     )}
@@ -4206,7 +4425,7 @@ const TradingHistory = ({
                                 </span>
                               )}
                             </div>
-                            <span className={cn('text-[10px] font-medium', isDark ? 'text-white/40' : 'text-black/50')}>
+                            <span className={cn('text-[10px] font-medium', isDark ? 'text-white/60' : 'text-black/50')}>
                               {(pool.tradingFee / 100000).toFixed(3)}% Fee
                             </span>
                           </div>
@@ -4216,7 +4435,7 @@ const TradingHistory = ({
                           <div className={cn('text-[14px] font-bold', hasApy ? 'text-[#22c55e]' : isDark ? 'text-white' : 'text-[#1a1a1a]')}>
                             {hasApy ? `${pool.apy7d.apy.toFixed(1)}%` : '-%'}
                           </div>
-                          <div className={cn('text-[10px] font-semibold uppercase tracking-[0.02em]', isDark ? 'text-white/40' : 'text-black/50')}>
+                          <div className={cn('text-[10px] font-semibold uppercase tracking-[0.02em]', isDark ? 'text-white/60' : 'text-black/50')}>
                             APY
                           </div>
                         </div>
@@ -4224,7 +4443,7 @@ const TradingHistory = ({
 
                       <div className={cn('flex items-center justify-between gap-3 py-2 px-[10px] rounded-[10px]', isDark ? 'bg-black/20' : 'bg-white/50')}>
                         <div className="flex flex-col gap-[2px]">
-                          <span className={cn('text-[10px] font-medium uppercase', isDark ? 'text-white/40' : 'text-black/50')}>
+                          <span className={cn('text-[10px] font-medium uppercase', isDark ? 'text-white/60' : 'text-black/50')}>
                             TVL
                           </span>
                           <span className={cn('text-[12px] font-semibold', isDark ? 'text-white/90' : 'text-black/90')}>
@@ -4235,7 +4454,7 @@ const TradingHistory = ({
                         </div>
 
                         <div className="flex flex-col gap-[2px] items-center">
-                          <span className={cn('text-[10px] font-medium uppercase', isDark ? 'text-white/40' : 'text-black/50')}>
+                          <span className={cn('text-[10px] font-medium uppercase', isDark ? 'text-white/60' : 'text-black/50')}>
                             Trend
                           </span>
                           {chartData && chartData.length >= 2 ? (
@@ -4248,7 +4467,7 @@ const TradingHistory = ({
                         </div>
 
                         <div className="flex flex-col gap-[2px] items-end">
-                          <span className={cn('text-[10px] font-medium uppercase', isDark ? 'text-white/40' : 'text-black/50')}>
+                          <span className={cn('text-[10px] font-medium uppercase', isDark ? 'text-white/60' : 'text-black/50')}>
                             Volume 7d
                           </span>
                           <span className={cn('text-[12px] font-semibold', isDark ? 'text-white/90' : 'text-black/90')}>
@@ -4312,7 +4531,7 @@ const TradingHistory = ({
                                 </span>
                               </div>
                               <div className="text-right">
-                                <span className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-black/50')}>
+                                <span className={cn('text-[11px]', isDark ? 'text-white/60' : 'text-black/50')}>
                                   LP Balance:
                                 </span>
                                 <div className={cn('text-[13px] font-semibold', isDark ? 'text-white' : 'text-[#1a1a1a]')}>
@@ -4326,7 +4545,7 @@ const TradingHistory = ({
                               return (
                               <div className={cn('mt-2 py-2 px-[10px] rounded-lg flex flex-col gap-[6px]', isDark ? 'bg-black/20' : 'bg-black/[0.03]')}>
                                 <div className="flex justify-between items-center">
-                                  <span className={cn('text-[10px] font-semibold', isDark ? 'text-white/40' : 'text-black/50')}>
+                                  <span className={cn('text-[10px] font-semibold', isDark ? 'text-white/60' : 'text-black/50')}>
                                     Worth if held (no pool)
                                   </span>
                                   <span className={cn('text-[12px] font-semibold', isDark ? 'text-white/90' : 'text-black/90')}>
@@ -4334,7 +4553,7 @@ const TradingHistory = ({
                                   </span>
                                 </div>
                                 <div className="flex justify-between items-center">
-                                  <span className={cn('text-[10px] font-semibold', isDark ? 'text-white/40' : 'text-black/50')}>
+                                  <span className={cn('text-[10px] font-semibold', isDark ? 'text-white/60' : 'text-black/50')}>
                                     Worth in pool now
                                   </span>
                                   <span className={cn('text-[12px] font-semibold', isDark ? 'text-white/90' : 'text-black/90')}>
@@ -4342,7 +4561,7 @@ const TradingHistory = ({
                                   </span>
                                 </div>
                                 <div className={cn('border-t pt-[5px] flex justify-between items-center', isDark ? 'border-white/[0.06]' : 'border-black/[0.06]')}>
-                                  <span className={cn('text-[10px] font-semibold', isDark ? 'text-white/40' : 'text-black/50')}>
+                                  <span className={cn('text-[10px] font-semibold', isDark ? 'text-white/60' : 'text-black/50')}>
                                     Impermanent {ilData.ilPercent >= 0 ? 'gain' : 'loss'}
                                   </span>
                                   <span className="text-[12px] font-bold" style={{ color: ilColor }}>
@@ -4359,7 +4578,7 @@ const TradingHistory = ({
                         {/* Additional Stats */}
                         <div className="grid grid-cols-2 gap-2">
                           <div className={cn('p-[10px] rounded-[10px]', isDark ? 'bg-black/20' : 'bg-black/[0.03]')}>
-                            <span className={cn('text-[9px] uppercase block mb-[2px]', isDark ? 'text-white/40' : 'text-black/50')}>
+                            <span className={cn('text-[9px] uppercase block mb-[2px]', isDark ? 'text-white/60' : 'text-black/50')}>
                               Fees 7d
                             </span>
                             <span className={cn('text-[12px] font-semibold', isDark ? 'text-white' : 'text-[#1a1a1a]')}>
@@ -4369,10 +4588,10 @@ const TradingHistory = ({
                             </span>
                           </div>
                           <div className={cn('p-[10px] rounded-[10px]', isDark ? 'bg-black/20' : 'bg-black/[0.03]')}>
-                            <span className={cn('text-[9px] uppercase block mb-[2px]', isDark ? 'text-white/40' : 'text-black/50')}>
+                            <span className={cn('text-[9px] uppercase block mb-[2px]', isDark ? 'text-white/60' : 'text-black/50')}>
                               Last Trade
                             </span>
-                            <span className={cn('text-[12px] font-semibold', isDark ? 'text-white' : 'text-[#1a1a1a]')}>
+                            <span suppressHydrationWarning className={cn('text-[12px] font-semibold', isDark ? 'text-white' : 'text-[#1a1a1a]')}>
                               {pool.lastTraded ? formatRelativeTime(pool.lastTraded) : '-'}
                             </span>
                           </div>
@@ -4388,37 +4607,37 @@ const TradingHistory = ({
             <div className="flex flex-col gap-1">
               {/* Header */}
               <div className={cn('grid grid-cols-[minmax(160px,1.2fr)_70px_1fr_1fr_1fr_1.2fr_80px_140px_32px] gap-3 py-[10px] px-4 border-b items-center', isDark ? 'border-white/[0.06]' : 'border-black/[0.06]')}>
-                <span className={cn('text-[10px] font-semibold uppercase tracking-[0.05em]', isDark ? 'text-white/35' : 'text-black/40')}>
+                <span className={cn('text-[10px] font-semibold uppercase tracking-[0.05em]', isDark ? 'text-white/55' : 'text-black/60')}>
                   Pool
                 </span>
-                <span className={cn('text-[10px] font-semibold uppercase tracking-[0.05em] text-center', isDark ? 'text-white/35' : 'text-black/40')}>
+                <span className={cn('text-[10px] font-semibold uppercase tracking-[0.05em] text-center', isDark ? 'text-white/55' : 'text-black/60')}>
                   Trend
                 </span>
-                <span className={cn('text-[10px] font-semibold uppercase tracking-[0.05em] text-right', isDark ? 'text-white/35' : 'text-black/40')}>
+                <span className={cn('text-[10px] font-semibold uppercase tracking-[0.05em] text-right', isDark ? 'text-white/55' : 'text-black/60')}>
                   Fee
                 </span>
                 <span
-                  className={cn('text-[10px] font-semibold uppercase tracking-[0.05em] text-right cursor-pointer flex items-center justify-end gap-1', poolSortBy === 'apy' ? 'text-[#3b82f6]' : isDark ? 'text-white/35' : 'text-black/40')}
+                  className={cn('text-[10px] font-semibold uppercase tracking-[0.05em] text-right cursor-pointer flex items-center justify-end gap-1', poolSortBy === 'apy' ? 'text-[#3b82f6]' : isDark ? 'text-white/55' : 'text-black/60')}
                   onClick={() => handlePoolSort('apy')}
                 >
                   APY {poolSortBy === 'apy' && (poolSortDir === 'desc' ? <ChevronDown size={10} /> : <ChevronUp size={10} />)}
                 </span>
                 <span
-                  className={cn('text-[10px] font-semibold uppercase tracking-[0.05em] text-right cursor-pointer flex items-center justify-end gap-1', poolSortBy === 'volume' ? 'text-[#3b82f6]' : isDark ? 'text-white/35' : 'text-black/40')}
+                  className={cn('text-[10px] font-semibold uppercase tracking-[0.05em] text-right cursor-pointer flex items-center justify-end gap-1', poolSortBy === 'volume' ? 'text-[#3b82f6]' : isDark ? 'text-white/55' : 'text-black/60')}
                   onClick={() => handlePoolSort('volume')}
                 >
                   Volume {poolSortBy === 'volume' && (poolSortDir === 'desc' ? <ChevronDown size={10} /> : <ChevronUp size={10} />)}
                 </span>
                 <span
-                  className={cn('text-[10px] font-semibold uppercase tracking-[0.05em] text-right cursor-pointer flex items-center justify-end gap-1', poolSortBy === 'liquidity' ? 'text-[#3b82f6]' : isDark ? 'text-white/35' : 'text-black/40')}
+                  className={cn('text-[10px] font-semibold uppercase tracking-[0.05em] text-right cursor-pointer flex items-center justify-end gap-1', poolSortBy === 'liquidity' ? 'text-[#3b82f6]' : isDark ? 'text-white/55' : 'text-black/60')}
                   onClick={() => handlePoolSort('liquidity')}
                 >
                   TVL {poolSortBy === 'liquidity' && (poolSortDir === 'desc' ? <ChevronDown size={10} /> : <ChevronUp size={10} />)}
                 </span>
-                <span className={cn('text-[10px] font-semibold uppercase tracking-[0.05em] text-right', isDark ? 'text-white/35' : 'text-black/40')}>
+                <span className={cn('text-[10px] font-semibold uppercase tracking-[0.05em] text-right', isDark ? 'text-white/55' : 'text-black/60')}>
                   Last Trade
                 </span>
-                <span className={cn('text-[10px] font-semibold uppercase tracking-[0.05em] text-center', isDark ? 'text-white/35' : 'text-black/40')}>
+                <span className={cn('text-[10px] font-semibold uppercase tracking-[0.05em] text-center', isDark ? 'text-white/55' : 'text-black/60')}>
                   Actions
                 </span>
                 <span></span>
@@ -4449,7 +4668,7 @@ const TradingHistory = ({
                     <div
                       onClick={() => handlePoolExpand(pool._id, pool)}
                       className={cn(
-                        'grid grid-cols-[minmax(160px,1.2fr)_70px_1fr_1fr_1fr_1.2fr_80px_140px_32px] gap-3 py-3 px-4 items-center cursor-pointer transition-all duration-150',
+                        'grid grid-cols-[minmax(160px,1.2fr)_70px_1fr_1fr_1fr_1.2fr_80px_140px_32px] gap-3 py-3 px-4 items-center cursor-pointer transition-[opacity,transform,background-color,border-color] duration-150',
                         isExpanded ? 'border-b-0' : isDark ? 'border-b border-white/[0.04]' : 'border-b border-black/[0.04]',
                         isMainPool
                           ? cn('rounded-t-[12px] shadow-[inset_4px_0_0_#3b82f6]', isDark ? 'bg-[rgba(59,130,246,0.06)]' : 'bg-[rgba(59,130,246,0.03)]')
@@ -4506,7 +4725,7 @@ const TradingHistory = ({
 
                       {/* APY */}
                       <div className="text-right">
-                        <span className={cn('text-[13px] font-bold', hasApy ? 'text-[#22c55e]' : isDark ? 'text-white/30' : 'text-black/30')}>
+                        <span className={cn('text-[13px] font-bold', hasApy ? 'text-[#22c55e]' : isDark ? 'text-white/60' : 'text-black/60')}>
                           {hasApy ? `${pool.apy7d.apy.toFixed(1)}%` : '-%'}
                         </span>
                       </div>
@@ -4529,7 +4748,7 @@ const TradingHistory = ({
 
                       {/* Last Trade */}
                       <div className="text-right">
-                        <span className={cn('text-[11px] font-medium', isDark ? 'text-white/40' : 'text-black/50')}>
+                        <span suppressHydrationWarning className={cn('text-[11px] font-medium', isDark ? 'text-white/60' : 'text-black/50')}>
                           {pool.lastTraded ? formatRelativeTime(pool.lastTraded) : '-'}
                         </span>
                       </div>
@@ -4541,7 +4760,7 @@ const TradingHistory = ({
                             e.stopPropagation();
                             handleAddLiquidity(pool);
                           }}
-                          className="py-[6px] px-3 text-[11px] font-bold rounded-lg border-none bg-[#3b82f6] text-white cursor-pointer transition-all duration-200"
+                          className="py-[6px] px-3 text-[11px] font-bold rounded-lg border-none bg-[#3b82f6] text-white cursor-pointer transition-[opacity,transform,background-color,border-color] duration-200"
                         >
                           Add
                         </button>
@@ -4550,7 +4769,7 @@ const TradingHistory = ({
                             e.stopPropagation();
                             handleWithdrawLiquidity(pool);
                           }}
-                          className={cn('py-[6px] px-3 text-[11px] font-bold rounded-lg border cursor-pointer transition-all duration-200', isDark ? 'border-white/10 bg-white/5 text-white' : 'border-black/10 bg-white text-[#1a1a1a]')}
+                          className={cn('py-[6px] px-3 text-[11px] font-bold rounded-lg border cursor-pointer transition-[opacity,transform,background-color,border-color] duration-200', isDark ? 'border-white/10 bg-white/5 text-white' : 'border-black/10 bg-white text-[#1a1a1a]')}
                         >
                           Withdraw
                         </button>
@@ -4582,7 +4801,7 @@ const TradingHistory = ({
                                   key={i}
                                   className={cn('p-3 rounded-[10px] border', isDark ? 'bg-black/20 border-white/5' : 'bg-white border-black/5')}
                                 >
-                                  <div className={cn('text-[9px] font-bold uppercase mb-1', isDark ? 'text-white/35' : 'text-black/40')}>
+                                  <div className={cn('text-[9px] font-bold uppercase mb-1', isDark ? 'text-white/55' : 'text-black/60')}>
                                     {stat.label}
                                   </div>
                                   <div className={cn('text-[15px] font-semibold', isDark ? 'text-white' : 'text-[#1a1a1a]')}>
@@ -4594,7 +4813,7 @@ const TradingHistory = ({
 
                             {/* Pool Composition */}
                             <div className={cn('p-4 rounded-[12px] border', isDark ? 'bg-black/20 border-white/5' : 'bg-white border-black/5')}>
-                              <div className={cn('text-[10px] font-bold uppercase mb-3', isDark ? 'text-white/35' : 'text-black/40')}>
+                              <div className={cn('text-[10px] font-bold uppercase mb-3', isDark ? 'text-white/55' : 'text-black/60')}>
                                 Pool Composition
                               </div>
                               <div className="flex gap-8">
@@ -4602,14 +4821,14 @@ const TradingHistory = ({
                                   <img src={getTokenImageUrl(pool.asset1.issuer, pool.asset1.currency)} alt="" className="w-6 h-6 rounded-full" />
                                   <div className="flex flex-col">
                                     <span className="text-[14px] font-semibold">{pool.currentLiquidity ? abbreviateNumber(pool.currentLiquidity.asset1Amount) : '-'}</span>
-                                    <span className={cn('text-[10px] font-semibold', isDark ? 'text-white/40' : 'text-black/50')}>{asset1}</span>
+                                    <span className={cn('text-[10px] font-semibold', isDark ? 'text-white/60' : 'text-black/50')}>{asset1}</span>
                                   </div>
                                 </div>
                                 <div className="flex items-center gap-[10px]">
                                   <img src={getTokenImageUrl(pool.asset2.issuer, pool.asset2.currency)} alt="" className="w-6 h-6 rounded-full" />
                                   <div className="flex flex-col">
                                     <span className="text-[14px] font-semibold">{pool.currentLiquidity ? abbreviateNumber(pool.currentLiquidity.asset2Amount) : '-'}</span>
-                                    <span className={cn('text-[10px] font-semibold', isDark ? 'text-white/40' : 'text-black/50')}>{asset2}</span>
+                                    <span className={cn('text-[10px] font-semibold', isDark ? 'text-white/60' : 'text-black/50')}>{asset2}</span>
                                   </div>
                                 </div>
                               </div>
@@ -4644,19 +4863,19 @@ const TradingHistory = ({
                                   return (
                                   <div className={cn('flex gap-6 items-end mt-3 py-[10px] px-3 rounded-lg', isDark ? 'bg-black/20' : 'bg-black/[0.03]')}>
                                     <div className="flex flex-col gap-[2px]">
-                                      <span className={cn('text-[9px] font-bold uppercase', isDark ? 'text-white/35' : 'text-black/40')}>Worth if held (no pool)</span>
+                                      <span className={cn('text-[9px] font-bold uppercase', isDark ? 'text-white/55' : 'text-black/60')}>Worth if held (no pool)</span>
                                       <span className={cn('text-[13px] font-semibold', isDark ? 'text-white/90' : 'text-black/90')}>
                                         {abbreviateNumber(ilData.holdValueXrp)} XRP
                                       </span>
                                     </div>
                                     <div className="flex flex-col gap-[2px]">
-                                      <span className={cn('text-[9px] font-bold uppercase', isDark ? 'text-white/35' : 'text-black/40')}>Worth in pool now</span>
+                                      <span className={cn('text-[9px] font-bold uppercase', isDark ? 'text-white/55' : 'text-black/60')}>Worth in pool now</span>
                                       <span className={cn('text-[13px] font-semibold', isDark ? 'text-white/90' : 'text-black/90')}>
                                         {abbreviateNumber(ilData.poolValueXrp)} XRP
                                       </span>
                                     </div>
                                     <div className="flex flex-col gap-[2px]">
-                                      <span className={cn('text-[9px] font-bold uppercase', isDark ? 'text-white/35' : 'text-black/40')}>Impermanent {ilData.ilPercent >= 0 ? 'gain' : 'loss'}</span>
+                                      <span className={cn('text-[9px] font-bold uppercase', isDark ? 'text-white/55' : 'text-black/60')}>Impermanent {ilData.ilPercent >= 0 ? 'gain' : 'loss'}</span>
                                       <span className="text-[14px] font-bold" style={{ color: ilColor }}>
                                         {diff >= 0 ? '+' : ''}{abbreviateNumber(diff)} XRP ({ilData.ilPercent >= 0 ? '+' : ''}{ilData.ilPercent.toFixed(2)}%)
                                       </span>
@@ -4671,7 +4890,7 @@ const TradingHistory = ({
 
                           {/* Chart Section */}
                           <div className={cn('p-5 rounded-xl h-full border', isDark ? 'bg-black/20 border-white/[0.05]' : 'bg-white border-black/[0.05]')}>
-                            <div className={cn('text-[10px] font-bold uppercase mb-4', isDark ? 'text-white/35' : 'text-black/40')}>
+                            <div className={cn('text-[10px] font-bold uppercase mb-4', isDark ? 'text-white/55' : 'text-black/60')}>
                               TVL History (30d)
                             </div>
                             {chartData && chartData.length > 0 ? (
@@ -4724,7 +4943,7 @@ const TradingHistory = ({
             <DialogPaper isDark={isDark}>
               <DialogTitle isDark={isDark}>
                 Manage Liquidity
-                <IconButton onClick={handleCloseDialog} isDark={isDark} className="p-[6px]">
+                <IconButton aria-label="Close dialog" onClick={handleCloseDialog} isDark={isDark} className="p-[6px]">
                   <X size={18} />
                 </IconButton>
               </DialogTitle>
@@ -4741,7 +4960,7 @@ const TradingHistory = ({
                         {decodeCurrency(liquidityDialog.pool.asset1.currency)}/{decodeCurrency(liquidityDialog.pool.asset2.currency)}
                       </span>
                       {liquidityDialog.pool.tradingFee != null && (
-                        <span className={cn('ml-auto text-[11px]', isDark ? 'text-white/40' : 'text-black/40')}>
+                        <span className={cn('ml-auto text-[11px]', isDark ? 'text-white/60' : 'text-black/60')}>
                           Fee {(liquidityDialog.pool.tradingFee / 1000).toFixed(2)}%
                         </span>
                       )}
@@ -4767,12 +4986,12 @@ const TradingHistory = ({
                             <div className="flex items-center gap-[6px]">
                               <img src={getTokenImageUrl(liquidityDialog.pool.asset1.issuer, liquidityDialog.pool.asset1.currency)} alt="" className="w-4 h-4 rounded-full" />
                               <span className={cn('text-[13px] font-medium', isDark ? 'text-white/85' : 'text-black/85')}>{abbreviateNumber(lp.asset1Amount)}</span>
-                              <span className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-black/40')}>{decodeCurrency(liquidityDialog.pool.asset1.currency)}</span>
+                              <span className={cn('text-[11px]', isDark ? 'text-white/60' : 'text-black/60')}>{decodeCurrency(liquidityDialog.pool.asset1.currency)}</span>
                             </div>
                             <div className="flex items-center gap-[6px]">
                               <img src={getTokenImageUrl(liquidityDialog.pool.asset2.issuer, liquidityDialog.pool.asset2.currency)} alt="" className="w-4 h-4 rounded-full" />
                               <span className={cn('text-[13px] font-medium', isDark ? 'text-white/85' : 'text-black/85')}>{abbreviateNumber(lp.asset2Amount)}</span>
-                              <span className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-black/40')}>{decodeCurrency(liquidityDialog.pool.asset2.currency)}</span>
+                              <span className={cn('text-[11px]', isDark ? 'text-white/60' : 'text-black/60')}>{decodeCurrency(liquidityDialog.pool.asset2.currency)}</span>
                             </div>
                           </div>
                           {hasIl && (() => {
@@ -4780,15 +4999,15 @@ const TradingHistory = ({
                             return (
                             <div className={cn('mt-[10px] py-2 px-[10px] rounded-lg flex flex-col gap-[5px]', isDark ? 'bg-black/15' : 'bg-black/[0.03]')}>
                               <div className="flex justify-between items-center">
-                                <span className={cn('text-[10px] font-semibold', isDark ? 'text-white/40' : 'text-black/50')}>Worth if held (no pool)</span>
+                                <span className={cn('text-[10px] font-semibold', isDark ? 'text-white/60' : 'text-black/50')}>Worth if held (no pool)</span>
                                 <span className={cn('text-[12px] font-semibold', isDark ? 'text-white/85' : 'text-black/85')}>{abbreviateNumber(ilData.holdValueXrp)} XRP</span>
                               </div>
                               <div className="flex justify-between items-center">
-                                <span className={cn('text-[10px] font-semibold', isDark ? 'text-white/40' : 'text-black/50')}>Worth in pool now</span>
+                                <span className={cn('text-[10px] font-semibold', isDark ? 'text-white/60' : 'text-black/50')}>Worth in pool now</span>
                                 <span className={cn('text-[12px] font-semibold', isDark ? 'text-white/85' : 'text-black/85')}>{abbreviateNumber(ilData.poolValueXrp)} XRP</span>
                               </div>
                               <div className={cn('pt-1 flex justify-between items-center border-t', isDark ? 'border-white/[0.06]' : 'border-black/[0.06]')}>
-                                <span className={cn('text-[10px] font-semibold', isDark ? 'text-white/40' : 'text-black/50')}>Impermanent {ilData.ilPercent >= 0 ? 'gain' : 'loss'}</span>
+                                <span className={cn('text-[10px] font-semibold', isDark ? 'text-white/60' : 'text-black/50')}>Impermanent {ilData.ilPercent >= 0 ? 'gain' : 'loss'}</span>
                                 <span className="text-[12px] font-bold" style={{ color: ilColor }}>{diff >= 0 ? '+' : ''}{abbreviateNumber(diff)} XRP ({ilData.ilPercent >= 0 ? '+' : ''}{ilData.ilPercent.toFixed(2)}%)</span>
                               </div>
                             </div>
@@ -4805,10 +5024,10 @@ const TradingHistory = ({
                           key={t}
                           onClick={() => setLiquidityDialog((prev) => ({ ...prev, tab: t }))}
                           className={cn(
-                            'flex-1 py-[9px] px-0 text-[13px] font-medium border-none rounded-lg cursor-pointer transition-all duration-150',
+                            'flex-1 py-[9px] px-0 text-[13px] font-medium border-none rounded-lg cursor-pointer transition-[opacity,transform,background-color,border-color] duration-150',
                             liquidityDialog.tab === t
                               ? cn('text-white', t === 'add' ? 'bg-[#3b82f6]' : isDark ? 'bg-white/[0.12]' : 'bg-[#1a1a1a]')
-                              : cn('bg-transparent', isDark ? 'text-white/45' : 'text-black/45')
+                              : cn('bg-transparent', isDark ? 'text-white/60' : 'text-black/60')
                           )}
                         >
                           {t === 'add' ? 'Add' : 'Remove'}
@@ -4826,11 +5045,11 @@ const TradingHistory = ({
                             { value: 'single1', label: `${decodeCurrency(liquidityDialog.pool.asset1.currency)} only`, desc: 'Trading fee applies' },
                             { value: 'single2', label: `${decodeCurrency(liquidityDialog.pool.asset2.currency)} only`, desc: 'Trading fee applies' }
                           ].map((opt) => (
-                            <label key={opt.value} className={cn('flex items-center gap-[10px] py-[10px] px-[14px] rounded-[10px] cursor-pointer border-[1.5px] transition-all duration-150', depositMode === opt.value ? cn('border-[#3b82f6]', isDark ? 'bg-[rgba(59,130,246,0.08)]' : 'bg-[rgba(59,130,246,0.04)]') : cn('bg-transparent', isDark ? 'border-white/[0.08]' : 'border-black/[0.08]'))}>
+                            <label key={opt.value} className={cn('flex items-center gap-[10px] py-[10px] px-[14px] rounded-[10px] cursor-pointer border-[1.5px] transition-[opacity,transform,background-color,border-color] duration-150', depositMode === opt.value ? cn('border-[#3b82f6]', isDark ? 'bg-[rgba(59,130,246,0.08)]' : 'bg-[rgba(59,130,246,0.04)]') : cn('bg-transparent', isDark ? 'border-white/[0.08]' : 'border-black/[0.08]'))}>
                               <input type="radio" value={opt.value} checked={depositMode === opt.value} onChange={(e) => setDepositMode(e.target.value)} className="accent-[#3b82f6]" />
                               <div className="flex flex-col gap-[2px]">
                                 <span className={cn('text-[13px] font-medium', isDark ? 'text-white' : 'text-[#1a1a1a]')}>{opt.label}</span>
-                                <span className={cn('text-[11px]', isDark ? 'text-white/35' : 'text-black/35')}>{opt.desc}</span>
+                                <span className={cn('text-[11px]', isDark ? 'text-white/55' : 'text-black/35')}>{opt.desc}</span>
                               </div>
                             </label>
                           ))}
@@ -4840,12 +5059,12 @@ const TradingHistory = ({
                         {(depositMode === 'double' || depositMode === 'single1') && (
                           <div>
                             <div className="flex justify-between items-center mb-[6px]">
-                              <span className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-black/40')}>
+                              <span className={cn('text-[11px]', isDark ? 'text-white/60' : 'text-black/60')}>
                                 {decodeCurrency(liquidityDialog.pool.asset1.currency)}
                               </span>
                               {userPoolBalances.asset1 != null && (
                                 <div className="flex items-center gap-[6px]">
-                                  <span className={cn('text-[10px]', isDark ? 'text-white/45' : 'text-black/45')}>
+                                  <span className={cn('text-[10px]', isDark ? 'text-white/60' : 'text-black/60')}>
                                     {Number(userPoolBalances.asset1).toFixed(4).replace(/\.?0+$/, '')} {decodeCurrency(liquidityDialog.pool.asset1.currency)}
                                   </span>
                                   {[0.5, 1].map((p) => (
@@ -4866,12 +5085,12 @@ const TradingHistory = ({
                         {(depositMode === 'double' || depositMode === 'single2') && (
                           <div>
                             <div className="flex justify-between items-center mb-[6px]">
-                              <span className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-black/40')}>
+                              <span className={cn('text-[11px]', isDark ? 'text-white/60' : 'text-black/60')}>
                                 {decodeCurrency(liquidityDialog.pool.asset2.currency)}
                               </span>
                               {userPoolBalances.asset2 != null && (
                                 <div className="flex items-center gap-[6px]">
-                                  <span className={cn('text-[10px]', isDark ? 'text-white/45' : 'text-black/45')}>
+                                  <span className={cn('text-[10px]', isDark ? 'text-white/60' : 'text-black/60')}>
                                     {Number(userPoolBalances.asset2).toFixed(4).replace(/\.?0+$/, '')} {decodeCurrency(liquidityDialog.pool.asset2.currency)}
                                   </span>
                                   {[0.5, 1].map((p) => (
@@ -4960,7 +5179,7 @@ const TradingHistory = ({
                           <button
                             onClick={handleSubmitDeposit}
                             disabled={depositLoading}
-                            className={cn('p-[13px] text-[14px] font-semibold w-full text-white border-none rounded-[10px] flex items-center justify-center gap-2 transition-all duration-150', depositLoading ? cn('cursor-not-allowed', isDark ? 'bg-[#222]' : 'bg-[#ccc]') : 'cursor-pointer bg-[#3b82f6]')}
+                            className={cn('p-[13px] text-[14px] font-semibold w-full text-white border-none rounded-[10px] flex items-center justify-center gap-2 transition-[opacity,transform,background-color,border-color] duration-150', depositLoading ? cn('cursor-not-allowed', isDark ? 'bg-[#222]' : 'bg-[#ccc]') : 'cursor-pointer bg-[#3b82f6]')}
                           >
                             {depositLoading && <Spinner size={16} />}
                             {depositLoading ? 'Simulating...' : 'Add Liquidity'}
@@ -4980,11 +5199,11 @@ const TradingHistory = ({
                             { value: 'single1', label: `${decodeCurrency(liquidityDialog.pool.asset1.currency)} only`, desc: 'Trading fee applies' },
                             { value: 'single2', label: `${decodeCurrency(liquidityDialog.pool.asset2.currency)} only`, desc: 'Trading fee applies' }
                           ].map((opt) => (
-                            <label key={opt.value} className={cn('flex items-center gap-[10px] py-[10px] px-[14px] rounded-[10px] cursor-pointer border-[1.5px] transition-all duration-150', withdrawMode === opt.value ? cn('border-[#3b82f6]', isDark ? 'bg-[rgba(59,130,246,0.08)]' : 'bg-[rgba(59,130,246,0.04)]') : cn('bg-transparent', isDark ? 'border-white/[0.08]' : 'border-black/[0.08]'))}>
+                            <label key={opt.value} className={cn('flex items-center gap-[10px] py-[10px] px-[14px] rounded-[10px] cursor-pointer border-[1.5px] transition-[opacity,transform,background-color,border-color] duration-150', withdrawMode === opt.value ? cn('border-[#3b82f6]', isDark ? 'bg-[rgba(59,130,246,0.08)]' : 'bg-[rgba(59,130,246,0.04)]') : cn('bg-transparent', isDark ? 'border-white/[0.08]' : 'border-black/[0.08]'))}>
                               <input type="radio" value={opt.value} checked={withdrawMode === opt.value} onChange={(e) => { setWithdrawMode(e.target.value); setWithdrawAmount1(''); setWithdrawAmount2(''); setPendingWithdraw(null); }} className="accent-[#3b82f6]" />
                               <div className="flex flex-col gap-[2px]">
                                 <span className={cn('text-[13px] font-medium', isDark ? 'text-white' : 'text-[#1a1a1a]')}>{opt.label}</span>
-                                <span className={cn('text-[11px]', isDark ? 'text-white/35' : 'text-black/35')}>{opt.desc}</span>
+                                <span className={cn('text-[11px]', isDark ? 'text-white/55' : 'text-black/35')}>{opt.desc}</span>
                               </div>
                             </label>
                           ))}
@@ -4994,7 +5213,7 @@ const TradingHistory = ({
                         {(withdrawMode === 'double' || withdrawMode === 'single1') && (
                           <div>
                             <div className="flex justify-between items-center mb-[6px]">
-                              <span className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-black/40')}>
+                              <span className={cn('text-[11px]', isDark ? 'text-white/60' : 'text-black/60')}>
                                 {decodeCurrency(liquidityDialog.pool.asset1.currency)}
                               </span>
                               {(() => {
@@ -5038,7 +5257,7 @@ const TradingHistory = ({
                         {(withdrawMode === 'double' || withdrawMode === 'single2') && (
                           <div>
                             <div className="flex justify-between items-center mb-[6px]">
-                              <span className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-black/40')}>
+                              <span className={cn('text-[11px]', isDark ? 'text-white/60' : 'text-black/60')}>
                                 {decodeCurrency(liquidityDialog.pool.asset2.currency)}
                               </span>
                               {(() => {
@@ -5157,7 +5376,7 @@ const TradingHistory = ({
                           <button
                             onClick={handleSubmitWithdraw}
                             disabled={withdrawLoading}
-                            className={cn('p-[13px] text-[14px] font-semibold w-full text-white border-none rounded-[10px] flex items-center justify-center gap-2 transition-all duration-150', withdrawLoading ? cn('cursor-not-allowed', isDark ? 'bg-[#222]' : 'bg-[#ccc]') : cn('cursor-pointer', isDark ? 'bg-white/10' : 'bg-[#1a1a1a]'))}
+                            className={cn('p-[13px] text-[14px] font-semibold w-full text-white border-none rounded-[10px] flex items-center justify-center gap-2 transition-[opacity,transform,background-color,border-color] duration-150', withdrawLoading ? cn('cursor-not-allowed', isDark ? 'bg-[#222]' : 'bg-[#ccc]') : cn('cursor-pointer', isDark ? 'bg-white/10' : 'bg-[#1a1a1a]'))}
                           >
                             {withdrawLoading && <Spinner size={16} />}
                             {withdrawLoading ? 'Simulating...' : withdrawMode === 'all' ? 'Withdraw All' : 'Remove Liquidity'}
@@ -5185,7 +5404,7 @@ const TradingHistory = ({
             <DialogPaper isDark={isDark}>
               <DialogTitle isDark={isDark}>
                 Create Pool
-                <IconButton onClick={handleCloseCreatePool} isDark={isDark} className="p-[6px]">
+                <IconButton aria-label="Close dialog" onClick={handleCloseCreatePool} isDark={isDark} className="p-[6px]">
                   <X size={18} />
                 </IconButton>
               </DialogTitle>
@@ -5193,7 +5412,7 @@ const TradingHistory = ({
                 <div className="flex flex-col gap-[14px]">
                   {/* Asset 1 - Current token (fixed) */}
                   <div className={cn('py-3 px-[14px] rounded-[10px] border-[1.5px]', isDark ? 'bg-white/[0.03] border-white/[0.08]' : 'bg-[#f9fafb] border-black/[0.08]')}>
-                    <div className={cn('text-[10px] font-semibold uppercase tracking-[0.5px] mb-2', isDark ? 'text-white/35' : 'text-black/40')}>Asset 1</div>
+                    <div className={cn('text-[10px] font-semibold uppercase tracking-[0.5px] mb-2', isDark ? 'text-white/55' : 'text-black/60')}>Asset 1</div>
                     <div className="flex items-center gap-[10px]">
                       <img src={getTokenImageUrl(token?.issuer, token?.currency)} alt="" className="w-7 h-7 rounded-full" />
                       <span className={cn('text-[15px] font-semibold', isDark ? 'text-white' : 'text-[#1a1a1a]')}>
@@ -5204,7 +5423,7 @@ const TradingHistory = ({
 
                   {/* Asset 2 - Token search/select */}
                   <div className={cn('py-3 px-[14px] rounded-[10px] border-[1.5px]', isDark ? 'bg-white/[0.03] border-white/[0.08]' : 'bg-[#f9fafb] border-black/[0.08]')}>
-                    <div className={cn('text-[10px] font-semibold uppercase tracking-[0.5px] mb-2', isDark ? 'text-white/35' : 'text-black/40')}>Asset 2</div>
+                    <div className={cn('text-[10px] font-semibold uppercase tracking-[0.5px] mb-2', isDark ? 'text-white/55' : 'text-black/60')}>Asset 2</div>
                     {createPoolAsset2 ? (
                       <div className="flex items-center gap-[10px]">
                         <img src={createPoolAsset2.image} alt="" className="w-7 h-7 rounded-full" />
@@ -5221,7 +5440,7 @@ const TradingHistory = ({
                     ) : (
                       <div className="relative">
                         <div className="relative">
-                          <Search size={14} className={cn('absolute left-[10px] top-1/2 -translate-y-1/2', isDark ? 'text-white/30' : 'text-black/30')} />
+                          <Search size={14} className={cn('absolute left-[10px] top-1/2 -translate-y-1/2', isDark ? 'text-white/60' : 'text-black/60')} />
                           <TextField
                             value={createPoolSearch}
                             onChange={(e) => handleCreatePoolSearch(e.target.value)}
@@ -5250,7 +5469,7 @@ const TradingHistory = ({
                                   <div className="flex flex-col gap-px">
                                     <span className="text-[13px] font-semibold">{name}</span>
                                     {!isXrp && t.issuer && (
-                                      <span className={cn('text-[10px]', isDark ? 'text-white/30' : 'text-black/35')}>
+                                      <span className={cn('text-[10px]', isDark ? 'text-white/60' : 'text-black/35')}>
                                         {t.issuer.slice(0, 8)}...{t.issuer.slice(-6)}
                                       </span>
                                     )}
@@ -5270,12 +5489,12 @@ const TradingHistory = ({
                       {/* Amount 1 */}
                       <div>
                         <div className="flex justify-between items-center mb-[6px]">
-                          <span className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-black/40')}>
+                          <span className={cn('text-[11px]', isDark ? 'text-white/60' : 'text-black/60')}>
                             {token?.currency === 'XRP' ? 'XRP' : decodeCurrency(token?.currency)} amount
                           </span>
                           {createPoolBalances.asset1 != null && (
                             <div className="flex items-center gap-[6px]">
-                              <span className={cn('text-[10px]', isDark ? 'text-white/45' : 'text-black/45')}>
+                              <span className={cn('text-[10px]', isDark ? 'text-white/60' : 'text-black/60')}>
                                 {Number(createPoolBalances.asset1).toFixed(4).replace(/\.?0+$/, '')}
                               </span>
                               {[0.5, 1].map((p) => (
@@ -5292,12 +5511,12 @@ const TradingHistory = ({
                       {/* Amount 2 */}
                       <div>
                         <div className="flex justify-between items-center mb-[6px]">
-                          <span className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-black/40')}>
+                          <span className={cn('text-[11px]', isDark ? 'text-white/60' : 'text-black/60')}>
                             {createPoolAsset2.name} amount
                           </span>
                           {createPoolBalances.asset2 != null && (
                             <div className="flex items-center gap-[6px]">
-                              <span className={cn('text-[10px]', isDark ? 'text-white/45' : 'text-black/45')}>
+                              <span className={cn('text-[10px]', isDark ? 'text-white/60' : 'text-black/60')}>
                                 {Number(createPoolBalances.asset2).toFixed(4).replace(/\.?0+$/, '')}
                               </span>
                               {[0.5, 1].map((p) => (
@@ -5314,7 +5533,7 @@ const TradingHistory = ({
                       {/* Trading Fee Slider */}
                       <div>
                         <div className="flex justify-between items-center mb-2">
-                          <span className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-black/40')}>Trading Fee</span>
+                          <span className={cn('text-[11px]', isDark ? 'text-white/60' : 'text-black/60')}>Trading Fee</span>
                           <span className={cn('text-[13px] font-semibold', isDark ? 'text-white' : 'text-[#1a1a1a]')}>{(createPoolFee / 1000).toFixed(2)}%</span>
                         </div>
                         <input
@@ -5326,7 +5545,7 @@ const TradingHistory = ({
                           onChange={(e) => { setCreatePoolFee(Number(e.target.value)); setPendingCreatePool(null); }}
                           className="w-full accent-[#137DFE]"
                         />
-                        <div className={cn('flex justify-between text-[9px] mt-[2px]', isDark ? 'text-white/25' : 'text-black/30')}>
+                        <div className={cn('flex justify-between text-[9px] mt-[2px]', isDark ? 'text-white/25' : 'text-black/60')}>
                           <span>0%</span>
                           <span>0.5%</span>
                           <span>1%</span>
@@ -5405,7 +5624,7 @@ const TradingHistory = ({
                         <button
                           onClick={handleSubmitCreatePool}
                           disabled={createPoolLoading || !createPoolAmount1 || !createPoolAmount2}
-                          className={cn('p-[13px] text-[14px] font-semibold w-full text-white border-none rounded-[10px] flex items-center justify-center gap-2 transition-all duration-150', (createPoolLoading || !createPoolAmount1 || !createPoolAmount2) ? cn('cursor-not-allowed', isDark ? 'bg-[#222]' : 'bg-[#ccc]') : 'cursor-pointer bg-[#137DFE]')}
+                          className={cn('p-[13px] text-[14px] font-semibold w-full text-white border-none rounded-[10px] flex items-center justify-center gap-2 transition-[opacity,transform,background-color,border-color] duration-150', (createPoolLoading || !createPoolAmount1 || !createPoolAmount2) ? cn('cursor-not-allowed', isDark ? 'bg-[#222]' : 'bg-[#ccc]') : 'cursor-pointer bg-[#137DFE]')}
                         >
                           {createPoolLoading && <Spinner size={16} />}
                           {createPoolLoading ? 'Simulating...' : 'Create Pool'}

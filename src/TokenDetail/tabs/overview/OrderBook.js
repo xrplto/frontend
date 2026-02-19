@@ -111,7 +111,7 @@ const ColumnHeader = ({ className, children, isDark, ...p }) => (
   <div
     className={cn(
       'flex justify-between px-4 py-1.5 text-[10px] font-semibold uppercase tracking-widest sticky top-0 z-[2] border-b',
-      isDark ? 'bg-[#010815] border-white/[0.06] text-white/40' : 'bg-[#fafafa] border-black/[0.06] text-black/40',
+      isDark ? 'bg-[#010815] border-white/[0.06] text-white/60' : 'bg-[#fafafa] border-black/[0.06] text-black/60',
       className
     )}
     {...p}
@@ -132,7 +132,7 @@ const Row = ({ className, children, type, isUserOrder, isHovered, isHighlighted,
   return (
     <div
       className={cn(
-        'flex justify-between items-center px-4 py-1.5 relative cursor-pointer text-xs transition-all duration-200 border-l-2 font-mono',
+        'flex justify-between items-center px-4 py-1.5 relative cursor-pointer text-xs transition-[opacity,transform,background-color,border-color] duration-200 border-l-2 font-mono',
         isUserOrder ? 'border-l-[#3b82f6]' : 'border-l-transparent',
         className
       )}
@@ -148,12 +148,12 @@ const Row = ({ className, children, type, isUserOrder, isHovered, isHighlighted,
 const DepthBar = ({ className, type, width, ...p }) => (
   <div
     className={cn(
-      'absolute top-px bottom-px pointer-events-none transition-[width] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]',
-      type === 'bid' ? 'left-0' : 'right-0',
+      'absolute top-px bottom-px pointer-events-none w-full transition-transform duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]',
+      type === 'bid' ? 'left-0 origin-left' : 'right-0 origin-right',
       type === 'ask' ? 'bg-red-500/[0.12]' : 'bg-green-500/[0.12]',
       className
     )}
-    style={{ width: `${width}%` }}
+    style={{ transform: `scaleX(${(width || 0) / 100})` }}
     {...p}
   />
 );
@@ -178,7 +178,7 @@ const Amount = ({ className, children, isDark, ...p }) => (
 
 const Maker = ({ className, children, isDark, onClick, ...p }) => (
   <span
-    className={cn('relative z-[1] cursor-pointer w-[50px] text-right text-[10px] transition-colors duration-200 hover:text-[#3b82f6]', isDark ? 'text-white/[0.35]' : 'text-black/[0.35]', className)}
+    className={cn('relative z-[1] cursor-pointer w-[50px] text-right text-[10px] transition-[background-color,border-color] duration-200 hover:text-[#3b82f6]', isDark ? 'text-white/60' : 'text-black/60', className)}
     onClick={onClick}
     {...p}
   >
@@ -224,17 +224,17 @@ const OrderTooltip = ({ isDark, type, cumSum, avgPrice, cumXrp, pctFromBest, tok
       : 'bg-white/95 border border-black/10'
   )}>
     <div className="flex items-center gap-[6px]">
-      <span className={cn(isDark ? 'text-white/40' : 'text-black/40')}>{'\u03A3'}</span>
+      <span className={cn(isDark ? 'text-white/55' : 'text-black/40')}>{'\u03A3'}</span>
       <span className={cn('font-semibold', type === 'ask' ? 'text-[#ef4444]' : 'text-[#22c55e]')}>{fNumber(cumSum)} {tokenName}</span>
       <span className={cn(isDark ? 'text-white/20' : 'text-black/20')}>{'\u00B7'}</span>
-      <span className={cn(isDark ? 'text-white/40' : 'text-black/40')}>Avg</span>
+      <span className={cn(isDark ? 'text-white/55' : 'text-black/40')}>Avg</span>
       <span className={cn('font-medium', isDark ? 'text-white/80' : 'text-black/80')}>{renderInlinePrice(avgPrice)}</span>
     </div>
     <div className="flex items-center gap-[6px]">
-      <span className={cn(isDark ? 'text-white/40' : 'text-black/40')}>Total</span>
+      <span className={cn(isDark ? 'text-white/55' : 'text-black/40')}>Total</span>
       <span className={cn('font-semibold', isDark ? 'text-white/80' : 'text-black/80')}>{fNumber(cumXrp)} XRP</span>
       <span className={cn(isDark ? 'text-white/20' : 'text-black/20')}>{'\u00B7'}</span>
-      <span className={cn(isDark ? 'text-white/40' : 'text-black/40')}>Depth</span>
+      <span className={cn(isDark ? 'text-white/55' : 'text-black/40')}>Depth</span>
       <span className={cn('font-semibold', pctFromBest > 5 ? 'text-[#f59e0b]' : isDark ? 'text-white/70' : 'text-black/70')}>
         {pctFromBest != null ? `${pctFromBest.toFixed(2)}%` : '\u2014'}
       </span>
@@ -246,8 +246,8 @@ const BearEmptyState = ({ isDark, message }) => (
   <div className={cn(
     'flex flex-col items-center justify-center px-[20px] py-[40px] m-[12px] rounded-[12px] gap-[12px]',
     isDark
-      ? 'bg-white/[0.02] border-[1.5px] border-dashed border-white/[0.06] text-white/40'
-      : 'bg-black/[0.02] border-[1.5px] border-dashed border-black/[0.06] text-black/40'
+      ? 'bg-white/[0.02] border-[1.5px] border-dashed border-white/[0.06] text-white/60'
+      : 'bg-black/[0.02] border-[1.5px] border-dashed border-black/[0.06] text-black/60'
   )}>
     <BookOpen size={24} className="opacity-30" />
     <span className="text-[11px] font-medium tracking-[0.05em] uppercase text-center">
@@ -474,16 +474,16 @@ const DepthChartModal = ({ bids, asks, isDark, onClose, userAccount }) => {
               'flex items-center rounded-lg p-[2px]',
               isDark ? 'bg-white/[0.04] border border-white/[0.06]' : 'bg-black/[0.03] border border-black/[0.06]'
             )}>
-              <span className={cn('text-[10px] font-medium px-2.5', isDark ? 'text-white/30' : 'text-black/30')}>Min XRP</span>
+              <span className={cn('text-[10px] font-medium px-2.5', isDark ? 'text-white/60' : 'text-black/60')}>Min XRP</span>
               {MIN_XRP_OPTIONS.map((v) => (
                 <button
                   key={v}
                   onClick={() => setMinXrp(v)}
                   className={cn(
-                    'h-[26px] px-2.5 rounded-md border-none cursor-pointer text-[10px] font-semibold transition-all',
+                    'h-[26px] px-2.5 rounded-md border-none cursor-pointer text-[10px] font-semibold transition-[opacity,transform,background-color,border-color]',
                     minXrp === v
                       ? 'bg-[#3b82f6] text-white'
-                      : isDark ? 'text-white/40 hover:text-white hover:bg-white/10' : 'text-black/40 hover:text-black hover:bg-black/5'
+                      : isDark ? 'text-white/55 hover:text-white hover:bg-white/10' : 'text-black/40 hover:text-black hover:bg-black/5'
                   )}
                 >
                   {v === 0 ? 'All' : v >= 1000 ? `${v / 1000}K` : v}
@@ -493,8 +493,8 @@ const DepthChartModal = ({ bids, asks, isDark, onClose, userAccount }) => {
             <button
               onClick={onClose}
               className={cn(
-                'p-1.5 rounded-lg transition-colors ml-1',
-                isDark ? 'hover:bg-white/10 text-white/40' : 'hover:bg-black/5 text-black/40'
+                'p-1.5 rounded-lg transition-[background-color,border-color] ml-1',
+                isDark ? 'hover:bg-white/10 text-white/55' : 'hover:bg-black/5 text-black/40'
               )}
             >
               <X size={16} />
@@ -530,7 +530,7 @@ const DepthChartModal = ({ bids, asks, isDark, onClose, userAccount }) => {
               <div className="h-full bg-[#22c55e] rounded-l-full" style={{ width: `${bidPct}%` }} />
               <div className="h-full bg-[#ef4444] rounded-r-full" style={{ width: `${100 - bidPct}%` }} />
             </div>
-            <span className={cn('text-[10px] font-mono font-medium', isDark ? 'text-white/40' : 'text-black/40')}>
+            <span className={cn('text-[10px] font-mono font-medium', isDark ? 'text-white/55' : 'text-black/40')}>
               {bidPct.toFixed(0)}% / {(100 - bidPct).toFixed(0)}%
             </span>
           </div>
@@ -939,9 +939,10 @@ const OrderBook = ({ token, onPriceClick, limitPrice }) => {
           <button
             onClick={() => setShowDepthChart(true)}
             className={cn(
-              'h-[24px] w-[24px] flex items-center justify-center rounded-[6px] transition-colors',
-              isDark ? 'hover:bg-white/10 text-white/40 hover:text-white/80' : 'hover:bg-black/5 text-black/40 hover:text-black/80'
+              'h-[24px] w-[24px] flex items-center justify-center rounded-[6px] transition-[background-color,border-color]',
+              isDark ? 'hover:bg-white/10 text-white/55 hover:text-white/80' : 'hover:bg-black/5 text-black/40 hover:text-black/80'
             )}
+            aria-label="Depth Chart"
             title="Depth Chart"
           >
             <BarChart3 size={14} />
@@ -955,14 +956,14 @@ const OrderBook = ({ token, onPriceClick, limitPrice }) => {
               <button
                 key={mode.id}
                 onClick={() => setViewMode(mode.id)}
-                className="h-[24px] px-[8px] rounded-[4px] border-none cursor-pointer text-[10px] font-semibold transition-all duration-200 flex items-center gap-[4px]"
+                className="h-[24px] px-[8px] rounded-[4px] border-none cursor-pointer text-[10px] font-semibold transition-[opacity,transform,background-color,border-color] duration-200 flex items-center gap-[4px]"
                 style={{
                   background: viewMode === mode.id
                     ? (isDark ? 'rgba(255,255,255,0.1)' : '#fff')
                     : 'transparent',
                   color: viewMode === mode.id
                     ? (isDark ? '#fff' : '#000')
-                    : (isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'),
+                    : (isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)'),
                   boxShadow: viewMode === mode.id && !isDark ? '0 1px 3px rgba(0,0,0,0.1)' : 'none'
                 }}
               >
@@ -979,10 +980,11 @@ const OrderBook = ({ token, onPriceClick, limitPrice }) => {
             ))}
           </div>
           <select
+            aria-label="Price decimal precision"
             value={precision}
             onChange={(e) => setPrecision(Number(e.target.value))}
             className={cn(
-              'py-[4px] pl-[10px] pr-[24px] rounded-[6px] text-[10px] font-medium cursor-pointer outline-none appearance-none bg-no-repeat transition-all duration-200',
+              'py-[4px] pl-[10px] pr-[24px] rounded-[6px] text-[10px] font-medium cursor-pointer outline-none appearance-none bg-no-repeat transition-[opacity,transform,background-color,border-color] duration-200',
               isDark
                 ? 'bg-[#1a1f2e] text-white border border-white/10'
                 : 'bg-[#f4f6f8] text-[#212B36] border border-black/10'
@@ -1108,7 +1110,7 @@ const OrderBook = ({ token, onPriceClick, limitPrice }) => {
           ) : (
             <SpreadBar isDark={isDark}>
               <div className="flex items-center gap-[4px]">
-                <span className={cn('text-[10px]', isDark ? 'text-white/30' : 'text-black/30')}>SPREAD</span>
+                <span className={cn('text-[10px]', isDark ? 'text-white/60' : 'text-black/60')}>SPREAD</span>
                 <span className={cn('font-semibold', isDark ? 'text-white' : 'text-black')}>
                   {spreadPct != null ? `${spreadPct.toFixed(3)}%` : '\u2014'}
                 </span>

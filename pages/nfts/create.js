@@ -37,10 +37,11 @@ export async function getStaticProps() {
   let ret = {};
 
   const ogp = {};
-  ogp.canonical = 'https://xrpnft.com';
+  ogp.canonical = 'https://xrpl.to';
   ogp.title = 'XRP NFT Marketplace, Buy, Sell & Collect NFTs';
-  ogp.url = 'https://xrpnft.com/';
-  ogp.imgUrl = 'https://xrpnft.com/static/ogp.png';
+  ogp.url = 'https://xrpl.to/';
+  ogp.imgUrl = 'https://xrpl.to/api/og/collection-create';
+  ogp.imgType = 'image/png';
   ogp.desc =
     "XRPL's largest NFT marketplace: Buy, sell, mint with ease. Experience exclusive NFT creation and trade.";
 

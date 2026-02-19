@@ -39,10 +39,6 @@ const Container = ({ className, children, isDark, ...p }) => (
     )}
     {...p}
   >
-    {/* ::before pseudo-element replacement */}
-    <span
-      className="absolute pointer-events-none z-0 -top-[60px] -right-[60px] w-[180px] h-[180px] rounded-full bg-[#137DFE]/20 blur-[40px]"
-    />
     {children}
     <style>{`
       .summary-container > * { position: relative; z-index: 1; }

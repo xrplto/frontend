@@ -3,13 +3,8 @@ import { useRef, useState, useEffect, useCallback, useMemo, useContext } from 'r
 import { useRouter } from 'next/router';
 
 import Link from 'next/link';
-import {
-  Wallet as XRPLWallet,
-  encodeSeed,
-  xrpToDrops,
-  dropsToXrp,
-  isValidAddress
-} from 'xrpl';
+// xrpl imported dynamically to avoid 68KB bundle on every page
+const getXrpl = () => import('xrpl');
 
 // Development logging helper
 const isDev = process.env.NODE_ENV === 'development';
@@ -46,7 +41,8 @@ import {
   Camera,
   SwitchCamera,
   WifiOff,
-  LogOut
+  LogOut,
+  Wallet2
 } from 'lucide-react';
 
 // Context
@@ -60,10 +56,12 @@ import { getHashIcon } from 'src/utils/formatters';
 import { EncryptedWalletStorage, securityUtils, deviceFingerprint } from 'src/utils/encryptedWalletStorage';
 import { cn } from 'src/utils/cn';
 import { alpha } from 'src/utils/color';
-import QRCode from 'react-qr-code';
+import dynamic from 'next/dynamic';
+const QRCode = dynamic(() => import('react-qr-code'), { ssr: false });
 
 // Generate random wallet with true random entropy
-const generateRandomWallet = () => {
+const generateRandomWallet = async () => {
+  const { Wallet: XRPLWallet } = await getXrpl();
   const entropy = crypto.getRandomValues(new Uint8Array(32));
   return XRPLWallet.fromEntropy(Array.from(entropy));
 };
@@ -702,7 +700,7 @@ const WalletContent = ({
 
   const validateSend = () => {
     if (!recipient) return 'Enter recipient address';
-    if (!isValidAddress(recipient)) return 'Invalid XRPL address';
+    if (!/^r[1-9A-HJ-NP-Za-km-z]{24,34}$/.test(recipient)) return 'Invalid XRPL address';
     if (recipient === accountLogin) return 'Cannot send to yourself';
     if (!amount || parseFloat(amount) <= 0) return 'Enter amount';
     if (parseFloat(amount) > maxSendable) return 'Insufficient balance';
@@ -733,6 +731,7 @@ const WalletContent = ({
 
       if (!wallet?.seed) throw new Error('Incorrect password');
 
+      const { Wallet: XRPLWallet, xrpToDrops } = await getXrpl();
       const payment = {
         TransactionType: 'Payment',
         Account: accountLogin,
@@ -1321,33 +1320,47 @@ const WalletContent = ({
       <Link
         href="/wallet"
         className={cn(
-          'block mx-4 mt-5 mb-4 p-5 rounded-2xl transition-all duration-300 group relative overflow-hidden',
+          'block mx-4 mt-5 mb-4 p-5 rounded-2xl transition-all duration-300 group relative overflow-hidden hover:-translate-y-0.5',
           isDark
-            ? 'bg-gradient-to-br from-white/[0.04] to-transparent hover:from-white/[0.07] border border-white/[0.08] shadow-2xl'
-            : 'bg-white hover:bg-gray-50 border border-gray-100 shadow-sm'
+            ? 'bg-gradient-to-br from-white/[0.05] via-white/[0.02] to-transparent hover:from-white/[0.08] border border-white/[0.08] shadow-2xl hover:shadow-primary/5'
+            : 'bg-white hover:bg-gray-50/80 border border-gray-100 shadow-sm hover:shadow-md'
         )}
       >
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-baseline gap-2">
-            <span className="font-mono text-3xl font-bold tracking-tight leading-none">
+        {/* Decorative dot pattern */}
+        <div className="absolute top-0 right-0 w-24 h-24 opacity-[0.03] pointer-events-none">
+          <div className="grid grid-cols-4 gap-2 p-3">
+            {Array.from({ length: 16 }).map((_, i) => (
+              <div key={i} className="w-1.5 h-1.5 rounded-full bg-current" />
+            ))}
+          </div>
+        </div>
+        <div className="flex items-center justify-between mb-3 relative">
+          <div className="flex items-baseline gap-2.5">
+            <span className="font-mono text-[32px] font-extrabold tracking-tighter leading-none">
               {accountBalance ? formatXrpBalance(accountBalance.curr1?.value) : '...'}
             </span>
-            <span className={cn('text-xs font-bold tracking-widest uppercase opacity-50')}>XRP</span>
+            <span className={cn('text-[10px] font-extrabold tracking-[0.2em] uppercase', isDark ? 'text-white/30' : 'text-gray-300')}>XRP</span>
           </div>
           <div className={cn(
-            'p-1.5 rounded-full transition-all duration-300 group-hover:translate-x-0.5',
-            isDark ? 'bg-white/5' : 'bg-gray-100'
+            'p-1.5 rounded-full transition-all duration-300 group-hover:translate-x-1',
+            isDark ? 'bg-white/5 group-hover:bg-white/10' : 'bg-gray-100 group-hover:bg-gray-200'
           )}>
             <ChevronRight size={14} className={cn(isDark ? 'text-white/40' : 'text-gray-400')} />
           </div>
         </div>
-        <div className={cn('text-[11px] font-medium flex items-center gap-2', isDark ? 'text-white/30' : 'text-gray-400')}>
-          <div className="flex items-center gap-1.5">
-            <span className="w-1 h-1 rounded-full bg-current opacity-30" />
+        <div className="flex items-center gap-2 relative">
+          <div className={cn(
+            'flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold',
+            isDark ? 'bg-white/[0.04] text-white/35' : 'bg-gray-100 text-gray-400'
+          )}>
+            <span className="w-1 h-1 rounded-full bg-primary/40" />
             {accountBalance ? formatXrpBalance(accountTotalXrp || Number(accountBalance.curr1?.value || 0) + Number(accountBalance.curr2?.value || 0)) : '...'} total
           </div>
-          <div className="flex items-center gap-1.5">
-            <span className="w-1 h-1 rounded-full bg-current opacity-30" />
+          <div className={cn(
+            'flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold',
+            isDark ? 'bg-white/[0.04] text-white/35' : 'bg-gray-100 text-gray-400'
+          )}>
+            <span className="w-1 h-1 rounded-full bg-amber-400/40" />
             {accountBalance ? formatXrpBalance(accountBalance.curr2?.value) : '...'} reserved
           </div>
         </div>
@@ -1359,26 +1372,26 @@ const WalletContent = ({
           <a
             href="/wallet?tab=send"
             className={cn(
-              'flex flex-col items-center justify-center gap-2.5 py-3.5 rounded-2xl text-[11px] font-bold uppercase tracking-wider transition-all active:scale-[0.97] shadow-sm',
-              'bg-primary hover:bg-primary/90 text-white shadow-primary/20'
+              'flex flex-col items-center justify-center gap-2.5 py-4 rounded-2xl text-[11px] font-bold uppercase tracking-wider transition-all duration-200 active:scale-95',
+              'bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/25 hover:-translate-y-0.5'
             )}
           >
-            <div className="p-2 rounded-xl bg-white/10">
-              <ArrowUpRight size={20} />
+            <div className="p-2.5 rounded-xl bg-white/15">
+              <ArrowUpRight size={18} strokeWidth={2.5} />
             </div>
             Send
           </a>
           <a
             href="/wallet?tab=receive"
             className={cn(
-              'flex flex-col items-center justify-center gap-2.5 py-3.5 rounded-2xl text-[11px] font-bold uppercase tracking-wider transition-all active:scale-[0.97] shadow-sm',
+              'flex flex-col items-center justify-center gap-2.5 py-4 rounded-2xl text-[11px] font-bold uppercase tracking-wider transition-all duration-200 active:scale-95 hover:-translate-y-0.5',
               isDark
-                ? 'bg-white/[0.04] hover:bg-white/[0.08] text-white/80 border border-white/[0.08]'
-                : 'bg-white hover:bg-gray-50 text-gray-700 border border-gray-200'
+                ? 'bg-white/[0.04] hover:bg-white/[0.07] text-white/80 border border-white/[0.08] hover:border-emerald-400/20'
+                : 'bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 hover:border-emerald-200'
             )}
           >
-            <div className={cn('p-2 rounded-xl', isDark ? 'bg-emerald-400/10' : 'bg-emerald-50')}>
-              <ArrowDownLeft size={20} className={isDark ? 'text-emerald-400' : 'text-emerald-600'} />
+            <div className={cn('p-2.5 rounded-xl transition-colors duration-200', isDark ? 'bg-emerald-400/10' : 'bg-emerald-50')}>
+              <ArrowDownLeft size={18} strokeWidth={2.5} className={isDark ? 'text-emerald-400' : 'text-emerald-600'} />
             </div>
             Receive
           </a>
@@ -1388,14 +1401,14 @@ const WalletContent = ({
               setShowBridgeInDropdown(true);
             }}
             className={cn(
-              'flex flex-col items-center justify-center gap-2.5 py-3.5 rounded-2xl text-[11px] font-bold uppercase tracking-wider transition-all active:scale-[0.97] shadow-sm',
+              'flex flex-col items-center justify-center gap-2.5 py-4 rounded-2xl text-[11px] font-bold uppercase tracking-wider transition-all duration-200 active:scale-95 hover:-translate-y-0.5',
               isDark
-                ? 'bg-white/[0.04] hover:bg-white/[0.08] text-white/80 border border-white/[0.08]'
-                : 'bg-white hover:bg-gray-50 text-gray-700 border border-gray-200'
+                ? 'bg-white/[0.04] hover:bg-white/[0.07] text-white/80 border border-white/[0.08] hover:border-purple-400/20'
+                : 'bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 hover:border-purple-200'
             )}
           >
-            <div className={cn('p-2 rounded-xl', isDark ? 'bg-purple-400/10' : 'bg-purple-50')}>
-              <ArrowLeftRight size={20} className={isDark ? 'text-purple-400' : 'text-purple-600'} />
+            <div className={cn('p-2.5 rounded-xl transition-colors duration-200', isDark ? 'bg-purple-400/10' : 'bg-purple-50')}>
+              <ArrowLeftRight size={18} strokeWidth={2.5} className={isDark ? 'text-purple-400' : 'text-purple-600'} />
             </div>
             Bridge
           </button>
@@ -1405,16 +1418,16 @@ const WalletContent = ({
       {/* Accounts - unified section with inline actions */}
       <div
         className={cn(
-          'mx-4 mb-4 rounded-2xl overflow-hidden',
+          'mx-4 mb-4 rounded-2xl overflow-hidden transition-all duration-200',
           isDark
             ? 'bg-white/[0.02] border border-white/[0.08]'
-            : 'bg-gray-50 border border-gray-200'
+            : 'bg-gray-50/80 border border-gray-200'
         )}
       >
         <button
           onClick={() => setShowAllAccounts(!showAllAccounts)}
           className={cn(
-            'w-full px-4 py-3 flex items-center justify-between transition-colors',
+            'w-full px-4 py-3 flex items-center justify-between transition-all duration-200',
             isDark ? 'hover:bg-white/[0.04]' : 'hover:bg-gray-100'
           )}
         >
@@ -1424,8 +1437,8 @@ const WalletContent = ({
             </span>
             <span
               className={cn(
-                'min-w-[20px] h-5 flex items-center justify-center rounded-full text-[10px] font-bold',
-                isDark ? 'bg-white/10 text-white/40' : 'bg-gray-200 text-gray-600'
+                'min-w-[20px] h-5 px-1.5 flex items-center justify-center rounded-full text-[10px] font-bold',
+                isDark ? 'bg-white/[0.06] text-white/40' : 'bg-gray-200/80 text-gray-500'
               )}
             >
               {profiles.length}
@@ -1434,7 +1447,7 @@ const WalletContent = ({
           <ChevronDown
             size={16}
             className={cn(
-              'transition-transform duration-300',
+              'transition-transform duration-300 ease-out',
               showAllAccounts && 'rotate-180',
               isDark ? 'text-white/20' : 'text-gray-300'
             )}
@@ -1460,14 +1473,14 @@ const WalletContent = ({
                   <div
                     key={profile.account}
                     className={cn(
-                      'group relative w-full px-4 py-2.5 flex items-center gap-3 transition-all',
+                      'group relative w-full px-4 py-2.5 flex items-center gap-3 transition-all duration-200',
                       isCurrent
                         ? isDark
-                          ? 'bg-primary/10'
-                          : 'bg-primary/5'
+                          ? 'bg-primary/10 border-l-2 border-l-primary'
+                          : 'bg-primary/5 border-l-2 border-l-primary'
                         : isDark
-                          ? 'hover:bg-white/[0.03]'
-                          : 'hover:bg-gray-100/50'
+                          ? 'hover:bg-white/[0.03] border-l-2 border-l-transparent'
+                          : 'hover:bg-gray-100/50 border-l-2 border-l-transparent'
                     )}
                   >
                     <button
@@ -1514,21 +1527,21 @@ const WalletContent = ({
                       isDeleting ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
                     )}>
                       {isDeleting ? (
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-1.5 animate-in fade-in">
                           <button
                             onClick={() => {
                               onRemoveProfile(profile.account);
                               setDeleteConfirm(null);
                             }}
-                            className="px-2.5 py-1 rounded-lg text-[10px] font-medium bg-red-500 text-white"
+                            className="px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-red-500 hover:bg-red-600 text-white transition-colors duration-200"
                           >
                             Delete
                           </button>
                           <button
                             onClick={() => setDeleteConfirm(null)}
                             className={cn(
-                              'px-2.5 py-1 rounded-lg text-[10px] font-medium',
-                              isDark ? 'bg-white/10 text-white/60' : 'bg-gray-200 text-gray-600'
+                              'px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-colors duration-200',
+                              isDark ? 'bg-white/[0.06] text-white/50 hover:bg-white/10' : 'bg-gray-200 text-gray-500 hover:bg-gray-300'
                             )}
                           >
                             Cancel
@@ -1572,14 +1585,14 @@ const WalletContent = ({
           </div>
           {/* Quick actions row */}
           <div className={cn(
-            'px-3 py-2.5 border-t flex items-center gap-2',
+            'px-3 py-2.5 border-t flex items-center gap-1',
             isDark ? 'border-white/[0.06]' : 'border-gray-100'
           )}>
             <button
               onClick={onCreateNewAccount}
               disabled={!onCreateNewAccount || profiles.length >= 25}
               className={cn(
-                'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all',
+                'flex items-center gap-1.5 px-3 py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all duration-200',
                 !onCreateNewAccount || profiles.length >= 25 ? 'opacity-30 cursor-not-allowed' : '',
                 isDark
                   ? 'text-white/40 hover:text-white hover:bg-white/[0.06]'
@@ -1589,11 +1602,11 @@ const WalletContent = ({
               <Plus size={13} />
               Add
             </button>
-            <div className={cn('w-px h-4', isDark ? 'bg-white/[0.06]' : 'bg-gray-200')} />
+            <div className={cn('w-px h-4 mx-0.5', isDark ? 'bg-white/[0.06]' : 'bg-gray-200')} />
             <button
               onClick={() => onQrSyncExport?.()}
               className={cn(
-                'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all',
+                'flex items-center gap-1.5 px-3 py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all duration-200',
                 isDark
                   ? 'text-white/40 hover:text-white hover:bg-white/[0.06]'
                   : 'text-gray-400 hover:text-gray-700 hover:bg-gray-100'
@@ -1605,7 +1618,7 @@ const WalletContent = ({
             <button
               onClick={() => onQrSyncImport?.()}
               className={cn(
-                'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all',
+                'flex items-center gap-1.5 px-3 py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all duration-200',
                 isDark
                   ? 'text-white/40 hover:text-white hover:bg-white/[0.06]'
                   : 'text-gray-400 hover:text-gray-700 hover:bg-gray-100'
@@ -1619,21 +1632,17 @@ const WalletContent = ({
       </div>
 
       {/* Footer - logout */}
-      <div
-        className={cn(
-          'mx-4 mb-4',
-        )}
-      >
+      <div className="mx-4 mb-4">
         <button
           onClick={onLogout}
           className={cn(
-            'w-full flex items-center justify-center gap-2 py-3 rounded-2xl text-[11px] font-bold uppercase tracking-wider transition-all active:scale-[0.95]',
+            'w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all duration-200 active:scale-[0.97]',
             isDark
-              ? 'text-white/30 hover:text-red-400 hover:bg-red-500/10'
-              : 'text-gray-400 hover:text-red-500 hover:bg-red-50'
+              ? 'text-white/20 hover:text-red-400 hover:bg-red-500/[0.08]'
+              : 'text-gray-300 hover:text-red-500 hover:bg-red-50'
           )}
         >
-          <LogOut size={14} />
+          <LogOut size={13} />
           <span>Disconnect</span>
         </button>
       </div>
@@ -1651,8 +1660,8 @@ export const ConnectWallet = ({ text = 'Connect', fullWidth = true, ...otherProp
     <button
       onClick={() => setOpenWalletModal(true)}
       className={cn(
-        'group relative my-2 rounded-xl border-[1.5px] px-4 py-2 text-[0.9rem] font-medium transition-all duration-300 overflow-hidden',
-        'before:absolute before:inset-0 before:rounded-[inherit] before:bg-[length:250%_250%,100%_100%] before:bg-[position:200%_0,0_0] before:bg-no-repeat before:transition-[background-position_0s_ease] hover:before:bg-[position:-100%_0,0_0] hover:before:duration-[1500ms]',
+        'group relative my-2 rounded-xl border-[1.5px] px-4 py-2 text-[0.9rem] font-medium transition-[border-color,background-color] duration-300 overflow-hidden',
+        'before:absolute before:inset-0 before:rounded-[inherit] before:bg-[length:250%_250%,100%_100%] before:bg-[position:200%_0,0_0] before:bg-no-repeat before:transition-[background-position] before:duration-0 hover:before:bg-[position:-100%_0,0_0] hover:before:duration-[1500ms]',
         fullWidth ? 'w-full' : 'w-auto',
         isDark
           ? 'bg-[#0a0a12] text-white/70 border-white/20 hover:border-white/40 hover:text-white before:bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.15)_50%,transparent_75%,transparent_100%)]'
@@ -2065,6 +2074,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       }
 
       // Validate all seeds first
+      const { Wallet: XRPLWallet } = await getXrpl();
       const validatedWallets = [];
       for (let i = 0; i < seedsToImport.length; i++) {
         const seed = seedsToImport[i];
@@ -2135,7 +2145,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         );
 
         for (let i = 0; i < randomWalletsNeeded; i++) {
-          const wallet = generateRandomWallet();
+          const wallet = await generateRandomWallet();
           const walletData = {
             accountIndex: validatedWallets.length + i,
             account: wallet.address,
@@ -2489,12 +2499,13 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     setCreateError('');
 
     try {
+      const { Wallet: XRPLWallet } = await getXrpl();
       let wallet;
       if (createMode === 'import' && createSeed) {
         const algorithm = getAlgorithmFromSeed(createSeed.trim());
         wallet = XRPLWallet.fromSeed(createSeed.trim(), { algorithm });
       } else {
-        wallet = generateRandomWallet();
+        wallet = await generateRandomWallet();
       }
 
       // Generate stable device fingerprint ID (survives storage clearing)
@@ -3546,6 +3557,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
           return;
         }
         // Import from seed with correct algorithm
+        const { Wallet: XRPLWallet } = await getXrpl();
         const algorithm = getAlgorithmFromSeed(newAccountSeed.trim());
         wallet = XRPLWallet.fromSeed(newAccountSeed.trim(), { algorithm });
         // Check if already exists
@@ -3554,7 +3566,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
           return;
         }
       } else {
-        wallet = generateRandomWallet();
+        wallet = await generateRandomWallet();
       }
 
       const walletData = {
@@ -5613,13 +5625,24 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                     isDark ? 'border-b border-white/[0.08]' : 'border-b border-gray-100'
                   )}
                 >
-                  <div className="flex flex-col">
-                    <h2 className="text-[16px] font-bold tracking-tight">
-                      {hasExistingWallet ? 'Welcome Back' : 'Connect Wallet'}
-                    </h2>
-                    <p className={cn('text-[10px] font-medium uppercase tracking-widest opacity-40 mt-0.5')}>
-                      {hasExistingWallet ? 'Securely Unlock' : 'Create or Import'}
-                    </p>
+                  <div className="flex items-center gap-3">
+                    <div className={cn(
+                      'p-2 rounded-xl',
+                      isDark ? 'bg-primary/10' : 'bg-primary/5'
+                    )}>
+                      {hasExistingWallet
+                        ? <Shield size={18} className="text-primary" />
+                        : <Wallet2 size={18} className="text-primary" />
+                      }
+                    </div>
+                    <div className="flex flex-col">
+                      <h2 className="text-[16px] font-bold tracking-tight">
+                        {hasExistingWallet ? 'Welcome Back' : 'Connect Wallet'}
+                      </h2>
+                      <p className={cn('text-[10px] font-medium uppercase tracking-widest mt-0.5', isDark ? 'text-white/30' : 'text-gray-400')}>
+                        {hasExistingWallet ? 'Securely Unlock' : 'Create or Import'}
+                      </p>
+                    </div>
                   </div>
                   {(() => {
                     const hasProgress =
@@ -5687,14 +5710,16 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                         } catch { return null; }
                       })()}
                       <div className={cn(
-                        'p-4 rounded-2xl border transition-all duration-300',
-                        isDark ? 'bg-white/[0.02] border-white/[0.06]' : 'bg-gray-50 border-gray-100'
+                        'p-5 rounded-2xl border transition-all duration-300',
+                        isDark ? 'bg-white/[0.03] border-white/[0.06]' : 'bg-gray-50/80 border-gray-100'
                       )}>
                         <div className="flex items-center justify-between mb-4">
-                          <span className={cn('text-[11px] font-bold uppercase tracking-wider opacity-40')}>
+                          <span className={cn('text-[11px] font-bold uppercase tracking-wider', isDark ? 'text-white/35' : 'text-gray-400')}>
                             Found {walletMetadata.length} account{walletMetadata.length !== 1 ? 's' : ''}
                           </span>
-                          <Lock size={14} className="opacity-20" />
+                          <div className={cn('p-1.5 rounded-lg', isDark ? 'bg-white/[0.04]' : 'bg-gray-100')}>
+                            <Lock size={14} className={isDark ? 'text-white/25' : 'text-gray-300'} />
+                          </div>
                         </div>
 
                         <div className="relative group">
@@ -5726,9 +5751,12 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                         </div>
 
                         {unlockError && (
-                          <div className="mt-3 flex items-center gap-2 text-red-400">
-                            <AlertCircle size={12} />
-                            <p className="text-[11px] font-medium">{unlockError}</p>
+                          <div className={cn(
+                            'mt-3 flex items-center gap-2 px-3 py-2 rounded-xl',
+                            isDark ? 'bg-red-500/10 text-red-400' : 'bg-red-50 text-red-500'
+                          )}>
+                            <AlertCircle size={13} className="flex-shrink-0" />
+                            <p className="text-[11px] font-semibold">{unlockError}</p>
                           </div>
                         )}
 
@@ -5736,17 +5764,19 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                           onClick={handlePasswordUnlock}
                           disabled={isUnlocking || !unlockPassword}
                           className={cn(
-                            'w-full mt-4 flex items-center justify-center gap-2 py-3.5 rounded-xl text-[13px] font-bold uppercase tracking-widest transition-all active:scale-[0.98]',
+                            'w-full mt-4 flex items-center justify-center gap-2 py-3.5 rounded-xl text-[13px] font-bold uppercase tracking-widest transition-all duration-200 active:scale-[0.97]',
                             unlockPassword && !isUnlocking
-                              ? 'bg-primary text-white shadow-lg shadow-primary/20 hover:bg-primary/90'
-                              : 'bg-white/5 text-white/20 cursor-not-allowed border border-white/5'
+                              ? 'bg-primary text-white shadow-lg shadow-primary/25 hover:bg-primary/90 hover:shadow-xl hover:shadow-primary/30'
+                              : isDark
+                                ? 'bg-white/5 text-white/20 cursor-not-allowed border border-white/5'
+                                : 'bg-gray-100 text-gray-300 cursor-not-allowed border border-gray-200'
                           )}
                         >
                           {isUnlocking ? <Loader2 size={16} className="animate-spin" /> : 'Unlock Wallet'}
                         </button>
                       </div>
 
-                      <div className="pt-2 text-center">
+                      <div className="pt-3 text-center">
                         <button
                           onClick={() => {
                             checkStoredWalletCount();
@@ -5754,10 +5784,10 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             setClearWarningAgreed(false);
                           }}
                           className={cn(
-                            'inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest transition-all group',
+                            'inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest transition-all duration-200 group',
                             isDark
-                              ? 'text-white/30 hover:text-red-400'
-                              : 'text-gray-400 hover:text-red-500'
+                              ? 'text-white/20 hover:text-red-400'
+                              : 'text-gray-300 hover:text-red-500'
                           )}
                         >
                           <RefreshCw size={12} className="group-hover:rotate-180 transition-transform duration-500" />
@@ -5773,7 +5803,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                       {/* Mode toggle: Create New / Import / QR Sync */}
                       <div
                         className={cn(
-                          'flex rounded-2xl p-1',
+                          'flex rounded-2xl p-1 gap-1',
                           isDark ? 'bg-white/[0.04]' : 'bg-gray-100'
                         )}
                       >
@@ -5784,14 +5814,14 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             stopQrScanner();
                           }}
                           className={cn(
-                            'flex-1 py-2 text-[11px] font-bold uppercase tracking-widest rounded-xl transition-all duration-300',
+                            'flex-1 py-2.5 text-[11px] font-bold uppercase tracking-widest rounded-xl transition-all duration-200',
                             createMode === 'new'
                               ? isDark
-                                ? 'bg-white/10 text-white shadow-xl ring-1 ring-white/10'
-                                : 'bg-white text-gray-900 shadow-sm'
+                                ? 'bg-white/[0.08] text-white shadow-lg ring-1 ring-white/[0.08]'
+                                : 'bg-white text-gray-900 shadow-sm ring-1 ring-gray-200/50'
                               : isDark
-                                ? 'text-white/30 hover:text-white/60'
-                                : 'text-gray-500 hover:text-gray-900'
+                                ? 'text-white/30 hover:text-white/50 hover:bg-white/[0.03]'
+                                : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
                           )}
                         >
                           Create
@@ -5803,14 +5833,14 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             stopQrScanner();
                           }}
                           className={cn(
-                            'flex-1 py-2 text-[11px] font-bold uppercase tracking-widest rounded-xl transition-all duration-300',
+                            'flex-1 py-2.5 text-[11px] font-bold uppercase tracking-widest rounded-xl transition-all duration-200',
                             createMode === 'import'
                               ? isDark
-                                ? 'bg-white/10 text-white shadow-xl ring-1 ring-white/10'
-                                : 'bg-white text-gray-900 shadow-sm'
+                                ? 'bg-white/[0.08] text-white shadow-lg ring-1 ring-white/[0.08]'
+                                : 'bg-white text-gray-900 shadow-sm ring-1 ring-gray-200/50'
                               : isDark
-                                ? 'text-white/30 hover:text-white/60'
-                                : 'text-gray-500 hover:text-gray-900'
+                                ? 'text-white/30 hover:text-white/50 hover:bg-white/[0.03]'
+                                : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
                           )}
                         >
                           Import
@@ -5823,14 +5853,14 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             setQrSyncPassword('');
                           }}
                           className={cn(
-                            'flex-1 py-2 text-[11px] font-bold uppercase tracking-widest rounded-xl transition-all duration-300 flex items-center justify-center gap-1.5',
+                            'flex-1 py-2.5 text-[11px] font-bold uppercase tracking-widest rounded-xl transition-all duration-200 flex items-center justify-center gap-1.5',
                             createMode === 'qr'
                               ? isDark
-                                ? 'bg-white/10 text-white shadow-xl ring-1 ring-white/10'
-                                : 'bg-white text-gray-900 shadow-sm'
+                                ? 'bg-white/[0.08] text-white shadow-lg ring-1 ring-white/[0.08]'
+                                : 'bg-white text-gray-900 shadow-sm ring-1 ring-gray-200/50'
                               : isDark
-                                ? 'text-white/30 hover:text-white/60'
-                                : 'text-gray-500 hover:text-gray-900'
+                                ? 'text-white/30 hover:text-white/50 hover:bg-white/[0.03]'
+                                : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
                           )}
                         >
                           <QrCode size={14} />
@@ -6090,9 +6120,12 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                           )}
 
                           {createError && (
-                            <div className="flex items-center gap-2 text-red-400">
-                              <AlertCircle size={12} />
-                              <p className="text-[11px] font-medium">{createError}</p>
+                            <div className={cn(
+                              'flex items-center gap-2 px-3 py-2 rounded-xl',
+                              isDark ? 'bg-red-500/10 text-red-400' : 'bg-red-50 text-red-500'
+                            )}>
+                              <AlertCircle size={13} className="flex-shrink-0" />
+                              <p className="text-[11px] font-semibold">{createError}</p>
                             </div>
                           )}
 

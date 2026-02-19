@@ -22,7 +22,7 @@ const Container = ({ isDark, className, ...props }) => (
 const TokenCard = ({ isDark, isWatched, className, children, ...props }) => (
   <a
     className={cn(
-      'grid grid-cols-[24px_28px_1fr_70px_50px] items-center gap-2.5 py-2.5 px-4 no-underline text-inherit transition-all duration-200 ease-in-out relative',
+      'grid grid-cols-[24px_28px_1fr_70px_50px] items-center gap-2.5 py-2.5 px-4 no-underline text-inherit transition-[opacity,transform,background-color,border-color] duration-200 ease-in-out relative',
       isDark
         ? 'border-b border-white/[0.04] hover:bg-white/[0.03]'
         : 'border-b border-black/[0.04] hover:bg-black/[0.02]',
@@ -176,10 +176,10 @@ const TrendingTokens = ({ token = null }) => {
               key={tab}
               onClick={() => setActiveTab(tab)}
               className={cn(
-                'h-6 px-3 text-[10px] font-semibold border-none rounded cursor-pointer transition-all duration-200',
+                'h-6 px-3 text-[10px] font-semibold border-none rounded cursor-pointer transition-[opacity,transform,background-color,border-color] duration-200',
                 activeTab === tab
                   ? cn(darkMode ? 'bg-white/10 text-white' : 'bg-white text-black shadow-[0_1px_3px_rgba(0,0,0,0.1)]')
-                  : cn('bg-transparent', darkMode ? 'text-white/40' : 'text-black/40')
+                  : cn('bg-transparent', darkMode ? 'text-white/55' : 'text-black/55')
               )}
             >
               {tab === 'trending' ? 'Trending' : 'New Tokens'}
@@ -231,7 +231,7 @@ const TrendingTokens = ({ token = null }) => {
               <div className={cn('w-7 h-7 rounded-lg overflow-hidden flex items-center justify-center', darkMode ? 'bg-white/5' : 'bg-black/5')}>
                 {t.md5 ? (
                   <img
-                    src={`https://s1.xrpl.to/token/${t.md5}`}
+                    src={`https://s1.xrpl.to/thumb/${t.md5}_32`}
                     alt=""
                     className="w-full h-full object-cover"
                     loading="lazy"
@@ -245,10 +245,10 @@ const TrendingTokens = ({ token = null }) => {
                 <div className={cn('overflow-hidden text-ellipsis whitespace-nowrap text-xs font-semibold', darkMode ? 'text-white' : 'text-[#1a1f2e]')}>
                   {t.name}
                 </div>
-                <div className="text-[10px] font-medium opacity-40 font-mono">
+                <div className="text-[8px] font-medium opacity-40 overflow-hidden text-ellipsis whitespace-nowrap max-w-[120px]" suppressHydrationWarning>
                   {activeTab === 'new' && t.dateon
                     ? (() => { const s = Math.floor((Date.now() - t.dateon) / 1000); if (s < 60) return `${s}s ago`; const m = Math.floor(s / 60); if (m < 60) return `${m}m ago`; const h = Math.floor(m / 60); if (h < 24) return `${h}h ago`; const d = Math.floor(h / 24); return `${d}d ago`; })()
-                    : t.currency?.slice(0, 8)}
+                    : t.user || t.name}
                 </div>
               </div>
               <div className="text-right flex flex-col gap-px">

@@ -662,7 +662,7 @@ export default function CreateCollection({ showHeader = true, onCreate }) {
           id="id_collection_slug"
           placeholder="my-xrpl-nfts"
           type="COLLECTION_SLUG"
-          startText="https://xrpnft.com/nfts/"
+          startText="https://xrpl.to/nfts/"
           value={slug}
           setValid={setValid2}
           onChange={(e) => {
@@ -1010,7 +1010,7 @@ export default function CreateCollection({ showHeader = true, onCreate }) {
         </p>
 
         <a
-          href="https://xrpnft.com/discord"
+          href="https://xrpl.to/discord"
           className="inline-block text-primary hover:underline text-[11px] mt-3"
           target="_blank"
           rel="noreferrer noopener nofollow"

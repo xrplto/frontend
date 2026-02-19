@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect, useMemo, useCallback, memo, useRef } from 'react';
+import React, { useState, useContext, useEffect, useLayoutEffect, useMemo, useCallback, memo, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import { selectMetrics } from 'src/redux/statusSlice';
 import { ThemeContext, WalletContext, AppContext } from 'src/context/AppContext';
@@ -99,7 +99,7 @@ const OriginIcon = ({ origin, isDark }) => {
     case 'xrp.fun':
       return <TrendingUp className={cn(s, 'text-[#B72136]')} />;
     default:
-      return <Sparkles className={cn(s, isDark ? 'text-white/40' : 'text-gray-400')} />;
+      return <Sparkles className={cn(s, isDark ? 'text-white/55' : 'text-gray-400')} />;
   }
 };
 
@@ -127,7 +127,9 @@ const TokenSummary = memo(({ token }) => {
     };
   }, []);
 
-  useEffect(() => {
+  // useLayoutEffect prevents CLS from mobile layout switch before paint
+  const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
+  useIsomorphicLayoutEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 640);
     checkMobile();
     window.addEventListener('resize', checkMobile);
@@ -444,7 +446,7 @@ const TokenSummary = memo(({ token }) => {
       ? new Decimal(tvl).div(metrics[activeFiatCurrency] || metrics.CNY || 1).toNumber()
       : tvl || 0;
 
-  const tokenImageUrl = `https://s1.xrpl.to/token/${md5}`;
+  const tokenImageUrl = `https://s1.xrpl.to/thumb/${md5}_128`;
   const fallbackImageUrl = issuer ? getHashIcon(issuer) : '/static/account_logo.webp';
   const handleGoogleLensSearch = () =>
     window.open(
@@ -529,7 +531,7 @@ const TokenSummary = memo(({ token }) => {
   return (
     <div
       className={cn(
-        'rounded-2xl border transition-all duration-200 p-4 relative overflow-hidden',
+        'rounded-2xl border transition-[opacity,transform,background-color,border-color] duration-200 p-4 relative overflow-hidden',
         isDark
           ? 'border-white/[0.08] bg-[#0a0a0a]/50 backdrop-blur-sm'
           : 'border-black/[0.06] bg-white/50 backdrop-blur-sm shadow-sm'
@@ -553,7 +555,7 @@ const TokenSummary = memo(({ token }) => {
               sizes="52px"
               priority
               className={cn(
-                'w-[52px] h-[52px] rounded-2xl object-cover border shadow-sm transition-all duration-300 group-hover:scale-105 group-hover:shadow-lg',
+                'w-[52px] h-[52px] rounded-2xl object-cover border shadow-sm transition-[opacity,transform,background-color,border-color] duration-300 group-hover:scale-105 group-hover:shadow-lg',
                 isDark ? 'border-white/10 shadow-black/20' : 'border-black/[0.08] shadow-gray-200'
               )}
               onError={(e) => {
@@ -598,7 +600,7 @@ const TokenSummary = memo(({ token }) => {
                   <button
                     onClick={() => setShowPromoteModal(true)}
                     className={cn(
-                      'inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-bold tracking-wider cursor-pointer transition-colors',
+                      'inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-bold tracking-wider cursor-pointer transition-[background-color,border-color]',
                       isDark ? 'bg-white/[0.06] text-white/60 hover:bg-white/[0.1]' : 'bg-black/[0.04] text-gray-500 hover:bg-black/[0.08]'
                     )}
                     title={`${tweetCount} verified tweets`}
@@ -611,7 +613,7 @@ const TokenSummary = memo(({ token }) => {
             </div>
             <div className="flex items-center gap-2">
               <span
-                className={cn('text-[11px] font-semibold truncate tracking-wide', isDark ? 'text-white/40' : 'text-gray-500')}
+                className={cn('text-[11px] font-semibold truncate tracking-wide', isDark ? 'text-white/55' : 'text-gray-500')}
               >
                 {user || name}
               </span>
@@ -679,7 +681,7 @@ const TokenSummary = memo(({ token }) => {
           <div
             key={stat.label}
             className={cn(
-              'flex flex-col items-center justify-center py-2.5 rounded-xl border transition-all duration-200',
+              'flex flex-col items-center justify-center py-2.5 rounded-xl border transition-[opacity,transform,background-color,border-color] duration-200',
               isDark
                 ? 'bg-white/[0.02] border-white/[0.04] hover:bg-white/[0.06] hover:border-white/[0.08]'
                 : 'bg-gray-50/50 border-black/[0.03] hover:bg-gray-100/50 hover:border-black/[0.06]'
@@ -702,7 +704,7 @@ const TokenSummary = memo(({ token }) => {
           <div
             key={item.label}
             className={cn(
-              'flex flex-col items-center justify-center py-1.5 rounded-lg border transition-all duration-200',
+              'flex flex-col items-center justify-center py-1.5 rounded-lg border transition-[opacity,transform,background-color,border-color] duration-200',
               isDark
                 ? 'bg-white/[0.015] border-white/[0.02] hover:bg-white/[0.03]'
                 : 'bg-white border-black/[0.02] hover:bg-gray-50 shadow-sm shadow-black/[0.01]'
@@ -734,7 +736,7 @@ const TokenSummary = memo(({ token }) => {
           )}
         >
           <div className="flex items-center justify-between text-[10px] font-bold mb-2 uppercase tracking-wide">
-            <span className="text-red-500/90 flex items-center gap-1">
+            <span className="text-red-400 flex items-center gap-1">
               <span className="opacity-50 font-bold">LOW</span>
               {currencySymbols[activeFiatCurrency]}
               {(() => {
@@ -764,7 +766,7 @@ const TokenSummary = memo(({ token }) => {
               className="absolute inset-y-0 bg-yellow-500/20 w-full"
             />
             <div
-              className="absolute top-0 bottom-0 bg-blue-500 transition-all duration-1000 ease-out"
+              className="absolute top-0 bottom-0 bg-blue-500 transition-[width] duration-1000 ease-out"
               style={{
                 left: '0%',
                 width: `${range24h.percent}%`,
@@ -790,7 +792,7 @@ const TokenSummary = memo(({ token }) => {
           <button
             onClick={() => setShowVerifyModal(true)}
             className={cn(
-              'col-span-2 flex items-center justify-center gap-2 py-2.5 sm:py-3 rounded-xl text-[12px] sm:text-[13px] font-bold uppercase tracking-wider transition-all duration-300 relative overflow-hidden group',
+              'col-span-2 flex items-center justify-center gap-2 py-2.5 sm:py-3 rounded-xl text-[12px] sm:text-[13px] font-bold uppercase tracking-wider transition-[opacity,transform,background-color,border-color] duration-300 relative overflow-hidden group',
               currentVerified === 0
                 ? isDark
                   ? 'bg-blue-600 text-white hover:bg-blue-500 border border-blue-500/50'
@@ -813,7 +815,7 @@ const TokenSummary = memo(({ token }) => {
               onClick={handleSetTrust}
               title={isRemove ? 'Remove trustline to free 0.2 XRP reserve' : 'Set trustline to hold this token'}
               className={cn(
-                "group/trust h-9 sm:h-10 px-3 sm:px-4 flex items-center justify-center gap-1.5 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all duration-200",
+                "group/trust h-9 sm:h-10 px-3 sm:px-4 flex items-center justify-center gap-1.5 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-[opacity,transform,background-color,border-color] duration-200",
                 isRemove
                   ? isDark
                     ? "bg-green-500/15 border border-green-500/30 text-green-400 hover:bg-red-500/15 hover:border-red-500/30 hover:text-red-400"
@@ -842,7 +844,7 @@ const TokenSummary = memo(({ token }) => {
             <ApiButton
               token={token}
               className={cn(
-                "w-full h-9 sm:h-10 flex items-center justify-center gap-2 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all duration-200",
+                "w-full h-9 sm:h-10 flex items-center justify-center gap-2 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-[opacity,transform,background-color,border-color] duration-200",
                 isDark ? "bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.08]" : "bg-gray-50 border border-black/[0.04] hover:bg-gray-100"
               )}
             />
@@ -851,7 +853,7 @@ const TokenSummary = memo(({ token }) => {
             <Watch
               token={token}
               className={cn(
-                "w-full h-9 sm:h-10 flex items-center justify-center gap-2 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all duration-200",
+                "w-full h-9 sm:h-10 flex items-center justify-center gap-2 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-[opacity,transform,background-color,border-color] duration-200",
                 isDark ? "bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.08]" : "bg-gray-50 border border-black/[0.04] hover:bg-gray-100"
               )}
             />
@@ -864,7 +866,7 @@ const TokenSummary = memo(({ token }) => {
             onOpenChange={setShowPromoteModal}
             wrapperClassName="sm:flex-1"
             className={cn(
-              "w-full h-9 sm:h-10 flex items-center justify-center gap-2 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all duration-200",
+              "w-full h-9 sm:h-10 flex items-center justify-center gap-2 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-[opacity,transform,background-color,border-color] duration-200",
               isDark ? "bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.08] text-white/60 hover:text-white/80" : "bg-gray-50 border border-black/[0.04] hover:bg-gray-100 text-gray-500 hover:text-gray-700"
             )}
           />
@@ -873,7 +875,7 @@ const TokenSummary = memo(({ token }) => {
               onClick={() => setShowBoostModal(true)}
               title="Boost trending position"
               className={cn(
-                "w-full h-9 sm:h-10 flex items-center justify-center gap-2 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all duration-200",
+                "w-full h-9 sm:h-10 flex items-center justify-center gap-2 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-[opacity,transform,background-color,border-color] duration-200",
                 isDark ? "bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.08] text-white/60 hover:text-white/80" : "bg-gray-50 border border-black/[0.04] hover:bg-gray-100 text-gray-500 hover:text-gray-700"
               )}
             >
@@ -885,7 +887,7 @@ const TokenSummary = memo(({ token }) => {
             <Share
               token={token}
               className={cn(
-                "w-full h-9 sm:h-10 flex items-center justify-center gap-2 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all duration-200",
+                "w-full h-9 sm:h-10 flex items-center justify-center gap-2 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-[opacity,transform,background-color,border-color] duration-200",
                 isDark ? "bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.08]" : "bg-gray-50 border border-black/[0.04] hover:bg-gray-100"
               )}
             />
@@ -894,7 +896,7 @@ const TokenSummary = memo(({ token }) => {
             <button
               onClick={() => setEditToken(token)}
               className={cn(
-                'px-3 h-9 sm:h-10 rounded-xl border text-[10px] font-bold uppercase tracking-wider transition-all flex items-center justify-center',
+                'px-3 h-9 sm:h-10 rounded-xl border text-[10px] font-bold uppercase tracking-wider transition-[opacity,transform,background-color,border-color] flex items-center justify-center',
                 isDark
                   ? 'border-amber-500/20 text-amber-500 hover:bg-amber-500/10'
                   : 'border-amber-200 text-amber-600 hover:bg-amber-50 shadow-sm'
@@ -955,7 +957,7 @@ const TokenSummary = memo(({ token }) => {
                   onClick={() => setShowInfo(false)}
                   className={cn(
                     'p-1 rounded-md',
-                    isDark ? 'hover:bg-white/[0.06] text-white/40' : 'hover:bg-gray-100 text-gray-400'
+                    isDark ? 'hover:bg-white/[0.06] text-white/55' : 'hover:bg-gray-100 text-gray-400'
                   )}
                 >
                   <X size={14} />
@@ -990,7 +992,7 @@ const TokenSummary = memo(({ token }) => {
                       <span
                         className={cn(
                           'text-[10px] w-14 flex-shrink-0',
-                          isDark ? 'text-white/40' : 'text-gray-400'
+                          isDark ? 'text-white/55' : 'text-gray-400'
                         )}
                       >
                         {item.label}
@@ -1009,7 +1011,7 @@ const TokenSummary = memo(({ token }) => {
                           copiedField === item.label
                             ? 'text-green-500'
                             : isDark
-                              ? 'text-white/20 group-hover:text-white/40'
+                              ? 'text-white/20 group-hover:text-white/55'
                               : 'text-gray-300 group-hover:text-gray-400'
                         )}
                       >

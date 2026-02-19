@@ -14,7 +14,6 @@ import {
   Tag,
   List,
   X,
-  Calendar,
   MessageCircle
 } from 'lucide-react';
 import { fNumber } from 'src/utils/formatters';
@@ -201,12 +200,12 @@ export default function HistoryList({ nft }) {
               isDark ? 'bg-white/5' : 'bg-gray-100'
             )}
           >
-            <Zap size={18} className="text-gray-500" />
+            <Zap size={18} className={isDark ? 'text-white/60' : 'text-gray-500'} />
           </div>
-          <p className={cn('text-sm', isDark ? 'text-white/50' : 'text-gray-500')}>
+          <p className={cn('text-sm', isDark ? 'text-white/60' : 'text-gray-500')}>
             No activity yet
           </p>
-          <p className={cn('text-xs mt-1', isDark ? 'text-white/25' : 'text-gray-400')}>
+          <p className={cn('text-xs mt-1', isDark ? 'text-white/60' : 'text-gray-400')}>
             History will appear here
           </p>
         </div>
@@ -244,7 +243,7 @@ export default function HistoryList({ nft }) {
                     isDark ? 'bg-white/[0.06]' : 'bg-gray-200'
                   )}
                 >
-                  <Icon size={13} className={isDark ? 'text-white/40' : 'text-gray-500'} />
+                  <Icon size={13} className={isDark ? 'text-white/60' : 'text-gray-500'} />
                 </div>
                 <div className="min-w-0">
                   <p
@@ -255,12 +254,12 @@ export default function HistoryList({ nft }) {
                   >
                     {value}
                     {suffix && (
-                      <span className={cn('ml-1 font-normal', isDark ? 'text-white/30' : 'text-gray-400')}>
+                      <span className={cn('ml-1 font-normal', isDark ? 'text-white/60' : 'text-gray-400')}>
                         {suffix}
                       </span>
                     )}
                   </p>
-                  <p className={cn('text-[10px] leading-tight', isDark ? 'text-white/30' : 'text-gray-500')}>
+                  <p className={cn('text-[10px] leading-tight', isDark ? 'text-white/60' : 'text-gray-500')}>
                     {label}
                   </p>
                 </div>
@@ -269,56 +268,73 @@ export default function HistoryList({ nft }) {
           </div>
 
           {/* Secondary stats row */}
-          {(stats.listPrice > 0 && stats.salePrice > 0 || stats.mintDate) && (
+          {(stats.salePrice > 0 || stats.listPrice > 0 || stats.mintDate) && (
             <div className="grid grid-cols-2 gap-2 mt-2">
-              {stats.listPrice > 0 && stats.salePrice > 0 ? (
+              {stats.salePrice > 0 && (
                 <div
                   className={cn(
                     'flex items-center justify-between px-3 py-2 rounded-lg',
                     isDark ? 'bg-white/[0.03]' : 'bg-gray-50'
                   )}
                 >
-                  <span className={cn('text-[10px]', isDark ? 'text-white/30' : 'text-gray-500')}>
-                    List / Sale
+                  <span className={cn('text-[10px]', isDark ? 'text-white/60' : 'text-gray-500')}>
+                    Last Sale
+                  </span>
+                  <span
+                    className={cn(
+                      'text-[11px] tabular-nums font-semibold',
+                      isDark ? 'text-white' : 'text-gray-900'
+                    )}
+                  >
+                    {fNumber(stats.salePrice)} XRP
+                  </span>
+                </div>
+              )}
+              {stats.listPrice > 0 && (
+                <div
+                  className={cn(
+                    'flex items-center justify-between px-3 py-2 rounded-lg',
+                    isDark ? 'bg-white/[0.03]' : 'bg-gray-50'
+                  )}
+                >
+                  <span className={cn('text-[10px]', isDark ? 'text-white/60' : 'text-gray-500')}>
+                    Last List
                   </span>
                   <div className="flex items-center gap-1.5">
                     <span
                       className={cn(
-                        'text-[11px] tabular-nums font-medium',
-                        isDark ? 'text-white/60' : 'text-gray-700'
+                        'text-[11px] tabular-nums font-semibold',
+                        isDark ? 'text-white' : 'text-gray-900'
                       )}
                     >
-                      {fNumber(stats.listPrice)} / {fNumber(stats.salePrice)}
+                      {fNumber(stats.listPrice)} XRP
                     </span>
-                    <span
-                      className={cn(
-                        'text-[10px] font-semibold tabular-nums px-1.5 py-0.5 rounded',
-                        stats.priceDiff >= 0
-                          ? 'text-emerald-400 bg-emerald-500/10'
-                          : 'text-red-400 bg-red-500/10'
-                      )}
-                    >
-                      {stats.priceDiff >= 0 ? '+' : ''}
-                      {stats.priceDiff.toFixed(0)}%
-                    </span>
+                    {stats.salePrice > 0 && (
+                      <span
+                        className={cn(
+                          'text-[10px] font-semibold tabular-nums px-1.5 py-0.5 rounded',
+                          stats.priceDiff >= 0
+                            ? 'text-emerald-400 bg-emerald-500/10'
+                            : 'text-red-400 bg-red-500/10'
+                        )}
+                      >
+                        {stats.priceDiff >= 0 ? '+' : ''}
+                        {stats.priceDiff.toFixed(0)}%
+                      </span>
+                    )}
                   </div>
                 </div>
-              ) : (
-                <div />
               )}
-              {stats.mintDate ? (
+              {stats.mintDate && (
                 <div
                   className={cn(
                     'flex items-center justify-between px-3 py-2 rounded-lg',
                     isDark ? 'bg-white/[0.03]' : 'bg-gray-50'
                   )}
                 >
-                  <div className="flex items-center gap-1.5">
-                    <Calendar size={11} className={isDark ? 'text-white/30' : 'text-gray-400'} />
-                    <span className={cn('text-[10px]', isDark ? 'text-white/30' : 'text-gray-500')}>
-                      Minted
-                    </span>
-                  </div>
+                  <span className={cn('text-[10px]', isDark ? 'text-white/60' : 'text-gray-500')}>
+                    Minted
+                  </span>
                   <span
                     className={cn(
                       'text-[11px] tabular-nums font-medium',
@@ -332,8 +348,6 @@ export default function HistoryList({ nft }) {
                     })}
                   </span>
                 </div>
-              ) : (
-                <div />
               )}
             </div>
           )}
@@ -346,13 +360,13 @@ export default function HistoryList({ nft }) {
           <button
             onClick={() => setActiveFilter('all')}
             className={cn(
-              'px-2.5 py-1 rounded-md text-[11px] font-medium transition-all whitespace-nowrap',
+              'px-2.5 py-1 rounded-md text-[11px] font-medium transition-[border-color,color,background-color] whitespace-nowrap',
               activeFilter === 'all'
                 ? isDark
                   ? 'bg-white/10 text-white'
                   : 'bg-gray-900 text-white'
                 : isDark
-                  ? 'text-white/40 hover:text-white/70 hover:bg-white/[0.04]'
+                  ? 'text-white/60 hover:text-white/70 hover:bg-white/[0.04]'
                   : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'
             )}
           >
@@ -366,13 +380,13 @@ export default function HistoryList({ nft }) {
                 key={type}
                 onClick={() => setActiveFilter(activeFilter === type ? 'all' : type)}
                 className={cn(
-                  'px-2.5 py-1 rounded-md text-[11px] font-medium transition-all whitespace-nowrap',
+                  'px-2.5 py-1 rounded-md text-[11px] font-medium transition-[border-color,color,background-color] whitespace-nowrap',
                   activeFilter === type
                     ? isDark
                       ? 'bg-white/10 text-white'
                       : 'bg-gray-900 text-white'
                     : isDark
-                      ? 'text-white/40 hover:text-white/70 hover:bg-white/[0.04]'
+                      ? 'text-white/60 hover:text-white/70 hover:bg-white/[0.04]'
                       : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'
                 )}
               >
@@ -387,7 +401,7 @@ export default function HistoryList({ nft }) {
       <div className="max-h-[420px] overflow-y-auto" style={{ scrollbarWidth: 'none' }}>
         {filtered.length === 0 ? (
           <div className="py-10 text-center">
-            <p className={cn('text-sm', isDark ? 'text-white/50' : 'text-gray-500')}>
+            <p className={cn('text-sm', isDark ? 'text-white/60' : 'text-gray-500')}>
               No {TYPE_CONFIG[activeFilter]?.label || activeFilter} events
             </p>
             <button
@@ -410,7 +424,7 @@ export default function HistoryList({ nft }) {
                     <span
                       className={cn(
                         'text-[10px] font-medium uppercase tracking-wider',
-                        isDark ? 'text-white/20' : 'text-gray-400'
+                        isDark ? 'text-white/60' : 'text-gray-400'
                       )}
                     >
                       {groupName}
@@ -419,7 +433,7 @@ export default function HistoryList({ nft }) {
                     <span
                       className={cn(
                         'text-[10px] tabular-nums',
-                        isDark ? 'text-white/15' : 'text-gray-300'
+                        isDark ? 'text-white/60' : 'text-gray-300'
                       )}
                     >
                       {items.length}
@@ -447,7 +461,7 @@ export default function HistoryList({ nft }) {
                         <div
                           key={item._id || item.hash || idx}
                           className={cn(
-                            'group grid grid-cols-[28px_1fr_1fr_1fr_auto] items-center gap-2 px-2 py-2 rounded-lg transition-colors',
+                            'group grid grid-cols-[28px_1fr_1fr_1fr_auto] items-center gap-2 px-2 py-2 rounded-lg transition-[background-color]',
                             isOwnershipChange
                               ? isDark
                                 ? 'bg-white/[0.02] hover:bg-white/[0.05]'
@@ -466,7 +480,7 @@ export default function HistoryList({ nft }) {
                           >
                             <config.Icon
                               size={13}
-                              className={isDark ? 'text-white/40' : 'text-gray-500'}
+                              className={isDark ? 'text-white/60' : 'text-gray-500'}
                             />
                           </div>
 
@@ -498,7 +512,7 @@ export default function HistoryList({ nft }) {
                                   'inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold tabular-nums',
                                   isCancelled
                                     ? isDark
-                                      ? 'text-white/20 line-through'
+                                      ? 'text-white/60 line-through'
                                       : 'text-gray-400 line-through'
                                     : isSpend
                                       ? 'text-emerald-400'
@@ -524,13 +538,13 @@ export default function HistoryList({ nft }) {
                               <Link
                                 href={`/address/${from}`}
                                 className={cn(
-                                  'font-mono transition-colors truncate',
+                                  'font-mono transition-[background-color] truncate',
                                   from === stats.currentOwner
                                     ? isDark
                                       ? 'text-white font-semibold'
                                       : 'text-gray-900 font-semibold'
                                     : isDark
-                                      ? 'text-white/30 hover:text-white/70'
+                                      ? 'text-white/60 hover:text-white/70'
                                       : 'text-gray-400 hover:text-gray-700'
                                 )}
                               >
@@ -539,19 +553,19 @@ export default function HistoryList({ nft }) {
                             )}
                             {to && (
                               <>
-                                <span className={isDark ? 'text-white/15' : 'text-gray-300'}>
+                                <span className={isDark ? 'text-white/60' : 'text-gray-300'}>
                                   →
                                 </span>
                                 <Link
                                   href={`/address/${to}`}
                                   className={cn(
-                                    'font-mono transition-colors truncate',
+                                    'font-mono transition-[background-color] truncate',
                                     to === stats.currentOwner
                                       ? isDark
                                         ? 'text-white font-semibold'
                                         : 'text-gray-900 font-semibold'
                                       : isDark
-                                        ? 'text-white/30 hover:text-white/70'
+                                        ? 'text-white/60 hover:text-white/70'
                                         : 'text-gray-400 hover:text-gray-700'
                                   )}
                                 >
@@ -567,7 +581,7 @@ export default function HistoryList({ nft }) {
                             {(from || to) && (
                               <button
                                 onClick={() => window.dispatchEvent(new CustomEvent('openDm', { detail: { user: to || from } }))}
-                                className="p-0.5 rounded hover:bg-white/10 text-gray-500 hover:text-[#650CD4] transition-colors opacity-0 group-hover:opacity-100"
+                                className={cn('p-0.5 rounded hover:bg-white/10 hover:text-[#650CD4] transition-[background-color] opacity-0 group-hover:opacity-100', isDark ? 'text-white/60' : 'text-gray-500')}
                                 title="Message"
                               >
                                 <MessageCircle size={11} />
@@ -580,7 +594,7 @@ export default function HistoryList({ nft }) {
                             <span
                               className={cn(
                                 'text-[10px] tabular-nums',
-                                isDark ? 'text-white/20' : 'text-gray-400'
+                                isDark ? 'text-white/60' : 'text-gray-400'
                               )}
                             >
                               {formatRelativeTime(item.time)}
@@ -589,10 +603,11 @@ export default function HistoryList({ nft }) {
                               <Link
                                 href={`/tx/${item.hash}`}
                                 target="_blank"
+                                aria-label={`View transaction ${item.hash.slice(0, 8)}`}
                                 className={cn(
-                                  'p-0.5 rounded transition-all opacity-0 group-hover:opacity-100',
+                                  'p-0.5 rounded transition-[border-color,color,background-color] opacity-0 group-hover:opacity-100',
                                   isDark
-                                    ? 'text-white/20 hover:text-white/60'
+                                    ? 'text-white/60 hover:text-white/60'
                                     : 'text-gray-300 hover:text-gray-600'
                                 )}
                               >

@@ -2,6 +2,7 @@ import { useRouter } from 'next/router';
 import api from 'src/utils/api';
 import { useState, useMemo, useEffect, useContext, useRef } from 'react';
 import { createPortal } from 'react-dom';
+import Head from 'next/head';
 import { ThemeContext } from 'src/context/AppContext';
 import { cn } from 'src/utils/cn';
 import { Copy, Sparkles } from 'lucide-react';
@@ -87,8 +88,8 @@ const sx2style = (sx) => {
   return s;
 };
 
-const Box = ({ children, sx, component: C = 'div', ...p }) => (
-  <C style={sx2style(sx)} {...p}>
+const Box = ({ children, sx, component: C = 'div', className: cls, ...p }) => (
+  <C style={sx2style(sx)} className={cls} {...p}>
     {children}
   </C>
 );
@@ -329,7 +330,7 @@ const JsonViewer = ({ data, isDark: isDarkProp }) => {
       <button
         onClick={copyJson}
         className={cn(
-          'absolute top-2 right-2 z-10 px-2.5 py-1 rounded-md text-[11px] font-medium transition-colors',
+          'absolute top-2 right-2 z-10 px-2.5 py-1 rounded-md text-[11px] font-medium transition-[background-color,border-color]',
           copied
             ? 'text-emerald-400'
             : isDark
@@ -382,15 +383,15 @@ const DetailRow = ({ label, children, index = 0, alignValue = 'right' }) => {
   return (
     <div
       className={cn(
-        'grid grid-cols-[140px_1fr] items-center px-4 py-2.5 min-h-[44px]',
+        'grid grid-cols-1 sm:grid-cols-[140px_1fr] items-start sm:items-center px-4 py-2.5 min-h-[44px] gap-0.5 sm:gap-0',
         isOdd && (isDark ? 'bg-white/[0.02]' : 'bg-gray-50/50')
       )}
     >
       <span className={cn('text-[13px]', isDark ? 'text-white/50' : 'text-gray-500')}>{label}</span>
       <div
         className={cn(
-          'text-[13px] flex items-center gap-2',
-          alignValue === 'right' ? 'justify-end' : 'justify-start',
+          'text-[13px] flex items-center gap-2 min-w-0 overflow-hidden',
+          alignValue === 'right' ? 'sm:justify-end' : 'justify-start',
           isDark ? 'text-white/90' : 'text-gray-800'
         )}
       >
@@ -652,7 +653,7 @@ const TokenTooltipContent = ({ md5, tokenInfo, loading, error }) => {
             <div className="text-[12px] text-white/50">"{token.user}"</div>
           )}
           {token.issuer && (
-            <div className="text-[11px] text-white/40 font-mono">
+            <div className="text-[11px] text-white/50 font-mono">
               {token.issuer.slice(0, 8)}...{token.issuer.slice(-6)}
             </div>
           )}
@@ -1811,15 +1812,19 @@ const TransactionSummaryCard = ({
   const isDark = themeName === 'XrplToDarkTheme';
   const { hash, TransactionType, Account, meta, date, ledger_index, Fee, Flags } = txData;
   const [copied, setCopied] = useState(false);
+  const [timeAgo, setTimeAgo] = useState(null);
+  const [dateStr, setDateStr] = useState(null);
 
   const isSuccess = meta?.TransactionResult === 'tesSUCCESS';
   const description = getTransactionDescription(txData);
   const parsedDate = parseTransactionDate(date);
-  const timeAgo =
-    parsedDate && !isNaN(parsedDate.getTime()) ? formatDistanceToNow(parsedDate) : null;
-  const dateStr =
-    parsedDate && !isNaN(parsedDate.getTime())
-      ? parsedDate.toLocaleString('en-US', {
+
+  // Compute time-dependent strings on client only to avoid hydration mismatch
+  useEffect(() => {
+    if (parsedDate && !isNaN(parsedDate.getTime())) {
+      setTimeAgo(formatDistanceToNow(parsedDate));
+      setDateStr(
+        parsedDate.toLocaleString('en-US', {
           month: 'short',
           day: 'numeric',
           year: 'numeric',
@@ -1828,7 +1833,9 @@ const TransactionSummaryCard = ({
           second: '2-digit',
           timeZoneName: 'short'
         })
-      : null;
+      );
+    }
+  }, [date]);
 
   const copyHash = () => {
     navigator.clipboard.writeText(hash);
@@ -1848,18 +1855,18 @@ const TransactionSummaryCard = ({
   return (
     <div
       className={cn(
-        'rounded-xl mb-4 overflow-hidden border-[1.5px]',
+        'rounded-xl mb-4 overflow-hidden border-[1.5px] max-w-full',
         isDark ? 'bg-transparent border-white/10' : 'bg-white border-black/[0.08]'
       )}
     >
       {/* Header bar */}
       <div
         className={cn(
-          'flex items-center justify-between px-4 py-3',
+          'flex flex-wrap items-center justify-between gap-2 px-4 py-3',
           isDark ? 'border-b border-[rgba(255,255,255,0.10)]' : 'border-b border-[rgba(0,0,0,0.08)]'
         )}
       >
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 flex-wrap min-w-0">
           <span
             className={cn(
               'px-2.5 py-1 rounded-md text-[11px] font-medium',
@@ -1884,7 +1891,7 @@ const TransactionSummaryCard = ({
           </span>
           {/* Swap Summary Inline */}
           {isSwap && isSuccess && (
-            <div className="flex items-center gap-2 ml-2">
+            <div className="flex items-center gap-2 ml-0 sm:ml-2">
               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-red-500/10 border border-red-500/15">
                 <span className="text-red-400 text-[12px] font-medium font-mono">
                   -{formatDecimal(new Decimal(swapInfo.paid.value))} {swapInfo.paid.currency}
@@ -1899,13 +1906,13 @@ const TransactionSummaryCard = ({
             </div>
           )}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           <TxShareModal hash={hash} type={TransactionType} />
           {aiExplanation || aiLoading ? (
             <button
               onClick={onCloseAI}
               className={cn(
-                'px-3 py-1.5 rounded-lg border text-[12px] font-medium transition-all duration-200',
+                'px-3 py-1.5 rounded-lg border text-[12px] font-medium transition-[background-color,border-color] duration-200',
                 isDark
                   ? 'border-white/10 hover:border-white/20 text-white/50 hover:text-white/70'
                   : 'border-gray-200 hover:border-gray-300 text-gray-500 hover:text-gray-700'
@@ -1917,7 +1924,7 @@ const TransactionSummaryCard = ({
             <button
               onClick={onExplainWithAI}
               className={cn(
-                'flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-[12px] font-medium transition-all duration-200',
+                'flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-[12px] font-medium transition-[background-color,border-color] duration-200',
                 isDark
                   ? 'border-[#8b5cf6]/25 hover:border-[#8b5cf6]/40 bg-[#8b5cf6]/10 hover:bg-[#8b5cf6]/15 text-[#c4b5fd] hover:text-[#ddd6fe]'
                   : 'border-[#8b5cf6]/30 hover:border-[#8b5cf6]/50 bg-[#8b5cf6]/10 hover:bg-[#8b5cf6]/20 text-[#7c3aed] hover:text-[#6d28d9]'
@@ -2005,7 +2012,7 @@ const TransactionSummaryCard = ({
           <div
             className={cn(
               'mt-5 text-[13px] font-mono flex items-center gap-2',
-              isDark ? 'text-white/40' : 'text-gray-400'
+              isDark ? 'text-white/50' : 'text-gray-400'
             )}
           >
             <span
@@ -2140,7 +2147,7 @@ const TransactionSummaryCard = ({
       {/* Tabs */}
       <div
         className={cn(
-          'flex items-center gap-2 px-4 py-3',
+          'flex items-center gap-2 px-4 py-3 overflow-x-auto',
           isDark ? 'border-b border-[rgba(255,255,255,0.10)]' : 'border-b border-[rgba(0,0,0,0.08)]'
         )}
       >
@@ -2149,7 +2156,7 @@ const TransactionSummaryCard = ({
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
             className={cn(
-              'px-4 py-2 rounded-lg text-[12px] font-medium transition-colors border',
+              'px-3 sm:px-4 py-2 rounded-lg text-[12px] font-medium transition-[background-color,border-color] border shrink-0',
               activeTab === tab.id
                 ? isDark
                   ? 'bg-white/10 text-white/90 border-white/15'
@@ -2167,15 +2174,15 @@ const TransactionSummaryCard = ({
       {/* Info grid */}
       <div
         className={cn(
-          'grid grid-cols-[1fr_2fr_1fr]',
-          isDark ? 'divide-x divide-white/[0.06]' : 'divide-x divide-gray-100'
+          'grid grid-cols-1 sm:grid-cols-[1fr_2fr_1fr]',
+          isDark ? 'sm:divide-x divide-white/[0.06]' : 'sm:divide-x divide-gray-100'
         )}
       >
         <div className="px-4 py-3">
           <div
             className={cn(
               'text-[10px] uppercase tracking-wider mb-1.5',
-              isDark ? 'text-white/40' : 'text-gray-400'
+              isDark ? 'text-white/50' : 'text-gray-500'
             )}
           >
             Signature
@@ -2189,12 +2196,12 @@ const TransactionSummaryCard = ({
             <button
               onClick={copyHash}
               className={cn(
-                'px-1.5 py-0.5 rounded text-[10px] font-medium transition-colors',
+                'px-1.5 py-0.5 rounded text-[10px] font-medium transition-[background-color,border-color]',
                 copied
                   ? 'text-emerald-400'
                   : isDark
-                    ? 'text-white/40 hover:text-primary'
-                    : 'text-gray-400 hover:text-primary'
+                    ? 'text-white/50 hover:text-primary'
+                    : 'text-gray-500 hover:text-primary'
               )}
             >
               {copied ? 'Copied' : 'Copy'}
@@ -2205,27 +2212,27 @@ const TransactionSummaryCard = ({
           <div
             className={cn(
               'text-[10px] uppercase tracking-wider mb-1.5',
-              isDark ? 'text-white/40' : 'text-gray-400'
+              isDark ? 'text-white/50' : 'text-gray-500'
             )}
           >
             Time
           </div>
-          <div className={cn('text-[13px]', isDark ? 'text-white/80' : 'text-gray-700')}>
+          <div className={cn('text-[13px] break-words', isDark ? 'text-white/80' : 'text-gray-700')}>
             {timeAgo ? (
               <>
                 <span className="text-primary">{timeAgo} ago</span>{' '}
-                <span className={isDark ? 'text-white/50' : 'text-gray-500'}>({dateStr})</span>
+                <span className={cn('hidden sm:inline', isDark ? 'text-white/50' : 'text-gray-500')}>({dateStr})</span>
               </>
             ) : (
               'Unknown'
             )}
           </div>
         </div>
-        <div className="px-4 py-3 text-right">
+        <div className="px-4 py-3 sm:text-right">
           <div
             className={cn(
               'text-[10px] uppercase tracking-wider mb-1.5',
-              isDark ? 'text-white/40' : 'text-gray-400'
+              isDark ? 'text-white/50' : 'text-gray-500'
             )}
           >
             Ledger
@@ -3178,7 +3185,7 @@ const TransactionDetails = ({ txData }) => {
             </DetailRow>
 
             <DetailRow label="Timestamp" index={1}>
-              <span className="font-mono">
+              <span className="font-mono" suppressHydrationWarning>
                 {(() => {
                   const d = parseTransactionDate(date);
                   return d && !isNaN(d.getTime()) ? d.toLocaleString() : 'Unknown';
@@ -3191,15 +3198,17 @@ const TransactionDetails = ({ txData }) => {
               <>
                 {isConversion && Account === Destination ? (
                   <DetailRow label="Account">
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0 }}>
                       <Link href={`/address/${Account}`} passHref>
                         <Typography
                           component="span"
                           variant="body2"
-                          className="font-mono text-[13px] no-underline hover:underline"
+                          className="font-mono text-[13px] no-underline hover:underline truncate block"
                           sx={{ color: theme.palette.primary.main }}
+                          title={Account}
                         >
-                          {Account}
+                          <span className="hidden sm:inline">{Account}</span>
+                          <span className="inline sm:hidden">{Account.slice(0, 10)}...{Account.slice(-6)}</span>
                         </Typography>
                       </Link>
                     </Box>
@@ -3207,21 +3216,23 @@ const TransactionDetails = ({ txData }) => {
                 ) : (
                   <>
                     <DetailRow label="From">
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0 }}>
                         <Link href={`/address/${Account}`} passHref>
                           <Typography
                             component="span"
                             variant="body2"
-                            className="font-mono text-[13px] no-underline hover:underline"
+                            className="font-mono text-[13px] no-underline hover:underline truncate block"
                             sx={{ color: theme.palette.primary.main }}
+                            title={Account}
                           >
-                            {Account}
+                            <span className="hidden sm:inline">{Account}</span>
+                            <span className="inline sm:hidden">{Account.slice(0, 10)}...{Account.slice(-6)}</span>
                           </Typography>
                         </Link>
                       </Box>
                     </DetailRow>
                     <DetailRow label="To">
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }} className="min-w-0 flex-wrap">
                         {isDestBlackholed && destAccountData ? (
                           <Tooltip
                             title={
@@ -3267,9 +3278,11 @@ const TransactionDetails = ({ txData }) => {
                               <Typography
                                 component="span"
                                 variant="body2"
-                                className="font-mono text-[13px] text-[#f87171] no-underline hover:underline"
+                                className="font-mono text-[13px] text-[#f87171] no-underline hover:underline truncate block"
+                                title={Destination}
                               >
-                                {Destination}
+                                <span className="hidden sm:inline">{Destination}</span>
+                                <span className="inline sm:hidden">{Destination.slice(0, 10)}...{Destination.slice(-6)}</span>
                               </Typography>
                             </Link>
                           </Tooltip>
@@ -3278,10 +3291,12 @@ const TransactionDetails = ({ txData }) => {
                             <Typography
                               component="span"
                               variant="body2"
-                              className="font-mono text-[13px] no-underline hover:underline"
+                              className="font-mono text-[13px] no-underline hover:underline truncate block"
                               sx={{ color: theme.palette.primary.main }}
+                              title={Destination}
                             >
-                              {Destination}
+                              <span className="hidden sm:inline">{Destination}</span>
+                              <span className="inline sm:hidden">{Destination.slice(0, 10)}...{Destination.slice(-6)}</span>
                             </Typography>
                           </Link>
                         )}
@@ -3423,18 +3438,21 @@ const TransactionDetails = ({ txData }) => {
                 {LimitAmount && (
                   <>
                     <DetailRow label="Token Issuer">
-                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', minWidth: 0 }}>
                         <Link href={`/address/${LimitAmount.issuer}`} passHref>
                           <Typography
                             component="span"
                             variant="body1"
+                            className="truncate block font-mono text-[13px]"
                             sx={{
                               color: theme.palette.primary.main,
                               textDecoration: 'none',
                               '&:hover': { textDecoration: 'underline' }
                             }}
+                            title={LimitAmount.issuer}
                           >
-                            {LimitAmount.issuer}
+                            <span className="hidden sm:inline">{LimitAmount.issuer}</span>
+                            <span className="inline sm:hidden">{LimitAmount.issuer.slice(0, 10)}...{LimitAmount.issuer.slice(-6)}</span>
                           </Typography>
                         </Link>
                       </Box>
@@ -3537,24 +3555,17 @@ const TransactionDetails = ({ txData }) => {
                       const fallbackView = (
                         <Grid container spacing={1}>
                           <DetailRow label="Offer" sx={{ mb: 1, pb: 1, borderBottom: 'none' }}>
-                            <Typography variant="body1" sx={{ wordBreak: 'break-all' }}>
-                              {offer.offerId}
-                            </Typography>
+                            <span className={cn('text-[13px] font-mono', isDark ? 'text-white/70' : 'text-gray-700')} title={offer.offerId}>
+                              <span className="hidden sm:inline break-all">{offer.offerId}</span>
+                              <span className="inline sm:hidden">{offer.offerId.slice(0, 12)}...{offer.offerId.slice(-8)}</span>
+                            </span>
                           </DetailRow>
                           <DetailRow label="NFT" sx={{ mb: 1, pb: 1, borderBottom: 'none' }}>
                             <Link href={`/nft/${offer.NFTokenID}`} passHref>
-                              <Typography
-                                component="span"
-                                variant="body1"
-                                sx={{
-                                  color: theme.palette.primary.main,
-                                  textDecoration: 'none',
-                                  '&:hover': { textDecoration: 'underline' },
-                                  wordBreak: 'break-all'
-                                }}
-                              >
-                                {offer.NFTokenID}
-                              </Typography>
+                              <span className="text-primary text-[13px] font-mono hover:underline" title={offer.NFTokenID}>
+                                <span className="hidden sm:inline break-all">{offer.NFTokenID}</span>
+                                <span className="inline sm:hidden">{offer.NFTokenID.slice(0, 12)}...{offer.NFTokenID.slice(-8)}</span>
+                              </span>
                             </Link>
                           </DetailRow>
                           <DetailRow label="Amount" sx={{ mb: 1, pb: 1, borderBottom: 'none' }}>
@@ -3565,19 +3576,12 @@ const TransactionDetails = ({ txData }) => {
                               label="Destination"
                               sx={{ mb: 1, pb: 1, borderBottom: 'none' }}
                             >
-                              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                              <Box sx={{ display: 'flex', alignItems: 'center', minWidth: 0 }}>
                                 <Link href={`/address/${offer.Destination}`} passHref>
-                                  <Typography
-                                    component="span"
-                                    variant="body1"
-                                    sx={{
-                                      color: theme.palette.primary.main,
-                                      textDecoration: 'none',
-                                      '&:hover': { textDecoration: 'underline' }
-                                    }}
-                                  >
-                                    {offer.Destination}
-                                  </Typography>
+                                  <span className="text-primary text-[13px] font-mono hover:underline" title={offer.Destination}>
+                                    <span className="hidden sm:inline">{offer.Destination}</span>
+                                    <span className="inline sm:hidden">{offer.Destination.slice(0, 10)}...{offer.Destination.slice(-6)}</span>
+                                  </span>
                                 </Link>
                               </Box>
                             </DetailRow>
@@ -3632,9 +3636,10 @@ const TransactionDetails = ({ txData }) => {
                   NFTokenOffers.length > 0 && (
                     <DetailRow label={NFTokenOffers.length > 1 ? 'Offers' : 'Offer'}>
                       {NFTokenOffers.map((offer) => (
-                        <Typography key={offer} variant="body1" sx={{ wordBreak: 'break-all' }}>
-                          {offer}
-                        </Typography>
+                        <span key={offer} className={cn('text-[13px] font-mono block', isDark ? 'text-white/70' : 'text-gray-700')} title={offer}>
+                          <span className="hidden sm:inline break-all">{offer}</span>
+                          <span className="inline sm:hidden">{offer.slice(0, 12)}...{offer.slice(-8)}</span>
+                        </span>
                       ))}
                     </DetailRow>
                   )
@@ -3672,15 +3677,17 @@ const TransactionDetails = ({ txData }) => {
                 )}
                 <DetailRow label="From">
                   <Link href={`/address/${acceptedOfferDetails.seller}`}>
-                    <span className="text-primary text-[13px] font-mono hover:underline">
-                      {acceptedOfferDetails.seller}
+                    <span className="text-primary text-[13px] font-mono hover:underline" title={acceptedOfferDetails.seller}>
+                      <span className="hidden sm:inline">{acceptedOfferDetails.seller}</span>
+                      <span className="inline sm:hidden">{acceptedOfferDetails.seller.slice(0, 10)}...{acceptedOfferDetails.seller.slice(-6)}</span>
                     </span>
                   </Link>
                 </DetailRow>
                 <DetailRow label="To">
                   <Link href={`/address/${acceptedOfferDetails.buyer}`}>
-                    <span className="text-primary text-[13px] font-mono hover:underline">
-                      {acceptedOfferDetails.buyer}
+                    <span className="text-primary text-[13px] font-mono hover:underline" title={acceptedOfferDetails.buyer}>
+                      <span className="hidden sm:inline">{acceptedOfferDetails.buyer}</span>
+                      <span className="inline sm:hidden">{acceptedOfferDetails.buyer.slice(0, 10)}...{acceptedOfferDetails.buyer.slice(-6)}</span>
                     </span>
                   </Link>
                 </DetailRow>
@@ -3740,7 +3747,7 @@ const TransactionDetails = ({ txData }) => {
                           )}
                         </div>
                         {/* Structured NFT Details Grid */}
-                        <div className="grid grid-cols-3 gap-x-4 gap-y-1 mt-2">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-1 mt-2">
                           <div>
                             <span className={cn('text-[10px] uppercase block', isDark ? 'text-white/30' : 'text-gray-400')}>Issuer</span>
                             <Link href={`/address/${acceptedNftInfo.issuer}`}>
@@ -3794,19 +3801,21 @@ const TransactionDetails = ({ txData }) => {
                         )}
                         <Link href={`/nft/${offerNftInfo.NFTokenID}`}>
                           <span
-                            className="text-primary text-[13px] font-mono hover:underline truncate max-w-[300px]"
+                            className="text-primary text-[13px] font-mono hover:underline"
                             title={offerNftInfo.NFTokenID}
                           >
-                            {offerNftInfo.NFTokenID}
+                            <span className="hidden sm:inline">{offerNftInfo.NFTokenID}</span>
+                            <span className="inline sm:hidden">{offerNftInfo.NFTokenID.slice(0, 12)}...{offerNftInfo.NFTokenID.slice(-8)}</span>
                           </span>
                         </Link>
                       </div>
                     </DetailRow>
                     <DetailRow label="Issuer">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 min-w-0">
                         <Link href={`/address/${offerNftInfo.issuer}`}>
-                          <span className="text-primary text-[13px] hover:underline">
-                            {offerNftInfo.issuer}
+                          <span className="text-primary text-[13px] font-mono hover:underline" title={offerNftInfo.issuer}>
+                            <span className="hidden sm:inline">{offerNftInfo.issuer}</span>
+                            <span className="inline sm:hidden">{offerNftInfo.issuer.slice(0, 10)}...{offerNftInfo.issuer.slice(-6)}</span>
                           </span>
                         </Link>
                       </div>
@@ -3815,17 +3824,21 @@ const TransactionDetails = ({ txData }) => {
                 ) : (
                   <DetailRow label="NFT">
                     <Link href={`/nft/${NFTokenID}`}>
-                      <span className="text-primary text-[13px] font-mono hover:underline">
-                        {NFTokenID}
+                      <span className="text-primary text-[13px] font-mono hover:underline" title={NFTokenID}>
+                        <span className="hidden sm:inline">{NFTokenID}</span>
+                        <span className="inline sm:hidden">{NFTokenID.slice(0, 12)}...{NFTokenID.slice(-8)}</span>
                       </span>
                     </Link>
                   </DetailRow>
                 )}
                 {Owner && (
                   <DetailRow label="NFT Owner">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 min-w-0">
                       <Link href={`/address/${Owner}`}>
-                        <span className="text-primary text-[13px] hover:underline">{Owner}</span>
+                        <span className="text-primary text-[13px] font-mono hover:underline" title={Owner}>
+                          <span className="hidden sm:inline">{Owner}</span>
+                          <span className="inline sm:hidden">{Owner.slice(0, 10)}...{Owner.slice(-6)}</span>
+                        </span>
                       </Link>
                     </div>
                   </DetailRow>
@@ -3834,12 +3847,13 @@ const TransactionDetails = ({ txData }) => {
                   <DetailRow label="Offer ID">
                     <span
                       className={cn(
-                        'text-[13px] font-mono truncate max-w-[300px]',
+                        'text-[13px] font-mono',
                         isDark ? 'text-white/70' : 'text-gray-700'
                       )}
                       title={meta.offer_id}
                     >
-                      {meta.offer_id}
+                      <span className="hidden sm:inline">{meta.offer_id}</span>
+                      <span className="inline sm:hidden">{meta.offer_id.slice(0, 12)}...{meta.offer_id.slice(-8)}</span>
                     </span>
                   </DetailRow>
                 )}
@@ -3848,10 +3862,11 @@ const TransactionDetails = ({ txData }) => {
                 </DetailRow>
                 {Destination && (
                   <DetailRow label="Destination">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 min-w-0">
                       <Link href={`/address/${Destination}`}>
-                        <span className="text-primary text-[13px] hover:underline">
-                          {Destination}
+                        <span className="text-primary text-[13px] font-mono hover:underline" title={Destination}>
+                          <span className="hidden sm:inline">{Destination}</span>
+                          <span className="inline sm:hidden">{Destination.slice(0, 10)}...{Destination.slice(-6)}</span>
                         </span>
                       </Link>
                     </div>
@@ -3876,10 +3891,11 @@ const TransactionDetails = ({ txData }) => {
                       ) : null}
                       <Link href={`/nft/${meta.nftoken_id}`}>
                         <span
-                          className="text-primary text-[13px] font-mono hover:underline truncate max-w-[300px]"
+                          className="text-primary text-[13px] font-mono hover:underline"
                           title={meta.nftoken_id}
                         >
-                          {meta.nftoken_id}
+                          <span className="hidden sm:inline">{meta.nftoken_id}</span>
+                          <span className="inline sm:hidden">{meta.nftoken_id.slice(0, 12)}...{meta.nftoken_id.slice(-8)}</span>
                         </span>
                       </Link>
                     </div>
@@ -3915,7 +3931,7 @@ const TransactionDetails = ({ txData }) => {
                   <DetailRow label="URI">
                     <Link href={safeHexDecode(URI)} target="_blank" rel="noopener noreferrer">
                       <span
-                        className="text-primary text-[13px] hover:underline truncate max-w-[300px]"
+                        className="text-primary text-[13px] hover:underline truncate block max-w-full"
                         title={safeHexDecode(URI)}
                       >
                         {safeHexDecode(URI)}
@@ -3954,7 +3970,7 @@ const TransactionDetails = ({ txData }) => {
                           label="Last Update Time"
                           sx={{ mb: 1, pb: 1, borderBottom: 'none' }}
                         >
-                          <Typography variant="body1">
+                          <Typography variant="body1" suppressHydrationWarning>
                             {formatDistanceToNow(new Date(LastUpdateTime * 1000))} ago (
                             {new Date(LastUpdateTime * 1000).toLocaleString()})
                           </Typography>
@@ -3962,8 +3978,8 @@ const TransactionDetails = ({ txData }) => {
                       )}
                       {URI && safeHexDecode(URI) && (
                         <DetailRow label="URI" sx={{ mb: 1, pb: 1, borderBottom: 'none' }}>
-                          <Link href={safeHexDecode(URI)} target="_blank" rel="noopener noreferrer">
-                            <span className="text-[#4285f4] hover:underline break-all text-[13px]">
+                          <Link href={safeHexDecode(URI)} target="_blank" rel="noopener noreferrer" className="min-w-0">
+                            <span className="text-[#4285f4] hover:underline text-[13px] truncate block max-w-full">
                               {safeHexDecode(URI)}
                             </span>
                           </Link>
@@ -4059,18 +4075,10 @@ const TransactionDetails = ({ txData }) => {
             {TransactionType === 'NFTokenBurn' && NFTokenID && (
               <DetailRow label="Burned NFT">
                 <Link href={`/nft/${NFTokenID}`} passHref>
-                  <Typography
-                    component="span"
-                    variant="body1"
-                    sx={{
-                      color: theme.palette.primary.main,
-                      textDecoration: 'none',
-                      '&:hover': { textDecoration: 'underline' },
-                      wordBreak: 'break-all'
-                    }}
-                  >
-                    {NFTokenID}
-                  </Typography>
+                  <span className="text-primary text-[13px] font-mono hover:underline" title={NFTokenID}>
+                    <span className="hidden sm:inline">{NFTokenID}</span>
+                    <span className="inline sm:hidden">{NFTokenID.slice(0, 12)}...{NFTokenID.slice(-8)}</span>
+                  </span>
                 </Link>
               </DetailRow>
             )}
@@ -4085,16 +4093,15 @@ const TransactionDetails = ({ txData }) => {
                 )}
                 {txData.EmailHash && (
                   <DetailRow label="Email Hash">
-                    <Typography variant="body1" className="font-mono">
-                      {txData.EmailHash}
-                    </Typography>
+                    <span className="text-[13px] font-mono break-all">{txData.EmailHash}</span>
                   </DetailRow>
                 )}
                 {txData.MessageKey && (
                   <DetailRow label="Message Key">
-                    <Typography variant="body1" className="font-mono">
-                      {txData.MessageKey}
-                    </Typography>
+                    <span className={cn('text-[13px] font-mono', isDark ? 'text-white/70' : 'text-gray-700')} title={txData.MessageKey}>
+                      <span className="hidden sm:inline break-all">{txData.MessageKey}</span>
+                      <span className="inline sm:hidden">{txData.MessageKey.slice(0, 16)}...{txData.MessageKey.slice(-8)}</span>
+                    </span>
                   </DetailRow>
                 )}
                 {txData.SetFlag !== undefined && (
@@ -4114,17 +4121,10 @@ const TransactionDetails = ({ txData }) => {
             {TransactionType === 'SetRegularKey' && txData.RegularKey && (
               <DetailRow label="Regular Key">
                 <Link href={`/address/${txData.RegularKey}`} passHref>
-                  <Typography
-                    component="span"
-                    variant="body1"
-                    sx={{
-                      color: theme.palette.primary.main,
-                      textDecoration: 'none',
-                      '&:hover': { textDecoration: 'underline' }
-                    }}
-                  >
-                    {txData.RegularKey}
-                  </Typography>
+                  <span className="text-primary text-[13px] font-mono hover:underline" title={txData.RegularKey}>
+                    <span className="hidden sm:inline">{txData.RegularKey}</span>
+                    <span className="inline sm:hidden">{txData.RegularKey.slice(0, 10)}...{txData.RegularKey.slice(-6)}</span>
+                  </span>
                 </Link>
               </DetailRow>
             )}
@@ -4136,12 +4136,10 @@ const TransactionDetails = ({ txData }) => {
               <>
                 {txData.CheckID && (
                   <DetailRow label="Check ID">
-                    <Typography
-                      variant="body1"
-                      className="font-mono break-all"
-                    >
-                      {txData.CheckID}
-                    </Typography>
+                    <span className={cn('text-[13px] font-mono', isDark ? 'text-white/70' : 'text-gray-700')} title={txData.CheckID}>
+                      <span className="hidden sm:inline break-all">{txData.CheckID}</span>
+                      <span className="inline sm:hidden">{txData.CheckID.slice(0, 12)}...{txData.CheckID.slice(-8)}</span>
+                    </span>
                   </DetailRow>
                 )}
                 {TransactionType === 'CheckCash' && txData.DeliverMin && (
@@ -4159,14 +4157,14 @@ const TransactionDetails = ({ txData }) => {
               <>
                 {txData.FinishAfter && parseTransactionDate(txData.FinishAfter) && (
                   <DetailRow label="Can Finish After">
-                    <Typography variant="body1">
+                    <Typography variant="body1" suppressHydrationWarning>
                       {parseTransactionDate(txData.FinishAfter).toLocaleString()}
                     </Typography>
                   </DetailRow>
                 )}
                 {txData.CancelAfter && parseTransactionDate(txData.CancelAfter) && (
                   <DetailRow label="Expires After">
-                    <Typography variant="body1">
+                    <Typography variant="body1" suppressHydrationWarning>
                       {parseTransactionDate(txData.CancelAfter).toLocaleString()}
                     </Typography>
                   </DetailRow>
@@ -4178,22 +4176,18 @@ const TransactionDetails = ({ txData }) => {
                 )}
                 {txData.Condition && (
                   <DetailRow label="Condition">
-                    <Typography
-                      variant="body2"
-                      className="font-mono break-all"
-                    >
-                      {txData.Condition}
-                    </Typography>
+                    <span className={cn('text-[13px] font-mono', isDark ? 'text-white/70' : 'text-gray-700')} title={txData.Condition}>
+                      <span className="hidden sm:inline break-all">{txData.Condition}</span>
+                      <span className="inline sm:hidden">{txData.Condition.slice(0, 16)}...{txData.Condition.slice(-8)}</span>
+                    </span>
                   </DetailRow>
                 )}
                 {txData.Fulfillment && (
                   <DetailRow label="Fulfillment">
-                    <Typography
-                      variant="body2"
-                      className="font-mono break-all"
-                    >
-                      {txData.Fulfillment}
-                    </Typography>
+                    <span className={cn('text-[13px] font-mono', isDark ? 'text-white/70' : 'text-gray-700')} title={txData.Fulfillment}>
+                      <span className="hidden sm:inline break-all">{txData.Fulfillment}</span>
+                      <span className="inline sm:hidden">{txData.Fulfillment.slice(0, 16)}...{txData.Fulfillment.slice(-8)}</span>
+                    </span>
                   </DetailRow>
                 )}
               </>
@@ -4206,12 +4200,10 @@ const TransactionDetails = ({ txData }) => {
               <>
                 {txData.Channel && (
                   <DetailRow label="Channel ID">
-                    <Typography
-                      variant="body1"
-                      className="font-mono break-all"
-                    >
-                      {txData.Channel}
-                    </Typography>
+                    <span className={cn('text-[13px] font-mono', isDark ? 'text-white/70' : 'text-gray-700')} title={txData.Channel}>
+                      <span className="hidden sm:inline break-all">{txData.Channel}</span>
+                      <span className="inline sm:hidden">{txData.Channel.slice(0, 12)}...{txData.Channel.slice(-8)}</span>
+                    </span>
                   </DetailRow>
                 )}
                 {txData.SettleDelay && (
@@ -4221,12 +4213,10 @@ const TransactionDetails = ({ txData }) => {
                 )}
                 {txData.PublicKey && (
                   <DetailRow label="Public Key">
-                    <Typography
-                      variant="body2"
-                      className="font-mono break-all"
-                    >
-                      {txData.PublicKey}
-                    </Typography>
+                    <span className={cn('text-[13px] font-mono', isDark ? 'text-white/70' : 'text-gray-700')} title={txData.PublicKey}>
+                      <span className="hidden sm:inline break-all">{txData.PublicKey}</span>
+                      <span className="inline sm:hidden">{txData.PublicKey.slice(0, 12)}...{txData.PublicKey.slice(-8)}</span>
+                    </span>
                   </DetailRow>
                 )}
                 {txData.Balance && (
@@ -4242,16 +4232,12 @@ const TransactionDetails = ({ txData }) => {
               <>
                 {txData.DIDDocument && (
                   <DetailRow label="DID Document">
-                    <Typography variant="body2" sx={{ wordBreak: 'break-all' }}>
-                      {txData.DIDDocument}
-                    </Typography>
+                    <span className="text-[13px] font-mono break-all">{txData.DIDDocument}</span>
                   </DetailRow>
                 )}
                 {txData.Data && (
                   <DetailRow label="Data">
-                    <Typography variant="body2" sx={{ wordBreak: 'break-all' }}>
-                      {txData.Data}
-                    </Typography>
+                    <span className="text-[13px] font-mono break-all">{txData.Data}</span>
                   </DetailRow>
                 )}
               </>
@@ -4270,34 +4256,20 @@ const TransactionDetails = ({ txData }) => {
                 {txData.Issuer && (
                   <DetailRow label="Issuer">
                     <Link href={`/address/${txData.Issuer}`} passHref>
-                      <Typography
-                        component="span"
-                        variant="body1"
-                        sx={{
-                          color: theme.palette.primary.main,
-                          textDecoration: 'none',
-                          '&:hover': { textDecoration: 'underline' }
-                        }}
-                      >
-                        {txData.Issuer}
-                      </Typography>
+                      <span className="text-primary text-[13px] font-mono hover:underline" title={txData.Issuer}>
+                        <span className="hidden sm:inline">{txData.Issuer}</span>
+                        <span className="inline sm:hidden">{txData.Issuer.slice(0, 10)}...{txData.Issuer.slice(-6)}</span>
+                      </span>
                     </Link>
                   </DetailRow>
                 )}
                 {txData.Subject && (
                   <DetailRow label="Subject">
                     <Link href={`/address/${txData.Subject}`} passHref>
-                      <Typography
-                        component="span"
-                        variant="body1"
-                        sx={{
-                          color: theme.palette.primary.main,
-                          textDecoration: 'none',
-                          '&:hover': { textDecoration: 'underline' }
-                        }}
-                      >
-                        {txData.Subject}
-                      </Typography>
+                      <span className="text-primary text-[13px] font-mono hover:underline" title={txData.Subject}>
+                        <span className="hidden sm:inline">{txData.Subject}</span>
+                        <span className="inline sm:hidden">{txData.Subject.slice(0, 10)}...{txData.Subject.slice(-6)}</span>
+                      </span>
                     </Link>
                   </DetailRow>
                 )}
@@ -4309,8 +4281,9 @@ const TransactionDetails = ({ txData }) => {
               <>
                 <DetailRow label="Initiated by">
                   <Link href={`/address/${Account}`}>
-                    <span className="text-primary text-[13px] font-mono hover:underline">
-                      {Account}
+                    <span className="text-primary text-[13px] font-mono hover:underline" title={Account}>
+                      <span className="hidden sm:inline">{Account}</span>
+                      <span className="inline sm:hidden">{Account.slice(0, 10)}...{Account.slice(-6)}</span>
                     </span>
                   </Link>
                 </DetailRow>
@@ -4385,7 +4358,7 @@ const TransactionDetails = ({ txData }) => {
                           </Link>
                         );
                       })()}
-                      <span className={cn('text-[11px] ml-1', isDark ? 'text-white/40' : 'text-gray-400')}>
+                      <span className={cn('text-[11px] ml-1', isDark ? 'text-white/50' : 'text-gray-400')}>
                         ({ammCreateDetails.lpTokenBalance.issuer.slice(0, 6)}...{ammCreateDetails.lpTokenBalance.issuer.slice(-6)})
                       </span>
                     </span>
@@ -4467,7 +4440,7 @@ const TransactionDetails = ({ txData }) => {
                           <span
                             className={cn(
                               'text-[13px]',
-                              isDark ? 'text-white/40' : 'text-gray-400'
+                              isDark ? 'text-white/50' : 'text-gray-400'
                             )}
                           >
                             N/A
@@ -4486,7 +4459,7 @@ const TransactionDetails = ({ txData }) => {
                     } catch (error) {
                       return (
                         <span
-                          className={cn('text-[13px]', isDark ? 'text-white/40' : 'text-gray-400')}
+                          className={cn('text-[13px]', isDark ? 'text-white/50' : 'text-gray-400')}
                         >
                           N/A
                         </span>
@@ -4558,13 +4531,12 @@ const TransactionDetails = ({ txData }) => {
                     const memoData = decodeMemo(memo.Memo.MemoData);
 
                     return (
-                      <Typography
+                      <span
                         key={idx}
-                        variant="body2"
-                        sx={{ fontSize: '13px', wordBreak: 'break-all' }}
+                        className="text-[13px] break-all block"
                       >
                         {[memoType, memoData].filter(Boolean).join(': ')}
-                      </Typography>
+                      </span>
                     );
                   })}
                 </Stack>
@@ -4575,31 +4547,32 @@ const TransactionDetails = ({ txData }) => {
           {/* Transaction Link */}
           <div
             className={cn(
-              'grid grid-cols-[140px_1fr] items-center px-4 py-2.5 min-h-[44px] border-t',
+              'grid grid-cols-1 sm:grid-cols-[140px_1fr] items-start sm:items-center px-4 py-2.5 min-h-[44px] border-t gap-0.5 sm:gap-0',
               isDark ? 'border-white/[0.06]' : 'border-gray-100'
             )}
           >
             <span className={cn('text-[13px]', isDark ? 'text-white/50' : 'text-gray-500')}>
               Link
             </span>
-            <div className="flex items-center gap-2 justify-end">
-              <Link href={`/tx/${hash}`} passHref>
+            <div className="flex items-center gap-2 sm:justify-end min-w-0">
+              <Link href={`/tx/${hash}`} passHref className="min-w-0 overflow-hidden">
                 <span
-                  className="text-primary text-[13px] font-mono hover:underline truncate max-w-[280px]"
+                  className="text-primary text-[13px] font-mono hover:underline truncate block"
                   title={txUrl}
                 >
-                  {txUrl}
+                  <span className="hidden sm:inline">{txUrl}</span>
+                  <span className="inline sm:hidden">xrpl.to/tx/{hash.slice(0, 8)}...{hash.slice(-6)}</span>
                 </span>
               </Link>
               <button
                 onClick={copyUrlToClipboard}
                 className={cn(
-                  'px-2 py-0.5 rounded text-[11px] font-medium shrink-0 transition-colors',
+                  'px-2 py-0.5 rounded text-[11px] font-medium shrink-0 transition-[background-color,border-color]',
                   urlCopied
                     ? 'text-emerald-400'
                     : isDark
-                      ? 'text-white/40 hover:text-primary'
-                      : 'text-gray-400 hover:text-primary'
+                      ? 'text-white/50 hover:text-primary'
+                      : 'text-gray-500 hover:text-primary'
                 )}
               >
                 {urlCopied ? 'Copied' : 'Copy'}
@@ -4628,7 +4601,7 @@ const TransactionDetails = ({ txData }) => {
             <span
               className={cn(
                 'text-[11px] font-medium uppercase tracking-wider',
-                isDark ? 'text-white/40' : 'text-gray-400'
+                isDark ? 'text-white/50' : 'text-gray-400'
               )}
             >
               Balance Changes ({balanceChanges.length})
@@ -4646,10 +4619,11 @@ const TransactionDetails = ({ txData }) => {
                     idx % 2 === 1 && (isDark ? 'bg-white/[0.02]' : 'bg-gray-50/50')
                   )}
                 >
-                  <div className="flex items-center gap-2 min-w-[280px] flex-1">
+                  <div className="flex items-center gap-2 min-w-0 sm:min-w-[280px] flex-1">
                     <Link href={`/address/${account}`} passHref>
-                      <span className="text-primary text-[13px] font-mono hover:underline break-all">
-                        {account}
+                      <span className="text-primary text-[13px] font-mono hover:underline" title={account}>
+                        <span className="hidden sm:inline">{account}</span>
+                        <span className="inline sm:hidden">{account.slice(0, 10)}...{account.slice(-6)}</span>
                       </span>
                     </Link>
                   </div>
@@ -4692,7 +4666,7 @@ const TransactionDetails = ({ txData }) => {
             <div
               className={cn(
                 'px-4 py-8 text-center text-[13px]',
-                isDark ? 'text-white/40' : 'text-gray-400'
+                isDark ? 'text-white/50' : 'text-gray-400'
               )}
             >
               No balance changes
@@ -4720,7 +4694,7 @@ const TransactionDetails = ({ txData }) => {
             <span
               className={cn(
                 'text-[11px] font-medium uppercase tracking-wider',
-                isDark ? 'text-white/40' : 'text-gray-400'
+                isDark ? 'text-white/50' : 'text-gray-400'
               )}
             >
               Technical Details
@@ -4780,7 +4754,7 @@ const TransactionDetails = ({ txData }) => {
             <span
               className={cn(
                 'text-[11px] font-medium uppercase tracking-wider',
-                isDark ? 'text-white/40' : 'text-gray-400'
+                isDark ? 'text-white/50' : 'text-gray-400'
               )}
             >
               Raw Transaction JSON
@@ -4794,7 +4768,7 @@ const TransactionDetails = ({ txData }) => {
             <span
               className={cn(
                 'text-[11px] font-medium uppercase tracking-wider',
-                isDark ? 'text-white/40' : 'text-gray-400'
+                isDark ? 'text-white/50' : 'text-gray-400'
               )}
             >
               Transaction Metadata
@@ -4835,10 +4809,23 @@ const TxPage = ({ txData, error }) => {
     return <div>Loading...</div>;
   }
 
+  const hash = router.query.hash;
+  const txType = txData?.TransactionType || 'Transaction';
+  const pageTitle = txData
+    ? `${txType} - ${hash?.slice(0, 8)}... | XRPL.to`
+    : 'Transaction Details | XRPL.to';
+  const pageDescription = txData
+    ? `View ${txType} transaction ${hash} on the XRP Ledger. Explore balances, technical details, and raw JSON.`
+    : 'View transaction details on the XRP Ledger.';
+
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen overflow-x-hidden">
+      <Head>
+        <title>{pageTitle}</title>
+        <meta name="description" content={pageDescription} />
+      </Head>
       <Header />
-      <div className={cn('flex-1 max-w-[1920px] mx-auto w-full px-4 mt-4', isDark ? '' : '')}>
+      <div className={cn('flex-1 max-w-[1920px] mx-auto w-full px-2 sm:px-4 mt-4 overflow-hidden')}>
         {/* NOTE: This file contains extensive MUI components that need manual migration to Tailwind.
             The imports have been updated, but the component JSX still uses many MUI components like:
             Box, Typography, Paper, Card, CardContent, Stack, Grid, Chip, Avatar, Tooltip, etc.
@@ -4855,8 +4842,8 @@ const TxPage = ({ txData, error }) => {
 
             See pages/nft-traders.js for a complete migration example.
         */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-normal mb-2">Transaction Details</h1>
+        <div className="mb-4 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-normal mb-2">Transaction Details</h1>
         </div>
         {error ? (
           <div
@@ -4906,7 +4893,7 @@ const TxPage = ({ txData, error }) => {
               <Link href="/">
                 <button
                   className={cn(
-                    'flex items-center gap-2 px-4 py-2.5 rounded-lg border-[1.5px] text-[13px] font-normal transition-colors',
+                    'flex items-center gap-2 px-4 py-2.5 rounded-lg border-[1.5px] text-[13px] font-normal transition-[background-color,border-color]',
                     isDark
                       ? 'border-white/15 text-white/80 hover:border-primary hover:bg-primary/5'
                       : 'border-gray-300 text-gray-700 hover:border-primary hover:bg-primary/5'
@@ -4919,7 +4906,7 @@ const TxPage = ({ txData, error }) => {
               <button
                 onClick={() => router.back()}
                 className={cn(
-                  'flex items-center gap-2 px-4 py-2.5 rounded-lg border-[1.5px] text-[13px] font-normal transition-colors',
+                  'flex items-center gap-2 px-4 py-2.5 rounded-lg border-[1.5px] text-[13px] font-normal transition-[background-color,border-color]',
                   isDark
                     ? 'border-white/15 text-white/80 hover:border-primary hover:bg-primary/5'
                     : 'border-gray-300 text-gray-700 hover:border-primary hover:bg-primary/5'

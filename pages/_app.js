@@ -6,14 +6,18 @@ import { CacheProvider } from '@emotion/react';
 import createEmotionCache from 'src/theme/createEmotionCache';
 import { ContextProvider, ThemeContext, WalletContext } from 'src/context/AppContext';
 import { useContext, useEffect, useState } from 'react';
-import { Toaster, toast } from 'sonner';
+import dynamic from 'next/dynamic';
+import { Inter } from 'next/font/google';
 import 'src/styles/globals.css';
 import { cn } from 'src/utils/cn';
 
-// Load performance monitor (registers window.__PERF__ for console access)
-if (typeof window !== 'undefined') {
-  import('src/utils/perfMonitor');
-}
+const inter = Inter({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  display: 'swap',
+  variable: '--font-inter'
+});
+
 
 // React.lazy — only imports when rendered (no prefetch unlike next/dynamic)
 const TransactionAlert = lazy(() => import('src/components/TransactionAlert'));
@@ -166,27 +170,34 @@ function AppPageLayout({ children }) {
   );
 }
 
-// Custom Toaster wrapper that uses theme context
-function ThemedToaster() {
-  const { themeName } = useContext(ThemeContext);
-  const isDark = themeName === 'XrplToDarkTheme';
-
-  return (
-    <Toaster
-      position="top-right"
-      closeButton
-      duration={4000}
-      theme={isDark ? 'dark' : 'light'}
-      gap={8}
-      visibleToasts={5}
-      expand={true}
-      richColors
-      toastOptions={{
-        className: 'sonner-toast-custom'
-      }}
-    />
-  );
-}
+// Lazy-load Sonner Toaster — it's ~67KB and only needed for toast notifications
+const ThemedToaster = dynamic(
+  () =>
+    import('sonner').then((mod) => {
+      const { Toaster } = mod;
+      // eslint-disable-next-line react/display-name
+      return function ThemedToasterInner(props) {
+        const { themeName } = useContext(ThemeContext);
+        const isDark = themeName === 'XrplToDarkTheme';
+        return (
+          <Toaster
+            position="top-right"
+            closeButton
+            duration={4000}
+            theme={isDark ? 'dark' : 'light'}
+            gap={8}
+            visibleToasts={5}
+            expand={true}
+            richColors
+            toastOptions={{
+              className: 'sonner-toast-custom'
+            }}
+          />
+        );
+      };
+    }),
+  { ssr: false }
+);
 
 function XRPLToApp({ Component, pageProps, router, emotionCache = clientSideEmotionCache }) {
   // Treat MAINTENANCE env as boolean string ("true"/"false")
@@ -194,7 +205,8 @@ function XRPLToApp({ Component, pageProps, router, emotionCache = clientSideEmot
 
   // Sonner toast wrapper for backward compatibility
   // Uses message as ID to prevent duplicate toasts
-  const openSnackbar = (msg, variant) => {
+  const openSnackbar = async (msg, variant) => {
+    const { toast } = await import('sonner');
     const id = msg;
     switch (variant) {
       case 'success':
@@ -238,10 +250,11 @@ function XRPLToApp({ Component, pageProps, router, emotionCache = clientSideEmot
 
   return (
     <CacheProvider value={emotionCache}>
-      <div>
+      <div className={inter.variable}>
         <style jsx global>{`
           body {
             font-family:
+              var(--font-inter),
               -apple-system,
               BlinkMacSystemFont,
               'Segoe UI',
@@ -325,9 +338,9 @@ function XRPLToApp({ Component, pageProps, router, emotionCache = clientSideEmot
             <AppPageLayout>
               <Component {...pageProps} />
             </AppPageLayout>
-            <ThemedToaster />
             {deferredReady && (
               <Suspense fallback={null}>
+                <ThemedToaster />
                 <TransactionAlert />
                 <Wallet />
                 <BridgeTracker />
