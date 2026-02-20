@@ -2186,8 +2186,16 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         }
       });
 
-      // Login with first wallet
-      doLogIn(wallets[0], allProfiles);
+      // Login with previously active wallet, or first wallet
+      let activeWallet = wallets[0];
+      try {
+        const savedAddress = await getActiveWalletFromIDB();
+        if (savedAddress) {
+          const found = allProfiles.find(p => p.account === savedAddress || p.address === savedAddress);
+          if (found) activeWallet = found;
+        }
+      } catch (e) { /* fall back to first */ }
+      doLogIn(activeWallet, allProfiles);
 
       setShowOAuthPasswordSetup(false);
       setOpenWalletModal(false);
@@ -2315,8 +2323,16 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         }
       });
 
-      // Login with the first imported wallet
-      doLogIn(storedWallets[0], allProfiles);
+      // Login with previously active wallet, or first imported wallet
+      let activeWallet = storedWallets[0];
+      try {
+        const savedAddress = await getActiveWalletFromIDB();
+        if (savedAddress) {
+          const found = allProfiles.find(p => p.account === savedAddress || p.address === savedAddress);
+          if (found) activeWallet = found;
+        }
+      } catch (e) { /* fall back to first */ }
+      doLogIn(activeWallet, allProfiles);
 
       // Close dialogs
       setShowOAuthPasswordSetup(false);
@@ -2350,7 +2366,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     accountBalance,
     handleLogin,
     handleLogout,
-    doLogIn
+    doLogIn,
+    getActiveWalletFromIDB
   } = useContext(WalletContext);
   const {
     open,
@@ -2464,7 +2481,17 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
       setProfiles(allProfiles);
       localStorage.setItem('profiles', JSON.stringify(allProfiles));
-      doLogIn(allProfiles[0], allProfiles);
+
+      // Restore previously active wallet from IndexedDB (survives localStorage clearing)
+      let activeProfile = allProfiles[0];
+      try {
+        const savedAddress = await getActiveWalletFromIDB();
+        if (savedAddress) {
+          const found = allProfiles.find(p => p.account === savedAddress);
+          if (found) activeProfile = found;
+        }
+      } catch (e) { /* fall back to first wallet */ }
+      doLogIn(activeProfile, allProfiles);
 
       setUnlockPassword('');
       setOpenWalletModal(false);

@@ -13,11 +13,13 @@ const ThemeProviderWrapper = (props) => {
       
       if (isDark) {
         root.classList.add('dark');
+        root.classList.remove('light');
         document.body.style.backgroundColor = theme.palette.background.default;
         document.body.style.backgroundImage = 'none';
         document.body.style.color = theme.palette.text.primary;
       } else {
         root.classList.remove('dark');
+        root.classList.add('light');
         document.body.style.backgroundColor = theme.palette.background.default;
         document.body.style.backgroundImage = 'radial-gradient(circle at 50% -20%, rgba(20, 125, 254, 0.05), transparent 80%)';
         document.body.style.color = theme.palette.text.primary;

@@ -537,7 +537,10 @@ const DashboardPage = () => {
       const res = await api.post(`${BASE_URL}/keys/stripe/checkout`, payload);
 
       if (res.data.checkoutUrl) {
-        window.location.href = res.data.checkoutUrl;
+        const { safeCheckoutRedirect } = await import('src/utils/api');
+        if (!safeCheckoutRedirect(res.data.checkoutUrl)) {
+          setError('Invalid checkout URL');
+        }
       } else {
         setError(res.data.error || 'Failed to create checkout session');
       }
@@ -1917,6 +1920,7 @@ export async function getStaticProps() {
         imgType: 'image/png',
         desc: 'Track your XRPL portfolio with real-time token balances, NFTs, and trading activity.'
       }
-    }
+    },
+    revalidate: 3600
   };
 }

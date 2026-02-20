@@ -187,9 +187,9 @@ const TagChip = ({ selected, darkMode, className, children, ...p }) => (
 const AllTagsButton = ({ darkMode, className, children, ...p }) => (
   <button
     className={cn(
-      'st-all-btn inline-flex items-center gap-1 px-3 border-none rounded-2xl text-blue-500 text-[0.7rem] font-medium cursor-pointer whitespace-nowrap h-[26px] shrink-0 ml-auto transition-[background-color,border-color,opacity] duration-150 hover:bg-blue-500/20',
-      'max-sm:text-[0.68rem] max-sm:h-6 max-sm:px-2 max-sm:gap-[3px]',
-      darkMode ? 'bg-blue-500/[0.15]' : 'bg-blue-500/10',
+      'st-all-btn inline-flex items-center gap-1 px-2 border-[1.5px] rounded-[6px] text-blue-500 text-[0.68rem] font-medium cursor-pointer whitespace-nowrap h-6 shrink-0 ml-auto transition-[background-color,border-color,opacity] duration-150 hover:bg-blue-500/[0.15]',
+      'max-sm:text-[0.62rem] max-sm:h-[22px] max-sm:px-[6px] max-sm:gap-[2px]',
+      darkMode ? 'bg-blue-500/[0.08] border-blue-500/20' : 'bg-blue-500/[0.05] border-blue-500/15',
       className
     )}
     {...p}
@@ -374,7 +374,8 @@ const SearchToolbar = memo(function SearchToolbar({
   setViewMode,
   customColumns,
   setCustomColumns,
-  setCustomSettingsOpen
+  setCustomSettingsOpen,
+  skipSortPersist
 }) {
   const router = useRouter();
   const { darkMode } = useContext(ThemeContext);
@@ -630,7 +631,7 @@ const SearchToolbar = memo(function SearchToolbar({
               value={currentOrderBy}
               onChange={(e) => {
                 setOrderBy(e.target.value);
-                localStorage.setItem('tokenListSortBy', e.target.value);
+                if (!skipSortPersist) localStorage.setItem('tokenListSortBy', e.target.value);
                 setSync((prev) => prev + 1);
               }}
               noMargin

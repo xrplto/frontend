@@ -154,6 +154,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
     lpBurnedAmount,
     lpHolderCount,
     lpBurnedHolders,
+    creatorHoldingPercent,
     date,
     dateon,
     creatorLastAction
@@ -962,6 +963,64 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                       <span className={cn('text-[10px] font-semibold whitespace-nowrap font-mono', isDark ? 'text-white/60' : 'text-black/60')}>
                         {lpBurnedHolders || 0} <span className={cn('text-[9px] font-normal', isDark ? 'text-white/55' : 'text-black/25')}>of {lpHolderCount || 0} holders</span>
                       </span>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            )}
+
+            {/* Creator Holding Row */}
+            {creatorHoldingPercent != null && creator && (
+              <tr className={cn('transition-[background] duration-150', isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-black/[0.015]')}>
+                <td className="border-b-0 align-middle first-of-type:w-[45%] last-of-type:w-[55%] last-of-type:text-right p-[6px_10px]">
+                  <span
+                    className={cn('font-normal text-[13px] whitespace-nowrap', isDark ? 'text-white/60' : 'text-black/60')}
+                  >
+                    Creator Holding
+                  </span>
+                </td>
+                <td className="border-b-0 align-middle first-of-type:w-[45%] last-of-type:w-[55%] last-of-type:text-right p-[6px_10px]">
+                  <div className="flex flex-col items-end gap-[6px]">
+                    <div className="flex items-center gap-[10px]">
+                      <span
+                        className="text-[13px] font-bold font-mono"
+                        style={{
+                          color:
+                            creatorHoldingPercent <= 5
+                              ? '#10b981'
+                              : creatorHoldingPercent <= 20
+                                ? '#f59e0b'
+                                : '#f43f5e'
+                        }}
+                      >
+                        {creatorHoldingPercent.toFixed(2)}%
+                      </span>
+                      <span className={cn('text-[10px] font-bold uppercase', isDark ? 'text-white/55' : 'text-black/30')}>
+                        of supply
+                      </span>
+                      {exch > 0 && amount > 0 && (
+                        <span className={cn('text-[11px] font-mono', isDark ? 'text-white/40' : 'text-black/35')}>
+                          ≈ ✕{fNumber((creatorHoldingPercent / 100) * amount * exch)}
+                        </span>
+                      )}
+                    </div>
+                    <div className="w-full flex items-center">
+                      <div
+                        className={cn('flex-1 h-[5px] rounded-full overflow-hidden', isDark ? 'bg-white/[0.08]' : 'bg-black/[0.06]')}
+                      >
+                        <div
+                          className="h-full rounded-full"
+                          style={{
+                            width: `${Math.min(creatorHoldingPercent, 100)}%`,
+                            background:
+                              creatorHoldingPercent <= 5
+                                ? 'linear-gradient(90deg, #059669, #10b981)'
+                                : creatorHoldingPercent <= 20
+                                  ? 'linear-gradient(90deg, #d97706, #f59e0b)'
+                                  : 'linear-gradient(90deg, #e11d48, #f43f5e)'
+                          }}
+                        />
+                      </div>
                     </div>
                   </div>
                 </td>

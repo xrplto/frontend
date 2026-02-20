@@ -672,7 +672,7 @@ const OrderBook = ({ token, onPriceClick, limitPrice }) => {
         const res = await fetch(`/api/ws/session?type=orderbook&${params}`);
         if (unmounted) return;
         const { wsUrl, apiKey } = await res.json();
-        if (unmounted) return;
+        if (unmounted || !wsUrl || !/^wss?:\/\//i.test(wsUrl)) return;
         const ws = new WebSocket(wsUrl);
         wsRef.current = ws;
 

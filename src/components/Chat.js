@@ -1,7 +1,7 @@
 import { apiFetch } from 'src/utils/api';
 import React, { useState, useEffect, useRef, useCallback, useContext, useMemo } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Inbox, Ban, VolumeX, Shield, HelpCircle, Send, ChevronLeft, ChevronDown, Plus, Clock, CheckCircle, AlertCircle, Loader2, Check, CheckCheck, MessageCircle, Smile } from 'lucide-react';
+import { X, Inbox, Ban, VolumeX, Shield, HelpCircle, Send, ChevronLeft, ChevronDown, Plus, Clock, CheckCircle, AlertCircle, Loader2, Check, CheckCheck, MessageCircle, Smile, Search, Trash2, Wifi, WifiOff } from 'lucide-react';
 import { ThemeContext } from 'src/context/AppContext';
 
 // Local emotes from /emotes/
@@ -638,12 +638,29 @@ const EmoteInMessage = ({ name }) => {
   return <img src={emote.url} alt={name} title={name} className="inline-block w-5 h-5 align-middle mx-0.5" />;
 };
 
-const renderMessage = (text) => {
+const renderMessage = (text, mentionTargets = null) => {
   if (!text || typeof text !== 'string') return text;
   const tokenRegex = /(?:https?:\/\/xrpl\.to)?\/token\/([a-fA-F0-9]{32}|[a-zA-Z0-9]+-[A-Fa-f0-9]+)|https?:\/\/firstledger\.net\/token(?:-v2)?\/([a-zA-Z0-9]+)\/([A-Fa-f0-9]+)|https?:\/\/xpmarket\.com\/token\/([a-zA-Z0-9]+)-([a-zA-Z0-9]+)|\b([a-fA-F0-9]{32})\b/g;
   const nftRegex = /(?:https?:\/\/xrpl\.to\/nft\/)?([A-Fa-f0-9]{64})/g;
   const collectionRegex = /(?:https?:\/\/xrpl\.to)?\/nfts\/([a-zA-Z0-9_-]+)/g;
-  const emoteRegex = /\b([A-Za-z][A-Za-z0-9]{2,}(?:[A-Z][a-z0-9]*)*)\b/g;
+
+  const highlightMentions = (str) => {
+    if (!mentionTargets?.length || typeof str !== 'string') return str;
+    const mentionRegex = new RegExp(`@(${mentionTargets.map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})\\b`, 'gi');
+    const parts = str.split(mentionRegex);
+    if (parts.length === 1) return str;
+    return parts.map((p, i) => i % 2 === 1
+      ? <span key={`m${i}`} className="px-0.5 rounded bg-[#137DFE]/15 text-[#137DFE] font-semibold">@{p}</span>
+      : p
+    );
+  };
+
+  const processWord = (word, i) => {
+    if (/^[A-Za-z][A-Za-z0-9_-]{1,}$/.test(word) && emoteCache?.some(e => e.name.toLowerCase() === word.toLowerCase())) {
+      return <EmoteInMessage key={i} name={word} />;
+    }
+    return highlightMentions(word);
+  };
 
   const parts = [];
   let last = 0;
@@ -655,17 +672,11 @@ const renderMessage = (text) => {
   const allMatches = [...nftMatches.map(m => ({ ...m, type: 'nft' })), ...tokenMatches.map(m => ({ ...m, type: 'token' })), ...collectionMatches.map(m => ({ ...m, type: 'collection' }))].sort((a, b) => a.index - b.index);
 
   if (allMatches.length === 0) {
-    // No token/NFT matches, check for emotes in plain text
-    return text.split(/(\s+)/).map((word, i) => {
-      if (/^[A-Za-z][A-Za-z0-9_-]{1,}$/.test(word) && emoteCache?.some(e => e.name.toLowerCase() === word.toLowerCase())) {
-        return <EmoteInMessage key={i} name={word} />;
-      }
-      return word;
-    });
+    return text.split(/(\s+)/).map((word, i) => processWord(word, i));
   }
 
   for (const m of allMatches) {
-    if (m.index > last) parts.push(text.slice(last, m.index));
+    if (m.index > last) parts.push(highlightMentions(text.slice(last, m.index)));
     if (m.type === 'nft') {
       parts.push(<NFTPreview key={`nft-${m.index}`} nftId={m[1]} />);
     } else if (m.type === 'collection') {
@@ -676,7 +687,7 @@ const renderMessage = (text) => {
     }
     last = m.index + m[0].length;
   }
-  if (last < text.length) parts.push(text.slice(last));
+  if (last < text.length) parts.push(highlightMentions(text.slice(last)));
   return parts;
 };
 
@@ -1025,6 +1036,8 @@ const Chat = () => {
   });
   const [messages, setMessages] = useState([]);
   const [onlineCount, setOnlineCount] = useState(0);
+  const [typingUsers, setTypingUsers] = useState({});
+  const [dmOnlineStatus, setDmOnlineStatus] = useState({});
   const [input, setInput] = useState('');
   const [attachedNft, setAttachedNft] = useState(null);
   const [attachedToken, setAttachedToken] = useState(null);
@@ -1034,8 +1047,10 @@ const Chat = () => {
   const [closedDms, setClosedDms] = useState([]);
   const [dmReadAt, setDmReadAt] = useState({});
   const walletKeyRef = useRef(authUser?.wallet);
-  const dmKey = useCallback((key) => walletKeyRef.current ? `${key}_${walletKeyRef.current}` : null, []);
+  const dmKey = useCallback((key) => walletKeyRef.current ? `${key}_${walletKeyRef.current}` : `${key}_anonymous`, []);
   const wsRef = useRef(null);
+  const isOpenRef = useRef(isOpen);
+  isOpenRef.current = isOpen;
   const messagesEndRef = useRef(null);
   const justOpenedRef = useRef(false);
   const inputRef = useRef(null);
@@ -1043,6 +1058,7 @@ const Chat = () => {
   const authUserRef = useRef(null);
   const activeTabRef = useRef(activeTab);
   const dmReadAtRef = useRef(dmReadAt);
+  const lastTypingSentRef = useRef(0);
   useEffect(() => { dmTabsRef.current = dmTabs; }, [dmTabs]);
   useEffect(() => { authUserRef.current = authUser; }, [authUser]);
   useEffect(() => { activeTabRef.current = activeTab; }, [activeTab]);
@@ -1080,12 +1096,17 @@ const Chat = () => {
     return () => { window.removeEventListener('storage', handleStorage); };
   }, [authUser?.wallet]);
   const [showInbox, setShowInbox] = useState(false);
+  const [inboxSearch, setInboxSearch] = useState('');
   const [isFocused, setIsFocused] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [modLevel, setModLevel] = useState(null); // 'admin' | 'verified' | null
   const [modError, setModError] = useState(null);
   const [showSupport, setShowSupport] = useState(false);
   const [supportNotif, setSupportNotif] = useState(0);
+  const [toast, setToast] = useState(null);
+  const [wsStatus, setWsStatus] = useState('disconnected'); // 'connected' | 'connecting' | 'disconnected'
+  const [pendingDeleteId, setPendingDeleteId] = useState(null);
+  const tabBarRef = useRef(null);
   const containerRef = useRef(null);
   const isNearBottomRef = useRef(true);
   const [showScrollBtn, setShowScrollBtn] = useState(false);
@@ -1123,6 +1144,19 @@ const Chat = () => {
       if (getWallet(messages[i]) === wallet && messages[i].tier) return messages[i].tier;
     }
     return null;
+  };
+
+  const getUserName = (wallet) => {
+    for (let i = messages.length - 1; i >= 0; i--) {
+      const m = messages[i];
+      if (getWallet(m) === wallet && m.username && m.username !== wallet) return m.username;
+    }
+    return null;
+  };
+
+  const displayWallet = (wallet) => {
+    const name = getUserName(wallet);
+    return name && name.length <= 16 ? name : `${wallet.slice(0, 6)}...${wallet.slice(-4)}`;
   };
 
   const handleMessagesScroll = useCallback((e) => {
@@ -1169,10 +1203,10 @@ const Chat = () => {
   const canMute = (targetTier = null) => {
     if (!modLevel) return false;
     if (modLevel === 'admin') return true;
-    // Verified can only mute VIP/Nova/Diamond (if tier provided), otherwise allow attempt
-    if (!targetTier) return modLevel === 'verified';
-    const t = targetTier?.toLowerCase();
-    return MUTABLE_BY_VERIFIED.includes(t);
+    if (modLevel !== 'verified') return false;
+    // Verified can only mute VIP/Nova/Diamond when tier is known
+    if (!targetTier) return false;
+    return MUTABLE_BY_VERIFIED.includes(targetTier.toLowerCase());
   };
 
   const canBan = () => modLevel === 'admin';
@@ -1198,6 +1232,13 @@ const Chat = () => {
     return Object.entries(convos).sort((a, b) => b[1].timestamp - a[1].timestamp);
   }, [messages, authUser?.wallet, dmReadAt]);
 
+  const mentionTargets = useMemo(() => {
+    const targets = [];
+    if (authUser?.wallet) targets.push(authUser.wallet);
+    if (authUser?.username && authUser.username !== authUser.wallet) targets.push(authUser.username);
+    return targets.length ? targets : null;
+  }, [authUser?.wallet, authUser?.username]);
+
   // Poll status when chat is closed
   useEffect(() => {
     if (isOpen) return;
@@ -1221,14 +1262,18 @@ const Chat = () => {
   const connect = useCallback(async () => {
     const wsUrl = await getWsUrl();
     if (!wsUrl) return null;
+    const { isValidWsUrl } = await import('src/utils/api');
+    if (!isValidWsUrl(wsUrl)) return null;
+    setWsStatus('connecting');
     const ws = new WebSocket(wsUrl);
     wsRef.current = ws;
 
-    ws.onopen = () => { };
+    ws.onopen = () => { setWsStatus('connected'); };
     ws.onerror = () => { };
 
     ws.onmessage = (event) => {
-      const data = JSON.parse(event.data);
+      let data;
+      try { data = JSON.parse(event.data); } catch { return; }
       if (data.users !== undefined) setOnlineCount(data.users);
       switch (data.type) {
         case 'authenticated':
@@ -1291,12 +1336,16 @@ const Chat = () => {
             if (data._id && prev.some((m) => m._id === data._id)) return prev;
             return [...prev, data];
           });
+          // Clear typing indicator for sender
+          if (data.wallet) setTypingUsers(prev => { const n = { ...prev }; delete n[data.wallet]; return n; });
           break;
         case 'private':
           setMessages((prev) => {
             if (data._id && prev.some((m) => m._id === data._id)) return prev;
             return [...prev, data];
           });
+          // Clear typing indicator for sender
+          if (data.wallet) setTypingUsers(prev => { const n = { ...prev }; delete n[data.wallet]; return n; });
           // Auto-open tab for incoming DM
           const senderWallet = data.wallet || data.address || data.username;
           const myWallet2 = authUserRef.current?.wallet;
@@ -1351,17 +1400,29 @@ const Chat = () => {
           setModLevel(null);
           break;
         case 'support_ticket':
-          // Handle support ticket notifications
           if (data.action === 'new' || data.action === 'reply') {
             setSupportNotif(n => n + 1);
+            const label = data.action === 'new' ? 'New ticket' : 'Ticket reply';
+            setToast({ text: `${label}: ${data.subject || 'Support ticket'}`, at: Date.now() });
           }
+          break;
+        case 'typing':
+          setTypingUsers(prev => ({ ...prev, [data.wallet]: Date.now() }));
+          break;
+        case 'status':
+          setDmOnlineStatus(prev => ({ ...prev, [data.wallet]: data.online }));
+          break;
+        case 'deleted':
+          // Mark as deleting first for animation, then remove after delay
+          setMessages(prev => prev.map(m => m._id === data.messageId ? { ...m, _deleting: true } : m));
+          setTimeout(() => setMessages(prev => prev.filter(m => m._id !== data.messageId)), 300);
           break;
         default:
           break;
       }
     };
 
-    ws.onclose = () => { setRegistered(false); setModLevel(null); };
+    ws.onclose = () => { setRegistered(false); setModLevel(null); setWsStatus('disconnected'); };
 
     return ws;
   }, []);
@@ -1416,7 +1477,7 @@ const Chat = () => {
 
       ws.onclose = () => {
         clearInterval(pingInterval);
-        if (!unmounted && isOpen && getLoggedInWallet()) {
+        if (!unmounted && isOpenRef.current && getLoggedInWallet()) {
           reconnectTimeout = setTimeout(() => wsRef.current?.readyState !== WebSocket.OPEN && connect(), 3000);
         }
       };
@@ -1455,10 +1516,11 @@ const Chat = () => {
       // Scroll immediately and again after messages render
       const scroll = () => messagesEndRef.current?.scrollIntoView({ block: 'end' });
       scroll();
-      setTimeout(scroll, 100);
-      setTimeout(scroll, 300);
-      setTimeout(scroll, 600);
-      setTimeout(() => { scroll(); justOpenedRef.current = false; }, 1500);
+      const t1 = setTimeout(scroll, 100);
+      const t2 = setTimeout(scroll, 300);
+      const t3 = setTimeout(scroll, 600);
+      const t4 = setTimeout(() => { scroll(); justOpenedRef.current = false; }, 1500);
+      return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); clearTimeout(t4); };
     }
   }, [isOpen]);
 
@@ -1477,15 +1539,62 @@ const Chat = () => {
     };
   }, [isOpen]);
 
+  // Auto-dismiss toast after 4s
+  useEffect(() => {
+    if (!toast) return;
+    const timer = setTimeout(() => setToast(null), 4000);
+    return () => clearTimeout(timer);
+  }, [toast]);
+
+  // Escape key to close chat / dismiss panels
+  const pendingDeleteRef = useRef(null);
+  pendingDeleteRef.current = pendingDeleteId;
+  const showSupportRef = useRef(false);
+  showSupportRef.current = showSupport;
+  const showInboxRef = useRef(false);
+  showInboxRef.current = showInbox;
+  useEffect(() => {
+    const handleEsc = (e) => {
+      if (e.key !== 'Escape' || !isOpenRef.current) return;
+      e.preventDefault();
+      e.stopPropagation();
+      if (pendingDeleteRef.current) { setPendingDeleteId(null); }
+      else if (showSupportRef.current) setShowSupport(false);
+      else if (showInboxRef.current) setShowInbox(false);
+      else setIsOpen(false);
+    };
+    document.addEventListener('keydown', handleEsc, true);
+    return () => document.removeEventListener('keydown', handleEsc, true);
+  }, []);
+
+  // Auto-clear pending delete after 5s
+  useEffect(() => {
+    if (!pendingDeleteId) return;
+    const t = setTimeout(() => setPendingDeleteId(null), 5000);
+    return () => clearTimeout(t);
+  }, [pendingDeleteId]);
+
+  // Clear stale typing indicators every 5s
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTypingUsers(prev => {
+        const now = Date.now();
+        const next = {};
+        for (const [k, v] of Object.entries(prev)) {
+          if (now - v < 5000) next[k] = v;
+        }
+        return Object.keys(next).length === Object.keys(prev).length ? prev : next;
+      });
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
   useEffect(() => {
     if (isOpen) messagesEndRef.current?.scrollIntoView();
   }, [activeTab]);
 
   useEffect(() => {
-    if (!showInbox) return;
-    const close = (e) => { if (!e.target.closest('.inbox-dropdown')) setShowInbox(false); };
-    document.addEventListener('click', close);
-    return () => document.removeEventListener('click', close);
+    if (!showInbox) setInboxSearch('');
   }, [showInbox]);
 
   // Listen for badge changes from wallet settings
@@ -1533,17 +1642,27 @@ const Chat = () => {
     }
     setActiveTab(user);
     setPrivateTo(user);
+    setShowInbox(false);
+    setShowSupport(false);
     inputRef.current?.focus();
+    // Auto-scroll tab into view (retry to handle async render)
+    const scrollTab = (attempts) => {
+      const tab = tabBarRef.current?.querySelector(`[data-tab="${user}"]`);
+      if (tab) tab.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      else if (attempts > 0) setTimeout(() => scrollTab(attempts - 1), 100);
+    };
+    setTimeout(() => scrollTab(3), 50);
     // Mark conversation as read locally
     setDmReadAt(prev => {
       const updated = { ...prev, [user]: Date.now() };
       localStorage.setItem(dmKey('chat_dm_read_at'), JSON.stringify(updated));
       return updated;
     });
-    // Request DM history and mark as read on server
+    // Request DM history, mark as read, and check online status
     if (wsRef.current?.readyState === WebSocket.OPEN) {
       wsRef.current.send(JSON.stringify({ type: 'history', with: user }));
       wsRef.current.send(JSON.stringify({ type: 'read', with: user }));
+      wsRef.current.send(JSON.stringify({ type: 'status', wallet: user }));
     }
   };
 
@@ -1579,6 +1698,8 @@ const Chat = () => {
     setInput('');
     setAttachedNft(null);
     setAttachedToken(null);
+    lastTypingSentRef.current = 0;
+    setTimeout(() => inputRef.current?.focus(), 0);
   };
 
   const baseClasses = isDark ? 'bg-black text-white border-white/[0.08]' : 'bg-white text-black border-black/[0.08]';
@@ -1598,7 +1719,7 @@ const Chat = () => {
             <span className={`tabular-nums ${isDark ? 'text-white/50' : 'text-black/50'}`}>{onlineCount >= 1000 ? `${(onlineCount / 1000).toFixed(1)}K` : onlineCount}</span>
           </span>
           {unreadCount > 0 && (
-            <span className="absolute -top-2 -right-2 min-w-[20px] h-5 flex items-center justify-center px-1.5 rounded-md bg-[#650CD4] text-white text-[11px] font-bold leading-none max-sm:hidden">
+            <span className="absolute -top-2 -right-2 max-sm:-top-1 max-sm:-right-1 min-w-[20px] max-sm:min-w-[16px] h-5 max-sm:h-4 flex items-center justify-center px-1.5 max-sm:px-1 rounded-md bg-[#650CD4] text-white text-[11px] max-sm:text-[9px] font-bold leading-none">
               {unreadCount > 99 ? '99+' : unreadCount}
             </span>
           )}
@@ -1618,64 +1739,46 @@ const Chat = () => {
                   <span className="text-[#08AA09] font-semibold tabular-nums">{onlineCount >= 1000 ? `${(onlineCount / 1000).toFixed(1)}K` : onlineCount}</span>
                 </span>
               )}
+              {authUser?.wallet && wsStatus !== 'connected' && (
+                <span className={`flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-full ${wsStatus === 'connecting' ? 'text-[#F6AF01] bg-[#F6AF01]/10' : 'text-red-400 bg-red-500/10'}`}>
+                  {wsStatus === 'connecting' ? <Loader2 size={10} className="animate-spin" /> : <WifiOff size={10} />}
+                  {wsStatus === 'connecting' ? 'Connecting' : 'Offline'}
+                </span>
+              )}
             </div>
             <div className="flex items-center gap-0.5 max-sm:gap-1">
-              <button onClick={() => { setShowSupport(true); setSupportNotif(0); }} className={`relative p-2 max-sm:p-2.5 rounded-lg transition-colors active:scale-95 ${showSupport ? 'bg-[#137DFE] text-white' : 'hover:bg-white/10 active:bg-white/20'}`} title="Support Tickets">
+              <button aria-label="Support Tickets" onClick={() => { setShowSupport(s => !s); setShowInbox(false); setSupportNotif(0); }} className={`relative p-2 max-sm:p-2.5 rounded-lg transition-colors active:scale-95 ${showSupport ? 'bg-[#137DFE] text-white' : isDark ? 'hover:bg-white/10 active:bg-white/20' : 'hover:bg-black/10 active:bg-black/20'}`} title="Support Tickets">
                 <HelpCircle size={16} className="max-sm:w-5 max-sm:h-5" />
                 {supportNotif > 0 && (
                   <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-white text-[10px] flex items-center justify-center">{supportNotif}</span>
                 )}
               </button>
-              <div className="relative inbox-dropdown">
-                <button onClick={() => setShowInbox(!showInbox)} className={`relative p-2 max-sm:p-2.5 rounded-lg transition-colors active:scale-95 ${showInbox ? 'bg-[#650CD4] text-white' : 'hover:bg-white/10 active:bg-white/20'}`}>
-                  <Inbox size={16} className="max-sm:w-5 max-sm:h-5" />
-                  {conversations.filter(([, m]) => m.unread).length > 0 && (
-                    <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-[#650CD4] text-white text-[9px] font-medium flex items-center justify-center">{conversations.filter(([, m]) => m.unread).length}</span>
-                  )}
-                </button>
-                {showInbox && (
-                  <div className={`absolute right-0 max-sm:-right-2 top-10 w-80 max-sm:w-[calc(100vw-32px)] max-sm:max-w-[320px] rounded-xl border-[1.5px] ${baseClasses} shadow-2xl z-50 overflow-hidden`}>
-                    <div className="px-3 py-2.5 border-b border-inherit flex items-center gap-2">
-                      <Inbox size={14} className="text-[#650CD4]" />
-                      <span className="text-xs font-semibold">Direct Messages</span>
-                      <span className="ml-auto text-[10px] opacity-40">{conversations.length}</span>
-                    </div>
-                    {conversations.length === 0 ? (
-                      <div className="px-4 py-8 text-center">
-                        <Inbox size={24} className="mx-auto mb-2 opacity-20" />
-                        <p className="text-sm opacity-40">No messages yet</p>
-                      </div>
-                    ) : (
-                      <div className="max-h-[480px] max-sm:max-h-[60vh] overflow-y-auto overscroll-contain scrollbar-hide">
-                        {conversations.map(([user, msg]) => (
-                          <button
-                            key={user}
-                            onClick={() => { openDmTab(user); setShowInbox(false); }}
-                            className={`w-full text-left px-3 py-1.5 border-b border-inherit last:border-b-0 transition-colors group ${isDark ? 'hover:bg-white/5 active:bg-white/10' : 'hover:bg-black/5 active:bg-black/10'}`}
-                          >
-                            <div className="flex items-center gap-2">
-                              <DmAvatar wallet={user} size="sm" />
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center justify-between gap-2">
-                                  <span className={`font-medium text-xs ${getTierTextColor(getUserTier(user))}`}>{user.slice(0, 6)}...{user.slice(-4)}</span>
-                                  <span className="text-[10px] opacity-40">{timeAgo(msg.timestamp)}</span>
-                                </div>
-                                <div className="text-[11px] opacity-50 truncate">{msg.message}</div>
-                              </div>
-                            </div>
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
+              <button aria-label="Direct Messages" onClick={() => {
+                const opening = !showInbox;
+                setShowInbox(opening);
+                setShowSupport(false);
+                setInboxSearch('');
+                if (opening && wsRef.current?.readyState === WebSocket.OPEN) {
+                  conversations.forEach(([user]) => wsRef.current.send(JSON.stringify({ type: 'status', wallet: user })));
+                }
+              }} className={`relative p-2 max-sm:p-2.5 rounded-lg transition-colors active:scale-95 ${showInbox ? 'bg-[#137DFE] text-white' : isDark ? 'hover:bg-white/10 active:bg-white/20' : 'hover:bg-black/10 active:bg-black/20'}`}>
+                <Inbox size={16} className="max-sm:w-5 max-sm:h-5" />
+                {conversations.filter(([, m]) => m.unread).length > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-[#650CD4] text-white text-[9px] font-medium flex items-center justify-center">{conversations.filter(([, m]) => m.unread).length}</span>
                 )}
-              </div>
-              <button onClick={() => setIsOpen(false)} className="p-2 max-sm:p-2.5 rounded-lg hover:bg-white/10 active:bg-white/20 active:scale-95 transition-all">
+              </button>
+              <button aria-label="Close chat" onClick={() => setIsOpen(false)} className={`p-2 max-sm:p-2.5 rounded-lg active:scale-95 transition-all ${isDark ? 'hover:bg-white/10 active:bg-white/20' : 'hover:bg-black/10 active:bg-black/20'}`}>
                 <X size={16} className="max-sm:w-5 max-sm:h-5" />
               </button>
             </div>
           </div>
 
+          {toast && Date.now() - toast.at < 4000 && (
+            <div className="px-3 py-2 bg-[#650CD4]/10 border-b border-[#650CD4]/20 text-[#650CD4] text-xs flex items-center justify-between animate-in fade-in">
+              <span className="flex items-center gap-1.5 truncate"><HelpCircle size={12} />{toast.text}</span>
+              <button onClick={() => setToast(null)} className="hover:text-[#650CD4]/70 shrink-0"><X size={14} /></button>
+            </div>
+          )}
           {modError && (
             <div className="px-3 py-2 bg-red-500/10 border-b border-red-500/20 text-red-400 text-xs flex items-center justify-between">
               <span>{modError}</span>
@@ -1697,6 +1800,105 @@ const Chat = () => {
               isDark={isDark}
               onBack={() => setShowSupport(false)}
             />
+          ) : showInbox ? (
+            <div className="h-[400px] max-sm:h-full max-sm:flex-1 flex flex-col">
+              <div className="px-3 py-2 border-b border-inherit shrink-0 flex items-center gap-2">
+                <button onClick={() => setShowInbox(false)} className={`p-1.5 rounded-lg shrink-0 transition-colors ${isDark ? 'hover:bg-white/10' : 'hover:bg-black/10'}`}>
+                  <ChevronLeft size={16} />
+                </button>
+                <div className={`flex-1 flex items-center gap-2 px-2.5 rounded-lg ${isDark ? 'bg-white/5' : 'bg-black/5'}`}>
+                  <Search size={14} className="opacity-30 shrink-0" />
+                  <input
+                    autoFocus
+                    value={inboxSearch}
+                    onChange={(e) => setInboxSearch(e.target.value)}
+                    placeholder="Search conversations..."
+                    className={`w-full py-2 text-sm bg-transparent outline-none ${isDark ? 'text-white placeholder-white/25' : 'text-black placeholder-black/25'}`}
+                  />
+                  {inboxSearch && (
+                    <button onClick={() => setInboxSearch('')} className="opacity-40 hover:opacity-80">
+                      <X size={14} />
+                    </button>
+                  )}
+                </div>
+              </div>
+              <div className="flex-1 overflow-y-auto overscroll-contain scrollbar-hide">
+                {(() => {
+                  const filtered = inboxSearch
+                    ? conversations.filter(([user, msg]) =>
+                        user.toLowerCase().includes(inboxSearch.toLowerCase()) ||
+                        (msg.message || '').toLowerCase().includes(inboxSearch.toLowerCase())
+                      )
+                    : conversations;
+                  const unread = filtered.filter(([, msg]) => msg.unread);
+                  const read = filtered.filter(([, msg]) => !msg.unread);
+
+                  if (conversations.length === 0) {
+                    return (
+                      <div className="h-full flex flex-col items-center justify-center opacity-25">
+                        <Inbox size={24} className="mb-2" />
+                        <p className="text-sm">No conversations yet</p>
+                      </div>
+                    );
+                  }
+
+                  if (filtered.length === 0) {
+                    return (
+                      <div className="h-full flex flex-col items-center justify-center opacity-25">
+                        <Search size={20} className="mb-2" />
+                        <p className="text-sm">No matches for "{inboxSearch}"</p>
+                      </div>
+                    );
+                  }
+
+                  const renderConvo = ([user, msg]) => (
+                    <button
+                      key={user}
+                      onClick={() => { openDmTab(user); setShowInbox(false); }}
+                      className={`w-full text-left px-3 py-2.5 border-b border-inherit last:border-b-0 transition-colors ${isDark ? 'hover:bg-white/5 active:bg-white/10' : 'hover:bg-black/5 active:bg-black/10'}`}
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <span className="relative shrink-0">
+                          <DmAvatar wallet={user} />
+                          {dmOnlineStatus[user] && <span className="absolute -bottom-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-[#08AA09] ring-1 ring-black" />}
+                        </span>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className={`font-medium text-xs ${getTierTextColor(getUserTier(user))}`}>{displayWallet(user)}</span>
+                            <span className={`text-[10px] shrink-0 ${msg.unread ? (isDark ? 'text-white/60' : 'text-black/60') : 'opacity-40'}`}>{timeAgo(msg.timestamp)}</span>
+                          </div>
+                          <div className={`text-[11px] truncate mt-0.5 ${msg.unread ? (isDark ? 'text-white/70 font-medium' : 'text-black/70 font-medium') : 'opacity-40'}`}>{msg.message}</div>
+                        </div>
+                        {msg.unread && <span className="w-2 h-2 rounded-full bg-[#650CD4] shrink-0" />}
+                      </div>
+                    </button>
+                  );
+
+                  return (
+                    <>
+                      {unread.length > 0 && (
+                        <>
+                          <div className={`sticky top-0 z-10 px-3 py-1.5 text-[10px] uppercase tracking-wide font-medium ${isDark ? 'text-[#650CD4] bg-black border-b border-white/[0.04]' : 'text-[#650CD4] bg-white border-b border-black/[0.04]'}`}>
+                            Unread ({unread.length})
+                          </div>
+                          {unread.map(renderConvo)}
+                        </>
+                      )}
+                      {read.length > 0 && (
+                        <>
+                          {unread.length > 0 && (
+                            <div className={`sticky top-0 z-10 px-3 py-1.5 text-[10px] uppercase tracking-wide font-medium ${isDark ? 'text-white/30 bg-black border-b border-white/[0.04]' : 'text-black/30 bg-white border-b border-black/[0.04]'}`}>
+                              Earlier
+                            </div>
+                          )}
+                          {read.map(renderConvo)}
+                        </>
+                      )}
+                    </>
+                  );
+                })()}
+              </div>
+            </div>
           ) : (
             <>
               {(() => {
@@ -1707,9 +1909,9 @@ const Chat = () => {
 
                 return (
                   <>
-                    <div className="flex gap-0.5 px-1 py-1 border-b border-inherit overflow-x-auto scrollbar-hide overscroll-x-contain touch-pan-x shrink-0">
+                    <div className="relative flex gap-0.5 px-1 py-1 border-b border-inherit overflow-x-auto scrollbar-hide overscroll-x-contain touch-pan-x shrink-0" ref={tabBarRef}>
                       <button
-                        onClick={() => { setActiveTab('general'); setPrivateTo(''); }}
+                        onClick={() => { setActiveTab('general'); setPrivateTo(''); setShowInbox(false); setShowSupport(false); }}
                         className={`px-2 py-0.5 text-[10px] rounded-md shrink-0 font-medium transition-all active:scale-95 ${activeTab === 'general' ? 'bg-[#137DFE] text-white' : isDark ? 'bg-white/5 hover:bg-white/10 active:bg-white/15' : 'bg-black/5 hover:bg-black/10 active:bg-black/15'}`}
                       >
                         General
@@ -1724,16 +1926,17 @@ const Chat = () => {
                         return (
                         <button
                           key={user}
+                          data-tab={user}
                           onClick={() => openDmTab(user)}
                           title={user}
-                          className={`group/tab px-1 py-0.5 text-[10px] rounded-md shrink-0 flex items-center gap-0.5 font-medium transition-all active:scale-95 ${activeTab === user ? 'bg-[#650CD4] text-white' : hasUnread ? 'bg-[#F6AF01]/10 hover:bg-[#F6AF01]/20 active:bg-[#F6AF01]/30' : isDark ? 'bg-white/5 hover:bg-white/10 active:bg-white/15' : 'bg-black/5 hover:bg-black/10 active:bg-black/15'}`}
+                          className={`group/tab px-1.5 py-0.5 text-[10px] rounded-md shrink-0 flex items-center gap-1 font-medium transition-all active:scale-95 ${activeTab === user ? 'bg-[#137DFE] text-white' : hasUnread ? 'bg-[#F6AF01]/10 hover:bg-[#F6AF01]/20 active:bg-[#F6AF01]/30' : isDark ? 'bg-white/5 hover:bg-white/10 active:bg-white/15' : 'bg-black/5 hover:bg-black/10 active:bg-black/15'}`}
                         >
                           <span className="relative">
                             <DmAvatar wallet={user} size="sm" />
-                            {hasUnread && <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-[#F6AF01] animate-pulse" />}
+                            {hasUnread ? <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-[#F6AF01] animate-pulse" /> : dmOnlineStatus[user] && <span className="absolute -bottom-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-[#08AA09]" />}
                           </span>
-                          <span className={`${getTierTextColor(getUserTier(user))}`}>{user.slice(0, 4)}..{user.slice(-3)}</span>
-                          <span onClick={(e) => closeDmTab(user, e)} className="p-0.5 -mr-0.5 rounded opacity-0 group-hover/tab:opacity-50 hover:!opacity-100 active:!opacity-100 hover:text-red-400 active:text-red-400 transition-opacity"><X size={9} /></span>
+                          <span className={`${getTierTextColor(getUserTier(user))}`}>{getUserName(user) || `${user.slice(0, 4)}..${user.slice(-3)}`}</span>
+                          <span onClick={(e) => closeDmTab(user, e)} className="p-1 -mr-1 rounded opacity-0 group-hover/tab:opacity-50 hover:!opacity-100 active:!opacity-100 hover:text-red-400 active:text-red-400 transition-opacity"><X size={10} /></span>
                         </button>
                         );
                       })}
@@ -1741,9 +1944,10 @@ const Chat = () => {
                     <div className="relative h-[400px] max-sm:!h-0 max-sm:flex-1 max-sm:min-h-0">
                     <div className="h-full overflow-y-auto overflow-x-hidden scrollbar-hide px-2 py-1 max-sm:px-1.5 scroll-smooth overscroll-contain" onScroll={handleMessagesScroll}>
                       {filtered.length === 0 && (
-                        <div className="h-full flex flex-col items-center justify-center opacity-25 text-sm gap-1">
-                          <Send size={16} />
-                          <span>{activeTab === 'general' ? 'No messages yet' : 'Start a conversation'}</span>
+                        <div className="h-full flex flex-col items-center justify-center opacity-25 text-sm gap-2">
+                          <MessageCircle size={24} />
+                          <span className="font-medium">{activeTab === 'general' ? 'No messages yet' : 'Start a conversation'}</span>
+                          <span className="text-[11px] opacity-60">{activeTab === 'general' ? 'Be the first to say something!' : 'Send a message to get started'}</span>
                         </div>
                       )}
                       {filtered.map((msg, i) => {
@@ -1755,7 +1959,7 @@ const Chat = () => {
                           : displayName;
 
                         return (
-                          <div key={msg._id || i} className={`flex items-baseline gap-1 py-0.5 px-1 -mx-1 rounded text-[12px] max-sm:text-[11px] leading-relaxed transition-colors overflow-hidden ${isDark ? 'hover:bg-white/[0.03]' : 'hover:bg-black/[0.03]'}`}>
+                          <div key={msg._id || i} className={`group/msg flex items-baseline gap-1 py-0.5 px-1 -mx-1 rounded text-[12px] max-sm:text-[11px] leading-relaxed transition-all overflow-hidden ${msg._deleting ? 'opacity-0 max-h-0 py-0 -my-0.5 scale-95' : 'opacity-100 max-h-40'} duration-300 ${isDark ? 'hover:bg-white/[0.03]' : 'hover:bg-black/[0.03]'}`}>
                             <span className="text-[10px] opacity-25 shrink-0 tabular-nums w-[44px] text-right whitespace-nowrap">
                               {timeAgo(msg.timestamp)}
                             </span>
@@ -1800,16 +2004,32 @@ const Chat = () => {
                                 </div>
                               )}
                             </span>
-                            <span className="break-words min-w-0">{renderMessage(msg.message)}</span>
+                            <span className="break-words min-w-0">{renderMessage(msg.message, mentionTargets)}</span>
                             {isOwn && (msg.isPrivate || msg.type === 'private') && (
                               msg.readAt ? (
                                 <div className="relative group/read shrink-0 ml-1">
                                   <CheckCheck size={12} className="text-[#137DFE]" />
                                   <div className={`absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden group-hover/read:block z-50 px-2 py-1 rounded text-[10px] whitespace-nowrap ${isDark ? 'bg-[#1a1a1a] border border-white/10 text-white/80' : 'bg-white border border-black/10 text-black/80'}`}>
-                                    Read {new Date(msg.readAt).toLocaleTimeString()}
+                                    Read {timeAgo(msg.readAt)}
                                   </div>
                                 </div>
                               ) : <Check size={12} className="opacity-30 shrink-0 ml-1" />
+                            )}
+                            {isOwn && msg._id && (
+                              pendingDeleteId === msg._id ? (
+                                <span className="flex items-center gap-1.5 shrink-0 ml-1 text-[10px] animate-in fade-in">
+                                  <button onClick={(e) => { e.stopPropagation(); setPendingDeleteId(null); }} className="text-[#137DFE] hover:underline font-medium">Cancel</button>
+                                  <button onClick={(e) => { e.stopPropagation(); setPendingDeleteId(null); if (wsRef.current?.readyState === WebSocket.OPEN) { wsRef.current.send(JSON.stringify({ type: 'delete', messageId: msg._id })); } else { setToast({ text: 'Cannot delete — connection lost', at: Date.now() }); } }} className="text-red-400 hover:underline font-medium flex items-center gap-0.5"><Trash2 size={9} />Delete</button>
+                                </span>
+                              ) : (
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); setPendingDeleteId(msg._id); }}
+                                  className="opacity-0 group-hover/msg:opacity-30 hover:!opacity-100 hover:text-red-400 shrink-0 ml-0.5 p-0.5 rounded transition-all active:scale-90"
+                                  aria-label="Delete message"
+                                >
+                                  <Trash2 size={10} />
+                                </button>
+                              )
                             )}
                           </div>
                         );
@@ -1824,6 +2044,33 @@ const Chat = () => {
                     )}
                     </div>
                   </>
+                );
+              })()}
+              {(() => {
+                const now = Date.now();
+                let typers;
+                if (activeTab === 'general') {
+                  typers = Object.entries(typingUsers).filter(([w, t]) => w !== authUser?.wallet && now - t < 5000);
+                } else if (privateTo) {
+                  const t = typingUsers[privateTo];
+                  typers = t && now - t < 5000 ? [[privateTo, t]] : [];
+                } else {
+                  typers = [];
+                }
+                if (!typers.length) return null;
+                const names = typers.map(([w]) => getUserName(w) || `${w.slice(0, 6)}...`);
+                const label = names.length === 1 ? `${names[0]} is typing` : names.length <= 3 ? `${names.join(', ')} are typing` : `${names.length} people typing`;
+                return (
+                  <div className={`px-3 py-1 text-[11px] border-t border-inherit ${isDark ? 'text-white/40' : 'text-black/40'}`}>
+                    <span className="inline-flex items-center gap-1">
+                      <span className="flex gap-0.5">
+                        <span className="w-1 h-1 rounded-full bg-current animate-bounce [animation-delay:0ms]" />
+                        <span className="w-1 h-1 rounded-full bg-current animate-bounce [animation-delay:150ms]" />
+                        <span className="w-1 h-1 rounded-full bg-current animate-bounce [animation-delay:300ms]" />
+                      </span>
+                      {label}
+                    </span>
+                  </div>
                 );
               })()}
               <div className="px-2 py-2 max-sm:px-3 max-sm:py-3 max-sm:pb-[calc(12px+env(safe-area-inset-bottom))] border-t border-inherit shrink-0">
@@ -1859,7 +2106,13 @@ const Chat = () => {
                       <input
                         ref={inputRef}
                         value={input}
-                        onChange={(e) => setInput(e.target.value.slice(0, 256))}
+                        onChange={(e) => {
+                          setInput(e.target.value.slice(0, 256));
+                          if (wsRef.current?.readyState === WebSocket.OPEN && Date.now() - lastTypingSentRef.current > 3000) {
+                            lastTypingSentRef.current = Date.now();
+                            wsRef.current.send(JSON.stringify(privateTo ? { type: 'typing', to: privateTo } : { type: 'typing' }));
+                          }
+                        }}
                         placeholder={activeTab === 'general' ? 'Message...' : `DM ${activeTab.slice(0, 6)}...`}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter' && !input.match(/:(\w{2,})$/)) {
@@ -1869,19 +2122,19 @@ const Chat = () => {
                               setPrivateTo(target);
                               openDmTab(target);
                               if (msg.trim()) {
-                                wsRef.current?.send(JSON.stringify({ type: 'private', to: target, message: msg.trim() }));
+                                wsRef.current?.send(JSON.stringify({ type: 'private', to: target, message: msg.trim().slice(0, 256) }));
                               }
                               setInput('');
                               return;
                             }
                             const muteMatch = input.match(/^\/mute\s+(r[a-zA-Z0-9]{24,34})(?:\s+(\d+))?$/i);
-                            if (muteMatch && canMute()) {
+                            if (muteMatch && modLevel) {
                               muteUser(muteMatch[1], parseInt(muteMatch[2]) || 30);
                               setInput('');
                               return;
                             }
                             const unmuteMatch = input.match(/^\/unmute\s+(r[a-zA-Z0-9]{24,34})$/i);
-                            if (unmuteMatch && canMute()) {
+                            if (unmuteMatch && modLevel) {
                               unmuteUser(unmuteMatch[1]);
                               setInput('');
                               return;
@@ -1904,14 +2157,15 @@ const Chat = () => {
                         className={`flex-1 px-3 py-2.5 max-sm:py-3 rounded-xl outline-none text-sm max-sm:text-base transition-all ${isDark ? 'bg-white/5 text-white placeholder-white/25 focus:bg-white/[0.07] focus:ring-1 focus:ring-white/10' : 'bg-black/5 text-black placeholder-black/25 focus:bg-black/[0.07] focus:ring-1 focus:ring-black/10'}`}
                       />
                       <button
+                        aria-label="Send message"
                         onClick={sendMessage}
                         disabled={!input && !attachedNft && !attachedToken}
-                        className={`px-3 max-sm:px-3.5 self-stretch rounded-xl transition-all duration-200 shrink-0 flex items-center justify-center ${(input || attachedNft || attachedToken) ? 'bg-[#137DFE] text-white hover:bg-[#137DFE]/80 active:scale-90' : isDark ? 'bg-white/5 text-white/20' : 'bg-black/5 text-black/20'}`}
+                        className={`px-3 max-sm:px-3.5 self-stretch rounded-xl transition-all duration-200 shrink-0 flex items-center justify-center ${(input || attachedNft || attachedToken) ? 'bg-[#137DFE] text-white hover:bg-[#137DFE]/80 active:scale-90' : isDark ? 'bg-white/5 text-white/20 cursor-not-allowed' : 'bg-black/5 text-black/20 cursor-not-allowed'}`}
                       >
                         <Send size={16} className={`max-sm:w-5 max-sm:h-5 transition-transform duration-200 ${(input || attachedNft || attachedToken) ? '-rotate-45 translate-x-[1px] -translate-y-[1px]' : ''}`} />
                       </button>
-                      {input.length > 200 && (
-                        <span className={`absolute right-14 top-1/2 -translate-y-1/2 text-[10px] ${input.length >= 256 ? 'text-red-500' : 'opacity-40'}`}>
+                      {input.length > 0 && (
+                        <span className={`absolute right-14 top-1/2 -translate-y-1/2 text-[10px] tabular-nums ${input.length >= 256 ? 'text-red-500 font-medium' : input.length >= 200 ? 'opacity-60' : 'opacity-25'}`}>
                           {256 - input.length}
                         </span>
                       )}

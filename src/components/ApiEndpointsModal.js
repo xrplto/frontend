@@ -1148,15 +1148,15 @@ export const ApiButton = memo(({ className = '', token = null }) => {
       <StyledApiButton
         onClick={() => setOpen(true)}
         className={cn(
-          'group border-[1.5px] gap-1.5 rounded-lg px-2.5 h-8 text-[11px]',
+          'group border-[1.5px] gap-1 rounded-md px-2 h-6 sm:h-7 text-[9px]',
           isDark
             ? 'border-white/[0.08] bg-white/[0.025] hover:bg-white/[0.05] text-white/50 hover:text-white/70'
             : 'border-black/[0.06] bg-black/[0.02] hover:bg-black/[0.04] text-black/40 hover:text-black/60',
           className
         )}
       >
-        <Code2 size={12} />
-        <span className="uppercase tracking-widest font-bold">API</span>
+        <Code2 size={11} />
+        <span className="uppercase tracking-wide font-bold">API</span>
       </StyledApiButton>
       <ApiEndpointsModal open={open} onClose={() => setOpen(false)} token={token} />
     </>

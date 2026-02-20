@@ -649,7 +649,7 @@ function CreatePage() {
 
     // Check wallet has sufficient balance for launch cost
     const requiredFunding = costBreakdown?.requiredFunding || Math.ceil(9 + formData.ammXrpAmount);
-    if (walletBalance !== null && walletBalance < requiredFunding) return false;
+    if (walletBalance !== null && (isNaN(walletBalance) || walletBalance < requiredFunding)) return false;
 
     // Validate bundle recipients if any
     if (formData.bundleRecipients.length > 0) {

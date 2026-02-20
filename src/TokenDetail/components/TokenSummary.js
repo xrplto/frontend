@@ -783,7 +783,7 @@ const TokenSummary = memo(({ token }) => {
       {/* Row 5: Actions */}
       <div
         className={cn(
-          'grid grid-cols-2 gap-1.5 sm:gap-2 mt-3 sm:mt-4 pt-3 sm:pt-4 border-t',
+          'grid grid-cols-2 gap-1 sm:gap-1.5 mt-2.5 sm:mt-3 pt-2.5 sm:pt-3 border-t',
           isDark ? 'border-white/[0.06]' : 'border-black/[0.06]'
         )}
       >
@@ -792,7 +792,7 @@ const TokenSummary = memo(({ token }) => {
           <button
             onClick={() => setShowVerifyModal(true)}
             className={cn(
-              'col-span-2 flex items-center justify-center gap-2 py-2.5 sm:py-3 rounded-xl text-[12px] sm:text-[13px] font-bold uppercase tracking-wider transition-[opacity,transform,background-color,border-color] duration-300 relative overflow-hidden group',
+              'col-span-2 flex items-center justify-center gap-1.5 py-1.5 sm:py-2 rounded-lg text-[10px] sm:text-[11px] font-bold uppercase tracking-wider transition-[opacity,transform,background-color,border-color] duration-300 relative overflow-hidden group',
               currentVerified === 0
                 ? isDark
                   ? 'bg-blue-600 text-white hover:bg-blue-500 border border-blue-500/50'
@@ -803,19 +803,19 @@ const TokenSummary = memo(({ token }) => {
             )}
           >
             <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
-            <Sparkles size={16} strokeWidth={2.5} />
+            <Sparkles size={13} strokeWidth={2.5} />
             <span>{currentVerified === 0 ? 'Get Verified' : 'Upgrade Verification'}</span>
           </button>
         )}
 
-        <div className="col-span-2 grid grid-cols-3 sm:flex gap-1.5 sm:gap-2">
+        <div className="col-span-2 grid grid-cols-3 sm:flex gap-1 sm:gap-1.5">
           {/* Trustline button - only for non-XRP/MPT tokens when logged in */}
           {accountProfile?.account && CURRENCY_ISSUERS?.XRP_MD5 !== md5 && !isMPT && (
             <button
               onClick={handleSetTrust}
               title={isRemove ? 'Remove trustline to free 0.2 XRP reserve' : 'Set trustline to hold this token'}
               className={cn(
-                "group/trust h-9 sm:h-10 px-3 sm:px-4 flex items-center justify-center gap-1.5 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-[opacity,transform,background-color,border-color] duration-200",
+                "group/trust h-6 sm:h-7 px-1.5 sm:px-2.5 flex items-center justify-center gap-1 rounded-md text-[9px] font-bold uppercase tracking-wide transition-[opacity,transform,background-color,border-color] duration-200",
                 isRemove
                   ? isDark
                     ? "bg-green-500/15 border border-green-500/30 text-green-400 hover:bg-red-500/15 hover:border-red-500/30 hover:text-red-400"
@@ -827,14 +827,14 @@ const TokenSummary = memo(({ token }) => {
             >
               {isRemove ? (
                 <>
-                  <Check size={13} className="group-hover/trust:hidden" />
-                  <X size={13} className="hidden group-hover/trust:block" />
+                  <Check size={11} className="group-hover/trust:hidden" />
+                  <X size={11} className="hidden group-hover/trust:block" />
                   <span className="hidden sm:inline group-hover/trust:hidden">Trusted</span>
                   <span className="hidden group-hover/trust:sm:inline">Remove</span>
                 </>
               ) : (
                 <>
-                  <Link2 size={13} />
+                  <Link2 size={11} />
                   <span className="hidden sm:inline">Trust</span>
                 </>
               )}
@@ -844,7 +844,7 @@ const TokenSummary = memo(({ token }) => {
             <ApiButton
               token={token}
               className={cn(
-                "w-full h-9 sm:h-10 flex items-center justify-center gap-2 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-[opacity,transform,background-color,border-color] duration-200",
+                "w-full h-6 sm:h-7 flex items-center justify-center gap-1 rounded-md text-[9px] font-bold uppercase tracking-wide transition-[opacity,transform,background-color,border-color] duration-200",
                 isDark ? "bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.08]" : "bg-gray-50 border border-black/[0.04] hover:bg-gray-100"
               )}
             />
@@ -853,7 +853,7 @@ const TokenSummary = memo(({ token }) => {
             <Watch
               token={token}
               className={cn(
-                "w-full h-9 sm:h-10 flex items-center justify-center gap-2 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-[opacity,transform,background-color,border-color] duration-200",
+                "w-full h-6 sm:h-7 flex items-center justify-center gap-1 rounded-md text-[9px] font-bold uppercase tracking-wide transition-[opacity,transform,background-color,border-color] duration-200",
                 isDark ? "bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.08]" : "bg-gray-50 border border-black/[0.04] hover:bg-gray-100"
               )}
             />
@@ -866,7 +866,7 @@ const TokenSummary = memo(({ token }) => {
             onOpenChange={setShowPromoteModal}
             wrapperClassName="sm:flex-1"
             className={cn(
-              "w-full h-9 sm:h-10 flex items-center justify-center gap-2 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-[opacity,transform,background-color,border-color] duration-200",
+              "w-full h-6 sm:h-7 flex items-center justify-center gap-1 rounded-md text-[9px] font-bold uppercase tracking-wide transition-[opacity,transform,background-color,border-color] duration-200",
               isDark ? "bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.08] text-white/60 hover:text-white/80" : "bg-gray-50 border border-black/[0.04] hover:bg-gray-100 text-gray-500 hover:text-gray-700"
             )}
           />
@@ -875,11 +875,11 @@ const TokenSummary = memo(({ token }) => {
               onClick={() => setShowBoostModal(true)}
               title="Boost trending position"
               className={cn(
-                "w-full h-9 sm:h-10 flex items-center justify-center gap-2 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-[opacity,transform,background-color,border-color] duration-200",
+                "w-full h-6 sm:h-7 flex items-center justify-center gap-1 rounded-md text-[9px] font-bold uppercase tracking-wide transition-[opacity,transform,background-color,border-color] duration-200",
                 isDark ? "bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.08] text-white/60 hover:text-white/80" : "bg-gray-50 border border-black/[0.04] hover:bg-gray-100 text-gray-500 hover:text-gray-700"
               )}
             >
-              <Zap size={14} />
+              <Zap size={11} />
               Boost
             </button>
           </div>
@@ -887,7 +887,7 @@ const TokenSummary = memo(({ token }) => {
             <Share
               token={token}
               className={cn(
-                "w-full h-9 sm:h-10 flex items-center justify-center gap-2 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-[opacity,transform,background-color,border-color] duration-200",
+                "w-full h-6 sm:h-7 flex items-center justify-center gap-1 rounded-md text-[9px] font-bold uppercase tracking-wide transition-[opacity,transform,background-color,border-color] duration-200",
                 isDark ? "bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.08]" : "bg-gray-50 border border-black/[0.04] hover:bg-gray-100"
               )}
             />
@@ -896,7 +896,7 @@ const TokenSummary = memo(({ token }) => {
             <button
               onClick={() => setEditToken(token)}
               className={cn(
-                'px-3 h-9 sm:h-10 rounded-xl border text-[10px] font-bold uppercase tracking-wider transition-[opacity,transform,background-color,border-color] flex items-center justify-center',
+                'px-1.5 h-6 sm:h-7 rounded-md border text-[8px] font-bold uppercase tracking-wide transition-[opacity,transform,background-color,border-color] flex items-center justify-center',
                 isDark
                   ? 'border-amber-500/20 text-amber-500 hover:bg-amber-500/10'
                   : 'border-amber-200 text-amber-600 hover:bg-amber-50 shadow-sm'

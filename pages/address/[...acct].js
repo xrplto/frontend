@@ -53,8 +53,6 @@ import {
 } from 'lucide-react';
 import { ApiButton } from 'src/components/ApiEndpointsModal';
 import AccountHistory from 'src/components/AccountHistory';
-import CryptoJS from 'crypto-js';
-
 // Same wrapper as index.js for consistent width
 const PageWrapper = ({ className, ...props }) => (
   <div className={cn('overflow-x-hidden min-h-screen m-0 p-0 flex flex-col bg-[var(--bg-main)]', className)} {...props} />
@@ -3001,7 +2999,9 @@ export async function getServerSideProps(ctx) {
   try {
     const params = ctx.params.acct;
     const account = params[0];
-    const tab = params[1] || 'overview';
+    const ALLOWED_TABS = ['overview', 'tokens', 'nfts', 'nft-offers', 'collection', 'collection-activity', 'history', 'trustlines', 'offers'];
+    const rawTab = params[1] || 'overview';
+    const tab = ALLOWED_TABS.includes(rawTab) ? rawTab : 'overview';
 
     // Validate XRP address
     const isValid = isValidClassicAddress(account);

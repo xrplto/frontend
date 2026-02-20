@@ -94,12 +94,7 @@ export async function getServerSideProps(ctx) {
     const dt = (t2 - t1).toFixed(2);
   } catch (error) {
     console.error('SSR Error:', error.message, error.response?.data);
-    return {
-      redirect: {
-        permanent: false,
-        destination: '/404'
-      }
-    };
+    return { notFound: true };
   }
 
   if (data && data.collection) {
@@ -146,11 +141,6 @@ export async function getServerSideProps(ctx) {
       }
     };
   } else {
-    return {
-      redirect: {
-        permanent: false,
-        destination: '/404'
-      }
-    };
+    return { notFound: true };
   }
 }

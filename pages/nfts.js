@@ -5,6 +5,7 @@ import AllCollections from 'src/NFTCollection/AllCollections';
 import ScrollToTop from 'src/components/ScrollToTop';
 import { registerApiCalls } from 'src/components/ApiEndpointsModal';
 import { useEffect } from 'react';
+import { apiFetch } from 'src/utils/api';
 
 export default function Overview({ collections, total, globalMetrics, tags, collectionCreation }) {
   useEffect(() => {
@@ -57,7 +58,7 @@ export async function getStaticProps() {
   let collectionCreation = [];
 
   try {
-    const response = await fetch(
+    const response = await apiFetch(
       `${BASE_URL}/nft/collections?page=0&limit=20&sortBy=totalVol24h&order=desc&includeGlobalMetrics=true`
     );
     const data = await response.json();

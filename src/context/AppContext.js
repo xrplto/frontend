@@ -24,6 +24,36 @@ const getWalletStorage = async () => {
   return _walletStorageSingleton;
 };
 
+// Plain IndexedDB helpers for non-sensitive metadata (survives localStorage clearing)
+const IDB_META_KEY = '__meta__active_wallet';
+const saveActiveWalletToIDB = (address) => {
+  try {
+    const req = indexedDB.open('XRPLWalletDB');
+    req.onsuccess = () => {
+      const db = req.result;
+      if (!db.objectStoreNames.contains('wallets')) { db.close(); return; }
+      const tx = db.transaction(['wallets'], 'readwrite');
+      tx.objectStore('wallets').put({ id: IDB_META_KEY, lookupHash: IDB_META_KEY, data: address, timestamp: Date.now() });
+      tx.oncomplete = () => db.close();
+      tx.onerror = () => db.close();
+    };
+  } catch (e) { /* best-effort */ }
+};
+const getActiveWalletFromIDB = () => new Promise((resolve) => {
+  try {
+    const req = indexedDB.open('XRPLWalletDB');
+    req.onsuccess = () => {
+      const db = req.result;
+      if (!db.objectStoreNames.contains('wallets')) { db.close(); return resolve(null); }
+      const tx = db.transaction(['wallets'], 'readonly');
+      const get = tx.objectStore('wallets').get(IDB_META_KEY);
+      get.onsuccess = () => { db.close(); resolve(get.result?.data || null); };
+      get.onerror = () => { db.close(); resolve(null); };
+    };
+    req.onerror = () => resolve(null);
+  } catch (e) { resolve(null); }
+});
+
 // Strip sensitive fields before writing to localStorage (seeds stay in memory only)
 const stripSeed = (profile) => {
   if (!profile) return profile;
@@ -139,6 +169,8 @@ function ContextProviderInner({ children, data, openSnackbar }) {
   useEffect(() => {
     // Listen for device login messages from popup
     const handleMessage = (event) => {
+      // Only accept messages from same origin to prevent cross-origin injection
+      if (event.origin !== window.location.origin) return;
       if (event.data.type === 'DEVICE_LOGIN_SUCCESS') {
         doLogIn(event.data.profile);
 
@@ -170,8 +202,10 @@ function ContextProviderInner({ children, data, openSnackbar }) {
       // Update profiles
       const storedProfiles = localStorage.getItem('profiles');
       if (storedProfiles) {
-        const newProfiles = JSON.parse(storedProfiles);
-        setProfiles(newProfiles);
+        try {
+          const newProfiles = JSON.parse(storedProfiles);
+          setProfiles(newProfiles);
+        } catch (e) { /* ignore corrupted profiles */ }
       }
       // Also update accountProfile (critical for OAuth redirects)
       const storedProfile = localStorage.getItem(KEY_ACCOUNT_PROFILE);
@@ -281,6 +315,8 @@ function ContextProviderInner({ children, data, openSnackbar }) {
     setAccountProfile(profile);
     localStorage.setItem(KEY_ACCOUNT_PROFILE, JSON.stringify(stripSeed(profile)));
     window.dispatchEvent(new StorageEvent('storage', { key: KEY_ACCOUNT_PROFILE }));
+    // Persist active wallet in IndexedDB so it survives localStorage clearing
+    saveActiveWalletToIDB(account);
   };
 
   const doLogIn = async (profile, profilesOverride = null) => {
@@ -323,24 +359,26 @@ function ContextProviderInner({ children, data, openSnackbar }) {
     localStorage.setItem(KEY_ACCOUNT_PROFILE, JSON.stringify(stripSeed(profileWithTimestamp)));
     // Notify same-tab listeners (storage event only fires cross-tab)
     window.dispatchEvent(new StorageEvent('storage', { key: KEY_ACCOUNT_PROFILE }));
+    // Persist active wallet in IndexedDB so it survives localStorage clearing
+    saveActiveWalletToIDB(profileWithTimestamp.account);
 
-    let exist = false;
-    const newProfiles = [];
-    const currentProfiles = profilesOverride || profiles;
-    for (const p of currentProfiles) {
-      if (p.account === profileWithTimestamp.account) {
+    setProfiles(prev => {
+      const currentProfiles = profilesOverride || prev;
+      let exist = false;
+      const newProfiles = [];
+      for (const p of currentProfiles) {
+        if (p.account === profileWithTimestamp.account) {
+          newProfiles.push(profileWithTimestamp);
+          exist = true;
+        } else newProfiles.push(p);
+      }
+      if (!exist) {
         newProfiles.push(profileWithTimestamp);
-        exist = true;
-      } else newProfiles.push(p);
-    }
-
-    if (!exist) {
-      newProfiles.push(profileWithTimestamp);
-    }
-
-    const safeProfiles = stripSeedArray(newProfiles);
-    localStorage.setItem('profiles', JSON.stringify(safeProfiles));
-    setProfiles(safeProfiles);
+      }
+      const safeProfiles = stripSeedArray(newProfiles);
+      try { localStorage.setItem('profiles', JSON.stringify(safeProfiles)); } catch {}
+      return safeProfiles;
+    });
   };
 
   const doLogOut = async () => {
@@ -419,6 +457,7 @@ function ContextProviderInner({ children, data, openSnackbar }) {
     const account = accountProfile.account;
     let ws = null;
     let reconnectTimeout = null;
+    let connectTimer = null;
     let attempts = 0;
     const MAX_RECONNECT = 5;
 
@@ -426,10 +465,12 @@ function ContextProviderInner({ children, data, openSnackbar }) {
       try {
         const res = await fetch(`/api/ws/session?type=balance&id=${account}`);
         const { wsUrl, apiKey } = await res.json();
+        const { isValidWsUrl } = await import('src/utils/api');
+        if (!isValidWsUrl(wsUrl)) return;
         ws = new WebSocket(wsUrl);
 
       // Connection timeout — abort if not open within 10s
-      const connectTimer = setTimeout(() => {
+      connectTimer = setTimeout(() => {
         if (ws && ws.readyState !== WebSocket.OPEN) {
           ws.close();
         }
@@ -482,6 +523,7 @@ function ContextProviderInner({ children, data, openSnackbar }) {
 
     return () => {
       if (reconnectTimeout) clearTimeout(reconnectTimeout);
+      if (connectTimer) clearTimeout(connectTimer);
       if (ws) {
         ws.onclose = null; // Prevent reconnect on intentional close
         ws.close();
@@ -575,7 +617,8 @@ function ContextProviderInner({ children, data, openSnackbar }) {
       setOpenWalletModal,
       setPendingWalletAuth,
       handleLogin,
-      handleLogout
+      handleLogout,
+      getActiveWalletFromIDB
     }),
     [accountProfile, profiles, accountBalance]
   );

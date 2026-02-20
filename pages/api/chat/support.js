@@ -1,8 +1,22 @@
+import { validateSameOrigin } from '../ws/session';
+
 const BASE_URL = 'https://api.xrpl.to';
 const CHAT_API_KEY = process.env.CHAT_API_KEY;
 
+// Valid XRP classic address: starts with 'r', 25-35 base58 chars
+const XRP_ADDRESS_RE = /^r[1-9A-HJ-NP-Za-km-z]{24,34}$/;
+
 export default async function handler(req, res) {
+  if (!validateSameOrigin(req)) {
+    return res.status(403).json({ error: 'Forbidden' });
+  }
+
   const { action, ticketId, wallet, ...params } = req.query;
+
+  // Validate wallet format if provided
+  if (wallet && !XRP_ADDRESS_RE.test(wallet)) {
+    return res.status(400).json({ error: 'Invalid wallet address format' });
+  }
 
   if (!CHAT_API_KEY) {
     return res.status(500).json({ error: 'Chat service unavailable' });

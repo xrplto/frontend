@@ -145,6 +145,6 @@ export async function getStaticProps() {
 
   return {
     props: ret,
-    revalidate: 5 // Revalidate every 5 seconds
+    revalidate: 60
   };
 }

@@ -308,15 +308,25 @@ export async function getServerSideProps(context) {
     };
   }
 
+  // Reject obviously invalid ledger indices (current ledger is ~95M as of 2026)
+  const ledgerNum = parseInt(index, 10);
+  if (ledgerNum > 999999999 || ledgerNum < 1) {
+    return {
+      props: { ledgerData: null, transactions: [], error: 'Ledger index out of valid range.' }
+    };
+  }
+
   try {
-    const res = await api.get(`https://api.xrpl.to/v1/ledger/${index}?expand=true`);
+    const res = await api.get(`https://api.xrpl.to/v1/ledger/${index}?expand=true`, {
+      timeout: 8000
+    });
     const ledgerData = res.data;
     const transactions = ledgerData?.transactions || [];
     return {
       props: { ledgerData, transactions, error: null }
     };
   } catch (error) {
-    console.error(error);
+    console.error(error?.message || error);
     return {
       props: { ledgerData: null, transactions: [], error: 'Failed to fetch ledger data.' }
     };

@@ -637,7 +637,8 @@ const TraderTooltip = memo(({ address, tokenId, isDark, currency, children }) =>
     }
     setLoading(true);
     try {
-      const res = await fetch(`https://api.xrpl.to/api/traders/token-traders/${tokenId}?search=${address}&limit=1`);
+      const { apiFetch } = await import('src/utils/api');
+      const res = await apiFetch(`https://api.xrpl.to/api/traders/token-traders/${tokenId}?search=${encodeURIComponent(address)}&limit=1`);
       const json = await res.json();
       const trader = json?.traders?.[0] || null;
       traderStatsCache.set(cacheKey, { data: trader, ts: Date.now() });
@@ -1921,7 +1922,7 @@ const TradeDetails = ({ trade, account, isDark, onClose, walletLabel, onTrackAdd
       setTxData(txObj ? { ...txObj, meta } : null);
       setProfileData(profile);
       setLoading(false);
-    });
+    }).catch(() => setLoading(false));
   }, [trade?.hash, account]);
 
   const dropsToXrp = (drops) =>
@@ -2584,7 +2585,7 @@ const TradingHistory = ({
       try {
         const res = await fetch(`/api/ws/session?type=history&id=${tokenId}&${wsParams}`);
         const { wsUrl, apiKey } = await res.json();
-        if (!isMounted) return;
+        if (!isMounted || !wsUrl || !/^wss?:\/\//i.test(wsUrl)) return;
         const ws = new WebSocket(wsUrl);
         wsRef.current = ws;
 
@@ -2913,7 +2914,8 @@ const TradingHistory = ({
     const asset1 = { currency: token?.currency, issuer: token?.issuer };
     const asset2 = { currency: isXrp ? 'XRP' : selected.currency, issuer: isXrp ? undefined : selected.issuer };
     Promise.all([fetchBal(asset1), fetchBal(asset2)])
-      .then(([b1, b2]) => setCreatePoolBalances({ asset1: b1, asset2: b2 }));
+      .then(([b1, b2]) => setCreatePoolBalances({ asset1: b1, asset2: b2 }))
+      .catch(() => {});
   };
 
   const handleSubmitCreatePool = async () => {
@@ -3052,7 +3054,8 @@ const TradingHistory = ({
     };
 
     Promise.all([fetchBal(pool.asset1), fetchBal(pool.asset2)])
-      .then(([b1, b2]) => setUserPoolBalances({ asset1: b1, asset2: b2 }));
+      .then(([b1, b2]) => setUserPoolBalances({ asset1: b1, asset2: b2 }))
+      .catch(() => {});
   }, [liquidityDialog.open, liquidityDialog.pool, accountProfile?.account, accountProfile?.address, lpRefreshCounter]);
 
   const handleAmount1Change = (value) => {

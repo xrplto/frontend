@@ -68,7 +68,7 @@ export default function Watch({ token, className }) {
       )}
     >
       <Bookmark
-        size={12}
+        size={11}
         className={cn(isActive && 'fill-current')}
       />
       {isActive ? 'Watching' : 'Watch'}

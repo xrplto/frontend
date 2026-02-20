@@ -2723,7 +2723,7 @@ const TradersTab = React.memo(({ slug }) => {
   const [loading, setLoading] = useState(true);
   const [traders, setTraders] = useState([]);
   const [sortBy, setSortBy] = useState('volume');
-  const [interval, setInterval] = useState('7d');
+  const [chartInterval, setChartInterval] = useState('7d');
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
 
@@ -2739,12 +2739,12 @@ const TradersTab = React.memo(({ slug }) => {
     const searchParam = debouncedSearch ? `&address=${encodeURIComponent(debouncedSearch)}` : '';
     api
       .get(
-        `${BASE_URL}/nft/analytics/collection/${slug}/traders?limit=50&sortBy=${sortBy}&interval=${interval}${searchParam}`
+        `${BASE_URL}/nft/analytics/collection/${slug}/traders?limit=50&sortBy=${sortBy}&interval=${chartInterval}${searchParam}`
       )
       .then((res) => setTraders(res.data?.traders || []))
       .catch(console.error)
       .finally(() => setLoading(false));
-  }, [slug, sortBy, interval, debouncedSearch]);
+  }, [slug, sortBy, chartInterval, debouncedSearch]);
 
   if (loading) {
     return (
@@ -2773,10 +2773,10 @@ const TradersTab = React.memo(({ slug }) => {
           {INTERVAL_OPTIONS.map((i) => (
             <button
               key={i.key}
-              onClick={() => setInterval(i.key)}
+              onClick={() => setChartInterval(i.key)}
               className={cn(
                 'px-2.5 py-1 text-[11px] font-medium rounded-md transition-[background-color]',
-                interval === i.key
+                chartInterval === i.key
                   ? 'bg-primary text-white'
                   : isDark
                     ? 'text-white/60 hover:text-white hover:bg-white/5'
@@ -2926,7 +2926,7 @@ const TradersTab = React.memo(({ slug }) => {
           <tbody>
             {traders.map((t, idx) => {
               const addr = t.address || t._id;
-              const key = interval === 'all' ? 'All' : interval;
+              const key = chartInterval === 'all' ? 'All' : chartInterval;
               const vol = t[`vol${key}`] ?? 0;
               const profit = t[`profit${key}`] ?? 0;
               const trades = t[`trades${key}`] ?? 0;

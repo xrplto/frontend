@@ -1,5 +1,5 @@
 import Head from 'next/head';
-import React, { memo, useMemo, lazy, Suspense } from 'react';
+import React, { memo, useMemo, lazy, Suspense, Component } from 'react';
 import { useRouter } from 'next/router';
 import ThemeProvider from 'src/theme/ThemeProvider';
 import { CacheProvider } from '@emotion/react';
@@ -10,6 +10,32 @@ import dynamic from 'next/dynamic';
 import { Inter } from 'next/font/google';
 import 'src/styles/globals.css';
 import { cn } from 'src/utils/cn';
+
+// Top-level error boundary to prevent full-page crashes
+class AppErrorBoundary extends Component {
+  state = { hasError: false };
+  static getDerivedStateFromError() { return { hasError: true }; }
+  componentDidCatch(error, info) {
+    console.error('[ErrorBoundary]', error, info?.componentStack);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'system-ui' }}>
+          <div style={{ textAlign: 'center' }}>
+            <h1 style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>Something went wrong</h1>
+            <p style={{ color: '#666', marginBottom: '1rem' }}>An unexpected error occurred.</p>
+            <button onClick={() => { this.setState({ hasError: false }); window.location.reload(); }}
+              style={{ padding: '8px 20px', borderRadius: '8px', border: '1px solid #ccc', cursor: 'pointer', background: '#137DFE', color: '#fff' }}>
+              Reload Page
+            </button>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 const inter = Inter({
   subsets: ['latin'],
@@ -154,7 +180,7 @@ function AppPageLayout({ children }) {
   const router = useRouter();
 
   // Check if we're on the API docs page
-  const isApiDocsPage = router.pathname === '/api-docs';
+  const isApiDocsPage = router.pathname === '/api-docs' || router.pathname === '/docs';
 
   return (
     <div style={{ position: 'relative', zIndex: 1 }}>
@@ -232,12 +258,11 @@ function XRPLToApp({ Component, pageProps, router, emotionCache = clientSideEmot
   const ogp = useMemo(() => pageProps.ogp || {}, [pageProps.ogp]);
   const data = pageProps.data;
 
-  // Memoize JSON-LD script content - use page-specific jsonLd if available
+  // Memoize JSON-LD script content - use page-specific jsonLd if available.
+  // Escape </script> sequences to prevent script injection via token names or other user data.
   const jsonLdScript = useMemo(() => {
-    if (ogp.jsonLd) {
-      return JSON.stringify(ogp.jsonLd);
-    }
-    return JSON.stringify(jsonLdSchema);
+    const raw = ogp.jsonLd ? JSON.stringify(ogp.jsonLd) : JSON.stringify(jsonLdSchema);
+    return raw.replace(/<\//g, '<\\/');
   }, [ogp.jsonLd]);
 
   // Early return for maintenance mode
@@ -292,23 +317,23 @@ function XRPLToApp({ Component, pageProps, router, emotionCache = clientSideEmot
           <link rel="manifest" href="/icons/site.webmanifest" />
           <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#000000" />
           <link rel="shortcut icon" href="/icons/favicon.ico" type="image/x-icon" />
-          <link rel="canonical" href={ogp.canonical} />
+          {ogp.canonical && <link rel="canonical" href={ogp.canonical} />}
 
           <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdScript }} />
 
-          <title>{ogp.title}</title>
-          <meta name="description" content={ogp.desc} />
+          {ogp.title && <title>{ogp.title}</title>}
+          {ogp.desc && <meta name="description" content={ogp.desc} />}
           <meta property="og:site_name" content="xrpl.to" />
 
           {/* Facebook Meta Tags */}
-          <meta property="og:url" content={ogp.url} />
+          {ogp.url && <meta property="og:url" content={ogp.url} />}
           <meta property="og:type" content={ogp.type || 'website'} />
-          <meta property="og:title" content={`${ogp.title} | xrpl.to`} />
-          <meta property="og:description" content={ogp.desc} />
-          <meta property="og:image" content={ogp.imgUrl} />
-          <meta property="og:image:type" content={ogp.imgType || 'image/png'} />
-          <meta property="og:image:width" content={ogp.imgWidth || '1200'} />
-          <meta property="og:image:height" content={ogp.imgHeight || '630'} />
+          <meta property="og:title" content={ogp.title ? `${ogp.title} | xrpl.to` : 'xrpl.to'} />
+          {ogp.desc && <meta property="og:description" content={ogp.desc} />}
+          {ogp.imgUrl && <meta property="og:image" content={ogp.imgUrl} />}
+          {ogp.imgUrl && <meta property="og:image:type" content={ogp.imgType || 'image/png'} />}
+          {ogp.imgUrl && <meta property="og:image:width" content={ogp.imgWidth || '1200'} />}
+          {ogp.imgUrl && <meta property="og:image:height" content={ogp.imgHeight || '630'} />}
           {ogp.imgAlt && <meta property="og:image:alt" content={ogp.imgAlt} />}
 
           {/* Additional Open Graph images for better fallback support */}
@@ -326,29 +351,31 @@ function XRPLToApp({ Component, pageProps, router, emotionCache = clientSideEmot
           {/* Twitter Meta Tags */}
           <meta name="twitter:card" content="summary_large_image" />
           <meta property="twitter:domain" content="xrpl.to" />
-          <meta property="twitter:url" content={ogp.url} />
-          <meta name="twitter:title" content={`${ogp.title} | xrpl.to`} />
-          <meta name="twitter:description" content={ogp.desc} />
-          <meta name="twitter:image" content={ogp.imgUrl} />
+          {ogp.url && <meta property="twitter:url" content={ogp.url} />}
+          <meta name="twitter:title" content={ogp.title ? `${ogp.title} | xrpl.to` : 'xrpl.to'} />
+          {ogp.desc && <meta name="twitter:description" content={ogp.desc} />}
+          {ogp.imgUrl && <meta name="twitter:image" content={ogp.imgUrl} />}
         </Head>
 
-        <ContextProvider data={data} openSnackbar={openSnackbar}>
-          <AppProgressBar router={router} />
-          <ThemeProvider>
-            <AppPageLayout>
-              <Component {...pageProps} />
-            </AppPageLayout>
-            {deferredReady && (
-              <Suspense fallback={null}>
-                <ThemedToaster />
-                <TransactionAlert />
-                <Wallet />
-                <BridgeTracker />
-                <Chat />
-              </Suspense>
-            )}
-          </ThemeProvider>
-        </ContextProvider>
+        <AppErrorBoundary>
+          <ContextProvider data={data} openSnackbar={openSnackbar}>
+            <AppProgressBar router={router} />
+            <ThemeProvider>
+              <AppPageLayout>
+                <Component {...pageProps} />
+              </AppPageLayout>
+              {deferredReady && (
+                <Suspense fallback={null}>
+                  <ThemedToaster />
+                  <TransactionAlert />
+                  <Wallet />
+                  <BridgeTracker />
+                  <Chat />
+                </Suspense>
+              )}
+            </ThemeProvider>
+          </ContextProvider>
+        </AppErrorBoundary>
       </div>
     </CacheProvider>
   );

@@ -274,7 +274,10 @@ export default function VerifyBadgeModal({ token, onClose, onSuccess, itemType =
       const res = await api.post(`${BASE_URL}/verify/stripe/checkout`, payload);
 
       if (res.data.checkoutUrl) {
-        window.location.href = res.data.checkoutUrl;
+        const { safeCheckoutRedirect } = await import('src/utils/api');
+        if (!safeCheckoutRedirect(res.data.checkoutUrl)) {
+          setError('Invalid checkout URL');
+        }
       } else {
         setError(res.data.error || 'Failed to create checkout session');
       }

@@ -278,11 +278,12 @@ export async function getStaticProps({ params }) {
     ret = { data, ogp };
     return {
       props: ret, // will be passed to the page component as props
-      revalidate: 5 // ISR: Regenerate page every 5 seconds if requested (matches trending/gainers/new pages)
+      revalidate: 30
     };
   } else {
     return {
-      notFound: true // Return 404 page for ISR
+      notFound: true, // Return 404 page for ISR
+      revalidate: 30 // Retry after 30 seconds (don't cache 404 forever)
     };
   }
 }

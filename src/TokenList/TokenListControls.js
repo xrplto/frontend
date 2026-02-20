@@ -198,7 +198,7 @@ const DESKTOP_TABLE_HEAD = [
   { id: 'tvl', label: 'LIQUIDITY', align: 'right', order: true, mobileHide: true },
   { id: 'marketcap', label: 'MARKET CAP', align: 'right', order: true, mobileHide: true },
   { id: 'holders', label: 'HOLDERS', align: 'right', order: true, mobileHide: true },
-  { id: 'origin', label: 'SOURCE', align: 'right', order: true, mobileHide: true }
+  { id: 'origin', label: 'SOURCE', align: 'right', order: true, mobileHide: true, style: { paddingLeft: 12, paddingRight: 16 } }
 ];
 
 // ============== TokenListHead Component ==============
@@ -428,7 +428,8 @@ export const TokenListHead = memo(function TokenListHead({
             align: 'right',
             width: '10%',
             order: true,
-            tooltip: 'Origin'
+            tooltip: 'Origin',
+            style: { paddingLeft: 12, paddingRight: 16 }
           }
         ];
 
@@ -750,7 +751,7 @@ export const TokenListHead = memo(function TokenListHead({
                 width: '90px',
                 order: true,
                 tooltip: 'Origin',
-                style: extraStyle
+                style: { ...extraStyle, paddingLeft: 12, paddingRight: 16 }
               });
               break;
             case 'sparkline':
@@ -776,11 +777,8 @@ export const TokenListHead = memo(function TokenListHead({
 
   const TABLE_HEAD = getTableHeaders();
 
-  // Filter out star column if user is not logged in
-  const filteredTableHead = TABLE_HEAD.filter((headCell) => {
-    if (headCell.id === 'star' && !isLoggedIn) return false;
-    return true;
-  });
+  // Always include star column to prevent layout shift when login state changes
+  const filteredTableHead = TABLE_HEAD;
 
   return (
     <>

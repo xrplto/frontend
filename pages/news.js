@@ -821,7 +821,8 @@ export async function getServerSideProps({ query }) {
     }
 
     const newsText = await newsRes.text();
-    const newsData = JSON.parse(newsText);
+    let newsData;
+    try { newsData = JSON.parse(newsText); } catch { newsData = []; }
     const chartData = chartRes.ok ? await chartRes.json() : null;
 
     const parse = (p) => ({

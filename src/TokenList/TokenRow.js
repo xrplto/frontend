@@ -144,7 +144,7 @@ const SparklineChart = memo(
     const fillColor = color === '#22c55e' ? 'rgba(34, 197, 94, 0.15)' : 'rgba(239, 68, 68, 0.15)';
 
     return (
-      <div ref={containerRef} className="tr-spark w-[120px] h-[32px]">
+      <div ref={containerRef} className="tr-spark w-[120px] h-[32px]" style={{ '--spark-color': color || 'transparent' }}>
         {linePath ? (
           <svg
             width="120"
@@ -311,7 +311,7 @@ const UserName = ({ className, children, isDark, isMobile, ...p }) => (
 const PriceText = ({ flashColor, isDark, isMobile, children }) => (
   <span
     className={cn(
-      'font-normal font-mono',
+      'font-normal font-mono price-flash',
       isMobile ? 'text-[14px]' : 'text-[15px]'
     )}
     style={{
@@ -422,16 +422,17 @@ const formatTimeAgo = (dateValue, fallbackValue) => {
 
 // Optimized image component — uses server-side thumb endpoint for resize + animation stripping
 const OptimizedImage = memo(
-  ({ src, alt, size, onError, priority = false, md5 }) => {
+  ({ src, alt, size, onError, priority = false, md5, noCache }) => {
     const [errored, setErrored] = useState(false);
 
     // Request 2x for retina, snapped to allowed sizes [16,32,40,48,64,96,128]
     const s2 = size * 2;
     const thumbSize = s2 <= 32 ? 32 : s2 <= 48 ? 48 : s2 <= 64 ? 64 : s2 <= 96 ? 96 : 128;
+    const cacheBust = noCache ? `?v=${Math.floor(Date.now() / 300000)}` : '';
     const imgSrc = errored
       ? '/static/alt.webp'
       : md5
-        ? `https://s1.xrpl.to/thumb/${md5}_${thumbSize}`
+        ? `https://s1.xrpl.to/thumb/${md5}_${thumbSize}${cacheBust}`
         : src;
 
     const handleError = useCallback(() => {
@@ -459,7 +460,8 @@ const OptimizedImage = memo(
     return (
       prevProps.src === nextProps.src &&
       prevProps.size === nextProps.size &&
-      prevProps.md5 === nextProps.md5
+      prevProps.md5 === nextProps.md5 &&
+      prevProps.noCache === nextProps.noCache
     );
   }
 );
@@ -473,7 +475,8 @@ const MobileTokenRow = ({
   imgError,
   setImgError,
   viewMode = 'classic',
-  customColumns = []
+  customColumns = [],
+  noImageCache = false
 }) => {
   const {
     name,
@@ -605,6 +608,7 @@ const MobileTokenRow = ({
             onError={() => setImgError(true)}
             priority={false}
             md5={md5}
+            noCache={noImageCache}
           />
         </TokenImage>
         <TokenDetails>
@@ -642,7 +646,8 @@ const DesktopTokenRow = ({
   formatValue,
   isLoggedIn,
   viewMode = 'classic',
-  customColumns = []
+  customColumns = [],
+  noImageCache = false
 }) => {
   const {
     name,
@@ -717,6 +722,7 @@ const DesktopTokenRow = ({
               onError={() => setImgError(true)}
               priority={false}
               md5={md5}
+              noCache={noImageCache}
             />
           </TokenImage>
           <div className="min-w-0">
@@ -838,7 +844,7 @@ const DesktopTokenRow = ({
             <StyledCell align="right" isDark={darkMode}>
               {formatValue(amount, 'int')}
             </StyledCell>
-            <StyledCell align="right" isDark={darkMode}>
+            <StyledCell align="right" isDark={darkMode} style={{ paddingLeft: 12, paddingRight: 16 }}>
               {origin || 'XRPL'}
             </StyledCell>
           </>
@@ -1112,7 +1118,7 @@ const DesktopTokenRow = ({
                 break;
               case 'origin':
                 columnElements.push(
-                  <StyledCell key="origin" align="right" isDark={darkMode} style={extraStyle}>
+                  <StyledCell key="origin" align="right" isDark={darkMode} style={{ ...extraStyle, paddingLeft: 12, paddingRight: 16 }}>
                     {origin || 'XRPL'}
                   </StyledCell>
                 );
@@ -1218,7 +1224,7 @@ const DesktopTokenRow = ({
             <StyledCell align="right" isDark={darkMode}>
               {formatValue(holders, 'int')}
             </StyledCell>
-            <StyledCell align="right" isDark={darkMode}>
+            <StyledCell align="right" isDark={darkMode} style={{ paddingLeft: 12, paddingRight: 16 }}>
               {origin || 'XRPL'}
             </StyledCell>
           </>
@@ -1228,16 +1234,16 @@ const DesktopTokenRow = ({
 
   return (
     <StyledRow onClick={handleRowClick} isDark={darkMode} isNew={isNew}>
-      {isLoggedIn && (
-        <StyledCell
-          align="center"
-          isDark={darkMode}
-          style={{
-            width: '40px',
-            minWidth: '40px',
-            maxWidth: '40px'
-          }}
-        >
+      <StyledCell
+        align="center"
+        isDark={darkMode}
+        style={{
+          width: '40px',
+          minWidth: '40px',
+          maxWidth: '40px'
+        }}
+      >
+        {isLoggedIn && (
           <span
             onClick={handleWatchlistClick}
             className={cn(
@@ -1251,8 +1257,8 @@ const DesktopTokenRow = ({
           >
             <Bookmark size={16} fill={watchList.includes(md5) ? 'currentColor' : 'none'} />
           </span>
-        </StyledCell>
-      )}
+        )}
+      </StyledCell>
 
       <StyledCell
         className="tr-idx"
@@ -1295,7 +1301,8 @@ const FTokenRow = memo(
     isLoggedIn,
     viewMode = 'classic',
     customColumns = [],
-    rows = 50
+    rows = 50,
+    noImageCache = false
   }) {
     const BASE_URL = 'https://api.xrpl.to/v1';
     const { accountProfile } = useContext(WalletContext);
@@ -1376,6 +1383,7 @@ const FTokenRow = memo(
           setImgError={setImgError}
           viewMode={viewMode}
           customColumns={customColumns}
+          noImageCache={noImageCache}
         />
       );
     }
@@ -1398,6 +1406,7 @@ const FTokenRow = memo(
         isLoggedIn={isLoggedIn}
         viewMode={viewMode}
         customColumns={customColumns}
+        noImageCache={noImageCache}
       />
     );
   },

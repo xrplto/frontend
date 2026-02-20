@@ -292,7 +292,7 @@ const PriceChartAdvanced = memo(({ token, onCandleClick, trackAddress }) => {
       try {
         const res = await fetch(`/api/ws/session?type=creator&id=${token.md5}`);
         const { wsUrl, apiKey } = await res.json();
-        if (!wsUrl || !mounted) return;
+        if (!wsUrl || !mounted || !/^wss?:\/\//i.test(wsUrl)) return;
 
         const ws = new WebSocket(wsUrl);
         creatorWsRef.current = ws;
@@ -440,7 +440,7 @@ const PriceChartAdvanced = memo(({ token, onCandleClick, trackAddress }) => {
         const params = `interval=${getWsInterval(timeRange)}&vs_currency=${activeFiatCurrency}`;
         const res = await fetch(`/api/ws/session?type=ohlc&id=${token.md5}&${params}`);
         const { wsUrl, apiKey } = await res.json();
-        if (!mounted) return;
+        if (!mounted || !wsUrl || !/^wss?:\/\//i.test(wsUrl)) return;
         const ws = new WebSocket(wsUrl);
         wsRef.current = ws;
 

@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom';
 import Head from 'next/head';
 import { ThemeContext } from 'src/context/AppContext';
 import { cn } from 'src/utils/cn';
-import { Copy, Sparkles } from 'lucide-react';
+import { Copy, Sparkles, Home, Search } from 'lucide-react';
 import { TxShareModal } from 'src/components/ShareButtons';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
@@ -317,7 +317,9 @@ const JsonViewer = ({ data, isDark: isDarkProp }) => {
   };
 
   const highlightLine = (line) => {
-    return line
+    // Escape HTML entities first to prevent XSS from API response data
+    const escaped = line.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return escaped
       .replace(/(".*?"):/g, '<span style="color: #4285f4;">$1</span>:')
       .replace(/: (".*?")/g, ': <span style="color: #10b981;">$1</span>')
       .replace(/: (true|false)/g, ': <span style="color: #f59e0b;">$1</span>')

@@ -28,7 +28,7 @@ const StyledTable = ({ className, children, ...p }) => (
 
 const StyledTableBody = ({ darkMode, className, children, ...p }) => (
   <tbody
-    className={cn('m-0 p-0', darkMode ? '[&_tr:hover]:bg-white/[0.02]' : '[&_tr:hover]:bg-black/[0.01]', className)}
+    className={cn('m-0 p-0', className)}
     {...p}
   >{children}</tbody>
 );
@@ -36,27 +36,27 @@ const StyledTableBody = ({ darkMode, className, children, ...p }) => (
 const StyledRow = ({ darkMode, className, children, ...p }) => (
   <tr
     className={cn(
-      'border-b-[1.5px] cursor-pointer transition-[background-color] duration-150',
-      darkMode ? 'border-white/10 hover:bg-white/[0.02]' : 'border-black/[0.06] hover:bg-black/[0.01]',
+      'tr-row border-b-[1.5px] cursor-pointer',
+      darkMode ? 'border-white/10' : 'border-black/[0.06]',
       className
     )}
-    style={{ contentVisibility: 'auto', containIntrinsicSize: 'auto 65px' }}
     {...p}
   >{children}</tr>
 );
 
-const StyledCell = ({ isCollectionColumn, align, fontWeight, color, darkMode, width, className, children, ...p }) => (
+const StyledCell = ({ isFirst, isLast, isCollectionColumn, align, fontWeight, color, darkMode, className, children, ...p }) => (
   <td
     className={cn(
-      'py-[14px] px-2 text-sm align-middle font-mono tabular-nums first-of-type:pl-3 last-of-type:pr-1',
-      isCollectionColumn ? 'whitespace-normal min-w-[200px]' : 'whitespace-nowrap',
+      'py-3 text-[13px] align-middle font-mono tabular-nums',
+      isCollectionColumn ? 'whitespace-normal' : 'whitespace-nowrap',
       className
     )}
     style={{
+      paddingLeft: isFirst ? '16px' : '6px',
+      paddingRight: isLast ? '16px' : '6px',
       textAlign: align || 'left',
       fontWeight: fontWeight || 400,
-      color: color || (darkMode ? 'rgba(255,255,255,0.85)' : '#1a1a2e'),
-      width: width || 'auto'
+      color: color || (darkMode ? 'rgba(255,255,255,0.85)' : '#1a1a2e')
     }}
     {...p}
   >{children}</td>
@@ -66,8 +66,8 @@ const StyledCell = ({ isCollectionColumn, align, fontWeight, color, darkMode, wi
 const MobileCollectionCard = ({ darkMode, className, children, ...p }) => (
   <div
     className={cn(
-      'flex w-full py-[10px] px-3 border-b-[1.5px] cursor-pointer box-border items-center transition-[background-color] duration-150',
-      darkMode ? 'border-white/10 hover:bg-white/[0.02]' : 'border-black/[0.06] hover:bg-black/[0.01]',
+      'mobile-card flex w-full py-[10px] px-3 border-b-[1.5px] cursor-pointer box-border items-center',
+      darkMode ? 'border-white/10' : 'border-black/[0.06]',
       className
     )}
     style={{ contentVisibility: 'auto', containIntrinsicSize: 'auto 49px' }}
@@ -90,7 +90,7 @@ const MobileCell = ({ flex, align, fontWeight, color, darkMode, minWidth, wordBr
 const CollectionImage = ({ isMobile, darkMode, className, children, ...p }) => (
   <div
     className={cn('rounded-lg overflow-hidden shrink-0', darkMode ? 'bg-white/[0.05]' : 'bg-black/[0.03]', className)}
-    style={{ width: isMobile ? '28px' : '36px', height: isMobile ? '28px' : '36px' }}
+    style={{ width: isMobile ? '28px' : '32px', height: isMobile ? '28px' : '32px' }}
     {...p}
   >{children}</div>
 );
@@ -146,7 +146,7 @@ const Text = ({ darkMode, fontWeight, className, children, ...p }) => (
 const NavButton = ({ darkMode, className, children, ...p }) => (
   <button
     className={cn(
-      'w-[26px] h-[26px] rounded-xl border-[1.5px] bg-transparent cursor-pointer inline-flex items-center justify-center p-0 transition-[background-color,border-color] duration-150',
+      'w-[26px] h-[26px] rounded-lg border-[1.5px] bg-transparent cursor-pointer inline-flex items-center justify-center p-0 transition-[background-color,border-color] duration-150',
       'disabled:cursor-not-allowed',
       darkMode
         ? 'border-white/10 text-white hover:enabled:border-white/[0.15] hover:enabled:bg-white/[0.02] disabled:text-white/30'
@@ -160,7 +160,7 @@ const NavButton = ({ darkMode, className, children, ...p }) => (
 const PageButton = ({ selected, darkMode, className, children, ...p }) => (
   <button
     className={cn(
-      'min-w-[22px] h-[22px] rounded-xl border-[1.5px] cursor-pointer inline-flex items-center justify-center px-1 m-0 text-[11px] tabular-nums transition-[background-color,border-color] duration-150',
+      'min-w-[22px] h-[22px] rounded-lg border-[1.5px] cursor-pointer inline-flex items-center justify-center px-1 m-0 text-[11px] tabular-nums transition-[background-color,border-color] duration-150',
       'disabled:cursor-not-allowed disabled:opacity-30',
       selected
         ? 'border-[#4285f4] bg-[#4285f4] text-white font-medium hover:enabled:border-[#1976D2] hover:enabled:bg-[#1976D2]'
@@ -188,7 +188,7 @@ const SelectButton = ({ className, children, ...p }) => (
 
 const SelectMenu = ({ darkMode, className, children, ...p }) => (
   <div
-    className={cn('absolute top-full right-0 mt-1 bg-transparent border-[1.5px] rounded-xl z-[1000] min-w-[50px] backdrop-blur-[12px]', darkMode ? 'border-white/10' : 'border-black/[0.06]', className)}
+    className={cn('absolute top-full right-0 mt-1 bg-transparent border-[1.5px] rounded-lg z-[1000] min-w-[50px] backdrop-blur-[12px]', darkMode ? 'border-white/10' : 'border-black/[0.06]', className)}
     {...p}
   >{children}</div>
 );
@@ -212,18 +212,21 @@ const StyledTableHead = ({ scrollTopLength, className, children, ...p }) => (
   >{children}</thead>
 );
 
-const StyledTableCell = ({ darkMode, isCollectionColumn, align, width, sortable, className, children, ...p }) => (
+const StyledTableCell = ({ isFirst, isLast, darkMode, isCollectionColumn, align, width, sortable, className, children, ...p }) => (
   <th
     className={cn(
-      'font-semibold text-[10px] tracking-[0.06em] uppercase py-[14px] px-2 border-b-[1.5px] box-border',
-      'first-of-type:pl-3 last-of-type:pr-3',
+      'font-semibold text-[10px] tracking-[0.06em] uppercase py-3 border-b-[1.5px] box-border',
       isCollectionColumn ? 'whitespace-normal' : 'whitespace-nowrap',
       sortable ? 'cursor-pointer' : 'cursor-default',
       darkMode ? 'text-white/30 border-white/10' : 'text-[#919EAB] border-black/[0.06]',
       sortable && (darkMode ? 'hover:text-white/60' : 'hover:text-black/60'),
       className
     )}
-    style={{ textAlign: align || 'left', width: width || 'auto', minWidth: isCollectionColumn ? '200px' : (width || 'auto') }}
+    style={{
+      paddingLeft: isCollectionColumn ? '8px' : isFirst ? '16px' : '6px',
+      paddingRight: isLast ? '16px' : '6px',
+      textAlign: align || 'left'
+    }}
     {...p}
   >{children}</th>
 );
@@ -301,8 +304,8 @@ const TABLE_HEAD_MOBILE = [
 ];
 
 const TABLE_HEAD_DESKTOP = [
-  { id: 'rank', label: '#', align: 'center', width: '40px', order: false },
-  { id: 'name', label: 'COLLECTION', align: 'left', width: '220px', order: false },
+  { id: 'rank', label: '#', align: 'center', width: '36px', order: false },
+  { id: 'name', label: 'COLLECTION', align: 'left', width: '210px', order: false },
   {
     id: 'floor',
     label: 'FLOOR',
@@ -470,16 +473,17 @@ const ListHead = memo(
     return (
       <StyledTableHead scrollTopLength={scrollTopLength} darkMode={darkMode}>
         <tr>
-          {TABLE_HEAD.map((headCell) => (
+          {TABLE_HEAD.map((headCell, idx) => (
             <StyledTableCell
               key={headCell.id}
               align={headCell.align}
               width={headCell.width}
               darkMode={darkMode}
               sortable={headCell.order}
+              isFirst={idx === 0}
+              isLast={idx === TABLE_HEAD.length - 1}
               isCollectionColumn={headCell.id === 'name'}
               onClick={headCell.order ? createSortHandler(headCell.id) : undefined}
-              style={headCell.style || {}}
             >
               {headCell.order ? (
                 <span>
@@ -639,7 +643,7 @@ const DesktopCollectionRow = ({ collection, idx, darkMode, handleRowClick }) => 
       <StyledCell
         align="center"
         darkMode={darkMode}
-        className="w-10 min-w-[40px] max-w-[40px]"
+        isFirst={true}
       >
         <span className={cn('font-medium text-[13px]', darkMode ? 'text-white/35' : 'text-black/40')}>
           {idx + 1}
@@ -650,11 +654,10 @@ const DesktopCollectionRow = ({ collection, idx, darkMode, handleRowClick }) => 
         align="left"
         darkMode={darkMode}
         isCollectionColumn={true}
-        className="w-[220px] min-w-[220px] max-w-[220px]"
       >
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <CollectionImage darkMode={darkMode}>
-            <OptimizedImage src={logoImageUrl} alt={collectionName} size={36} />
+            <OptimizedImage src={logoImageUrl} alt={collectionName} size={32} />
           </CollectionImage>
           <div className="min-w-0 flex-1">
             <CollectionName title={collectionName} darkMode={darkMode}>
@@ -671,7 +674,7 @@ const DesktopCollectionRow = ({ collection, idx, darkMode, handleRowClick }) => 
       <StyledCell
         align="center"
         darkMode={darkMode}
-        className="min-w-[140px] w-[140px] overflow-visible relative z-[101]"
+        className="overflow-visible relative z-[101]"
       >
         <div className="w-full flex justify-center">
           <NFTSparklineChart slug={slug} period="7d" />
@@ -725,7 +728,7 @@ const DesktopCollectionRow = ({ collection, idx, darkMode, handleRowClick }) => 
         {fIntNumber(items)}
       </StyledCell>
 
-      <StyledCell align="right" darkMode={darkMode} fontWeight={400} className="pr-4">
+      <StyledCell align="right" darkMode={darkMode} fontWeight={400} isLast={true}>
         <span className={cn('font-sans font-medium', darkMode ? 'text-white/45' : 'text-black/50')}>
           {origin || 'XRPL'}
         </span>
@@ -865,7 +868,7 @@ const ListToolbar = memo(function ListToolbar({ rows, setRows, page, setPage, to
           disabled={!hasPrev}
           aria-label="Previous page"
           className={cn(
-            'p-1.5 rounded-xl border-[1.5px] transition-[background-color,border-color]',
+            'p-1.5 rounded-lg border-[1.5px] transition-[background-color,border-color]',
             !hasPrev ? 'opacity-30 cursor-not-allowed' : '',
             darkMode
               ? 'text-white/50 border-white/10 hover:border-white/[0.15] hover:bg-white/[0.02]'
@@ -888,7 +891,7 @@ const ListToolbar = memo(function ListToolbar({ rows, setRows, page, setPage, to
           disabled={!hasNext}
           aria-label="Next page"
           className={cn(
-            'p-1.5 rounded-xl border-[1.5px] transition-[background-color,border-color]',
+            'p-1.5 rounded-lg border-[1.5px] transition-[background-color,border-color]',
             !hasNext ? 'opacity-30 cursor-not-allowed' : '',
             darkMode
               ? 'text-white/50 border-white/10 hover:border-white/[0.15] hover:bg-white/[0.02]'
@@ -907,18 +910,37 @@ export default function CollectionList({
   type,
   category,
   tag,
+  origin,
   onGlobalMetrics,
   initialCollections = [],
-  initialTotal = 0
+  initialTotal = 0,
+  rows: rowsProp,
+  setRows: setRowsProp,
+  orderBy: orderByProp,
+  setOrderBy: setOrderByProp,
+  order: orderProp,
+  setOrder: setOrderProp,
+  sync: syncProp,
+  setSync: setSyncProp
 }) {
   const BASE_URL = 'https://api.xrpl.to/v1';
   const { themeName } = useContext(ThemeContext);
   const darkMode = themeName === 'XrplToDarkTheme';
 
   const [page, setPage] = useState(0);
-  const [rows, setRows] = useState(20);
-  const [order, setOrder] = useState('desc');
-  const [orderBy, setOrderBy] = useState('totalVol24h');
+  const [rowsLocal, setRowsLocal] = useState(20);
+  const [orderLocal, setOrderLocal] = useState('desc');
+  const [orderByLocal, setOrderByLocal] = useState('totalVol24h');
+  const [syncLocal, setSyncLocal] = useState(0);
+
+  const rows = rowsProp !== undefined ? rowsProp : rowsLocal;
+  const setRows = setRowsProp || setRowsLocal;
+  const order = orderProp !== undefined ? orderProp : orderLocal;
+  const setOrder = setOrderProp || setOrderLocal;
+  const orderBy = orderByProp !== undefined ? orderByProp : orderByLocal;
+  const setOrderBy = setOrderByProp || setOrderByLocal;
+  const sync = syncProp !== undefined ? syncProp : syncLocal;
+  const setSync = setSyncProp || setSyncLocal;
 
   const [total, setTotal] = useState(initialTotal);
   const [collections, setCollections] = useState(initialCollections);
@@ -926,7 +948,6 @@ export default function CollectionList({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const [sync, setSync] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
@@ -939,10 +960,10 @@ export default function CollectionList({
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // Reset page when tag changes
+  // Reset page when tag or origin changes
   useEffect(() => {
     setPage(0);
-  }, [tag]);
+  }, [tag, origin]);
 
   useEffect(() => {
     // Only fetch if not initial load (page change, sort change, etc)
@@ -952,6 +973,7 @@ export default function CollectionList({
       orderBy === 'totalVol24h' &&
       rows === 20 &&
       !tag &&
+      !origin &&
       initialCollections.length > 0
     ) {
       // Reset to initial data when returning to page 1 with default settings
@@ -974,6 +996,9 @@ export default function CollectionList({
 
       if (tag) {
         params.set('tag', tag);
+      }
+      if (origin) {
+        params.set('origin', origin);
       }
 
       api
@@ -999,7 +1024,7 @@ export default function CollectionList({
         });
     };
     loadCollections();
-  }, [sync, order, orderBy, page, rows, tag]);
+  }, [sync, order, orderBy, page, rows, tag, origin]);
 
   const handleRequestSort = useCallback(
     (event, id) => {
@@ -1067,6 +1092,23 @@ export default function CollectionList({
       ) : (
         <TableContainer darkMode={darkMode}>
           <StyledTable>
+            <colgroup>
+              <col style={{ width: '2.5%' }} />  {/* # */}
+              <col style={{ width: '12%' }} />   {/* Collection */}
+              <col style={{ width: '6.5%' }} />  {/* Floor */}
+              <col style={{ width: '8.5%' }} />  {/* Trendline */}
+              <col style={{ width: '6%' }} />    {/* Change 24h */}
+              <col style={{ width: '7%' }} />    {/* Vol 24h */}
+              <col style={{ width: '7%' }} />    {/* Vol All */}
+              <col style={{ width: '7.5%' }} />  {/* Created */}
+              <col style={{ width: '6%' }} />    {/* Sales 24h */}
+              <col style={{ width: '6.5%' }} />  {/* Sales All */}
+              <col style={{ width: '8%' }} />    {/* Market Cap */}
+              <col style={{ width: '5.5%' }} />  {/* Listed */}
+              <col style={{ width: '5.5%' }} />  {/* Owners */}
+              <col style={{ width: '5.5%' }} />  {/* Supply */}
+              <col style={{ width: '6%' }} />    {/* Source */}
+            </colgroup>
             <ListHead
               order={order}
               orderBy={orderBy}

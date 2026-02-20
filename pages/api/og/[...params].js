@@ -62,9 +62,17 @@ async function fetchNftData(nftokenid) {
   }
 }
 
+// Trusted domains for image fetching (prevent SSRF)
+const TRUSTED_IMAGE_HOSTS = ['s1.xrpl.to', 'xrpl.to', 'ipfs.io'];
+
 // Fetch image, convert to PNG via sharp, return as base64 data URI
 async function fetchImageAsDataUri(url) {
   try {
+    // Validate URL is from a trusted domain to prevent SSRF
+    const parsed = new URL(url);
+    if (parsed.protocol !== 'https:' || !TRUSTED_IMAGE_HOSTS.includes(parsed.hostname)) {
+      return null;
+    }
     const res = await fetch(url);
     if (!res.ok) return null;
     const buf = Buffer.from(await res.arrayBuffer());
@@ -567,7 +575,16 @@ function StaticLayout({ config }) {
   );
 }
 
+// Simple in-memory rate limiter to prevent OG image generation floods
+const ogRateLimit = { active: 0, maxConcurrent: 5 };
+
 export default async function handler(req, res) {
+  // Reject if too many concurrent OG image generations
+  if (ogRateLimit.active >= ogRateLimit.maxConcurrent) {
+    res.setHeader('Retry-After', '2');
+    return res.status(429).json({ error: 'Too many requests, try again shortly' });
+  }
+  ogRateLimit.active++;
   try {
     const protocol = req.headers['x-forwarded-proto'] || 'http';
     const host = req.headers.host || 'localhost:3002';
@@ -963,5 +980,7 @@ export default async function handler(req, res) {
   } catch (e) {
     console.error('[og] Error:', e);
     res.status(500).end('Error generating image');
+  } finally {
+    ogRateLimit.active--;
   }
 }

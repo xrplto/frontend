@@ -761,6 +761,7 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
       try {
         const res = await fetch(`/api/ws/session?type=balancePair&id=${account}&${params}`);
         const { wsUrl, apiKey } = await res.json();
+        if (!wsUrl || !/^wss?:\/\//i.test(wsUrl)) return;
         ws = new WebSocket(wsUrl);
 
         ws.onopen = () => { if (apiKey) ws.send(JSON.stringify({ type: 'auth', apiKey })); };

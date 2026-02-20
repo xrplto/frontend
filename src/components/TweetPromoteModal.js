@@ -646,10 +646,10 @@ export default function TweetPromoteModal({ token, tweetCount = 0, onCountChange
         onClick={() => setIsOpen(true)}
         className={className}
       >
-        <XSocialIcon size={12} /> Promote
+        <XSocialIcon size={11} /> Promote
         {tweetCount > 0 && (
           <span className={cn(
-            'ml-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-bold',
+            'ml-0.5 px-1 py-px rounded-full text-[8px] font-bold',
             isDark ? 'bg-white/10 text-white/60' : 'bg-black/[0.06] text-gray-500'
           )}>
             {tweetCount}

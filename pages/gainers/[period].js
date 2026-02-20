@@ -16,7 +16,7 @@ function getInitialTokens(data) {
   return [];
 }
 
-function GainersPage({ data, period }) {
+function GainersPage({ data, period, sortBy }) {
   const [tokens, setTokens] = useState(() => getInitialTokens(data));
   const tMap = useMemo(() => {
     const map = new Map();
@@ -64,7 +64,7 @@ function GainersPage({ data, period }) {
           <div className="w-full">
             {data && data.tags ? (
               <>
-                <TokenList tags={data.tags} tokens={tokens} tMap={tMap} setTokens={setTokens} />
+                <TokenList tags={data.tags} tokens={tokens} tMap={tMap} setTokens={setTokens} initialOrderBy={sortBy} />
               </>
             ) : (
               <></>
@@ -153,7 +153,7 @@ export async function getStaticProps({ params }) {
     };
     ogp.jsonLd = itemListSchema;
 
-    ret = { data, ogp, period: params.period };
+    ret = { data, ogp, period: params.period, sortBy };
   }
 
   return {

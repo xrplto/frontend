@@ -1771,7 +1771,8 @@ export default function WalletPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to create checkout');
       if (!data.checkoutUrl || typeof data.checkoutUrl !== 'string') throw new Error('Invalid checkout response');
-      window.location.href = data.checkoutUrl;
+      const { safeCheckoutRedirect } = await import('src/utils/api');
+      if (!safeCheckoutRedirect(data.checkoutUrl)) throw new Error('Invalid checkout URL');
     } catch (e) {
       setProfileError(e.message);
     }

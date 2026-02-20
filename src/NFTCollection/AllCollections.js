@@ -1,4 +1,4 @@
-import React, { useState, useContext, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useContext, useMemo, useEffect, useRef, forwardRef } from 'react';
 import { createPortal } from 'react-dom';
 import { format } from 'date-fns';
 import { useRouter } from 'next/router';
@@ -6,7 +6,7 @@ import CollectionList from './CollectionList';
 import { cn } from 'src/utils/cn';
 import { fVolume, fIntNumber, normalizeTag } from 'src/utils/formatters';
 import { ThemeContext } from 'src/context/AppContext';
-import { X, Search } from 'lucide-react';
+import { X, Search, Flame, TrendingUp, Sparkles, Clock } from 'lucide-react';
 import { ApiButton } from 'src/components/ApiEndpointsModal';
 
 // Constants
@@ -494,19 +494,18 @@ const CollectionCreationChart = ({ data, isDark }) => {
 };
 
 // Tags Bar Components
-const TagsContainer = ({ isDark, className, children, ...p }) => (
+const TagsContainer = forwardRef(({ isDark, className, children, ...p }, ref) => (
   <div
+    ref={ref}
     className={cn(
-      'flex flex-col gap-2 rounded-xl border-[1.5px] backdrop-blur-[12px] py-[10px] px-[14px] relative box-border overflow-hidden',
-      'before:content-[""] before:absolute before:-top-[60px] before:-right-[60px] before:w-[180px] before:h-[180px] before:rounded-full before:bg-[radial-gradient(circle,rgba(19,125,254,0.2)_0%,transparent_70%)] before:blur-[40px] before:pointer-events-none before:z-0',
-      '[&>*]:relative [&>*]:z-[1]',
+      'flex flex-col gap-2 rounded-xl border-[1.5px] backdrop-blur-[12px] py-[10px] px-[14px] box-border',
       'max-sm:py-[6px] max-sm:px-2 max-sm:gap-[6px]',
       isDark ? 'border-white/[0.08] bg-[rgba(10,10,10,0.5)]' : 'border-black/[0.06] bg-white/50',
       className
     )}
     {...p}
   >{children}</div>
-);
+));
 
 const TagsRow = ({ className, children, ...p }) => (
   <div className={cn('flex items-center gap-[6px] w-full', className)} {...p}>{children}</div>
@@ -542,14 +541,105 @@ const TagChip = ({ selected, isDark, className, children, ...p }) => (
 const AllTagsButton = ({ isDark, className, children, ...p }) => (
   <button
     className={cn(
-      'inline-flex items-center gap-1 px-3 border-none rounded-2xl text-blue-500 text-[0.7rem] font-medium cursor-pointer whitespace-nowrap h-[26px] shrink-0 ml-auto transition-[background-color] duration-150 hover:bg-blue-500/20',
-      'max-sm:text-[0.68rem] max-sm:h-6 max-sm:px-2 max-sm:gap-[3px]',
-      isDark ? 'bg-blue-500/[0.15]' : 'bg-blue-500/10',
+      'inline-flex items-center gap-1 px-2 border-[1.5px] rounded-[6px] text-blue-500 text-[0.68rem] font-medium cursor-pointer whitespace-nowrap h-6 shrink-0 ml-auto transition-[background-color,border-color,opacity] duration-150 hover:bg-blue-500/[0.15]',
+      'max-sm:text-[0.62rem] max-sm:h-[22px] max-sm:px-[6px] max-sm:gap-[2px]',
+      isDark ? 'bg-blue-500/[0.08] border-blue-500/20' : 'bg-blue-500/[0.05] border-blue-500/15',
       className
     )}
     {...p}
   >{children}</button>
 );
+
+const Row = ({ spaceBetween, className, children, ...p }) => (
+  <div
+    className={cn(
+      'flex items-center gap-[6px] flex-row w-full relative overflow-y-visible',
+      spaceBetween ? 'justify-between' : 'justify-start',
+      'flex-wrap overflow-x-hidden',
+      'max-sm:gap-[5px] max-sm:overflow-x-auto max-sm:flex-nowrap max-sm:pb-[2px] max-sm:[scrollbar-width:none] max-sm:[&::-webkit-scrollbar]:hidden',
+      className
+    )}
+    {...p}
+  >{children}</div>
+);
+
+const RowContent = ({ className, children, ...p }) => (
+  <div
+    className={cn(
+      'flex items-center gap-1 flex-wrap flex-auto',
+      'max-sm:gap-1 max-sm:flex-nowrap max-sm:overflow-x-auto max-sm:mr-2 max-sm:[scrollbar-width:none] max-sm:[&::-webkit-scrollbar]:hidden',
+      className
+    )}
+    style={{ WebkitOverflowScrolling: 'touch' }}
+    {...p}
+  >{children}</div>
+);
+
+const Stack = ({ className, children, ...p }) => (
+  <div className={cn('flex flex-row gap-[6px] items-center shrink-0 relative z-[1] max-sm:gap-[3px] max-sm:touch-manipulation', className)} {...p}>{children}</div>
+);
+
+const SortSelector = ({ isDark, className, children, ...p }) => {
+  const bgImage = isDark
+    ? `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.6)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e")`
+    : `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='rgba(0,0,0,0.5)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e")`;
+  return (
+    <select
+      className={cn(
+        'rounded-lg border-[1.5px] text-xs font-medium cursor-pointer h-8 min-w-[70px] appearance-none transition-[background-color,border-color,opacity] duration-150',
+        'hover:border-blue-500/50 focus:outline-none focus:border-blue-500',
+        'max-sm:text-[0.62rem] max-sm:h-[26px] max-sm:min-w-[48px] max-sm:pl-[6px] max-sm:pr-5',
+        isDark ? 'border-white/10 bg-black/40 text-white/85 [&_option]:bg-[#0a0a0a] [&_option]:text-[#e5e5e5]' : 'border-black/[0.08] bg-white/90 text-black/70 [&_option]:bg-white [&_option]:text-[#1a1a1a]',
+        isDark ? 'hover:bg-blue-500/10' : 'hover:bg-blue-500/[0.05]',
+        className
+      )}
+      style={{
+        padding: '0 28px 0 12px',
+        backgroundImage: bgImage,
+        backgroundRepeat: 'no-repeat',
+        backgroundPosition: 'right 10px center',
+        backgroundSize: '12px'
+      }}
+      {...p}
+    >{children}</select>
+  );
+};
+
+const MarketplaceGroup = ({ isDark, className, children, ...p }) => (
+  <div
+    className={cn('st-lp-group inline-flex items-center gap-[2px] py-[3px] pl-2 pr-[6px] rounded-[6px] border ml-2', isDark ? 'bg-white/[0.06] border-white/[0.12]' : 'bg-black/[0.04] border-black/[0.1]', className)}
+    {...p}
+  >{children}</div>
+);
+
+const MarketplaceLabel = ({ isDark, className, children, ...p }) => (
+  <span
+    className={cn('st-lp-label text-[0.6rem] font-semibold uppercase tracking-[0.05em] mr-1', isDark ? 'text-white/60' : 'text-black/60', className)}
+    {...p}
+  >{children}</span>
+);
+
+const MarketplaceChip = ({ selected, isDark, className, children, ...p }) => (
+  <button
+    className={cn(
+      'st-lp-chip inline-flex items-center px-[6px] border-none rounded text-[0.65rem] cursor-pointer whitespace-nowrap h-5 shrink-0 transition-[background-color,border-color,opacity] duration-150',
+      'hover:bg-blue-500/10 hover:text-blue-500',
+      selected ? 'bg-blue-500/[0.15] text-blue-500 font-medium' : cn('bg-transparent', isDark ? 'text-white/60 font-normal' : 'text-[#212B36]/60 font-normal'),
+      className
+    )}
+    {...p}
+  >{children}</button>
+);
+
+const NFT_MARKETPLACES = [
+  { id: 'xrp.cafe', name: 'xrp.cafe' },
+  { id: 'Sologenic', name: 'Sologenic' },
+  { id: 'xmart.art', name: 'xmart.art' },
+  { id: 'onXRP', name: 'onXRP' },
+  { id: 'OpulenceX', name: 'OpulenceX' },
+  { id: 'XPMarket', name: 'XPMarket' },
+  { id: 'xrpnft.com', name: 'xrpnft.com' }
+];
 
 const Drawer = ({ open, className, children, ...p }) => (
   <div className={cn('fixed inset-0 z-[1300]', open ? 'block' : 'hidden', className)} {...p}>{children}</div>
@@ -671,8 +761,16 @@ function Collections({
   const [tagsDrawerOpen, setTagsDrawerOpen] = useState(false);
   const [tagSearch, setTagSearch] = useState('');
   const [selectedTag, setSelectedTag] = useState(router.query.tag || null);
+  const [selectedOrigin, setSelectedOrigin] = useState(router.query.origin || null);
+  const [activeView, setActiveView] = useState('all');
   const [copied, setCopied] = useState(false);
+  const [rows, setRows] = useState(20);
+  const [orderBy, setOrderBy] = useState('totalVol24h');
+  const [order, setOrder] = useState('desc');
+  const [sync, setSync] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
+  const [visibleTagCount, setVisibleTagCount] = useState(0);
+  const tagsContainerRef = useRef(null);
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 600);
@@ -681,6 +779,35 @@ function Collections({
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
+  // Calculate how many tags can fit (same heuristic as SearchToolbar)
+  useEffect(() => {
+    if (!tags || tags.length === 0) return;
+
+    const calculateVisibleTags = () => {
+      const containerWidth = tagsContainerRef.current?.offsetWidth || window.innerWidth;
+      const mobile = window.innerWidth <= 600;
+      const allTagsWidth = mobile ? 60 : 100;
+      const availableWidth = containerWidth - allTagsWidth - 20;
+      const avgTagWidth = mobile ? 60 : 90;
+      const count = Math.floor(Math.max(availableWidth, 0) / avgTagWidth);
+      setVisibleTagCount(Math.max(mobile ? 5 : 8, Math.min(count, tags.length)));
+    };
+
+    calculateVisibleTags();
+
+    let resizeTimer;
+    const handleResize = () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(calculateVisibleTags, 150);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      clearTimeout(resizeTimer);
+    };
+  }, [tags]);
+
   // Sync selectedTag with URL query
   useEffect(() => {
     const urlTag = router.query.tag || null;
@@ -688,8 +815,6 @@ function Collections({
       setSelectedTag(urlTag);
     }
   }, [router.query.tag]);
-
-  const visibleTagCount = isMobile ? 5 : 10;
 
   // Helper to get tag name from tag object or string
   const getTagName = (t) => (typeof t === 'object' ? t.tag : t);
@@ -705,11 +830,36 @@ function Collections({
   const handleTagClick = (tag) => {
     const newTag = selectedTag === tag ? null : tag;
     setSelectedTag(newTag);
+    setActiveView('all');
     setTagsDrawerOpen(false);
-    // Update URL without full page reload
     router.push(newTag ? `/nfts?tag=${encodeURIComponent(newTag)}` : '/nfts', undefined, {
       shallow: true
     });
+  };
+
+  const handleViewClick = (view) => {
+    if (activeView === view) {
+      // Reset to default
+      setActiveView('all');
+      setOrderBy('totalVol24h');
+      setOrder('desc');
+      setSync((prev) => prev + 1);
+    } else {
+      setActiveView(view);
+      // Map views to sort fields
+      const viewSortMap = {
+        new: { sortBy: 'created', order: 'desc' },
+        trending: { sortBy: 'trendingScore', order: 'desc' },
+        hot: { sortBy: 'sales24h', order: 'desc' },
+        rising: { sortBy: 'floor1dPercent', order: 'desc' }
+      };
+      const config = viewSortMap[view];
+      if (config) {
+        setOrderBy(config.sortBy);
+        setOrder(config.order);
+        setSync((prev) => prev + 1);
+      }
+    }
   };
 
   const filteredTags = useMemo(() => {
@@ -1061,24 +1211,12 @@ function Collections({
       {/* Tags Bar */}
       {tags && tags.length > 0 && (
         <Container>
-          <TagsContainer isDark={isDark}>
+          <TagsContainer isDark={isDark} ref={tagsContainerRef}>
+            {/* Row 1: Categories + All button */}
             <TagsRow>
               <TagsScrollArea>
-                {/* All NFTs button - always visible */}
-                <TagChip
-                  isDark={isDark}
-                  selected={!selectedTag}
-                  onClick={() => setSelectedTag(null)}
-                >
-                  All NFTs
-                </TagChip>
-                {selectedTag && (
-                  <TagChip isDark={isDark} selected onClick={() => setSelectedTag(null)}>
-                    <span>{selectedTag}</span> <X size={12} />
-                  </TagChip>
-                )}
                 {tags
-                  .slice(0, selectedTag ? visibleTagCount - 2 : visibleTagCount - 1)
+                  .slice(0, visibleTagCount)
                   .filter((t) => getTagName(t) !== selectedTag)
                   .map((t) => {
                     const tagName = getTagName(t);
@@ -1086,6 +1224,7 @@ function Collections({
                       <TagChip
                         key={tagName}
                         isDark={isDark}
+                        selected={selectedTag === tagName}
                         onClick={() => handleTagClick(tagName)}
                       >
                         <span>{tagName}</span>
@@ -1094,14 +1233,107 @@ function Collections({
                   })}
               </TagsScrollArea>
               <AllButtonWrapper>
-                <div className="flex gap-1.5">
-                  <ApiButton />
-                  <AllTagsButton isDark={isDark} onClick={() => setTagsDrawerOpen(true)}>
-                    <span>All {tags.length > visibleTagCount ? `(${tags.length})` : ''}</span>
-                  </AllTagsButton>
-                </div>
+                <AllTagsButton isDark={isDark} onClick={() => setTagsDrawerOpen(true)}>
+                  <span>All {tags.length > visibleTagCount ? `(${tags.length})` : ''}</span>
+                </AllTagsButton>
               </AllButtonWrapper>
             </TagsRow>
+
+            {/* Row 2: View chips + Marketplaces (left) | Sort + Rows + API (right) */}
+            <Row spaceBetween>
+              <RowContent>
+                <TagChip
+                  isDark={isDark}
+                  selected={activeView === 'all'}
+                  onClick={() => { setActiveView('all'); setSelectedTag(null); setOrderBy('totalVol24h'); setOrder('desc'); setSync((prev) => prev + 1); }}
+                >
+                  Collections
+                </TagChip>
+                <TagChip
+                  isDark={isDark}
+                  selected={activeView === 'new'}
+                  onClick={() => handleViewClick('new')}
+                >
+                  <Clock size={13} />
+                  <span>New</span>
+                </TagChip>
+                <TagChip
+                  isDark={isDark}
+                  selected={activeView === 'trending'}
+                  onClick={() => handleViewClick('trending')}
+                >
+                  <Flame size={13} />
+                  <span>Trending</span>
+                </TagChip>
+                <TagChip
+                  isDark={isDark}
+                  selected={activeView === 'hot'}
+                  onClick={() => handleViewClick('hot')}
+                >
+                  <TrendingUp size={13} />
+                  <span>Hot</span>
+                </TagChip>
+                <TagChip
+                  isDark={isDark}
+                  selected={activeView === 'rising'}
+                  onClick={() => handleViewClick('rising')}
+                >
+                  <Sparkles size={13} />
+                  <span>Rising</span>
+                </TagChip>
+
+                {/* Marketplaces group */}
+                <MarketplaceGroup isDark={isDark}>
+                  <MarketplaceLabel isDark={isDark}>Marketplaces</MarketplaceLabel>
+                  {NFT_MARKETPLACES.map((mp) => (
+                    <MarketplaceChip
+                      key={mp.id}
+                      isDark={isDark}
+                      selected={selectedOrigin === mp.id}
+                      onClick={() => setSelectedOrigin(selectedOrigin === mp.id ? null : mp.id)}
+                    >
+                      {mp.name}
+                    </MarketplaceChip>
+                  ))}
+                </MarketplaceGroup>
+              </RowContent>
+
+              {/* Sort + Rows + API on the right */}
+              <Stack className="ml-auto gap-[6px]">
+                <SortSelector
+                  isDark={isDark}
+                  value={orderBy}
+                  onChange={(e) => {
+                    setOrderBy(e.target.value);
+                    setActiveView('all');
+                    setSync((prev) => prev + 1);
+                  }}
+                  aria-label="Sort by"
+                >
+                  <option value="totalVol24h">{isMobile ? 'Vol 24H' : 'Volume 24H'}</option>
+                  <option value="totalVolume">{isMobile ? 'Vol All' : 'Volume All'}</option>
+                  <option value="trendingScore">Trending</option>
+                  <option value="floor">Floor</option>
+                  <option value="floor1dPercent">{isMobile ? 'Chg 24H' : 'Change 24H'}</option>
+                  <option value="marketcap.amount">{isMobile ? 'MCap' : 'Market Cap'}</option>
+                  <option value="sales24h">{isMobile ? 'Sales 24H' : 'Sales 24H'}</option>
+                  <option value="owners">Owners</option>
+                  <option value="items">Supply</option>
+                  <option value="created">Newest</option>
+                </SortSelector>
+                <SortSelector
+                  isDark={isDark}
+                  value={rows}
+                  onChange={(e) => setRows(parseInt(e.target.value))}
+                  aria-label="Rows per page"
+                >
+                  <option value="20">20</option>
+                  <option value="50">50</option>
+                  <option value="100">100</option>
+                </SortSelector>
+                <ApiButton />
+              </Stack>
+            </Row>
           </TagsContainer>
         </Container>
       )}
@@ -1112,9 +1344,18 @@ function Collections({
           <CollectionList
             type={CollectionListType.ALL}
             tag={selectedTag}
+            origin={selectedOrigin}
             onGlobalMetrics={setGlobalMetrics}
             initialCollections={initialCollections}
             initialTotal={initialTotal}
+            rows={rows}
+            setRows={setRows}
+            orderBy={orderBy}
+            setOrderBy={setOrderBy}
+            order={order}
+            setOrder={setOrder}
+            sync={sync}
+            setSync={setSync}
           />
         </div>
       </Container>

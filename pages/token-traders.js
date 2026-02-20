@@ -609,16 +609,25 @@ export default function TokenTradersPage({ traders = [], pagination = {}, trader
   );
 }
 
-export async function getServerSideProps({ query }) {
+export async function getServerSideProps({ query, res }) {
+  // Cache SSR response for 30s to prevent expensive API calls under load
+  res.setHeader('Cache-Control', 'public, s-maxage=30, stale-while-revalidate=120');
+
   const page = parseInt(query.page) || 1;
   const sortBy = query.sortBy || 'totalProfit';
+
+  // Validate inputs to prevent abuse
+  const safePage = Math.min(Math.max(1, page), 10000);
+  const allowedSorts = ['totalProfit', 'totalVolume', 'totalTrades', 'buyVolume', 'sellVolume', 'avgROI', 'winRate', 'washTradingScore', 'lastActive', 'xrpBalance'];
+  const safeSortBy = allowedSorts.includes(sortBy) ? sortBy : 'totalProfit';
 
   try {
     const [tradersRes, summaryRes] = await Promise.all([
       api.get(
-        `${BASE_URL}/token/analytics/traders?sortBy=${sortBy}&limit=${ROWS_PER_PAGE}&page=${page}`
+        `${BASE_URL}/token/analytics/traders?sortBy=${safeSortBy}&limit=${ROWS_PER_PAGE}&page=${safePage}`,
+        { timeout: 8000 }
       ),
-      api.get(`${BASE_URL}/token/analytics/traders/summary`)
+      api.get(`${BASE_URL}/token/analytics/traders/summary`, { timeout: 8000 })
     ]);
     const rawTraders = tradersRes.data.data || [];
     const traders = rawTraders.map(t => ({

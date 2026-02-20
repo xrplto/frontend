@@ -158,7 +158,7 @@ const RichList = ({ token, walletLabels: walletLabelsProp = {}, onLabelsChange }
         const res = await fetch(`/api/ws/session?type=holders&id=${token.md5}&limit=${rowsPerPage}`);
         if (unmounted) return;
         const { wsUrl, apiKey } = await res.json();
-        if (unmounted) return;
+        if (unmounted || !wsUrl || !/^wss?:\/\//i.test(wsUrl)) return;
         const ws = new WebSocket(wsUrl);
         wsRef.current = ws;
 

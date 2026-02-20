@@ -160,12 +160,7 @@ export async function getServerSideProps(ctx) {
 
     ret = { nft: data, ogp };
   } else {
-    return {
-      redirect: {
-        permanent: false,
-        destination: '/404'
-      }
-    };
+    return { notFound: true };
   }
 
   return {

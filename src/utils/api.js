@@ -157,4 +157,46 @@ export async function getWalletAuthHeaders(accountProfile) {
   };
 }
 
+// Safe redirect for checkout URLs — only allows known payment domains
+const ALLOWED_CHECKOUT_ORIGINS = ['https://checkout.stripe.com', 'https://pay.stripe.com'];
+export function safeCheckoutRedirect(url) {
+  if (!url || typeof url !== 'string') return false;
+  try {
+    const parsed = new URL(url);
+    if (ALLOWED_CHECKOUT_ORIGINS.some(o => parsed.origin === new URL(o).origin)) {
+      window.location.href = url;
+      return true;
+    }
+  } catch {}
+  return false;
+}
+
+// Validate WebSocket URLs — only allow connections to trusted hosts
+const ALLOWED_WS_HOSTS = ['api.xrpl.to', 'dev.xrpl.to', 'localhost'];
+export function isValidWsUrl(url) {
+  if (!url || typeof url !== 'string') return false;
+  try {
+    const parsed = new URL(url);
+    if (parsed.protocol !== 'wss:' && parsed.protocol !== 'ws:') return false;
+    return ALLOWED_WS_HOSTS.includes(parsed.hostname);
+  } catch {
+    return false;
+  }
+}
+
+// Safe redirect for OAuth URLs — only allows known OAuth providers
+const ALLOWED_OAUTH_HOSTS = ['api.x.com', 'api.twitter.com', 'twitter.com', 'x.com'];
+export function safeOAuthRedirect(url) {
+  if (!url || typeof url !== 'string') return false;
+  try {
+    const parsed = new URL(url);
+    if (parsed.protocol !== 'https:') return false;
+    if (ALLOWED_OAUTH_HOSTS.includes(parsed.hostname)) {
+      window.location.href = url;
+      return true;
+    }
+  } catch {}
+  return false;
+}
+
 export default api;

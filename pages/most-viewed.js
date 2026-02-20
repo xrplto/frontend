@@ -98,7 +98,8 @@ function MostViewedPage({ data }) {
 
 export default MostViewedPage;
 
-export async function getServerSideProps() {
+export async function getServerSideProps({ res }) {
+  res.setHeader('Cache-Control', 'public, s-maxage=30, stale-while-revalidate=120');
   const data = await getTokens('nginxScore', 'desc');
 
   let ret = {};

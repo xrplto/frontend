@@ -4303,30 +4303,34 @@ syncWs.onopen = () => {
                   >
                     {JSON.stringify(apiResponse, null, 2)
                       .split('\n')
-                      .map((line, i) => (
-                        <div
-                          key={i}
-                          dangerouslySetInnerHTML={{
-                            __html: line
-                              .replace(
-                                /"([^"]+)":/g,
-                                `<span class="${isDark ? 'text-[#7dd3fc]' : 'text-cyan-600'}">"$1"</span>:`
-                              )
-                              .replace(
-                                /: "([^"]*)"/g,
-                                `: <span class="${isDark ? 'text-[#fde047]' : 'text-amber-600'}">"$1"</span>`
-                              )
-                              .replace(
-                                /: (\d+\.?\d*)/g,
-                                `: <span class="${isDark ? 'text-[#a78bfa]' : 'text-purple-600'}">$1</span>`
-                              )
-                              .replace(
-                                /: (true|false|null)/g,
-                                `: <span class="${isDark ? 'text-[#f472b6]' : 'text-pink-600'}">$1</span>`
-                              )
-                          }}
-                        />
-                      ))}
+                      .map((line, i) => {
+                        // Escape HTML entities first to prevent XSS from API response data
+                        const escaped = line.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                        return (
+                          <div
+                            key={i}
+                            dangerouslySetInnerHTML={{
+                              __html: escaped
+                                .replace(
+                                  /"([^"]+)":/g,
+                                  `<span class="${isDark ? 'text-[#7dd3fc]' : 'text-cyan-600'}">"$1"</span>:`
+                                )
+                                .replace(
+                                  /: "([^"]*)"/g,
+                                  `: <span class="${isDark ? 'text-[#fde047]' : 'text-amber-600'}">"$1"</span>`
+                                )
+                                .replace(
+                                  /: (\d+\.?\d*)/g,
+                                  `: <span class="${isDark ? 'text-[#a78bfa]' : 'text-purple-600'}">$1</span>`
+                                )
+                                .replace(
+                                  /: (true|false|null)/g,
+                                  `: <span class="${isDark ? 'text-[#f472b6]' : 'text-pink-600'}">$1</span>`
+                                )
+                            }}
+                          />
+                        );
+                      })}
                   </pre>
                 ) : null}
               </div>

@@ -197,22 +197,28 @@ function TokenListComponent({
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(0);
   const [order, setOrder] = useState('desc');
+  // When a page explicitly sets initialOrderBy (e.g. /new uses "dateon"),
+  // always use it — don't let localStorage override page-specific sort.
+  const hasExplicitSort = initialOrderBy && initialOrderBy !== 'vol24hxrp';
   const [orderBy, setOrderBy] = useState(() => {
+    if (hasExplicitSort) return initialOrderBy;
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('tokenListSortBy');
       if (saved) return saved;
     }
-    return initialOrderBy || 'vol24hxrp';
+    return 'vol24hxrp';
   });
   const [sync, setSync] = useState(() => {
     if (!tokens?.length) return 1;
-    // If saved sort differs from default, force a re-fetch
-    if (typeof window !== 'undefined' && localStorage.getItem('tokenListSortBy') && localStorage.getItem('tokenListSortBy') !== (initialOrderBy || 'vol24hxrp')) return 1;
+    // If no explicit sort and saved sort differs from default, force a re-fetch
+    if (!hasExplicitSort && typeof window !== 'undefined' && localStorage.getItem('tokenListSortBy') && localStorage.getItem('tokenListSortBy') !== 'vol24hxrp') return 1;
     return 0;
   });
 
   // Clear SSR tokens immediately if user's saved sort differs from SSR sort
+  // (only applies when there's no explicit page-level sort override)
   useEffect(() => {
+    if (hasExplicitSort) return;
     const saved = localStorage.getItem('tokenListSortBy');
     if (saved && saved !== (initialOrderBy || 'vol24hxrp') && tokens?.length) {
       setTokens([]);
@@ -465,8 +471,8 @@ function TokenListComponent({
                 bearbullTime: Date.now()
               });
             }
-          } else if (autoAddNewTokens && update.name && update.dateon) {
-            // Add new token if autoAddNewTokens enabled and has required fields
+          } else if (autoAddNewTokens && update.name && update.dateon && update.isOMCF === 'yes') {
+            // Add new token if autoAddNewTokens enabled, has required fields, and is OMCF verified
             hasChanges = true;
             tokenMap.set(update.md5, { ...update, time: Date.now(), isNew: true });
           }
@@ -671,6 +677,7 @@ function TokenListComponent({
               sync={sync}
               currentOrderBy={orderBy}
               setOrderBy={setOrderBy}
+              skipSortPersist={hasExplicitSort}
               viewMode={viewMode}
               setViewMode={handleViewModeChange}
               customColumns={customColumns}
@@ -1036,6 +1043,7 @@ function TokenListComponent({
                 viewMode={viewMode}
                 rows={rows}
                 customColumns={customColumns}
+                noImageCache={autoAddNewTokens}
               />
             ))}
           </MobileContainer>
@@ -1076,6 +1084,7 @@ function TokenListComponent({
                     viewMode={viewMode}
                     customColumns={customColumns}
                     rows={rows}
+                    noImageCache={autoAddNewTokens}
                   />
                 ))}
               </StyledTableBody>

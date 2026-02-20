@@ -67,7 +67,7 @@ const NFTSparklineChart = memo(
     const fillColor = hexToRgba(color, 0.15);
 
     return (
-      <div ref={containerRef} className="w-[120px] h-8">
+      <div ref={containerRef} className="tr-spark w-[120px] h-8" style={{ '--spark-color': color || 'transparent' }}>
         {linePath ? (
           <svg
             width="120"

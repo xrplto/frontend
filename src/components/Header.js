@@ -299,7 +299,9 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
       sessionStorage.setItem('oauth1_token', data.oauth_token);
       sessionStorage.setItem('oauth1_token_secret', data.oauth_token_secret);
       sessionStorage.setItem('oauth1_auth_start', Date.now().toString());
-      window.location.href = data.auth_url.replace('api.twitter.com', 'api.x.com');
+      const transformedUrl = data.auth_url.replace('api.twitter.com', 'api.x.com');
+      const { safeOAuthRedirect } = await import('src/utils/api');
+      if (!safeOAuthRedirect(transformedUrl)) return;
     } catch { }
   };
 
@@ -372,7 +374,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
   // Load recent searches from localStorage
   useEffect(() => {
     const stored = localStorage.getItem('recentSearches');
-    if (stored) setRecentSearches(JSON.parse(stored));
+    if (stored) { try { setRecentSearches(JSON.parse(stored)); } catch {} }
   }, []);
 
   const tokensRef = useRef(null);

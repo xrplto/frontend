@@ -153,7 +153,10 @@ export default function BoostModal({ token, onClose, onSuccess }) {
         ...(method ? { method } : {})
       });
       if (res.data?.checkoutUrl) {
-        window.location.href = res.data.checkoutUrl;
+        const { safeCheckoutRedirect } = await import('src/utils/api');
+        if (!safeCheckoutRedirect(res.data.checkoutUrl)) {
+          setError('Invalid checkout URL');
+        }
       } else {
         setError(res.data?.error || 'Failed to create checkout');
       }

@@ -836,6 +836,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
       try {
         const res = await fetch(`/api/ws/session?type=balancePair&id=${account}&${params}`);
         const { wsUrl, apiKey } = await res.json();
+        if (!wsUrl || !/^wss?:\/\//i.test(wsUrl)) return;
         ws = new WebSocket(wsUrl);
 
         ws.onopen = () => { attempts = 0; if (apiKey) ws.send(JSON.stringify({ type: 'auth', apiKey })); };
@@ -850,6 +851,8 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
             console.error('[Swap WS] Parse error:', err);
           }
         };
+
+        ws.onerror = () => ws.close();
 
         ws.onclose = () => {
           if (attempts < MAX_RECONNECT) {

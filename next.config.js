@@ -18,9 +18,11 @@ const config = {
   assetPrefix: isProd ? 'https://xrpl.to' : undefined,
   outputFileTracingRoot: __dirname,
   env: {
-    API_URL: process.env.API_URL,
     MAINTENANCE: process.env.MAINTENANCE,
     RUN_ENV: process.env.RUN_ENV
+  },
+  serverRuntimeConfig: {
+    API_URL: process.env.API_URL
   },
   // Only generate production source maps when explicitly enabled elsewhere
   productionBrowserSourceMaps: false,
@@ -69,7 +71,7 @@ const config = {
 
     const cspProd = [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval'", // unsafe-eval needed for some charting libs
+      "script-src 'self' 'unsafe-inline'", // unsafe-inline needed for Next.js inline scripts
       "style-src 'self' 'unsafe-inline'", // emotion/styled-jsx needs inline styles
       "img-src 'self' data: blob: https://s1.xrpl.to https://xrpl.to https://ipfs.io/ipfs/ https://content-api.changenow.io",
       "font-src 'self' data:",

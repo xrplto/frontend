@@ -190,7 +190,6 @@ export async function getStaticProps() {
 
   return {
     props: ret,
-    // Revalidate every 5 seconds (adjust as needed)
-    revalidate: 5
+    revalidate: 60
   };
 }

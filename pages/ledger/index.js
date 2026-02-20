@@ -734,6 +734,7 @@ export default function LedgerStreamPage() {
   const [networkStats, setNetworkStats] = useState({ tps: 0, successRate: 0, avgFee: 0 });
   const wsRef = useRef(null);
   const reconnectTimeoutRef = useRef(null);
+  const pingIntervalRef = useRef(null);
   const statsWindowRef = useRef({ txCounts: [], times: [], successes: [], totals: [], fees: [] });
 
   // Load from URL params
@@ -998,6 +999,7 @@ export default function LedgerStreamPage() {
     try {
       const res = await fetch('/api/ws/session?type=ledger');
       const { wsUrl, apiKey } = await res.json();
+      if (!wsUrl || !/^wss?:\/\//i.test(wsUrl)) return;
       const ws = new WebSocket(wsUrl);
 
       ws.onopen = () => {
@@ -1039,11 +1041,9 @@ export default function LedgerStreamPage() {
 
       wsRef.current = ws;
 
-      const pingInterval = setInterval(() => {
+      pingIntervalRef.current = setInterval(() => {
         if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'ping' }));
       }, 30000);
-
-      return () => clearInterval(pingInterval);
     } catch (e) {
       console.error('[Ledger WS] Session error:', e);
       setConnectionStatus('disconnected');
@@ -1055,6 +1055,7 @@ export default function LedgerStreamPage() {
     connectWebSocket();
     return () => {
       if (reconnectTimeoutRef.current) clearTimeout(reconnectTimeoutRef.current);
+      if (pingIntervalRef.current) clearInterval(pingIntervalRef.current);
       if (wsRef.current) wsRef.current.close();
     };
   }, [connectWebSocket]);
@@ -1376,6 +1377,7 @@ export async function getStaticProps() {
         imgType: 'image/png',
         desc: 'Explore the XRP Ledger in real-time. View transactions, accounts, and network activity.'
       }
-    }
+    },
+    revalidate: 3600
   };
 }
