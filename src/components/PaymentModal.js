@@ -214,6 +214,9 @@ export default function PaymentModal({
         isDark ? 'bg-black/70' : 'bg-white/60'
       )}
       onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Payment"
     >
       <div
         className={cn(
@@ -239,8 +242,9 @@ export default function PaymentModal({
           </div>
           <button
             onClick={onClose}
+            aria-label="Close"
             className={cn(
-              'p-2 rounded-lg transition-colors',
+              'p-2 rounded-lg transition-colors outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
               isDark ? 'hover:bg-white/10 text-white/50' : 'hover:bg-gray-100 text-gray-400'
             )}
           >
@@ -324,7 +328,7 @@ export default function PaymentModal({
                   <span className={cn('text-[11px] font-mono', isDark ? 'text-white/70' : 'text-gray-600')}>
                     {paymentInfo.destination?.slice(0, 8)}...{paymentInfo.destination?.slice(-6)}
                   </span>
-                  <button onClick={() => copyToClipboard(paymentInfo.destination, 'dest')} className="p-1 rounded hover:bg-white/10">
+                  <button onClick={() => copyToClipboard(paymentInfo.destination, 'dest')} aria-label="Copy destination address" className="p-1 rounded hover:bg-white/10 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]">
                     {copied === 'dest' ? <CheckCircle size={12} className="text-emerald-500" /> : <Copy size={12} className="opacity-50" />}
                   </button>
                 </div>
@@ -333,7 +337,7 @@ export default function PaymentModal({
                 <span className={cn('text-[12px]', isDark ? 'text-white/50' : 'text-gray-500')}>Destination Tag</span>
                 <div className="flex items-center gap-1">
                   <span className={cn('font-mono font-semibold text-primary')}>{paymentInfo.destinationTag}</span>
-                  <button onClick={() => copyToClipboard(String(paymentInfo.destinationTag), 'tag')} className="p-1 rounded hover:bg-white/10">
+                  <button onClick={() => copyToClipboard(String(paymentInfo.destinationTag), 'tag')} aria-label="Copy destination tag" className="p-1 rounded hover:bg-white/10 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]">
                     {copied === 'tag' ? <CheckCircle size={12} className="text-emerald-500" /> : <Copy size={12} className="opacity-50" />}
                   </button>
                 </div>

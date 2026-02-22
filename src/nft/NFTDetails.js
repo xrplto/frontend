@@ -6,6 +6,7 @@ import Link from 'next/link';
 import {
   Copy,
   Info,
+  ImageOff,
   ChevronLeft,
   ChevronRight,
   X,
@@ -118,8 +119,6 @@ function getProperties(meta) {
 const NFTPreviewComponent = memo(function NFTPreviewComponent({ nft, showDetails = false }) {
   const { themeName } = useContext(ThemeContext);
   const isDark = themeName === 'XrplToDarkTheme';
-  const noImg = '/static/nft_no_image.webp';
-
   // Slider state
   const [loadedSlider, setLoadedSlider] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -233,29 +232,18 @@ const NFTPreviewComponent = memo(function NFTPreviewComponent({ nft, showDetails
         {((imageUrl && contentTab === 'image') || (animationUrl && contentTab === 'animation')) && (
           <>
             <div className="w-full relative">
-              {/* Blur-up placeholder */}
               {!loaded && !errored && (
                 <div
                   className={cn(
                     'absolute inset-0 flex items-center justify-center',
-                    isDark ? 'bg-gray-900' : 'bg-gray-100'
+                    isDark ? 'bg-[#111]' : 'bg-[#F1F5F9]'
                   )}
                 >
-                  <div className="relative">
-                    {/* Animated gradient background */}
-                    <div
-                      className={cn(
-                        'w-48 h-48 rounded-2xl animate-pulse',
-                        isDark
-                          ? 'bg-gradient-to-br from-white/[0.08] to-white/[0.02]'
-                          : 'bg-gradient-to-br from-gray-200 to-gray-100'
-                      )}
-                    />
-                    {/* Centered spinner */}
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <Loader2 size={28} className="animate-spin text-primary/60" />
-                    </div>
-                  </div>
+                  <Loader2
+                    size={22}
+                    strokeWidth={1.5}
+                    className={cn('animate-spin', isDark ? 'text-[#4B5563]' : 'text-[#94A3B8]')}
+                  />
                 </div>
               )}
               <img
@@ -265,7 +253,8 @@ const NFTPreviewComponent = memo(function NFTPreviewComponent({ nft, showDetails
                 decoding="sync"
                 className={cn(
                   'w-full h-auto max-h-[70vh] object-contain mx-auto cursor-pointer transition-[transform] duration-300',
-                  'hover:scale-[1.02]'
+                  'hover:scale-[1.02]',
+                  errored && 'hidden'
                 )}
                 onLoad={() => {
                   setLoaded(true);
@@ -303,12 +292,15 @@ const NFTPreviewComponent = memo(function NFTPreviewComponent({ nft, showDetails
               {errored && (
                 <div
                   className={cn(
-                    'flex flex-col items-center justify-center py-20 gap-2',
-                    isDark ? 'text-white/60' : 'text-gray-500'
+                    'flex flex-col items-center justify-center aspect-square max-h-[70vh] gap-3',
+                    isDark ? 'bg-[#111] text-[#9CA3AF]' : 'bg-[#F1F5F9] text-[#64748B]'
                   )}
                 >
-                  <Info size={24} className="opacity-50" />
-                  <span className="text-[13px]">Image unavailable</span>
+                  <ImageOff size={48} strokeWidth={1.2} />
+                  <span className="text-sm font-medium">Image Unavailable</span>
+                  <span className={cn('text-xs', isDark ? 'text-[#4B5563]' : 'text-[#94A3B8]')}>
+                    Media source is offline
+                  </span>
                 </div>
               )}
             </div>
@@ -318,6 +310,9 @@ const NFTPreviewComponent = memo(function NFTPreviewComponent({ nft, showDetails
                   'fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md max-sm:h-dvh',
                   isDark ? 'bg-black/80' : 'bg-black/70'
                 )}
+                role="dialog"
+                aria-modal="true"
+                aria-label="Full size image"
                 onClick={() => setOpenImage(false)}
               >
                 <div className="relative max-w-[95vw] max-h-[95dvh] flex items-center justify-center">
@@ -332,7 +327,8 @@ const NFTPreviewComponent = memo(function NFTPreviewComponent({ nft, showDetails
                       e.stopPropagation();
                       setOpenImage(false);
                     }}
-                    className="absolute top-4 right-4 p-2 text-white bg-black/60 hover:bg-black/80 rounded-full backdrop-blur-sm"
+                    aria-label="Close full size image"
+                    className="absolute top-4 right-4 p-2 text-white bg-black/60 hover:bg-black/80 rounded-full backdrop-blur-sm outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]"
                   >
                     <X size={24} />
                   </button>
@@ -423,7 +419,7 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
           setIsSaved(allItems.some((item) => item.nftokenId === nft.NFTokenID));
         }
       })
-      .catch(() => {});
+      .catch(err => { console.warn('[NFTDetails] NFT watchlist check failed:', err.message); });
   }, [accountLogin, nft?.NFTokenID]);
 
   const handleSave = async () => {
@@ -583,8 +579,10 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
             <button
               onClick={handleSave}
               disabled={saveLoading}
+              aria-label={isSaved ? 'Remove from watchlist' : 'Add to watchlist'}
               className={cn(
                 'flex-shrink-0 p-2.5 rounded-lg border-[1.5px] transition-[border-color,background-color]',
+                'outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                 isSaved
                   ? 'border-primary bg-primary/15 text-primary shadow-[0_0_12px_rgba(66,133,244,0.25)]'
                   : isDark
@@ -800,7 +798,7 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
                   onClick={() => handleCopy(account, 'Owner')}
                   aria-label="Copy owner address"
                   className={cn(
-                    'min-w-[24px] min-h-[24px] inline-flex items-center justify-center rounded hover:bg-white/10 transition-[background-color]',
+                    'min-w-[24px] min-h-[24px] inline-flex items-center justify-center rounded hover:bg-white/10 transition-[background-color] outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                     isDark ? 'text-white/60 hover:text-white' : 'text-gray-400 hover:text-gray-900'
                   )}
                 >
@@ -811,7 +809,7 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
                     onClick={() => window.dispatchEvent(new CustomEvent('openDm', { detail: { user: account, nftId: NFTokenID } }))}
                     aria-label="Message owner"
                     className={cn(
-                      'min-w-[24px] min-h-[24px] inline-flex items-center justify-center rounded hover:bg-white/10 transition-[background-color]',
+                      'min-w-[24px] min-h-[24px] inline-flex items-center justify-center rounded hover:bg-white/10 transition-[background-color] outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                       isDark ? 'text-white/60 hover:text-[#650CD4]' : 'text-gray-400 hover:text-[#650CD4]'
                     )}
                   >
@@ -866,7 +864,7 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
                 onClick={() => handleCopy(issuer, 'Issuer')}
                 aria-label="Copy issuer address"
                 className={cn(
-                  'min-w-[24px] min-h-[24px] inline-flex items-center justify-center rounded hover:bg-white/10 transition-[background-color]',
+                  'min-w-[24px] min-h-[24px] inline-flex items-center justify-center rounded hover:bg-white/10 transition-[background-color] outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                   isDark ? 'text-white/60 hover:text-white' : 'text-gray-400 hover:text-gray-900'
                 )}
               >
@@ -877,7 +875,7 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
                   onClick={() => window.dispatchEvent(new CustomEvent('openDm', { detail: { user: issuer } }))}
                   aria-label="Message issuer"
                   className={cn(
-                    'min-w-[24px] min-h-[24px] inline-flex items-center justify-center rounded hover:bg-white/10 transition-[background-color]',
+                    'min-w-[24px] min-h-[24px] inline-flex items-center justify-center rounded hover:bg-white/10 transition-[background-color] outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                     isDark ? 'text-white/60 hover:text-[#650CD4]' : 'text-gray-400 hover:text-[#650CD4]'
                   )}
                   title="Chat with issuer"
@@ -912,7 +910,7 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
                 onClick={() => handleCopy(NFTokenID, 'Token ID')}
                 aria-label="Copy token ID"
                 className={cn(
-                  'min-w-[24px] min-h-[24px] inline-flex items-center justify-center rounded hover:bg-white/10 transition-[background-color]',
+                  'min-w-[24px] min-h-[24px] inline-flex items-center justify-center rounded hover:bg-white/10 transition-[background-color] outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                   isDark ? 'text-white/60 hover:text-white' : 'text-gray-400 hover:text-gray-900'
                 )}
               >

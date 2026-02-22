@@ -52,7 +52,7 @@ const NFTSparklineChart = memo(
           setAreaPath(area);
           setColor(chartColor);
         })
-        .catch(() => {});
+        .catch(err => { console.warn('[NFTSparkline] Chart data fetch failed:', err.message); });
       return () => {
         cancelled = true;
       };
@@ -75,6 +75,8 @@ const NFTSparklineChart = memo(
             viewBox="0 0 120 32"
             preserveAspectRatio="none"
             className="block"
+            aria-label="Price trend sparkline chart"
+            role="img"
           >
             <path d={areaPath} fill={fillColor} />
             <path

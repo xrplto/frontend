@@ -38,8 +38,8 @@ const Grid = ({ className, children, ...p }) => (
 const MetricBox = ({ isDark, className, children, ...p }) => (
   <div
     className={cn(
-      'py-3 px-[14px] h-[82px] flex flex-col justify-between items-start rounded-xl bg-transparent border-[1.5px] transition-[background-color,border-color] duration-150',
-      'max-sm:py-[10px] max-sm:px-3 max-sm:h-[68px] max-sm:flex-none max-sm:min-w-[95px]',
+      'py-[12px] px-[14px] h-[86px] flex flex-col justify-between items-start rounded-xl bg-transparent border-[1.5px] transition-[background-color,border-color] duration-150',
+      'max-sm:py-[10px] max-sm:px-3 max-sm:h-[72px] max-sm:flex-none max-sm:min-w-[100px]',
       isDark ? 'border-white/10 hover:border-white/[0.15] hover:bg-white/[0.02]' : 'border-black/[0.06] hover:border-black/10 hover:bg-black/[0.01]',
       className
     )}
@@ -48,17 +48,17 @@ const MetricBox = ({ isDark, className, children, ...p }) => (
 );
 
 const MetricTitle = ({ isDark, className, children, ...p }) => (
-  <span className={cn('text-[0.68rem] font-normal tracking-[0.02em] max-sm:text-[0.58rem]', isDark ? 'text-white/50' : 'text-[#212B36]/50', className)} {...p}>{children}</span>
+  <span className={cn('text-[0.75rem] font-normal tracking-[0.02em] max-sm:text-[0.6rem]', isDark ? 'text-white/50' : 'text-[#212B36]/50', className)} {...p}>{children}</span>
 );
 
 const MetricValue = ({ isDark, className, children, ...p }) => (
-  <span className={cn('text-xl font-semibold leading-none tracking-[-0.02em] whitespace-nowrap max-sm:text-[0.92rem]', isDark ? 'text-white' : 'text-[#212B36]', className)} {...p}>{children}</span>
+  <span className={cn('text-[1.35rem] font-semibold leading-none tracking-[-0.02em] whitespace-nowrap max-sm:text-[1rem]', isDark ? 'text-white' : 'text-[#212B36]', className)} {...p}>{children}</span>
 );
 
 const PercentageChange = ({ isPositive, className, children, ...p }) => (
   <span
     className={cn(
-      'text-[0.68rem] inline-flex items-center gap-[2px] font-medium tracking-[-0.01em] px-1 py-px rounded max-sm:text-[0.58rem] max-sm:px-[3px]',
+      'text-[0.75rem] inline-flex items-center gap-[2px] font-medium tracking-[-0.01em] px-1.5 py-0.5 rounded max-sm:text-[0.6rem] max-sm:px-[4px]',
       isPositive ? 'text-emerald-500 bg-emerald-500/10' : 'text-red-500 bg-red-500/10',
       className
     )}
@@ -67,7 +67,7 @@ const PercentageChange = ({ isPositive, className, children, ...p }) => (
 );
 
 const VolumePercentage = ({ isDark, className, children, ...p }) => (
-  <span className={cn('text-[0.58rem] font-normal max-sm:text-[0.5rem]', isDark ? 'text-white/60' : 'text-[#212B36]/60', className)} {...p}>{children}</span>
+  <span className={cn('text-[0.65rem] font-normal max-sm:text-[0.54rem]', isDark ? 'text-white/60' : 'text-[#212B36]/60', className)} {...p}>{children}</span>
 );
 
 const ChartMetricBox = ({ isDark, className, children, ...p }) => (
@@ -249,6 +249,7 @@ const VolumeChart = ({ data, isDark }) => {
       >
         <canvas
           ref={canvasRef}
+          aria-label="Volume chart"
           className="w-full h-full block cursor-pointer"
         />
       </div>
@@ -485,6 +486,7 @@ const CollectionCreationChart = ({ data, isDark }) => {
       >
         <canvas
           ref={canvasRef}
+          aria-label="Collection creation chart"
           className="w-full h-full block cursor-pointer"
         />
       </div>
@@ -527,6 +529,7 @@ const TagChip = ({ selected, isDark, className, children, ...p }) => (
   <button
     className={cn(
       'inline-flex items-center gap-[3px] px-2 rounded-[6px] border text-[0.68rem] cursor-pointer whitespace-nowrap h-6 shrink-0 transition-[background-color,border-color] duration-150',
+      'outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
       selected
         ? 'border-blue-500/30 bg-blue-500/10 text-blue-500 font-medium hover:bg-blue-500/[0.15]'
         : cn(
@@ -542,6 +545,7 @@ const AllTagsButton = ({ isDark, className, children, ...p }) => (
   <button
     className={cn(
       'inline-flex items-center gap-1 px-2 border-[1.5px] rounded-[6px] text-blue-500 text-[0.68rem] font-medium cursor-pointer whitespace-nowrap h-6 shrink-0 ml-auto transition-[background-color,border-color,opacity] duration-150 hover:bg-blue-500/[0.15]',
+      'outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
       'max-sm:text-[0.62rem] max-sm:h-[22px] max-sm:px-[6px] max-sm:gap-[2px]',
       isDark ? 'bg-blue-500/[0.08] border-blue-500/20' : 'bg-blue-500/[0.05] border-blue-500/15',
       className
@@ -587,7 +591,7 @@ const SortSelector = ({ isDark, className, children, ...p }) => {
     <select
       className={cn(
         'rounded-lg border-[1.5px] text-xs font-medium cursor-pointer h-8 min-w-[70px] appearance-none transition-[background-color,border-color,opacity] duration-150',
-        'hover:border-blue-500/50 focus:outline-none focus:border-blue-500',
+        'hover:border-blue-500/50 focus:outline-none focus:border-blue-500 focus-visible:ring-2 focus-visible:ring-[#137DFE]',
         'max-sm:text-[0.62rem] max-sm:h-[26px] max-sm:min-w-[48px] max-sm:pl-[6px] max-sm:pr-5',
         isDark ? 'border-white/10 bg-black/40 text-white/85 [&_option]:bg-[#0a0a0a] [&_option]:text-[#e5e5e5]' : 'border-black/[0.08] bg-white/90 text-black/70 [&_option]:bg-white [&_option]:text-[#1a1a1a]',
         isDark ? 'hover:bg-blue-500/10' : 'hover:bg-blue-500/[0.05]',
@@ -624,6 +628,7 @@ const MarketplaceChip = ({ selected, isDark, className, children, ...p }) => (
     className={cn(
       'st-lp-chip inline-flex items-center px-[6px] border-none rounded text-[0.65rem] cursor-pointer whitespace-nowrap h-5 shrink-0 transition-[background-color,border-color,opacity] duration-150',
       'hover:bg-blue-500/10 hover:text-blue-500',
+      'outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
       selected ? 'bg-blue-500/[0.15] text-blue-500 font-medium' : cn('bg-transparent', isDark ? 'text-white/60 font-normal' : 'text-[#212B36]/60 font-normal'),
       className
     )}
@@ -673,6 +678,7 @@ const DrawerClose = ({ isDark, className, children, ...p }) => (
     className={cn(
       'w-8 h-8 border-[1.5px] rounded-lg bg-transparent cursor-pointer flex items-center justify-center transition-[background-color,border-color] duration-150',
       'hover:border-blue-400/50 hover:text-[#4285f4]',
+      'outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
       isDark ? 'border-white/10 text-white/40' : 'border-black/10 text-black/40',
       className
     )}
@@ -725,6 +731,7 @@ const TagButton = ({ isDark, className, children, ...p }) => (
     className={cn(
       'inline-flex items-center justify-center py-1 px-3 border rounded-lg bg-transparent text-xs font-normal cursor-pointer font-[inherit] whitespace-nowrap h-7 shrink-0 transition-[background-color,border-color] duration-200',
       'hover:bg-blue-500/[0.08] hover:border-blue-500/30 hover:text-blue-500',
+      'outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
       'max-sm:h-8 max-sm:py-1 max-sm:px-[14px] max-sm:text-[0.8rem]',
       isDark ? 'border-white/[0.08] text-white/70' : 'border-black/[0.08] text-[#212B36]/70',
       className
@@ -880,7 +887,7 @@ function Collections({
       {tagsDrawerOpen && (
         <Drawer open={tagsDrawerOpen}>
           <DrawerBackdrop onClick={() => setTagsDrawerOpen(false)} />
-          <DrawerPaper isDark={isDark}>
+          <DrawerPaper isDark={isDark} role="dialog" aria-modal="true" aria-label="Categories">
             <DrawerHeader>
               <div className="flex items-center gap-4 flex-1">
                 <span className="text-[11px] font-semibold uppercase tracking-[0.1em] text-blue-500 whitespace-nowrap">
@@ -899,10 +906,10 @@ function Collections({
                 />
               </div>
               <div className="flex gap-2">
-                <DrawerClose isDark={isDark} onClick={copyTags} title="Copy all tags">
+                <DrawerClose isDark={isDark} onClick={copyTags} title="Copy all tags" aria-label="Copy all tags">
                   {copied ? <Check size={18} color="#10b981" /> : <Copy size={18} />}
                 </DrawerClose>
-                <DrawerClose isDark={isDark} onClick={() => setTagsDrawerOpen(false)}>
+                <DrawerClose isDark={isDark} onClick={() => setTagsDrawerOpen(false)} aria-label="Close categories drawer">
                   <X size={18} />
                 </DrawerClose>
               </div>
@@ -1023,7 +1030,7 @@ function Collections({
                   const rsiColor = getRsiColor(rsi);
 
                   return (
-                    <div className={cn('flex items-end', isMobile ? 'gap-4' : 'gap-6')}>
+                    <div className={cn('flex items-end w-full', isMobile ? 'gap-4 justify-evenly' : 'gap-0 justify-evenly')}>
                       {/* Sentiment gauge */}
                       <div className="flex flex-col items-center gap-1">
                         <div className="relative w-9 h-5">
@@ -1045,12 +1052,12 @@ function Collections({
                         </div>
                         <div className="flex items-baseline gap-0.5">
                           <span
-                            className="text-base font-semibold leading-none"
+                            className="text-lg font-semibold leading-none"
                             style={{ color: sentColor }}
                           >
                             {sentiment}
                           </span>
-                          <span className={cn('text-[0.5rem]', isDark ? 'text-white/60' : 'text-black/60')}>
+                          <span className={cn('text-[0.58rem]', isDark ? 'text-white/60' : 'text-black/60')}>
                             Sentiment
                           </span>
                         </div>
@@ -1077,12 +1084,12 @@ function Collections({
                         </div>
                         <div className="flex items-baseline gap-0.5">
                           <span
-                            className="text-base font-semibold leading-none"
+                            className="text-lg font-semibold leading-none"
                             style={{ color: rsiColor }}
                           >
                             {rsi}
                           </span>
-                          <span className={cn('text-[0.5rem]', isDark ? 'text-white/60' : 'text-black/60')}>
+                          <span className={cn('text-[0.58rem]', isDark ? 'text-white/60' : 'text-black/60')}>
                             RSI
                           </span>
                         </div>
@@ -1115,15 +1122,15 @@ function Collections({
                         <MetricTitle isDark={isDark}>New Collections</MetricTitle>
                         <div className="flex items-center gap-1.5">
                           <span
-                            className={cn('text-[0.85rem] font-semibold', isDark ? 'text-white' : 'text-[#212B36]')}
+                            className={cn('text-[0.95rem] font-semibold', isDark ? 'text-white' : 'text-[#212B36]')}
                           >
                             {formatNumberWithDecimals(today)}
                           </span>
-                          <span className={cn('text-[0.5rem]', isDark ? 'text-white/60' : 'text-black/60')}>
+                          <span className={cn('text-[0.58rem]', isDark ? 'text-white/60' : 'text-black/60')}>
                             today
                           </span>
                           <span
-                            className="text-[0.65rem]"
+                            className="text-[0.7rem]"
                             style={{ color: isUp ? '#10b981' : '#ef4444' }}
                           >
                             {isUp ? '↑' : '↓'}
@@ -1131,7 +1138,7 @@ function Collections({
                           {latestCollection && (
                             <a
                               href={`/nft/collection/${latestCollection.slug}`}
-                              className={cn('text-[0.55rem] no-underline flex items-center gap-1 pl-1.5', isDark ? 'text-white/50 border-l border-white/10' : 'text-black/50 border-l border-black/10')}
+                              className={cn('text-[0.6rem] no-underline flex items-center gap-1 pl-1.5', isDark ? 'text-white/50 border-l border-white/10' : 'text-black/50 border-l border-black/10')}
                             >
                               <span className="max-w-[55px] overflow-hidden text-ellipsis whitespace-nowrap">
                                 {latestCollection.name}
@@ -1172,13 +1179,13 @@ function Collections({
                     <div className="flex items-center justify-between">
                       <MetricTitle isDark={isDark}>New Collections</MetricTitle>
                       <div className="flex items-center gap-1">
-                        <span className={cn('text-[0.75rem] font-semibold', isDark ? 'text-white' : 'text-[#212B36]')}>
+                        <span className={cn('text-[0.85rem] font-semibold', isDark ? 'text-white' : 'text-[#212B36]')}>
                           {formatNumberWithDecimals(today)}
                         </span>
-                        <span className={cn('text-[0.45rem]', isDark ? 'text-white/60' : 'text-black/60')}>
+                        <span className={cn('text-[0.5rem]', isDark ? 'text-white/60' : 'text-black/60')}>
                           today
                         </span>
-                        <span className="text-[0.6rem]" style={{ color: isUp ? '#10b981' : '#ef4444' }}>
+                        <span className="text-[0.65rem]" style={{ color: isUp ? '#10b981' : '#ef4444' }}>
                           {isUp ? '↑' : '↓'}
                         </span>
                         {latestCollection && (

@@ -117,7 +117,7 @@ const Stack = ({ className, children, ...p }) => (
 const StyledIconButton = ({ darkMode, className, children, ...p }) => (
   <button
     className={cn(
-      'inline-flex items-center justify-center w-[30px] h-[30px] p-0 border-none rounded-lg bg-transparent cursor-pointer transition-[background-color,border-color,opacity] duration-150 shrink-0',
+      'inline-flex items-center justify-center w-[30px] h-[30px] p-0 border-none rounded-lg bg-transparent cursor-pointer transition-[background-color,border-color,opacity] duration-150 shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
       'hover:bg-blue-500/10 hover:text-blue-500',
       'max-sm:w-[26px] max-sm:h-[26px]',
       darkMode ? 'text-white/50' : 'text-black/40',
@@ -226,7 +226,7 @@ const DrawerTitle = ({ isDark, className, children, ...p }) => (
 const DrawerClose = ({ isDark, className, children, ...p }) => (
   <button
     className={cn(
-      'w-8 h-8 border-[1.5px] rounded-lg bg-transparent cursor-pointer flex items-center justify-center transition-[background-color,border-color,opacity] duration-150',
+      'w-8 h-8 border-[1.5px] rounded-lg bg-transparent cursor-pointer flex items-center justify-center transition-[background-color,border-color,opacity] duration-150 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
       'hover:border-blue-400/50 hover:text-[#4285f4]',
       isDark ? 'border-white/10 text-white/40' : 'border-black/10 text-black/40',
       className
@@ -259,7 +259,7 @@ const SearchIconWrapper = ({ isDark, className, children, ...p }) => (
 const SearchInput = ({ isDark, className, ...p }) => (
   <input
     className={cn(
-      'flex-1 bg-transparent border-none outline-none text-sm font-[inherit] focus:outline-none',
+      'flex-1 bg-transparent border-none outline-none text-sm font-[inherit] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
       isDark ? 'text-white placeholder:text-white/50' : 'text-[#212B36] placeholder:text-[#212B36]/40',
       className
     )}

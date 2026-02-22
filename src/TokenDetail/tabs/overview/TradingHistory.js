@@ -44,7 +44,16 @@ import {
   CheckCircle,
   AlertTriangle,
   Search,
-  CandlestickChart
+  CandlestickChart,
+  Shield,
+  Gem,
+  Star,
+  Crown,
+  Zap,
+  Medal,
+  Gift,
+  Swords,
+  Check
 } from 'lucide-react';
 import { cn } from 'src/utils/cn';
 
@@ -893,7 +902,7 @@ const Pagination = ({ className, children, ...p }) => (
 const PaginationButton = ({ isDark, className, children, ...p }) => (
   <button
     className={cn(
-      'flex items-center justify-center rounded-lg p-[6px] cursor-pointer border transition-[opacity,transform,background-color,border-color] duration-200',
+      'flex items-center justify-center rounded-lg p-[6px] cursor-pointer border transition-[opacity,transform,background-color,border-color] duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
       'hover:enabled:text-blue-500 hover:enabled:border-blue-500/40',
       'disabled:opacity-25 disabled:cursor-default',
       isDark ? 'text-white/60 bg-white/[0.03] border-white/[0.08] hover:enabled:bg-white/[0.08]' : 'text-black/60 bg-black/[0.03] border-black/[0.08] hover:enabled:bg-black/[0.06]',
@@ -975,7 +984,7 @@ const Tooltip = ({ title, children, arrow }) => {
 const IconButton = ({ isDark, className, children, 'aria-label': ariaLabel, ...p }) => (
   <button
     aria-label={ariaLabel}
-    className={cn('p-1 bg-transparent border-none rounded-lg cursor-pointer inline-flex items-center justify-center transition-[color] duration-150 hover:text-blue-500', isDark ? 'text-white/60' : 'text-black/60', className)}
+    className={cn('p-1 bg-transparent border-none rounded-lg cursor-pointer inline-flex items-center justify-center transition-[color] duration-150 hover:text-blue-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]', isDark ? 'text-white/60' : 'text-black/60', className)}
     {...p}
   >{children}</button>
 );
@@ -988,13 +997,15 @@ const FormControlLabel = ({ isDark, className, children, ...p }) => (
 );
 
 const Tabs = ({ isDark, className, children, ...p }) => (
-  <div className={cn('flex gap-2 mb-3 max-sm:w-full max-sm:gap-[6px]', className)} {...p}>{children}</div>
+  <div role="tablist" className={cn('flex gap-2 mb-3 max-sm:w-full max-sm:gap-[6px]', className)} {...p}>{children}</div>
 );
 
 const Tab = ({ selected, isDark, className, children, ...p }) => (
   <button
+    role="tab"
+    aria-selected={selected}
     className={cn(
-      'inline-flex items-center justify-center gap-2 text-xs font-medium tracking-[0.05em] py-[10px] px-4 bg-transparent border rounded-[6px] cursor-pointer transition-[opacity,transform,background-color,border-color] duration-150 whitespace-nowrap shrink-0 uppercase',
+      'inline-flex items-center justify-center gap-2 text-xs font-medium tracking-[0.05em] py-[10px] px-4 bg-transparent border rounded-[6px] cursor-pointer transition-[opacity,transform,background-color,border-color] duration-150 whitespace-nowrap shrink-0 uppercase focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
       'max-sm:flex-1 max-sm:py-2 max-sm:px-1 max-sm:text-[10px] max-sm:gap-[3px] max-sm:[&_svg]:w-[14px] max-sm:[&_svg]:h-[14px]',
       selected
         ? isDark ? 'border-white/20 text-white' : 'border-black/20 text-[#1a1a1a]'
@@ -1190,6 +1201,15 @@ const parseValue = (value) => {
   return parseFloat(value);
 };
 
+const formatShare = (share) => {
+  const pct = share * 100;
+  if (pct >= 1) return pct.toFixed(2) + '%';
+  if (pct >= 0.01) return pct.toFixed(2) + '%';
+  if (pct >= 0.0001) return pct.toFixed(4) + '%';
+  if (pct > 0) return '<0.0001%';
+  return '0%';
+};
+
 const SubTab = ({ selected, isDark, className, children, ...p }) => (
   <button
     className={cn(
@@ -1239,9 +1259,9 @@ const CancelButton = ({ isDark, className, children, ...p }) => (
 );
 
 // My Activity Tab Component - Shows user's trading history and open offers
-const MyActivityTab = memo(({ token, isDark, isMobile, onTransactionClick }) => {
+const MyActivityTabInner = ({ token, isDark, isMobile, onTransactionClick, ammPools, userLpBalances, ilPositions, onAddLiquidity, onWithdrawLiquidity, ammLoading }) => {
   const { accountProfile } = useContext(WalletContext);
-  const [activeSubTab, setActiveSubTab] = useState('assets'); // 'assets', 'history', or 'offers'
+  const [activeSubTab, setActiveSubTab] = useState('assets'); // 'assets', 'history', 'offers', or 'pools'
   const [loading, setLoading] = useState(false);
   const [openOffers, setOpenOffers] = useState([]);
   const [offersTotal, setOffersTotal] = useState(0);
@@ -1258,6 +1278,34 @@ const MyActivityTab = memo(({ token, isDark, isMobile, onTransactionClick }) => 
   const [tradesHasMore, setTradesHasMore] = useState(false);
   const [tradesCursor, setTradesCursor] = useState(null);
   const [tradesInitialized, setTradesInitialized] = useState(false);
+
+  // Profile data for promotion banner
+  const [profileData, setProfileData] = useState(null);
+
+  useEffect(() => {
+    const account = accountProfile?.account || accountProfile?.address;
+    if (!account) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const [profileRes, badgesRes, perksRes] = await Promise.all([
+          api.get(`https://api.xrpl.to/api/user/${account}`).catch(() => null),
+          api.get(`https://api.xrpl.to/v1/user/${account}/badges`).catch(() => null),
+          api.get(`https://api.xrpl.to/api/user/${account}/perks`).catch(() => null)
+        ]);
+        if (cancelled) return;
+        const user = profileRes?.data?.user || profileRes?.data;
+        const badges = badgesRes?.data?.badges || badgesRes?.data || [];
+        const perks = perksRes?.data;
+        if (user) {
+          setProfileData({ ...user, earnedBadges: badges, perks });
+        }
+      } catch (err) {
+        console.warn('[MyActivity] Profile fetch failed:', err.message);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [accountProfile]);
 
   // Fetch open offers from API with md5 filter
   const fetchOpenOffers = useCallback(async () => {
@@ -1512,6 +1560,13 @@ const MyActivityTab = memo(({ token, isDark, isMobile, onTransactionClick }) => 
           History
         </SubTab>
         <SubTab
+          selected={activeSubTab === 'pools'}
+          onClick={() => setActiveSubTab('pools')}
+          isDark={isDark}
+        >
+          Pools {ammPools?.filter(p => { const pa = p.ammAccount || p.account || p._id; return userLpBalances?.[pa]?.balance > 0; }).length > 0 && `(${ammPools.filter(p => { const pa = p.ammAccount || p.account || p._id; return userLpBalances?.[pa]?.balance > 0; }).length})`}
+        </SubTab>
+        <SubTab
           selected={activeSubTab === 'offers'}
           onClick={() => setActiveSubTab('offers')}
           isDark={isDark}
@@ -1519,6 +1574,114 @@ const MyActivityTab = memo(({ token, isDark, isMobile, onTransactionClick }) => 
           Offers {offersTotal > 0 && `(${offersTotal})`}
         </SubTab>
       </div>
+
+      {/* Profile Banner */}
+      {profileData && (() => {
+        const account = accountProfile?.account || accountProfile?.address;
+        const tierConfig = {
+          verified: { icon: Check, label: 'Verified', color: 'from-[#FFD700] via-[#FF6B9D] to-[#00FFFF]', textColor: 'text-amber-400', dotColor: 'bg-gradient-to-r from-[#FFD700] via-[#FF6B9D] to-[#00FFFF]' },
+          diamond: { icon: Gem, label: 'Diamond', color: 'from-violet-500 to-violet-700', textColor: 'text-violet-400', dotColor: 'bg-violet-500' },
+          nova: { icon: Star, label: 'Nova', color: 'from-amber-500 to-amber-700', textColor: 'text-amber-400', dotColor: 'bg-amber-500' },
+          vip: { icon: Sparkles, label: 'VIP', color: 'from-emerald-500 to-emerald-700', textColor: 'text-emerald-400', dotColor: 'bg-emerald-500' }
+        };
+        const badgeIcons = {
+          first_recruit: { icon: Users, color: '#137DFE' },
+          squad_leader: { icon: Swords, color: '#F6AF01' },
+          early_adopter: { icon: Zap, color: '#08AA09' },
+          top_trader: { icon: TrendingUp, color: '#137DFE' },
+          whale: { icon: Gem, color: '#650CD4' },
+          og: { icon: Medal, color: '#F6AF01' },
+          contributor: { icon: Gift, color: '#08AA09' },
+          army_general: { icon: Crown, color: '#650CD4' }
+        };
+        const tier = profileData.tier || profileData.perks?.tier;
+        const tc = tier && tierConfig[tier];
+        const TierIcon = tc?.icon;
+        const earned = Array.isArray(profileData.earnedBadges) ? profileData.earnedBadges.filter(b => b.earned) : [];
+        const groups = profileData.groups || [];
+        const roleConfig = {
+          admin: { icon: Shield, color: 'text-rose-500', bg: 'bg-rose-500/10' },
+          moderator: { icon: Shield, color: 'text-orange-500', bg: 'bg-orange-500/10' }
+        };
+
+        return (
+          <a
+            href={`/wallet`}
+            onClick={(e) => { e.preventDefault(); window.location.href = '/wallet'; }}
+            className={cn(
+              'flex items-center gap-3 p-3 rounded-[12px] border cursor-pointer transition-all duration-200 no-underline',
+              isDark ? 'bg-white/[0.02] border-white/[0.06] hover:bg-white/[0.04] hover:border-white/10' : 'bg-black/[0.01] border-black/[0.06] hover:bg-black/[0.03] hover:border-black/10'
+            )}
+          >
+            {/* Avatar */}
+            <div className="relative flex-shrink-0">
+              {profileData.avatar ? (
+                <img src={profileData.avatar} alt="" className="w-9 h-9 rounded-full object-cover" />
+              ) : (
+                <div className={cn('w-9 h-9 rounded-full flex items-center justify-center text-[14px] font-bold', isDark ? 'bg-white/10 text-white/70' : 'bg-black/10 text-black/70')}>
+                  {(profileData.username || account || '?')[0].toUpperCase()}
+                </div>
+              )}
+              {tc && (
+                <div className={cn('absolute -bottom-[2px] -right-[2px] w-[14px] h-[14px] rounded-full border-2 flex items-center justify-center', isDark ? 'border-[#0a0a0a]' : 'border-white', tc.dotColor)}>
+                  {TierIcon && <TierIcon size={7} className="text-white" strokeWidth={3} />}
+                </div>
+              )}
+            </div>
+
+            {/* Name + Tier */}
+            <div className="flex flex-col min-w-0 flex-1">
+              <div className="flex items-center gap-[6px]">
+                <span className={cn('text-[13px] font-semibold truncate', isDark ? 'text-white' : 'text-[#1a1a1a]')}>
+                  {profileData.username || `${(account || '').slice(0, 8)}...`}
+                </span>
+                {groups.includes('admin') && <Shield size={12} className="text-rose-500 flex-shrink-0" />}
+                {groups.includes('moderator') && <Shield size={12} className="text-orange-500 flex-shrink-0" />}
+              </div>
+              <div className="flex items-center gap-2">
+                {tc && (
+                  <span className={cn('text-[10px] font-semibold uppercase tracking-[0.04em]', tc.textColor)}>
+                    {tc.label}
+                  </span>
+                )}
+                {profileData.armyRank && profileData.armyRank !== 'Unranked' && (
+                  <span className={cn('text-[10px] font-medium', isDark ? 'text-white/40' : 'text-black/40')}>
+                    {profileData.armyRank}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Earned Badges */}
+            {earned.length > 0 && (
+              <div className="flex items-center gap-1 flex-shrink-0">
+                {earned.slice(0, 4).map((badge) => {
+                  const bc = badgeIcons[badge.id || badge.name];
+                  if (!bc) return null;
+                  const BadgeIcon = bc.icon;
+                  return (
+                    <div
+                      key={badge.id || badge.name}
+                      title={badge.label || badge.id || badge.name}
+                      className={cn('w-[22px] h-[22px] rounded-full flex items-center justify-center', isDark ? 'bg-white/[0.06]' : 'bg-black/[0.04]')}
+                    >
+                      <BadgeIcon size={11} style={{ color: bc.color }} strokeWidth={2.5} />
+                    </div>
+                  );
+                })}
+                {earned.length > 4 && (
+                  <span className={cn('text-[10px] font-medium', isDark ? 'text-white/40' : 'text-black/40')}>
+                    +{earned.length - 4}
+                  </span>
+                )}
+              </div>
+            )}
+
+            {/* Arrow */}
+            <ChevronRight size={14} className={cn('flex-shrink-0', isDark ? 'text-white/20' : 'text-black/20')} />
+          </a>
+        );
+      })()}
 
       {/* Assets */}
       {activeSubTab === 'assets' && (
@@ -1742,6 +1905,116 @@ const MyActivityTab = memo(({ token, isDark, isMobile, onTransactionClick }) => 
         </>
       )}
 
+      {/* Pools - User LP Positions */}
+      {activeSubTab === 'pools' && (
+        <>
+          {ammLoading ? (
+            <div className="flex justify-center p-8">
+              <Spinner size={24} className="opacity-50" />
+            </div>
+          ) : (() => {
+            const userPools = (ammPools || []).filter(pool => {
+              const pa = pool.ammAccount || pool.account || pool._id;
+              return userLpBalances?.[pa]?.balance > 0;
+            });
+            if (userPools.length === 0) {
+              return (
+                <div className={cn('text-center p-8 rounded-[12px] border border-dashed', isDark ? 'border-white/10 bg-white/[0.01]' : 'border-black/10 bg-black/[0.01]')}>
+                  <Droplets size={24} className={cn('mx-auto mb-2', isDark ? 'text-white/20' : 'text-black/20')} />
+                  <span className={cn('text-[13px] font-medium block', isDark ? 'text-white/60' : 'text-black/60')}>No liquidity positions</span>
+                  <span className={cn('text-[11px] block mt-1', isDark ? 'text-white/40' : 'text-black/40')}>Add liquidity to a pool from the Pools tab to start earning fees</span>
+                </div>
+              );
+            }
+            return (
+              <div className="flex flex-col gap-2">
+                {userPools.map(pool => {
+                  const poolAccount = pool.ammAccount || pool.account || pool._id;
+                  const userPosition = userLpBalances[poolAccount];
+                  const ilData = ilPositions?.[pool._id];
+                  const asset1 = pool.asset1?.currency === 'XRP' ? 'XRP' : decodeCurrency(pool.asset1?.currency);
+                  const asset2 = pool.asset2?.currency === 'XRP' ? 'XRP' : decodeCurrency(pool.asset2?.currency);
+                  const hasApy = pool.apy7d?.apy > 0;
+                  const hasIl = ilData && typeof ilData.ilPercent === 'number';
+                  const ilColor = hasIl ? (ilData.ilPercent >= 0 ? '#08AA09' : '#ef4444') : null;
+
+                  return (
+                    <div key={pool._id} className={cn('rounded-[14px] overflow-hidden border p-3', isDark ? 'bg-white/[0.03] border-white/[0.08]' : 'bg-black/[0.02] border-black/[0.08]')}>
+                      {/* Pool header */}
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-[10px]">
+                          <div className="flex shrink-0">
+                            <img src={getTokenImageUrl(pool.asset1.issuer, pool.asset1.currency)} alt="" className={cn('w-6 h-6 rounded-full', isDark ? 'border-[1.5px] border-[#1a1a1a]' : 'border-[1.5px] border-white')} />
+                            <img src={getTokenImageUrl(pool.asset2.issuer, pool.asset2.currency)} alt="" className={cn('w-6 h-6 rounded-full -ml-[10px]', isDark ? 'border-[1.5px] border-[#1a1a1a]' : 'border-[1.5px] border-white')} />
+                          </div>
+                          <div className="flex flex-col">
+                            <span className={cn('text-[13px] font-semibold', isDark ? 'text-white' : 'text-[#1a1a1a]')}>{asset1}/{asset2}</span>
+                            <span className={cn('text-[10px] font-medium', isDark ? 'text-white/60' : 'text-black/50')}>
+                              {(pool.tradingFee / 100000).toFixed(3)}% Fee {hasApy && `· ${pool.apy7d.apy.toFixed(1)}% APY`}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => onAddLiquidity?.(pool)}
+                            className="flex items-center gap-1 py-[6px] px-3 text-[11px] font-bold rounded-lg border-none bg-[#3b82f6] text-white cursor-pointer"
+                          >
+                            <Plus size={13} /> Add
+                          </button>
+                          <button
+                            onClick={() => onWithdrawLiquidity?.(pool)}
+                            className={cn('flex items-center gap-1 py-[6px] px-3 text-[11px] font-bold rounded-lg border cursor-pointer', isDark ? 'border-white/10 bg-white/5 text-white' : 'border-black/10 bg-white text-[#1a1a1a]')}
+                          >
+                            <Minus size={13} /> Withdraw
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Position details */}
+                      <div className={cn('p-3 rounded-[10px]', isDark ? 'bg-white/[0.03]' : 'bg-black/[0.02]')}>
+                        <div className="flex justify-between items-center mb-2">
+                          <span className={cn('text-[10px] font-semibold uppercase', isDark ? 'text-white/50' : 'text-black/50')}>Your Position</span>
+                          <span className="text-[11px] font-bold text-[#3b82f6]">{formatShare(userPosition.share)} share</span>
+                        </div>
+                        <div className="grid grid-cols-3 gap-3">
+                          <div className="flex flex-col">
+                            <span className={cn('text-[10px]', isDark ? 'text-white/50' : 'text-black/50')}>{asset1}</span>
+                            <span className={cn('text-[13px] font-semibold', isDark ? 'text-white' : 'text-[#1a1a1a]')}>{abbreviateNumber(userPosition.asset1Amount)}</span>
+                          </div>
+                          <div className="flex flex-col">
+                            <span className={cn('text-[10px]', isDark ? 'text-white/50' : 'text-black/50')}>{asset2}</span>
+                            <span className={cn('text-[13px] font-semibold', isDark ? 'text-white' : 'text-[#1a1a1a]')}>{abbreviateNumber(userPosition.asset2Amount)}</span>
+                          </div>
+                          <div className="flex flex-col items-end">
+                            <span className={cn('text-[10px]', isDark ? 'text-white/50' : 'text-black/50')}>LP Tokens</span>
+                            <span className={cn('text-[13px] font-semibold', isDark ? 'text-white' : 'text-[#1a1a1a]')}>{abbreviateNumber(userPosition.balance)}</span>
+                          </div>
+                        </div>
+
+                        {/* Impermanent Loss */}
+                        {hasIl && (() => {
+                          const diff = ilData.poolValueXrp - ilData.holdValueXrp;
+                          return (
+                            <div className={cn('mt-2 pt-2 border-t flex justify-between items-center', isDark ? 'border-white/[0.06]' : 'border-black/[0.06]')}>
+                              <span className={cn('text-[10px] font-semibold', isDark ? 'text-white/50' : 'text-black/50')}>
+                                IL {ilData.ilPercent >= 0 ? 'gain' : 'loss'}
+                              </span>
+                              <span className="text-[12px] font-bold" style={{ color: ilColor }}>
+                                {diff >= 0 ? '+' : ''}{abbreviateNumber(diff)} XRP ({ilData.ilPercent >= 0 ? '+' : ''}{ilData.ilPercent.toFixed(2)}%)
+                              </span>
+                            </div>
+                          );
+                        })()}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })()}
+        </>
+      )}
+
       {/* Open Offers */}
       {activeSubTab === 'offers' && (
         <>
@@ -1866,7 +2139,7 @@ const MyActivityTab = memo(({ token, isDark, isMobile, onTransactionClick }) => 
       )}
     </div>
   );
-});
+};
 
 // Inline Expandable Trade Details Component
 const TradeDetails = ({ trade, account, isDark, onClose, walletLabel, onTrackAddress, isMobilePanel = false }) => {
@@ -2164,6 +2437,16 @@ const TradeDetails = ({ trade, account, isDark, onClose, walletLabel, onTrackAdd
   );
 };
 
+const MyActivityTab = memo(MyActivityTabInner, (prev, next) =>
+  prev.token?.md5 === next.token?.md5 &&
+  prev.isDark === next.isDark &&
+  prev.isMobile === next.isMobile &&
+  prev.ammLoading === next.ammLoading &&
+  prev.ammPools === next.ammPools &&
+  prev.userLpBalances === next.userLpBalances &&
+  prev.ilPositions === next.ilPositions
+);
+
 const TradingHistory = ({
   tokenId,
   amm,
@@ -2185,6 +2468,16 @@ const TradingHistory = ({
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
   const isMobile = isMobileState || isMobileProp;
+
+  // Stable token ref for non-Trades tabs — only updates when token identity changes
+  const stableTokenRef = useRef(token);
+  const [stableToken, setStableToken] = useState(token);
+  useEffect(() => {
+    if (token?.md5 !== stableTokenRef.current?.md5) {
+      stableTokenRef.current = token;
+      setStableToken(token);
+    }
+  }, [token]);
 
   // Fiat currency conversion
   const { accountProfile } = useContext(WalletContext);
@@ -2266,14 +2559,6 @@ const TradingHistory = ({
   const [createPoolLoading, setCreatePoolLoading] = useState(false);
   const [pendingCreatePool, setPendingCreatePool] = useState(null); // { tx, deviceWallet, simResult } or { error }
   const [createPoolBalances, setCreatePoolBalances] = useState({ asset1: null, asset2: null });
-  const formatShare = (share) => {
-    const pct = share * 100;
-    if (pct >= 1) return pct.toFixed(2) + '%';
-    if (pct >= 0.01) return pct.toFixed(2) + '%';
-    if (pct >= 0.0001) return pct.toFixed(4) + '%';
-    if (pct > 0) return '<0.0001%';
-    return '0%';
-  };
 
   // Wallet labels from logged-in user
   const [walletLabels, setWalletLabels] = useState({});
@@ -2290,18 +2575,18 @@ const TradingHistory = ({
           setWalletLabels(map);
         }
       })
-      .catch(() => { });
+      .catch(err => { console.warn('[TradingHistory] Labels fetch failed:', err.message); });
   }, [accountProfile?.account, accountProfile?.address]);
 
-  const handleTxClick = (hash, tradeAccount) => {
+  const handleTxClick = useCallback((hash, tradeAccount) => {
     if (onTransactionClick) {
       onTransactionClick(hash, tradeAccount);
     }
-  };
+  }, [onTransactionClick]);
 
   const handleTabChange = async (event, newValue) => {
     setTabValue(newValue);
-    if (newValue === 1 && token && token.currency && ammPools.length === 0) {
+    if ((newValue === 1 || newValue === 4) && token && token.currency && ammPools.length === 0) {
       setAmmLoading(true);
       try {
         const ammUrl = `https://api.xrpl.to/v1/amm?issuer=${token.issuer}&currency=${token.currency}&sortBy=fees`;
@@ -2581,16 +2866,20 @@ const TradingHistory = ({
     if (historyType !== 'all') wsParams.set('type', historyType);
     if (liquidityType) wsParams.set('liquidityType', liquidityType);
 
-    (async () => {
+    let reconnectTimeout = null;
+    let retryCount = 0;
+
+    const connect = async () => {
+      if (!isMounted) return;
       try {
-        const res = await fetch(`/api/ws/session?type=history&id=${tokenId}&${wsParams}`);
-        const { wsUrl, apiKey } = await res.json();
-        if (!isMounted || !wsUrl || !/^wss?:\/\//i.test(wsUrl)) return;
+        const { getSessionWsUrl } = await import('src/utils/wsToken');
+        const wsUrl = await getSessionWsUrl('history', tokenId, Object.fromEntries(wsParams));
+        if (!isMounted || !wsUrl) return;
         const ws = new WebSocket(wsUrl);
         wsRef.current = ws;
 
         ws.onopen = () => {
-      if (apiKey) ws.send(JSON.stringify({ type: 'auth', apiKey }));
+      retryCount = 0;
       wsPingRef.current = setInterval(() => {
         if (ws.readyState === WebSocket.OPEN) {
           ws.send(JSON.stringify({ type: 'ping' }));
@@ -2664,19 +2953,22 @@ const TradingHistory = ({
 
     ws.onerror = () => {};
 
-    ws.onclose = (ev) => {
+    ws.onclose = () => {
           if (wsPingRef.current) {
             clearInterval(wsPingRef.current);
             wsPingRef.current = null;
           }
+          if (isMounted && retryCount < 5) {
+            reconnectTimeout = setTimeout(() => { retryCount++; connect(); }, Math.min(3000 * Math.pow(2, retryCount), 60000));
+          }
         };
-      } catch (e) {
-        console.error('[History WS] Session error:', e);
-      }
-    })();
+      } catch {}
+    };
+    connect();
 
     return () => {
       isMounted = false;
+      if (reconnectTimeout) clearTimeout(reconnectTimeout);
       if (wsRef.current) {
         wsRef.current.close();
         wsRef.current = null;
@@ -2797,12 +3089,12 @@ const TradingHistory = ({
     fetchTradingHistory(null, false, 'asc');
   }, [tokenId, totalRecords, limit, fetchTradingHistory]);
 
-  const handleAddLiquidity = (pool) => {
+  const handleAddLiquidity = useCallback((pool) => {
     setLiquidityDialog({ open: true, pool, tab: 'add' });
     setDepositAmount1('');
     setDepositAmount2('');
     setDepositMode('double');
-  };
+  }, []);
 
   const handleCloseDialog = () => {
     setLiquidityDialog({ open: false, pool: null, tab: 'add' });
@@ -2915,7 +3207,7 @@ const TradingHistory = ({
     const asset2 = { currency: isXrp ? 'XRP' : selected.currency, issuer: isXrp ? undefined : selected.issuer };
     Promise.all([fetchBal(asset1), fetchBal(asset2)])
       .then(([b1, b2]) => setCreatePoolBalances({ asset1: b1, asset2: b2 }))
-      .catch(() => {});
+      .catch(err => { console.warn('[TradingHistory] Create pool balance fetch failed:', err.message); });
   };
 
   const handleSubmitCreatePool = async () => {
@@ -3055,7 +3347,7 @@ const TradingHistory = ({
 
     Promise.all([fetchBal(pool.asset1), fetchBal(pool.asset2)])
       .then(([b1, b2]) => setUserPoolBalances({ asset1: b1, asset2: b2 }))
-      .catch(() => {});
+      .catch(err => { console.warn('[TradingHistory] Pool balance fetch failed:', err.message); });
   }, [liquidityDialog.open, liquidityDialog.pool, accountProfile?.account, accountProfile?.address, lpRefreshCounter]);
 
   const handleAmount1Change = (value) => {
@@ -3335,12 +3627,12 @@ const TradingHistory = ({
     setDepositLoading(false);
   };
 
-  const handleWithdrawLiquidity = (pool) => {
+  const handleWithdrawLiquidity = useCallback((pool) => {
     setLiquidityDialog({ open: true, pool, tab: 'remove' });
     setWithdrawAmount1('');
     setWithdrawAmount2('');
     setWithdrawMode('double');
-  };
+  }, []);
 
   const handleCloseWithdrawDialog = () => {
     setLiquidityDialog({ open: false, pool: null, tab: 'add' });
@@ -3947,16 +4239,6 @@ const TradingHistory = ({
     walletLabels
   ]);
 
-  if (loading) {
-    return (
-      <div className="flex flex-col gap-3">
-        <div className="flex justify-center p-8">
-          <Spinner size={32} />
-        </div>
-      </div>
-    );
-  }
-
   const emptyState = (
     <BearEmptyState
       isDark={isDark}
@@ -4156,7 +4438,13 @@ const TradingHistory = ({
         </button>
       )}
 
-      {tabValue === 0 && (
+      {tabValue === 0 && loading && (
+        <div className="flex justify-center p-8">
+          <Spinner size={32} />
+        </div>
+      )}
+
+      {tabValue === 0 && !loading && (
         <>
           {/* Desktop header - hidden on mobile */}
           {!isMobile && (
@@ -4225,6 +4513,7 @@ const TradingHistory = ({
                   disabled={currentPage === 1}
                   isDark={isDark}
                   title="First"
+                  aria-label="First page"
                 >
                   <ChevronsLeft size={14} />
                 </PaginationButton>
@@ -4233,6 +4522,7 @@ const TradingHistory = ({
                   disabled={currentPage === 1}
                   isDark={isDark}
                   title="Previous"
+                  aria-label="Previous page"
                 >
                   <ChevronLeft size={14} />
                 </PaginationButton>
@@ -4246,6 +4536,7 @@ const TradingHistory = ({
                   disabled={isLastPage}
                   isDark={isDark}
                   title="Next"
+                  aria-label="Next page"
                 >
                   <ChevronRight size={14} />
                 </PaginationButton>
@@ -4254,6 +4545,7 @@ const TradingHistory = ({
                   disabled={isLastPage && direction === 'asc'}
                   isDark={isDark}
                   title="Last"
+                  aria-label="Last page"
                 >
                   <ChevronsRight size={14} />
                 </PaginationButton>
@@ -4263,7 +4555,7 @@ const TradingHistory = ({
         </>
       )}
 
-      {tabValue === 1 && (
+      <div style={{ display: tabValue === 1 ? undefined : 'none' }}>
         <div className="flex flex-col gap-4">
           {/* Pool Controls - Filter & Sort */}
           {!ammLoading && ammPools.length > 0 && (
@@ -4915,24 +5207,34 @@ const TradingHistory = ({
             </div>
           )}
         </div>
-      )}
+      </div>
 
-      {tabValue === 2 && token && <TopTraders token={token} walletLabels={walletLabels} onLabelsChange={setWalletLabels} />}
+      <div style={{ display: tabValue === 2 ? undefined : 'none' }}>
+        {stableToken && <TopTraders token={stableToken} walletLabels={walletLabels} onLabelsChange={setWalletLabels} />}
+      </div>
 
-      {tabValue === 3 && token && (
-        <Suspense fallback={<Spinner size={32} />}>
-          <RichList token={token} amm={amm} walletLabels={walletLabels} onLabelsChange={setWalletLabels} />
-        </Suspense>
-      )}
+      <div style={{ display: tabValue === 3 ? undefined : 'none' }}>
+        {stableToken && (
+          <Suspense fallback={<Spinner size={32} />}>
+            <RichList token={stableToken} amm={amm} walletLabels={walletLabels} onLabelsChange={setWalletLabels} />
+          </Suspense>
+        )}
+      </div>
 
-      {tabValue === 4 && (
+      <div style={{ display: tabValue === 4 ? undefined : 'none' }}>
         <MyActivityTab
-          token={token}
+          token={stableToken}
           isDark={isDark}
           isMobile={isMobile}
           onTransactionClick={onTransactionClick}
+          ammPools={ammPools}
+          userLpBalances={userLpBalances}
+          ilPositions={ilPositions}
+          onAddLiquidity={handleAddLiquidity}
+          onWithdrawLiquidity={handleWithdrawLiquidity}
+          ammLoading={ammLoading}
         />
-      )}
+      </div>
 
       {/* Liquidity Dialog - Combined Add/Remove */}
       {typeof document !== 'undefined' &&

@@ -25,10 +25,12 @@ import {
   ToggleLeft,
   ToggleRight,
   List,
-  Settings
+  Settings,
+  Zap
 } from 'lucide-react';
 
 import { ApiButton } from './ApiEndpointsModal';
+import BoostModal from './BoostModal';
 
 // Utils
 import { cn } from 'src/utils/cn';
@@ -464,6 +466,11 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
   const [showDepthPanel, setShowDepthPanel] = useState(false);
   const amount1Ref = useRef(null);
 
+  // Trending tokens state
+  const [trendingTokens, setTrendingTokens] = useState([]);
+  const [trendingLoading, setTrendingLoading] = useState(true);
+  const [boostToken, setBoostToken] = useState(null);
+
   // Transaction preview state (simulation results)
   const [txPreview, setTxPreview] = useState(null);
   const [pendingTx, setPendingTx] = useState(null);
@@ -791,7 +798,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
             setHasTrustline1(res.data.hasTrustline === true);
           }
         })
-        .catch(() => {});
+        .catch(err => { console.warn('[SwapInterface] Trustline check failed (curr1):', err.message); });
     } else if (curr1?.currency === 'XRP') {
       setHasTrustline1(true);
     }
@@ -804,7 +811,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
             setHasTrustline2(res.data.hasTrustline === true);
           }
         })
-        .catch(() => {});
+        .catch(err => { console.warn('[SwapInterface] Trustline check failed (curr2):', err.message); });
     } else if (curr2?.currency === 'XRP') {
       setHasTrustline2(true);
     }
@@ -834,12 +841,12 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
 
     const connect = async () => {
       try {
-        const res = await fetch(`/api/ws/session?type=balancePair&id=${account}&${params}`);
-        const { wsUrl, apiKey } = await res.json();
-        if (!wsUrl || !/^wss?:\/\//i.test(wsUrl)) return;
+        const { getSessionWsUrl } = await import('src/utils/wsToken');
+        const wsUrl = await getSessionWsUrl('balancePair', account, Object.fromEntries(new URLSearchParams(params)));
+        if (!wsUrl) return;
         ws = new WebSocket(wsUrl);
 
-        ws.onopen = () => { attempts = 0; if (apiKey) ws.send(JSON.stringify({ type: 'auth', apiKey })); };
+        ws.onopen = () => { attempts = 0; };
 
         ws.onmessage = (event) => {
           try {
@@ -2248,6 +2255,18 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
     }
   };
 
+  // Fetch trending tokens for bottom section
+  useEffect(() => {
+    const ctrl = new AbortController();
+    api.get(`${BASE_URL}/tokens?start=0&limit=20&sortBy=trendingScore&sortType=desc&skipMetrics=true`, { signal: ctrl.signal })
+      .then((res) => {
+        setTrendingTokens(res.data?.tokens || []);
+        setTrendingLoading(false);
+      })
+      .catch((err) => { if (!api.isCancel?.(err)) setTrendingLoading(false); });
+    return () => ctrl.abort();
+  }, []);
+
   // Token Selector Functions
   useEffect(() => {
     if (panel1Open || panel2Open) {
@@ -2563,6 +2582,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search symbols or addresses..."
+            aria-label="Search tokens"
             className={cn(
               'flex-1 bg-transparent text-[16px] font-medium outline-none',
               darkMode
@@ -2572,8 +2592,9 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
           />
           <button
             onClick={onClose}
+            aria-label="Close token selector"
             className={cn(
-              'p-2 rounded-xl transition-all',
+              'p-2 rounded-xl transition-all outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
               darkMode ? 'hover:bg-white/5 text-white/40' : 'hover:bg-gray-100 text-gray-400'
             )}
           >
@@ -2769,8 +2790,9 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
               </div>
               <button
                 onClick={handleCancelPreview}
+                aria-label="Close preview"
                 className={cn(
-                  'border-none rounded-lg cursor-pointer p-1.5 flex items-center justify-center',
+                  'border-none rounded-lg cursor-pointer p-1.5 flex items-center justify-center outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                   isDark ? 'bg-white/5 text-white/40' : 'bg-black/5 text-black/40'
                 )}
               >
@@ -2946,18 +2968,20 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
         <div className="flex flex-col items-center gap-4 sm:gap-5 md:gap-8 mx-auto w-full max-w-[1000px] px-2 sm:px-3 md:px-4 pt-1 sm:pt-2 md:pt-0">
           {/* Header with Market/Limit Tabs - Futuristic & Sleek */}
           <div className="flex flex-wrap items-center justify-between w-full px-1 sm:px-2 gap-2">
-            <div className={cn(
+            <div role="tablist" aria-label="Order type" className={cn(
               'flex p-0.5 sm:p-1 rounded-xl backdrop-blur-md border-[1.5px]',
               darkMode ? 'bg-white/5 border-white/[0.06]' : 'bg-gray-100 border-gray-200'
             )}>
               <button
+                role="tab"
+                aria-selected={orderType === 'market'}
                 onClick={() => {
                   setOrderType('market');
                   setShowOrders(false);
                   setShowOrderbook(false);
                 }}
                 className={cn(
-                  'px-3 sm:px-6 py-1.5 sm:py-2 rounded-lg text-[12px] sm:text-[13px] font-bold transition-all duration-300',
+                  'px-3 sm:px-6 py-1.5 sm:py-2 rounded-lg text-[12px] sm:text-[13px] font-bold transition-all duration-300 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                   orderType === 'market'
                     ? 'bg-primary text-white shadow-lg shadow-primary/20'
                     : darkMode
@@ -2968,12 +2992,14 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                 Market
               </button>
               <button
+                role="tab"
+                aria-selected={orderType === 'limit'}
                 onClick={() => {
                   setOrderType('limit');
                   setShowOrders(false);
                 }}
                 className={cn(
-                  'px-3 sm:px-6 py-1.5 sm:py-2 rounded-lg text-[12px] sm:text-[13px] font-bold transition-all duration-300',
+                  'px-3 sm:px-6 py-1.5 sm:py-2 rounded-lg text-[12px] sm:text-[13px] font-bold transition-all duration-300 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                   orderType === 'limit'
                     ? 'bg-primary text-white shadow-lg shadow-primary/20'
                     : darkMode
@@ -2990,8 +3016,9 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
             )}>
               <button
                 onClick={() => setShowSettingsModal(true)}
+                aria-label="Swap settings"
                 className={cn(
-                  'flex items-center gap-1 px-1.5 sm:px-3 py-1.5 sm:py-2 rounded-lg text-[11px] sm:text-[13px] font-bold transition-all duration-300',
+                  'flex items-center gap-1 px-1.5 sm:px-3 py-1.5 sm:py-2 rounded-lg text-[11px] sm:text-[13px] font-bold transition-all duration-300 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                   darkMode
                     ? 'text-white/40 hover:text-white/70'
                     : 'text-gray-500 hover:text-gray-900'
@@ -3004,7 +3031,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                 onClick={handleShareUrl}
                 aria-label="Share swap URL"
                 className={cn(
-                  'flex items-center px-1.5 sm:px-3 py-1.5 sm:py-2 rounded-lg transition-all duration-300',
+                  'flex items-center px-1.5 sm:px-3 py-1.5 sm:py-2 rounded-lg transition-all duration-300 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                   darkMode
                     ? 'text-white/40 hover:text-white/70'
                     : 'text-gray-500 hover:text-gray-900'
@@ -3017,22 +3044,21 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
           </div>
 
 
-          {/* Horizontal Two-Card Layout - Futuristic Style */}
-          <div className="flex flex-col md:flex-row items-stretch justify-center gap-4 md:gap-6 w-full">
+          {/* Unified Swap Card */}
+          <div className={cn(
+            'w-full rounded-[1.5rem] sm:rounded-[2rem] p-4 sm:p-6 md:p-8 transition-all duration-500 relative overflow-hidden backdrop-blur-3xl border-[1.5px]',
+            darkMode
+              ? 'border-white/[0.06] bg-white/[0.01] shadow-2xl shadow-black/40'
+              : 'border-gray-200/80 bg-white/40 shadow-xl shadow-gray-200/20'
+          )}>
+            {/* Background Mesh */}
+            <div className="absolute -top-[20%] -left-[20%] w-[60%] h-[60%] bg-primary/5 rounded-full blur-[100px] pointer-events-none" aria-hidden="true" />
+            <div className="absolute -bottom-[20%] -right-[20%] w-[60%] h-[60%] bg-blue-500/5 rounded-full blur-[100px] pointer-events-none" aria-hidden="true" />
+
+            {/* Token Pair Row */}
+            <div className="flex flex-col md:flex-row items-stretch justify-center gap-4 md:gap-6 w-full relative z-10">
             {/* First Token Card - You Pay */}
-            <div
-              className={cn(
-                'flex-1 min-w-0 rounded-[1.5rem] sm:rounded-[2rem] p-4 sm:p-6 md:p-10 transition-all duration-500 relative overflow-hidden backdrop-blur-3xl border-[1.5px]',
-                focusTop
-                  ? 'border-primary shadow-[0_0_40px_-10px_rgba(59,130,246,0.3)] shadow-primary/20'
-                  : darkMode
-                    ? 'border-white/[0.06] bg-white/[0.01] shadow-2xl shadow-black/40'
-                    : 'border-gray-200/80 bg-white/40 shadow-xl shadow-gray-200/20'
-              )}
-            >
-              {/* Animated Background Mesh */}
-              <div className="absolute -top-[20%] -left-[20%] w-[60%] h-[60%] bg-primary/5 rounded-full blur-[100px] pointer-events-none" aria-hidden="true" />
-              <div className="absolute -bottom-[20%] -right-[20%] w-[60%] h-[60%] bg-blue-500/5 rounded-full blur-[100px] pointer-events-none" aria-hidden="true" />
+            <div className="flex-1 min-w-0 relative">
 
               {/* Token Display - Futuristic Glow */}
               <div className="flex flex-col items-start mb-4 sm:mb-6 relative z-10">
@@ -3044,7 +3070,8 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                 </span>
                 <button
                   onClick={() => setPanel1Open(true)}
-                  className="flex items-center gap-3 sm:gap-4 group relative max-w-full"
+                  aria-label="Select token to pay"
+                  className="flex items-center gap-3 sm:gap-4 group relative max-w-full outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] rounded-xl"
                 >
                   <div className="relative flex-shrink-0">
                     <div className="absolute inset-0 rounded-full bg-primary/20 blur-xl group-hover:bg-primary/40 transition-all duration-500 scale-110" />
@@ -3097,12 +3124,13 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                       type="text"
                       inputMode="decimal"
                       placeholder="0.00"
+                      aria-label="Amount to pay"
                       value={amount1}
                       onChange={handleChangeAmount1}
                       onFocus={() => setFocusTop(true)}
                       onBlur={() => setFocusTop(false)}
                       className={cn(
-                        'flex-1 min-w-0 text-left text-xl sm:text-2xl md:text-4xl font-bold bg-transparent border-none outline-none font-mono tracking-tight',
+                        'flex-1 min-w-0 text-left text-xl sm:text-2xl md:text-4xl font-bold bg-transparent border-none outline-none font-mono tracking-tight focus-visible:ring-2 focus-visible:ring-[#137DFE] rounded',
                         darkMode
                           ? 'text-white placeholder:text-white/10'
                           : 'text-gray-900 placeholder:text-gray-200'
@@ -3166,9 +3194,10 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                 onClick={onRevertExchange}
                 disabled={isSwitching}
                 title="Switch currencies (Alt + S)"
+                aria-label="Switch currencies"
                 className={cn(
                   'w-11 h-11 md:w-14 md:h-14 rounded-2xl flex items-center justify-center transition-all duration-500 border-[1.5px]',
-                  'backdrop-blur-xl shadow-lg',
+                  'backdrop-blur-xl shadow-lg outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                   darkMode
                     ? 'bg-black/60 border-white/[0.08] hover:border-primary hover:shadow-primary/20 text-white/70 hover:text-white'
                     : 'bg-white/80 border-gray-200/60 hover:border-primary hover:shadow-primary/10 text-gray-400 hover:text-primary',
@@ -3184,19 +3213,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
 
 
             {/* Second Token Card - You Receive */}
-            <div
-              className={cn(
-                'flex-1 min-w-0 rounded-[1.5rem] sm:rounded-[2rem] p-4 sm:p-6 md:p-10 transition-all duration-500 relative overflow-hidden backdrop-blur-3xl border-[1.5px]',
-                focusBottom
-                  ? 'border-primary shadow-[0_0_40px_-10px_rgba(59,130,246,0.3)] shadow-primary/20'
-                  : darkMode
-                    ? 'border-white/[0.06] bg-white/[0.01] shadow-2xl shadow-black/40'
-                    : 'border-gray-200/80 bg-white/40 shadow-xl shadow-gray-200/20'
-              )}
-            >
-              {/* Animated Background Mesh */}
-              <div className="absolute -top-[20%] -right-[20%] w-[60%] h-[60%] bg-primary/5 rounded-full blur-[100px] pointer-events-none" aria-hidden="true" />
-              <div className="absolute -bottom-[20%] -left-[20%] w-[60%] h-[60%] bg-blue-500/5 rounded-full blur-[100px] pointer-events-none" aria-hidden="true" />
+            <div className="flex-1 min-w-0 relative">
 
               {/* Token Display - Receive */}
               <div className="flex flex-col items-start mb-4 sm:mb-6 relative z-10">
@@ -3208,7 +3225,8 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                 </span>
                 <button
                   onClick={() => setPanel2Open(true)}
-                  className="flex items-center gap-3 sm:gap-4 group relative max-w-full"
+                  aria-label="Select token to receive"
+                  className="flex items-center gap-3 sm:gap-4 group relative max-w-full outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] rounded-xl"
                 >
                   <div className="relative flex-shrink-0">
                     <div className="absolute inset-0 rounded-full bg-primary/20 blur-xl group-hover:bg-primary/40 transition-all duration-500 scale-110" />
@@ -3260,12 +3278,13 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                       type="text"
                       inputMode="decimal"
                       placeholder="0.00"
+                      aria-label="Amount to receive"
                       value={amount1 === '' ? '' : amount2}
                       onChange={handleChangeAmount2}
                       onFocus={() => setFocusBottom(true)}
                       onBlur={() => setFocusBottom(false)}
                       className={cn(
-                        'flex-1 min-w-0 text-left text-xl sm:text-2xl md:text-4xl font-bold bg-transparent border-none outline-none font-mono tracking-tight',
+                        'flex-1 min-w-0 text-left text-xl sm:text-2xl md:text-4xl font-bold bg-transparent border-none outline-none font-mono tracking-tight focus-visible:ring-2 focus-visible:ring-[#137DFE] rounded',
                         darkMode
                           ? 'text-white placeholder:text-white/10'
                           : 'text-gray-900 placeholder:text-gray-200'
@@ -3302,16 +3321,8 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
             </div>
           </div>
 
-          {/* Bottom Controls Container */}
-          <div className="w-full rounded-xl relative max-w-[560px]">
-            <div className="flex flex-col gap-4">
-              {/* Left side - Controls */}
-              <div
-                className={cn(
-                  'flex-1 flex flex-col',
-                  darkMode ? 'bg-transparent' : 'bg-transparent'
-                )}
-              >
+            {/* Controls & Action Button */}
+            <div className="flex flex-col relative z-10 mt-6">
                 {/* Settings Modal */}
                 {showSettingsModal && (
                   <div
@@ -3338,7 +3349,8 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                         </span>
                         <button
                           onClick={() => setShowSettingsModal(false)}
-                          className="p-1.5 rounded-lg hover:bg-white/10"
+                          aria-label="Close settings"
+                          className="p-1.5 rounded-lg hover:bg-white/10 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]"
                         >
                           <X size={16} className={darkMode ? 'text-white/40' : 'text-gray-400'} />
                         </button>
@@ -3381,6 +3393,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                             <input
                               type="text"
                               inputMode="decimal"
+                              aria-label="Custom slippage percentage"
                               value={slippage}
                               onChange={(e) => {
                                 const val = e.target.value.replace(/[^0-9.]/g, '');
@@ -3818,22 +3831,6 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                       ))}
                     </div>
 
-                    {/* Toggle Order Book */}
-                    <button
-                      onClick={() => setShowOrderbook(!showOrderbook)}
-                      className={cn(
-                        'w-full py-2 rounded-lg text-[11px] transition-colors flex items-center justify-center gap-1.5',
-                        showOrderbook
-                          ? 'bg-primary/10 text-primary'
-                          : darkMode
-                            ? 'text-white/40 hover:text-white/60 hover:bg-white/5'
-                            : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
-                      )}
-                      style={{ border: `1px solid ${showOrderbook ? 'var(--primary)' : darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}` }}
-                    >
-                      <List size={12} />
-                      {showOrderbook ? 'Hide' : 'Show'} Order Book
-                    </button>
                   </div>
                 )}
 
@@ -3900,331 +3897,198 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                   />
                 )}
 
-              </div>
             </div>
           </div>
-        </div>
-      )}
 
-      {/* Floating Order Book Panel */}
-      {showOrderbook && (
-        <div
-          className={cn(
-            'fixed z-[9999] w-[320px] rounded-lg overflow-hidden select-none shadow-[0_8px_32px_rgba(0,0,0,0.3)]',
+          {/* Trending Tokens */}
+          <div className={cn(
+            'w-full rounded-[1.5rem] sm:rounded-[2rem] p-4 sm:p-6 md:p-8 border-[1.5px] relative overflow-hidden backdrop-blur-3xl',
             darkMode
-              ? 'border border-white/[0.12] bg-black/95'
-              : 'border border-gray-200 bg-white/[0.98]'
-          )}
-          style={{ left: orderBookPos.x, top: orderBookPos.y }}
-        >
-          {/* Drag Handle */}
-          <div
-            onMouseDown={handleDragStartOB}
-            className={cn(
-              'px-3 py-2 border-b text-[12px] font-mono flex items-center justify-between cursor-move',
-              darkMode ? 'border-primary/20 bg-white/[0.03]' : 'border-primary/15 bg-gray-50'
-            )}
-          >
-            <span
-              className={cn(
-                'uppercase tracking-wide',
-                darkMode ? 'text-primary/70' : 'text-primary/70'
-              )}
-            >
-              Order Book
-            </span>
-            <button
-              onClick={() => setShowOrderbook(false)}
-              className={cn(
-                'w-5 h-5 flex items-center justify-center rounded hover:bg-white/10',
-                darkMode ? 'text-white/50 hover:text-white' : 'text-gray-500 hover:text-gray-700'
-              )}
-            >
-              <X size={14} />
-            </button>
-          </div>
-          {asks.length === 0 && bids.length === 0 ? (
-            <div
-              className={cn(
-                'p-8 text-center text-[12px] font-mono',
-                darkMode ? 'text-primary/40' : 'text-primary/40'
-              )}
-            >
-              No orderbook data available
-            </div>
-          ) : (
-            <>
-              <div
+              ? 'border-white/[0.06] bg-white/[0.01]'
+              : 'border-[#E2E8F0] bg-white/40'
+          )}>
+            {/* Background glow */}
+            {darkMode && <div className="absolute -top-[30%] -right-[20%] w-[50%] h-[50%] bg-primary/[0.03] rounded-full blur-[80px] pointer-events-none" />}
+
+            <div className="flex items-center justify-between mb-4 sm:mb-6">
+              <div className="flex items-center gap-2.5">
+                <div className={cn(
+                  'w-7 h-7 rounded-lg flex items-center justify-center',
+                  darkMode ? 'bg-white/[0.06]' : 'bg-[#137DFE]/10'
+                )}>
+                  <TrendingUp size={14} className={darkMode ? 'text-white/60' : 'text-[#137DFE]'} />
+                </div>
+                <span className={cn(
+                  'text-[13px] sm:text-[14px] font-bold uppercase tracking-[1.5px] font-mono',
+                  darkMode ? 'text-[#F5F5F5]' : 'text-[#0F172A]'
+                )}>
+                  Trending
+                </span>
+              </div>
+              <a
+                href="/trending"
                 className={cn(
-                  'flex text-[10px] font-mono px-2 py-1.5 border-b',
-                  darkMode ? 'border-[rgba(66,133,244,0.1)]' : 'border-[rgba(66,133,244,0.08)]'
+                  'text-[11px] sm:text-[12px] font-semibold no-underline transition-colors tracking-wide',
+                  darkMode ? 'text-white/40 hover:text-white/70' : 'text-[#137DFE]/60 hover:text-[#137DFE]'
                 )}
               >
-                <span className={cn('flex-1', darkMode ? 'text-primary/40' : 'text-primary/40')}>
-                  Price
-                </span>
-                <span
-                  className={cn(
-                    'flex-1 text-right',
-                    darkMode ? 'text-primary/40' : 'text-primary/40'
-                  )}
-                >
-                  {token1?.name || 'Token'}
-                </span>
-                <span
-                  className={cn(
-                    'flex-1 text-right',
-                    darkMode ? 'text-primary/40' : 'text-primary/40'
-                  )}
-                >
-                  Total
-                </span>
-              </div>
-              {/* Asks */}
-              <div
-                ref={asksContainerRef}
-                className="max-h-[280px] overflow-y-auto scrollbar-none"
-                style={{ scrollbarWidth: 'none' }}
-              >
-                {(() => {
-                  const visibleAsks = asks.slice(0, 30);
-                  const maxAmount = Math.max(...visibleAsks.map((a) => a.amount || 0), 1);
-                  const userPrice = parseFloat(limitPrice) || 0;
-                  const reversedAsks = [...visibleAsks].reverse();
-                  const bestAsk = asks[0]?.price || Infinity;
+                View All
+              </a>
+            </div>
 
-                  const rows = [];
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4">
+              {trendingLoading ? (
+                [...Array(5)].map((_, i) => (
+                  <div key={i} className={cn(
+                    'rounded-xl h-[160px] sm:h-[170px] animate-pulse border-[1.5px]',
+                    darkMode ? 'bg-white/[0.02] border-white/[0.04]' : 'bg-[#F1F5F9] border-[#E2E8F0]'
+                  )} />
+                ))
+              ) : (
+                trendingTokens.slice(0, 5).map((t, i) => {
+                  const change = t.pro24h || 0;
+                  const isUp = change >= 0;
+                  const rate = metrics[activeFiatCurrency] || 1;
+                  const sym = currencySymbols[activeFiatCurrency] || '$';
+                  const price = activeFiatCurrency === 'XRP' ? t.exch : (t.exch ? t.exch / rate : 0);
 
-                  reversedAsks.forEach((ask, idx) => {
-                    rows.push(
-                      <div
-                        key={`ask-${idx}`}
-                        onClick={() => setLimitPrice(ask.price.toString())}
-                        className={cn(
-                          'flex px-2 py-1 text-[11px] font-mono cursor-pointer hover:bg-red-500/15 relative',
-                          darkMode ? 'text-white/80' : 'text-gray-700'
-                        )}
-                      >
-                        <div
-                          className="absolute inset-y-0 right-0 bg-red-500/15 pointer-events-none"
-                          style={{ width: `${(ask.amount / maxAmount) * 100}%` }}
-                        />
-                        <span className="flex-1 text-red-400 relative z-[1]">
-                          {ask.price?.toFixed(6)}
-                        </span>
-                        <span className="flex-1 text-right relative z-[1]">
-                          {fNumber(ask.amount)}
-                        </span>
-                        <span
-                          className={cn(
-                            'flex-1 text-right relative z-[1]',
-                            darkMode ? 'text-white/40' : 'text-gray-400'
-                          )}
-                        >
-                          {fNumber(ask.total)}
-                        </span>
-                      </div>
-                    );
-                  });
-
-                  // Add user order at bottom of asks if price is above best ask
-                  if (userPrice > 0 && userPrice >= bestAsk) {
-                    const willFill = userPrice >= bestAsk;
-                    rows.push(
-                      <div
-                        key="user-order-ask"
-                        className={cn(
-                          'flex px-2 py-1 text-[11px] font-mono relative border-y',
-                          willFill
-                            ? 'bg-red-500/30 border-red-500/50'
-                            : 'bg-primary/20 border-primary/50'
-                        )}
-                      >
-                        <span
-                          className={cn(
-                            'flex-1 relative z-[1]',
-                            willFill ? 'text-red-400' : 'text-primary'
-                          )}
-                        >
-                          {userPrice.toFixed(6)}
-                        </span>
-                        <span
-                          className={cn(
-                            'flex-1 text-right relative z-[1]',
-                            willFill ? 'text-red-400' : 'text-primary'
-                          )}
-                        >
-                          {willFill ? 'INSTANT FILL' : 'Your Order'}
-                        </span>
-                        <span
-                          className={cn(
-                            'flex-1 text-right relative z-[1]',
-                            willFill ? 'text-red-400' : 'text-primary'
-                          )}
-                        >
-                          {revert ? 'SELL' : 'BUY'}
-                        </span>
-                      </div>
-                    );
-                  }
-                  return rows;
-                })()}
-              </div>
-              {/* Spread + User Order if in spread */}
-              {(() => {
-                const userPrice = parseFloat(limitPrice) || 0;
-                const bestBid = bids[0]?.price || 0;
-                const bestAsk = asks[0]?.price || Infinity;
-                const inSpread = userPrice > 0 && userPrice > bestBid && userPrice < bestAsk;
-                return (
-                  <>
-                    {inSpread && (
-                      <div className="flex px-2 py-1 text-[11px] font-mono bg-primary/20 border-y border-primary/50">
-                        <span className="flex-1 text-primary">{userPrice.toFixed(6)}</span>
-                        <span className="flex-1 text-right text-primary">Your Order</span>
-                        <span className="flex-1 text-right text-primary">
-                          {revert ? 'SELL' : 'BUY'}
-                        </span>
-                      </div>
-                    )}
-                    <div
-                      className={cn(
-                        'px-2 py-2 text-[11px] font-mono border-y flex justify-between items-center',
-                        darkMode ? 'border-white/10 bg-white/[0.03]' : 'border-gray-200 bg-gray-50'
-                      )}
-                    >
-                      <span className="text-green-400">{bids[0]?.price?.toFixed(6) || '—'}</span>
-                      <span
-                        className={cn(
-                          'px-2 py-0.5 rounded text-[10px]',
-                          darkMode ? 'bg-white/10' : 'bg-gray-200'
-                        )}
-                      >
-                        {asks[0] && bids[0]
-                          ? (((asks[0].price - bids[0].price) / asks[0].price) * 100).toFixed(2)
-                          : '0.00'}
-                        %
-                      </span>
-                      <span className="text-red-400">{asks[0]?.price?.toFixed(6) || '—'}</span>
-                    </div>
-                  </>
-                );
-              })()}
-              {/* Bids */}
-              <div
-                className="max-h-[280px] overflow-y-auto scrollbar-none"
-                style={{ scrollbarWidth: 'none' }}
-              >
-                {(() => {
-                  const visibleBids = bids.slice(0, 30);
-                  const maxAmount = Math.max(...visibleBids.map((b) => b.amount || 0), 1);
-                  const userPrice = parseFloat(limitPrice) || 0;
-
-                  let userOrderInserted = false;
-                  const rows = [];
-                  const bestBidPrice = bids[0]?.price || 0;
-
-                  visibleBids.forEach((bid, idx) => {
-                    if (!userOrderInserted && userPrice > 0 && userPrice <= bid.price) {
-                      const willFill = userPrice <= bestBidPrice;
-                      rows.push(
-                        <div
-                          key="user-order-bid"
-                          className={cn(
-                            'flex px-2 py-1 text-[11px] font-mono relative border-y',
-                            willFill
-                              ? 'bg-red-500/30 border-red-500/50'
-                              : 'bg-primary/20 border-primary/50'
-                          )}
-                        >
-                          <span
-                            className={cn(
-                              'flex-1 relative z-[1]',
-                              willFill ? 'text-red-400' : 'text-primary'
-                            )}
-                          >
-                            {userPrice.toFixed(6)}
-                          </span>
-                          <span
-                            className={cn(
-                              'flex-1 text-right relative z-[1]',
-                              willFill ? 'text-red-400' : 'text-primary'
-                            )}
-                          >
-                            {willFill ? 'INSTANT FILL' : 'Your Order'}
-                          </span>
-                          <span
-                            className={cn(
-                              'flex-1 text-right relative z-[1]',
-                              willFill ? 'text-red-400' : 'text-primary'
-                            )}
-                          >
-                            {revert ? 'SELL' : 'BUY'}
-                          </span>
-                        </div>
-                      );
-                      userOrderInserted = true;
+                  const fmtPrice = (p) => {
+                    if (!p) return `${sym}0`;
+                    if (p < 0.0001) {
+                      const z = -Math.floor(Math.log10(p)) - 1;
+                      const s = Math.round(p * Math.pow(10, z + 4));
+                      return <>{sym}0.0<sub className="text-[8px]">{z}</sub>{s}</>;
                     }
-                    rows.push(
-                      <div
-                        key={`bid-${idx}`}
-                        onClick={() => setLimitPrice(bid.price.toString())}
-                        className={cn(
-                          'flex px-2 py-1 text-[11px] font-mono cursor-pointer hover:bg-green-500/15 relative',
-                          darkMode ? 'text-white/80' : 'text-gray-700'
-                        )}
-                      >
-                        <div
-                          className="absolute inset-y-0 left-0 bg-green-500/15 pointer-events-none"
-                          style={{ width: `${(bid.amount / maxAmount) * 100}%` }}
-                        />
-                        <span className="flex-1 text-green-400 relative z-[1]">
-                          {bid.price?.toFixed(6)}
-                        </span>
-                        <span className="flex-1 text-right relative z-[1]">
-                          {fNumber(bid.amount)}
-                        </span>
-                        <span
-                          className={cn(
-                            'flex-1 text-right relative z-[1]',
-                            darkMode ? 'text-white/40' : 'text-gray-400'
-                          )}
-                        >
-                          {fNumber(bid.total)}
-                        </span>
-                      </div>
-                    );
-                  });
+                    if (p < 1) return `${sym}${p.toFixed(4).replace(/0+$/, '').replace(/\.$/, '')}`;
+                    if (p >= 1e6) return `${sym}${(p / 1e6).toFixed(1)}M`;
+                    if (p >= 1e3) return `${sym}${(p / 1e3).toFixed(1)}K`;
+                    return `${sym}${p < 100 ? p.toFixed(2) : Math.round(p)}`;
+                  };
 
-                  if (
-                    !userOrderInserted &&
-                    userPrice > 0 &&
-                    userPrice < (visibleBids[visibleBids.length - 1]?.price || Infinity)
-                  ) {
-                    rows.push(
-                      <div
-                        key="user-order-bid"
-                        className="flex px-2 py-1 text-[11px] font-mono relative bg-primary/20 border-y border-primary/50"
-                      >
-                        <span className="flex-1 text-primary relative z-[1]">
-                          {userPrice.toFixed(6)}
-                        </span>
-                        <span className="flex-1 text-right text-primary relative z-[1]">
-                          Your Order
-                        </span>
-                        <span className="flex-1 text-right text-primary relative z-[1]">
-                          {revert ? 'SELL' : 'BUY'}
-                        </span>
+                  return (
+                    <a
+                      key={t.md5 || i}
+                      href={`/token/${t.slug}`}
+                      className={cn(
+                        'flex flex-col items-center justify-center rounded-xl p-4 sm:p-5 no-underline relative overflow-hidden group transition-all duration-300 border-[1.5px]',
+                        'hover:scale-[1.02] active:scale-[0.98]',
+                        darkMode
+                          ? 'bg-[#111111] border-white/[0.06] hover:border-white/[0.12]'
+                          : 'bg-[#F8FAFD] border-[#E2E8F0] hover:border-[#137DFE]/30'
+                      )}
+                      style={darkMode ? {
+                        boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.03)',
+                        transition: 'box-shadow 0.3s, border-color 0.3s, transform 0.3s',
+                      } : undefined}
+                      onMouseEnter={(e) => { if (darkMode) e.currentTarget.style.boxShadow = `0 4px 20px -4px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06)`; }}
+                      onMouseLeave={(e) => { if (darkMode) e.currentTarget.style.boxShadow = 'inset 0 1px 0 rgba(255,255,255,0.03)'; }}
+                    >
+
+                      {/* Rank */}
+                      <div className={cn(
+                        'absolute top-2 right-2.5 text-[9px] font-mono font-bold',
+                        darkMode ? 'text-white/15' : 'text-[#137DFE]/15'
+                      )}>
+                        #{i + 1}
                       </div>
-                    );
-                  }
-                  return rows;
-                })()}
+
+                      {/* Token image */}
+                      <div className={cn(
+                        'w-11 h-11 sm:w-12 sm:h-12 rounded-xl overflow-hidden mb-3 border-[1.5px] flex-shrink-0',
+                        darkMode ? 'border-white/[0.06] bg-white/[0.03]' : 'border-[#E2E8F0] bg-white'
+                      )}>
+                        {t.md5 ? (
+                          <img
+                            src={`https://s1.xrpl.to/thumb/${t.md5}_32`}
+                            alt=""
+                            className="w-full h-full object-cover"
+                            loading="lazy"
+                            onError={(e) => { e.target.style.display = 'none'; }}
+                          />
+                        ) : (
+                          <div className={cn(
+                            'w-full h-full flex items-center justify-center text-[12px] font-bold',
+                            darkMode ? 'text-white/20' : 'text-[#64748B]/30'
+                          )}>{t.currency?.[0]}</div>
+                        )}
+                      </div>
+
+                      {/* Name */}
+                      <div className={cn(
+                        'text-[12px] sm:text-[13px] font-semibold truncate w-full text-center mb-1',
+                        darkMode ? 'text-[#F5F5F5]' : 'text-[#0F172A]'
+                      )}>
+                        {t.name}
+                      </div>
+
+                      {/* Price */}
+                      <div className={cn(
+                        'text-[11px] sm:text-[12px] font-mono font-medium mb-1.5',
+                        darkMode ? 'text-[#9CA3AF]' : 'text-[#64748B]'
+                      )}>
+                        {fmtPrice(price)}
+                      </div>
+
+                      {/* Change + score */}
+                      <div className="flex items-center gap-1.5">
+                        <span className={cn(
+                          'text-[10px] sm:text-[11px] font-bold font-mono',
+                          isUp ? 'text-[#08AA09]' : 'text-[#ef4444]'
+                        )}>
+                          {isUp ? '+' : ''}{change.toFixed(1)}%
+                        </span>
+                        {t.trendingScore > 0 && (
+                          <span className={cn(
+                            'text-[8px] font-mono',
+                            darkMode ? 'text-white/20' : 'text-black/20'
+                          )}>
+                            {t.trendingScore >= 1000 ? `${(t.trendingScore / 1000).toFixed(1)}k` : Math.round(t.trendingScore)}
+                          </span>
+                        )}
+                      </div>
+                    </a>
+                  );
+                })
+              )}
+            </div>
+
+            {/* Boost CTA */}
+            {!trendingLoading && trendingTokens.length > 0 && (
+              <div className={cn(
+                'flex items-center justify-between mt-3 sm:mt-4 pt-3 sm:pt-4 border-t',
+                darkMode ? 'border-white/[0.06]' : 'border-black/[0.06]'
+              )}>
+                <div className="flex items-center gap-2">
+                  <Zap size={13} className={darkMode ? 'text-[#F6AF01]' : 'text-[#F6AF01]'} />
+                  <span className={cn('text-[11px] sm:text-[12px]', darkMode ? 'text-white/40' : 'text-black/40')}>
+                    Want your token here?
+                  </span>
+                </div>
+                <button
+                  onClick={() => setBoostToken(trendingTokens[0])}
+                  className={cn(
+                    'px-3 py-1.5 rounded-lg text-[10px] sm:text-[11px] font-bold tracking-wide transition-all',
+                    'bg-[#F6AF01]/10 text-[#F6AF01] border border-[#F6AF01]/20',
+                    'hover:bg-[#F6AF01]/20 hover:border-[#F6AF01]/40'
+                  )}
+                >
+                  Boost Trending
+                </button>
               </div>
-            </>
+            )}
+          </div>
+
+          {/* Boost Modal */}
+          {boostToken && (
+            <BoostModal
+              token={boostToken}
+              onClose={() => setBoostToken(null)}
+              onSuccess={() => setBoostToken(null)}
+            />
           )}
         </div>
       )}
+
     </div>
   );
 }

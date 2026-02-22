@@ -93,7 +93,7 @@ const NftImage = ({ nftTokenId, className, fallback }) => {
         src={imageUrl}
         alt=""
         className={className}
-        onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; }}
+        onError={(e) => { e.target.onerror = null; e.target.src = ''; e.target.style.opacity = '0'; e.target.style.width = '0'; e.target.style.height = '0'; }}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={() => setShowTooltip(false)}
       />
@@ -558,7 +558,7 @@ const AccountHistory = ({ account, compact = false }) => {
     <>
       {/* History View Toggle */}
       <div className="flex justify-start mb-4 sm:mb-5">
-        <div className={cn(
+        <nav role="tablist" aria-label="History views" className={cn(
           'flex items-center gap-1 p-1 rounded-xl border',
           isDark ? 'bg-white/[0.03] border-white/10' : 'bg-gray-100/50 border-gray-200'
         )}>
@@ -568,9 +568,12 @@ const AccountHistory = ({ account, compact = false }) => {
           ].map((view) => (
             <button
               key={view.id}
+              role="tab"
+              aria-selected={historyView === view.id}
+              aria-controls={`tabpanel-${view.id}`}
               onClick={() => setHistoryView(view.id)}
               className={cn(
-                'flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-lg text-xs font-bold transition-all duration-200',
+                'flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-lg text-xs font-bold outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] transition-all duration-200',
                 historyView === view.id
                   ? cn(isDark ? 'bg-white/10 text-white shadow-[0_0_15px_rgba(255,255,255,0.05)]' : 'bg-white text-gray-900 shadow-sm')
                   : cn(isDark ? 'text-white/40 hover:text-white/70 hover:bg-white/[0.02]' : 'text-gray-500 hover:text-gray-700 hover:bg-white/50')
@@ -580,12 +583,12 @@ const AccountHistory = ({ account, compact = false }) => {
               <span>{view.label}</span>
             </button>
           ))}
-        </div>
+        </nav>
       </div>,
 
       {/* Onchain History - Table Layout */}
       {historyView === 'onchain' && (
-        <div
+        <section role="tabpanel" id="tabpanel-onchain" aria-label="Onchain transactions"><div
           className={cn(
             'rounded-xl overflow-hidden transition-all duration-300',
             isDark ? 'bg-black/50 backdrop-blur-sm border border-white/[0.15]' : 'bg-white border border-gray-200'
@@ -609,7 +612,7 @@ const AccountHistory = ({ account, compact = false }) => {
                   key={t}
                   onClick={() => setTxTypeFilter(t)}
                   className={cn(
-                    'px-2.5 sm:px-3.5 py-1.5 rounded-lg text-[10px] sm:text-[11px] font-bold transition-all duration-200',
+                    'px-2.5 sm:px-3.5 py-1.5 rounded-lg text-[10px] sm:text-[11px] font-bold outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] transition-all duration-200',
                     txTypeFilter === t
                       ? (isDark ? 'bg-white/10 text-white shadow-sm' : 'bg-gray-900 text-white shadow-sm')
                       : (isDark ? 'text-white/40 hover:text-white/70 hover:bg-white/5' : 'text-gray-400 hover:text-gray-900 hover:bg-gray-100')
@@ -623,7 +626,7 @@ const AccountHistory = ({ account, compact = false }) => {
                 value={['all', 'Payment', 'OfferCreate', 'TrustSet'].includes(txTypeFilter) ? '' : txTypeFilter}
                 onChange={(e) => e.target.value && setTxTypeFilter(e.target.value)}
                 className={cn(
-                  'px-3 py-1.5 rounded-lg text-[10px] font-bold outline-none cursor-pointer transition-all appearance-none',
+                  'px-3 py-1.5 rounded-lg text-[10px] font-bold outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] cursor-pointer transition-all appearance-none',
                   !['all', 'Payment', 'OfferCreate', 'TrustSet'].includes(txTypeFilter)
                     ? (isDark ? 'bg-white/10 text-white shadow-sm border border-white/5' : 'bg-gray-900 text-white shadow-sm')
                     : (isDark ? 'bg-white/5 text-white/40 hover:text-white/70 border border-white/5' : 'bg-gray-100 text-gray-400 hover:text-gray-900'),
@@ -782,7 +785,7 @@ const AccountHistory = ({ account, compact = false }) => {
                             </span>
                           </td>
                           <td className="px-6 py-3.5 text-right">
-                            <div className={cn('p-2 rounded-lg ml-auto w-fit transition-colors group-hover:bg-white/5', isDark ? 'text-white/20 group-hover:text-blue-400' : 'text-gray-300 group-hover:text-blue-500')}>
+                            <div aria-label="View transaction" className={cn('p-2 rounded-lg ml-auto w-fit transition-colors group-hover:bg-white/5', isDark ? 'text-white/20 group-hover:text-blue-400' : 'text-gray-300 group-hover:text-blue-500')}>
                               <ExternalLink size={14} />
                             </div>
                           </td>
@@ -859,7 +862,7 @@ const AccountHistory = ({ account, compact = false }) => {
               onClick={() => fetchTxHistory(txMarker)}
               disabled={txLoading}
               className={cn(
-                'w-full text-center py-3 sm:py-4 text-[11px] sm:text-[12px] font-bold uppercase tracking-widest border-t transition-all duration-200',
+                'w-full text-center py-3 sm:py-4 text-[11px] sm:text-[12px] font-bold uppercase tracking-widest border-t outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] transition-all duration-200',
                 isDark
                   ? 'border-white/[0.08] text-white/40 hover:text-white/70 hover:bg-white/[0.02]'
                   : 'border-gray-100 text-gray-400 hover:text-gray-600 hover:bg-gray-50'
@@ -869,7 +872,7 @@ const AccountHistory = ({ account, compact = false }) => {
             </button>
           )}
         </div>
-      )}
+      </section>)}
 
       {/* Token History */}
       {historyView === 'tokens' &&
@@ -881,7 +884,7 @@ const AccountHistory = ({ account, compact = false }) => {
           );
 
           return (
-            <div
+            <section role="tabpanel" id="tabpanel-tokens" aria-label="Token trades"><div
               className={cn(
                 'rounded-xl overflow-hidden transition-all duration-300 mt-6',
                 isDark ? 'bg-black/50 backdrop-blur-sm border border-white/[0.15]' : 'bg-white border border-gray-200'
@@ -909,7 +912,7 @@ const AccountHistory = ({ account, compact = false }) => {
                           setTokenHistoryPage(0);
                         }}
                         className={cn(
-                          'px-4 py-1.5 text-[11px] font-bold rounded-lg transition-all duration-200 capitalize',
+                          'px-4 py-1.5 text-[11px] font-bold rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] transition-all duration-200 capitalize',
                           tokenHistoryType === t
                             ? (isDark ? 'bg-white/10 text-white shadow-sm' : 'bg-white text-gray-900 shadow-sm')
                             : (isDark ? 'text-white/40 hover:text-white/70' : 'text-gray-500 hover:text-gray-700')
@@ -999,7 +1002,7 @@ const AccountHistory = ({ account, compact = false }) => {
                                   <Link href={`/tx/${trade.hash}`} target="_blank" className={cn('text-[11px] font-mono font-bold tracking-wider hover:text-blue-400 transition-colors', isDark ? 'text-white/20' : 'text-gray-400')}>
                                     {trade.hash?.slice(0, 4)}...{trade.hash?.slice(-4)}
                                   </Link>
-                                  <button onClick={() => navigator.clipboard.writeText(trade.hash)} className={cn('p-1.5 rounded-lg transition-all hover:scale-110', isDark ? 'text-white/20 hover:text-white/50 hover:bg-white/5' : 'text-gray-300 hover:text-gray-600 hover:bg-gray-100')}>
+                                  <button onClick={() => navigator.clipboard.writeText(trade.hash)} aria-label="Copy transaction hash" className={cn('p-1.5 rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] transition-all hover:scale-110', isDark ? 'text-white/20 hover:text-white/50 hover:bg-white/5' : 'text-gray-300 hover:text-gray-600 hover:bg-gray-100')}>
                                     <Copy size={12} />
                                   </button>
                                 </div>
@@ -1064,49 +1067,53 @@ const AccountHistory = ({ account, compact = false }) => {
                 </div>
                 <div className="flex items-center gap-1.5">
                   <button
+                    aria-label="First page"
                     onClick={() => setTokenHistoryPage(0)}
                     disabled={tokenHistoryPage === 0}
                     className={cn(
-                      'w-8 h-8 rounded-lg flex items-center justify-center transition-all disabled:opacity-20',
+                      'w-8 h-8 rounded-lg flex items-center justify-center outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] transition-all disabled:opacity-20',
                       isDark ? 'text-white/40 hover:text-white hover:bg-white/5' : 'text-gray-400 hover:text-gray-900 hover:bg-gray-100'
                     )}
                   >
                     <span className="text-sm font-bold">&laquo;</span>
                   </button>
                   <button
+                    aria-label="Previous page"
                     onClick={() => setTokenHistoryPage((p) => Math.max(0, p - 1))}
                     disabled={tokenHistoryPage === 0}
                     className={cn(
-                      'w-8 h-8 rounded-lg flex items-center justify-center transition-all disabled:opacity-20',
+                      'w-8 h-8 rounded-lg flex items-center justify-center outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] transition-all disabled:opacity-20',
                       isDark ? 'text-white/40 hover:text-white hover:bg-white/5' : 'text-gray-400 hover:text-gray-900 hover:bg-gray-100'
                     )}
                   >
                     <span className="text-sm font-bold">&lsaquo;</span>
                   </button>
-                  <div className={cn('px-3 py-1 rounded-lg text-[11px] font-bold', isDark ? 'bg-white/5 text-white/70' : 'bg-gray-100 text-gray-700')}>
+                  <div role="status" aria-live="polite" className={cn('px-3 py-1 rounded-lg text-[11px] font-bold', isDark ? 'bg-white/5 text-white/70' : 'bg-gray-100 text-gray-700')}>
                     {tokenHistoryPage + 1} / {tokenHistoryHasMore ? '...' : totalPages}
                   </div>
                   <button
+                    aria-label="Next page"
                     onClick={() => {
                       setTokenHistoryPage((p) => p + 1);
                       if ((tokenHistoryPage + 2) * ITEMS_PER_PAGE >= tokenHistory.length && tokenHistoryHasMore) loadMoreTokenHistory();
                     }}
                     disabled={!tokenHistoryHasMore && tokenHistoryPage >= totalPages - 1}
                     className={cn(
-                      'w-8 h-8 rounded-lg flex items-center justify-center transition-all disabled:opacity-20',
+                      'w-8 h-8 rounded-lg flex items-center justify-center outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] transition-all disabled:opacity-20',
                       isDark ? 'text-white/40 hover:text-white hover:bg-white/5' : 'text-gray-400 hover:text-gray-900 hover:bg-gray-100'
                     )}
                   >
                     <span className="text-sm font-bold">&rsaquo;</span>
                   </button>
                   <button
+                    aria-label="Last page"
                     onClick={() => {
                       if (tokenHistoryHasMore) loadMoreTokenHistory();
                       setTokenHistoryPage(totalPages - 1);
                     }}
                     disabled={!tokenHistoryHasMore && tokenHistoryPage >= totalPages - 1}
                     className={cn(
-                      'w-8 h-8 rounded-lg flex items-center justify-center transition-all disabled:opacity-20',
+                      'w-8 h-8 rounded-lg flex items-center justify-center outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] transition-all disabled:opacity-20',
                       isDark ? 'text-white/40 hover:text-white hover:bg-white/5' : 'text-gray-400 hover:text-gray-900 hover:bg-gray-100'
                     )}
                   >
@@ -1115,7 +1122,7 @@ const AccountHistory = ({ account, compact = false }) => {
                 </div>
               </div>
             </div>
-          );
+          </section>);
         })()}
 
       {/* NFT Trades Section */}
@@ -1197,7 +1204,7 @@ const AccountHistory = ({ account, compact = false }) => {
                               <Link href={`/tx/${trade.hash}`} target="_blank" className={cn('text-[11px] font-mono font-bold tracking-wider hover:text-blue-400 transition-colors', isDark ? 'text-white/20' : 'text-gray-400')}>
                                 {trade.hash?.slice(0, 4)}...{trade.hash?.slice(-4)}
                               </Link>
-                              <button onClick={() => navigator.clipboard.writeText(trade.hash)} className={cn('p-1.5 rounded-lg transition-all hover:scale-110', isDark ? 'text-white/20 hover:text-white/50 hover:bg-white/5' : 'text-gray-300 hover:text-gray-600 hover:bg-gray-100')}>
+                              <button onClick={() => navigator.clipboard.writeText(trade.hash)} aria-label="Copy transaction hash" className={cn('p-1.5 rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] transition-all hover:scale-110', isDark ? 'text-white/20 hover:text-white/50 hover:bg-white/5' : 'text-gray-300 hover:text-gray-600 hover:bg-gray-100')}>
                                 <Copy size={12} />
                               </button>
                             </div>
@@ -1245,19 +1252,19 @@ const AccountHistory = ({ account, compact = false }) => {
                   <span className={cn('text-[12px] font-bold tabular-nums', isDark ? 'text-white' : 'text-gray-900')}>{ITEMS_PER_PAGE}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <button onClick={() => setNftTradesPage(0)} disabled={nftTradesPage === 0} className={cn('w-8 h-8 rounded-lg flex items-center justify-center transition-all disabled:opacity-20', isDark ? 'text-white/40 hover:text-white hover:bg-white/5' : 'text-gray-400 hover:text-gray-900 hover:bg-gray-100')}>
+                  <button aria-label="First page" onClick={() => setNftTradesPage(0)} disabled={nftTradesPage === 0} className={cn('w-8 h-8 rounded-lg flex items-center justify-center outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] transition-all disabled:opacity-20', isDark ? 'text-white/40 hover:text-white hover:bg-white/5' : 'text-gray-400 hover:text-gray-900 hover:bg-gray-100')}>
                     <span className="text-sm font-bold">&laquo;</span>
                   </button>
-                  <button onClick={() => setNftTradesPage((p) => Math.max(0, p - 1))} disabled={nftTradesPage === 0} className={cn('w-8 h-8 rounded-lg flex items-center justify-center transition-all disabled:opacity-20', isDark ? 'text-white/40 hover:text-white hover:bg-white/5' : 'text-gray-400 hover:text-gray-900 hover:bg-gray-100')}>
+                  <button aria-label="Previous page" onClick={() => setNftTradesPage((p) => Math.max(0, p - 1))} disabled={nftTradesPage === 0} className={cn('w-8 h-8 rounded-lg flex items-center justify-center outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] transition-all disabled:opacity-20', isDark ? 'text-white/40 hover:text-white hover:bg-white/5' : 'text-gray-400 hover:text-gray-900 hover:bg-gray-100')}>
                     <span className="text-sm font-bold">&lsaquo;</span>
                   </button>
-                  <div className={cn('px-3 py-1 rounded-lg text-[11px] font-bold', isDark ? 'bg-white/5 text-white/70' : 'bg-gray-100 text-gray-700')}>
+                  <div role="status" aria-live="polite" className={cn('px-3 py-1 rounded-lg text-[11px] font-bold', isDark ? 'bg-white/5 text-white/70' : 'bg-gray-100 text-gray-700')}>
                     {nftTradesPage + 1} / {nftTotalPages}
                   </div>
-                  <button onClick={() => setNftTradesPage((p) => Math.min(nftTotalPages - 1, p + 1))} disabled={nftTradesPage >= nftTotalPages - 1} className={cn('w-8 h-8 rounded-lg flex items-center justify-center transition-all disabled:opacity-20', isDark ? 'text-white/40 hover:text-white hover:bg-white/5' : 'text-gray-400 hover:text-gray-900 hover:bg-gray-100')}>
+                  <button aria-label="Next page" onClick={() => setNftTradesPage((p) => Math.min(nftTotalPages - 1, p + 1))} disabled={nftTradesPage >= nftTotalPages - 1} className={cn('w-8 h-8 rounded-lg flex items-center justify-center outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] transition-all disabled:opacity-20', isDark ? 'text-white/40 hover:text-white hover:bg-white/5' : 'text-gray-400 hover:text-gray-900 hover:bg-gray-100')}>
                     <span className="text-sm font-bold">&rsaquo;</span>
                   </button>
-                  <button onClick={() => setNftTradesPage(nftTotalPages - 1)} disabled={nftTradesPage >= nftTotalPages - 1} className={cn('w-8 h-8 rounded-lg flex items-center justify-center transition-all disabled:opacity-20', isDark ? 'text-white/40 hover:text-white hover:bg-white/5' : 'text-gray-400 hover:text-gray-900 hover:bg-gray-100')}>
+                  <button aria-label="Last page" onClick={() => setNftTradesPage(nftTotalPages - 1)} disabled={nftTradesPage >= nftTotalPages - 1} className={cn('w-8 h-8 rounded-lg flex items-center justify-center outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] transition-all disabled:opacity-20', isDark ? 'text-white/40 hover:text-white hover:bg-white/5' : 'text-gray-400 hover:text-gray-900 hover:bg-gray-100')}>
                     <span className="text-sm font-bold">&raquo;</span>
                   </button>
                 </div>

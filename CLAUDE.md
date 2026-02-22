@@ -15,6 +15,42 @@ Never disable features to fix performance. Use memoization, virtualization, lazy
 ### No Speculation
 Do not speculate or guess. Always provide factual, verifiable data. If uncertain, say "I don't know" and suggest how to investigate.
 
+### API Key Security — NEVER Leak Keys to the Frontend
+**The platform API key (`CHAT_API_KEY`) must NEVER appear in browser-visible responses, network requests, localStorage, console output, or client-side code (`src/`).**
+
+**Correct patterns:**
+- **WebSocket auth**: `pages/api/ws/session.js` generates a short-lived HMAC token (`wsToken`) signed with `WS_TOKEN_SECRET`. The browser receives only `wsToken=<timestamp>.<signature>` — never the raw API key. The API server verifies the HMAC and grants platform-tier access.
+- **REST proxy**: `pages/api/proxy/[...path].js` injects `X-Api-Key` server-side. Client calls `/api/proxy/...` without any key.
+- **Chat mod actions**: `pages/api/chat/mod.js` proxies ban/mute/unban/unmute — client sends action + wallet, server injects the key.
+- **SSR requests**: `src/utils/api.js` only attaches `CHAT_API_KEY` when `isServer === true`.
+
+**Forbidden:**
+- Destructuring `apiKey` from any `/api/ws/session` response in client code
+- Sending API keys as WS messages (`ws.send(JSON.stringify({ type: 'auth', apiKey }))`)
+- Storing API keys in localStorage/sessionStorage
+- Sending `X-Api-Key` header from client-side `fetch`/`apiFetch` calls
+- Passing API keys through component props or React context
+
+**WS Token Flow (per OWASP WS Cheat Sheet & Authgear HMAC guide):**
+```
+Browser → GET /api/ws/session?type=sync  (same-origin only, Sec-Fetch-Site validated)
+Server  → nonce = randomBytes(8)
+Server  → sig = HMAC-SHA256(timestamp + ":" + nonce, WS_TOKEN_SECRET)
+Server  → { wsUrl: "wss://api.xrpl.to/ws/sync?wsToken=<ts>.<nonce>.<sig>" }
+Browser → caches token in src/utils/wsToken.js (shared across all WS connections)
+Browser → new WebSocket(wsUrl)  (token multi-use, expires in 5 min)
+API     → verifyWSToken(): timingSafeEqual + expiry check
+API     → scrubs wsToken from ws.data.query (prevents downstream log exposure)
+```
+
+**Security properties:**
+- HMAC-SHA256 proves token was issued by trusted server (Authgear)
+- Timestamp enforces 5-min TTL (OWASP replay prevention)
+- `crypto.timingSafeEqual` prevents timing side-channel (OWASP)
+- Token is multi-use within TTL — shared across all WS connections per user
+- Browser refreshes token at 80% TTL (4 min) with request deduplication
+- Auth credentials scrubbed from `ws.data.query` after verification (log safety)
+
 ## Project Overview
 
 XRPL.to - XRP Ledger analytics platform with token prices, NFT marketplace, DEX trading, portfolio management.

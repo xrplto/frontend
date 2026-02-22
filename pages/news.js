@@ -18,7 +18,8 @@ import {
   TrendingUp,
   TrendingDown,
   ArrowRight,
-  Sparkles
+  Sparkles,
+  ImageOff
 } from 'lucide-react';
 
 const SENTIMENT_COLORS = {
@@ -269,6 +270,36 @@ const SourcesMenu = memo(({ sources, selectedSource, onSourceSelect, isMobile, i
 });
 SourcesMenu.displayName = 'SourcesMenu';
 
+const proxyImageUrl = (url) => url ? `/api/news-image?url=${encodeURIComponent(url)}` : null;
+
+const NewsImageFallback = ({ isDark, className }) => (
+  <div className={cn(
+    'flex flex-col items-center justify-center gap-1.5 w-full h-full',
+    isDark ? 'bg-[#111] text-[#9CA3AF]' : 'bg-[#F1F5F9] text-[#64748B]',
+    className
+  )}>
+    <ImageOff size={24} strokeWidth={1.2} />
+    <span className={cn('text-[10px] font-medium', isDark ? 'text-[#4B5563]' : 'text-[#94A3B8]')}>
+      Image Unavailable
+    </span>
+  </div>
+);
+
+const NewsImage = memo(({ src, isDark, className }) => {
+  const [errored, setErrored] = useState(false);
+  if (errored) return <NewsImageFallback isDark={isDark} className={className} />;
+  return (
+    <img
+      src={src}
+      alt=""
+      className={cn('w-full h-full object-cover', className)}
+      loading="lazy"
+      onError={() => setErrored(true)}
+    />
+  );
+});
+NewsImage.displayName = 'NewsImage';
+
 const NewsArticle = memo(({ article, isDark, extractTitle }) => (
   <a
     href={article.sourceUrl}
@@ -283,12 +314,7 @@ const NewsArticle = memo(({ article, isDark, extractTitle }) => (
   >
     {article.articleImage && (
       <div className="sm:hidden shrink-0 w-full h-[160px] rounded-xl overflow-hidden -mt-0.5">
-        <img
-          src={article.articleImage}
-          alt=""
-          className="w-full h-full object-cover"
-          loading="lazy"
-        />
+        <NewsImage src={proxyImageUrl(article.articleImage)} isDark={isDark} />
       </div>
     )}
     <div className="flex flex-col gap-2 sm:gap-3 flex-1 min-w-0">
@@ -335,12 +361,7 @@ const NewsArticle = memo(({ article, isDark, extractTitle }) => (
 
     {article.articleImage && (
       <div className="hidden sm:block shrink-0 w-[140px] h-[100px] rounded-xl overflow-hidden self-center">
-        <img
-          src={article.articleImage}
-          alt=""
-          className="w-full h-full object-cover"
-          loading="lazy"
-        />
+        <NewsImage src={proxyImageUrl(article.articleImage)} isDark={isDark} />
       </div>
     )}
   </a>
@@ -810,10 +831,16 @@ export async function getServerSideProps({ query }) {
     : `https://api.xrpl.to/v1/news?${params}`;
 
   try {
+    const newsController = new AbortController();
+    const chartController = new AbortController();
+    const newsTimeout = setTimeout(() => newsController.abort(), 8000);
+    const chartTimeout = setTimeout(() => chartController.abort(), 8000);
     const [newsRes, chartRes] = await Promise.all([
-      fetch(endpoint),
-      apiFetch('https://api.xrpl.to/v1/news/sentiment-chart?days=30')
+      fetch(endpoint, { signal: newsController.signal }),
+      apiFetch('https://api.xrpl.to/v1/news/sentiment-chart?days=30', { signal: chartController.signal })
     ]);
+    clearTimeout(newsTimeout);
+    clearTimeout(chartTimeout);
 
     if (!newsRes.ok) {
       console.error('News API error:', newsRes.status, newsRes.statusText);

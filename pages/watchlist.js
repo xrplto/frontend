@@ -577,14 +577,13 @@ function Overview({ data }) {
 
 export default Overview;
 
-// This function gets called at build time on server-side.
-// It may be called again, on a serverless function, if
-// revalidation is enabled and a new request comes in
-export async function getStaticProps() {
+export async function getServerSideProps({ res }) {
+  res.setHeader('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=300');
+
   let data = null;
   try {
-    const res = await api.get(`${BASE_URL}/tags`);
-    data = res.data;
+    const tagRes = await api.get(`${BASE_URL}/tags`, { timeout: 8000 });
+    data = tagRes.data;
   } catch { }
   let ret = {};
   if (data) {
@@ -602,10 +601,6 @@ export async function getStaticProps() {
   }
 
   return {
-    props: ret, // will be passed to the page component as props
-    // Next.js will attempt to re-generate the page:
-    // - When a request comes in
-    // - At most once every 10 seconds
-    revalidate: 10 // In seconds
+    props: ret
   };
 }

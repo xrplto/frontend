@@ -595,9 +595,10 @@ export async function getServerSideProps({ query }) {
   try {
     const [tradersRes, marketRes] = await Promise.all([
       api.get(
-        `${BASE_URL}/nft/analytics/traders?sortBy=${sortBy}&limit=${ROWS_PER_PAGE}&page=${page}`
+        `${BASE_URL}/nft/analytics/traders?sortBy=${sortBy}&limit=${ROWS_PER_PAGE}&page=${page}`,
+        { timeout: 8000 }
       ),
-      api.get(`${BASE_URL}/nft/analytics/market`)
+      api.get(`${BASE_URL}/nft/analytics/market`, { timeout: 8000 })
     ]);
     const traders = tradersRes.data.traders || [];
     const pagination = tradersRes.data.pagination || {};

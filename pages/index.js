@@ -102,6 +102,7 @@ function Overview({ data }) {
         XRPL Tokens Analytics & Trading Platform
       </h1>
 
+      <main role="main">
       <div
         id="back-to-top-anchor"
         className="mx-auto max-w-[1920px] px-4 mt-4"
@@ -109,7 +110,7 @@ function Overview({ data }) {
         <Summary />
       </div>
 
-      <div className="mx-auto max-w-[1920px] px-4">
+      <section aria-label="Token list" className="mx-auto max-w-[1920px] px-4">
         <div className="flex flex-col">
           <div className="w-full">
             {data && data.tags ? (
@@ -121,7 +122,8 @@ function Overview({ data }) {
             )}
           </div>
         </div>
-      </div>
+      </section>
+      </main>
 
       <ScrollToTop />
       <Footer />
@@ -131,7 +133,9 @@ function Overview({ data }) {
 
 export default Overview;
 
-export async function getStaticProps() {
+export async function getServerSideProps({ res }) {
+  res.setHeader('Cache-Control', 'public, s-maxage=30, stale-while-revalidate=120');
+
   // Fetch only 50 tokens initially to reduce page data size
   const data = await getTokens('vol24hxrp', 'desc', 'yes', false, false, 50);
 
@@ -139,7 +143,6 @@ export async function getStaticProps() {
   if (data) {
     let ogp = {};
 
-    // Enhanced SEO metadata
     ogp.canonical = 'https://xrpl.to';
     ogp.title = 'XRP Ledger Tokens - Live Prices, Charts & Trading Data | XRPL.to';
     ogp.url = 'https://xrpl.to/';
@@ -148,18 +151,15 @@ export async function getStaticProps() {
     ogp.desc =
       'Discover XRP Ledger tokens with live prices, market cap, 24h volume & trading charts. Track XRPL DeFi tokens, compare performance & find new opportunities on XRP Ledger.';
 
-    // Additional structured metadata for better SEO
     ogp.keywords =
       'XRP Ledger, XRPL tokens, XRP tokens, cryptocurrency prices, DeFi tokens, crypto charts, market cap, trading volume, XRP ecosystem, digital assets, blockchain tokens, altcoins';
     ogp.type = 'website';
     ogp.siteName = 'XRPL.to';
     ogp.locale = 'en_US';
 
-    // Twitter card metadata
     ogp.twitterCard = 'summary_large_image';
     ogp.twitterCreator = '@xrplto';
 
-    // ItemList structured data for homepage
     const itemListSchema = {
       '@context': 'https://schema.org',
       '@type': 'ItemList',
@@ -189,7 +189,6 @@ export async function getStaticProps() {
   }
 
   return {
-    props: ret,
-    revalidate: 60
+    props: ret
   };
 }

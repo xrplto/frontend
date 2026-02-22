@@ -109,6 +109,7 @@ const TransactionAlert = () => {
   return (
     <>
       <div
+        role="alert"
         className={cn(
           'fixed bottom-6 right-6 z-[9999] sm:min-w-[360px] sm:max-w-[480px]',
           'max-sm:left-4 max-sm:right-4 max-sm:bottom-[calc(16px+env(safe-area-inset-bottom))]',
@@ -127,7 +128,8 @@ const TransactionAlert = () => {
             {showClose && (
               <button
                 onClick={handleClose}
-                className="bg-white/20 border-none w-7 h-7 rounded-lg flex items-center justify-center cursor-pointer hover:bg-white/30 active:scale-95"
+                aria-label="Close"
+                className="bg-white/20 border-none w-7 h-7 rounded-lg flex items-center justify-center cursor-pointer hover:bg-white/30 active:scale-95 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]"
               >
                 <svg
                   className="w-4 h-4 fill-white"

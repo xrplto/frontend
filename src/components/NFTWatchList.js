@@ -1,7 +1,7 @@
 import { useState, useEffect, useContext } from 'react';
 import api from 'src/utils/api';
 import Link from 'next/link';
-import { ChevronDown, Trash2, ExternalLink, Loader2, X, Compass } from 'lucide-react';
+import { ChevronDown, Trash2, ExternalLink, Loader2, X, Compass, ImageOff } from 'lucide-react';
 import { cn } from 'src/utils/cn';
 import { ThemeContext, AppContext } from 'src/context/AppContext';
 
@@ -57,7 +57,7 @@ function NFTCard({ nft, onRemove, isDark }) {
   const price = nft.offer?.amount ? (nft.offer.amount / 1000000).toFixed(2) : null;
 
   return (
-    <Link href={`/nft/${nft.nftokenId}`} className="block group">
+    <Link href={`/nft/${nft.nftokenId}`} className="block group outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] rounded-2xl">
       <div
         className={cn(
           'relative rounded-2xl overflow-hidden transition-all duration-300 border-[1.5px]',
@@ -68,12 +68,9 @@ function NFTCard({ nft, onRemove, isDark }) {
       >
         <div className="relative aspect-square overflow-hidden">
           {loadingImg && !imageError && (
-            <div
-              className={cn(
-                'absolute inset-0 animate-pulse',
-                isDark ? 'bg-white/5' : 'bg-gray-100'
-              )}
-            />
+            <div className={cn('absolute inset-0 flex items-center justify-center', isDark ? 'bg-[#111]' : 'bg-[#F1F5F9]')}>
+              <Loader2 size={16} strokeWidth={1.5} className={cn('animate-spin', isDark ? 'text-[#4B5563]' : 'text-[#94A3B8]')} />
+            </div>
           )}
           {!imageError ? (
             <img
@@ -91,15 +88,9 @@ function NFTCard({ nft, onRemove, isDark }) {
               )}
             />
           ) : (
-            <div
-              className={cn(
-                'w-full h-full flex items-center justify-center',
-                isDark ? 'bg-white/5' : 'bg-gray-100'
-              )}
-            >
-              <span className={cn('text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/20' : 'text-gray-400')}>
-                No Image
-              </span>
+            <div className={cn('w-full h-full flex flex-col items-center justify-center gap-1.5', isDark ? 'bg-[#111] text-[#4B5563]' : 'bg-[#F1F5F9] text-[#94A3B8]')}>
+              <ImageOff size={20} strokeWidth={1.2} />
+              <span className="text-[10px]">Unavailable</span>
             </div>
           )}
 
@@ -117,8 +108,9 @@ function NFTCard({ nft, onRemove, isDark }) {
             <button
               onClick={handleRemove}
               disabled={removing}
+              aria-label="Remove from watchlist"
               className={cn(
-                'p-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-auto backdrop-blur-md border',
+                'p-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-auto backdrop-blur-md border outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] focus-visible:opacity-100',
                 isDark
                   ? 'bg-black/40 border-white/10 hover:bg-red-500/80 text-white/70 hover:text-white'
                   : 'bg-white/70 border-black/5 hover:bg-red-500 hover:text-white text-gray-400'
@@ -172,8 +164,9 @@ function CollectionGroup({ slug, data, onRemove, isDark, defaultOpen = false }) 
     )}>
       <button
         onClick={() => setIsOpen(!isOpen)}
+        aria-expanded={isOpen}
         className={cn(
-          'w-full flex items-center justify-between px-6 py-5 transition-colors',
+          'w-full flex items-center justify-between px-6 py-5 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] focus-visible:ring-inset',
           isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-black/[0.02]'
         )}
       >
@@ -196,7 +189,7 @@ function CollectionGroup({ slug, data, onRemove, isDark, defaultOpen = false }) 
               href={`/nfts/${slug}`}
               onClick={(e) => e.stopPropagation()}
               className={cn(
-                'flex items-center gap-2 px-3 py-1.5 rounded-xl transition-all border',
+                'flex items-center gap-2 px-3 py-1.5 rounded-xl transition-all border outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                 isDark ? 'border-white/10 hover:bg-white/10 text-white/50 hover:text-white' : 'border-black/5 hover:bg-black/5 text-gray-500'
               )}
             >

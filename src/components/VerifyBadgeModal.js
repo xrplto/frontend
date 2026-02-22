@@ -460,7 +460,7 @@ export default function VerifyBadgeModal({ token, onClose, onSuccess, itemType =
                 <span className={cn('text-[10px] font-mono', isDark ? 'text-white/70' : 'text-gray-700')}>
                   {paymentInfo?.destination?.slice(0, 8)}...{paymentInfo?.destination?.slice(-6)}
                 </span>
-                <button onClick={() => copyToClipboard(paymentInfo?.destination, 'dest')} className="p-1 rounded hover:bg-white/10">
+                <button onClick={() => copyToClipboard(paymentInfo?.destination, 'dest')} aria-label="Copy" className="p-1 rounded hover:bg-white/10 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]">
                   {copied === 'dest' ? <CheckCircle size={11} className="text-emerald-500" /> : <Copy size={11} className="opacity-50" />}
                 </button>
               </div>
@@ -469,7 +469,7 @@ export default function VerifyBadgeModal({ token, onClose, onSuccess, itemType =
               <span className={cn('text-xs', isDark ? 'text-white/50' : 'text-gray-500')}>Destination Tag</span>
               <div className="flex items-center gap-1">
                 <span className={cn('font-mono font-semibold text-primary')}>{paymentInfo?.destinationTag}</span>
-                <button onClick={() => copyToClipboard(String(paymentInfo?.destinationTag), 'tag')} className="p-1 rounded hover:bg-white/10">
+                <button onClick={() => copyToClipboard(String(paymentInfo?.destinationTag), 'tag')} aria-label="Copy" className="p-1 rounded hover:bg-white/10 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]">
                   {copied === 'tag' ? <CheckCircle size={11} className="text-emerald-500" /> : <Copy size={11} className="opacity-50" />}
                 </button>
               </div>
@@ -612,6 +612,9 @@ export default function VerifyBadgeModal({ token, onClose, onSuccess, itemType =
 
   return createPortal(
     <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Verify badge"
       className={cn(
         'fixed inset-0 z-[9999] flex items-center justify-center p-4 backdrop-blur-md max-sm:h-dvh',
         isDark ? 'bg-black/70' : 'bg-white/60'
@@ -650,8 +653,9 @@ export default function VerifyBadgeModal({ token, onClose, onSuccess, itemType =
           </div>
           <button
             onClick={onClose}
+            aria-label="Close"
             className={cn(
-              'p-1.5 rounded-lg transition-colors',
+              'p-1.5 rounded-lg transition-colors outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
               isDark ? 'hover:bg-white/10 text-white/50' : 'hover:bg-gray-100 text-gray-400'
             )}
           >

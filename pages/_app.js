@@ -225,6 +225,7 @@ const ThemedToaster = dynamic(
   { ssr: false }
 );
 
+
 function XRPLToApp({ Component, pageProps, router, emotionCache = clientSideEmotionCache }) {
   // Treat MAINTENANCE env as boolean string ("true"/"false")
   const isUnderMaintenance = process.env.MAINTENANCE === 'true';
@@ -410,17 +411,6 @@ export function reportWebVitals(metric) {
                 ? '#f59e0b'
                 : '#22c55e'
             : '#3b82f6';
-
-  const unit = name === 'CLS' ? '' : 'ms';
-  const displayValue = name === 'CLS' ? value.toFixed(3) : Math.round(value);
-
-  console.log(
-    `%c[WebVital] %c${name}%c ${displayValue}${unit} %c(${label})`,
-    'color: #6b7280',
-    `color: ${color}; font-weight: bold`,
-    `color: ${color}`,
-    'color: #6b7280; font-size: 11px'
-  );
 
   // Store metrics on window for easy access via DevTools console
   if (typeof window !== 'undefined') {

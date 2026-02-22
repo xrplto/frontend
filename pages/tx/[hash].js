@@ -11,7 +11,7 @@ import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import Link from 'next/link';
 import {
-  rippleTimeToISO8601,
+  rippleToUnixTimestamp,
   dropsToXrp,
   normalizeCurrencyCode,
   getNftCoverUrl,
@@ -247,8 +247,7 @@ const parseTransactionDate = (date) => {
   if (!date) return null;
   if (typeof date === 'string') return new Date(date);
   if (typeof date === 'number') {
-    const iso = rippleTimeToISO8601(date);
-    return iso ? new Date(iso) : null;
+    return new Date(rippleToUnixTimestamp(date));
   }
   return null;
 };
@@ -4940,7 +4939,7 @@ export async function getServerSideProps(context) {
     };
   }
 
-  const response = await api.get(`https://api.xrpl.to/v1/tx/${hash}`).catch(() => null);
+  const response = await api.get(`https://api.xrpl.to/v1/tx/${hash}`, { timeout: 8000 }).catch(() => null);
 
   if (!response || !response.data) {
     return {

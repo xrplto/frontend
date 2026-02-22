@@ -99,14 +99,15 @@ function NewTokensPage({ data }) {
 
 export default NewTokensPage;
 
-export async function getStaticProps() {
+export async function getServerSideProps({ res }) {
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+
   const data = await getTokens('dateon', 'desc');
 
   let ret = {};
   if (data) {
     let ogp = {};
 
-    // Enhanced SEO metadata for new tokens page
     ogp.canonical = 'https://xrpl.to/new';
     ogp.title = 'New XRPL Tokens | Latest Launches | XRP Ledger';
     ogp.url = 'https://xrpl.to/new';
@@ -115,17 +116,13 @@ export async function getStaticProps() {
     ogp.desc =
       'Discover the newest XRPL tokens and latest launches on the XRP Ledger. Stay updated with fresh token listings and emerging projects in the XRP ecosystem.';
 
-    // Additional structured metadata for better SEO
-    ('new XRPL tokens, latest XRP launches, token launches, new cryptocurrency, fresh tokens, DEX tokens, XRP ecosystem new');
     ogp.type = 'website';
     ogp.siteName = 'XRPL.to';
     ogp.locale = 'en_US';
 
-    // Twitter card metadata
     ogp.twitterCard = 'summary_large_image';
     ogp.twitterCreator = '@xrplto';
 
-    // ItemList structured data
     const itemListSchema = {
       '@context': 'https://schema.org',
       '@type': 'ItemList',
@@ -155,7 +152,6 @@ export async function getStaticProps() {
   }
 
   return {
-    props: ret,
-    revalidate: 60
+    props: ret
   };
 }

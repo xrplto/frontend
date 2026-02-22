@@ -103,115 +103,77 @@ function Detail({ data }) {
 
 export default Detail;
 
-// Convert to ISR for better performance (pre-render top tokens at build time)
-export async function getStaticPaths() {
-  // Pre-render only top 100 most popular tokens at build time
-  // All other tokens will use fallback: 'blocking' (SSR-like on first request, then cached)
-  const BASE_URL = process.env.API_URL || 'https://api.xrpl.to/v1';
-
-  try {
-    const res = await api.get(`${BASE_URL}/tokens?limit=100&sortBy=vol24hxrp&sortType=desc`);
-    const topTokens = res.data.tokens || [];
-
-    const paths = topTokens.map((token) => ({
-      params: { slug: [token.slug] }
-    }));
-
-    return {
-      paths,
-      fallback: 'blocking' // Generate other pages on-demand and cache
-    };
-  } catch (error) {
-    return {
-      paths: [],
-      fallback: 'blocking'
-    };
-  }
-}
-
-export async function getStaticProps({ params }) {
+// SSR: fetch fresh data on every request - no cached 404s
+export async function getServerSideProps({ params, res }) {
   const BASE_URL = process.env.API_URL || 'https://api.xrpl.to/v1';
 
   let data = null;
   let tab = null;
   let slug = null;
 
-  try {
-    slug = params.slug[0];
-    tab = params.slug[1];
+  slug = params.slug[0];
+  tab = params.slug[1];
 
-    // Use performance API if available (Node.js 16+ has it globally)
-    const t1 = typeof performance !== 'undefined' ? performance.now() : Date.now();
+  const apiUrl = `${BASE_URL}/token/${slug}?desc=yes`;
 
-    // https://api.xrpl.to/v1/token/bitstamp-usd
-    const apiUrl = `${BASE_URL}/token/${slug}?desc=yes`;
-    const res = await api.get(apiUrl, {
-      timeout: 10000,
-      validateStatus: (status) => status === 200
-    });
-    if (res.data && typeof res.data === 'object') {
-      data = res.data.data || res.data;
-      if (tab && data) data.tab = tab;
+  // Retry up to 2 times on transient failures
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      const reqRes = await api.get(apiUrl, {
+        timeout: attempt === 0 ? 8000 : 12000,
+        validateStatus: (status) => status === 200
+      });
+      if (reqRes.data && typeof reqRes.data === 'object') {
+        data = reqRes.data.data || reqRes.data;
+        if (tab && data) data.tab = tab;
+      }
+      break;
+    } catch (e) {
+      if (attempt === 1) {
+        console.error('[getServerSideProps] Error after retries:', e.message, 'slug:', slug);
+      }
     }
-
-    // SEO: 301 redirect md5 hash to human-readable slug (better for SEO + UX)
-    if (data && data.token && data.token.slug && slug !== data.token.slug) {
-      return {
-        redirect: {
-          destination: `/token/${data.token.slug}${tab ? `/${tab}` : ''}`,
-          permanent: true // 301 redirect
-        }
-      };
-    }
-
-    // SEO: Redirect legacy /trustset URLs (feature removed, prevents duplicate content)
-    if (tab === 'trustset') {
-      return {
-        redirect: {
-          destination: `/token/${data.token.slug || slug}`,
-          permanent: true // 301 redirect
-        }
-      };
-    }
-
-    const t2 = typeof performance !== 'undefined' ? performance.now() : Date.now();
-    const dt = (t2 - t1).toFixed(2);
-  } catch (e) {
-    // Error during getStaticProps
-    console.error('[getStaticProps] Error:', e.message, 'slug:', slug, 'BASE_URL:', BASE_URL);
   }
-  let ret = {};
+
+  // SEO: 301 redirect md5 hash to human-readable slug
+  if (data && data.token && data.token.slug && slug !== data.token.slug) {
+    return {
+      redirect: {
+        destination: `/token/${data.token.slug}${tab ? `/${tab}` : ''}`,
+        permanent: true
+      }
+    };
+  }
+
   if (data && data.token) {
+    // Set cache headers for successful responses
+    res.setHeader('Cache-Control', 'public, s-maxage=10, stale-while-revalidate=59');
+
     let ogp = {};
     const token = data.token;
     const { name, ext, md5, slug, exch, pro24h, vol24hxrp, marketcap, holders, issuer } = token;
 
-    // Format price and percentage change for meta description
     const priceDisplay = exch ? `${Number(exch).toFixed(exch < 0.01 ? 10 : 8)} XRP` : '';
     const changeDisplay =
       pro24h !== undefined ? `${pro24h >= 0 ? '+' : ''}${Number(pro24h).toFixed(2)}%` : '';
 
-    // Create dynamic meta description with specific token data
     let metaDesc = `${name} live price: ${priceDisplay}`;
     if (changeDisplay) {
       metaDesc += ` (${changeDisplay} 24h)`;
     }
     metaDesc += `. Get real-time charts, trading data & market insights on XRPL.to`;
 
-    // Ensure description is under 160 characters
     if (metaDesc.length > 155) {
       metaDesc = `${name} price: ${priceDisplay}${
         changeDisplay ? ` (${changeDisplay})` : ''
       }. Live charts, trading data & XRPL market insights`;
     }
 
-    // Create SEO-optimized title with dynamic data
     let seoTitle = `${name}: ${priceDisplay}`;
     if (changeDisplay) {
       seoTitle += ` ${changeDisplay}`;
     }
 
-    // Fallback shorter title if too long (keep under 60 chars when possible)
     if (seoTitle.length > 60) {
       seoTitle = `${name}: ${priceDisplay}${changeDisplay ? ` ${changeDisplay}` : ''}`;
     }
@@ -224,7 +186,6 @@ export async function getStaticProps({ params }) {
       alt: `${name} price chart on XRPL.to`
     };
 
-    // Use human-readable slug for canonical URL (SEO best practice: descriptive URLs)
     const canonicalSlug = slug || md5;
 
     ogp.canonical = `https://xrpl.to/token/${canonicalSlug}`;
@@ -238,7 +199,6 @@ export async function getStaticProps({ params }) {
     ogp.imgType = imageData.type;
     ogp.imgAlt = imageData.alt;
 
-    // Additional Open Graph image properties for better social media support
     ogp.images = [
       {
         url: imageData.url,
@@ -249,7 +209,6 @@ export async function getStaticProps({ params }) {
       }
     ];
 
-    // JSON-LD structured data for SEO
     const jsonLd = {
       '@context': 'https://schema.org',
       '@type': 'FinancialProduct',
@@ -275,31 +234,12 @@ export async function getStaticProps({ params }) {
     };
 
     ogp.jsonLd = jsonLd;
-    ret = { data, ogp };
     return {
-      props: ret, // will be passed to the page component as props
-      revalidate: 30
+      props: { data, ogp }
     };
   } else {
     return {
-      notFound: true, // Return 404 page for ISR
-      revalidate: 30 // Retry after 30 seconds (don't cache 404 forever)
+      notFound: true
     };
   }
 }
-
-// This function gets called at build time
-// export async function getStaticPaths() {
-//     // Call an external API endpoint to get posts
-//     const res = await fetch('https://.../posts')
-//     const posts = await res.json()
-
-//     // Get the paths we want to pre-render based on posts
-//     const paths = posts.map((post) => ({
-//       params: { id: post.id },
-//     }))
-
-//     // We'll pre-render only these paths at build time.
-//     // { fallback: false } means other routes should 404.
-//     return { paths, fallback: false }
-// }

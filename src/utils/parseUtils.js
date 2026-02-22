@@ -2,17 +2,6 @@ import Decimal from 'decimal.js-light';
 import { encodeAccountID } from 'ripple-address-codec';
 const CryptoJS = require('crypto-js');
 
-// Removed ripple-keypairs for security (compromised in 2025)
-const { xAddressToClassicAddress } = require('ripple-address-codec');
-
-// Inline from txflags.js - only need Payment flags
-const txFlags = {
-  Payment: {
-    PartialPayment: 0x00020000
-  }
-};
-
-const dropsInXRP = 1000000;
 
 // https://xrpl.org/accounts.html#special-addresses
 const BLACKHOLE_ACCOUNTS = [
@@ -50,48 +39,6 @@ export function getSourceTagName(tag) {
   return SOURCE_TAGS[tag] || null;
 }
 
-function adjustQualityForXRP(quality, takerGetsCurrency, takerPaysCurrency) {
-  // quality = takerPays.value/takerGets.value
-  // using drops (1e-6 XRP) for XRP values
-  const numeratorShift = takerPaysCurrency === 'XRP' ? -6 : 0;
-  const denominatorShift = takerGetsCurrency === 'XRP' ? -6 : 0;
-  const shift = numeratorShift - denominatorShift;
-  return shift === 0 ? quality : new Decimal(quality).mul(Decimal.pow(10, shift)).toString();
-}
-
-function parseQuality(quality) {
-  if (typeof quality !== 'number') {
-    return undefined;
-  }
-  try {
-    return new Decimal(quality).div(Decimal.pow(10, 9)).toNumber();
-  } catch (error) {
-    console.error('Error in parseQuality:', error);
-    return undefined;
-  }
-}
-
-function parseTimestamp(rippleTime) {
-  if (typeof rippleTime !== 'number') {
-    return undefined;
-  }
-  return rippleTimeToISO8601(rippleTime);
-}
-
-function isPartialPayment(tx) {
-  // tslint:disable-next-line:no-bitwise
-  return (tx.Flags & txFlags.Payment.PartialPayment) !== 0;
-}
-
-function hexToString(hex) {
-  return hex ? Buffer.from(hex, 'hex').toString('utf-8') : undefined;
-}
-
-function isValidSecret(secret) {
-  // Basic validation - removed ripple-keypairs for security
-  // XRP secrets are typically 29 chars starting with 's'
-  return secret && typeof secret === 'string' && secret.length === 29 && secret.startsWith('s');
-}
 
 function dropsToXrp(drops) {
   // Handle undefined, null, or empty values
@@ -182,40 +129,6 @@ function xrpToDrops(xrp) {
   return new Decimal(xrp).mul(1000000.0).floor().toString();
 }
 
-function toRippledAmount(amount) {
-  if (typeof amount === 'string') return amount;
-
-  if (amount.currency === 'XRP') {
-    return xrpToDrops(amount.value);
-  }
-  if (amount.currency === 'drops') {
-    return amount.value;
-  }
-
-  let issuer = amount.counterparty || amount.issuer;
-  let tag = false;
-
-  try {
-    ({ classicAddress: issuer, tag } = xAddressToClassicAddress(issuer));
-  } catch (e) {
-    /* not an X-address */
-  }
-
-  if (tag !== false) {
-    console.error('Issuer X-address includes a tag');
-  }
-
-  return {
-    currency: amount.currency,
-    issuer,
-    value: amount.value
-  };
-}
-
-function removeUndefined(obj) {
-  return Object.fromEntries(Object.entries(obj).filter(([, v]) => v != null));
-}
-
 /**
  * @param {Number} rpepoch (seconds since 1/1/2000 GMT)
  * @return {Number} s since unix epoch
@@ -232,53 +145,6 @@ function rippleToUnixTimestamp(rpepoch) {
   return rippleToUnixTime(rpepoch) * 1000;
 }
 
-/**
- * @param {Number|Date} timestamp (ms since unix epoch)
- * @return {Number} seconds since ripple epoch (1/1/2000 GMT)
- */
-function unixToRippleTimestamp(timestamp) {
-  return Math.round(timestamp / 1000) - 0x386d4380;
-}
-
-function rippleTimeToISO8601(rippleTime) {
-  if (rippleTime == null || typeof rippleTime !== 'number' || isNaN(rippleTime)) {
-    return null;
-  }
-  const timestamp = rippleToUnixTimestamp(rippleTime);
-  const date = new Date(timestamp);
-  if (isNaN(date.getTime())) {
-    return null;
-  }
-  return date.toISOString();
-}
-
-/**
- * @param {string} iso8601 international standard date format
- * @return {number} seconds since ripple epoch (1/1/2000 GMT)
- */
-function iso8601ToRippleTime(iso8601) {
-  return unixToRippleTimestamp(Date.parse(iso8601));
-}
-
-function normalizeNode(affectedNode) {
-  const diffType = Object.keys(affectedNode)[0];
-  const node = affectedNode[diffType];
-  return Object.assign({}, node, {
-    diffType,
-    entryType: node.LedgerEntryType,
-    ledgerIndex: node.LedgerIndex,
-    newFields: node.NewFields || {},
-    finalFields: node.FinalFields || {},
-    previousFields: node.PreviousFields || {}
-  });
-}
-
-function normalizeNodes(metadata) {
-  if (!metadata.AffectedNodes) {
-    return [];
-  }
-  return metadata.AffectedNodes.map(normalizeNode);
-}
 
 /**
  * IEEE 754 floating-point.
@@ -432,21 +298,6 @@ function normalizeCurrencyCode(currencyCode, maxLength = 20) {
   return currencyCode;
 }
 
-function parseFlags(value, keys, options = {}) {
-  const flags = {};
-  for (const flagName in keys) {
-    // tslint:disable-next-line:no-bitwise
-    if (value & keys[flagName]) {
-      flags[flagName] = true;
-    } else {
-      if (!options.excludeFalse) {
-        flags[flagName] = false;
-      }
-    }
-  }
-  return flags;
-}
-
 export const getNftCoverUrl = (nft, size = 'medium', type = '') => {
   if (!nft) return '';
 
@@ -559,7 +410,7 @@ export const getNftFilesUrls = (nft, type = 'image') => {
   }
 };
 
-export function cipheredTaxon(tokenSeq, taxon) {
+function cipheredTaxon(tokenSeq, taxon) {
   // An issuer may issue several NFTs with the same taxon; to ensure that NFTs
   // are spread across multiple pages we lightly mix the taxon up by using the
   // sequence (which is not under the issuer's direct control) as the seed for
@@ -627,127 +478,6 @@ export function parseAmount(amount) {
     name: normalizeCurrencyCode(amount.currency),
     value: amount.value
   };
-}
-
-// ==== CURRENCY CODE NORMALIZERS (from normalizers.js) ====
-
-// IEEE 754 floating-point implementation
-function fromBytesIEEE754(bytes) {
-  var b = '';
-  for (var i = 0, n = bytes.length; i < n; i++) {
-    var bits = (bytes[i] & 0xff).toString(2);
-    while (bits.length < 8) bits = '0' + bits;
-    b += bits;
-  }
-
-  var exponentBits = bytes.length === 4 ? 4 : 11;
-  var mantissaBits = bytes.length * 8 - exponentBits - 1;
-  var bias = Math.pow(2, exponentBits - 1) - 1;
-  var minExponent = 1 - bias - mantissaBits;
-
-  var s = b[0];
-  var e = b.substring(1, exponentBits + 1);
-  var m = b.substring(exponentBits + 1);
-
-  var allZeros = /^0+$/;
-  var allOnes = /^1+$/;
-
-  var value = 0;
-  var multiplier = s === '0' ? 1 : -1;
-
-  if (allZeros.test(e)) {
-    if (allZeros.test(m)) {
-      // Value is zero
-    } else {
-      value = parseInt(m, 2) * Math.pow(2, minExponent);
-    }
-  } else if (allOnes.test(e)) {
-    if (allZeros.test(m)) {
-      value = Infinity;
-    } else {
-      value = NaN;
-    }
-  } else {
-    var exponent = parseInt(e, 2) - bias;
-    var mantissa = parseInt(m, 2);
-    value = (1 + mantissa * Math.pow(2, -mantissaBits)) * Math.pow(2, exponent);
-  }
-
-  return value * multiplier;
-}
-
-function isHex(string) {
-  return /^[0-9A-Fa-f]*$/.test(string);
-}
-
-export function currencyCodeUTF8ToHexIfUTF8(currencyCode) {
-  if (currencyCode) {
-    if (currencyCode.length === 3) return currencyCode;
-    else if (currencyCode.length === 40 && isHex(currencyCode)) return currencyCode;
-    else return Buffer.from(currencyCode, 'utf-8').toString('hex');
-  } else {
-    return '';
-  }
-}
-
-export function currencyCodeHexToUTF8Trimmed(currencyCode) {
-  if (currencyCode && currencyCode.length === 40 && isHex(currencyCode)) {
-    while (currencyCode.endsWith('00')) {
-      currencyCode = currencyCode.substring(0, currencyCode.length - 2);
-    }
-  }
-
-  if (currencyCode) {
-    if (currencyCode.length > 3 && isHex(currencyCode)) {
-      if (currencyCode.startsWith('01')) return convertDemurrageToUTF8(currencyCode);
-      else return Buffer.from(currencyCode, 'hex').toString('utf-8').trim();
-    } else {
-      return currencyCode;
-    }
-  } else {
-    return '';
-  }
-}
-
-export function currencyCodeUTF8ToHex(currencyCode) {
-  if (currencyCode && currencyCode.length === 40) {
-    while (currencyCode.endsWith('00')) {
-      currencyCode = currencyCode.substring(0, currencyCode.length - 2);
-    }
-  }
-
-  let output;
-  if (currencyCode.length > 3) output = Buffer.from(currencyCode.trim(), 'utf-8').toString('hex');
-  else output = currencyCode;
-
-  return output;
-}
-
-export function getCurrencyCodeForXRPL(currencyCode) {
-  let returnString = '';
-  if (currencyCode) {
-    let currency = currencyCode.trim();
-
-    if (currency && currency.length > 3) {
-      if (!isHex(currency)) currency = Buffer.from(currency, 'utf-8').toString('hex');
-
-      while (currency.length < 40) currency += '0';
-
-      returnString = currency.toUpperCase();
-    } else {
-      returnString = currency;
-    }
-  }
-
-  return returnString;
-}
-
-export function rippleEpocheTimeToUTC(rippleEpocheTime) {
-  return (rippleEpocheTime + 946684800) * 1000;
-}
-
-export function utcToRippleEpocheTime(utcTime) {
-  return utcTime / 1000 - 946684800;
 }
 
 export function normalizeAmount(Amount) {
@@ -1707,22 +1437,9 @@ export function parseTransaction(rawTx, userAddress, decodeCurrency = normalizeC
 }
 
 export {
-  parseQuality,
-  hexToString,
-  parseTimestamp,
-  adjustQualityForXRP,
-  isPartialPayment,
   dropsToXrp,
   xrpToDrops,
-  toRippledAmount,
-  removeUndefined,
-  rippleToUnixTime,
   rippleToUnixTimestamp,
-  rippleTimeToISO8601,
-  iso8601ToRippleTime,
-  isValidSecret,
-  normalizeNodes,
   normalizeCurrencyCode,
-  parseFlags,
   BLACKHOLE_ACCOUNTS
 };

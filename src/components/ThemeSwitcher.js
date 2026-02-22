@@ -42,8 +42,9 @@ export default function ThemeSwitcher() {
     <div className="relative">
       <button
         onClick={handleClick}
+        aria-label="Theme settings"
         className={cn(
-          'rounded-md p-1 min-w-8 w-8 h-8 border-none flex items-center justify-center',
+          'rounded-md p-1 min-w-8 w-8 h-8 border-none flex items-center justify-center outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
           isDark ? 'bg-primary/[0.08] hover:bg-primary/20' : 'bg-primary/[0.08] hover:bg-primary/20'
         )}
       >
@@ -54,6 +55,8 @@ export default function ThemeSwitcher() {
         <>
           <div className="fixed inset-0 z-40" onClick={handleClose} />
           <div
+            role="menu"
+            aria-label="Theme options"
             className={cn(
               'absolute mt-1 min-w-[160px] rounded-2xl border z-50 right-0',
               isDark
@@ -67,7 +70,7 @@ export default function ThemeSwitcher() {
                   key={theme.id}
                   onClick={() => handleThemeChange(theme.id)}
                   className={cn(
-                    'w-full rounded-lg px-2.5 py-2 min-h-9 flex items-center gap-2 border-none cursor-pointer my-0.5 text-left',
+                    'w-full rounded-lg px-2.5 py-2 min-h-9 flex items-center gap-2 border-none cursor-pointer my-0.5 text-left outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                     themeName === theme.id
                       ? isDark
                         ? 'bg-primary/[0.08] hover:bg-primary/20'

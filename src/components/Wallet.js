@@ -6,7 +6,10 @@ import Link from 'next/link';
 // xrpl imported dynamically to avoid 68KB bundle on every page
 const getXrpl = () => import('xrpl');
 
-// Development logging helper
+// Development logging helper — devLog/devError are no-ops in production.
+// Remaining console.warn/error calls in catch blocks are intentional: they log non-sensitive
+// error messages (not state or secrets) for production debugging. An attacker with devtools
+// already has full JS access, so suppressing these adds no security value.
 const isDev = process.env.NODE_ENV === 'development';
 const devLog = () => {};
 const devError = () => {};
@@ -55,7 +58,7 @@ import { ThemeContext, WalletContext, WalletUIContext, AppContext } from 'src/co
 import { getHashIcon } from 'src/utils/formatters';
 import { EncryptedWalletStorage, securityUtils, deviceFingerprint } from 'src/utils/encryptedWalletStorage';
 import { cn } from 'src/utils/cn';
-import { alpha } from 'src/utils/color';
+import { alpha } from 'src/utils/formatters';
 import dynamic from 'next/dynamic';
 const QRCode = dynamic(() => import('react-qr-code'), { ssr: false });
 
@@ -648,20 +651,33 @@ const WalletContent = ({
   const [sendError, setSendError] = useState('');
   const [txResult, setTxResult] = useState(null);
   const [isUnlocked, setIsUnlocked] = useState(false);
-  const [storedPassword, setStoredPassword] = useState(null);
+  // Security: password in ref (not state) — invisible to React DevTools
+  const storedPasswordRef = useRef(null);
 
-  // Security: clear sensitive WalletContent state when tab is hidden
+  // Security: clear sensitive state on tab hide + 5min inactivity auto-lock (audit)
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    const handleVisibility = () => {
-      if (document.hidden) {
-        setStoredPassword(null);
-        setIsUnlocked(false);
-        setSendPassword('');
-      }
+    const clearSensitive = () => {
+      storedPasswordRef.current = null;
+      setIsUnlocked(false);
+      setSendPassword('');
     };
+    const handleVisibility = () => { if (document.hidden) clearSensitive(); };
+    // Inactivity auto-lock: re-lock wallet after 5 min of no interaction
+    let idleTimer = null;
+    const resetIdle = () => {
+      if (idleTimer) clearTimeout(idleTimer);
+      idleTimer = setTimeout(clearSensitive, 5 * 60 * 1000);
+    };
+    const events = ['mousedown', 'keydown', 'touchstart', 'scroll'];
+    events.forEach((e) => document.addEventListener(e, resetIdle, { passive: true }));
     document.addEventListener('visibilitychange', handleVisibility);
-    return () => document.removeEventListener('visibilitychange', handleVisibility);
+    resetIdle();
+    return () => {
+      if (idleTimer) clearTimeout(idleTimer);
+      events.forEach((e) => document.removeEventListener(e, resetIdle));
+      document.removeEventListener('visibilitychange', handleVisibility);
+    };
   }, []);
 
   const handleCopyAddress = () => {
@@ -683,7 +699,7 @@ const WalletContent = ({
         if (pwd) {
           const walletData = await walletStorage.getWalletByAddress(accountLogin, pwd);
           if (walletData?.seed) {
-            setStoredPassword(pwd);
+            storedPasswordRef.current = pwd;
             setIsUnlocked(true);
           }
         }
@@ -720,7 +736,7 @@ const WalletContent = ({
     setTxResult(null);
 
     try {
-      const pwdToUse = isUnlocked && storedPassword ? storedPassword : sendPassword;
+      const pwdToUse = isUnlocked && storedPasswordRef.current ? storedPasswordRef.current : sendPassword;
       let wallet;
       if (accountProfile?.wallet_type === 'oauth') {
         const walletId = `${accountProfile.provider}_${accountProfile.provider_id}`;
@@ -743,6 +759,10 @@ const WalletContent = ({
 
       const algorithm = wallet.seed.startsWith('sEd') ? 'ed25519' : 'secp256k1';
       const xrplWallet = XRPLWallet.fromSeed(wallet.seed, { algorithm });
+      // Best-effort memory zeroing (audit: clear sensitive data post-use)
+      wallet.seed = '';
+      wallet.privateKey = '';
+
       const result = await submitTransaction(xrplWallet, payment);
 
       if (result.success) {
@@ -1758,15 +1778,26 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   const [seedPassword, setSeedPassword] = useState('');
   const [showSeedPassword, setShowSeedPassword] = useState(false);
   const [seedWarningAgreed, setSeedWarningAgreed] = useState(false);
+  const [seedWarningText, setSeedWarningText] = useState('');
   const [backupMode, setBackupMode] = useState(null); // 'seed' or 'full'
   const [backupTargetProfile, setBackupTargetProfile] = useState(null); // profile to backup
   const walletStorage = useMemo(() => new EncryptedWalletStorage(), []);
 
-  // Auto-clear seed from memory after 60s and on unmount
+  // Auto-clear seed from memory after 30s, on tab switch, and on unmount
+  const [seedCountdown, setSeedCountdown] = useState(0);
   useEffect(() => {
-    if (!displaySeed) return;
-    const timer = setTimeout(() => setDisplaySeed(''), 60000);
-    return () => clearTimeout(timer);
+    if (!displaySeed) { setSeedCountdown(0); return; }
+    setSeedCountdown(30);
+    const tick = setInterval(() => {
+      setSeedCountdown((c) => {
+        if (c <= 1) { setDisplaySeed(''); return 0; }
+        return c - 1;
+      });
+    }, 1000);
+    // Clear seed when user switches tabs or minimizes (audit: screen timeout enforcement)
+    const onVisChange = () => { if (document.hidden) setDisplaySeed(''); };
+    document.addEventListener('visibilitychange', onVisChange);
+    return () => { clearInterval(tick); document.removeEventListener('visibilitychange', onVisChange); };
   }, [displaySeed]);
   useEffect(() => () => setDisplaySeed(''), []);
   const [showNewAccountFlow, setShowNewAccountFlow] = useState(false);
@@ -1792,6 +1823,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   const qrStreamRef = useRef(null);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [clearWarningAgreed, setClearWarningAgreed] = useState(false);
+  const [clearWarningText, setClearWarningText] = useState('');
   const [clearSliderValue, setClearSliderValue] = useState(0);
   const [storedWalletCount, setStoredWalletCount] = useState(0);
   const [storedWalletDate, setStoredWalletDate] = useState(null);
@@ -1815,6 +1847,31 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   const [createMode, setCreateMode] = useState('new'); // 'new' | 'import' | 'qr'
   const [createSeed, setCreateSeed] = useState('');
 
+  // Password strength meter for create/import flow
+  const passwordStrength = useMemo(() => {
+    if (!createPassword) return null;
+    const len = createPassword.length;
+    const hasUpper = /[A-Z]/.test(createPassword);
+    const hasLower = /[a-z]/.test(createPassword);
+    const hasNumber = /[0-9]/.test(createPassword);
+    const hasSpecial = /[^A-Za-z0-9]/.test(createPassword);
+    const variety = [hasUpper, hasLower, hasNumber, hasSpecial].filter(Boolean).length;
+    const weak = ['password', '12345678', 'qwerty12', 'letmein1', 'welcome1'];
+    const isCommon = weak.some((w) => createPassword.toLowerCase().includes(w));
+
+    let score = 0;
+    if (len >= 8) score++;
+    if (len >= 12) score++;
+    if (variety >= 3) score++;
+    if (variety >= 4) score++;
+    if (isCommon) score = Math.min(score, 1);
+
+    if (score <= 1) return { level: 1, label: 'Weak', color: '#ef4444' };
+    if (score === 2) return { level: 2, label: 'Fair', color: '#F6AF01' };
+    if (score === 3) return { level: 3, label: 'Good', color: '#08AA09' };
+    return { level: 4, label: 'Strong', color: '#08AA09' };
+  }, [createPassword]);
+
   // Post-creation backup screen state
   const [newWalletData, setNewWalletData] = useState(null);
   const [showNewWalletScreen, setShowNewWalletScreen] = useState(false);
@@ -1822,6 +1879,33 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   const [showNewSeed, setShowNewSeed] = useState(false);
   const [newSeedCopied, setNewSeedCopied] = useState(false);
   const [newAddressCopied, setNewAddressCopied] = useState(false);
+
+  // Security: seed stored in ref (not state) to avoid DOM/React DevTools exposure
+  const newWalletSeedRef = useRef(null);
+  const [newSeedAvailable, setNewSeedAvailable] = useState(false);
+  const [newSeedCountdown, setNewSeedCountdown] = useState(0);
+
+  // Auto-clear seed ref after 60s
+  useEffect(() => {
+    if (!newSeedAvailable) { setNewSeedCountdown(0); return; }
+    setNewSeedCountdown(60);
+    const tick = setInterval(() => {
+      setNewSeedCountdown((c) => {
+        if (c <= 1) {
+          newWalletSeedRef.current = null;
+          setNewSeedAvailable(false);
+          setShowNewSeed(false);
+          return 0;
+        }
+        return c - 1;
+      });
+    }, 1000);
+    const onVis = () => { if (document.hidden) { newWalletSeedRef.current = null; setNewSeedAvailable(false); setShowNewSeed(false); } };
+    document.addEventListener('visibilitychange', onVis);
+    return () => { clearInterval(tick); document.removeEventListener('visibilitychange', onVis); };
+  }, [newSeedAvailable]);
+  // Clear on unmount
+  useEffect(() => () => { newWalletSeedRef.current = null; }, []);
 
   // Crypto bridge state
   const [showBridgeForm, setShowBridgeForm] = useState(false);
@@ -1892,7 +1976,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
           setShowNewAccountFlow(true);
           setNewAccountMode(data.newAccountMode || 'new');
         }
-      } catch (e) {}
+      } catch (e) { console.warn('[Wallet] Session restore failed:', e.message); }
     }
   }, []);
 
@@ -1957,6 +2041,9 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         // Clear any plaintext seeds/passwords from React state
         setDisplaySeed('');
         setSeedPassword('');
+        // Clear seed ref (backup screen)
+        newWalletSeedRef.current = null;
+        setNewSeedAvailable(false);
         // Strip seed from newWalletData if present (keep address/publicKey)
         setNewWalletData((prev) => {
           if (prev?.seed) {
@@ -2019,6 +2106,13 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       return;
     }
 
+    // Audit (Temple/Thanos): rate-limit seed reveal to prevent brute force
+    const rateCheck = securityUtils.rateLimiter.check('seed_reveal');
+    if (!rateCheck.allowed) {
+      openSnackbar(rateCheck.error, 'error');
+      return;
+    }
+
     try {
       let wallet;
 
@@ -2043,6 +2137,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
       if (wallet && wallet.seed) {
         if (backupMode === 'seed') {
+          securityUtils.rateLimiter.recordSuccess('seed_reveal');
           setSeedAuthStatus('success');
           setDisplaySeed(wallet.seed);
           setSeedBlurred(true);
@@ -2055,6 +2150,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         throw new Error('Wallet not found or incorrect password');
       }
     } catch (error) {
+      securityUtils.rateLimiter.recordFailure('seed_reveal');
       devError('Error retrieving wallet:', error);
       openSnackbar('Incorrect password', 'error');
       setSeedPassword('');
@@ -2062,299 +2158,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     }
   };
 
-  const handleImportSeed = async () => {
-    setIsCreatingWallet(true);
-    setOAuthPasswordError('Validating seeds...');
-    try {
-      // Get all non-empty seeds
-      const seedsToImport = importSeeds.filter((s) => s.trim()).map((s) => s.trim());
-
-      if (seedsToImport.length === 0) {
-        throw new Error('Please enter at least one seed');
-      }
-
-      // Validate all seeds first
-      const { Wallet: XRPLWallet } = await getXrpl();
-      const validatedWallets = [];
-      for (let i = 0; i < seedsToImport.length; i++) {
-        const seed = seedsToImport[i];
-        if (!seed.startsWith('s')) {
-          throw new Error(`Seed ${i + 1} invalid: must start with "s"`);
-        }
-
-        const algorithm = seed.startsWith('sEd') ? 'ed25519' : 'secp256k1';
-
-        try {
-          const wallet = XRPLWallet.fromSeed(seed, { algorithm });
-          if (!wallet.address || !wallet.publicKey) {
-            throw new Error(`Failed to derive wallet from seed ${i + 1}`);
-          }
-
-          // Check for duplicates
-          if (validatedWallets.some((w) => w.address === wallet.address)) {
-            throw new Error(`Seed ${i + 1} creates duplicate wallet`);
-          }
-
-          validatedWallets.push(wallet);
-          devLog(`Validated seed ${i + 1}: ${wallet.address}`);
-        } catch (seedError) {
-          throw new Error(`Seed ${i + 1} invalid: ${seedError.message}`);
-        }
-      }
-
-      // Get OAuth data
-      const token = sessionStorage.getItem('oauth_temp_token');
-      const provider = sessionStorage.getItem('oauth_temp_provider');
-      const userStr = sessionStorage.getItem('oauth_temp_user');
-      const user = JSON.parse(userStr);
-
-      // Create wallets array
-      const wallets = [];
-      const totalWallets = Math.min(
-        25,
-        validatedWallets.length + Math.max(1, 25 - validatedWallets.length)
-      );
-
-      // Import all seed wallets first
-      for (let i = 0; i < validatedWallets.length && i < 25; i++) {
-        const wallet = validatedWallets[i];
-        const walletProfile = {
-          accountIndex: i,
-          account: wallet.address,
-          address: wallet.address,
-          publicKey: wallet.publicKey,
-          seed: wallet.seed,
-          wallet_type: 'oauth',
-          provider: provider,
-          provider_id: user.id,
-          imported: true,
-          xrp: '0',
-          createdAt: Date.now()
-        };
-
-        wallets.push(walletProfile);
-        await walletStorage.storeWallet(walletProfile, oauthPassword);
-        setOAuthPasswordError(`Imported seed wallet ${i + 1}/${validatedWallets.length}...`);
-      }
-
-      // Generate additional random wallets if needed to reach 25
-      const randomWalletsNeeded = Math.max(0, 25 - validatedWallets.length);
-      if (randomWalletsNeeded > 0) {
-        setOAuthPasswordError(
-          `Creating ${randomWalletsNeeded} additional wallet${randomWalletsNeeded > 1 ? 's' : ''}...`
-        );
-
-        for (let i = 0; i < randomWalletsNeeded; i++) {
-          const wallet = await generateRandomWallet();
-          const walletData = {
-            accountIndex: validatedWallets.length + i,
-            account: wallet.address,
-            address: wallet.address,
-            publicKey: wallet.publicKey,
-            seed: wallet.seed,
-            wallet_type: 'oauth',
-            provider: provider,
-            provider_id: user.id,
-            xrp: '0',
-            createdAt: Date.now()
-          };
-
-          wallets.push(walletData);
-          await walletStorage.storeWallet(walletData, oauthPassword);
-        }
-      }
-
-      // Store password for provider
-      const walletId = `${provider}_${user.id}`;
-      await walletStorage.setSecureItem(`wallet_pwd_${walletId}`, oauthPassword);
-
-      // Clear session
-      sessionStorage.removeItem('oauth_temp_token');
-      sessionStorage.removeItem('oauth_temp_provider');
-      sessionStorage.removeItem('oauth_temp_user');
-
-      // Store auth
-      await walletStorage.setSecureItem('jwt', token);
-      await walletStorage.setSecureItem('authMethod', provider);
-      await walletStorage.setSecureItem('user', user);
-
-      // Add all wallets to profiles
-      const allProfiles = [...profiles];
-      wallets.forEach((w) => {
-        if (!allProfiles.find((p) => p.account === w.address)) {
-          allProfiles.push({ ...w, tokenCreatedAt: Date.now() });
-        }
-      });
-
-      // Login with previously active wallet, or first wallet
-      let activeWallet = wallets[0];
-      try {
-        const savedAddress = await getActiveWalletFromIDB();
-        if (savedAddress) {
-          const found = allProfiles.find(p => p.account === savedAddress || p.address === savedAddress);
-          if (found) activeWallet = found;
-        }
-      } catch (e) { /* fall back to first */ }
-      doLogIn(activeWallet, allProfiles);
-
-      setShowOAuthPasswordSetup(false);
-      setOpenWalletModal(false);
-      setOAuthPassword('');
-      setImportSeeds(['']);
-      setSeedCount(1);
-
-      const importedCount = validatedWallets.length;
-      const newCount = randomWalletsNeeded;
-
-      if (importedCount === 25) {
-        openSnackbar(`Imported all 25 wallets from seeds!`, 'success');
-      } else if (newCount === 0) {
-        openSnackbar(
-          `Imported ${importedCount} wallet${importedCount > 1 ? 's' : ''} from seed${importedCount > 1 ? 's' : ''}!`,
-          'success'
-        );
-      } else {
-        openSnackbar(
-          `Created 25 wallets (${importedCount} from seed${importedCount > 1 ? 's' : ''}, ${newCount} new)`,
-          'success'
-        );
-      }
-    } catch (error) {
-      setOAuthPasswordError(error.message || 'Invalid seed phrase');
-    } finally {
-      setIsCreatingWallet(false);
-    }
-  };
-
-  const handleImportWallet = async () => {
-    setIsCreatingWallet(true);
-    setOAuthPasswordError('Processing backup file...');
-    try {
-      // Read the import file
-      const fileContent = await importFile.text();
-      const importData = JSON.parse(fileContent);
-
-      // Validate import file structure
-      if (!importData.type || importData.type !== 'xrpl-encrypted-wallet') {
-        throw new Error('Invalid wallet backup file');
-      }
-
-      if (!importData.data || !importData.data.encrypted) {
-        throw new Error('Invalid encrypted wallet data');
-      }
-
-      // Get OAuth data from session
-      const token = sessionStorage.getItem('oauth_temp_token');
-      const provider = sessionStorage.getItem('oauth_temp_provider');
-      const userStr = sessionStorage.getItem('oauth_temp_user');
-
-      if (!token || !provider || !userStr) {
-        throw new Error('Missing OAuth data');
-      }
-
-      const user = JSON.parse(userStr);
-
-      // Decrypt backup to get wallets
-      let wallets = [];
-      try {
-        // Try to decrypt with provided password
-        const decrypted = await walletStorage.decryptData(importData.data.encrypted, oauthPassword);
-
-        // Check if it's multi-wallet format (v3.0) or single wallet
-        if (decrypted.wallets && Array.isArray(decrypted.wallets)) {
-          // Multi-wallet backup (v3.0)
-          wallets = decrypted.wallets;
-          setOAuthPasswordError(
-            `Found ${wallets.length} wallet${wallets.length > 1 ? 's' : ''} in backup...`
-          );
-        } else if (decrypted.seed) {
-          // Single wallet or old format
-          wallets = [decrypted];
-        } else {
-          throw new Error('Invalid backup format');
-        }
-      } catch (decryptError) {
-        throw new Error('Incorrect password or corrupted backup file');
-      }
-
-      // Store all imported wallets
-      const storedWallets = [];
-      for (let i = 0; i < wallets.length; i++) {
-        const walletData = wallets[i];
-        const profile = {
-          accountIndex: i,
-          account: walletData.address,
-          address: walletData.address,
-          publicKey: walletData.publicKey,
-          seed: walletData.seed,
-          wallet_type: 'oauth',
-          provider: provider,
-          provider_id: user.id,
-          imported: true,
-          xrp: '0',
-          createdAt: walletData.createdAt || Date.now()
-        };
-
-        await walletStorage.storeWallet(profile, oauthPassword);
-        storedWallets.push(profile);
-        setOAuthPasswordError(`Importing wallet ${i + 1}/${wallets.length}...`);
-      }
-
-      // Store password for provider
-      const walletId = `${provider}_${user.id}`;
-      await walletStorage.setSecureItem(`wallet_pwd_${walletId}`, oauthPassword);
-
-      // Clear temporary session data
-      sessionStorage.removeItem('oauth_temp_token');
-      sessionStorage.removeItem('oauth_temp_provider');
-      sessionStorage.removeItem('oauth_temp_user');
-      sessionStorage.removeItem('oauth_action');
-
-      // Store permanent auth data
-      await walletStorage.setSecureItem('jwt', token);
-      await walletStorage.setSecureItem('authMethod', provider);
-      await walletStorage.setSecureItem('user', user);
-
-      // Add all wallets to profiles
-      const allProfiles = [...profiles];
-      storedWallets.forEach((w) => {
-        if (!allProfiles.find((p) => p.account === w.address)) {
-          allProfiles.push({ ...w, tokenCreatedAt: Date.now() });
-        }
-      });
-
-      // Login with previously active wallet, or first imported wallet
-      let activeWallet = storedWallets[0];
-      try {
-        const savedAddress = await getActiveWalletFromIDB();
-        if (savedAddress) {
-          const found = allProfiles.find(p => p.account === savedAddress || p.address === savedAddress);
-          if (found) activeWallet = found;
-        }
-      } catch (e) { /* fall back to first */ }
-      doLogIn(activeWallet, allProfiles);
-
-      // Close dialogs
-      setShowOAuthPasswordSetup(false);
-      setOpenWalletModal(false);
-
-      // Reset state
-      setOAuthPassword('');
-      setOAuthConfirmPassword('');
-      setImportFile(null);
-      setImportMethod('new');
-
-      openSnackbar(
-        `Imported ${storedWallets.length} wallet${storedWallets.length > 1 ? 's' : ''} successfully!`,
-        'success'
-      );
-    } catch (error) {
-      devError('Import error:', error);
-      setOAuthPasswordError(error.message || 'Failed to import wallet');
-    } finally {
-      setIsCreatingWallet(false);
-    }
-  };
+  // OAuth provider functions (handleImportSeed, handleImportWallet) removed — dead code
 
   const { darkMode } = useContext(ThemeContext);
   const {
@@ -2374,8 +2178,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     setOpen,
     openWalletModal,
     setOpenWalletModal,
-    pendingWalletAuth,
-    setPendingWalletAuth,
     connecting,
     setConnecting,
     handleOpen,
@@ -2440,6 +2242,13 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       return;
     }
 
+    // Audit (Temple/Thanos): rate-limit unlock attempts to prevent brute force
+    const rateCheck = securityUtils.rateLimiter.check('wallet_unlock');
+    if (!rateCheck.allowed) {
+      setUnlockError(rateCheck.error);
+      return;
+    }
+
     setIsUnlocking(true);
     setUnlockError('');
 
@@ -2447,6 +2256,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       const wallets = await walletStorage.unlockWithPassword(unlockPassword);
 
       if (!wallets || wallets.length === 0) {
+        securityUtils.rateLimiter.recordFailure('wallet_unlock');
         setUnlockError('Incorrect password');
         return;
       }
@@ -2493,9 +2303,11 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       } catch (e) { /* fall back to first wallet */ }
       doLogIn(activeProfile, allProfiles);
 
+      securityUtils.rateLimiter.recordSuccess('wallet_unlock');
       setUnlockPassword('');
       setOpenWalletModal(false);
     } catch (error) {
+      securityUtils.rateLimiter.recordFailure('wallet_unlock');
       setUnlockError(error.message || 'Incorrect password');
     } finally {
       setIsUnlocking(false);
@@ -2551,6 +2363,10 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         seed: wallet.seed
       };
 
+      // Audit: zero seed from wallet object after copying to walletData
+      wallet.seed = '';
+      wallet.privateKey = '';
+
       await walletStorage.storeWallet(walletData, createPassword);
       // Store password for auto-retrieval (like OAuth wallets do)
       await walletStorage.storeWalletCredential(deviceKeyId, createPassword);
@@ -2578,14 +2394,18 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ address: wallet.address, ...(storedRef && { referredBy: storedRef }) })
-        }).catch(() => {});
+        }).catch(err => { console.warn('[Wallet] Referral register failed:', err.message); });
         localStorage.removeItem('referral_code');
       }
 
       // For new wallets, show backup screen. For imports, skip (user already has seed)
       if (createMode === 'new') {
         localStorage.setItem(`wallet_needs_backup_${wallet.address}`, 'true');
-        setNewWalletData({ ...walletData, profile });
+        // Security: store seed in ref (never in state/DOM), strip from walletData
+        newWalletSeedRef.current = walletData.seed;
+        setNewSeedAvailable(true);
+        const { seed: _s, ...safeWalletData } = walletData;
+        setNewWalletData({ ...safeWalletData, profile });
         setShowNewWalletScreen(true);
         setBackupConfirmed(false);
         setShowNewSeed(false);
@@ -2681,13 +2501,14 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
   // Complete wallet setup after backup confirmation
   const handleCompleteSetup = () => {
+    newWalletSeedRef.current = null;
+    setNewSeedAvailable(false);
     setShowNewWalletScreen(false);
     setNewWalletData(null);
     setShowBridgeForm(false);
     setBridgeData(null);
     setOpenWalletModal(false);
     clearPersistedState(); // Clear sessionStorage
-    openSnackbar('Wallet ready!', 'success');
   };
 
   // Fetch available currencies
@@ -2804,6 +2625,9 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   };
 
   // Create bridge exchange
+  // Security note: no CSRF token needed — POST goes through same-origin /api/proxy which injects
+  // the API key server-side. Same-origin policy prevents cross-origin CSRF. XSS is the real threat
+  // vector, mitigated by CSP + no innerHTML (see audit Finding 2/16).
   const handleCreateBridge = async (targetAddress = null) => {
     const address = targetAddress || newWalletData?.address || accountLogin;
     if (!bridgeAmount || !address || !selectedCurrency) return;
@@ -2966,17 +2790,13 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
   // Load jsQR library dynamically
   const loadJsQR = async () => {
-    // Check if already loaded
-    if (window.jsQR) {
-      return window.jsQR;
-    }
+    if (window.jsQR) return window.jsQR;
 
-    const url = 'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js';
-
+    // Self-hosted — no CDN dependency, no SRI risk
+    const url = '/js/jsQR.min.js';
     try {
-      // Load via script tag (safe, CSP-compliant)
-      const existingScript = document.querySelector(`script[src="${url}"]`);
-      if (!existingScript) {
+      const existing = document.querySelector(`script[src="${url}"]`);
+      if (!existing) {
         await new Promise((resolve, reject) => {
           const script = document.createElement('script');
           script.src = url;
@@ -2986,20 +2806,13 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
           document.head.appendChild(script);
         });
       }
-
-      // Wait for initialization
+      // Wait for global to appear
       for (let i = 0; i < 20; i++) {
-        if (window.jsQR) {
-          devLog('jsQR loaded via script tag');
-          return window.jsQR;
-        }
+        if (window.jsQR) return window.jsQR;
         await new Promise(r => setTimeout(r, 100));
       }
-
-      console.error('jsQR failed to initialize');
       return null;
     } catch (e) {
-      console.error('Failed to load jsQR:', e);
       return null;
     }
   };
@@ -3028,22 +2841,16 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         throw new Error('Video container not found');
       }
 
-      // Clear container and create video with inline HTML (iOS Safari works better this way)
-      container.innerHTML = `
-        <video
-          id="qr-camera-video"
-          autoplay
-          playsinline
-          muted
-          webkit-playsinline
-          style="width:100%;height:180px;object-fit:cover;background:#000;display:block;"
-        ></video>
-      `;
-
-      const video = document.getElementById('qr-camera-video');
-      if (!video) {
-        throw new Error('Video element not created');
-      }
+      // Clear container and create video element (DOM API — no innerHTML)
+      while (container.firstChild) container.removeChild(container.firstChild);
+      const video = document.createElement('video');
+      video.id = 'qr-camera-video';
+      video.autoplay = true;
+      video.playsInline = true;
+      video.muted = true;
+      video.setAttribute('webkit-playsinline', '');
+      Object.assign(video.style, { width: '100%', height: '180px', objectFit: 'cover', background: '#000', display: 'block' });
+      container.appendChild(video);
 
       qrVideoRef.current = video;
 
@@ -3206,11 +3013,11 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       qrVideoRef.current = null;
     }
 
-    // Clean up containers
-    const container = document.getElementById('qr-video-container');
-    const containerCreate = document.getElementById('qr-video-container-create');
-    if (container) container.innerHTML = '';
-    if (containerCreate) containerCreate.innerHTML = '';
+    // Clean up containers (DOM API — no innerHTML)
+    for (const id of ['qr-video-container', 'qr-video-container-create']) {
+      const el = document.getElementById(id);
+      if (el) while (el.firstChild) el.removeChild(el.firstChild);
+    }
   };
 
   // Capture photo and scan QR (fallback for iOS Safari)
@@ -3382,7 +3189,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       setDisplaySeed('');
       setShowSeedDialog(false);
 
-      // Refresh profiles
+      // Intentional full reload: ensures clean state after QR import — resetting ~30 state
+      // variables via React would be error-prone. Reload also flushes any residual sensitive data.
       window.location.reload();
     } catch (error) {
       setQrSyncError(error.message);
@@ -3503,12 +3311,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       }
       keysToRemove.forEach((key) => localStorage.removeItem(key));
 
-      // Clear session storage OAuth data
-      sessionStorage.removeItem('oauth_temp_token');
-      sessionStorage.removeItem('oauth_temp_provider');
-      sessionStorage.removeItem('oauth_temp_user');
-      sessionStorage.removeItem('oauth_action');
-
       // Clear state
       setProfiles([]);
       setStoredWalletCount(0);
@@ -3517,11 +3319,14 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       handleLogout();
       setShowClearConfirm(false);
       setClearSliderValue(0);
+      setClearWarningText('');
       setOpenWalletModal(false);
       openSnackbar('All wallets cleared', 'success');
 
-      // Force reload to ensure clean state
-      setTimeout(() => window.location.reload(), 500);
+      // Intentional full reload after clear-all: guarantees no stale wallet state survives
+      // in React, IndexedDB connections, or closure-scoped caches. This is the nuclear option
+      // and appropriate here since the user just wiped all wallets.
+      window.location.reload();
     } catch (error) {
       openSnackbar('Failed to clear wallets: ' + error.message, 'error');
     }
@@ -3610,6 +3415,10 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         createdAt: Date.now(),
         seed: wallet.seed
       };
+
+      // Audit: zero seed from wallet object after copying to walletData
+      wallet.seed = '';
+      wallet.privateKey = '';
 
       // Store encrypted with same password
       await walletStorage.storeWallet(walletData, newAccountPassword);
@@ -3902,21 +3711,15 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                           Backup Secret Key
                         </span>
                       </div>
-                      <button
-                        onClick={() => setShowNewSeed(!showNewSeed)}
-                        className={cn(
-                          'flex items-center gap-1 text-[10px] px-2 py-0.5 rounded transition-colors',
-                          isDark
-                            ? 'text-amber-400 hover:bg-amber-500/10'
-                            : 'text-amber-600 hover:bg-amber-50'
-                        )}
-                      >
-                        {showNewSeed ? <EyeOff size={11} /> : <Eye size={11} />}
-                        {showNewSeed ? 'Hide' : 'Reveal'}
-                      </button>
+                      {newSeedAvailable && (
+                        <span className={cn('text-[10px] px-2 py-0.5 rounded', 'text-emerald-500 bg-emerald-500/10')}>
+                          <Lock size={10} className="inline mr-1 -mt-0.5" />
+                          Ready to copy
+                        </span>
+                      )}
                     </div>
 
-                    {showNewSeed ? (
+                    {newSeedAvailable ? (
                       <div
                         className={cn(
                           'rounded border p-2 mb-2',
@@ -3924,32 +3727,34 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                         )}
                       >
                         <div className="flex items-center justify-between gap-2">
-                          <code
-                            className={cn(
-                              'text-[10px] font-mono break-all flex-1',
-                              isDark ? 'text-white/90' : 'text-gray-900'
-                            )}
-                          >
-                            {newWalletData.seed}
-                          </code>
                           <button
                             onClick={() => {
-                              navigator.clipboard.writeText(newWalletData.seed);
+                              const seed = newWalletSeedRef.current;
+                              if (!seed) return;
+                              navigator.clipboard.writeText(seed);
                               setNewSeedCopied(true);
                               setTimeout(() => setNewSeedCopied(false), 2000);
+                              // Clear clipboard after 30s
+                              setTimeout(() => navigator.clipboard.writeText('').catch(() => {}), 30000);
                             }}
                             className={cn(
-                              'flex-shrink-0 p-1 rounded transition-colors',
+                              'w-full flex items-center justify-center gap-2 py-2 rounded-lg text-[11px] font-medium transition-colors',
                               newSeedCopied
                                 ? 'bg-emerald-500/15 text-emerald-500'
                                 : isDark
-                                  ? 'bg-white/10 text-white/60 hover:bg-white/15'
-                                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                  ? 'bg-white/[0.06] text-white/70 hover:bg-white/10'
+                                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                             )}
                           >
-                            {newSeedCopied ? <Check size={12} /> : <Copy size={12} />}
+                            {newSeedCopied ? <Check size={13} /> : <Copy size={13} />}
+                            {newSeedCopied ? 'Copied to clipboard' : 'Copy secret key to clipboard'}
                           </button>
                         </div>
+                        {newSeedCountdown > 0 && (
+                          <p className={cn('text-[10px] text-center mt-1.5', newSeedCountdown <= 10 ? 'text-red-400' : 'opacity-40')}>
+                            Available for {newSeedCountdown}s
+                          </p>
+                        )}
                       </div>
                     ) : (
                       <div
@@ -3961,7 +3766,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                         <span
                           className={cn('text-[10px]', isDark ? 'text-white/30' : 'text-gray-400')}
                         >
-                          Click "Reveal" to view
+                          {newWalletData?.address ? 'Seed expired — use Backup in account menu to view later' : 'Click "Reveal" to view'}
                         </span>
                       </div>
                     )}
@@ -3993,12 +3798,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                   >
                     <div className="flex items-center gap-3">
                       <div className="rounded-lg bg-white p-1.5">
-                        <img
-                          src={`https://api.qrserver.com/v1/create-qr-code/?size=60x60&data=${newWalletData.address}`}
-                          alt="QR"
-                          width={60}
-                          height={60}
-                        />
+                        <QRCode value={newWalletData.address} size={60} level="M" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <p
@@ -4774,6 +4574,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                           setDisplaySeed('');
                           setSeedBlurred(true);
                           setSeedWarningAgreed(false);
+                          setSeedWarningText('');
                           setBackupMode(null);
                           setSeedPassword('');
                           setBackupTargetProfile(null);
@@ -4953,38 +4754,34 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                           </p>
                         </div>
 
-                        <button
-                          onClick={() => setSeedWarningAgreed(!seedWarningAgreed)}
-                          className={cn(
-                            'w-full flex items-start gap-2 p-2.5 rounded-lg border-[1.5px] text-left transition-colors',
-                            seedWarningAgreed
-                              ? 'border-primary bg-primary/5'
-                              : isDark
-                                ? 'border-[#3f96fe]/20 hover:border-[#3f96fe]/40'
-                                : 'border-blue-200 hover:border-blue-400'
-                          )}
-                        >
-                          <div
-                            className={cn(
-                              'w-4 h-4 rounded flex-shrink-0 flex items-center justify-center mt-0.5 border-2 transition-colors',
-                              seedWarningAgreed
-                                ? 'border-primary bg-primary'
-                                : isDark
-                                  ? 'border-white/30'
-                                  : 'border-gray-300'
-                            )}
-                          >
-                            {seedWarningAgreed && <Check size={12} color="white" />}
-                          </div>
-                          <span
+                        <div className="space-y-1.5">
+                          <p
                             className={cn(
                               'text-[11px] leading-relaxed',
-                              isDark ? 'text-white' : 'text-gray-900'
+                              isDark ? 'text-white/50' : 'text-gray-500'
                             )}
                           >
-                            I understand my seed must be kept offline and never shared
-                          </span>
-                        </button>
+                            Type <span className={cn('font-medium', isDark ? 'text-amber-400' : 'text-amber-600')}>I understand</span> to confirm you have read the warnings above
+                          </p>
+                          <input
+                            type="text"
+                            value={seedWarningText}
+                            onChange={(e) => {
+                              setSeedWarningText(e.target.value);
+                              setSeedWarningAgreed(e.target.value.trim().toLowerCase() === 'i understand');
+                            }}
+                            placeholder="Type here..."
+                            autoComplete="off"
+                            className={cn(
+                              'w-full px-2.5 py-1.5 rounded-md border-[1.5px] text-[11px] outline-none transition-colors',
+                              seedWarningAgreed
+                                ? 'border-emerald-500/40 bg-emerald-500/5'
+                                : isDark
+                                  ? 'border-white/10 bg-black/30 text-white/80 placeholder:text-white/20'
+                                  : 'border-gray-200 bg-white text-gray-900 placeholder:text-gray-300'
+                            )}
+                          />
+                        </div>
 
                         <div>
                           <p
@@ -5037,6 +4834,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                               setSeedPassword('');
                               setShowSeedPassword(false);
                               setSeedWarningAgreed(false);
+                              setSeedWarningText('');
                               setBackupTargetProfile(null);
                             }}
                             className={cn(
@@ -5105,11 +4903,18 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                           {displaySeed}
                         </div>
 
+                        {seedCountdown > 0 && (
+                          <p className={cn('text-[10px] text-center', seedCountdown <= 10 ? 'text-red-400' : 'opacity-40')}>
+                            Auto-clearing in {seedCountdown}s
+                          </p>
+                        )}
+
                         <div className="flex gap-2 justify-center">
                           <button
                             onClick={() => {
                               navigator.clipboard.writeText(displaySeed).then(() => {
-                                openSnackbar('Seed copied', 'success');
+                                openSnackbar('Seed copied - clipboard clears in 30s', 'success');
+                                setTimeout(() => navigator.clipboard.writeText('').catch(() => {}), 30000);
                               });
                             }}
                             className="px-3 py-1.5 rounded-lg bg-primary hover:bg-primary/90 text-white text-[11px] transition-colors"
@@ -5809,6 +5614,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             checkStoredWalletCount();
                             setShowClearConfirm(true);
                             setClearWarningAgreed(false);
+                            setClearWarningText('');
                           }}
                           className={cn(
                             'inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest transition-all duration-200 group',
@@ -6117,6 +5923,26 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             </div>
                           </div>
 
+                          {/* Password strength indicator */}
+                          {createPassword && createMode !== 'qr' && passwordStrength && (
+                            <div className="flex items-center gap-2 px-1">
+                              <div className="flex gap-1 flex-1">
+                                {[1, 2, 3, 4].map((i) => (
+                                  <div
+                                    key={i}
+                                    className="h-1 flex-1 rounded-full transition-all duration-300"
+                                    style={{
+                                      backgroundColor: i <= passwordStrength.level ? passwordStrength.color : (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)')
+                                    }}
+                                  />
+                                ))}
+                              </div>
+                              <span className="text-[10px] font-semibold" style={{ color: passwordStrength.color }}>
+                                {passwordStrength.label}
+                              </span>
+                            </div>
+                          )}
+
                           {/* Confirm password - only for new/import modes, not QR */}
                           {createMode !== 'qr' && (
                             <div className="space-y-1">
@@ -6227,6 +6053,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                               setShowClearConfirm(false);
                               setClearSliderValue(0);
                               setClearWarningAgreed(false);
+                              setClearWarningText('');
                             }}
                             className={cn(
                               'text-[11px] px-2 py-0.5 rounded-md transition-colors',
@@ -6270,63 +6097,58 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                           </div>
                         )}
 
-                        <button
-                          onClick={() => setClearWarningAgreed(!clearWarningAgreed)}
-                          className={cn(
-                            'w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-left mb-2 transition-all border',
-                            clearWarningAgreed
-                              ? 'border-red-500/40 bg-red-500/10'
-                              : isDark
-                                ? 'border-white/10'
-                                : 'border-gray-200'
-                          )}
-                        >
-                          <div
+                        <div className="space-y-1.5 mb-2">
+                          <p
                             className={cn(
-                              'w-3.5 h-3.5 rounded flex items-center justify-center flex-shrink-0',
+                              'text-[10px] leading-relaxed',
+                              isDark ? 'text-white/50' : 'text-gray-500'
+                            )}
+                          >
+                            Type <span className="font-medium text-red-500">I understand</span> to confirm this cannot be undone
+                          </p>
+                          <input
+                            type="text"
+                            value={clearWarningText}
+                            onChange={(e) => {
+                              setClearWarningText(e.target.value);
+                              setClearWarningAgreed(e.target.value.trim().toLowerCase() === 'i understand');
+                            }}
+                            placeholder="Type here..."
+                            autoComplete="off"
+                            className={cn(
+                              'w-full px-2.5 py-1.5 rounded-md border-[1.5px] text-[11px] outline-none transition-colors',
                               clearWarningAgreed
-                                ? 'bg-red-500'
+                                ? 'border-red-500/40 bg-red-500/5'
                                 : isDark
-                                  ? 'border border-white/20'
-                                  : 'border border-gray-300'
+                                  ? 'border-white/10 bg-black/30 text-white/80 placeholder:text-white/20'
+                                  : 'border-gray-200 bg-white text-gray-900 placeholder:text-gray-300'
                             )}
-                          >
-                            {clearWarningAgreed && <Check size={9} className="text-white" />}
-                          </div>
-                          <span
-                            className={cn(
-                              'text-[10px]',
-                              clearWarningAgreed
-                                ? 'text-red-500'
-                                : isDark ? 'text-white/50' : 'text-gray-500'
-                            )}
-                          >
-                            This cannot be undone
-                          </span>
-                        </button>
+                          />
+                        </div>
 
                         <div
                           className={cn(
-                            'relative h-9 rounded-lg overflow-hidden select-none transition-all',
+                            'relative h-11 rounded-xl overflow-hidden select-none transition-all',
                             clearWarningAgreed
                               ? 'cursor-pointer'
                               : 'cursor-not-allowed opacity-30',
                             clearSliderValue >= 95
                               ? 'bg-red-500'
                               : isDark
-                                ? 'bg-white/[0.03]'
-                                : 'bg-gray-100'
+                                ? 'bg-white/[0.04] border border-white/[0.06]'
+                                : 'bg-gray-100 border border-gray-200/60'
                           )}
                           onMouseDown={(e) => {
                             if (!clearWarningAgreed) return;
                             const rect = e.currentTarget.getBoundingClientRect();
+                            const pad = 4;
+                            const thumbSize = rect.height - pad * 2;
+                            const travel = rect.width - thumbSize - pad * 2;
                             const handleMove = (moveEvent) => {
-                              const x = Math.max(
-                                0,
-                                Math.min(moveEvent.clientX - rect.left, rect.width)
-                              );
-                              setClearSliderValue(Math.round((x / rect.width) * 100));
-                              if (x / rect.width >= 0.95) handleClearAllWallets();
+                              const x = Math.max(0, Math.min(moveEvent.clientX - rect.left - pad - thumbSize / 2, travel));
+                              const pct = Math.round((x / travel) * 100);
+                              setClearSliderValue(pct);
+                              if (pct >= 95) handleClearAllWallets();
                             };
                             const handleUp = () => {
                               document.removeEventListener('mousemove', handleMove);
@@ -6340,14 +6162,15 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                           onTouchStart={(e) => {
                             if (!clearWarningAgreed) return;
                             const rect = e.currentTarget.getBoundingClientRect();
+                            const pad = 4;
+                            const thumbSize = rect.height - pad * 2;
+                            const travel = rect.width - thumbSize - pad * 2;
                             const handleMove = (moveEvent) => {
                               const touch = moveEvent.touches[0];
-                              const x = Math.max(
-                                0,
-                                Math.min(touch.clientX - rect.left, rect.width)
-                              );
-                              setClearSliderValue(Math.round((x / rect.width) * 100));
-                              if (x / rect.width >= 0.95) handleClearAllWallets();
+                              const x = Math.max(0, Math.min(touch.clientX - rect.left - pad - thumbSize / 2, travel));
+                              const pct = Math.round((x / travel) * 100);
+                              setClearSliderValue(pct);
+                              if (pct >= 95) handleClearAllWallets();
                             };
                             const handleEnd = () => {
                               document.removeEventListener('touchmove', handleMove);
@@ -6359,37 +6182,39 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             document.addEventListener('touchend', handleEnd);
                           }}
                         >
+                          {/* Fill track */}
                           <div
                             className={cn(
-                              'absolute inset-y-0 left-0',
-                              clearSliderValue >= 95 ? 'bg-red-600' : 'bg-red-500'
+                              'absolute inset-y-0 left-0 rounded-xl',
+                              clearSliderValue >= 95 ? 'bg-red-600' : 'bg-red-500/90'
                             )}
-                            style={{ width: `${clearSliderValue}%` }}
+                            style={{ width: `calc(${clearSliderValue}% - ${clearSliderValue * 0.36}px + 4px + 36px)` }}
                           />
+                          {/* Thumb — square, matches inner height */}
                           <div
                             className={cn(
-                              'absolute top-1 bottom-1 w-7 rounded-md flex items-center justify-center',
+                              'absolute top-1 bottom-1 aspect-square rounded-lg flex items-center justify-center transition-colors',
                               clearSliderValue >= 95
                                 ? 'bg-white'
                                 : clearSliderValue > 0
-                                  ? 'bg-red-500'
+                                  ? 'bg-white/95'
                                   : isDark
                                     ? 'bg-white/10'
                                     : 'bg-white'
                             )}
                             style={{
-                              left: `calc(${clearSliderValue}% - ${clearSliderValue * 0.28}px + 4px)`,
-                              transition: clearSliderValue === 0 ? 'left 0.2s ease-out' : 'none'
+                              left: `calc(${clearSliderValue}% - ${clearSliderValue * 0.36}px + 4px)`,
+                              transition: clearSliderValue === 0 ? 'left 0.3s cubic-bezier(0.32, 0.72, 0, 1)' : 'none'
                             }}
                           >
                             {clearSliderValue >= 95 ? (
-                              <Loader2 size={13} className="text-red-500 animate-spin" />
+                              <Loader2 size={14} className="text-red-500 animate-spin" />
                             ) : (
                               <ChevronRight
-                                size={13}
+                                size={14}
                                 className={
                                   clearSliderValue > 0
-                                    ? 'text-white'
+                                    ? 'text-red-500'
                                     : isDark
                                       ? 'text-white/40'
                                       : 'text-gray-400'
@@ -6397,12 +6222,14 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                               />
                             )}
                           </div>
+                          {/* Label */}
                           <span
                             className={cn(
-                              'absolute inset-0 flex items-center justify-center text-[10px] font-medium pointer-events-none tracking-wider uppercase pl-7',
-                              clearSliderValue > 15 ? 'opacity-0' : 'opacity-100',
+                              'absolute inset-0 flex items-center justify-center text-[10px] font-medium pointer-events-none tracking-[0.15em] uppercase transition-opacity duration-200',
+                              clearSliderValue > 10 ? 'opacity-0' : 'opacity-100',
                               isDark ? 'text-white/30' : 'text-gray-400'
                             )}
+                            style={{ paddingLeft: 'calc(36px + 8px)' }}
                           >
                             Slide to delete
                           </span>

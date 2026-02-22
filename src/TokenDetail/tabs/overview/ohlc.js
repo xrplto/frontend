@@ -277,7 +277,7 @@ const PriceChartAdvanced = memo(({ token, onCandleClick, trackAddress }) => {
           setCreatorEvents(res.data.map(mapCreatorEvent));
         }
       })
-      .catch(() => {});
+      .catch(err => { console.warn('[OHLC] Creator events fetch failed:', err.message); });
     return () => { mounted = false; };
   }, [token?.md5, mapCreatorEvent]);
 
@@ -290,13 +290,13 @@ const PriceChartAdvanced = memo(({ token, onCandleClick, trackAddress }) => {
     const connect = async () => {
       if (!mounted) return;
       try {
-        const res = await fetch(`/api/ws/session?type=creator&id=${token.md5}`);
-        const { wsUrl, apiKey } = await res.json();
-        if (!wsUrl || !mounted || !/^wss?:\/\//i.test(wsUrl)) return;
+        const { getSessionWsUrl } = await import('src/utils/wsToken');
+        const wsUrl = await getSessionWsUrl('creator', token.md5);
+        if (!wsUrl || !mounted) return;
 
         const ws = new WebSocket(wsUrl);
         creatorWsRef.current = ws;
-        ws.onopen = () => { retryDelay = 3000; if (apiKey) ws.send(JSON.stringify({ type: 'auth', apiKey })); };
+        ws.onopen = () => { retryDelay = 3000; };
         ws.onmessage = (e) => {
           if (!mounted) return;
           const msg = JSON.parse(e.data);
@@ -437,15 +437,13 @@ const PriceChartAdvanced = memo(({ token, onCandleClick, trackAddress }) => {
     const connectWs = async () => {
       if (!mounted) return;
       try {
-        const params = `interval=${getWsInterval(timeRange)}&vs_currency=${activeFiatCurrency}`;
-        const res = await fetch(`/api/ws/session?type=ohlc&id=${token.md5}&${params}`);
-        const { wsUrl, apiKey } = await res.json();
-        if (!mounted || !wsUrl || !/^wss?:\/\//i.test(wsUrl)) return;
+        const { getSessionWsUrl } = await import('src/utils/wsToken');
+        const wsUrl = await getSessionWsUrl('ohlc', token.md5, { interval: getWsInterval(timeRange), vs_currency: activeFiatCurrency });
+        if (!mounted || !wsUrl) return;
         const ws = new WebSocket(wsUrl);
         wsRef.current = ws;
 
         ws.onopen = () => {
-          if (apiKey) ws.send(JSON.stringify({ type: 'auth', apiKey }));
           pingInterval = setInterval(() => ws.readyState === 1 && ws.send('{"type":"ping"}'), 30000);
         };
 
@@ -550,7 +548,7 @@ const PriceChartAdvanced = memo(({ token, onCandleClick, trackAddress }) => {
         holderDataRef.current = processed;
         setHolderData(processed);
       })
-      .catch(() => {})
+      .catch(err => { console.warn('[OHLC] Holder data fetch failed:', err.message); })
       .finally(() => mounted && setLoading(false));
 
     return () => {
@@ -600,7 +598,7 @@ const PriceChartAdvanced = memo(({ token, onCandleClick, trackAddress }) => {
         liquidityDataRef.current = processed;
         setLiquidityData(processed);
       })
-      .catch(() => {})
+      .catch(err => { console.warn('[OHLC] Liquidity data fetch failed:', err.message); })
       .finally(() => mounted && setLoading(false));
 
     return () => {
@@ -1599,7 +1597,7 @@ const PriceChartAdvanced = memo(({ token, onCandleClick, trackAddress }) => {
               const ago = d < 60 ? d + 's' : d < 3600 ? Math.floor(d / 60) + 'm' : d < 86400 ? Math.floor(d / 3600) + 'h' : Math.floor(d / 86400) + 'd';
               const isXrp = ['SELL', 'BUY', 'WITHDRAW', 'DEPOSIT', 'SEND', 'RECEIVE'].includes(e.type);
               const amt = isXrp && e.xrpAmount > 0.001 ? f(e.xrpAmount) + ' XRP' : e.tokenAmount > 0 ? f(e.tokenAmount) + (e.currency ? ' ' + e.currency : '') : '';
-              const short = { SELL: 'Sell', BUY: 'Buy', SEND: 'Send', RECEIVE: 'Recv', 'TRANSFER OUT': 'Send', WITHDRAW: 'Out', DEPOSIT: 'In' }[e.type] || e.type;
+              const short = { SELL: 'Sell', BUY: 'Buy', SEND: 'Send', RECEIVE: 'Recv', 'TRANSFER OUT': 'Send', WITHDRAW: 'Withdraw', DEPOSIT: 'Deposit' }[e.type] || e.type;
               return (
                 <a
                   key={e.hash || i}

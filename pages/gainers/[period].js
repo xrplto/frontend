@@ -81,19 +81,7 @@ function GainersPage({ data, period, sortBy }) {
 
 export default GainersPage;
 
-export async function getStaticPaths() {
-  return {
-    paths: [
-      { params: { period: '5m' } },
-      { params: { period: '1h' } },
-      { params: { period: '24h' } },
-      { params: { period: '7d' } }
-    ],
-    fallback: false
-  };
-}
-
-export async function getStaticProps({ params }) {
+export async function getServerSideProps({ params, res }) {
   // Map URL periods to API sortBy parameters
   const periodMap = {
     '5m': 'pro5m',
@@ -106,6 +94,8 @@ export async function getStaticProps({ params }) {
   if (!sortBy) {
     return { notFound: true };
   }
+
+  res.setHeader('Cache-Control', 'public, s-maxage=30, stale-while-revalidate=120');
 
   const data = await getTokens(sortBy, 'desc');
 
@@ -127,7 +117,6 @@ export async function getStaticProps({ params }) {
     ogp.twitterCard = 'summary_large_image';
     ogp.twitterCreator = '@xrplto';
 
-    // ItemList structured data
     const itemListSchema = {
       '@context': 'https://schema.org',
       '@type': 'ItemList',
@@ -157,7 +146,6 @@ export async function getStaticProps({ params }) {
   }
 
   return {
-    props: ret,
-    revalidate: 5
+    props: ret
   };
 }

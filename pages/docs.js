@@ -4347,13 +4347,15 @@ syncWs.onopen = () => {
 
 export default ApiDocsPage;
 
-export async function getStaticProps() {
+export async function getServerSideProps({ res }) {
+  res.setHeader('Cache-Control', 'public, s-maxage=120, stale-while-revalidate=300');
+
   const BASE_URL = 'https://api.xrpl.to/v1';
   let apiDocs = null;
 
   try {
-    const res = await api.get(`${BASE_URL}/docs`);
-    apiDocs = res.data;
+    const docsRes = await api.get(`${BASE_URL}/docs`, { timeout: 8000 });
+    apiDocs = docsRes.data;
   } catch (e) {
     console.error('Failed to fetch API docs:', e.message);
   }
@@ -4371,7 +4373,6 @@ export async function getStaticProps() {
     props: {
       apiDocs,
       ogp
-    },
-    revalidate: 300
+    }
   };
 }

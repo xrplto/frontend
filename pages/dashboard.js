@@ -496,15 +496,19 @@ const DashboardPage = () => {
       return;
     }
 
-    if (sessionId) {
+    if (sessionId && walletAddress) {
       api
-        .get(`${BASE_URL}/keys/stripe/status/${sessionId}`)
+        .get(`${BASE_URL}/keys/stripe/status/${sessionId}?wallet=${walletAddress}`)
         .then((res) => {
           if (res.data.status === 'complete' || res.data.status === 'paid') {
             setStripeSuccess({
               credits: res.data.credits,
               tier: res.data.tier
             });
+            // Show auto-created API key if returned (first-time purchaser)
+            if (res.data.apiKey) {
+              setNewKey(res.data.apiKey);
+            }
             fetchCredits();
             fetchApiKeys();
           }
@@ -648,6 +652,10 @@ const DashboardPage = () => {
           message: verifyRes.data.message,
           newBalance: verifyRes.data.newBalance
         });
+        // Show auto-created API key if returned (first-time purchaser)
+        if (verifyRes.data.apiKey) {
+          setNewKey(verifyRes.data.apiKey);
+        }
         setXrpPayment(null);
         fetchCredits();
         fetchApiKeys();
@@ -682,6 +690,9 @@ const DashboardPage = () => {
           message: res.data.message,
           newBalance: res.data.newBalance
         });
+        if (res.data.apiKey) {
+          setNewKey(res.data.apiKey);
+        }
         setXrpPayment(null);
         setTxHash('');
         fetchCredits();

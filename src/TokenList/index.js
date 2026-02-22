@@ -32,7 +32,7 @@ const LazySearchToolbar = lazy(
 
 const Container = ({ className, children, ...p }) => (
   <div
-    className={cn('flex flex-col w-full p-0 m-0 overflow-visible [contain:layout_style]', className)}
+    className={cn('flex flex-col w-full p-0 m-0 overflow-visible [contain:layout_style_paint]', className)}
     {...p}
   >
     {children}
@@ -46,7 +46,7 @@ const TableWrapper = ({ className, children, darkMode, ...p }) => (
       darkMode ? 'border-white/10' : 'border-black/[0.06]',
       className
     )}
-    style={{ minHeight: '680px', ...p.style }}
+    style={{ minHeight: '680px', contain: 'content', ...p.style }}
     {...(({ style, ...rest }) => rest)(p)}
   >
     {children}
@@ -178,13 +178,9 @@ function TokenListComponent({
   const [isMobile, setIsMobile] = useState(false);
   const [hasMounted, setHasMounted] = useState(false);
 
-  useEffect(() => { setHasMounted(true); }, []);
-
   useEffect(() => {
-    const checkMobile = () => {
-      const mobile = window.innerWidth < 960;
-      setIsMobile(mobile);
-    };
+    setHasMounted(true);
+    const checkMobile = () => setIsMobile(window.innerWidth < 960);
     checkMobile();
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
@@ -691,6 +687,8 @@ function TokenListComponent({
       {customSettingsOpen && viewMode === 'custom' ? (
         <CustomColumnsPanel
           darkMode={darkMode}
+          role="dialog"
+          aria-label="Customize table columns"
           style={isMobile ? { padding: '16px', margin: '8px 0', borderRadius: '8px' } : {}}
         >
           <div className="flex items-center justify-between mb-4">
@@ -709,8 +707,9 @@ function TokenListComponent({
                   setTempCustomColumns(customColumns);
                   setCustomSettingsOpen(false);
                 }}
+                aria-label="Close custom columns settings"
                 className={cn(
-                  'bg-transparent border-none text-xl cursor-pointer p-1',
+                  'bg-transparent border-none text-xl cursor-pointer p-1 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] rounded',
                   darkMode ? 'text-white/50' : 'text-black/50'
                 )}
               >
@@ -738,7 +737,7 @@ function TokenListComponent({
                     setTempCustomColumns([e.target.value, tempCustomColumns[1] || 'pro24h'])
                   }
                   className={cn(
-                    'w-full p-3 rounded-lg border-[1.5px] text-[13px] cursor-pointer appearance-none bg-no-repeat bg-[position:right_12px_center]',
+                    'w-full p-3 rounded-lg border-[1.5px] text-[13px] cursor-pointer appearance-none bg-no-repeat bg-[position:right_12px_center] outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                     darkMode ? 'border-[#f59e0b] bg-[#1a1a1a] text-white' : 'border-black/10 bg-white text-black'
                   )}
                   style={{
@@ -777,7 +776,7 @@ function TokenListComponent({
                     setTempCustomColumns([tempCustomColumns[0] || 'price', e.target.value])
                   }
                   className={cn(
-                    'w-full p-3 rounded-lg border-[1.5px] text-[13px] cursor-pointer appearance-none bg-no-repeat bg-[position:right_12px_center]',
+                    'w-full p-3 rounded-lg border-[1.5px] text-[13px] cursor-pointer appearance-none bg-no-repeat bg-[position:right_12px_center] outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                     darkMode ? 'border-[#f59e0b] bg-[#1a1a1a] text-white' : 'border-black/10 bg-white text-black'
                   )}
                   style={{
@@ -808,7 +807,7 @@ function TokenListComponent({
                     setCustomSettingsOpen(false);
                   }}
                   className={cn(
-                    'flex-1 p-[10px] rounded-lg border-[1.5px] bg-transparent text-xs font-medium cursor-pointer',
+                    'flex-1 p-[10px] rounded-lg border-[1.5px] bg-transparent text-xs font-medium cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                     darkMode ? 'border-white/10 text-white/70' : 'border-black/10 text-black/70'
                   )}
                 >
@@ -820,7 +819,7 @@ function TokenListComponent({
                     localStorage.setItem('customTokenColumns', JSON.stringify(tempCustomColumns));
                     setCustomSettingsOpen(false);
                   }}
-                  className="flex-[2] p-[10px] rounded-lg border-none bg-[#2196f3] text-white text-xs font-medium cursor-pointer"
+                  className="flex-[2] p-[10px] rounded-lg border-none bg-[#2196f3] text-white text-xs font-medium cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]"
                 >
                   Apply
                 </button>
@@ -849,7 +848,7 @@ function TokenListComponent({
                           setTempCustomColumns(tempCustomColumns.filter((id) => id !== column.id));
                         }
                       }}
-                      className="w-4 h-4 cursor-pointer"
+                      className="w-4 h-4 cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] rounded"
                     />
                     <div className="flex-1">
                       <div
@@ -873,7 +872,7 @@ function TokenListComponent({
                     setCustomSettingsOpen(false);
                   }}
                   className={cn(
-                    'py-[10px] px-5 rounded-lg border-[1.5px] bg-transparent cursor-pointer text-[13px] font-medium',
+                    'py-[10px] px-5 rounded-lg border-[1.5px] bg-transparent cursor-pointer text-[13px] font-medium outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                     darkMode ? 'border-white/10 text-white' : 'border-black/10 text-black'
                   )}
                 >
@@ -885,7 +884,7 @@ function TokenListComponent({
                     localStorage.setItem('customTokenColumns', JSON.stringify(tempCustomColumns));
                     setCustomSettingsOpen(false);
                   }}
-                  className="py-[10px] px-5 rounded-lg border-none bg-[#2196f3] text-white cursor-pointer text-[13px] font-medium"
+                  className="py-[10px] px-5 rounded-lg border-none bg-[#2196f3] text-white cursor-pointer text-[13px] font-medium outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]"
                 >
                   Apply
                 </button>
@@ -894,7 +893,7 @@ function TokenListComponent({
                     setTempCustomColumns(customColumns);
                     setCustomSettingsOpen(false);
                   }}
-                  className="py-[10px] px-5 rounded-lg border-[1.5px] border-[rgba(239,68,68,0.2)] bg-[rgba(239,68,68,0.1)] text-[#ef4444] cursor-pointer text-[13px] font-medium"
+                  className="py-[10px] px-5 rounded-lg border-[1.5px] border-[rgba(239,68,68,0.2)] bg-[rgba(239,68,68,0.1)] text-[#ef4444] cursor-pointer text-[13px] font-medium outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]"
                 >
                   Cancel
                 </button>
@@ -905,7 +904,7 @@ function TokenListComponent({
       ) : isMobile ? (
         <TableWrapper darkMode={darkMode}>
           <MobileContainer>
-            <MobileHeader isDark={darkMode}>
+            <MobileHeader isDark={darkMode} role="row">
               <HeaderCell
                 flex={2}
                 align="left"

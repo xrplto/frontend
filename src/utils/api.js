@@ -114,7 +114,6 @@ export async function submitTransaction(wallet, tx) {
     headers: { 'Content-Type': 'application/json', ...headers },
     body: JSON.stringify({ tx_blob: signed.tx_blob })
   }).then((r) => r.json());
-
   if (!submitRes.success) throw new Error(submitRes.engine_result_message || submitRes.error || 'Submit failed');
   return { ...submitRes, hash: signed.hash };
 }

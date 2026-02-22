@@ -43,32 +43,28 @@ const Container = ({ className, children, isDark, ...p }) => (
     <style>{`
       .summary-container > * { position: relative; z-index: 1; }
       @media (max-width: 1024px) {
-        .summary-root { padding: 5px 8px; gap: 3px; margin-bottom: 5px; }
-        .summary-metric { height: 56px; padding: 5px 7px; gap: 2px; overflow: hidden; }
-        .summary-title { font-size: 0.55rem; }
-        .summary-value { font-size: 0.82rem; }
-        .summary-pct { font-size: 0.5rem; padding: 1px 3px; }
-        .summary-mcap-row { gap: 8px !important; }
-        .summary-mcap-row .summary-value { font-size: 0.78rem !important; }
-        .summary-mcap-row .summary-pct { font-size: 0.45rem; }
+        .summary-root { padding: 6px 9px; gap: 4px; margin-bottom: 5px; }
+        .summary-metric { height: 64px; padding: 8px 8px; overflow: hidden; }
+        .summary-title { font-size: 0.6rem; }
+        .summary-value { font-size: 0.9rem; }
+        .summary-pct { font-size: 0.55rem; padding: 1px 3px; }
+        .summary-mcap-row .summary-value { font-size: 0.85rem !important; }
+        .summary-mcap-row .summary-pct { font-size: 0.5rem; }
         .summary-vol-badge { display: none; }
         .summary-gauge { display: none !important; }
-        .summary-market-row { gap: 10px !important; }
       }
       @media (max-width: 820px) {
-        .summary-metric { height: 62px; padding: 6px 8px; gap: 3px; overflow: hidden; }
-        .summary-title { font-size: 0.58rem; }
-        .summary-value { font-size: 0.9rem; }
-        .summary-pct { font-size: 0.52rem; }
-        .summary-vol-badge { display: inline-flex; font-size: 0.5rem; }
+        .summary-metric { height: 70px; padding: 9px 9px; overflow: hidden; }
+        .summary-title { font-size: 0.64rem; }
+        .summary-value { font-size: 0.95rem; }
+        .summary-pct { font-size: 0.56rem; }
+        .summary-vol-badge { display: inline-flex; font-size: 0.55rem; }
         .summary-gauge { display: none !important; }
-        .summary-mcap-row { gap: 12px !important; }
-        .summary-mcap-row .summary-value { font-size: 0.85rem !important; }
-        .summary-market-row { gap: 16px !important; }
+        .summary-mcap-row .summary-value { font-size: 0.9rem !important; }
       }
       @media (min-width: 601px) and (max-width: 820px) {
-        .summary-market-row span.font-semibold { font-size: 0.9rem !important; }
-        .summary-market-row div > div > span { font-size: 0.48rem !important; }
+        .summary-market-row span.font-semibold { font-size: 0.95rem !important; }
+        .summary-market-row div > div > span { font-size: 0.52rem !important; }
       }
     `}</style>
   </div>
@@ -96,42 +92,42 @@ const Grid = ({ className, children, ...p }) => (
     <style>{`
       .summary-grid {
         display: grid;
-        grid-template-columns: 1.1fr 1fr 0.8fr 0.9fr 1fr 1.6fr;
+        grid-template-columns: 1.1fr 1fr 0.9fr 1fr 1.6fr;
         gap: 8px;
       }
-      @media (max-width: 1400px) { .summary-grid { grid-template-columns: 1.1fr 1fr 0.8fr 0.9fr 1fr 1.6fr; gap: 6px; } }
+      @media (max-width: 1400px) { .summary-grid { grid-template-columns: 1.1fr 1fr 0.9fr 1fr 1.6fr; gap: 6px; } }
       @media (max-width: 1200px) { .summary-grid { grid-template-columns: repeat(3, 1fr); } }
-      @media (max-width: 1024px) { .summary-grid { grid-template-columns: 1fr 1fr 0.7fr 0.8fr 0.9fr 1.4fr; gap: 4px; } }
+      @media (max-width: 1024px) { .summary-grid { grid-template-columns: 1fr 1fr 0.8fr 0.9fr 1.4fr; gap: 4px; } }
       @media (max-width: 820px) { .summary-grid { grid-template-columns: repeat(3, 1fr); gap: 4px; } }
       @media (max-width: 700px) { .summary-grid { grid-template-columns: repeat(2, 1fr); gap: 3px; } }
       @media (max-width: 600px) {
         .summary-grid {
           display: grid;
-          grid-template-columns: repeat(5, 1fr);
+          grid-template-columns: repeat(4, 1fr);
           gap: 3px;
           align-items: stretch;
         }
         .summary-metric {
           height: auto !important;
           min-height: 0 !important;
-          padding: 6px 6px !important;
-          gap: 2px !important;
-          justify-content: center !important;
+          padding: 8px 7px !important;
+          gap: 3px !important;
+          justify-content: space-between !important;
         }
-        .summary-title { font-size: 0.5rem !important; margin-bottom: 0 !important; }
-        .summary-value { font-size: 0.7rem !important; }
-        .summary-pct { font-size: 0.48rem !important; padding: 0 2px !important; }
+        .summary-title { font-size: 0.55rem !important; margin-bottom: 0 !important; }
+        .summary-value { font-size: 0.78rem !important; }
+        .summary-pct { font-size: 0.52rem !important; padding: 0 2px !important; }
         .summary-vol-badge { display: none !important; }
         .summary-gauge { display: none !important; }
-        .summary-mcap-row { flex-direction: column !important; gap: 0 !important; }
-        .summary-mcap-row > div { flex-direction: row !important; align-items: baseline !important; gap: 2px !important; }
-        .summary-market-row { gap: 4px !important; flex-direction: row !important; align-items: center !important; }
+        .summary-mcap-row { flex-direction: column !important; gap: 2px !important; }
+        .summary-mcap-row > div { flex-direction: row !important; align-items: baseline !important; gap: 3px !important; }
+        .summary-market-row { flex-direction: row !important; align-items: center !important; justify-content: space-evenly !important; }
         .summary-market-row > div { gap: 0 !important; }
-        .summary-market-row span.font-semibold { font-size: 0.7rem !important; line-height: 1 !important; }
-        .summary-market-row div > div > span { font-size: 0.42rem !important; line-height: 1 !important; }
+        .summary-market-row span.font-semibold { font-size: 0.78rem !important; line-height: 1 !important; }
+        .summary-market-row div > div > span { font-size: 0.46rem !important; line-height: 1 !important; }
       }
     `}</style>
-    <div className={cn('summary-grid relative z-[1]', className)} {...p}>
+    <div className={cn('summary-grid relative z-[1]', className)} role="status" aria-live="polite" {...p}>
       {children}
     </div>
   </>
@@ -140,10 +136,10 @@ const Grid = ({ className, children, ...p }) => (
 const MetricBox = ({ className, children, isDark, ...p }) => (
   <div
     className={cn(
-      'summary-metric flex flex-col justify-center rounded-xl transition-[background-color,border-color,opacity,transform] duration-200',
+      'summary-metric flex flex-col justify-between rounded-xl transition-[background-color,border-color,opacity,transform] duration-200',
       'max-[600px]:rounded-[10px]',
-      'py-[6px] px-[10px] h-[68px] gap-[4px] backdrop-blur-[4px] border-[1.5px]',
-      'max-[600px]:h-auto max-[600px]:py-[6px] max-[600px]:px-[6px] max-[600px]:gap-[2px]',
+      'py-[10px] px-[12px] h-[78px] gap-0 backdrop-blur-[4px] border-[1.5px]',
+      'max-[600px]:h-auto max-[600px]:py-[8px] max-[600px]:px-[7px] max-[600px]:gap-0',
       isDark ? 'bg-white/[0.02] border-white/[0.08]' : 'bg-black/[0.01] border-black/[0.06]',
       className
     )}
@@ -167,7 +163,7 @@ const MetricBox = ({ className, children, isDark, ...p }) => (
 const MetricTitle = ({ className, children, isDark, ...p }) => (
   <span
     className={cn(
-      'summary-title text-[0.68rem] max-[600px]:text-[0.52rem] font-normal tracking-[0.02em]',
+      'summary-title text-[0.75rem] max-[600px]:text-[0.56rem] font-normal tracking-[0.02em]',
       isDark ? 'text-white/50' : 'text-[rgba(33,43,54,0.5)]',
       className
     )}
@@ -180,7 +176,7 @@ const MetricTitle = ({ className, children, isDark, ...p }) => (
 const MetricValue = ({ className, children, isDark, ...p }) => (
   <span
     className={cn(
-      'summary-value text-lg max-[600px]:text-[0.78rem] font-semibold whitespace-nowrap leading-[1] tracking-[-0.02em]',
+      'summary-value text-xl max-[600px]:text-[0.85rem] font-semibold whitespace-nowrap leading-[1] tracking-[-0.02em]',
       isDark ? 'text-white' : 'text-[#212B36]',
       className
     )}
@@ -196,7 +192,7 @@ const MetricValue = ({ className, children, isDark, ...p }) => (
 const PercentageChange = ({ className, children, isPositive, ...p }) => (
   <span
     className={cn(
-      'summary-pct text-[0.68rem] max-[600px]:text-[0.5rem] inline-flex items-center gap-0.5 font-medium rounded',
+      'summary-pct text-[0.75rem] max-[600px]:text-[0.54rem] inline-flex items-center gap-0.5 font-medium rounded',
       'tracking-[-0.01em] py-px px-1',
       isPositive ? 'text-[#10b981] bg-[rgba(16,185,129,0.1)]' : 'text-[#ef4444] bg-[rgba(239,68,68,0.1)]',
       className
@@ -213,7 +209,7 @@ const PercentageChange = ({ className, children, isPositive, ...p }) => (
 const VolumePercentage = ({ className, children, isDark, ...p }) => (
   <span
     className={cn(
-      'text-[0.58rem] max-[600px]:text-[0.5rem] font-normal',
+      'text-[0.65rem] max-[600px]:text-[0.54rem] font-normal',
       isDark ? 'text-white/[0.45]' : 'text-[rgba(33,43,54,0.45)]',
       className
     )}
@@ -226,7 +222,7 @@ const VolumePercentage = ({ className, children, isDark, ...p }) => (
 const ContentTypography = ({ className, children, isDark, ...p }) => (
   <span
     className={cn(
-      'text-[0.7rem] max-[600px]:text-[0.48rem] max-[480px]:text-[0.45rem] font-normal tracking-[0.01em]',
+      'text-[0.78rem] max-[600px]:text-[0.52rem] max-[480px]:text-[0.48rem] font-normal tracking-[0.01em]',
       isDark ? 'text-white/70' : 'text-[rgba(33,43,54,0.7)]',
       className
     )}
@@ -308,22 +304,22 @@ const ChartMetricBox = ({ className, children, isDark, ...p }) => (
       .chart-metric-box {
         grid-column: span 1;
         overflow: visible;
-        height: 64px;
-        padding: 6px 10px;
-        justify-content: flex-start;
+        height: 78px;
+        padding: 8px 12px;
+        justify-content: space-between;
         gap: 0;
       }
-      @media (max-width: 1400px) { .chart-metric-box { height: 60px; } }
+      @media (max-width: 1400px) { .chart-metric-box { height: 74px; } }
       @media (max-width: 1200px) { .chart-metric-box { grid-column: span 3; } }
-      @media (max-width: 1024px) { .chart-metric-box { grid-column: span 1; height: 56px; padding: 5px 7px; } }
-      @media (max-width: 820px) { .chart-metric-box { grid-column: span 3; height: 60px; } }
+      @media (max-width: 1024px) { .chart-metric-box { grid-column: span 1; height: 64px; padding: 8px 8px; } }
+      @media (max-width: 820px) { .chart-metric-box { grid-column: span 3; height: 70px; padding: 9px 9px; } }
       @media (max-width: 700px) { .chart-metric-box { grid-column: span 2; } }
       @media (max-width: 600px) { .chart-metric-box { display: none; } }
     `}</style>
     <MetricBox
       className={cn('chart-metric-box', className)}
       isDark={isDark}
-      style={{ justifyContent: 'flex-start' }}
+      style={{ justifyContent: 'space-between' }}
       {...p}
     >
       {children}
@@ -343,19 +339,6 @@ const MobileChartBox = ({ className, children, isDark, ...p }) => (
     {children}
   </div>
 );
-
-function Rate(num, exch) {
-  if (num === 0 || exch === 0) return '0';
-  const price = num / exch;
-
-  if (price < 0.01) {
-    return price.toFixed(8).replace(/0+$/, '').replace(/\.$/, '');
-  }
-  if (price < 100) {
-    return price.toFixed(4).replace(/0+$/, '').replace(/\.$/, '');
-  }
-  return price.toFixed(2).replace(/0+$/, '').replace(/\.$/, '');
-}
 
 const formatNumberWithDecimals = (num) => {
   if (num >= 1e9) return `${(num / 1e9).toFixed(1)}B`;
@@ -921,17 +904,6 @@ export default function Summary() {
     return chartData.some((d) => (d.platforms?.[platform] || 0) > 0);
   });
 
-  const xrpPrice =
-    activeFiatCurrency === 'XRP'
-      ? Rate(1, metrics.USD || 1)
-      : Rate(
-          1,
-          metrics[activeFiatCurrency] || (activeFiatCurrency === 'CNH' ? metrics.CNY : null) || 1
-        );
-
-  const xrpPriceSymbol =
-    activeFiatCurrency === 'XRP' ? currencySymbols.USD : currencySymbols[activeFiatCurrency];
-
   return (
     <Container isDark={darkMode}>
         {/* Main Metrics Section */}
@@ -950,7 +922,17 @@ export default function Summary() {
           <>
             <Grid>
               <MetricBox isDark={darkMode}>
-                <MetricTitle isDark={darkMode}>{isMobile ? 'MCap' : 'MCap / TVL'}</MetricTitle>
+                <div className="flex items-center justify-between w-full">
+                  <MetricTitle isDark={darkMode}>{isMobile ? 'MCap' : 'MCap / TVL'}</MetricTitle>
+                  {metrics.USD > 0 && (
+                    <span className={cn('text-[0.65rem] max-[600px]:text-[0.5rem] font-medium tabular-nums', darkMode ? 'text-white/60' : 'text-black/60')}>
+                      XRP ${new Decimal(1).div(activeFiatCurrency === 'XRP' ? metrics.USD : fiatRate).toFixed(2)}
+                      <span className={cn('ml-0.5 text-[0.55rem] max-[600px]:text-[0.42rem]', (metrics.H24?.xrpPro24h || 0) >= 0 ? 'text-[#10b981]' : 'text-[#ef4444]')}>
+                        {(metrics.H24?.xrpPro24h || 0) >= 0 ? '↑' : '↓'}{Math.abs(metrics.H24?.xrpPro24h || 0).toFixed(1)}%
+                      </span>
+                    </span>
+                  )}
+                </div>
                 {isMobile ? (
                   <>
                     <MetricValue isDark={darkMode}>
@@ -971,9 +953,9 @@ export default function Summary() {
                     </span>
                   </>
                 ) : (
-                  <div className="summary-mcap-row flex w-full items-center gap-5">
+                  <div className="summary-mcap-row flex w-full items-center justify-between">
                     <div className="flex flex-col gap-[3px]">
-                      <MetricValue isDark={darkMode} style={{ fontSize: '1.15rem' }}>
+                      <MetricValue isDark={darkMode} style={{ fontSize: '1.25rem' }}>
                         {currencySymbols[activeFiatCurrency]}
                         {formatNumberWithDecimals(
                           new Decimal(metrics.global?.gMarketcap || metrics.market_cap_usd || 0)
@@ -983,14 +965,14 @@ export default function Summary() {
                       </MetricValue>
                       <PercentageChange
                         isPositive={(metrics.global?.gMarketcapPro || 0) >= 0}
-                        style={{ fontSize: '0.58rem' }}
+                        style={{ fontSize: '0.65rem' }}
                       >
                         {(metrics.global?.gMarketcapPro || 0) >= 0 ? '↑' : '↓'}
                         {Math.abs(metrics.global?.gMarketcapPro || 0).toFixed(1)}%
                       </PercentageChange>
                     </div>
                     <div className="flex flex-col gap-[3px]">
-                      <MetricValue isDark={darkMode} style={{ fontSize: '1.15rem', opacity: 0.6 }}>
+                      <MetricValue isDark={darkMode} style={{ fontSize: '1.25rem', opacity: 0.6 }}>
                         {currencySymbols[activeFiatCurrency]}
                         {formatNumberWithDecimals(
                           new Decimal(
@@ -1010,7 +992,7 @@ export default function Summary() {
                             metrics.H24?.totalTVLPro ||
                             0) >= 0
                         }
-                        style={{ fontSize: '0.58rem' }}
+                        style={{ fontSize: '0.65rem' }}
                       >
                         {(metrics.global?.gTVLPro ||
                           metrics.global?.totalTVLPro ||
@@ -1048,17 +1030,17 @@ export default function Summary() {
                   const memePercent =
                     ((metrics.global?.gMemeVolume || 0) / (metrics.global?.gDexVolume || 1)) * 100;
                   return (
-                    <div className="flex items-center gap-1 flex-wrap">
+                    <div className="flex items-center gap-1.5 flex-wrap">
                       <PercentageChange isPositive={(metrics.global?.gDexVolumePro || 0) >= 0}>
                         {(metrics.global?.gDexVolumePro || 0) >= 0 ? '↑' : '↓'}
                         {Math.abs(metrics.global?.gDexVolumePro || 0).toFixed(1)}%
                       </PercentageChange>
                       {!isMobile && (
                         <>
-                          <span className="summary-vol-badge text-[0.58rem] font-medium py-px px-1 rounded bg-[rgba(16,185,129,0.1)] text-[#10b981]">
+                          <span className="summary-vol-badge text-[0.65rem] font-medium py-px px-1 rounded bg-[rgba(16,185,129,0.1)] text-[#10b981]">
                             {stablePercent.toFixed(0)}% Stable
                           </span>
-                          <span className="summary-vol-badge text-[0.58rem] font-medium py-px px-1 rounded bg-[rgba(245,158,11,0.1)] text-[#f59e0b]">
+                          <span className="summary-vol-badge text-[0.65rem] font-medium py-px px-1 rounded bg-[rgba(245,158,11,0.1)] text-[#f59e0b]">
                             {memePercent.toFixed(0)}% Meme
                           </span>
                         </>
@@ -1066,20 +1048,6 @@ export default function Summary() {
                     </div>
                   );
                 })()}
-              </MetricBox>
-
-              <MetricBox isDark={darkMode}>
-                <MetricTitle isDark={darkMode}>{isMobile ? 'XRP' : 'XRP Price'}</MetricTitle>
-                <MetricValue isDark={darkMode}>
-                  {xrpPriceSymbol}
-                  {xrpPrice}
-                </MetricValue>
-                <PercentageChange
-                  isPositive={(metrics.H24?.xrpPro24h || metrics.XRPchange24h || 0) >= 0}
-                >
-                  {(metrics.H24?.xrpPro24h || metrics.XRPchange24h || 0) >= 0 ? '↑' : '↓'}
-                  {Math.abs(metrics.H24?.xrpPro24h || metrics.XRPchange24h || 0).toFixed(2)}%
-                </PercentageChange>
               </MetricBox>
 
               <MetricBox isDark={darkMode}>
@@ -1093,11 +1061,11 @@ export default function Summary() {
                   const total = buyVol + sellVol;
                   const buyPercent = total > 0 ? (buyVol / total) * 100 : 50;
                   return !isMobile ? (
-                    <div className="flex items-center gap-1">
-                      <span className="font-medium rounded bg-[rgba(16,185,129,0.1)] text-[#10b981] text-[0.58rem] py-px px-1">
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-medium rounded bg-[rgba(16,185,129,0.1)] text-[#10b981] text-[0.65rem] py-px px-1.5">
                         {buyPercent.toFixed(0)}% Buy
                       </span>
-                      <span className="font-medium rounded bg-[rgba(239,68,68,0.1)] text-[#ef4444] text-[0.58rem] py-px px-1">
+                      <span className="font-medium rounded bg-[rgba(239,68,68,0.1)] text-[#ef4444] text-[0.65rem] py-px px-1.5">
                         {(100 - buyPercent).toFixed(0)}% Sell
                       </span>
                     </div>
@@ -1141,7 +1109,7 @@ export default function Summary() {
 
                   return (
                     <div
-                      className="summary-market-row flex items-center w-full justify-start gap-5"
+                      className="summary-market-row flex items-center w-full justify-evenly"
                     >
                       {/* Sentiment gauge */}
                       <div className="flex flex-col items-center gap-[3px]">
@@ -1163,7 +1131,7 @@ export default function Summary() {
                           <span className="font-semibold leading-[1] text-[1.15rem]" style={{ color: sentColor }}>
                             {sentiment.toFixed(0)}
                           </span>
-                          <span className={cn('text-[0.52rem]', darkMode ? 'text-white/60' : 'text-black/60')}>
+                          <span className={cn('text-[0.58rem]', darkMode ? 'text-white/60' : 'text-black/60')}>
                             Sentiment
                           </span>
                         </div>
@@ -1189,7 +1157,7 @@ export default function Summary() {
                           <span className="font-semibold leading-[1] text-[1.15rem]" style={{ color: rsiColor }}>
                             {rsi.toFixed(0)}
                           </span>
-                          <span className={cn('text-[0.52rem]', darkMode ? 'text-white/60' : 'text-black/60')}>
+                          <span className={cn('text-[0.58rem]', darkMode ? 'text-white/60' : 'text-black/60')}>
                             RSI
                           </span>
                         </div>
@@ -1216,7 +1184,7 @@ export default function Summary() {
                               {today}
                             </span>
                             <span
-                              className={cn('text-[0.52rem]', darkMode ? 'text-white/60' : 'text-black/60')}
+                              className={cn('text-[0.58rem]', darkMode ? 'text-white/60' : 'text-black/60')}
                             >
                               today
                             </span>
@@ -1232,7 +1200,7 @@ export default function Summary() {
                             href={`/token/${latestToken.md5}`}
                             prefetch={false}
                             className={cn(
-                              'text-[0.58rem] no-underline flex items-center gap-[6px] pl-2 border-l',
+                              'text-[0.65rem] no-underline flex items-center gap-[6px] pl-2 border-l outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] rounded',
                               darkMode ? 'text-white/50 border-white/10' : 'text-black/50 border-black/10'
                             )}
                           >
@@ -1289,7 +1257,7 @@ export default function Summary() {
                           href={`/token/${latestToken.md5}`}
                           prefetch={false}
                           className={cn(
-                            'text-[0.48rem] no-underline flex items-center gap-1 pl-[6px] border-l',
+                            'text-[0.48rem] no-underline flex items-center gap-1 pl-[6px] border-l outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] rounded',
                             darkMode ? 'text-white/50 border-white/10' : 'text-black/50 border-black/10'
                           )}
                         >

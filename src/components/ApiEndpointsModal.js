@@ -622,6 +622,9 @@ const ApiEndpointsModal = memo(({ open, onClose, token = null }) => {
     <div className="fixed inset-0 z-[1400] flex items-center justify-center p-4 max-sm:h-dvh" onClick={onClose}>
       <div className={cn('fixed inset-0 z-[1400]', isDark ? 'bg-black/80' : 'bg-black/40')} />
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="API endpoints"
         onClick={(e) => e.stopPropagation()}
         className={cn(
           'relative z-[1401] rounded-2xl border-[1.5px] w-full max-w-[480px] max-h-[85dvh] overflow-hidden flex flex-col',
@@ -658,7 +661,8 @@ const ApiEndpointsModal = memo(({ open, onClose, token = null }) => {
               </span>
               <button
                 onClick={onClose}
-                className={cn('p-1.5 rounded-lg transition-colors', isDark ? 'hover:bg-white/[0.06] text-white/40 hover:text-white' : 'hover:bg-black/[0.04] text-black/30 hover:text-black')}
+                aria-label="Close"
+                className={cn('p-1.5 rounded-lg transition-colors outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]', isDark ? 'hover:bg-white/[0.06] text-white/40 hover:text-white' : 'hover:bg-black/[0.04] text-black/30 hover:text-black')}
               >
                 <X size={16} />
               </button>
@@ -666,11 +670,13 @@ const ApiEndpointsModal = memo(({ open, onClose, token = null }) => {
           </div>
 
           {/* Tab Toggle */}
-          <div className={cn('flex p-1 rounded-[10px]', isDark ? 'bg-white/[0.025] border border-white/[0.06]' : 'bg-black/[0.02] border border-black/[0.06]')}>
+          <div role="tablist" aria-label="Endpoint views" className={cn('flex p-1 rounded-[10px]', isDark ? 'bg-white/[0.025] border border-white/[0.06]' : 'bg-black/[0.02] border border-black/[0.06]')}>
             <button
+              role="tab"
+              aria-selected={view === 'detected'}
               onClick={() => setView('detected')}
               className={cn(
-                'flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-[11px] font-semibold transition-all duration-200',
+                'flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-[11px] font-semibold transition-all duration-200 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                 view === 'detected'
                   ? 'bg-blue-500 text-white'
                   : isDark
@@ -688,9 +694,11 @@ const ApiEndpointsModal = memo(({ open, onClose, token = null }) => {
               </span>
             </button>
             <button
+              role="tab"
+              aria-selected={view === 'all'}
               onClick={() => setView('all')}
               className={cn(
-                'flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-[11px] font-semibold transition-all duration-200',
+                'flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-[11px] font-semibold transition-all duration-200 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                 view === 'all'
                   ? 'bg-blue-500 text-white'
                   : isDark
@@ -723,7 +731,8 @@ const ApiEndpointsModal = memo(({ open, onClose, token = null }) => {
             {search && (
               <button
                 onClick={() => setSearch('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 rounded-full hover:bg-white/10"
+                aria-label="Clear search"
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 rounded-full hover:bg-white/10 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]"
               >
                 <X size={12} className={isDark ? 'text-white/30' : 'text-gray-400'} />
               </button>
@@ -828,8 +837,9 @@ const ApiEndpointsModal = memo(({ open, onClose, token = null }) => {
                           {canTry(ep) && (
                             <button
                               onClick={() => tryAndCopy(ep)}
+                              aria-label="Fetch example JSON"
                               className={cn(
-                                'p-1.5 rounded-lg transition-all duration-200',
+                                'p-1.5 rounded-lg transition-all duration-200 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                                 copiedResponse === ep.path
                                   ? 'text-emerald-500 bg-emerald-500/10'
                                   : isDark
@@ -849,8 +859,9 @@ const ApiEndpointsModal = memo(({ open, onClose, token = null }) => {
                           )}
                           <button
                             onClick={() => copyCurl(ep)}
+                            aria-label="Copy cURL command"
                             className={cn(
-                              'p-1.5 rounded-lg transition-all duration-200',
+                              'p-1.5 rounded-lg transition-all duration-200 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                               copiedCurl === ep.path
                                 ? 'text-blue-500 bg-blue-500/10'
                                 : isDark
@@ -863,8 +874,9 @@ const ApiEndpointsModal = memo(({ open, onClose, token = null }) => {
                           </button>
                           <button
                             onClick={() => handleCopy(ep.path)}
+                            aria-label="Copy API URL"
                             className={cn(
-                              'p-1.5 rounded-lg transition-all duration-200',
+                              'p-1.5 rounded-lg transition-all duration-200 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                               copiedPath === ep.path
                                 ? 'text-emerald-500 bg-emerald-500/10'
                                 : isDark
@@ -893,8 +905,9 @@ const ApiEndpointsModal = memo(({ open, onClose, token = null }) => {
                           </span>
                           <button
                             onClick={() => setResponsePreview(null)}
+                            aria-label="Close preview"
                             className={cn(
-                              'p-0.5 rounded',
+                              'p-0.5 rounded outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                               isDark ? 'hover:bg-white/[0.06]' : 'hover:bg-black/[0.04]'
                             )}
                           >
@@ -1006,8 +1019,9 @@ const ApiEndpointsModal = memo(({ open, onClose, token = null }) => {
                                   {canTry(ep) && (
                                     <button
                                       onClick={() => tryAndCopy(ep)}
+                                      aria-label="Fetch example JSON"
                                       className={cn(
-                                        'p-1 opacity-0 group-hover:opacity-100 transition-opacity',
+                                        'p-1 opacity-0 group-hover:opacity-100 transition-opacity outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] focus-visible:opacity-100',
                                         copiedResponse === ep.path
                                           ? 'text-emerald-500 opacity-100'
                                           : isDark
@@ -1027,8 +1041,9 @@ const ApiEndpointsModal = memo(({ open, onClose, token = null }) => {
                                   )}
                                   <button
                                     onClick={() => handleCopy(ep.path)}
+                                    aria-label="Copy API URL"
                                     className={cn(
-                                      'p-1 opacity-0 group-hover:opacity-100 transition-opacity',
+                                      'p-1 opacity-0 group-hover:opacity-100 transition-opacity outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] focus-visible:opacity-100',
                                       copiedPath === ep.path
                                         ? 'text-emerald-500 opacity-100'
                                         : isDark
@@ -1063,8 +1078,9 @@ const ApiEndpointsModal = memo(({ open, onClose, token = null }) => {
                                     </span>
                                     <button
                                       onClick={() => setResponsePreview(null)}
+                                      aria-label="Close preview"
                                       className={cn(
-                                        'p-0.5 rounded',
+                                        'p-0.5 rounded outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                                         isDark ? 'hover:bg-white/[0.06]' : 'hover:bg-black/[0.04]'
                                       )}
                                     >
@@ -1148,7 +1164,7 @@ export const ApiButton = memo(({ className = '', token = null }) => {
       <StyledApiButton
         onClick={() => setOpen(true)}
         className={cn(
-          'group border-[1.5px] gap-1 rounded-md px-2 h-6 sm:h-7 text-[9px]',
+          'group border-[1.5px] gap-1 rounded-lg px-2 h-8 max-sm:h-[26px] text-[9px]',
           isDark
             ? 'border-white/[0.08] bg-white/[0.025] hover:bg-white/[0.05] text-white/50 hover:text-white/70'
             : 'border-black/[0.06] bg-black/[0.02] hover:bg-black/[0.04] text-black/40 hover:text-black/60',

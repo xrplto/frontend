@@ -79,22 +79,17 @@ function SwapPage({ data }) {
 
 export default SwapPage;
 
-export async function getStaticPaths() {
-  return {
-    paths: [],
-    fallback: 'blocking'
-  };
-}
+export async function getServerSideProps({ res }) {
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
 
-export async function getStaticProps({ params }) {
-  const startTime = performance.now();
   const BASE_URL = 'https://api.xrpl.to/v1';
 
   let metrics = null;
 
   try {
     const metricsResponse = await api.get(
-      `${BASE_URL}/tokens?start=0&limit=50&sortBy=vol24hxrp&sortType=desc&filter=`
+      `${BASE_URL}/tokens?start=0&limit=50&sortBy=vol24hxrp&sortType=desc&filter=`,
+      { timeout: 8000 }
     );
 
     if (metricsResponse.status === 200) {
@@ -106,8 +101,6 @@ export async function getStaticProps({ params }) {
       }
     }
   } catch (error) {}
-
-  const duration = Math.round(performance.now() - startTime);
 
   const data = metrics || {
     tokens: [],
@@ -134,8 +127,7 @@ export async function getStaticProps({ params }) {
       gStableVolumePro: 0,
       gXRPdominance: 0,
       gXRPdominancePro: 0
-    },
-    duration
+    }
   };
 
   const ogp = {
@@ -148,7 +140,6 @@ export async function getStaticProps({ params }) {
   };
 
   return {
-    props: { data, ogp },
-    revalidate: 300
+    props: { data, ogp }
   };
 }

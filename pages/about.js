@@ -3,7 +3,7 @@ import api from 'src/utils/api';
 import { ThemeContext } from 'src/context/AppContext';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
-import { LineChart, ArrowLeftRight, Palette, TrendingUp, Code, Zap } from 'lucide-react';
+import { LineChart, ArrowLeftRight, Palette, TrendingUp, Code, Zap, Twitter, Send } from 'lucide-react';
 import { cn } from 'src/utils/cn';
 // Constants
 const BASE_URL = 'https://api.xrpl.to/v1';
@@ -63,6 +63,46 @@ const TimelineDate = ({ className, children, ...p }) => <div className={cn('text
 
 const TimelineText = ({ isDark, className, children, ...p }) => <div className={cn('text-[11px]', isDark ? 'text-white/60' : 'text-black/60', className)} {...p}>{children}</div>;
 
+const SocialSection = ({ className, children, ...p }) => <div className={cn('my-8', className)} {...p}>{children}</div>;
+
+const SocialGrid = ({ className, children, ...p }) => <div className={cn('grid grid-cols-4 gap-3 max-w-[600px] mx-auto max-[500px]:grid-cols-2', className)} {...p}>{children}</div>;
+
+const SocialCard = ({ isDark, className, children, ...p }) => (
+  <a
+    className={cn(
+      'flex flex-col items-center gap-2 py-5 px-4 bg-transparent rounded-lg border no-underline transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] focus-visible:ring-offset-1',
+      isDark ? 'border-white/[0.08] hover:border-white/[0.15] text-white/70 hover:text-[#3b82f6]' : 'border-black/[0.08] hover:border-black/[0.15] text-black/70 hover:text-[#3b82f6]',
+      className
+    )}
+    target="_blank"
+    rel="noreferrer noopener"
+    {...p}
+  >
+    {children}
+  </a>
+);
+
+const SocialLabel = ({ isDark, className, children, ...p }) => <span className={cn('text-xs font-medium', className)} {...p}>{children}</span>;
+
+const RedditIcon = ({ size = 20 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 0 1 .14-.197.35.35 0 0 1 .238-.042l2.906.617a1.214 1.214 0 0 1 1.108-.701zM9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.248-.561 1.248-1.249 0-.688-.561-1.249-1.249-1.249zm5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249zm-5.466 3.99a.327.327 0 0 0-.231.094.33.33 0 0 0 0 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 0 0 .029-.463.33.33 0 0 0-.464 0c-.547.533-1.684.73-2.512.73-.828 0-1.979-.196-2.512-.73a.326.326 0 0 0-.232-.095z" />
+  </svg>
+);
+
+const DiscordIcon = ({ size = 20 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z" />
+  </svg>
+);
+
+const SOCIALS = [
+  { href: 'https://twitter.com/xrplto', label: 'Twitter', Icon: Twitter },
+  { href: 'https://t.me/xrplto/', label: 'Telegram', Icon: Send },
+  { href: 'https://www.reddit.com/r/xrplto/', label: 'Reddit', Icon: RedditIcon },
+  { href: 'https://xrpl.to/discord/', label: 'Discord', Icon: DiscordIcon }
+];
+
 const FaqSection = ({ isDark, className, children, ...p }) => <div className={cn('mt-8 pt-8 border-t', isDark ? 'border-white/[0.08]' : 'border-black/[0.08]', className)} {...p}>{children}</div>;
 
 const FaqHeader = ({ className, children, ...p }) => <div className={cn('text-center mb-5', className)} {...p}>{children}</div>;
@@ -76,7 +116,7 @@ const FaqList = ({ className, children, ...p }) => <div className={cn('flex flex
 const AccordionItem = ({ isDark, className, children, ...p }) => <div className={cn('bg-transparent rounded-lg border overflow-hidden', isDark ? 'border-white/[0.08]' : 'border-black/[0.08]', className)} {...p}>{children}</div>;
 
 const AccordionHeader = ({ isDark, className, children, ...p }) => (
-  <button className={cn('w-full py-[14px] px-4 bg-transparent border-none text-left cursor-pointer flex justify-between items-center', isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-black/[0.02]', className)} {...p}>{children}</button>
+  <button className={cn('w-full py-[14px] px-4 bg-transparent border-none text-left cursor-pointer flex justify-between items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] focus-visible:ring-offset-1', isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-black/[0.02]', className)} {...p}>{children}</button>
 );
 
 const QuestionText = ({ isDark, className, children, ...p }) => <span className={cn('text-xs font-medium pr-3 flex-1', isDark ? 'text-white/90' : 'text-[#212B36]', className)} {...p}>{children}</span>;
@@ -85,38 +125,42 @@ const ExpandIcon = ({ expanded, isDark, className, ...p }) => (
   <svg className={cn('text-[#3b82f6] shrink-0 transition-transform duration-200', expanded && 'rotate-180', className)} {...p} />
 );
 
-const AccordionContent = ({ expanded, className, children, ...p }) => <div className={cn('overflow-hidden transition-[max-height] duration-200', className)} style={{ maxHeight: expanded ? '500px' : '0' }} {...p}>{children}</div>;
+const AccordionContent = ({ expanded, id, className, children, ...p }) => <div role="region" id={id} className={cn('overflow-hidden transition-[max-height] duration-200', className)} style={{ maxHeight: expanded ? '500px' : '0' }} {...p}>{children}</div>;
 
 const AnswerText = ({ isDark, className, children, ...p }) => <p className={cn('px-4 pb-[14px] m-0 leading-[1.6] text-[11px]', isDark ? 'text-white/60' : 'text-black/60', className)} {...p}>{children}</p>;
 
 // Memoized FAQ Item Component
-const FAQItem = memo(({ faq, index, isExpanded, onToggle, isDark }) => (
-  <AccordionItem isDark={isDark}>
-    <AccordionHeader onClick={onToggle} aria-expanded={isExpanded} isDark={isDark}>
-      <QuestionText isDark={isDark}>{faq.question}</QuestionText>
-      <ExpandIcon
-        expanded={isExpanded}
-        isDark={isDark}
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <path
-          d="M7 10l5 5 5-5"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </ExpandIcon>
-    </AccordionHeader>
-    <AccordionContent expanded={isExpanded}>
-      <AnswerText isDark={isDark}>{faq.answer}</AnswerText>
-    </AccordionContent>
-  </AccordionItem>
-));
+const FAQItem = memo(({ faq, index, isExpanded, onToggle, isDark }) => {
+  const headerId = `faq-header-${index}`;
+  const panelId = `faq-panel-${index}`;
+  return (
+    <AccordionItem isDark={isDark}>
+      <AccordionHeader id={headerId} onClick={onToggle} aria-expanded={isExpanded} aria-controls={panelId} isDark={isDark}>
+        <QuestionText isDark={isDark}>{faq.question}</QuestionText>
+        <ExpandIcon
+          expanded={isExpanded}
+          isDark={isDark}
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M7 10l5 5 5-5"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </ExpandIcon>
+      </AccordionHeader>
+      <AccordionContent expanded={isExpanded} id={panelId} aria-labelledby={headerId}>
+        <AnswerText isDark={isDark}>{faq.answer}</AnswerText>
+      </AccordionContent>
+    </AccordionItem>
+  );
+});
 
 function AboutPage() {
   const { themeName } = useContext(ThemeContext);
@@ -255,8 +299,10 @@ function AboutPage() {
         About XRPL.to
       </h1>
 
+      <main>
       <Container>
         {/* Hero Section */}
+        <section aria-label="Platform overview">
         <HeroSection>
           <HeroTitle>XRPL.to</HeroTitle>
           <HeroSubtitle isDark={isDark}>
@@ -282,8 +328,10 @@ function AboutPage() {
             </StatCard>
           </StatsRow>
         </HeroSection>
+        </section>
 
         {/* Features Section */}
+        <section aria-label="Platform features">
         <FeaturesSection>
           <SectionTitle isDark={isDark}>Platform Features</SectionTitle>
           <FeatureGrid>
@@ -301,8 +349,10 @@ function AboutPage() {
             })}
           </FeatureGrid>
         </FeaturesSection>
+        </section>
 
         {/* Fees Section */}
+        <section aria-label="Trading fees">
         <FeesSection>
           <SectionTitle isDark={isDark}>Trading Fees</SectionTitle>
           <FeesGrid>
@@ -316,8 +366,10 @@ function AboutPage() {
             </FeeCard>
           </FeesGrid>
         </FeesSection>
+        </section>
 
         {/* Timeline Section */}
+        <section aria-label="Our journey">
         <TimelineSection>
           <SectionTitle isDark={isDark}>Our Journey</SectionTitle>
           <Timeline>
@@ -331,8 +383,25 @@ function AboutPage() {
             ))}
           </Timeline>
         </TimelineSection>
+        </section>
+
+        {/* Social / Community Section */}
+        <section aria-label="Community links">
+        <SocialSection>
+          <SectionTitle isDark={isDark}>Community</SectionTitle>
+          <SocialGrid>
+            {SOCIALS.map((social) => (
+              <SocialCard key={social.label} href={social.href} isDark={isDark}>
+                <social.Icon size={20} />
+                <SocialLabel isDark={isDark}>{social.label}</SocialLabel>
+              </SocialCard>
+            ))}
+          </SocialGrid>
+        </SocialSection>
+        </section>
 
         {/* FAQ Section */}
+        <section aria-label="Frequently asked questions">
         <FaqSection isDark={isDark}>
           <FaqHeader>
             <FaqTitle>Frequently Asked Questions</FaqTitle>
@@ -354,7 +423,9 @@ function AboutPage() {
             ))}
           </FaqList>
         </FaqSection>
+        </section>
       </Container>
+      </main>
 
       <Footer />
     </PageWrapper>
@@ -364,21 +435,7 @@ function AboutPage() {
 export default memo(AboutPage);
 
 // This function gets called at build time on server-side.
-// It may be called again, on a serverless function, if
-// revalidation is enabled and a new request comes in
 export async function getStaticProps() {
-  // https://api.xrpl.to/v1/banxa/currencies
-  // const BASE_URL = process.env.API_URL;
-  let data = null;
-  try {
-    // var t1 = performance.now();
-    // const res = await api.get(`${BASE_URL}/banxa/currencies`);
-    // data = res.data;
-    // var t2 = performance.now();
-    // var dt = (t2 - t1).toFixed(2);
-    // console.log(`2. getStaticProps fiats: ${data.fiats.length} took: ${dt}ms`);
-  } catch (e) {}
-
   const ogp = {
     title: 'About XRPL.to | Premier XRP Ledger Analytics Platform',
     url: 'https://xrpl.to/about',
@@ -427,7 +484,6 @@ export async function getStaticProps() {
   };
 
   return {
-    props: { data, ogp },
-    revalidate: 86400
+    props: { ogp }
   };
 }

@@ -6,8 +6,6 @@ import useWebSocket from 'react-use-websocket';
  * Supports subscription filtering and batched updates
  */
 export function useTokenSync({ onTokensUpdate, onMetricsUpdate, onTagsUpdate, enabled = true }) {
-  const [wsUrl, setWsUrl] = useState(null);
-  const apiKeyRef = useRef(null);
   const queueRef = useRef([]);
   const timerRef = useRef(null);
   const [ready, setReady] = useState(false);
@@ -26,14 +24,10 @@ export function useTokenSync({ onTokensUpdate, onMetricsUpdate, onTagsUpdate, en
     return cleanup;
   }, [enabled]);
 
-  // Fetch WebSocket URL and API key after ready
-  useEffect(() => {
-    if (!ready) { setWsUrl(null); return; }
-    fetch('/api/ws/session?type=sync')
-      .then(r => r.json())
-      .then(d => { apiKeyRef.current = d.apiKey; setWsUrl(d.wsUrl); })
-      .catch(() => setWsUrl(null));
-  }, [ready]);
+  const getWsUrl = useCallback(async () => {
+    const { getSessionWsUrl } = await import('src/utils/wsToken');
+    return getSessionWsUrl('sync');
+  }, []);
 
   const processQueue = useCallback(() => {
     if (queueRef.current.length === 0) return;
@@ -66,10 +60,8 @@ export function useTokenSync({ onTokensUpdate, onMetricsUpdate, onTagsUpdate, en
     }
   }, [onTokensUpdate, onMetricsUpdate, onTagsUpdate]);
 
-  const { sendJsonMessage, readyState } = useWebSocket(wsUrl, {
-    onOpen: () => {
-      if (apiKeyRef.current) sendJsonMessage({ type: 'auth', apiKey: apiKeyRef.current });
-    },
+  const { sendJsonMessage, readyState } = useWebSocket(ready ? getWsUrl : null, {
+    onOpen: () => {},
     onMessage: (e) => {
       try {
         const data = JSON.parse(e.data);

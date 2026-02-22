@@ -88,7 +88,12 @@ function ContextProviderInner({ children, data, openSnackbar }) {
     const isDark = window.localStorage.getItem('appTheme');
     return isDark === 'false' ? 'XrplToLightTheme' : 'XrplToDarkTheme';
   });
-  const [activeFiatCurrency, setActiveFiatCurrency] = useState('XRP');
+  const [activeFiatCurrency, setActiveFiatCurrency] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.localStorage.getItem('appFiatCurrency') || 'XRP';
+    }
+    return 'XRP';
+  });
 
   // Load profile synchronously on mount to avoid flash of "No wallet connected"
   const [accountProfile, setAccountProfile] = useState(() => {
@@ -121,7 +126,13 @@ function ContextProviderInner({ children, data, openSnackbar }) {
   const [open, setOpen] = useState(false);
   const [openWalletModal, setOpenWalletModal] = useState(false);
   const [pendingWalletAuth, setPendingWalletAuth] = useState(null);
-  const [accountBalance, setAccountBalance] = useState(null);
+  const [accountBalance, setAccountBalance] = useState(() => {
+    if (typeof window === 'undefined') return null;
+    try {
+      const c = localStorage.getItem('xrpl_balance');
+      return c ? JSON.parse(c) : null;
+    } catch { return null; }
+  });
   const [watchList, setWatchList] = useState([]);
 
   const toggleTheme = () => {
@@ -144,13 +155,8 @@ function ContextProviderInner({ children, data, openSnackbar }) {
   useEffect(() => {
     const savedThemeName = window.localStorage.getItem('appThemeName');
     const isDarkMode = window.localStorage.getItem('appTheme');
-    const fiatCurrency = window.localStorage.getItem('appFiatCurrency');
-
-    if (fiatCurrency) {
-      setActiveFiatCurrency(fiatCurrency);
-    } else {
-      // Set XRP as default and save to localStorage
-      setActiveFiatCurrency('XRP');
+    // fiatCurrency already initialized synchronously from localStorage in useState
+    if (!window.localStorage.getItem('appFiatCurrency')) {
       window.localStorage.setItem('appFiatCurrency', 'XRP');
     }
 
@@ -463,10 +469,9 @@ function ContextProviderInner({ children, data, openSnackbar }) {
 
     const connect = async () => {
       try {
-        const res = await fetch(`/api/ws/session?type=balance&id=${account}`);
-        const { wsUrl, apiKey } = await res.json();
-        const { isValidWsUrl } = await import('src/utils/api');
-        if (!isValidWsUrl(wsUrl)) return;
+        const { getSessionWsUrl } = await import('src/utils/wsToken');
+        const wsUrl = await getSessionWsUrl('balance', account);
+        if (!wsUrl) return;
         ws = new WebSocket(wsUrl);
 
       // Connection timeout — abort if not open within 10s
@@ -478,8 +483,7 @@ function ContextProviderInner({ children, data, openSnackbar }) {
 
       ws.onopen = () => {
         clearTimeout(connectTimer);
-        attempts = 0; // Reset on successful connection
-        if (apiKey) ws.send(JSON.stringify({ type: 'auth', apiKey }));
+        attempts = 0;
       };
 
       ws.onmessage = (event) => {
@@ -487,10 +491,12 @@ function ContextProviderInner({ children, data, openSnackbar }) {
           const data = JSON.parse(event.data);
           // Handle both initial and update events
           if (data.type === 'initial' || data.e === 'balance') {
-            setAccountBalance({
+            const newBalance = {
               curr1: { value: data.balance ?? '0' },
               curr2: { value: data.reserve ?? '0' }
-            });
+            };
+            setAccountBalance(newBalance);
+            try { localStorage.setItem('xrpl_balance', JSON.stringify(newBalance)); } catch {}
             if (accountProfile && accountProfile.xrp !== data.total) {
               setAccountProfile((prev) => prev ? { ...prev, xrp: data.total } : prev);
             }

@@ -30,7 +30,7 @@ export default function TxPreviewModal({
   });
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-[rgba(0,0,0,0.92)] backdrop-blur-[4px] max-sm:h-dvh">
+    <div role="dialog" aria-modal="true" aria-label="Transaction preview" className="fixed inset-0 z-[9999] flex items-center justify-center bg-[rgba(0,0,0,0.92)] backdrop-blur-[4px] max-sm:h-dvh">
       <div className={cn(
         'w-full max-w-[340px] mx-4 p-5 rounded-2xl border',
         isDark ? 'bg-black border-white/[0.08]' : 'bg-white border-black/[0.08]'
@@ -40,7 +40,7 @@ export default function TxPreviewModal({
           <span className={cn('text-[11px]', isDark ? 'text-white/30' : 'text-black/30')}>
             Preview · No funds sent yet
           </span>
-          <button className={cn('p-1.5 rounded-lg border-none bg-transparent cursor-pointer', isDark ? 'text-white/40' : 'text-black/40')} onClick={onClose}>
+          <button aria-label="Close" className={cn('p-1.5 rounded-lg border-none bg-transparent cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]', isDark ? 'text-white/40' : 'text-black/40')} onClick={onClose}>
             <X size={16} />
           </button>
         </div>

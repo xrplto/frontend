@@ -639,7 +639,8 @@ export async function getServerSideProps({ query }) {
 
   try {
     const res = await api.get(`${BASE_URL}/api/amm`, {
-      params: { sortBy, status, page, limit, includeAPY: true }
+      params: { sortBy, status, page, limit, includeAPY: true },
+      timeout: 8000
     });
 
     return {

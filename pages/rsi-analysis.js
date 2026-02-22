@@ -1052,11 +1052,13 @@ function RSIAnalysisPage({ data }) {
 
 export default RSIAnalysisPage;
 
-export async function getStaticProps() {
+export async function getServerSideProps({ res }) {
+  res.setHeader('Cache-Control', 'public, s-maxage=30, stale-while-revalidate=120');
+
   const BASE_URL = 'https://api.xrpl.to/v1';
 
   try {
-    const res = await api.get(`${BASE_URL}/rsi`, {
+    const rsiRes = await api.get(`${BASE_URL}/rsi`, {
       params: {
         sortBy: 'rsi24h',
         sortType: 'desc',
@@ -1064,13 +1066,14 @@ export async function getStaticProps() {
         timeframe: '24h',
         activeOnly: true,
         excludeNeutral: true
-      }
+      },
+      timeout: 8000
     });
 
     return {
       props: {
         data: {
-          tokens: res.data?.tokens || []
+          tokens: rsiRes.data?.tokens || []
         },
         ogp: {
           canonical: 'https://xrpl.to/rsi-analysis',
@@ -1081,14 +1084,12 @@ export async function getStaticProps() {
           desc: 'Advanced RSI analysis for XRPL tokens with overbought/oversold detection',
           keywords: 'RSI analysis, XRPL tokens, technical indicators, crypto RSI'
         }
-      },
-      revalidate: 60
+      }
     };
   } catch (error) {
     console.error('Error fetching RSI data:', error);
     return {
-      props: { data: { tokens: [] } },
-      revalidate: 60
+      props: { data: { tokens: [] } }
     };
   }
 }

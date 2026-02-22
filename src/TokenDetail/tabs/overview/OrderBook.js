@@ -492,8 +492,9 @@ const DepthChartModal = ({ bids, asks, isDark, onClose, userAccount }) => {
             </div>
             <button
               onClick={onClose}
+              aria-label="Close depth chart"
               className={cn(
-                'p-1.5 rounded-lg transition-[background-color,border-color] ml-1',
+                'p-1.5 rounded-lg transition-[background-color,border-color] ml-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                 isDark ? 'hover:bg-white/10 text-white/55' : 'hover:bg-black/5 text-black/40'
               )}
             >
@@ -566,6 +567,7 @@ const OrderBook = ({ token, onPriceClick, limitPrice }) => {
   }, [viewMode]);
   const [precision, setPrecision] = useState(6);
   const [hoveredRow, setHoveredRow] = useState(null);
+  const hasLoadedRef = useRef(false);
   const wsRef = useRef(null);
 
   // XRP is native asset - show RLUSD/XRP orderbook instead
@@ -581,7 +583,7 @@ const OrderBook = ({ token, onPriceClick, limitPrice }) => {
       fetchInFlight
         .get(rlusdKey)
         .then((token) => mounted && token && setRlusdToken(token))
-        .catch(() => { });
+        .catch(err => { console.warn('[OrderBook] RLUSD fetch failed:', err.message); });
       return () => {
         mounted = false;
       };
@@ -598,7 +600,7 @@ const OrderBook = ({ token, onPriceClick, limitPrice }) => {
         mounted && token && setRlusdToken(token);
         fetchInFlight.delete(rlusdKey);
       })
-      .catch(() => fetchInFlight.delete(rlusdKey));
+      .catch(err => { console.warn('[OrderBook] RLUSD token fetch failed:', err.message); fetchInFlight.delete(rlusdKey); });
     return () => {
       mounted = false;
     };
@@ -644,6 +646,7 @@ const OrderBook = ({ token, onPriceClick, limitPrice }) => {
       a.sumAmount = askSum;
     });
 
+    hasLoadedRef.current = true;
     setBids(parsedBids.slice(0, 100));
     setAsks(parsedAsks.slice(0, 100));
   };
@@ -667,18 +670,28 @@ const OrderBook = ({ token, onPriceClick, limitPrice }) => {
     });
 
     let unmounted = false;
-    (async () => {
+    let reconnectTimeout = null;
+    let retryCount = 0;
+
+    const connect = async () => {
+      if (unmounted) return;
       try {
-        const res = await fetch(`/api/ws/session?type=orderbook&${params}`);
-        if (unmounted) return;
-        const { wsUrl, apiKey } = await res.json();
-        if (unmounted || !wsUrl || !/^wss?:\/\//i.test(wsUrl)) return;
+        const { getSessionWsUrl } = await import('src/utils/wsToken');
+        const wsUrl = await getSessionWsUrl('orderbook', null, Object.fromEntries(new URLSearchParams(params)));
+        if (unmounted || !wsUrl) return;
         const ws = new WebSocket(wsUrl);
         wsRef.current = ws;
 
-        ws.onopen = () => { if (apiKey) ws.send(JSON.stringify({ type: 'auth', apiKey })); setWsConnected(true); };
-        ws.onclose = () => { if (!unmounted) setWsConnected(false); };
-        ws.onerror = () => { if (!unmounted) setWsConnected(false); };
+        ws.onopen = () => { setWsConnected(true); retryCount = 0; };
+        ws.onclose = () => {
+          if (!unmounted) {
+            setWsConnected(false);
+            if (retryCount < 5) {
+              reconnectTimeout = setTimeout(() => { retryCount++; connect(); }, Math.min(3000 * Math.pow(2, retryCount), 60000));
+            }
+          }
+        };
+        ws.onerror = () => {};
         ws.onmessage = (event) => {
           try {
             const msg = JSON.parse(event.data);
@@ -687,19 +700,17 @@ const OrderBook = ({ token, onPriceClick, limitPrice }) => {
             } else if (msg.e === 'depth') {
               processWsOrderbook(msg.b, msg.a);
             }
-          } catch {
-            // Parse error
-          }
+          } catch {}
         };
 
         if (unmounted) { ws.close(); wsRef.current = null; }
-      } catch {
-        // Session error
-      }
-    })();
+      } catch {}
+    };
+    connect();
 
     return () => {
       unmounted = true;
+      if (reconnectTimeout) clearTimeout(reconnectTimeout);
       if (wsRef.current) wsRef.current.close();
       wsRef.current = null;
       setWsConnected(false);
@@ -794,6 +805,7 @@ const OrderBook = ({ token, onPriceClick, limitPrice }) => {
       });
 
       if (mountedRef.current) {
+        hasLoadedRef.current = true;
         setBids(parsedBids.slice(0, 100));
         setAsks(parsedAsks.slice(0, 100));
       }
@@ -926,6 +938,7 @@ const OrderBook = ({ token, onPriceClick, limitPrice }) => {
   }
 
   if (!bids.length && !asks.length) {
+    if (!hasLoadedRef.current) return <Container isDark={isDark} />;
     return <BearEmptyState isDark={isDark} message="No orderbook data" />;
   }
 
@@ -939,7 +952,7 @@ const OrderBook = ({ token, onPriceClick, limitPrice }) => {
           <button
             onClick={() => setShowDepthChart(true)}
             className={cn(
-              'h-[24px] w-[24px] flex items-center justify-center rounded-[6px] transition-[background-color,border-color]',
+              'h-[24px] w-[24px] flex items-center justify-center rounded-[6px] transition-[background-color,border-color] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
               isDark ? 'hover:bg-white/10 text-white/55 hover:text-white/80' : 'hover:bg-black/5 text-black/40 hover:text-black/80'
             )}
             aria-label="Depth Chart"
@@ -956,7 +969,7 @@ const OrderBook = ({ token, onPriceClick, limitPrice }) => {
               <button
                 key={mode.id}
                 onClick={() => setViewMode(mode.id)}
-                className="h-[24px] px-[8px] rounded-[4px] border-none cursor-pointer text-[10px] font-semibold transition-[opacity,transform,background-color,border-color] duration-200 flex items-center gap-[4px]"
+                className="h-[24px] px-[8px] rounded-[4px] border-none cursor-pointer text-[10px] font-semibold transition-[opacity,transform,background-color,border-color] duration-200 flex items-center gap-[4px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]"
                 style={{
                   background: viewMode === mode.id
                     ? (isDark ? 'rgba(255,255,255,0.1)' : '#fff')
@@ -984,7 +997,7 @@ const OrderBook = ({ token, onPriceClick, limitPrice }) => {
             value={precision}
             onChange={(e) => setPrecision(Number(e.target.value))}
             className={cn(
-              'py-[4px] pl-[10px] pr-[24px] rounded-[6px] text-[10px] font-medium cursor-pointer outline-none appearance-none bg-no-repeat transition-[opacity,transform,background-color,border-color] duration-200',
+              'py-[4px] pl-[10px] pr-[24px] rounded-[6px] text-[10px] font-medium cursor-pointer outline-none appearance-none bg-no-repeat transition-[opacity,transform,background-color,border-color] duration-200 focus-visible:ring-2 focus-visible:ring-[#137DFE]',
               isDark
                 ? 'bg-[#1a1f2e] text-white border border-white/10'
                 : 'bg-[#f4f6f8] text-[#212B36] border border-black/10'

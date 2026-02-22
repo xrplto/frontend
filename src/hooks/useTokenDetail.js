@@ -15,20 +15,19 @@ export function useTokenDetail({
   delta = true,
   enabled = true
 }) {
-  const [wsUrl, setWsUrl] = useState(null);
-  const apiKeyRef = useRef(null);
   const batchRef = useRef(null);
   const batchTimerRef = useRef(null);
   const connectTimeRef = useRef(null);
   const connectCountRef = useRef(0);
+  const paramsRef = useRef({ md5, fields, delta, enabled });
+  paramsRef.current = { md5, fields, delta, enabled };
 
-  useEffect(() => {
-    if (!enabled || !md5) { setWsUrl(null); return; }
-    fetch(`/api/ws/session?type=token&id=${md5}&fields=${fields}&delta=${delta}`)
-      .then(r => r.json())
-      .then(d => { apiKeyRef.current = d.apiKey; setWsUrl(d.wsUrl); })
-      .catch(() => {});
-  }, [enabled, md5, fields, delta]);
+  const getWsUrl = useCallback(async () => {
+    const { md5: id, fields: f, delta: d, enabled: e } = paramsRef.current;
+    if (!e || !id) return null;
+    const { getSessionWsUrl } = await import('src/utils/wsToken');
+    return getSessionWsUrl('token', id, { fields: f, delta: d });
+  }, []);
 
   const processMessage = useCallback(
     (data) => {
@@ -47,15 +46,9 @@ export function useTokenDetail({
     [onTokenUpdate, onMetricsUpdate]
   );
 
-  // Log connection start
-  useEffect(() => {
-    if (wsUrl) connectTimeRef.current = performance.now();
-  }, [wsUrl]);
-
-  const { sendJsonMessage, readyState } = useWebSocket(wsUrl, {
+  const { sendJsonMessage, readyState } = useWebSocket(enabled && md5 ? getWsUrl : null, {
     onOpen: () => {
       connectCountRef.current++;
-      if (apiKeyRef.current) sendJsonMessage({ type: 'auth', apiKey: apiKeyRef.current });
     },
     onReconnectStop: () => {},
     onMessage: (e) => {

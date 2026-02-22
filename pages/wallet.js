@@ -63,7 +63,8 @@ import {
   Tag,
   Loader2,
   DollarSign,
-  CreditCard
+  CreditCard,
+  ImageOff
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import Link from 'next/link';
@@ -72,6 +73,18 @@ const QRCode = dynamic(() => import('react-qr-code'), { ssr: false });
 import AccountHistory from 'src/components/AccountHistory';
 
 const BASE_URL = 'https://api.xrpl.to';
+
+// NFT image with error fallback
+const NftImg = ({ src, alt, isDark, className = 'w-full aspect-square object-cover' }) => {
+  const [err, setErr] = useState(false);
+  if (err) return (
+    <div className={cn('w-full aspect-square flex flex-col items-center justify-center gap-1', isDark ? 'bg-[#111] text-[#4B5563]' : 'bg-[#F1F5F9] text-[#94A3B8]')}>
+      <ImageOff size={16} strokeWidth={1.2} />
+      <span className="text-[9px]">Unavailable</span>
+    </div>
+  );
+  return <img src={src} alt={alt} className={className} onError={() => setErr(true)} />;
+};
 
 // Smart balance formatting - adapts decimals based on value size
 const formatBalance = (value) => {
@@ -1916,6 +1929,7 @@ export default function WalletPage() {
 
       <Header />
 
+      <main role="main">
       {!hydrated ? (
         <div className={cn('min-h-[calc(100dvh-64px)]', isDark ? 'bg-black' : 'bg-gray-50')} />
       ) : !address ? (
@@ -1994,8 +2008,9 @@ export default function WalletPage() {
                 )}
                 <button
                   onClick={() => handleCopy(address)}
+                  aria-label={copied ? 'Address copied' : 'Copy wallet address'}
                   className={cn(
-                    'flex items-center gap-2 px-3 py-1.5 rounded-lg text-[11px] font-mono transition-colors duration-150',
+                    'flex items-center gap-2 px-3 py-1.5 rounded-lg text-[11px] font-mono transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-[#137DFE] focus-visible:outline-none',
                     copied
                       ? 'bg-emerald-500/10 text-[#08AA09]'
                       : isDark
@@ -2016,10 +2031,13 @@ export default function WalletPage() {
             </div>
 
             {/* Tabs */}
-            <div className="flex gap-2 mb-6 overflow-x-auto no-scrollbar max-sm:w-full max-sm:gap-[6px]">
+            <nav role="tablist" aria-label="Wallet sections" className="flex gap-2 mb-6 overflow-x-auto no-scrollbar max-sm:w-full max-sm:gap-[6px]">
               {tabs.map((tab) => (
                 <button
                   key={tab.id}
+                  role="tab"
+                  aria-selected={activeTab === tab.id}
+                  aria-controls={`tabpanel-${tab.id}`}
                   onClick={() => handleTabChange(tab.id)}
                   className={cn(
                     'inline-flex items-center justify-center gap-2 text-xs font-medium tracking-[0.05em] py-[10px] px-4 bg-transparent border rounded-[6px] cursor-pointer transition-[opacity,transform,background-color,border-color] duration-150 whitespace-nowrap shrink-0 uppercase',
@@ -2035,11 +2053,11 @@ export default function WalletPage() {
                   <span>{tab.label}</span>
                 </button>
               ))}
-            </div>
+            </nav>
 
             {/* Send/Receive Modal */}
             {showPanel && (
-              <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4">
+              <div role="dialog" aria-modal="true" aria-label={showPanel === 'send' ? 'Send tokens' : 'Receive tokens'} className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4">
                 {/* Backdrop */}
                 <div
                   className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
@@ -2088,8 +2106,9 @@ export default function WalletPage() {
                     </div>
                     <button
                       onClick={() => setShowPanel(null)}
+                      aria-label="Close panel"
                       className={cn(
-                        'p-2 rounded-xl transition-colors',
+                        'p-2 rounded-xl transition-colors focus-visible:ring-2 focus-visible:ring-[#137DFE] focus-visible:outline-none',
                         isDark ? 'text-white/30 hover:text-white/60 hover:bg-white/5' : 'text-gray-300 hover:text-gray-500 hover:bg-gray-100'
                       )}
                     >
@@ -2163,7 +2182,7 @@ export default function WalletPage() {
                                     }}
                                     placeholder={`Search ${dropdownTokens.length} tokens...`}
                                     className={cn(
-                                      "w-full pl-8 pr-3 py-2 rounded-md text-[13px] outline-none",
+                                      "w-full pl-8 pr-3 py-2 rounded-md text-[13px] outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]",
                                       isDark ? "bg-white/[0.04] text-white placeholder:text-white/20" : "bg-gray-50 text-gray-900 placeholder:text-gray-400"
                                     )}
                                   />
@@ -2386,8 +2405,9 @@ export default function WalletPage() {
                                 handleCopy(address);
                               }
                             }}
+                            aria-label="Share address"
                             className={cn(
-                              'px-4 py-3 rounded-xl transition-colors',
+                              'px-4 py-3 rounded-xl transition-colors focus-visible:ring-2 focus-visible:ring-[#137DFE] focus-visible:outline-none',
                               isDark
                                 ? 'bg-white/[0.04] text-white/40 hover:bg-white/[0.08] hover:text-white/60'
                                 : 'bg-gray-100 text-gray-400 hover:bg-gray-200 hover:text-gray-600'
@@ -2405,7 +2425,7 @@ export default function WalletPage() {
 
             {/* Overview Tab */}
             {activeTab === 'overview' && (
-              <div className="space-y-4">
+              <section role="tabpanel" id="tabpanel-overview" aria-label="Overview" className="space-y-4">
                 {/* Portfolio Header */}
                 {(() => {
                   const totalPortfolio = totalValue + nftPortfolioValue;
@@ -2449,7 +2469,7 @@ export default function WalletPage() {
                         <div className="flex flex-col gap-1 lg:min-w-[200px]">
                           <span className={cn('text-[10px] font-bold uppercase tracking-widest', isDark ? 'text-white/30' : 'text-gray-400')}>Total Portfolio</span>
                           <div className="flex items-baseline gap-1.5">
-                            <span className={cn('text-3xl font-black tabular-nums tracking-tight', isDark ? 'text-white' : 'text-gray-900')}>
+                            <span role="status" aria-live="polite" className={cn('text-3xl font-black tabular-nums tracking-tight', isDark ? 'text-white' : 'text-gray-900')}>
                               {tokensLoading ? '...' : (
                                 <>
                                   {activeFiatCurrency !== 'XRP' && currencySymbols[activeFiatCurrency]}
@@ -2499,10 +2519,10 @@ export default function WalletPage() {
                         {/* Actions */}
                         <div className="flex items-center gap-2 mt-2 lg:mt-0">
                           {isInactive && <span className="text-[10px] px-2 py-1 rounded bg-amber-500/10 text-[#F6AF01] font-bold uppercase tracking-wider">Inactive</span>}
-                          <button onClick={() => setShowPanel('send')} className="flex-1 lg:flex-none flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl text-[13px] font-bold bg-[#137DFE] text-white hover:bg-blue-600 shadow-lg shadow-blue-500/20 transition-all active:scale-95">
+                          <button onClick={() => setShowPanel('send')} aria-label="Send tokens" className="flex-1 lg:flex-none flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl text-[13px] font-bold bg-[#137DFE] text-white hover:bg-blue-600 shadow-lg shadow-blue-500/20 transition-all active:scale-95 focus-visible:ring-2 focus-visible:ring-[#137DFE] focus-visible:ring-offset-2 focus-visible:ring-offset-black focus-visible:outline-none">
                             <ArrowUpRight size={16} strokeWidth={2.5} /> Send
                           </button>
-                          <button onClick={() => setShowPanel('receive')} className={cn('flex-1 lg:flex-none flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl text-[13px] font-bold transition-all active:scale-95', isDark ? 'bg-white/5 text-white/80 hover:bg-white/10' : 'bg-gray-100 text-gray-700 hover:bg-gray-200')}>
+                          <button onClick={() => setShowPanel('receive')} aria-label="Receive tokens" className={cn('flex-1 lg:flex-none flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl text-[13px] font-bold transition-all active:scale-95 focus-visible:ring-2 focus-visible:ring-[#137DFE] focus-visible:outline-none', isDark ? 'bg-white/5 text-white/80 hover:bg-white/10' : 'bg-gray-100 text-gray-700 hover:bg-gray-200')}>
                             <ArrowDownLeft size={16} strokeWidth={2.5} /> Receive
                           </button>
                         </div>
@@ -2555,8 +2575,9 @@ export default function WalletPage() {
                               )}
                               <button
                                 onClick={() => setShowPLCard(true)}
+                                aria-label="Share P&L card"
                                 className={cn(
-                                  'hidden lg:flex ml-auto items-center gap-1 px-2.5 py-1 rounded-md text-[9px] font-bold transition-all uppercase tracking-wider',
+                                  'hidden lg:flex ml-auto items-center gap-1 px-2.5 py-1 rounded-md text-[9px] font-bold transition-all uppercase tracking-wider focus-visible:ring-2 focus-visible:ring-[#137DFE] focus-visible:outline-none',
                                   isDark ? 'bg-[#137DFE]/10 text-[#137DFE] hover:bg-[#137DFE]/20' : 'bg-blue-50 text-blue-600 hover:bg-blue-100'
                                 )}
                               >
@@ -2781,7 +2802,7 @@ export default function WalletPage() {
                 <div className="mt-4">
                   <AccountHistory account={address} compact />
                 </div>
-              </div>
+              </section>
             )}
 
             {/* Tokens Tab - Full Token Management */}
@@ -2831,7 +2852,7 @@ export default function WalletPage() {
                             onChange={(e) => setTokenSearch(e.target.value)}
                             placeholder="Search tokens..."
                             className={cn(
-                              'w-full pl-10 pr-4 py-2.5 rounded-lg text-[13px] outline-none transition-colors duration-150',
+                              'w-full pl-10 pr-4 py-2.5 rounded-lg text-[13px] outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] transition-colors duration-150',
                               isDark
                                 ? 'bg-white/[0.04] text-white border border-white/[0.15] placeholder:text-white/30 focus:border-[#137DFE]/40'
                                 : 'bg-gray-50 border border-gray-200 placeholder:text-gray-400 focus:border-[#137DFE]'
@@ -2844,7 +2865,7 @@ export default function WalletPage() {
                             value={tokenSort}
                             onChange={(e) => setTokenSort(e.target.value)}
                             className={cn(
-                              'px-3 py-2.5 rounded-lg text-[13px] outline-none transition-colors duration-150',
+                              'px-3 py-2.5 rounded-lg text-[13px] outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] transition-colors duration-150',
                               isDark
                                 ? 'bg-[#1a1a1a] text-white border border-white/[0.15] [&>option]:bg-[#1a1a1a]'
                                 : 'bg-gray-50 border border-gray-200'
@@ -2989,16 +3010,16 @@ export default function WalletPage() {
                               {/* Actions */}
                               <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
                                 {token.rawAmount >= 0.000001 && token.currency && token.issuer && (
-                                  <button onClick={() => { setBurnModal(token); setBurnAmount(''); }} disabled={burning === token.currency + token.issuer} className={cn("p-2 rounded-lg transition-all", isDark ? "text-white/20 hover:text-orange-500 hover:bg-orange-500/10" : "text-gray-300 hover:text-orange-600 hover:bg-orange-50")} title="Burn">
+                                  <button onClick={() => { setBurnModal(token); setBurnAmount(''); }} disabled={burning === token.currency + token.issuer} aria-label={`Burn ${token.symbol}`} className={cn("p-2 rounded-lg transition-all focus-visible:ring-2 focus-visible:ring-[#137DFE] focus-visible:outline-none", isDark ? "text-white/20 hover:text-orange-500 hover:bg-orange-500/10" : "text-gray-300 hover:text-orange-600 hover:bg-orange-50")} title="Burn">
                                     <Flame size={16} strokeWidth={2.5} />
                                   </button>
                                 )}
                                 {token.currency && token.issuer && (
-                                  <button onClick={() => { setTradeModal(token); setTradeAmount(''); setTradeDirection('sell'); }} className={cn("p-2 rounded-lg transition-all", isDark ? "text-white/20 hover:text-[#137DFE] hover:bg-[#137DFE]/10" : "text-gray-300 hover:text-[#137DFE] hover:bg-blue-50")} title="Trade">
+                                  <button onClick={() => { setTradeModal(token); setTradeAmount(''); setTradeDirection('sell'); }} aria-label={`Trade ${token.symbol}`} className={cn("p-2 rounded-lg transition-all focus-visible:ring-2 focus-visible:ring-[#137DFE] focus-visible:outline-none", isDark ? "text-white/20 hover:text-[#137DFE] hover:bg-[#137DFE]/10" : "text-gray-300 hover:text-[#137DFE] hover:bg-blue-50")} title="Trade">
                                     <ArrowRightLeft size={16} strokeWidth={2.5} />
                                   </button>
                                 )}
-                                <button onClick={() => { setSelectedToken(token.symbol); setShowPanel('send'); }} className={cn("p-2 rounded-lg transition-all", isDark ? "text-[#137DFE] bg-[#137DFE]/10 hover:bg-[#137DFE]/20" : "text-[#137DFE] bg-blue-50 hover:bg-blue-100")} title="Send">
+                                <button onClick={() => { setSelectedToken(token.symbol); setShowPanel('send'); }} aria-label={`Send ${token.symbol}`} className={cn("p-2 rounded-lg transition-all focus-visible:ring-2 focus-visible:ring-[#137DFE] focus-visible:outline-none", isDark ? "text-[#137DFE] bg-[#137DFE]/10 hover:bg-[#137DFE]/20" : "text-[#137DFE] bg-blue-50 hover:bg-blue-100")} title="Send">
                                   <Send size={16} strokeWidth={2.5} />
                                 </button>
                               </div>
@@ -3084,7 +3105,7 @@ export default function WalletPage() {
 
             {/* Offers Tab */}
             {activeTab === 'offers' && (
-              <div className="space-y-4">
+              <section role="tabpanel" id="tabpanel-offers" aria-label="Offers" className="space-y-4">
                 {offersLoading ? (
                   <div
                     className={cn(
@@ -3359,17 +3380,17 @@ export default function WalletPage() {
                     </div>
                   </>
                 )}
-              </div>
+              </section>
             )}
 
             {/* Activity Tab */}
-            {activeTab === 'trades' && (
+            {activeTab === 'trades' && (/* tabpanel-trades */
               <AccountHistory account={address} />
             )}
 
             {/* Withdrawals Tab */}
             {activeTab === 'withdrawals' && (
-              <div className="space-y-4">
+              <section role="tabpanel" id="tabpanel-withdrawals" aria-label="Withdrawals" className="space-y-4">
                 {/* Delete Confirmation Modal */}
                 {deleteConfirmId && (
                   <div
@@ -3490,7 +3511,7 @@ export default function WalletPage() {
                             }
                             placeholder="e.g. Binance, Coinbase"
                             className={cn(
-                              'w-full px-4 py-3 rounded-lg text-[13px] outline-none transition-colors duration-150',
+                              'w-full px-4 py-3 rounded-lg text-[13px] outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] transition-colors duration-150',
                               isDark
                                 ? 'bg-white/[0.04] text-white border border-white/[0.15] placeholder:text-white/30 focus:border-[#137DFE]/40'
                                 : 'bg-gray-50 border border-gray-200 placeholder:text-gray-400 focus:border-[#137DFE]'
@@ -3514,7 +3535,7 @@ export default function WalletPage() {
                             }
                             placeholder="rAddress..."
                             className={cn(
-                              'w-full px-4 py-3 rounded-lg text-[13px] font-mono outline-none transition-colors duration-150',
+                              'w-full px-4 py-3 rounded-lg text-[13px] font-mono outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] transition-colors duration-150',
                               isDark
                                 ? 'bg-white/[0.04] text-white border border-white/[0.15] placeholder:text-white/30 focus:border-[#137DFE]/40'
                                 : 'bg-gray-50 border border-gray-200 placeholder:text-gray-400 focus:border-[#137DFE]'
@@ -3541,7 +3562,7 @@ export default function WalletPage() {
                             }
                             placeholder="e.g. 12345678"
                             className={cn(
-                              'w-full px-4 py-3 rounded-lg text-[13px] font-mono outline-none transition-colors duration-150',
+                              'w-full px-4 py-3 rounded-lg text-[13px] font-mono outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] transition-colors duration-150',
                               isDark
                                 ? 'bg-white/[0.04] text-white border border-white/[0.15] placeholder:text-white/30 focus:border-[#137DFE]/40'
                                 : 'bg-gray-50 border border-gray-200 placeholder:text-gray-400 focus:border-[#137DFE]'
@@ -3672,8 +3693,9 @@ export default function WalletPage() {
                           <div className="flex items-center gap-1">
                             <button
                               onClick={() => handleCopy(wallet.address)}
+                              aria-label={`Copy ${wallet.name} address`}
                               className={cn(
-                                'p-2 rounded-lg transition-colors duration-150',
+                                'p-2 rounded-lg transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-[#137DFE] focus-visible:outline-none',
                                 isDark
                                   ? 'hover:bg-[#137DFE]/5 text-white/40 hover:text-[#137DFE]'
                                   : 'hover:bg-blue-50 text-gray-400 hover:text-blue-600'
@@ -3682,6 +3704,7 @@ export default function WalletPage() {
                               <Copy size={14} />
                             </button>
                             <button
+                              aria-label={`Send to ${wallet.name}`}
                               onClick={() => {
                                 setSelectedToken('XRP');
                                 setSendTo(wallet.address);
@@ -3700,8 +3723,9 @@ export default function WalletPage() {
                             </button>
                             <button
                               onClick={() => setDeleteConfirmId(wallet.id)}
+                              aria-label={`Delete ${wallet.name}`}
                               className={cn(
-                                'p-2 rounded-lg transition-colors duration-150 opacity-0 group-hover:opacity-100',
+                                'p-2 rounded-lg transition-colors duration-150 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:outline-none',
                                 isDark
                                   ? 'hover:bg-red-500/10 text-white/40 hover:text-red-400'
                                   : 'hover:bg-red-50 text-gray-400 hover:text-red-500'
@@ -3715,12 +3739,12 @@ export default function WalletPage() {
                     </div>
                   )}
                 </div>
-              </div>
+              </section>
             )}
 
             {/* XRP Army Referral Tab */}
             {activeTab === 'referral' && (
-              <div className="space-y-4">
+              <section role="tabpanel" id="tabpanel-referral" aria-label="Referral" className="space-y-4">
                 {referralLoading ? (
                   <div className={cn('rounded-xl p-12 text-center', isDark ? 'bg-black/50 border-[1.5px] border-white/10' : 'bg-white border-[1.5px] border-gray-200')}>
                     <p className={cn('text-sm', isDark ? 'text-white/40' : 'text-gray-400')}>Loading...</p>
@@ -4048,12 +4072,12 @@ export default function WalletPage() {
                     </div>
                   </div>
                 )}
-              </div>
+              </section>
             )}
 
             {/* Profile Tab */}
             {activeTab === 'profile' && (
-              <div className="space-y-4">
+              <section role="tabpanel" id="tabpanel-profile" aria-label="Profile" className="space-y-4">
                 {profileLoading ? (
                   <div className={cn('rounded-xl p-12 text-center', isDark ? 'bg-black/50 border border-white/[0.15]' : 'bg-white border border-gray-200')}>
                     <p className={cn('text-sm', isDark ? 'text-white/40' : 'text-gray-400')}>Loading...</p>
@@ -4258,9 +4282,10 @@ export default function WalletPage() {
                                     (settingAvatar || !nft.files?.[0]?.thumbnail?.large) && 'opacity-50 grayscale'
                                   )}
                                 >
-                                  <img
+                                  <NftImg
                                     src={nft.files?.[0]?.thumbnail?.large ? `https://s1.xrpl.to/nft/${nft.files[0].thumbnail.large}` : getNftCoverUrl(nft.meta, nft.url)}
                                     alt={nft.meta?.name || 'NFT'}
+                                    isDark={isDark}
                                     className="w-full h-full object-cover transition-transform duration-500 group-hover/item:scale-110"
                                   />
                                   {profileUser.avatarNftId === nft.NFTokenID && (
@@ -4640,12 +4665,12 @@ export default function WalletPage() {
                     )}
                   </div>
                 </div>
-              </div>
+              </section>
             )}
 
             {/* NFTs Tab */}
             {activeTab === 'nfts' && (
-              <div>
+              <section role="tabpanel" id="tabpanel-nfts" aria-label="NFTs">
                 {/* NFT Transfer Modal */}
                 {nftToTransfer && (
                   <div
@@ -4730,7 +4755,7 @@ export default function WalletPage() {
                             onChange={(e) => setNftRecipient(e.target.value)}
                             placeholder="rAddress..."
                             className={cn(
-                              'w-full px-4 py-3 rounded-lg text-[13px] font-mono outline-none transition-colors duration-150',
+                              'w-full px-4 py-3 rounded-lg text-[13px] font-mono outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] transition-colors duration-150',
                               isDark
                                 ? 'bg-white/[0.04] text-white border border-white/[0.15] placeholder:text-white/30 focus:border-[#137DFE]/40'
                                 : 'bg-gray-50 border border-gray-200 placeholder:text-gray-400 focus:border-[#137DFE]'
@@ -5030,24 +5055,11 @@ export default function WalletPage() {
                             >
                               <div className="relative">
                                 {nft.image ? (
-                                  <img
-                                    src={nft.image}
-                                    alt={nft.name}
-                                    className="w-full aspect-square object-cover"
-                                    onError={(e) => {
-                                      e.target.style.display = 'none';
-                                    }}
-                                  />
+                                  <NftImg src={nft.image} alt={nft.name} isDark={isDark} />
                                 ) : (
-                                  <div
-                                    className={cn(
-                                      'w-full aspect-square flex items-center justify-center text-[9px]',
-                                      isDark
-                                        ? 'bg-white/5 text-white/30'
-                                        : 'bg-gray-100 text-gray-400'
-                                    )}
-                                  >
-                                    No image
+                                  <div className={cn('w-full aspect-square flex flex-col items-center justify-center gap-1', isDark ? 'bg-[#111] text-[#4B5563]' : 'bg-[#F1F5F9] text-[#94A3B8]')}>
+                                    <ImageOff size={16} strokeWidth={1.2} />
+                                    <span className="text-[9px]">Unavailable</span>
                                   </div>
                                 )}
                                 {/* Listed badge */}
@@ -5142,22 +5154,11 @@ export default function WalletPage() {
                       >
                         <div className="relative">
                           {col.logo ? (
-                            <img
-                              src={col.logo}
-                              alt={col.name}
-                              className="w-full aspect-square object-cover transition-transform duration-500 group-hover:scale-105"
-                              onError={(e) => {
-                                e.target.style.display = 'none';
-                              }}
-                            />
+                            <NftImg src={col.logo} alt={col.name} isDark={isDark} className="w-full aspect-square object-cover transition-transform duration-500 group-hover:scale-105" />
                           ) : (
-                            <div
-                              className={cn(
-                                'w-full aspect-square flex items-center justify-center text-[9px]',
-                                isDark ? 'bg-white/5 text-white/30' : 'bg-gray-100 text-gray-400'
-                              )}
-                            >
-                              No image
+                            <div className={cn('w-full aspect-square flex flex-col items-center justify-center gap-1', isDark ? 'bg-[#111] text-[#4B5563]' : 'bg-[#F1F5F9] text-[#94A3B8]')}>
+                              <ImageOff size={16} strokeWidth={1.2} />
+                              <span className="text-[9px]">Unavailable</span>
                             </div>
                           )}
                         </div>
@@ -5183,7 +5184,7 @@ export default function WalletPage() {
                     ))}
                   </div>
                 )}
-              </div>
+              </section>
             )}
           </div >
         </div >
@@ -5854,6 +5855,7 @@ export default function WalletPage() {
         )
       }
 
+      </main>
       <Footer />
     </>
   );

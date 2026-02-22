@@ -457,12 +457,6 @@ function CreatePage() {
 
           // Update to current step
           if (['success', 'completed'].includes(status.status)) {
-            console.log('[session-restore] Completion from reload, status:', JSON.stringify({
-              status: status.status,
-              userCheckClaimed: status.userCheckClaimed,
-              userCheckId: status.userCheckId || status.data?.userCheckId,
-              bundleCheckIds: status.bundleCheckIds?.map(b => ({ checkId: b.checkId?.substring(0, 8), claimed: b.claimed })),
-            }));
             setLaunchStep('completed');
             setSessionData((prev) => ({
               ...prev,
@@ -908,12 +902,6 @@ function CreatePage() {
         clearInterval(pollInterval);
         cleared = true;
         if (status.status === 'success' || status.status === 'completed') {
-          console.log('[funding-poll] Completion detected, status:', JSON.stringify({
-            status: status.status,
-            userCheckClaimed: status.userCheckClaimed,
-            userCheckId: status.userCheckId || status.data?.userCheckId,
-            bundleCheckIds: status.bundleCheckIds?.map(b => ({ checkId: b.checkId?.substring(0, 8), claimed: b.claimed })),
-          }));
           setLaunchStep('completed');
           // Don't let empty API fields overwrite existing populated data
           setSessionData((prev) => ({
@@ -959,12 +947,6 @@ function CreatePage() {
       // Check completion
       if (status.status === 'success' || status.status === 'completed') {
         clearInterval(pollInterval);
-        console.log('[processing-poll] Completion detected, status:', JSON.stringify({
-          status: status.status,
-          userCheckClaimed: status.userCheckClaimed,
-          userCheckId: status.userCheckId || status.data?.userCheckId,
-          bundleCheckIds: status.bundleCheckIds?.map(b => ({ checkId: b.checkId?.substring(0, 8), claimed: b.claimed })),
-        }));
         setLaunchStep('completed');
         setSessionData((prev) => ({
           ...prev,
@@ -1024,7 +1006,6 @@ function CreatePage() {
 
     const checkOnChain = async () => {
       if (cancelled) return;
-      console.log('[on-chain-check] Starting on-chain verification for', allCheckIds.length, 'checks');
       const wsUrl = sessionData?.network === 'mainnet'
         ? 'wss://xrplcluster.com'
         : 'wss://s.altnet.rippletest.net:51233';
@@ -1037,14 +1018,11 @@ function CreatePage() {
             await client.request({ command: 'ledger_entry', check: entry.id, ledger_index: 'validated' });
             // Check exists on-chain — confirmed unclaimed
             confirmedOnChain.add(entry.id);
-            console.log('[on-chain-check]', entry.type, entry.id.substring(0, 12), '→ EXISTS (unclaimed)');
           } catch (err) {
             const errCode = err?.data?.error || err?.message || '';
-            console.log('[on-chain-check]', entry.type, entry.id.substring(0, 12), '→ ERROR:', errCode, 'previouslyConfirmed:', confirmedOnChain.has(entry.id));
             // Only mark claimed if we previously confirmed this check existed on-chain
             // (so entryNotFound means it was cashed, not that it hasn't propagated yet)
             if (!cancelled && errCode === 'entryNotFound' && confirmedOnChain.has(entry.id)) {
-              console.log('[on-chain-check] Marking', entry.type, 'as CLAIMED (was on-chain before, now gone)');
               if (entry.type === 'user') {
                 setCheckClaimed(true);
               } else {

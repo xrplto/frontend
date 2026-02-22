@@ -47,13 +47,13 @@ const StyledRow = ({ darkMode, className, children, ...p }) => (
 const StyledCell = ({ isFirst, isLast, isCollectionColumn, align, fontWeight, color, darkMode, className, children, ...p }) => (
   <td
     className={cn(
-      'py-3 text-[13px] align-middle font-mono tabular-nums',
+      'py-3.5 text-[14px] align-middle font-mono tabular-nums',
       isCollectionColumn ? 'whitespace-normal' : 'whitespace-nowrap',
       className
     )}
     style={{
-      paddingLeft: isFirst ? '16px' : '6px',
-      paddingRight: isLast ? '16px' : '6px',
+      paddingLeft: isFirst ? '16px' : '8px',
+      paddingRight: isLast ? '16px' : '8px',
       textAlign: align || 'left',
       fontWeight: fontWeight || 400,
       color: color || (darkMode ? 'rgba(255,255,255,0.85)' : '#1a1a2e')
@@ -66,22 +66,22 @@ const StyledCell = ({ isFirst, isLast, isCollectionColumn, align, fontWeight, co
 const MobileCollectionCard = ({ darkMode, className, children, ...p }) => (
   <div
     className={cn(
-      'mobile-card flex w-full py-[10px] px-3 border-b-[1.5px] cursor-pointer box-border items-center',
+      'mobile-card flex w-full py-3 px-3.5 border-b-[1.5px] cursor-pointer box-border items-center',
       darkMode ? 'border-white/10' : 'border-black/[0.06]',
       className
     )}
-    style={{ contentVisibility: 'auto', containIntrinsicSize: 'auto 49px' }}
+    style={{ contentVisibility: 'auto', containIntrinsicSize: 'auto 54px' }}
     {...p}
   >{children}</div>
 );
 
 const MobileCollectionInfo = ({ className, children, ...p }) => (
-  <div className={cn('flex-[2] flex items-center gap-[10px] px-1 min-w-0', className)} {...p}>{children}</div>
+  <div className={cn('flex-[2] flex items-center gap-3 px-1 min-w-0', className)} {...p}>{children}</div>
 );
 
 const MobileCell = ({ flex, align, fontWeight, color, darkMode, minWidth, wordBreak, lineHeight, className, children, ...p }) => (
   <div
-    className={cn('px-[6px] text-sm font-mono tabular-nums', className)}
+    className={cn('px-[6px] text-[14px] font-mono tabular-nums', className)}
     style={{ flex: flex || 1, textAlign: align || 'right', fontWeight: fontWeight || 400, color: color || (darkMode ? 'rgba(255,255,255,0.85)' : '#1a1a2e'), minWidth: minWidth || 'auto', wordBreak: wordBreak || 'normal', lineHeight: lineHeight || 'normal' }}
     {...p}
   >{children}</div>
@@ -90,19 +90,19 @@ const MobileCell = ({ flex, align, fontWeight, color, darkMode, minWidth, wordBr
 const CollectionImage = ({ isMobile, darkMode, className, children, ...p }) => (
   <div
     className={cn('rounded-lg overflow-hidden shrink-0', darkMode ? 'bg-white/[0.05]' : 'bg-black/[0.03]', className)}
-    style={{ width: isMobile ? '28px' : '32px', height: isMobile ? '28px' : '32px' }}
+    style={{ width: isMobile ? '30px' : '34px', height: isMobile ? '30px' : '34px' }}
     {...p}
   >{children}</div>
 );
 
 const CollectionDetails = ({ className, children, ...p }) => (
-  <div className={cn('flex-1 min-w-0 flex flex-col gap-[2px]', className)} {...p}>{children}</div>
+  <div className={cn('flex-1 min-w-0 flex flex-col gap-[3px]', className)} {...p}>{children}</div>
 );
 
 const CollectionName = ({ isMobile, darkMode, className, children, ...p }) => (
   <span
     className={cn('font-semibold overflow-hidden text-ellipsis whitespace-nowrap block leading-[1.4] font-sans tracking-[-0.01em]', darkMode ? 'text-white/95' : 'text-[#1a1a2e]', className)}
-    style={{ fontSize: isMobile ? '14px' : '15px', maxWidth: isMobile ? '120px' : '180px' }}
+    style={{ fontSize: isMobile ? '14px' : '15px', maxWidth: isMobile ? '130px' : '190px' }}
     {...p}
   >{children}</span>
 );
@@ -110,7 +110,7 @@ const CollectionName = ({ isMobile, darkMode, className, children, ...p }) => (
 const CollectionSubtext = ({ isMobile, darkMode, className, children, ...p }) => (
   <span
     className={cn('font-medium block overflow-hidden text-ellipsis whitespace-nowrap leading-[1.3] uppercase tracking-[0.02em] font-sans', darkMode ? 'text-white/35' : 'text-black/40', className)}
-    style={{ fontSize: isMobile ? '11px' : '12px', maxWidth: isMobile ? '120px' : '180px' }}
+    style={{ fontSize: isMobile ? '11px' : '12px', maxWidth: isMobile ? '130px' : '190px' }}
     {...p}
   >{children}</span>
 );
@@ -137,7 +137,7 @@ const RowsSelector = ({ className, children, ...p }) => (
 
 const Text = ({ darkMode, fontWeight, className, children, ...p }) => (
   <span
-    className={cn('text-[11px] tabular-nums font-medium tracking-[0.01em]', darkMode ? 'text-white/40' : 'text-[#212B36]/50', className)}
+    className={cn('text-[12px] tabular-nums font-medium tracking-[0.01em]', darkMode ? 'text-white/40' : 'text-[#212B36]/50', className)}
     style={{ fontWeight: fontWeight || 400 }}
     {...p}
   >{children}</span>
@@ -148,6 +148,7 @@ const NavButton = ({ darkMode, className, children, ...p }) => (
     className={cn(
       'w-[26px] h-[26px] rounded-lg border-[1.5px] bg-transparent cursor-pointer inline-flex items-center justify-center p-0 transition-[background-color,border-color] duration-150',
       'disabled:cursor-not-allowed',
+      'outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
       darkMode
         ? 'border-white/10 text-white hover:enabled:border-white/[0.15] hover:enabled:bg-white/[0.02] disabled:text-white/30'
         : 'border-black/[0.06] text-[#212B36] hover:enabled:border-black/10 hover:enabled:bg-black/[0.01] disabled:text-[#212B36]/30',
@@ -162,6 +163,7 @@ const PageButton = ({ selected, darkMode, className, children, ...p }) => (
     className={cn(
       'min-w-[22px] h-[22px] rounded-lg border-[1.5px] cursor-pointer inline-flex items-center justify-center px-1 m-0 text-[11px] tabular-nums transition-[background-color,border-color] duration-150',
       'disabled:cursor-not-allowed disabled:opacity-30',
+      'outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
       selected
         ? 'border-[#4285f4] bg-[#4285f4] text-white font-medium hover:enabled:border-[#1976D2] hover:enabled:bg-[#1976D2]'
         : cn(
@@ -181,7 +183,7 @@ const Select = ({ className, children, ...p }) => (
 
 const SelectButton = ({ className, children, ...p }) => (
   <button
-    className={cn('bg-transparent border-none text-[#4285f4] font-medium text-[11px] cursor-pointer p-0 flex items-center gap-[2px] min-w-[36px] hover:bg-blue-400/[0.04] hover:rounded hover:py-[2px] hover:px-1 hover:-my-[2px] hover:-mx-1', className)}
+    className={cn('bg-transparent border-none text-[#4285f4] font-medium text-[11px] cursor-pointer p-0 flex items-center gap-[2px] min-w-[36px] hover:bg-blue-400/[0.04] hover:rounded hover:py-[2px] hover:px-1 hover:-my-[2px] hover:-mx-1 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]', className)}
     {...p}
   >{children}</button>
 );
@@ -215,7 +217,7 @@ const StyledTableHead = ({ scrollTopLength, className, children, ...p }) => (
 const StyledTableCell = ({ isFirst, isLast, darkMode, isCollectionColumn, align, width, sortable, className, children, ...p }) => (
   <th
     className={cn(
-      'font-semibold text-[10px] tracking-[0.06em] uppercase py-3 border-b-[1.5px] box-border',
+      'font-semibold text-[11px] tracking-[0.06em] uppercase py-3.5 border-b-[1.5px] box-border',
       isCollectionColumn ? 'whitespace-normal' : 'whitespace-nowrap',
       sortable ? 'cursor-pointer' : 'cursor-default',
       darkMode ? 'text-white/30 border-white/10' : 'text-[#919EAB] border-black/[0.06]',
@@ -223,8 +225,8 @@ const StyledTableCell = ({ isFirst, isLast, darkMode, isCollectionColumn, align,
       className
     )}
     style={{
-      paddingLeft: isCollectionColumn ? '8px' : isFirst ? '16px' : '6px',
-      paddingRight: isLast ? '16px' : '6px',
+      paddingLeft: isCollectionColumn ? '8px' : isFirst ? '16px' : '8px',
+      paddingRight: isLast ? '16px' : '8px',
       textAlign: align || 'left'
     }}
     {...p}
@@ -253,7 +255,7 @@ const MobileContainer = ({ darkMode, className, children, ...p }) => (
 const StyledMobileHeader = ({ isDark, className, children, ...p }) => (
   <div
     className={cn(
-      'flex w-full py-3 px-4 bg-transparent backdrop-blur-[12px] border-b-[1.5px] text-[10px] font-semibold uppercase tracking-[0.06em] sticky top-0 z-10 box-border',
+      'flex w-full py-3.5 px-4 bg-transparent backdrop-blur-[12px] border-b-[1.5px] text-[11px] font-semibold uppercase tracking-[0.06em] sticky top-0 z-10 box-border',
       isDark ? 'border-white/10 text-white/30' : 'border-black/[0.06] text-[#919EAB]',
       className
     )}
@@ -561,7 +563,7 @@ const MobileCollectionRow = ({ collection, darkMode, handleRowClick }) => {
     <MobileCollectionCard onClick={handleRowClick} darkMode={darkMode}>
       <MobileCollectionInfo>
         <CollectionImage isMobile={true} darkMode={darkMode}>
-          <OptimizedImage src={logoImageUrl} alt={collectionName} size={28} />
+          <OptimizedImage src={logoImageUrl} alt={collectionName} size={30} />
         </CollectionImage>
         <CollectionDetails>
           <CollectionName isMobile={true} darkMode={darkMode}>
@@ -645,7 +647,7 @@ const DesktopCollectionRow = ({ collection, idx, darkMode, handleRowClick }) => 
         darkMode={darkMode}
         isFirst={true}
       >
-        <span className={cn('font-medium text-[13px]', darkMode ? 'text-white/35' : 'text-black/40')}>
+        <span className={cn('font-medium text-[14px]', darkMode ? 'text-white/35' : 'text-black/40')}>
           {idx + 1}
         </span>
       </StyledCell>
@@ -655,9 +657,9 @@ const DesktopCollectionRow = ({ collection, idx, darkMode, handleRowClick }) => 
         darkMode={darkMode}
         isCollectionColumn={true}
       >
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2.5">
           <CollectionImage darkMode={darkMode}>
-            <OptimizedImage src={logoImageUrl} alt={collectionName} size={32} />
+            <OptimizedImage src={logoImageUrl} alt={collectionName} size={34} />
           </CollectionImage>
           <div className="min-w-0 flex-1">
             <CollectionName title={collectionName} darkMode={darkMode}>
@@ -869,6 +871,7 @@ const ListToolbar = memo(function ListToolbar({ rows, setRows, page, setPage, to
           aria-label="Previous page"
           className={cn(
             'p-1.5 rounded-lg border-[1.5px] transition-[background-color,border-color]',
+            'outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
             !hasPrev ? 'opacity-30 cursor-not-allowed' : '',
             darkMode
               ? 'text-white/50 border-white/10 hover:border-white/[0.15] hover:bg-white/[0.02]'
@@ -892,6 +895,7 @@ const ListToolbar = memo(function ListToolbar({ rows, setRows, page, setPage, to
           aria-label="Next page"
           className={cn(
             'p-1.5 rounded-lg border-[1.5px] transition-[background-color,border-color]',
+            'outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
             !hasNext ? 'opacity-30 cursor-not-allowed' : '',
             darkMode
               ? 'text-white/50 border-white/10 hover:border-white/[0.15] hover:bg-white/[0.02]'

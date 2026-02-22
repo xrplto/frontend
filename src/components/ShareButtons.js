@@ -76,6 +76,8 @@ export function ShareDropdown({ url, title, buttonLabel = 'Share' }) {
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
           <div
+            role="menu"
+            aria-label="Share options"
             className={cn(
               'absolute top-full right-0 mt-2 rounded-lg border z-50 p-1.5 min-w-[160px]',
               isDark ? 'bg-[#111] border-white/10' : 'bg-white border-gray-200 shadow-lg'
@@ -434,7 +436,7 @@ export function TokenShareModal({ token, className }) {
       >
         <div className="flex items-center justify-between px-6 py-4">
           <span className={cn('text-sm font-bold uppercase tracking-widest opacity-40', isDark ? 'text-white' : 'text-gray-900')}>Share Token</span>
-          <button onClick={() => setOpen(false)} className={cn("p-1.5 rounded-xl transition-[background-color]", isDark ? "hover:bg-white/10 text-white/40" : "hover:bg-gray-100 text-gray-400")}>
+          <button onClick={() => setOpen(false)} aria-label="Close" className={cn("p-1.5 rounded-xl transition-[background-color] outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]", isDark ? "hover:bg-white/10 text-white/40" : "hover:bg-gray-100 text-gray-400")}>
             <X size={20} />
           </button>
         </div>
@@ -538,7 +540,7 @@ export function NFTShareModal({ name, imageUrl, url }) {
               <span className={`text-[15px] font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
                 Share {name}
               </span>
-              <button onClick={() => setOpen(false)} className="p-1.5 rounded-lg hover:bg-white/10">
+              <button onClick={() => setOpen(false)} aria-label="Close" className="p-1.5 rounded-lg hover:bg-white/10 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]">
                 <X size={16} className={isDark ? 'text-white/40' : 'text-gray-400'} />
               </button>
             </div>
@@ -579,6 +581,7 @@ export function NFTShareModal({ name, imageUrl, url }) {
                   </span>
                   <button
                     onClick={handleCopy}
+                    aria-label="Copy link"
                     className={`p-2 rounded-lg transition-[background-color] ${isDark
                       ? 'bg-white/10 hover:bg-white/15 text-white/60'
                       : 'bg-gray-100 hover:bg-gray-200 text-gray-500'
@@ -651,7 +654,7 @@ export function TxShareModal({ hash, type }) {
               <span className={`text-[15px] font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
                 Share Transaction
               </span>
-              <button onClick={() => setOpen(false)} className="p-1.5 rounded-lg hover:bg-white/10">
+              <button onClick={() => setOpen(false)} aria-label="Close" className="p-1.5 rounded-lg hover:bg-white/10 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]">
                 <X size={16} className={isDark ? 'text-white/40' : 'text-gray-400'} />
               </button>
             </div>
@@ -693,6 +696,7 @@ export function TxShareModal({ hash, type }) {
                   </span>
                   <button
                     onClick={handleCopy}
+                    aria-label="Copy link"
                     className={`p-2 rounded-lg transition-[background-color] ${isDark
                       ? 'bg-white/10 hover:bg-white/15 text-white/60'
                       : 'bg-gray-100 hover:bg-gray-200 text-gray-500'

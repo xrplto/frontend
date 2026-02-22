@@ -1576,7 +1576,7 @@ export async function getServerSideProps({ res }) {
   try {
     // Fetch all available data
     const startDate = new Date(Date.now() - 730 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-    const response = await api.get(`${BASE_URL}/token/analytics/market?startDate=${startDate}`);
+    const response = await api.get(`${BASE_URL}/token/analytics/market?startDate=${startDate}`, { timeout: 8000 });
     const data = response.data;
 
     // Extract from new API structure

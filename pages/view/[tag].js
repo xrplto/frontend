@@ -1,5 +1,4 @@
 import api from 'src/utils/api';
-import { performance } from 'perf_hooks';
 import { useState, useEffect, useContext } from 'react';
 
 // Components
@@ -76,10 +75,9 @@ export async function getServerSideProps(ctx) {
   const tag = ctx.params.tag; // Move tag definition outside try block
 
   try {
-    var t1 = performance.now();
-
     const res = await api.get(
-      `${BASE_URL}/tokens?tag=${tag}&start=0&limit=100&sortBy=vol24hxrp&sortType=desc&filter=&tags=yes`
+      `${BASE_URL}/tokens?tag=${tag}&start=0&limit=100&sortBy=vol24hxrp&sortType=desc&filter=&tags=yes`,
+      { timeout: 8000 }
     );
 
     data = res.data;
@@ -92,7 +90,7 @@ export async function getServerSideProps(ctx) {
       token.time = time;
     }
   } catch (e) {
-    // Error during getStaticProps
+    // API fetch failed
   }
   let ret = {};
   if (data) {
@@ -134,40 +132,6 @@ export async function getServerSideProps(ctx) {
   }
 
   return {
-    props: ret // will be passed to the page component as props
+    props: ret
   };
 }
-
-// export async function getServerSideProps(ctx) {
-//     // https://api.xrpl.to/v1/tokens?start=0&limit=20&sortBy=vol24hxrp&sortType=desc&filter=&showNew=false&showSlug=false
-//     let data = null;
-//     try {
-//         var t1 = performance.now();
-
-//         const res = await api.get(`${BASE_URL}/tokens?start=0&limit=100&sortBy=vol24hxrp&sortType=desc&filter=&showNew=false&showSlug=false`);
-
-//         data = res.data;
-
-//         var t2 = performance.now();
-//         var dt = (t2 - t1).toFixed(2);
-
-//         console.log(`1. getServerSideProps tokens: ${data.tokens.length} took: ${dt}ms`);
-//     } catch (e) {
-//         console.log(e);
-//     }
-//     let ret = {};
-//     if (data) {
-//         let ogp = {};
-
-//         ogp.title = 'XRPL Token Prices, Charts, Market Volume And Activity';
-//         ogp.url = 'https://xrpl.to/';
-//         ogp.imgUrl = 'https://xrpl.to/og/view.webp';
-//         ogp.desc = 'Top XRPL DEX tokens prices and charts, listed by 24h volume. Access to current and historic data for XRP ecosystem. All XRPL tokens automatically listed.';
-
-//         ret = {data, ogp};
-//     }
-
-//     return {
-//         props: ret, // will be passed to the page component as props
-//     }
-// }

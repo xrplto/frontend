@@ -52,7 +52,7 @@ const formatCompactPrice = (price) => {
 import { configureMemos } from 'src/utils/parseUtils';
 import Image from 'next/image';
 import { PuffLoader } from '../../../components/Spinners';
-import { alpha } from 'src/utils/color';
+import { alpha } from 'src/utils/formatters';
 
 const pulse = keyframes`
   0% {
@@ -74,7 +74,7 @@ const CurrencyContent = ({ isDark, className, children, ...p }) => (
   <div
     className={cn(
       'box-border my-[3px] flex flex-row py-[10px] px-3 rounded-[10px] items-center w-full justify-between border transition-[opacity,transform,background-color,border-color] duration-150',
-      'max-sm:py-3 max-sm:px-[14px] max-sm:my-1',
+      'max-sm:py-2 max-sm:px-[10px] max-sm:my-[2px]',
       'focus-within:border-blue-500/40 focus-within:bg-blue-500/[0.03]',
       isDark
         ? 'bg-white/[0.025] border-white/[0.06] focus-within:border-blue-500/40 focus-within:bg-blue-500/[0.05]'
@@ -96,7 +96,7 @@ const OverviewWrapper = ({ isDark, className, children, ...p }) => (
   <div
     className={cn(
       'flex flex-col overflow-hidden box-border relative rounded-2xl p-3 w-full min-w-0 border transition-[opacity,transform,background-color,border-color] duration-200',
-      'max-sm:rounded-2xl max-sm:p-[10px]',
+      'max-sm:rounded-xl max-sm:p-2',
       isDark ? 'bg-transparent border-white/[0.08]' : 'bg-transparent border-black/[0.06]',
       className
     )}
@@ -117,7 +117,7 @@ const ToggleContent = ({ isDark, className, children, ...p }) => (
     className={cn(
       'cursor-pointer absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-[10px] p-0 z-[2] border-[1.5px] overflow-hidden',
       'transition-[opacity,transform,background-color,border-color] duration-[250ms] ease-[cubic-bezier(0.4,0,0.2,1)]',
-      'hover:scale-105 hover:border-blue-500/50 active:scale-95',
+      'hover:scale-105 hover:border-blue-500/50 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
       '[&:hover_svg]:text-blue-500 [&:hover_svg]:rotate-180',
       isDark
         ? 'bg-[rgba(20,20,25,0.95)] border-white/10 hover:bg-blue-500/[0.12]'
@@ -131,7 +131,7 @@ const ToggleContent = ({ isDark, className, children, ...p }) => (
 const ExchangeButton = ({ isDark, disabled, className, children, ...p }) => (
   <button
     className={cn(
-      'w-full relative overflow-hidden rounded-xl bg-blue-500 text-white font-bold border-none py-[14px] px-4 text-sm uppercase tracking-[0.05em] mt-2 transition-[opacity,transform,background-color,border-color] duration-200 shadow-[0_4px_12px_rgba(59,130,246,0.25)]',
+      'w-full relative overflow-hidden rounded-xl bg-blue-500 text-white font-bold border-none py-[14px] px-4 text-sm uppercase tracking-[0.05em] mt-2 transition-[opacity,transform,background-color,border-color] duration-200 shadow-[0_4px_12px_rgba(59,130,246,0.25)] max-sm:py-[10px] max-sm:text-xs max-sm:mt-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] focus-visible:ring-offset-2',
       'hover:bg-blue-600 hover:-translate-y-px hover:shadow-[0_6px_16px_rgba(59,130,246,0.35)]',
       'active:translate-y-0',
       disabled && (isDark ? 'bg-white/[0.04] text-white/20 shadow-none hover:bg-white/[0.04] hover:translate-y-0 hover:shadow-none' : 'bg-black/[0.04] text-black/20 shadow-none hover:bg-black/[0.04] hover:translate-y-0 hover:shadow-none'),
@@ -154,7 +154,7 @@ const SummaryBox = ({ isDark, className, children, ...p }) => (
   <div
     className={cn(
       'py-2 px-[10px] rounded-lg border mt-[6px] mb-[2px]',
-      'max-sm:py-[10px] max-sm:px-3 max-sm:rounded-[10px] max-sm:mt-2',
+      'max-sm:py-[6px] max-sm:px-2 max-sm:rounded-lg max-sm:mt-1',
       isDark ? 'bg-white/[0.025] border-white/[0.06]' : 'bg-black/[0.015] border-black/[0.06]',
       className
     )}
@@ -458,41 +458,52 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
     return currency;
   };
 
-  const isLoggedIn = accountProfile && accountProfile.account && accountPairBalance;
+  const isLoggedIn = accountProfile && accountProfile.account;
+  const hasBalance = isLoggedIn && accountPairBalance;
 
   let isSufficientBalance = false;
   let errMsg = '';
 
-  if (isLoggedIn) {
-    errMsg = '';
-    isSufficientBalance = false;
-
-    try {
-      const accountAmount = new Decimal(accountPairBalance.curr1.value).toNumber();
-
-      if (amount1 && amount2) {
-        const fAmount1 = new Decimal(amount1 || 0).toNumber();
-        const fAmount2 = new Decimal(amount2 || 0).toNumber();
-
-        if (fAmount1 > 0 && fAmount2 > 0) {
-          if (accountAmount >= fAmount1) {
-            isSufficientBalance = true;
-          } else {
-            errMsg = 'Insufficient wallet balance';
-          }
-        } else {
-          errMsg = 'Insufficient wallet balance';
-        }
-      }
-    } catch (e) {
-      errMsg = 'Insufficient wallet balance';
-    }
-  } else if (!accountProfile?.account) {
+  if (!accountProfile?.account) {
     errMsg = 'Connect your wallet!';
+    isSufficientBalance = false;
+  } else if (!hasBalance) {
+    errMsg = '';
     isSufficientBalance = false;
   } else {
     errMsg = '';
     isSufficientBalance = false;
+
+    // Check trustlines first
+    if (!hasTrustline1 && curr1.currency !== 'XRP') {
+      const displayName = getCurrencyDisplayName(curr1.currency, curr1?.name);
+      errMsg = `No trustline for ${displayName}`;
+    } else if (!hasTrustline2 && curr2.currency !== 'XRP') {
+      const displayName = getCurrencyDisplayName(curr2.currency, curr2?.name);
+      errMsg = `No trustline for ${displayName}`;
+    } else {
+      // Check balance if trustlines exist
+      try {
+        const accountAmount = new Decimal(accountPairBalance.curr1.value).toNumber();
+
+        if (amount1 && amount2) {
+          const fAmount1 = new Decimal(amount1 || 0).toNumber();
+          const fAmount2 = new Decimal(amount2 || 0).toNumber();
+
+          if (fAmount1 > 0 && fAmount2 > 0) {
+            if (accountAmount >= fAmount1) {
+              isSufficientBalance = true;
+            } else {
+              errMsg = 'Insufficient wallet balance';
+            }
+          } else {
+            errMsg = 'Insufficient wallet balance';
+          }
+        }
+      } catch (e) {
+        errMsg = 'Insufficient wallet balance';
+      }
+    }
   }
 
   const canPlaceOrder = isLoggedIn && isSufficientBalance;
@@ -510,11 +521,11 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
       return;
     }
 
-    if (quoteAbortRef.current) quoteAbortRef.current.abort();
-    quoteAbortRef.current = new AbortController();
+    const timeoutId = setTimeout(async () => {
+      if (quoteAbortRef.current) quoteAbortRef.current.abort();
+      quoteAbortRef.current = new AbortController();
 
-    setQuoteLoading(true);
-    (async () => {
+      setQuoteLoading(true);
       try {
         // Use curr2 (destination) which respects revert state
         const destAmount =
@@ -554,9 +565,9 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
       } finally {
         setQuoteLoading(false);
       }
-    })();
+    }, 400);
 
-    return () => quoteAbortRef.current?.abort();
+    return () => clearTimeout(timeoutId);
   }, [amount2, curr1, curr2, accountProfile?.account, slippage, orderType]);
 
   // Client-side fallback quote calculation from orderbook
@@ -759,12 +770,12 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
 
     const connect = async () => {
       try {
-        const res = await fetch(`/api/ws/session?type=balancePair&id=${account}&${params}`);
-        const { wsUrl, apiKey } = await res.json();
-        if (!wsUrl || !/^wss?:\/\//i.test(wsUrl)) return;
+        const { getSessionWsUrl } = await import('src/utils/wsToken');
+        const wsUrl = await getSessionWsUrl('balancePair', account, Object.fromEntries(new URLSearchParams(params)));
+        if (!wsUrl) return;
         ws = new WebSocket(wsUrl);
 
-        ws.onopen = () => { if (apiKey) ws.send(JSON.stringify({ type: 'auth', apiKey })); };
+        ws.onopen = () => {};
         ws.onmessage = (event) => {
           try {
             const data = JSON.parse(event.data);
@@ -972,7 +983,6 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
       }
 
       const seed = walletData.seed.trim();
-      if (seed !== walletData.seed) console.warn('[Swap] Seed had whitespace! original:', walletData.seed.length, 'trimmed:', seed.length);
       const algorithm = seed.startsWith('sEd') ? 'ed25519' : 'secp256k1';
       const deviceWallet = Wallet.fromSeed(seed, { algorithm });
 
@@ -1307,7 +1317,6 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
 
         } catch (simErr) {
           // Simulation not available - continue with submit directly
-          console.warn('[Swap] Simulation failed, proceeding without preview:', simErr.message);
         }
 
         // Submit via API (fallback if simulation unavailable)
@@ -1472,6 +1481,7 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
     } catch (err) {
       console.error('Swap error:', err);
       toast.error('Swap failed', { id: toastId, description: err.message?.slice(0, 50) });
+      dispatch(updateProcess(0));
     }
   };
 
@@ -1521,6 +1531,7 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
       setAmount1(''); setAmount2(''); setLimitPrice('');
       setSync((s) => s + 1); setIsSwapped((v) => !v);
     } catch (err) {
+      console.error('Confirmed swap error:', err);
       toast.error('Swap failed', { id: toastId, description: err.message?.slice(0, 50) });
     }
   };
@@ -1534,6 +1545,7 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
     let value = e.target.value;
 
     if (value === '.') value = '0.';
+    if (value === '0' && amount1 === '') value = '0.';
     if (isNaN(Number(value))) return;
 
     setAmount1(value);
@@ -1562,6 +1574,7 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
     let value = e.target.value;
 
     if (value === '.') value = '0.';
+    if (value === '0' && amount2 === '') value = '0.';
     if (isNaN(Number(value))) return;
 
     setAmount2(value);
@@ -1594,6 +1607,19 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
 
   const handleMsg = () => {
     if (isProcessing === 1) return 'Pending Exchanging';
+
+    // Check for missing trustlines
+    if (
+      isLoggedIn &&
+      ((!hasTrustline1 && curr1.currency !== 'XRP') || (!hasTrustline2 && curr2.currency !== 'XRP'))
+    ) {
+      const missingToken =
+        !hasTrustline1 && curr1.currency !== 'XRP'
+          ? getCurrencyDisplayName(curr1.currency, curr1?.name)
+          : getCurrencyDisplayName(curr2.currency, curr2?.name);
+      return `Set Trustline for ${missingToken}`;
+    }
+
     if (!amount1 || !amount2) return 'Enter an Amount';
     if (orderType === 'limit' && !limitPrice) return 'Enter Limit Price';
     if (errMsg && amount1 !== '' && amount2 !== '') return errMsg;
@@ -1666,7 +1692,7 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
         LimitAmount: {
           issuer: currency.issuer,
           currency: currency.currency,
-          value: new Decimal(currency.supply).toFixed(0)
+          value: currency.supply ? new Decimal(currency.supply).toFixed(0) : '1000000000000000'
         },
         Flags: 0x00020000,
         SourceTag: 161803
@@ -1840,8 +1866,9 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
               </div>
               <button
                 onClick={handleCancelPreview}
+                aria-label="Close preview"
                 className={cn(
-                  'border-none rounded-lg cursor-pointer p-[6px] flex items-center justify-center',
+                  'border-none rounded-lg cursor-pointer p-[6px] flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                   isDark ? 'bg-white/[0.05] text-white/55' : 'bg-black/[0.05] text-black/40'
                 )}
               >
@@ -2064,11 +2091,11 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
             </span>
           </div>
         )}
-        <div className="mb-1">
+        <div className="mb-1 max-sm:mb-0.5">
           <div className="flex gap-1 sm:gap-2">
             <button
               className={cn(
-                'py-[6px] px-3 text-[11px] font-medium tracking-[0.05em] uppercase bg-transparent rounded-md border cursor-pointer transition-[opacity,transform,background-color,border-color] duration-150 sm:py-[10px] sm:px-4 sm:text-xs',
+                'py-[6px] px-3 text-[11px] font-medium tracking-[0.05em] uppercase bg-transparent rounded-md border cursor-pointer transition-[opacity,transform,background-color,border-color] duration-150 sm:py-[10px] sm:px-4 sm:text-xs max-sm:py-[4px] max-sm:px-2',
                 orderType === 'market'
                   ? isDark ? 'border-white/20 text-white/90' : 'border-black/20 text-black/80'
                   : isDark ? 'border-white/10 text-white/55' : 'border-black/10 text-black/40',
@@ -2080,7 +2107,7 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
             </button>
             <button
               className={cn(
-                'py-[6px] px-3 text-[11px] font-medium tracking-[0.05em] uppercase bg-transparent rounded-md border cursor-pointer transition-[opacity,transform,background-color,border-color] duration-150 sm:py-[10px] sm:px-4 sm:text-xs',
+                'py-[6px] px-3 text-[11px] font-medium tracking-[0.05em] uppercase bg-transparent rounded-md border cursor-pointer transition-[opacity,transform,background-color,border-color] duration-150 sm:py-[10px] sm:px-4 sm:text-xs max-sm:py-[4px] max-sm:px-2',
                 orderType === 'limit'
                   ? isDark ? 'border-white/20 text-white/90' : 'border-black/20 text-black/80'
                   : isDark ? 'border-white/10 text-white/55' : 'border-black/10 text-black/40',
@@ -2131,9 +2158,9 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
                     </div>
                   )}
                 </div>
-                <div className="flex items-center gap-2.5 mt-1">
+                <div className="flex items-center gap-2.5 max-sm:gap-2 mt-1 max-sm:mt-0.5">
                   <div className={cn(
-                    'flex items-center gap-2 py-1.5 px-2.5 rounded-lg cursor-pointer',
+                    'flex items-center gap-2 py-1.5 px-2.5 rounded-lg cursor-pointer max-sm:py-1 max-sm:px-2',
                     isDark ? 'bg-white/[0.04]' : 'bg-black/[0.03]'
                   )}>
                     <TokenImage
@@ -2152,12 +2179,13 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
                     <input
                       placeholder="0.00"
                       autoComplete="new-password"
-                      className={cn('outline-none max-sm:text-base max-sm:p-[10px]', isDark ? 'text-white placeholder:text-white/55' : 'text-[#212B36] placeholder:text-black/40')}
+                      className={cn('outline-none', isDark ? 'text-white placeholder:text-white/55' : 'text-[#212B36] placeholder:text-black/40')}
                       style={{ width: '100%', padding: '0px', border: 'none', fontSize: '20px', textAlign: 'end', appearance: 'none', fontWeight: 500, background: 'transparent' }}
                       value={amount1}
                       onChange={handleChangeAmount1}
+                      onFocus={(e) => { if (window.innerWidth < 640) setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300); }}
                     />
-                    <span className={cn('text-[11px]', isDark ? 'text-white/55' : 'text-black/40')}>
+                    <span className={cn('text-[11px] max-sm:text-[10px]', isDark ? 'text-white/55' : 'text-black/40')}>
                       {curr1IsXRP ? `≈ ${fNumber(tokenPrice1)} XRP` : `≈ ${currencySymbols[activeFiatCurrency]}${fNumber(tokenPrice1)}`}
                     </span>
                   </div>
@@ -2183,9 +2211,9 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
                     </span>
                   )}
                 </div>
-                <div className="flex items-center gap-2.5 mt-1">
+                <div className="flex items-center gap-2.5 max-sm:gap-2 mt-1 max-sm:mt-0.5">
                   <div className={cn(
-                    'flex items-center gap-2 py-1.5 px-2.5 rounded-lg cursor-pointer',
+                    'flex items-center gap-2 py-1.5 px-2.5 rounded-lg cursor-pointer max-sm:py-1 max-sm:px-2',
                     isDark ? 'bg-white/[0.04]' : 'bg-black/[0.03]'
                   )}>
                     <TokenImage
@@ -2204,12 +2232,13 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
                     <input
                       placeholder="0.00"
                       autoComplete="new-password"
-                      className={cn('outline-none max-sm:text-base max-sm:p-[10px]', isDark ? 'text-white placeholder:text-white/55' : 'text-[#212B36] placeholder:text-black/40')}
+                      className={cn('outline-none', isDark ? 'text-white placeholder:text-white/55' : 'text-[#212B36] placeholder:text-black/40')}
                       style={{ width: '100%', padding: '0px', border: 'none', fontSize: '20px', textAlign: 'end', appearance: 'none', fontWeight: 500, background: 'transparent' }}
                       value={amount2}
                       onChange={handleChangeAmount2}
+                      onFocus={(e) => { if (window.innerWidth < 640) setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300); }}
                     />
-                    <span className={cn('text-[11px]', isDark ? 'text-white/55' : 'text-black/40')}>
+                    <span className={cn('text-[11px] max-sm:text-[10px]', isDark ? 'text-white/55' : 'text-black/40')}>
                       {curr2IsXRP ? `≈ ${fNumber(tokenPrice2)} XRP` : `≈ ${currencySymbols[activeFiatCurrency]}${fNumber(tokenPrice2)}`}
                     </span>
                   </div>
@@ -2217,8 +2246,8 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
               </div>
             </CurrencyContent>
 
-            <ToggleContent isDark={isDark} onClick={onRevertExchange}>
-              <div className="flex items-center justify-center w-9 h-9">
+            <ToggleContent isDark={isDark} onClick={onRevertExchange} role="button" aria-label="Swap currency direction">
+              <div className="flex items-center justify-center w-9 h-9 max-sm:w-7 max-sm:h-7">
                 <ArrowUpDown
                   size={16}
                   strokeWidth={2.5}
@@ -2260,8 +2289,9 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
                   </span>
                   <button
                     onClick={() => setShowSettingsModal(false)}
+                    aria-label="Close settings"
                     className={cn(
-                      'p-1.5 rounded-lg transition-[background-color,border-color]',
+                      'p-1.5 rounded-lg transition-[background-color,border-color] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                       isDark ? 'hover:bg-white/5' : 'hover:bg-gray-100'
                     )}
                   >
@@ -2581,7 +2611,7 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
                 <div className="relative">
                   <input
                     placeholder="0.00"
-                    className={cn('outline-none w-full max-sm:text-base max-sm:p-[10px] font-mono', isDark ? 'text-white placeholder:text-white/55' : 'text-[#212B36] placeholder:text-black/40')}
+                    className={cn('outline-none w-full max-sm:text-sm max-sm:p-2 font-mono', isDark ? 'text-white placeholder:text-white/55' : 'text-[#212B36] placeholder:text-black/40')}
                     style={{ padding: '10px 12px', border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`, fontSize: '14px', fontWeight: 600, background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)', borderRadius: '10px' }}
                     value={limitPrice}
                     onChange={(e) => {
@@ -2829,8 +2859,7 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
                 isDark={isDark}
                 disabled={
                   isProcessing === 1 ||
-                  !isLoggedIn ||
-                  (canPlaceOrder === false && hasTrustline1 && hasTrustline2)
+                  !isLoggedIn
                 }
               >
                 {handleMsg()}
@@ -2847,7 +2876,7 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
         </ConverterFrame>
       </OverviewWrapper>
 
-      <div className="flex items-center gap-1.5 mt-1 mb-0.5 px-1">
+      <div className="flex items-center gap-1.5 mt-1 mb-0.5 px-1 max-sm:mt-0.5">
         <PuffLoader color={isDark ? '#22c55e' : '#3b82f6'} size={10} />
         <span className={cn('text-[10px] font-mono', isDark ? 'text-white/55' : 'text-gray-400')}>
           1 {curr1.name} ={' '}

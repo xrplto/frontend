@@ -80,6 +80,14 @@ const currencyConfig = {
   activeFiatCurrency: 'XRP'
 };
 
+function Rate(num, exch) {
+  if (num === 0 || exch === 0) return '0';
+  const price = num / exch;
+  if (price < 0.01) return price.toFixed(8).replace(/0+$/, '').replace(/\.$/, '');
+  if (price < 100) return price.toFixed(4).replace(/0+$/, '').replace(/\.$/, '');
+  return price.toFixed(2).replace(/0+$/, '').replace(/\.$/, '');
+}
+
 const truncateAccount = (account, chars = 4) => {
   if (!account) return '';
   return `${account.slice(0, chars)}...${account.slice(-chars)}`;
@@ -446,7 +454,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
         setSuggestedTokens(res.data?.tokens?.slice(0, 4) || []);
         setSuggestedCollections(res.data?.collections?.slice(0, 3) || []);
       })
-      .catch(() => { });
+      .catch(err => { console.warn('[Header] Suggested search failed:', err.message); });
   }, [searchOpen, fullSearch]);
 
   // Search effect
@@ -802,6 +810,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
         {/* Left: Logo + Nav */}
         <div className="flex shrink-0 items-center gap-2 2xl:gap-6">
           <Logo alt="xrpl.to Logo" />
+
 
           {/* Desktop Navigation - Left Side */}
             <nav className="hidden lg:flex items-center [&_a]:px-2 2xl:[&_a]:px-3">
@@ -1639,7 +1648,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                 setSearchQuery('');
               }}
             />
-            <div className="fixed inset-x-0 top-0 z-[9999] px-4 pt-4" ref={searchRef}>
+            <div className="fixed inset-x-0 top-0 z-[9999] px-4 pt-4" ref={searchRef} role="dialog" aria-modal="true" aria-label="Search">
               <div
                 className={cn(
                   'flex items-center gap-3 px-4 h-[42px] rounded-2xl border transition-[background-color,border-color,opacity,transform] duration-300',
@@ -1666,8 +1675,9 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                     setFullSearch(false);
                     setSearchQuery('');
                   }}
+                  aria-label="Close search"
                   className={cn(
-                    'p-1.5 rounded-lg transition-colors',
+                    'p-1.5 rounded-lg transition-colors outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                     isDark ? 'text-white/60 hover:text-white hover:bg-white/10' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
                   )}
                 >
@@ -2148,7 +2158,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
               aria-label="Open search"
               onClick={handleFullSearch}
               className={cn(
-                'lg:hidden flex h-9 w-9 items-center justify-center rounded-full transition-[background-color,border-color,opacity,transform] duration-200',
+                'lg:hidden flex h-9 w-9 items-center justify-center rounded-full transition-[background-color,border-color,opacity,transform] duration-200 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                 isDark
                   ? 'text-white/60 hover:text-[#3f96fe] hover:bg-[rgba(63,150,254,0.1)]'
                   : 'text-gray-500 hover:text-[#3f96fe] hover:bg-blue-50'
@@ -2166,7 +2176,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                 href="/watchlist"
                 aria-label="Watchlist"
                 className={cn(
-                  'flex h-8 w-8 items-center justify-center rounded-lg border transition-[background-color,border-color,opacity,transform] duration-200',
+                  'flex h-8 w-8 items-center justify-center rounded-lg border transition-[background-color,border-color,opacity,transform] duration-200 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                   isDark
                     ? 'border-white/10 text-white/50 hover:text-[#3f96fe] hover:border-[#3f96fe]/50 hover:bg-[rgba(63,150,254,0.1)]'
                     : 'border-gray-200 text-gray-400 hover:text-[#3f96fe] hover:border-[#3f96fe]/50 hover:bg-blue-50'
@@ -2181,7 +2191,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   onClick={handleSettingsToggle}
                   aria-label="Settings"
                   className={cn(
-                    'flex h-8 w-8 items-center justify-center rounded-lg border transition-[background-color,border-color,opacity,transform] duration-200',
+                    'flex h-8 w-8 items-center justify-center rounded-lg border transition-[background-color,border-color,opacity,transform] duration-200 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                     isDark
                       ? 'border-white/10 text-white/50 hover:text-[#3f96fe] hover:border-[#3f96fe]/50 hover:bg-[rgba(63,150,254,0.1)]'
                       : 'border-gray-200 text-gray-400 hover:text-[#3f96fe] hover:border-[#3f96fe]/50 hover:bg-blue-50'
@@ -2324,53 +2334,58 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                 <span className="relative z-10">Launch</span>
               </a>
 
-              {hasMounted && accountProfile ? (
-                <div
-                  className={cn(
-                    'relative flex h-8 items-center rounded-lg text-[13px] font-medium border overflow-hidden',
-                    !isAccountActivated
-                      ? isDark
-                        ? 'bg-amber-500/5 text-white border-amber-500/20'
-                        : 'bg-amber-50 text-gray-900 border-amber-200'
-                      : isDark
-                        ? 'bg-emerald-500/5 text-white border-emerald-500/20'
-                        : 'bg-emerald-50 text-gray-900 border-emerald-200'
-                  )}
-                >
-                  {/* Main area - links to /wallet */}
+              {!hasMounted ? (
+                <div className="w-[90px] h-8" />
+              ) : accountProfile ? (
+                <div className="flex items-center gap-1">
+                  {/* Address — links to /wallet */}
                   <a
                     href="/wallet"
+                    title="View wallet"
                     className={cn(
-                      'flex items-center gap-2 px-3 h-full transition-[background-color,border-color,opacity,transform] duration-200',
-                      !isAccountActivated
-                        ? isDark
-                          ? 'hover:bg-amber-500/10'
-                          : 'hover:bg-amber-100/50'
-                        : isDark
-                          ? 'hover:bg-emerald-500/10'
-                          : 'hover:bg-emerald-100/50'
+                      'flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-[12px] font-medium border transition-[background-color,border-color,opacity,transform] duration-200',
+                      isDark
+                        ? 'bg-white/[0.04] text-white/60 border-white/10 hover:border-white/25 hover:text-white'
+                        : 'bg-gray-50 text-gray-500 border-gray-200 hover:border-gray-300 hover:text-gray-700'
                     )}
                   >
-                    <span className="relative flex h-2 w-2">
+                    <span className="relative flex h-1.5 w-1.5">
                       {isAccountActivated && (
                         <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
                       )}
                       <span
                         className={cn(
-                          'relative inline-flex h-2 w-2 rounded-full',
-                          !isAccountActivated
-                            ? 'bg-amber-400/60'
-                            : 'bg-emerald-500'
+                          'relative inline-flex h-1.5 w-1.5 rounded-full',
+                          !isAccountActivated ? 'bg-amber-400/60' : 'bg-emerald-500'
                         )}
                       />
                     </span>
-                    <span className="font-medium tabular-nums">
-                      {availableXrp != null ? `${parseFloat(availableXrp).toFixed(2)} XRP` : '...'}
+                    <span className="tabular-nums">
+                      {accountLogin ? `${accountLogin.slice(0, 4)}...${accountLogin.slice(-4)}` : ''}
+                    </span>
+                  </a>
+                  {/* Balance — opens wallet modal */}
+                  <button
+                    onClick={() => setOpenWalletModal(true)}
+                    title="Switch wallet"
+                    className={cn(
+                      'flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-[13px] font-medium border transition-[background-color,border-color,opacity,transform] duration-200',
+                      !isAccountActivated
+                        ? isDark
+                          ? 'bg-amber-500/5 text-white border-amber-500/20 hover:bg-amber-500/10'
+                          : 'bg-amber-50 text-gray-900 border-amber-200 hover:bg-amber-100/50'
+                        : isDark
+                          ? 'bg-emerald-500/5 text-white border-emerald-500/20 hover:bg-emerald-500/10'
+                          : 'bg-emerald-50 text-gray-900 border-emerald-200 hover:bg-emerald-100/50'
+                    )}
+                  >
+                    <span className="tabular-nums">
+                      {availableXrp != null ? `${parseFloat(availableXrp).toFixed(2)}` : '...'}
                     </span>
                     {profiles?.length > 1 && (
                       <span
                         className={cn(
-                          'text-[10px] px-1.5 py-0.5 rounded font-semibold',
+                          'text-[10px] px-1 py-px rounded font-semibold',
                           isDark
                             ? 'bg-white/10 text-white/60'
                             : !isAccountActivated
@@ -2381,35 +2396,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                         {profiles.length}
                       </span>
                     )}
-                  </a>
-                  {/* Divider */}
-                  <div
-                    className={cn(
-                      'h-4 w-px',
-                      !isAccountActivated
-                        ? isDark
-                          ? 'bg-amber-500/20'
-                          : 'bg-amber-200'
-                        : isDark
-                          ? 'bg-emerald-500/20'
-                          : 'bg-emerald-200'
-                    )}
-                  />
-                  {/* Dropdown trigger - opens modal */}
-                  <button
-                    onClick={() => setOpenWalletModal(true)}
-                    className={cn(
-                      'flex items-center justify-center px-2 h-full transition-[background-color,border-color,opacity,transform] duration-200',
-                      !isAccountActivated
-                        ? isDark
-                          ? 'hover:bg-amber-500/10'
-                          : 'hover:bg-amber-100/50'
-                        : isDark
-                          ? 'hover:bg-emerald-500/10'
-                          : 'hover:bg-emerald-100/50'
-                    )}
-                  >
-                    <ChevronDown size={12} className={isDark ? 'text-white/60' : 'text-gray-400'} />
+                    <ChevronDown size={11} className={isDark ? 'text-white/40' : 'text-gray-400'} />
                   </button>
                 </div>
               ) : (
@@ -2433,31 +2420,19 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
           {!fullSearch && (
             <div className="lg:hidden flex items-center gap-1">
               {/* Mobile Wallet Button */}
-              {hasMounted && accountProfile ? (
-                <div
-                  className={cn(
-                    'flex h-8 items-center rounded-lg text-[12px] font-medium border overflow-hidden',
-                    !isAccountActivated
-                      ? isDark
-                        ? 'bg-amber-500/5 text-white border-amber-500/20'
-                        : 'bg-amber-50 text-gray-900 border-amber-200'
-                      : isDark
-                        ? 'bg-emerald-500/5 text-white border-emerald-500/20'
-                        : 'bg-emerald-50 text-gray-900 border-emerald-200'
-                  )}
-                >
-                  {/* Main area - links to /wallet */}
+              {!hasMounted ? (
+                <div className="w-8 h-8" />
+              ) : accountProfile ? (
+                <div className="flex items-center gap-0.5">
+                  {/* Address — links to /wallet */}
                   <a
                     href="/wallet"
+                    title="View wallet"
                     className={cn(
-                      'flex items-center gap-1.5 px-2.5 h-full transition-[background-color,border-color,opacity,transform] duration-200',
-                      !isAccountActivated
-                        ? isDark
-                          ? 'hover:bg-amber-500/10'
-                          : 'hover:bg-amber-100/50'
-                        : isDark
-                          ? 'hover:bg-emerald-500/10'
-                          : 'hover:bg-emerald-100/50'
+                      'flex h-8 items-center gap-1 rounded-lg px-2 text-[11px] font-medium border transition-[background-color,border-color,opacity,transform] duration-200',
+                      isDark
+                        ? 'bg-white/[0.04] text-white/60 border-white/10 hover:border-white/25'
+                        : 'bg-gray-50 text-gray-500 border-gray-200 hover:border-gray-300'
                     )}
                   >
                     <span className="relative flex h-1.5 w-1.5">
@@ -2467,45 +2442,30 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       <span
                         className={cn(
                           'relative inline-flex h-1.5 w-1.5 rounded-full',
-                          !isAccountActivated
-                            ? 'bg-amber-400/60'
-                            : 'bg-emerald-500'
+                          !isAccountActivated ? 'bg-amber-400/60' : 'bg-emerald-500'
                         )}
                       />
                     </span>
                     <span className="tabular-nums">
-                      {availableXrp != null ? parseFloat(availableXrp).toFixed(1) : '...'}
+                      {accountLogin ? `${accountLogin.slice(0, 4)}..${accountLogin.slice(-3)}` : ''}
                     </span>
                   </a>
-                  {/* Divider */}
-                  <div
-                    className={cn(
-                      'h-4 w-px',
-                      !isAccountActivated
-                        ? isDark
-                          ? 'bg-amber-500/20'
-                          : 'bg-amber-200'
-                        : isDark
-                          ? 'bg-emerald-500/20'
-                          : 'bg-emerald-200'
-                    )}
-                  />
-                  {/* Dropdown trigger - opens modal */}
+                  {/* Switch wallet */}
                   <button
-                    aria-label="Wallet options"
+                    aria-label="Switch wallet"
                     onClick={() => setOpenWalletModal(true)}
                     className={cn(
-                      'flex items-center justify-center px-1.5 h-full transition-[background-color,border-color,opacity,transform] duration-200',
+                      'flex h-8 w-7 items-center justify-center rounded-lg border transition-[background-color,border-color,opacity,transform] duration-200 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                       !isAccountActivated
                         ? isDark
-                          ? 'hover:bg-amber-500/10'
-                          : 'hover:bg-amber-100/50'
+                          ? 'bg-amber-500/5 border-amber-500/20 hover:bg-amber-500/10'
+                          : 'bg-amber-50 border-amber-200 hover:bg-amber-100/50'
                         : isDark
-                          ? 'hover:bg-emerald-500/10'
-                          : 'hover:bg-emerald-100/50'
+                          ? 'bg-emerald-500/5 border-emerald-500/20 hover:bg-emerald-500/10'
+                          : 'bg-emerald-50 border-emerald-200 hover:bg-emerald-100/50'
                     )}
                   >
-                    <ChevronDown size={10} className={isDark ? 'text-white/60' : 'text-gray-400'} />
+                    <ChevronDown size={10} className={isDark ? 'text-white/50' : 'text-gray-400'} />
                   </button>
                 </div>
               ) : (
@@ -2513,7 +2473,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   aria-label="Connect wallet"
                   onClick={() => setOpenWalletModal(true)}
                   className={cn(
-                    'flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-[12px] font-medium transition-[background-color,border-color,opacity,transform] duration-200 border active:scale-95',
+                    'flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-[12px] font-medium transition-[background-color,border-color,opacity,transform] duration-200 border active:scale-95 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                     isDark
                       ? 'bg-white/[0.08] text-white/70 border-white/20 hover:border-white/30 hover:bg-white/[0.12]'
                       : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50 hover:border-gray-300'
@@ -2527,7 +2487,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                 aria-label="Open menu"
                 onClick={() => toggleDrawer(true)}
                 className={cn(
-                  'flex h-9 w-9 items-center justify-center rounded-full transition-[background-color,border-color,opacity,transform] duration-200',
+                  'flex h-9 w-9 items-center justify-center rounded-full transition-[background-color,border-color,opacity,transform] duration-200 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                   isDark
                     ? 'text-white/60 hover:text-[#3f96fe] hover:bg-[rgba(63,150,254,0.1)]'
                     : 'text-gray-500 hover:text-[#3f96fe] hover:bg-blue-50'
@@ -2552,6 +2512,9 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
             onClick={() => toggleDrawer(false)}
           />
           <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Navigation menu"
             className={cn(
               'fixed inset-x-4 top-2 bottom-4 pb-[env(safe-area-inset-bottom)] z-[2147483647] rounded-2xl border-[1.5px] animate-in fade-in zoom-in-95 duration-200',
               isDark
@@ -2574,7 +2537,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   onClick={() => toggleDrawer(false)}
                   aria-label="Close menu"
                   className={cn(
-                    'rounded-lg p-1.5 transition-colors duration-100',
+                    'rounded-lg p-1.5 transition-colors duration-100 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                     isDark
                       ? 'text-white/50 hover:text-white hover:bg-white/[0.05]'
                       : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
@@ -2608,7 +2571,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   <button
                     onClick={() => setTokensExpanded(!tokensExpanded)}
                     className={cn(
-                      'px-3 py-2 rounded-r-lg transition-colors duration-100',
+                      'px-3 py-2 rounded-r-lg transition-colors duration-100 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                       isDark ? 'hover:bg-white/[0.05]' : 'hover:bg-gray-100'
                     )}
                     aria-label="Expand tokens submenu"
@@ -2696,7 +2659,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   <button
                     onClick={() => setNftsExpanded(!nftsExpanded)}
                     className={cn(
-                      'px-3 py-2 rounded-r-lg transition-colors duration-100',
+                      'px-3 py-2 rounded-r-lg transition-colors duration-100 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                       isDark ? 'hover:bg-white/[0.05]' : 'hover:bg-gray-100'
                     )}
                     aria-label="Expand NFTs submenu"
@@ -2848,32 +2811,17 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
               />
 
               <div className="px-1">
-                {hasMounted && accountProfile ? (
-                  <div
-                    className={cn(
-                      'flex w-full items-center rounded-lg text-[13px] font-medium border overflow-hidden',
-                      !isAccountActivated
-                        ? isDark
-                          ? 'bg-amber-500/5 text-white border-amber-500/20'
-                          : 'bg-amber-50 text-gray-900 border-amber-200'
-                        : isDark
-                          ? 'bg-emerald-500/5 text-white border-emerald-500/20'
-                          : 'bg-emerald-50 text-gray-900 border-emerald-200'
-                    )}
-                  >
-                    {/* Main area - links to /wallet */}
+                {!hasMounted ? null : accountProfile ? (
+                  <div className="flex w-full gap-1.5">
+                    {/* Address — links to /wallet */}
                     <a
                       href="/wallet"
                       onClick={() => toggleDrawer(false)}
                       className={cn(
-                        'flex flex-1 items-center justify-center gap-2 px-4 py-2.5 transition-[background-color,border-color,opacity,transform] duration-200',
-                        !isAccountActivated
-                          ? isDark
-                            ? 'hover:bg-amber-500/10'
-                            : 'hover:bg-amber-100/50'
-                          : isDark
-                            ? 'hover:bg-emerald-500/10'
-                            : 'hover:bg-emerald-100/50'
+                        'flex flex-1 items-center gap-2 rounded-lg px-3 py-2.5 text-[13px] font-medium border transition-[background-color,border-color,opacity,transform] duration-200',
+                        isDark
+                          ? 'bg-white/[0.04] text-white/60 border-white/10 hover:border-white/25 hover:text-white'
+                          : 'bg-gray-50 text-gray-500 border-gray-200 hover:border-gray-300 hover:text-gray-700'
                       )}
                     >
                       <span className="relative flex h-2 w-2">
@@ -2883,19 +2831,39 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                         <span
                           className={cn(
                             'relative inline-flex h-2 w-2 rounded-full',
-                            !isAccountActivated
-                              ? 'bg-amber-400/60'
-                              : 'bg-emerald-500'
+                            !isAccountActivated ? 'bg-amber-400/60' : 'bg-emerald-500'
                           )}
                         />
                       </span>
-                      <span className="font-medium tabular-nums">
-                        {availableXrp != null ? `${parseFloat(availableXrp).toFixed(2)} XRP` : '...'}
+                      <span className="tabular-nums">
+                        {accountLogin ? `${accountLogin.slice(0, 4)}...${accountLogin.slice(-4)}` : ''}
+                      </span>
+                      <ArrowRight size={12} className={isDark ? 'text-white/20' : 'text-gray-300'} />
+                    </a>
+                    {/* Balance — opens wallet modal */}
+                    <button
+                      onClick={() => {
+                        setOpenWalletModal(true);
+                        toggleDrawer(false);
+                      }}
+                      className={cn(
+                        'flex items-center gap-1.5 rounded-lg px-3 py-2.5 text-[13px] font-medium border transition-[background-color,border-color,opacity,transform] duration-200',
+                        !isAccountActivated
+                          ? isDark
+                            ? 'bg-amber-500/5 text-white border-amber-500/20 hover:bg-amber-500/10'
+                            : 'bg-amber-50 text-gray-900 border-amber-200 hover:bg-amber-100/50'
+                          : isDark
+                            ? 'bg-emerald-500/5 text-white border-emerald-500/20 hover:bg-emerald-500/10'
+                            : 'bg-emerald-50 text-gray-900 border-emerald-200 hover:bg-emerald-100/50'
+                      )}
+                    >
+                      <span className="tabular-nums">
+                        {availableXrp != null ? `${parseFloat(availableXrp).toFixed(2)}` : '...'}
                       </span>
                       {profiles?.length > 1 && (
                         <span
                           className={cn(
-                            'text-[10px] px-1.5 py-0.5 rounded font-semibold',
+                            'text-[10px] px-1 py-px rounded font-semibold',
                             isDark
                               ? 'bg-white/10 text-white/60'
                               : !isAccountActivated
@@ -2906,38 +2874,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                           {profiles.length}
                         </span>
                       )}
-                    </a>
-                    {/* Divider */}
-                    <div
-                      className={cn(
-                        'h-6 w-px',
-                        !isAccountActivated
-                          ? isDark
-                            ? 'bg-amber-500/20'
-                            : 'bg-amber-200'
-                          : isDark
-                            ? 'bg-emerald-500/20'
-                            : 'bg-emerald-200'
-                      )}
-                    />
-                    {/* Dropdown trigger - opens modal */}
-                    <button
-                      onClick={() => {
-                        setOpenWalletModal(true);
-                        toggleDrawer(false);
-                      }}
-                      className={cn(
-                        'flex items-center justify-center px-3 py-2.5 transition-[background-color,border-color,opacity,transform] duration-200',
-                        !isAccountActivated
-                          ? isDark
-                            ? 'hover:bg-amber-500/10'
-                            : 'hover:bg-amber-100/50'
-                          : isDark
-                            ? 'hover:bg-emerald-500/10'
-                            : 'hover:bg-emerald-100/50'
-                      )}
-                    >
-                      <ChevronDown size={14} className={isDark ? 'text-white/60' : 'text-gray-400'} />
+                      <ChevronDown size={12} className={isDark ? 'text-white/40' : 'text-gray-400'} />
                     </button>
                   </div>
                 ) : (
@@ -3073,9 +3010,10 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                           />
                           <button
                             type="submit"
+                            aria-label="Submit email"
                             disabled={mobileEmailLoading || !mobileEmail.includes('@')}
                             className={cn(
-                              'rounded-lg border px-3 py-2 transition-colors disabled:opacity-50',
+                              'rounded-lg border px-3 py-2 transition-colors disabled:opacity-50 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                               isDark
                                 ? 'border-white/10 hover:border-primary/50 hover:bg-primary/5'
                                 : 'border-gray-200 hover:border-primary/50 hover:bg-primary/5'
@@ -3202,6 +3140,9 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
           />
           <div
             ref={commandPaletteRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Command palette"
             className={cn(
               'fixed left-1/2 top-[15%] z-[2147483647] w-full max-w-[520px] -translate-x-1/2 rounded-xl border overflow-hidden animate-in fade-in zoom-in-95 duration-150',
               isDark

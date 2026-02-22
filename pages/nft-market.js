@@ -1047,7 +1047,7 @@ export default function NFTMarketPage({ stats }) {
 
 export async function getServerSideProps() {
   try {
-    const response = await api.get(`${BASE_URL}/nft/analytics/market`);
+    const response = await api.get(`${BASE_URL}/nft/analytics/market`, { timeout: 8000 });
     const data = response.data;
 
     // Map new API structure

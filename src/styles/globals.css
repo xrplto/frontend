@@ -128,7 +128,8 @@ html.dark .tr-row-new { animation: newRowFade 3s ease-out forwards; }
 html.dark .mobile-card:hover { background: rgba(19, 125, 254, 0.10); }
 
 /* Sonner Toast */
-[data-sonner-toaster] {
+[data-sonner-toaster],
+[data-sonner-toaster] > * {
   pointer-events: none !important;
 }
 [data-sonner-toast] {

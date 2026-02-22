@@ -49,10 +49,23 @@ import {
   Gift,
   Crown,
   Award,
-  Trophy
+  Trophy,
+  ImageOff
 } from 'lucide-react';
 import { ApiButton } from 'src/components/ApiEndpointsModal';
 import AccountHistory from 'src/components/AccountHistory';
+// NFT image with error fallback
+const NftImg = ({ src, alt, isDark }) => {
+  const [err, setErr] = useState(false);
+  if (err) return (
+    <div className={cn('w-full aspect-square flex flex-col items-center justify-center gap-1', isDark ? 'bg-[#111] text-[#4B5563]' : 'bg-[#F1F5F9] text-[#94A3B8]')}>
+      <ImageOff size={16} strokeWidth={1.2} />
+      <span className="text-[9px]">Unavailable</span>
+    </div>
+  );
+  return <img src={src} alt={alt} className="w-full aspect-square object-cover" onError={() => setErr(true)} />;
+};
+
 // Same wrapper as index.js for consistent width
 const PageWrapper = ({ className, ...props }) => (
   <div className={cn('overflow-x-hidden min-h-screen m-0 p-0 flex flex-col bg-[var(--bg-main)]', className)} {...props} />
@@ -745,7 +758,7 @@ const OverView = ({ account }) => {
                               className={cn('w-28 px-2 py-1 rounded-md text-[12px] outline-none', isDark ? 'bg-white/10 text-white border border-white/20' : 'bg-white text-gray-900 border border-gray-300')}
                             />
                             <button onClick={handleSaveLabel} disabled={labelSaving || !labelInput.trim()} className="px-3 py-1 rounded-md text-[11px] bg-primary text-white disabled:opacity-50 font-bold hover:bg-primary/90 transition-colors">Save</button>
-                            {walletLabel && <button onClick={handleDeleteLabel} disabled={labelSaving} className={cn('p-1.5 rounded-md transition-colors', isDark ? 'text-red-400 hover:bg-red-500/10' : 'text-red-500 hover:bg-red-50')}><Trash2 size={14} /></button>}
+                            {walletLabel && <button onClick={handleDeleteLabel} disabled={labelSaving} aria-label="Delete label" className={cn('p-1.5 rounded-md transition-colors outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]', isDark ? 'text-red-400 hover:bg-red-500/10' : 'text-red-500 hover:bg-red-50')}><Trash2 size={14} /></button>}
                             <button onClick={() => setEditingLabel(false)} className={cn('px-2 py-1 text-[11px] font-medium', isDark ? 'text-white/50 hover:text-white/70' : 'text-gray-500 hover:text-gray-700')}>Cancel</button>
                           </div>
                         ) : walletLabel ? (
@@ -754,7 +767,7 @@ const OverView = ({ account }) => {
                             {walletLabel}
                           </button>
                         ) : (
-                          <button onClick={() => { setLabelInput(''); setEditingLabel(true); }} className={cn('p-2 rounded-xl transition-all hover:scale-105', isDark ? 'bg-white/5 text-white/30 hover:text-white/60' : 'bg-gray-100 text-gray-400 hover:text-gray-600')} title="Add label">
+                          <button onClick={() => { setLabelInput(''); setEditingLabel(true); }} aria-label="Add label" className={cn('p-2 rounded-xl transition-all hover:scale-105 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]', isDark ? 'bg-white/5 text-white/30 hover:text-white/60' : 'bg-gray-100 text-gray-400 hover:text-gray-600')} title="Add label">
                             <Tag size={14} />
                           </button>
                         )
@@ -2357,24 +2370,11 @@ const OverView = ({ account }) => {
                         >
                           <div className="relative">
                             {nft.image ? (
-                              <img
-                                src={nft.image}
-                                alt={nft.name}
-                                className="w-full aspect-square object-cover"
-                                onError={(e) => {
-                                  e.target.style.display = 'none';
-                                }}
-                              />
+                              <NftImg src={nft.image} alt={nft.name} isDark={isDark} />
                             ) : (
-                              <div
-                                className={cn(
-                                  'w-full aspect-square flex items-center justify-center text-[10px]',
-                                  isDark
-                                    ? 'bg-white/5 text-white/30'
-                                    : 'bg-gray-100 text-gray-400'
-                                )}
-                              >
-                                No image
+                              <div className={cn('w-full aspect-square flex flex-col items-center justify-center gap-1', isDark ? 'bg-[#111] text-[#4B5563]' : 'bg-[#F1F5F9] text-[#94A3B8]')}>
+                                <ImageOff size={16} strokeWidth={1.2} />
+                                <span className="text-[9px]">Unavailable</span>
                               </div>
                             )}
                           </div>
@@ -2487,22 +2487,11 @@ const OverView = ({ account }) => {
                       >
                         <div className="relative">
                           {col.logo ? (
-                            <img
-                              src={col.logo}
-                              alt={col.name}
-                              className="w-full aspect-square object-cover"
-                              onError={(e) => {
-                                e.target.style.display = 'none';
-                              }}
-                            />
+                            <NftImg src={col.logo} alt={col.name} isDark={isDark} />
                           ) : (
-                            <div
-                              className={cn(
-                                'w-full aspect-square flex items-center justify-center text-[10px]',
-                                isDark ? 'bg-white/5 text-white/30' : 'bg-gray-100 text-gray-400'
-                              )}
-                            >
-                              No image
+                            <div className={cn('w-full aspect-square flex flex-col items-center justify-center gap-1', isDark ? 'bg-[#111] text-[#4B5563]' : 'bg-[#F1F5F9] text-[#94A3B8]')}>
+                              <ImageOff size={16} strokeWidth={1.2} />
+                              <span className="text-[9px]">Unavailable</span>
                             </div>
                           )}
                         </div>
@@ -2701,6 +2690,7 @@ const OverView = ({ account }) => {
                                       src={`https://s1.xrpl.to/nft-collection/${c.logo}`}
                                       alt=""
                                       className="w-full h-full rounded-[4px] object-cover"
+                                      onError={(e) => { e.target.onerror = null; e.target.style.opacity = '0'; }}
                                     />
                                   </div>
                                 )}

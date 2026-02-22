@@ -998,12 +998,11 @@ export default function LedgerStreamPage() {
     setConnectionStatus('connecting');
     try {
       const res = await fetch('/api/ws/session?type=ledger');
-      const { wsUrl, apiKey } = await res.json();
+      const { wsUrl } = await res.json();
       if (!wsUrl || !/^wss?:\/\//i.test(wsUrl)) return;
       const ws = new WebSocket(wsUrl);
 
       ws.onopen = () => {
-        if (apiKey) ws.send(JSON.stringify({ type: 'auth', apiKey }));
         setConnectionStatus('connected');
       };
 

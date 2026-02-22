@@ -136,13 +136,13 @@ const EmotePicker = ({ onSelect, inputRef, input, setInput }) => {
     <>
       {/* Autocomplete dropdown */}
       {show && filtered.length > 0 && (
-        <div ref={pickerRef} className={`absolute bottom-full left-0 max-sm:left-0 max-sm:right-0 mb-2 w-72 max-sm:w-full max-h-52 overflow-y-auto overscroll-contain scrollbar-hide rounded-xl border-[1.5px] z-50 p-1 ${isDark ? 'bg-black border-white/[0.08]' : 'bg-white border-black/[0.08]'}`}>
-          <div className={`px-2 py-1.5 text-[10px] uppercase tracking-wide font-medium ${isDark ? 'text-white/40' : 'text-black/40'}`}>Emotes</div>
+        <div ref={pickerRef} className={`absolute bottom-full left-0 max-sm:left-0 max-sm:right-0 mb-2 w-72 max-sm:w-full max-h-52 overflow-y-auto overscroll-contain scrollbar-hide rounded-sm border-[1px] z-50 p-1 ${isDark ? 'bg-black border-white/[0.06]' : 'bg-white border-black/[0.06]'}`}>
+          <div className={`px-2 py-1.5 text-[9px] uppercase tracking-widest font-mono font-medium ${isDark ? 'text-[#137DFE]/40' : 'text-black/40'}`}>EMOTES</div>
           {filtered.map((e, i) => (
             <button
               key={e.name}
               onClick={() => insertEmote(e)}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 text-left text-sm rounded-lg transition-colors ${i === selectedIdx ? 'bg-[#137DFE]/15 text-[#137DFE]' : isDark ? 'hover:bg-white/5 active:bg-white/10 text-white/80' : 'hover:bg-black/5 active:bg-black/10 text-black/80'}`}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 text-left text-sm rounded-sm transition-colors ${i === selectedIdx ? 'bg-[#137DFE]/15 text-[#137DFE]' : isDark ? 'hover:bg-white/5 active:bg-white/10 text-white/80' : 'hover:bg-black/5 active:bg-black/10 text-black/80'}`}
             >
               <img src={e.url} alt={e.name} className="w-7 h-7 object-contain" loading="lazy" />
               <span className="font-medium">{e.name}</span>
@@ -152,21 +152,23 @@ const EmotePicker = ({ onSelect, inputRef, input, setInput }) => {
       )}
       {/* Emoji picker button */}
       <button
+        aria-label="Emoji picker"
         onClick={() => setGridOpen(o => !o)}
-        className={`p-2.5 max-sm:p-3 rounded-xl shrink-0 transition-all ${gridOpen ? 'bg-[#137DFE]/15 text-[#137DFE]' : isDark ? 'text-white/40 hover:text-white/70 hover:bg-white/5 active:bg-white/10' : 'text-black/40 hover:text-black/70 hover:bg-black/5 active:bg-black/10'}`}
+        className={`p-2.5 max-sm:p-3 rounded-sm shrink-0 transition-all outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] ${gridOpen ? 'bg-[#137DFE]/15 text-[#137DFE]' : isDark ? 'text-white/40 hover:text-white/70 hover:bg-white/5 active:bg-white/10' : 'text-black/40 hover:text-black/70 hover:bg-black/5 active:bg-black/10'}`}
       >
         <Smile size={18} className="max-sm:w-5 max-sm:h-5" />
       </button>
       {/* Grid picker */}
       {gridOpen && (
-        <div ref={gridRef} className={`absolute bottom-full left-0 max-sm:left-0 max-sm:right-0 mb-2 w-80 max-sm:w-full rounded-xl border-[1.5px] z-50 ${isDark ? 'bg-black border-white/[0.08]' : 'bg-white border-black/[0.08]'}`}>
+        <div ref={gridRef} className={`absolute bottom-full left-0 max-sm:left-0 max-sm:right-0 mb-2 w-80 max-sm:w-full rounded-sm border-[1px] z-50 ${isDark ? 'bg-black border-white/[0.06]' : 'bg-white border-black/[0.06]'}`}>
           <div className="p-2">
             <input
               ref={gridSearchRef}
               value={gridSearch}
               onChange={(e) => setGridSearch(e.target.value)}
-              placeholder="Search emotes..."
-              className={`w-full px-3 py-2 rounded-lg text-sm outline-none ${isDark ? 'bg-white/5 text-white placeholder-white/25' : 'bg-black/5 text-black placeholder-black/25'}`}
+              placeholder="SEARCH EMOTES..."
+              aria-label="Search emotes"
+              className={`w-full px-3 py-2 rounded-sm text-sm font-mono outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] ${isDark ? 'bg-white/5 text-white placeholder-white/25 border border-white/[0.06]' : 'bg-black/5 text-black placeholder-black/25 border border-black/10'}`}
             />
           </div>
           <div className="grid grid-cols-7 max-sm:grid-cols-8 gap-0.5 p-2 pt-0 max-h-60 overflow-y-auto overscroll-contain scrollbar-hide">
@@ -175,7 +177,7 @@ const EmotePicker = ({ onSelect, inputRef, input, setInput }) => {
                 key={e.name}
                 onClick={() => pickEmote(e)}
                 title={e.name}
-                className={`p-1.5 rounded-lg flex items-center justify-center transition-colors ${isDark ? 'hover:bg-white/10 active:bg-white/15' : 'hover:bg-black/10 active:bg-black/15'}`}
+                className={`p-1.5 rounded-sm flex items-center justify-center transition-colors ${isDark ? 'hover:bg-white/10 active:bg-white/15' : 'hover:bg-black/10 active:bg-black/15'}`}
               >
                 <img src={e.url} alt={e.name} className="w-7 h-7 object-contain" loading="lazy" />
               </button>
@@ -243,7 +245,7 @@ const ChatAvatar = ({ wallet }) => {
         <img src={avatar} alt="" loading="lazy" decoding="async" className={`w-3.5 h-3.5 rounded object-cover shrink-0 cursor-pointer transition-opacity duration-200 ${imgLoaded ? 'opacity-100' : 'opacity-0'}`} onLoad={() => { loadedImgUrls.add(avatar); setImgLoaded(true); }} onMouseEnter={handleHover} onMouseLeave={() => setShowTip(false)} />
       </a>
       {showTip && (
-        <div className={`absolute bottom-full left-0 mb-1.5 px-2.5 py-1.5 rounded-xl border-[1.5px] text-[10px] whitespace-nowrap z-50 ${isDark ? 'bg-black border-white/[0.08]' : 'bg-white border-black/[0.08]'}`}>
+        <div className={`absolute bottom-full left-0 mb-1.5 px-2.5 py-1.5 rounded-sm border-[1px] text-[10px] font-mono whitespace-nowrap z-50 ${isDark ? 'bg-black border-white/[0.06]' : 'bg-white border-black/[0.06]'}`}>
           {nftData ? (
             <><span className={`font-medium ${isDark ? 'text-white' : 'text-black'}`}>{nftData.name || 'NFT'}</span>{nftData.collection && <span className={`ml-1 ${isDark ? 'text-white/50' : 'text-black/50'}`}>• {nftData.collection}</span>}</>
           ) : <span className={isDark ? 'text-white/50' : 'text-black/50'}>Loading...</span>}
@@ -304,7 +306,7 @@ const TokenPreview = ({ match }) => {
     apiFetch(`https://api.xrpl.to/v1/token/${match}`)
       .then(r => r.json())
       .then(d => { if (d.token) setToken(d.token); })
-      .catch(() => { })
+      .catch(err => { console.warn('[Chat] Token mention fetch failed:', err.message); })
       .finally(() => setLoading(false));
   }, [match]);
 
@@ -342,7 +344,7 @@ const TokenPreview = ({ match }) => {
 
   return (
     <span className="relative inline-block" ref={triggerRef} onMouseEnter={handleMouseEnter} onMouseLeave={() => setShowTooltip(false)}>
-      <a href={`/token/${match}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 px-1 py-px rounded bg-[#137DFE]/10 border border-[#137DFE]/20 hover:border-[#137DFE]/40 transition-colors text-[11px] leading-tight">
+      <a href={`/token/${match}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 px-1 py-px rounded bg-[#137DFE]/10 border border-white/[0.06] hover:border-[#137DFE]/40 transition-colors text-[11px] leading-tight">
         {imgSrc && !imgError ? (
           <img src={imgSrc} alt="" className="w-3.5 h-3.5 rounded-full object-cover" onError={() => setImgError(true)} />
         ) : (
@@ -353,7 +355,7 @@ const TokenPreview = ({ match }) => {
       </a>
       {showTooltip && tooltipPos && createPortal(
         <div className="fixed z-[9999] pointer-events-none" style={{ top: tooltipPos.top - 8, left: tooltipPos.left, transform: 'translate(-50%, -100%)' }}>
-          <div className={`px-3 py-2.5 rounded-xl border-[1.5px] text-[11px] min-w-[200px] ${isDark ? 'bg-black border-white/[0.08]' : 'bg-white border-black/[0.08]'}`}>
+          <div className={`px-3 py-2.5 rounded-sm border-[1px] text-[11px] min-w-[200px] ${isDark ? 'bg-black border-white/[0.06]' : 'bg-white border-black/[0.06]'}`}>
             <div className="flex items-center gap-2 mb-2">
               {imgSrc && !imgError ? (
                 <img src={imgSrc} alt="" className="w-5 h-5 rounded-full object-cover" />
@@ -364,9 +366,9 @@ const TokenPreview = ({ match }) => {
               <span className={`ml-auto font-mono font-semibold text-xs ${isDark ? 'text-white' : 'text-black'}`}>{formatPrice(token.exch)}</span>
             </div>
             <div className="grid grid-cols-3 gap-x-4 gap-y-1.5">
-              <div><span className={isDark ? 'text-white/40' : 'text-black/40'}>24h</span><div className={`font-mono font-medium ${isUp ? 'text-[#08AA09]' : 'text-red-500'}`}>{isUp ? '+' : ''}{change.toFixed(1)}%</div></div>
-              <div><span className={isDark ? 'text-white/40' : 'text-black/40'}>MCap</span><div className={`font-mono ${isDark ? 'text-white/70' : 'text-black/70'}`}>{formatMcap(token.marketcap)}</div></div>
-              <div><span className={isDark ? 'text-white/40' : 'text-black/40'}>Holders</span><div className={`font-mono ${isDark ? 'text-white/70' : 'text-black/70'}`}>{token.holders?.toLocaleString() || '-'}</div></div>
+              <div><span className={`font-mono text-[9px] uppercase tracking-wider ${isDark ? 'text-white/40' : 'text-black/40'}`}>24h</span><div className={`font-mono font-medium ${isUp ? 'text-[#08AA09]' : 'text-red-500'}`}>{isUp ? '+' : ''}{change.toFixed(1)}%</div></div>
+              <div><span className={`font-mono text-[9px] uppercase tracking-wider ${isDark ? 'text-white/40' : 'text-black/40'}`}>MCap</span><div className={`font-mono ${isDark ? 'text-white/70' : 'text-black/70'}`}>{formatMcap(token.marketcap)}</div></div>
+              <div><span className={`font-mono text-[9px] uppercase tracking-wider ${isDark ? 'text-white/40' : 'text-black/40'}`}>Holders</span><div className={`font-mono ${isDark ? 'text-white/70' : 'text-black/70'}`}>{token.holders?.toLocaleString() || '-'}</div></div>
             </div>
           </div>
         </div>,
@@ -389,7 +391,7 @@ const AttachedTokenPreview = ({ md5 }) => {
     apiFetch(`https://api.xrpl.to/v1/token/${md5}`)
       .then(r => r.json())
       .then(d => { if (d.token) setToken(d.token); })
-      .catch(() => { });
+      .catch(err => { console.warn('[Chat] Token hover fetch failed:', err.message); });
   }, [md5]);
 
   if (!token) return <span className="text-[#137DFE] text-xs">loading...</span>;
@@ -424,7 +426,7 @@ const AttachedTokenPreview = ({ md5 }) => {
 
   return (
     <span className="relative inline-block" ref={triggerRef} onMouseEnter={handleMouseEnter} onMouseLeave={() => setShowTooltip(false)}>
-      <a href={`/token/${md5}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 px-1 py-px rounded bg-[#137DFE]/10 border border-[#137DFE]/20 hover:border-[#137DFE]/40 transition-colors text-[11px] leading-tight">
+      <a href={`/token/${md5}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 px-1 py-px rounded bg-[#137DFE]/10 border border-white/[0.06] hover:border-[#137DFE]/40 transition-colors text-[11px] leading-tight">
         {!imgError ? (
           <img src={`https://s1.xrpl.to/token/${md5}`} alt="" className="w-3.5 h-3.5 rounded-full object-cover" onError={() => setImgError(true)} />
         ) : (
@@ -435,7 +437,7 @@ const AttachedTokenPreview = ({ md5 }) => {
       </a>
       {showTooltip && tooltipPos && createPortal(
         <div className="fixed z-[9999] pointer-events-none" style={{ top: tooltipPos.top - 8, left: tooltipPos.left, transform: 'translate(-50%, -100%)' }}>
-          <div className={`px-3 py-2.5 rounded-xl border-[1.5px] text-[11px] min-w-[200px] ${isDark ? 'bg-black border-white/[0.08]' : 'bg-white border-black/[0.08]'}`}>
+          <div className={`px-3 py-2.5 rounded-sm border-[1px] text-[11px] min-w-[200px] ${isDark ? 'bg-black border-white/[0.06]' : 'bg-white border-black/[0.06]'}`}>
             <div className="flex items-center gap-2 mb-2">
               {!imgError ? (
                 <img src={`https://s1.xrpl.to/token/${md5}`} alt="" className="w-5 h-5 rounded-full object-cover" />
@@ -446,9 +448,9 @@ const AttachedTokenPreview = ({ md5 }) => {
               <span className={`ml-auto font-mono font-semibold text-xs ${isDark ? 'text-white' : 'text-black'}`}>{formatPrice(token.exch)}</span>
             </div>
             <div className="grid grid-cols-3 gap-x-4 gap-y-1.5">
-              <div><span className={isDark ? 'text-white/40' : 'text-black/40'}>24h</span><div className={`font-mono font-medium ${isUp ? 'text-[#08AA09]' : 'text-red-500'}`}>{isUp ? '+' : ''}{change.toFixed(1)}%</div></div>
-              <div><span className={isDark ? 'text-white/40' : 'text-black/40'}>MCap</span><div className={`font-mono ${isDark ? 'text-white/70' : 'text-black/70'}`}>{formatMcap(token.marketcap)}</div></div>
-              <div><span className={isDark ? 'text-white/40' : 'text-black/40'}>Holders</span><div className={`font-mono ${isDark ? 'text-white/70' : 'text-black/70'}`}>{token.holders?.toLocaleString() || '-'}</div></div>
+              <div><span className={`font-mono text-[9px] uppercase tracking-wider ${isDark ? 'text-white/40' : 'text-black/40'}`}>24h</span><div className={`font-mono font-medium ${isUp ? 'text-[#08AA09]' : 'text-red-500'}`}>{isUp ? '+' : ''}{change.toFixed(1)}%</div></div>
+              <div><span className={`font-mono text-[9px] uppercase tracking-wider ${isDark ? 'text-white/40' : 'text-black/40'}`}>MCap</span><div className={`font-mono ${isDark ? 'text-white/70' : 'text-black/70'}`}>{formatMcap(token.marketcap)}</div></div>
+              <div><span className={`font-mono text-[9px] uppercase tracking-wider ${isDark ? 'text-white/40' : 'text-black/40'}`}>Holders</span><div className={`font-mono ${isDark ? 'text-white/70' : 'text-black/70'}`}>{token.holders?.toLocaleString() || '-'}</div></div>
             </div>
           </div>
         </div>,
@@ -520,7 +522,7 @@ const NFTPreview = ({ nftId }) => {
       </a>
       {showTooltip && tooltipPos && createPortal(
         <div className="fixed z-[9999] pointer-events-none" style={{ top: tooltipPos.top - 8, left: tooltipPos.left, transform: 'translate(-50%, -100%)' }}>
-          <div className={`px-3 py-2.5 rounded-xl border-[1.5px] text-[11px] min-w-[200px] ${isDark ? 'bg-black border-white/[0.08]' : 'bg-white border-black/[0.08]'}`}>
+          <div className={`px-3 py-2.5 rounded-sm border-[1px] text-[11px] min-w-[200px] ${isDark ? 'bg-black border-white/[0.06]' : 'bg-white border-black/[0.06]'}`}>
             <div className="flex items-center gap-2 mb-2">
               {imgSrc ? (
                 <img src={imgSrc} alt="" className="w-5 h-5 rounded object-cover" />
@@ -601,7 +603,7 @@ const CollectionPreview = ({ slug }) => {
       </a>
       {showTooltip && tooltipPos && createPortal(
         <div className="fixed z-[9999] pointer-events-none" style={{ top: tooltipPos.top - 8, left: tooltipPos.left, transform: 'translate(-50%, -100%)' }}>
-          <div className={`px-3 py-2.5 rounded-xl border-[1.5px] text-[11px] min-w-[220px] ${isDark ? 'bg-black border-white/[0.08]' : 'bg-white border-black/[0.08]'}`}>
+          <div className={`px-3 py-2.5 rounded-sm border-[1px] text-[11px] min-w-[220px] ${isDark ? 'bg-black border-white/[0.06]' : 'bg-white border-black/[0.06]'}`}>
             <div className="flex items-center gap-2 mb-2">
               {col.logoImage ? <img src={`https://s1.xrpl.to/nft-collection/${col.logoImage}`} className="w-5 h-5 rounded object-cover" alt="" /> : <span className="w-5 h-5 rounded bg-[#650CD4]/20 flex items-center justify-center text-[8px] text-[#650CD4]">C</span>}
               <div className="min-w-0">
@@ -695,13 +697,7 @@ const renderMessage = (text, mentionTargets = null) => {
 const SUPPORT_TIERS = ['vip', 'nova', 'diamond', 'verified', 'god', 'developer', 'partner', 'business', 'professional'];
 const BASE_URL = 'https://api.xrpl.to';
 
-const getApiKey = () => {
-  if (typeof window === 'undefined') return null;
-  try {
-    const profile = JSON.parse(localStorage.getItem('account_profile_2') || 'null');
-    return profile?.apiKey || null;
-  } catch { return null; }
-};
+// Mod actions are proxied through /api/chat/mod (server injects API key)
 
 const SupportTickets = ({ wallet, isStaff, tier, isDark, onBack }) => {
   const [tickets, setTickets] = useState([]);
@@ -732,7 +728,7 @@ const SupportTickets = ({ wallet, isStaff, tier, isDark, onBack }) => {
       <div className="h-[400px] max-sm:h-full max-sm:flex-1 flex flex-col items-center justify-center text-center px-6">
         <HelpCircle size={32} className="opacity-20 mb-3" />
         <p className="text-sm opacity-60">Support tickets require VIP, Nova, Diamond, or Verified tier</p>
-        <button onClick={onBack} className="mt-4 px-4 py-1.5 text-xs rounded-lg bg-white/10 hover:bg-white/20">Back to Chat</button>
+        <button onClick={onBack} className="mt-4 px-4 py-1.5 text-xs font-mono uppercase tracking-wider rounded-sm bg-white/10 hover:bg-white/20 border border-white/[0.06]">Back to Chat</button>
       </div>
     );
   }
@@ -749,16 +745,16 @@ const SupportTickets = ({ wallet, isStaff, tier, isDark, onBack }) => {
     <div className="h-[400px] max-sm:h-full max-sm:flex-1 flex flex-col">
       <div className="flex items-center justify-between px-3 py-2 border-b border-inherit shrink-0">
         <div className="flex items-center gap-2">
-          <button onClick={onBack} className="p-1.5 hover:bg-white/10 rounded-lg active:bg-white/20"><ChevronLeft size={18} /></button>
+          <button aria-label="Go back" onClick={onBack} className="p-1.5 hover:bg-white/10 rounded-sm active:bg-white/20 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]"><ChevronLeft size={18} /></button>
           <span className="text-sm font-medium">Support Tickets</span>
         </div>
-        <button onClick={() => setShowCreate(true)} className="flex items-center gap-1 px-3 py-1.5 text-xs rounded-lg bg-[#137DFE] text-white hover:bg-[#137DFE]/80 active:bg-[#137DFE]/60">
+        <button onClick={() => setShowCreate(true)} className="flex items-center gap-1 px-3 py-1.5 text-xs font-mono uppercase tracking-wider rounded-sm bg-[#137DFE] text-white hover:bg-[#137DFE]/80 active:bg-[#137DFE]/60">
           <Plus size={14} /> New
         </button>
       </div>
       <div className="flex gap-1.5 px-2 py-2 border-b border-inherit overflow-x-auto scrollbar-hide">
         {['open', 'in_progress', 'resolved', 'all'].map(s => (
-          <button key={s} onClick={() => setFilter(s)} className={`px-2.5 py-1 text-[11px] rounded-lg capitalize shrink-0 transition-all active:scale-95 ${filter === s ? 'bg-[#650CD4] text-white' : 'opacity-60 hover:opacity-100 active:opacity-100'}`}>
+          <button key={s} onClick={() => setFilter(s)} className={`px-2.5 py-1 text-[10px] font-mono uppercase tracking-wider rounded-sm shrink-0 transition-all active:scale-95 ${filter === s ? 'bg-[#650CD4] text-white' : 'opacity-60 hover:opacity-100 active:opacity-100'}`}>
             {s.replace('_', ' ')}
           </button>
         ))}
@@ -799,7 +795,7 @@ const TicketStatus = ({ status }) => {
   }[status] || { icon: AlertCircle, color: 'text-white/40', bg: 'bg-white/5' };
   const Icon = config.icon;
   return (
-    <span className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] ${config.color} ${config.bg}`}>
+    <span className={`flex items-center gap-1 px-1.5 py-0.5 rounded-sm text-[9px] font-mono uppercase tracking-wider ${config.color} ${config.bg}`}>
       <Icon size={10} /> {status?.replace('_', ' ')}
     </span>
   );
@@ -836,18 +832,18 @@ const CreateTicket = ({ wallet, isDark, onBack, onCreated }) => {
   return (
     <div className="h-[400px] max-sm:h-full max-sm:flex-1 flex flex-col">
       <div className="flex items-center gap-2 px-3 py-2 border-b border-inherit shrink-0">
-        <button onClick={onBack} className="p-1.5 hover:bg-white/10 rounded-lg active:bg-white/20"><ChevronLeft size={18} /></button>
+        <button aria-label="Go back" onClick={onBack} className="p-1.5 hover:bg-white/10 rounded-sm active:bg-white/20 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]"><ChevronLeft size={18} /></button>
         <span className="text-sm font-medium">New Ticket</span>
       </div>
       <div className="flex-1 p-3 max-sm:p-4 space-y-4 overflow-y-auto overscroll-contain scrollbar-hide">
-        {error && <div className="px-3 py-2.5 rounded-lg bg-red-500/10 text-red-400 text-sm">{error}</div>}
+        {error && <div className="px-3 py-2.5 rounded-sm bg-red-500/10 text-red-400 text-sm font-mono">{error}</div>}
         <div>
           <label className="text-[11px] uppercase opacity-50 mb-1.5 block">Subject</label>
           <input
             value={subject}
             onChange={e => setSubject(e.target.value.slice(0, 100))}
             placeholder="Brief description..."
-            className={`w-full px-3 py-2.5 max-sm:py-3 rounded-lg border text-sm max-sm:text-base ${isDark ? 'bg-white/5 border-white/10' : 'bg-black/5 border-black/10'}`}
+            className={`w-full px-3 py-2.5 max-sm:py-3 rounded-sm border text-sm max-sm:text-base font-mono ${isDark ? 'bg-white/5 border-white/[0.06] focus:border-[#137DFE]/30' : 'bg-black/5 border-black/10 focus:border-[#137DFE]/30'}`}
           />
           <span className="text-[11px] opacity-40 mt-1 block text-right">{subject.length}/100</span>
         </div>
@@ -858,7 +854,7 @@ const CreateTicket = ({ wallet, isDark, onBack, onCreated }) => {
             onChange={e => setMessage(e.target.value.slice(0, 2000))}
             placeholder="Describe your issue in detail..."
             rows={6}
-            className={`w-full px-3 py-2.5 max-sm:py-3 rounded-lg border text-sm max-sm:text-base resize-none ${isDark ? 'bg-white/5 border-white/10' : 'bg-black/5 border-black/10'}`}
+            className={`w-full px-3 py-2.5 max-sm:py-3 rounded-sm border text-sm max-sm:text-base resize-none font-mono ${isDark ? 'bg-white/5 border-white/[0.06] focus:border-[#137DFE]/30' : 'bg-black/5 border-black/10 focus:border-[#137DFE]/30'}`}
           />
           <span className="text-[11px] opacity-40 mt-1 block text-right">{message.length}/2000</span>
         </div>
@@ -867,7 +863,7 @@ const CreateTicket = ({ wallet, isDark, onBack, onCreated }) => {
         <button
           onClick={submit}
           disabled={submitting || subject.length < 3 || message.length < 10}
-          className="w-full py-2.5 max-sm:py-3 rounded-lg bg-[#137DFE] text-white text-sm max-sm:text-base font-medium disabled:opacity-40 active:bg-[#137DFE]/60 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+          className="w-full py-2.5 max-sm:py-3 rounded-sm bg-[#137DFE] text-white text-sm max-sm:text-base font-mono font-medium uppercase tracking-wider disabled:opacity-40 active:bg-[#137DFE]/60 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
         >
           {submitting ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
           Submit Ticket
@@ -939,7 +935,7 @@ const TicketDetail = ({ ticketId, wallet, isStaff, isDark, onBack }) => {
       <div className="px-3 py-2 border-b border-inherit">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 min-w-0">
-            <button onClick={onBack} className="p-1.5 hover:bg-white/10 rounded-lg active:bg-white/20 shrink-0"><ChevronLeft size={18} /></button>
+            <button aria-label="Go back" onClick={onBack} className="p-1.5 hover:bg-white/10 rounded-sm active:bg-white/20 shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]"><ChevronLeft size={18} /></button>
             <span className="text-sm font-medium truncate max-sm:max-w-[180px] max-w-[200px]">{ticket.subject}</span>
           </div>
           <TicketStatus status={ticket.status} />
@@ -947,7 +943,7 @@ const TicketDetail = ({ ticketId, wallet, isStaff, isDark, onBack }) => {
         {isStaff && ticket.status !== 'closed' && (
           <div className="flex gap-1 mt-2 pl-7">
             {['open', 'in_progress', 'resolved', 'closed'].filter(s => s !== ticket.status).map(s => (
-              <button key={s} onClick={() => updateStatus(s)} className="px-2 py-0.5 text-[10px] rounded bg-white/10 hover:bg-white/20 capitalize">
+              <button key={s} onClick={() => updateStatus(s)} className="px-2 py-0.5 text-[10px] font-mono uppercase tracking-wider rounded-sm bg-white/10 hover:bg-white/20">
                 {s.replace('_', ' ')}
               </button>
             ))}
@@ -956,7 +952,7 @@ const TicketDetail = ({ ticketId, wallet, isStaff, isDark, onBack }) => {
         {!isStaff && ticket.wallet === wallet && !['resolved', 'closed'].includes(ticket.status) && (
           <div className="flex gap-1 mt-2 pl-7">
             {['resolved', 'closed'].map(s => (
-              <button key={s} onClick={() => updateStatus(s)} className="px-2 py-0.5 text-[10px] rounded bg-white/10 hover:bg-white/20 capitalize">
+              <button key={s} onClick={() => updateStatus(s)} className="px-2 py-0.5 text-[10px] font-mono uppercase tracking-wider rounded-sm bg-white/10 hover:bg-white/20">
                 {s}
               </button>
             ))}
@@ -964,7 +960,7 @@ const TicketDetail = ({ ticketId, wallet, isStaff, isDark, onBack }) => {
         )}
       </div>
       <div className="flex-1 overflow-y-auto scrollbar-hide px-3 py-2 space-y-3">
-        <div className={`p-3 rounded-lg ${isDark ? 'bg-white/5' : 'bg-black/5'}`}>
+        <div className={`p-3 rounded-sm ${isDark ? 'bg-white/5 border border-white/[0.06]' : 'bg-black/5'}`}>
           <div className="flex items-center justify-between text-[10px] opacity-50 mb-1">
             <span>{ticket.username || ticket.wallet?.slice(0, 8)}</span>
             <span>{timeAgo(ticket.createdAt)}</span>
@@ -972,7 +968,7 @@ const TicketDetail = ({ ticketId, wallet, isStaff, isDark, onBack }) => {
           <p className="text-sm whitespace-pre-wrap">{ticket.message}</p>
         </div>
         {ticket.replies?.map((r, i) => (
-          <div key={i} className={`p-3 rounded-lg ${r.isStaff ? 'bg-[#650CD4]/10 border border-[#650CD4]/20' : isDark ? 'bg-white/5' : 'bg-black/5'}`}>
+          <div key={i} className={`p-3 rounded-sm ${r.isStaff ? 'bg-[#650CD4]/10 border border-[#650CD4]/20' : isDark ? 'bg-white/5 border border-white/[0.06]' : 'bg-black/5'}`}>
             <div className="flex items-center justify-between text-[10px] mb-1">
               <span className={r.isStaff ? 'text-[#650CD4]' : 'opacity-50'}>
                 {r.username || r.wallet?.slice(0, 8)} {r.isStaff && <span className="opacity-60">(Staff)</span>}
@@ -990,10 +986,11 @@ const TicketDetail = ({ ticketId, wallet, isStaff, isDark, onBack }) => {
             value={reply}
             onChange={e => setReply(e.target.value.slice(0, 2000))}
             placeholder="Type your reply..."
+            aria-label="Type your reply"
             onKeyDown={e => e.key === 'Enter' && sendReply()}
-            className={`flex-1 px-3 py-2.5 max-sm:py-3 rounded-lg border text-sm max-sm:text-base ${isDark ? 'bg-white/5 border-white/10' : 'bg-black/5 border-black/10'}`}
+            className={`flex-1 px-3 py-2.5 max-sm:py-3 rounded-sm border text-sm max-sm:text-base font-mono outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] ${isDark ? 'bg-white/5 border-white/[0.06] focus:border-[#137DFE]/30' : 'bg-black/5 border-black/10 focus:border-[#137DFE]/30'}`}
           />
-          <button onClick={sendReply} disabled={!reply.trim() || submitting} className={`px-3 py-2.5 max-sm:px-4 max-sm:py-3 rounded-lg transition-all duration-200 ${reply.trim() && !submitting ? 'bg-[#137DFE] text-white hover:bg-[#137DFE]/80 active:scale-90' : isDark ? 'bg-white/5 text-white/20' : 'bg-black/5 text-black/20'}`}>
+          <button aria-label="Send reply" onClick={sendReply} disabled={!reply.trim() || submitting} className={`px-3 py-2.5 max-sm:px-4 max-sm:py-3 rounded-sm transition-all duration-200 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] ${reply.trim() && !submitting ? 'bg-[#137DFE] text-white hover:bg-[#137DFE]/80 active:scale-90' : isDark ? 'bg-white/5 text-white/20' : 'bg-black/5 text-black/20'}`}>
             {submitting ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} className={`transition-transform duration-200 ${reply.trim() ? '-rotate-45 translate-x-[1px] -translate-y-[1px]' : ''}`} />}
           </button>
         </div>
@@ -1010,15 +1007,30 @@ const Chat = () => {
       return profile?.account || null;
     } catch { return null; }
   };
+  const chatWsCache = useRef({ url: null, fetchedAt: 0 });
+  const CHAT_TOKEN_TTL = 4 * 60 * 1000; // refresh at 4 min (token valid 5 min)
+
   const getWsUrl = async () => {
     const wallet = getLoggedInWallet();
     if (!wallet) return null;
+
+    // Reuse cached URL if still fresh
+    const cache = chatWsCache.current;
+    if (cache.url && (Date.now() - cache.fetchedAt) < CHAT_TOKEN_TTL) {
+      return cache.url;
+    }
+
     try {
       const res = await fetch(`/api/chat/session?wallet=${wallet}`);
+      if (!res.ok) return cache.url || null;
       const data = await res.json();
-      return data.wsUrl || null;
+      const url = data.wsUrl || null;
+      if (url) {
+        chatWsCache.current = { url, fetchedAt: Date.now() };
+      }
+      return url;
     } catch {
-      return null;
+      return cache.url || null;
     }
   };
   const { themeName } = useContext(ThemeContext);
@@ -1179,12 +1191,10 @@ const Chat = () => {
   };
 
   const modAction = async (action, wallet, duration = null) => {
-    const apiKey = getApiKey();
-    if (!apiKey) { setModError('No API key'); return null; }
     try {
-      const res = await apiFetch(`https://api.xrpl.to/v1/chat/${action}`, {
+      const res = await apiFetch(`/api/chat/mod?action=${encodeURIComponent(action)}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-Api-Key': apiKey },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ wallet, duration })
       });
       const data = await res.json();
@@ -1427,9 +1437,9 @@ const Chat = () => {
     return ws;
   }, []);
 
-  // Fetch messages via REST for non-logged-in users (read-only mode)
+  // Pre-fetch messages via REST immediately when chat opens (fast path for all users)
   useEffect(() => {
-    if (!isOpen || authUser?.wallet) return;
+    if (!isOpen) return;
 
     let cancelled = false;
     const fetchMessages = async () => {
@@ -1437,16 +1447,22 @@ const Chat = () => {
         const res = await apiFetch('https://api.xrpl.to/api/chat/messages?limit=50');
         const data = await res.json();
         if (!cancelled && data.messages) {
-          setMessages(data.messages);
-          setOnlineCount(data.online || 0);
+          // Only use REST data if WS hasn't already provided messages
+          setMessages(prev => prev.length ? prev : data.messages);
+          if (data.online !== undefined) setOnlineCount(data.online);
         }
       } catch { }
     };
 
     fetchMessages();
-    const interval = setInterval(fetchMessages, 10000); // Refresh every 10s
 
-    return () => { cancelled = true; clearInterval(interval); };
+    // Non-logged-in users: poll every 10s since they don't have a WS connection
+    let interval = null;
+    if (!authUser?.wallet) {
+      interval = setInterval(fetchMessages, 10000);
+    }
+
+    return () => { cancelled = true; if (interval) clearInterval(interval); };
   }, [isOpen, authUser?.wallet]);
 
   useEffect(() => {
@@ -1457,12 +1473,46 @@ const Chat = () => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ wallet: getLoggedInWallet() })
-    }).catch(() => { });
+    }).catch(err => { console.warn('[Chat] Mark-as-read failed:', err.message); });
 
     let ws = null;
     let pingInterval = null;
     let reconnectTimeout = null;
     let unmounted = false;
+    let retryDelay = 3000;
+    let consecutiveFailures = 0;
+
+    const scheduleReconnect = () => {
+      if (unmounted || !isOpenRef.current || !getLoggedInWallet()) return;
+      reconnectTimeout = setTimeout(async () => {
+        if (unmounted || wsRef.current?.readyState === WebSocket.OPEN) return;
+        const newWs = await connect();
+        if (newWs && !unmounted) {
+          retryDelay = 3000;
+          consecutiveFailures = 0;
+          setupWs(newWs);
+        } else if (!unmounted) {
+          consecutiveFailures++;
+          retryDelay = Math.min(retryDelay * 2, 60000);
+          scheduleReconnect();
+        }
+      }, retryDelay);
+    };
+
+    const setupWs = (socket) => {
+      ws = socket;
+      if (pingInterval) clearInterval(pingInterval);
+      pingInterval = setInterval(() => {
+        if (ws?.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'ping' }));
+      }, 30000);
+
+      ws.onclose = () => {
+        clearInterval(pingInterval);
+        pingInterval = null;
+        setWsStatus('disconnected');
+        scheduleReconnect();
+      };
+    };
 
     const init = async () => {
       ws = await connect();
@@ -1470,17 +1520,7 @@ const Chat = () => {
         if (ws) ws.close();
         return;
       }
-
-      pingInterval = setInterval(() => {
-        if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'ping' }));
-      }, 30000);
-
-      ws.onclose = () => {
-        clearInterval(pingInterval);
-        if (!unmounted && isOpenRef.current && getLoggedInWallet()) {
-          reconnectTimeout = setTimeout(() => wsRef.current?.readyState !== WebSocket.OPEN && connect(), 3000);
-        }
-      };
+      setupWs(ws);
     };
 
     init();
@@ -1702,55 +1742,73 @@ const Chat = () => {
     setTimeout(() => inputRef.current?.focus(), 0);
   };
 
-  const baseClasses = isDark ? 'bg-black text-white border-white/[0.08]' : 'bg-white text-black border-black/[0.08]';
+  const baseClasses = isDark ? 'bg-black text-white border-white/[0.06]' : 'bg-white text-black border-black/[0.06]';
 
   return (
-    <div className={`fixed z-50 ${isOpen ? 'bottom-4 right-4 max-sm:top-0 max-sm:left-0 max-sm:right-0 max-sm:bottom-0 max-sm:touch-manipulation' : 'bottom-4 right-4 max-sm:bottom-0 max-sm:right-0 max-sm:left-0'}`}>
+    <div className={`fixed ${isOpen ? 'z-50 bottom-4 right-4 max-sm:top-0 max-sm:left-0 max-sm:right-0 max-sm:bottom-0 max-sm:touch-manipulation' : 'z-50 bottom-5 max-sm:bottom-3 right-5 max-sm:right-3'}`}>
       {!isOpen ? (
         <button
+          aria-label="Open chat"
           onClick={() => setIsOpen(true)}
-          className={`group relative flex items-center gap-3 px-4 py-2.5 rounded-xl border-[1.5px] transition-all duration-200 active:scale-[0.97] max-sm:w-full max-sm:justify-center max-sm:rounded-none max-sm:border-x-0 max-sm:border-b-0 max-sm:py-3 ${isDark ? 'bg-black border-white/[0.08] hover:border-[#137DFE]/30' : 'bg-white border-black/[0.08] hover:border-[#137DFE]/30'}`}
+          className={`group relative flex items-center gap-3 h-10 px-7 rounded-sm border-[1.5px] transition-all duration-200 active:scale-[0.97] backdrop-blur-md outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] ${isDark ? 'bg-white/[0.04] border-white/[0.10] hover:border-white/20 hover:bg-white/[0.08]' : 'bg-black/[0.03] border-black/[0.10] hover:border-black/20 hover:bg-black/[0.06]'}`}
         >
-          <MessageCircle size={18} className="text-[#137DFE] shrink-0" />
-          <span className={`font-semibold text-sm ${isDark ? 'text-white' : 'text-black'}`}>Shoutbox</span>
-          <span className={`h-5 w-px shrink-0 ${isDark ? 'bg-white/10' : 'bg-black/10'}`} />
-          <span className="flex items-center gap-1.5 text-[11px] font-medium">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#08AA09] animate-pulse" />
-            <span className={`tabular-nums ${isDark ? 'text-white/50' : 'text-black/50'}`}>{onlineCount >= 1000 ? `${(onlineCount / 1000).toFixed(1)}K` : onlineCount}</span>
+          {/* left: online dot + count */}
+          <span className="flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#08AA09]" style={{ boxShadow: '0 0 6px rgba(8,170,9,0.6)' }} />
+            <span className={`tabular-nums text-[11px] font-mono font-medium ${isDark ? 'text-white/40' : 'text-black/40'}`}>{onlineCount >= 1000 ? `${(onlineCount / 1000).toFixed(1)}K` : onlineCount}</span>
           </span>
-          {unreadCount > 0 && (
-            <span className="absolute -top-2 -right-2 max-sm:-top-1 max-sm:-right-1 min-w-[20px] max-sm:min-w-[16px] h-5 max-sm:h-4 flex items-center justify-center px-1.5 max-sm:px-1 rounded-md bg-[#650CD4] text-white text-[11px] max-sm:text-[9px] font-bold leading-none">
-              {unreadCount > 99 ? '99+' : unreadCount}
-            </span>
-          )}
+
+          {/* center divider */}
+          <span className={`w-px h-4 ${isDark ? 'bg-white/15' : 'bg-black/15'}`} />
+
+          {/* center: label */}
+          <span className={`font-mono font-semibold text-[10px] uppercase tracking-widest ${isDark ? 'text-white/50' : 'text-black/50'}`}>Shoutbox</span>
+
+          {/* right divider */}
+          <span className={`w-px h-4 ${isDark ? 'bg-white/15' : 'bg-black/15'}`} />
+
+          {/* right: unread or placeholder for symmetry */}
+          <span className="flex items-center justify-center min-w-[28px]">
+            {unreadCount > 0 ? (
+              <span className="min-w-[20px] h-5 flex items-center justify-center px-1.5 rounded-sm bg-[#650CD4] text-white text-[10px] font-mono font-bold leading-none">
+                {unreadCount > 99 ? '99+' : unreadCount}
+              </span>
+            ) : (
+              <span className={`text-[10px] font-mono tracking-widest font-medium ${isDark ? 'text-white/15' : 'text-black/15'}`}>///</span>
+            )}
+          </span>
         </button>
       ) : (
         <div
           ref={containerRef}
+          role="complementary"
+          aria-label="Chat"
           onClick={() => { if (!isFocused) inputRef.current?.focus(); }}
-          className={`w-[560px] max-sm:w-full max-sm:h-full max-sm:rounded-none rounded-xl border-[1.5px] max-sm:border-0 ${baseClasses} overflow-hidden shadow-2xl flex flex-col`}
+          className={`w-[700px] max-sm:w-full max-sm:h-full max-sm:rounded-none rounded-sm border-[1px] max-sm:border-0 ${baseClasses} overflow-hidden flex flex-col`}
+          style={isDark ? { boxShadow: '0 0 30px rgba(255,255,255,0.03), 0 0 60px rgba(255,255,255,0.01)' } : {}}
         >
-          <div className="flex items-center justify-between px-3 py-2.5 max-sm:py-3 max-sm:pt-[calc(12px+env(safe-area-inset-top))] border-b border-inherit shrink-0">
+          <div className="relative flex items-center justify-between px-3 py-2.5 max-sm:py-3 max-sm:pt-[calc(12px+env(safe-area-inset-top))] border-b border-inherit shrink-0">
+            <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
             <div className="flex items-center gap-2 max-sm:gap-2.5">
-              <span className="font-bold text-sm max-sm:text-base">Shoutbox</span>
+              <span className="font-mono font-bold text-xs max-sm:text-sm uppercase tracking-widest">Shoutbox</span>
               {onlineCount > 0 && (
-                <span className="flex items-center gap-1.5 text-[11px] px-2 py-0.5 rounded-full bg-[#08AA09]/10">
+                <span className="flex items-center gap-1.5 text-[11px] px-2 py-0.5 rounded-sm bg-[#08AA09]/10 border border-[#08AA09]/20">
                   <span className="w-1.5 h-1.5 rounded-full bg-[#08AA09] animate-pulse" />
-                  <span className="text-[#08AA09] font-semibold tabular-nums">{onlineCount >= 1000 ? `${(onlineCount / 1000).toFixed(1)}K` : onlineCount}</span>
+                  <span className="text-[#08AA09] font-mono font-semibold tabular-nums">{onlineCount >= 1000 ? `${(onlineCount / 1000).toFixed(1)}K` : onlineCount}</span>
                 </span>
               )}
               {authUser?.wallet && wsStatus !== 'connected' && (
-                <span className={`flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-full ${wsStatus === 'connecting' ? 'text-[#F6AF01] bg-[#F6AF01]/10' : 'text-red-400 bg-red-500/10'}`}>
+                <span className={`flex items-center gap-1 text-[10px] font-mono px-1.5 py-0.5 rounded-sm ${wsStatus === 'connecting' ? 'text-[#F6AF01] bg-[#F6AF01]/10 border border-[#F6AF01]/20' : 'text-red-400 bg-red-500/10 border border-red-500/20'}`}>
                   {wsStatus === 'connecting' ? <Loader2 size={10} className="animate-spin" /> : <WifiOff size={10} />}
-                  {wsStatus === 'connecting' ? 'Connecting' : 'Offline'}
+                  {wsStatus === 'connecting' ? 'SYNC' : 'OFFLINE'}
                 </span>
               )}
             </div>
             <div className="flex items-center gap-0.5 max-sm:gap-1">
-              <button aria-label="Support Tickets" onClick={() => { setShowSupport(s => !s); setShowInbox(false); setSupportNotif(0); }} className={`relative p-2 max-sm:p-2.5 rounded-lg transition-colors active:scale-95 ${showSupport ? 'bg-[#137DFE] text-white' : isDark ? 'hover:bg-white/10 active:bg-white/20' : 'hover:bg-black/10 active:bg-black/20'}`} title="Support Tickets">
+              <button aria-label="Support Tickets" onClick={() => { setShowSupport(s => !s); setShowInbox(false); setSupportNotif(0); }} className={`relative p-2 max-sm:p-2.5 rounded-sm transition-colors active:scale-95 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] ${showSupport ? 'bg-white/20 text-white' : isDark ? 'hover:bg-white/10 active:bg-white/20' : 'hover:bg-black/10 active:bg-black/20'}`} title="Support Tickets">
                 <HelpCircle size={16} className="max-sm:w-5 max-sm:h-5" />
                 {supportNotif > 0 && (
-                  <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-white text-[10px] flex items-center justify-center">{supportNotif}</span>
+                  <span className="absolute -top-1 -right-1 w-4 h-4 rounded-sm bg-red-500 text-white text-[10px] font-mono flex items-center justify-center">{supportNotif}</span>
                 )}
               </button>
               <button aria-label="Direct Messages" onClick={() => {
@@ -1761,35 +1819,35 @@ const Chat = () => {
                 if (opening && wsRef.current?.readyState === WebSocket.OPEN) {
                   conversations.forEach(([user]) => wsRef.current.send(JSON.stringify({ type: 'status', wallet: user })));
                 }
-              }} className={`relative p-2 max-sm:p-2.5 rounded-lg transition-colors active:scale-95 ${showInbox ? 'bg-[#137DFE] text-white' : isDark ? 'hover:bg-white/10 active:bg-white/20' : 'hover:bg-black/10 active:bg-black/20'}`}>
+              }} className={`relative p-2 max-sm:p-2.5 rounded-sm transition-colors active:scale-95 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] ${showInbox ? 'bg-white/20 text-white' : isDark ? 'hover:bg-white/10 active:bg-white/20' : 'hover:bg-black/10 active:bg-black/20'}`}>
                 <Inbox size={16} className="max-sm:w-5 max-sm:h-5" />
                 {conversations.filter(([, m]) => m.unread).length > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-[#650CD4] text-white text-[9px] font-medium flex items-center justify-center">{conversations.filter(([, m]) => m.unread).length}</span>
+                  <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-sm bg-[#650CD4] text-white text-[9px] font-mono font-medium flex items-center justify-center">{conversations.filter(([, m]) => m.unread).length}</span>
                 )}
               </button>
-              <button aria-label="Close chat" onClick={() => setIsOpen(false)} className={`p-2 max-sm:p-2.5 rounded-lg active:scale-95 transition-all ${isDark ? 'hover:bg-white/10 active:bg-white/20' : 'hover:bg-black/10 active:bg-black/20'}`}>
+              <button aria-label="Close chat" onClick={() => setIsOpen(false)} className={`p-2 max-sm:p-2.5 rounded-sm active:scale-95 transition-all outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] ${isDark ? 'hover:bg-white/10 active:bg-white/20' : 'hover:bg-black/10 active:bg-black/20'}`}>
                 <X size={16} className="max-sm:w-5 max-sm:h-5" />
               </button>
             </div>
           </div>
 
           {toast && Date.now() - toast.at < 4000 && (
-            <div className="px-3 py-2 bg-[#650CD4]/10 border-b border-[#650CD4]/20 text-[#650CD4] text-xs flex items-center justify-between animate-in fade-in">
+            <div className="px-3 py-2 bg-[#650CD4]/10 border-b border-[#650CD4]/20 text-[#650CD4] text-xs font-mono tracking-wide flex items-center justify-between animate-in fade-in">
               <span className="flex items-center gap-1.5 truncate"><HelpCircle size={12} />{toast.text}</span>
-              <button onClick={() => setToast(null)} className="hover:text-[#650CD4]/70 shrink-0"><X size={14} /></button>
+              <button aria-label="Close" onClick={() => setToast(null)} className="hover:text-[#650CD4]/70 shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]"><X size={14} /></button>
             </div>
           )}
           {modError && (
-            <div className="px-3 py-2 bg-red-500/10 border-b border-red-500/20 text-red-400 text-xs flex items-center justify-between">
+            <div className="px-3 py-2 bg-red-500/10 border-b border-red-500/20 text-red-400 text-xs font-mono tracking-wide flex items-center justify-between">
               <span>{modError}</span>
-              <button onClick={() => setModError(null)} className="hover:text-red-300"><X size={14} /></button>
+              <button aria-label="Close" onClick={() => setModError(null)} className="hover:text-red-300 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]"><X size={14} /></button>
             </div>
           )}
-          {!registered && authUser?.wallet ? (
+          {!registered && authUser?.wallet && messages.length === 0 ? (
             <div className="h-[400px] max-sm:h-full max-sm:flex-1 flex items-center justify-center">
               <div className="text-center opacity-40">
                 <Loader2 size={20} className="animate-spin mx-auto mb-2.5" />
-                <p className="text-sm font-medium">Connecting...</p>
+                <p className="text-xs font-mono font-medium uppercase tracking-widest">Connecting...</p>
               </div>
             </div>
           ) : showSupport ? (
@@ -1803,20 +1861,21 @@ const Chat = () => {
           ) : showInbox ? (
             <div className="h-[400px] max-sm:h-full max-sm:flex-1 flex flex-col">
               <div className="px-3 py-2 border-b border-inherit shrink-0 flex items-center gap-2">
-                <button onClick={() => setShowInbox(false)} className={`p-1.5 rounded-lg shrink-0 transition-colors ${isDark ? 'hover:bg-white/10' : 'hover:bg-black/10'}`}>
+                <button aria-label="Go back" onClick={() => setShowInbox(false)} className={`p-1.5 rounded-sm shrink-0 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] ${isDark ? 'hover:bg-white/10' : 'hover:bg-black/10'}`}>
                   <ChevronLeft size={16} />
                 </button>
-                <div className={`flex-1 flex items-center gap-2 px-2.5 rounded-lg ${isDark ? 'bg-white/5' : 'bg-black/5'}`}>
+                <div className={`flex-1 flex items-center gap-2 px-2.5 rounded-sm ${isDark ? 'bg-white/5 border border-white/[0.06]' : 'bg-black/5 border border-black/10'}`}>
                   <Search size={14} className="opacity-30 shrink-0" />
                   <input
                     autoFocus
                     value={inboxSearch}
                     onChange={(e) => setInboxSearch(e.target.value)}
-                    placeholder="Search conversations..."
-                    className={`w-full py-2 text-sm bg-transparent outline-none ${isDark ? 'text-white placeholder-white/25' : 'text-black placeholder-black/25'}`}
+                    placeholder="SEARCH..."
+                    aria-label="Search conversations"
+                    className={`w-full py-2 text-sm font-mono bg-transparent outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] ${isDark ? 'text-white placeholder-white/25' : 'text-black placeholder-black/25'}`}
                   />
                   {inboxSearch && (
-                    <button onClick={() => setInboxSearch('')} className="opacity-40 hover:opacity-80">
+                    <button aria-label="Clear search" onClick={() => setInboxSearch('')} className="opacity-40 hover:opacity-80 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]">
                       <X size={14} />
                     </button>
                   )}
@@ -1878,7 +1937,7 @@ const Chat = () => {
                     <>
                       {unread.length > 0 && (
                         <>
-                          <div className={`sticky top-0 z-10 px-3 py-1.5 text-[10px] uppercase tracking-wide font-medium ${isDark ? 'text-[#650CD4] bg-black border-b border-white/[0.04]' : 'text-[#650CD4] bg-white border-b border-black/[0.04]'}`}>
+                          <div className={`sticky top-0 z-10 px-3 py-1.5 text-[9px] uppercase tracking-widest font-mono font-medium ${isDark ? 'text-[#650CD4] bg-black border-b border-[#650CD4]/10' : 'text-[#650CD4] bg-white border-b border-black/[0.04]'}`}>
                             Unread ({unread.length})
                           </div>
                           {unread.map(renderConvo)}
@@ -1887,7 +1946,7 @@ const Chat = () => {
                       {read.length > 0 && (
                         <>
                           {unread.length > 0 && (
-                            <div className={`sticky top-0 z-10 px-3 py-1.5 text-[10px] uppercase tracking-wide font-medium ${isDark ? 'text-white/30 bg-black border-b border-white/[0.04]' : 'text-black/30 bg-white border-b border-black/[0.04]'}`}>
+                            <div className={`sticky top-0 z-10 px-3 py-1.5 text-[9px] uppercase tracking-widest font-mono font-medium ${isDark ? 'text-white/30 bg-black border-b border-white/[0.04]' : 'text-black/30 bg-white border-b border-black/[0.04]'}`}>
                               Earlier
                             </div>
                           )}
@@ -1912,7 +1971,7 @@ const Chat = () => {
                     <div className="relative flex gap-0.5 px-1 py-1 border-b border-inherit overflow-x-auto scrollbar-hide overscroll-x-contain touch-pan-x shrink-0" ref={tabBarRef}>
                       <button
                         onClick={() => { setActiveTab('general'); setPrivateTo(''); setShowInbox(false); setShowSupport(false); }}
-                        className={`px-2 py-0.5 text-[10px] rounded-md shrink-0 font-medium transition-all active:scale-95 ${activeTab === 'general' ? 'bg-[#137DFE] text-white' : isDark ? 'bg-white/5 hover:bg-white/10 active:bg-white/15' : 'bg-black/5 hover:bg-black/10 active:bg-black/15'}`}
+                        className={`px-2 py-0.5 text-[9px] font-mono uppercase tracking-wider rounded-sm shrink-0 font-medium transition-all active:scale-95 ${activeTab === 'general' ? (isDark ? 'bg-white/15 text-white' : 'bg-black/15 text-black') : isDark ? 'bg-white/5 hover:bg-white/10 active:bg-white/15' : 'bg-black/5 hover:bg-black/10 active:bg-black/15'}`}
                       >
                         General
                       </button>
@@ -1929,7 +1988,7 @@ const Chat = () => {
                           data-tab={user}
                           onClick={() => openDmTab(user)}
                           title={user}
-                          className={`group/tab px-1.5 py-0.5 text-[10px] rounded-md shrink-0 flex items-center gap-1 font-medium transition-all active:scale-95 ${activeTab === user ? 'bg-[#137DFE] text-white' : hasUnread ? 'bg-[#F6AF01]/10 hover:bg-[#F6AF01]/20 active:bg-[#F6AF01]/30' : isDark ? 'bg-white/5 hover:bg-white/10 active:bg-white/15' : 'bg-black/5 hover:bg-black/10 active:bg-black/15'}`}
+                          className={`group/tab px-1.5 py-0.5 text-[9px] font-mono tracking-wider rounded-sm shrink-0 flex items-center gap-1 font-medium transition-all active:scale-95 ${activeTab === user ? (isDark ? 'bg-white/15 text-white' : 'bg-black/15 text-black') : hasUnread ? 'bg-[#F6AF01]/10 hover:bg-[#F6AF01]/20 active:bg-[#F6AF01]/30' : isDark ? 'bg-white/5 hover:bg-white/10 active:bg-white/15' : 'bg-black/5 hover:bg-black/10 active:bg-black/15'}`}
                         >
                           <span className="relative">
                             <DmAvatar wallet={user} size="sm" />
@@ -1941,13 +2000,13 @@ const Chat = () => {
                         );
                       })}
                     </div>
-                    <div className="relative h-[400px] max-sm:!h-0 max-sm:flex-1 max-sm:min-h-0">
-                    <div className="h-full overflow-y-auto overflow-x-hidden scrollbar-hide px-2 py-1 max-sm:px-1.5 scroll-smooth overscroll-contain" onScroll={handleMessagesScroll}>
+                    <div className="relative h-[400px] max-sm:!h-0 max-sm:flex-1 max-sm:min-h-0" style={isDark ? { backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(255,255,255,0.02) 39px, rgba(255,255,255,0.02) 40px)', backgroundSize: '100% 40px' } : {}}>
+                    <div role="log" aria-live="polite" className="h-full overflow-y-auto overflow-x-hidden scrollbar-hide px-2 py-1 max-sm:px-1.5 scroll-smooth overscroll-contain" onScroll={handleMessagesScroll}>
                       {filtered.length === 0 && (
                         <div className="h-full flex flex-col items-center justify-center opacity-25 text-sm gap-2">
                           <MessageCircle size={24} />
-                          <span className="font-medium">{activeTab === 'general' ? 'No messages yet' : 'Start a conversation'}</span>
-                          <span className="text-[11px] opacity-60">{activeTab === 'general' ? 'Be the first to say something!' : 'Send a message to get started'}</span>
+                          <span className="font-mono font-medium uppercase tracking-wider text-xs">{activeTab === 'general' ? 'No messages yet' : 'Start a conversation'}</span>
+                          <span className="text-[10px] font-mono opacity-60">{activeTab === 'general' ? 'Be the first to say something!' : 'Send a message to get started'}</span>
                         </div>
                       )}
                       {filtered.map((msg, i) => {
@@ -1959,43 +2018,43 @@ const Chat = () => {
                           : displayName;
 
                         return (
-                          <div key={msg._id || i} className={`group/msg flex items-baseline gap-1 py-0.5 px-1 -mx-1 rounded text-[12px] max-sm:text-[11px] leading-relaxed transition-all overflow-hidden ${msg._deleting ? 'opacity-0 max-h-0 py-0 -my-0.5 scale-95' : 'opacity-100 max-h-40'} duration-300 ${isDark ? 'hover:bg-white/[0.03]' : 'hover:bg-black/[0.03]'}`}>
-                            <span className="text-[10px] opacity-25 shrink-0 tabular-nums w-[44px] text-right whitespace-nowrap">
+                          <div key={msg._id || i} className={`group/msg flex items-baseline gap-1 py-0.5 px-1 -mx-1 rounded-sm text-[12px] max-sm:text-[11px] leading-relaxed transition-all overflow-hidden ${msg._deleting ? 'opacity-0 max-h-0 py-0 -my-0.5 scale-95' : 'opacity-100 max-h-40'} duration-300 ${isDark ? 'hover:bg-white/[0.03]' : 'hover:bg-black/[0.03]'}`}>
+                            <span className={`text-[10px] font-mono shrink-0 tabular-nums w-[44px] text-right whitespace-nowrap ${isDark ? 'text-white/20' : 'text-black/20'}`}>
                               {timeAgo(msg.timestamp)}
                             </span>
                             <ChatAvatar wallet={msgWallet} />
                             <span className="relative group shrink-0">
                               <button
                                 onClick={() => { if (!isOwn) openDmTab(msgWallet); }}
-                                className={`font-semibold hover:underline ${isOwn ? 'text-[#137DFE]' : msg.tier && msg.tier.toLowerCase() !== 'member' ? getTierTextColor(msg.tier) : activeTab !== 'general' ? 'text-[#650CD4]' : 'text-[#08AA09]'}`}
+                                className={`font-semibold hover:underline ${isOwn ? (isDark ? 'text-white/60' : 'text-black/60') : msg.tier && msg.tier.toLowerCase() !== 'member' ? getTierTextColor(msg.tier) : activeTab !== 'general' ? 'text-[#650CD4]' : 'text-[#08AA09]'}`}
                               >
-                                {isOwn ? 'You' : shortName}:
+                                {isOwn ? <span className="font-mono">You</span> : shortName}:
                               </button>
                               {!isOwn && (
                                 <div className="absolute bottom-full left-0 mb-2 hidden group-hover:block z-50">
-                                  <div className={`px-3 py-2.5 rounded-xl border-[1.5px] text-[11px] whitespace-nowrap ${isDark ? 'bg-black border-white/[0.08]' : 'bg-white border-black/[0.08]'}`}>
+                                  <div className={`px-3 py-2.5 rounded-sm border-[1px] text-[11px] whitespace-nowrap ${isDark ? 'bg-black border-white/[0.06]' : 'bg-white border-black/[0.06]'}`}>
                                     <div className={`font-mono text-xs mb-1.5 ${isDark ? 'text-white' : 'text-black'}`}>{msgWallet}</div>
-                                    <div className={`flex gap-3 ${isDark ? 'text-white/40' : 'text-black/40'}`}>
+                                    <div className={`flex gap-3 font-mono text-[10px] uppercase tracking-wider ${isDark ? 'text-white/40' : 'text-black/40'}`}>
                                       {msg.tier && <span>Tier <span className={isDark ? 'text-white/70' : 'text-black/70'}>{msg.tier}</span></span>}
                                       {msg.platform && <span>Platform <span className={isDark ? 'text-white/70' : 'text-black/70'}>{msg.platform}</span></span>}
                                     </div>
-                                    <div className="text-[#137DFE] mt-2 text-[10px] font-medium">Click to DM</div>
+                                    <div className={`mt-2 text-[10px] font-mono font-medium tracking-wider ${isDark ? 'text-white/40' : 'text-black/40'}`}>CLICK TO DM</div>
                                     {(canMute(msg.tier) || canBan()) && (
-                                      <div className={`flex gap-2 mt-2 pt-2 border-t ${isDark ? 'border-white/[0.08]' : 'border-black/[0.08]'}`}>
+                                      <div className={`flex gap-2 mt-2 pt-2 border-t ${isDark ? 'border-white/[0.06]' : 'border-black/[0.08]'}`}>
                                         {canMute(msg.tier) && (
                                           <button
                                             onClick={(e) => { e.stopPropagation(); muteUser(msgWallet, 30); }}
-                                            className="flex items-center gap-1 px-2 py-1 rounded-lg bg-[#F6AF01]/10 text-[#F6AF01] hover:bg-[#F6AF01]/20 text-[10px] font-medium"
+                                            className="flex items-center gap-1 px-2 py-1 rounded-sm bg-[#F6AF01]/10 text-[#F6AF01] hover:bg-[#F6AF01]/20 text-[10px] font-mono font-medium"
                                           >
-                                            <VolumeX size={10} /> Mute 30m
+                                            <VolumeX size={10} /> MUTE 30M
                                           </button>
                                         )}
                                         {canBan() && (
                                           <button
                                             onClick={(e) => { e.stopPropagation(); banUser(msgWallet, 60); }}
-                                            className="flex items-center gap-1 px-2 py-1 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 text-[10px] font-medium"
+                                            className="flex items-center gap-1 px-2 py-1 rounded-sm bg-red-500/10 text-red-400 hover:bg-red-500/20 text-[10px] font-mono font-medium"
                                           >
-                                            <Ban size={10} /> Ban 1h
+                                            <Ban size={10} /> BAN 1H
                                           </button>
                                         )}
                                       </div>
@@ -2008,8 +2067,8 @@ const Chat = () => {
                             {isOwn && (msg.isPrivate || msg.type === 'private') && (
                               msg.readAt ? (
                                 <div className="relative group/read shrink-0 ml-1">
-                                  <CheckCheck size={12} className="text-[#137DFE]" />
-                                  <div className={`absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden group-hover/read:block z-50 px-2 py-1 rounded text-[10px] whitespace-nowrap ${isDark ? 'bg-[#1a1a1a] border border-white/10 text-white/80' : 'bg-white border border-black/10 text-black/80'}`}>
+                                  <CheckCheck size={12} className={isDark ? 'text-white/50' : 'text-black/50'} />
+                                  <div className={`absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden group-hover/read:block z-50 px-2 py-1 rounded-sm text-[10px] font-mono whitespace-nowrap ${isDark ? 'bg-black border border-white/[0.06] text-white/80' : 'bg-white border border-black/10 text-black/80'}`}>
                                     Read {timeAgo(msg.readAt)}
                                   </div>
                                 </div>
@@ -2018,13 +2077,13 @@ const Chat = () => {
                             {isOwn && msg._id && (
                               pendingDeleteId === msg._id ? (
                                 <span className="flex items-center gap-1.5 shrink-0 ml-1 text-[10px] animate-in fade-in">
-                                  <button onClick={(e) => { e.stopPropagation(); setPendingDeleteId(null); }} className="text-[#137DFE] hover:underline font-medium">Cancel</button>
+                                  <button onClick={(e) => { e.stopPropagation(); setPendingDeleteId(null); }} className={`hover:underline font-medium ${isDark ? 'text-white/50' : 'text-black/50'}`}>Cancel</button>
                                   <button onClick={(e) => { e.stopPropagation(); setPendingDeleteId(null); if (wsRef.current?.readyState === WebSocket.OPEN) { wsRef.current.send(JSON.stringify({ type: 'delete', messageId: msg._id })); } else { setToast({ text: 'Cannot delete — connection lost', at: Date.now() }); } }} className="text-red-400 hover:underline font-medium flex items-center gap-0.5"><Trash2 size={9} />Delete</button>
                                 </span>
                               ) : (
                                 <button
                                   onClick={(e) => { e.stopPropagation(); setPendingDeleteId(msg._id); }}
-                                  className="opacity-0 group-hover/msg:opacity-30 hover:!opacity-100 hover:text-red-400 shrink-0 ml-0.5 p-0.5 rounded transition-all active:scale-90"
+                                  className="opacity-0 group-hover/msg:opacity-30 hover:!opacity-100 hover:text-red-400 shrink-0 ml-0.5 p-0.5 rounded transition-all active:scale-90 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]"
                                   aria-label="Delete message"
                                 >
                                   <Trash2 size={10} />
@@ -2037,9 +2096,9 @@ const Chat = () => {
                       <div ref={messagesEndRef} />
                     </div>
                     {showScrollBtn && (
-                      <button onClick={scrollToBottom} className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1 px-3 py-1.5 rounded-full bg-[#137DFE] text-white text-[11px] font-semibold shadow-lg hover:bg-[#137DFE]/90 active:scale-95 transition-all z-10 backdrop-blur-sm">
+                      <button onClick={scrollToBottom} className={`absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1 px-3 py-1.5 rounded-sm text-[10px] font-mono font-semibold uppercase tracking-wider active:scale-95 transition-all z-10 backdrop-blur-sm outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] ${isDark ? 'bg-white/15 text-white hover:bg-white/20' : 'bg-black/10 text-black hover:bg-black/15'}`}>
                         <ChevronDown size={12} />
-                        {newMsgCount > 0 ? `${newMsgCount} new` : 'Latest'}
+                        {newMsgCount > 0 ? `${newMsgCount} NEW` : 'LATEST'}
                       </button>
                     )}
                     </div>
@@ -2061,13 +2120,9 @@ const Chat = () => {
                 const names = typers.map(([w]) => getUserName(w) || `${w.slice(0, 6)}...`);
                 const label = names.length === 1 ? `${names[0]} is typing` : names.length <= 3 ? `${names.join(', ')} are typing` : `${names.length} people typing`;
                 return (
-                  <div className={`px-3 py-1 text-[11px] border-t border-inherit ${isDark ? 'text-white/40' : 'text-black/40'}`}>
-                    <span className="inline-flex items-center gap-1">
-                      <span className="flex gap-0.5">
-                        <span className="w-1 h-1 rounded-full bg-current animate-bounce [animation-delay:0ms]" />
-                        <span className="w-1 h-1 rounded-full bg-current animate-bounce [animation-delay:150ms]" />
-                        <span className="w-1 h-1 rounded-full bg-current animate-bounce [animation-delay:300ms]" />
-                      </span>
+                  <div className={`px-3 py-1 text-[10px] font-mono tracking-wider border-t border-inherit ${isDark ? 'text-white/30' : 'text-black/30'}`}>
+                    <span className="inline-flex items-center gap-1.5">
+                      <span className={`animate-pulse ${isDark ? 'text-white/40' : 'text-black/40'}`}>_</span>
                       {label}
                     </span>
                   </div>
@@ -2075,7 +2130,7 @@ const Chat = () => {
               })()}
               <div className="px-2 py-2 max-sm:px-3 max-sm:py-3 max-sm:pb-[calc(12px+env(safe-area-inset-bottom))] border-t border-inherit shrink-0">
                 {!authUser?.wallet ? (
-                  <div className={`flex items-center justify-center gap-2 py-3 text-sm rounded-xl ${isDark ? 'text-white/40 bg-white/[0.02]' : 'text-black/40 bg-black/[0.02]'}`}>
+                  <div className={`flex items-center justify-center gap-2 py-3 text-xs font-mono uppercase tracking-wider rounded-sm ${isDark ? 'text-white/40 bg-white/[0.02] border border-white/[0.06]' : 'text-black/40 bg-black/[0.02] border border-black/10'}`}>
                     <Send size={14} />
                     <span>Connect wallet to chat</span>
                   </div>
@@ -2084,17 +2139,17 @@ const Chat = () => {
                     {(attachedNft || attachedToken) && (
                       <div className="flex items-center gap-2 mb-2 flex-wrap">
                         {attachedToken && (
-                          <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg bg-[#137DFE]/10 border border-[#137DFE]/20">
+                          <div className={`flex items-center gap-1.5 px-2 py-1.5 rounded-sm ${isDark ? 'bg-white/5 border border-white/[0.06]' : 'bg-black/5 border border-black/[0.06]'}`}>
                             <AttachedTokenPreview md5={attachedToken} />
-                            <button onClick={() => setAttachedToken(null)} className="p-1 hover:bg-white/10 active:bg-white/20 rounded text-white/40 hover:text-white">
+                            <button aria-label="Remove attachment" onClick={() => setAttachedToken(null)} className="p-1 hover:bg-white/10 active:bg-white/20 rounded text-white/40 hover:text-white outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]">
                               <X size={14} />
                             </button>
                           </div>
                         )}
                         {attachedNft && (
-                          <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg bg-[#650CD4]/10 border border-[#650CD4]/20">
+                          <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-sm bg-[#650CD4]/10 border border-[#650CD4]/20">
                             <NFTPreview nftId={attachedNft} />
-                            <button onClick={() => setAttachedNft(null)} className="p-1 hover:bg-white/10 active:bg-white/20 rounded text-white/40 hover:text-white">
+                            <button aria-label="Remove attachment" onClick={() => setAttachedNft(null)} className="p-1 hover:bg-white/10 active:bg-white/20 rounded text-white/40 hover:text-white outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]">
                               <X size={14} />
                             </button>
                           </div>
@@ -2106,6 +2161,7 @@ const Chat = () => {
                       <input
                         ref={inputRef}
                         value={input}
+                        aria-label="Type a message"
                         onChange={(e) => {
                           setInput(e.target.value.slice(0, 256));
                           if (wsRef.current?.readyState === WebSocket.OPEN && Date.now() - lastTypingSentRef.current > 3000) {
@@ -2154,18 +2210,18 @@ const Chat = () => {
                             sendMessage();
                           }
                         }}
-                        className={`flex-1 px-3 py-2.5 max-sm:py-3 rounded-xl outline-none text-sm max-sm:text-base transition-all ${isDark ? 'bg-white/5 text-white placeholder-white/25 focus:bg-white/[0.07] focus:ring-1 focus:ring-white/10' : 'bg-black/5 text-black placeholder-black/25 focus:bg-black/[0.07] focus:ring-1 focus:ring-black/10'}`}
+                        className={`flex-1 px-3 py-2.5 max-sm:py-3 rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] text-sm max-sm:text-base transition-all ${isDark ? 'bg-white/5 text-white placeholder-white/25 font-mono placeholder:font-mono focus:bg-white/[0.07] focus:ring-1 focus:ring-white/10 border border-transparent focus:border-white/[0.06]' : 'bg-black/5 text-black placeholder-black/25 font-mono placeholder:font-mono focus:bg-black/[0.07] focus:ring-1 focus:ring-black/10 border border-transparent focus:border-black/[0.06]'}`}
                       />
                       <button
                         aria-label="Send message"
                         onClick={sendMessage}
                         disabled={!input && !attachedNft && !attachedToken}
-                        className={`px-3 max-sm:px-3.5 self-stretch rounded-xl transition-all duration-200 shrink-0 flex items-center justify-center ${(input || attachedNft || attachedToken) ? 'bg-[#137DFE] text-white hover:bg-[#137DFE]/80 active:scale-90' : isDark ? 'bg-white/5 text-white/20 cursor-not-allowed' : 'bg-black/5 text-black/20 cursor-not-allowed'}`}
+                        className={`px-3 py-2.5 max-sm:px-3.5 max-sm:py-3 rounded-sm transition-all duration-200 shrink-0 flex items-center justify-center outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] ${(input || attachedNft || attachedToken) ? (isDark ? 'bg-white/15 text-white hover:bg-white/20 active:scale-90' : 'bg-black/10 text-black hover:bg-black/15 active:scale-90') : isDark ? 'bg-white/5 text-white/20 cursor-not-allowed' : 'bg-black/5 text-black/20 cursor-not-allowed'}`}
                       >
                         <Send size={16} className={`max-sm:w-5 max-sm:h-5 transition-transform duration-200 ${(input || attachedNft || attachedToken) ? '-rotate-45 translate-x-[1px] -translate-y-[1px]' : ''}`} />
                       </button>
                       {input.length > 0 && (
-                        <span className={`absolute right-14 top-1/2 -translate-y-1/2 text-[10px] tabular-nums ${input.length >= 256 ? 'text-red-500 font-medium' : input.length >= 200 ? 'opacity-60' : 'opacity-25'}`}>
+                        <span className={`absolute right-14 top-1/2 -translate-y-1/2 text-[10px] font-mono tabular-nums ${input.length >= 256 ? 'text-red-500 font-medium' : input.length >= 200 ? 'opacity-60' : 'opacity-25'}`}>
                           {256 - input.length}
                         </span>
                       )}

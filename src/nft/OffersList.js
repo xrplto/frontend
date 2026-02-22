@@ -84,7 +84,8 @@ export default function OffersList({ nft, offers, handleAcceptOffer, handleCance
                       {offer.owner !== accountLogin && (
                         <button
                           onClick={() => window.dispatchEvent(new CustomEvent('openDm', { detail: { user: offer.owner } }))}
-                          className={cn('p-0.5 rounded hover:bg-white/10', isDark ? 'text-white/60 hover:text-[#650CD4]' : 'text-gray-400 hover:text-[#650CD4]')}
+                          className={cn('p-0.5 rounded hover:bg-white/10 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]', isDark ? 'text-white/60 hover:text-[#650CD4]' : 'text-gray-400 hover:text-[#650CD4]')}
+                          aria-label="Send direct message"
                           title="Message"
                         >
                           <MessageCircle size={10} />

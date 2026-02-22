@@ -98,14 +98,15 @@ function SpotlightPage({ data }) {
 
 export default SpotlightPage;
 
-export async function getStaticProps() {
+export async function getServerSideProps({ res }) {
+  res.setHeader('Cache-Control', 'public, s-maxage=30, stale-while-revalidate=120');
+
   const data = await getTokens('assessmentScore', 'desc');
 
   let ret = {};
   if (data) {
     let ogp = {};
 
-    // Enhanced SEO metadata for spotlight page
     ogp.canonical = 'https://xrpl.to/spotlight';
     ogp.title = 'Spotlight XRPL Tokens | Curated & Top-Rated | XRP Ledger';
     ogp.url = 'https://xrpl.to/spotlight';
@@ -114,17 +115,13 @@ export async function getStaticProps() {
     ogp.desc =
       'Discover curated spotlight XRPL tokens with the highest assessment scores. Find top-rated, verified tokens with strong fundamentals on the XRP Ledger ecosystem.';
 
-    // Additional structured metadata for better SEO
-    ('spotlight XRPL tokens, top-rated XRP tokens, curated cryptocurrency, verified tokens, assessment score, crypto fundamentals, DEX tokens, XRP ecosystem spotlight');
     ogp.type = 'website';
     ogp.siteName = 'XRPL.to';
     ogp.locale = 'en_US';
 
-    // Twitter card metadata
     ogp.twitterCard = 'summary_large_image';
     ogp.twitterCreator = '@xrplto';
 
-    // ItemList structured data
     const itemListSchema = {
       '@context': 'https://schema.org',
       '@type': 'ItemList',
@@ -154,7 +151,6 @@ export async function getStaticProps() {
   }
 
   return {
-    props: ret,
-    revalidate: 5 // Revalidate every 5 seconds
+    props: ret
   };
 }

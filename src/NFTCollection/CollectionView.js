@@ -8,7 +8,7 @@ import React, {
   createContext
 } from 'react';
 import api from 'src/utils/api';
-import { alpha } from 'src/utils/color';
+import { alpha } from 'src/utils/formatters';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -47,7 +47,8 @@ import {
   Check,
   Link2,
   MessageCircle,
-  Shield
+  Shield,
+  ImageOff
 } from 'lucide-react';
 import VerificationBadge, { VerificationLabel } from 'src/components/VerificationBadge';
 import VerifyBadgeModal from 'src/components/VerifyBadgeModal';
@@ -66,7 +67,8 @@ const Pagination = ({
     <button
       onClick={onPrev}
       disabled={!hasPrev}
-      className="p-1.5 rounded-lg disabled:opacity-30 hover:bg-white/10 transition-[background-color]"
+      aria-label="Previous page"
+      className="p-1.5 rounded-lg disabled:opacity-30 hover:bg-white/10 transition-[background-color] outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]"
     >
       <ChevronLeft size={16} />
     </button>
@@ -76,7 +78,8 @@ const Pagination = ({
     <button
       onClick={onNext}
       disabled={!hasNext}
-      className="p-1.5 rounded-lg disabled:opacity-30 hover:bg-white/10 transition-[background-color]"
+      aria-label="Next page"
+      className="p-1.5 rounded-lg disabled:opacity-30 hover:bg-white/10 transition-[background-color] outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]"
     >
       <ChevronRight size={16} />
     </button>
@@ -363,6 +366,7 @@ const NFTCard = React.memo(
     const imgUrl = getNftCoverUrl(nft, 'large');
     const name = meta?.name || meta?.Name || 'No Name';
     const listPrice = cost?.amount && cost.currency === 'XRP' ? cost.amount : null;
+    const [imgError, setImgError] = useState(false);
 
     return (
       <a
@@ -378,9 +382,9 @@ const NFTCard = React.memo(
           )}
         >
           <div
-            className={cn('relative aspect-square overflow-hidden', isDark ? 'bg-white/5' : 'bg-[#f3f4f6]')}
+            className={cn('relative aspect-square overflow-hidden', isDark ? 'bg-[#111]' : 'bg-[#F1F5F9]')}
           >
-            {imgUrl ? (
+            {imgUrl && !imgError ? (
               <Image
                 src={imgUrl}
                 alt=""
@@ -391,12 +395,14 @@ const NFTCard = React.memo(
                 priority={priority}
                 fetchPriority={priority ? 'high' : 'auto'}
                 unoptimized
+                onError={() => setImgError(true)}
               />
             ) : (
               <span
-                className={cn('absolute inset-0 flex items-center justify-center text-[11px]', isDark ? 'text-white/30' : 'text-[#9ca3af]')}
+                className={cn('absolute inset-0 flex flex-col items-center justify-center gap-1.5', isDark ? 'text-[#4B5563]' : 'text-[#94A3B8]')}
               >
-                No image
+                <ImageOff size={20} strokeWidth={1.2} />
+                <span className="text-[10px]">Unavailable</span>
               </span>
             )}
 
@@ -599,7 +605,7 @@ const NFTGrid = React.memo(
             setTraits(formatted);
           }
         })
-        .catch(() => {});
+        .catch(err => { console.warn('[CollectionView] Traits fetch failed:', err.message); });
     }, [slug]);
 
     // Apply URL filters on load
@@ -762,6 +768,7 @@ const NFTGrid = React.memo(
                 aria-label="Filter NFTs"
                 className={cn(
                   'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border-[1.5px] text-[11px] font-medium transition-[background-color,border-color]',
+                  'outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                   showFilter
                     ? 'border-primary bg-primary/10 text-primary'
                     : isDark
@@ -784,6 +791,7 @@ const NFTGrid = React.memo(
                 onClick={() => setShowSortDropdown(!showSortDropdown)}
                 className={cn(
                   'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border-[1.5px] text-[11px] font-medium transition-[background-color,border-color]',
+                  'outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                   isDark
                     ? 'border-white/[0.08] text-white/50 hover:border-primary/30'
                     : 'border-gray-200 text-gray-500 hover:border-primary/30'
@@ -831,6 +839,7 @@ const NFTGrid = React.memo(
                 onClick={() => setShowListedDropdown(!showListedDropdown)}
                 className={cn(
                   'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border-[1.5px] text-[11px] font-medium transition-[background-color,border-color]',
+                  'outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                   listed
                     ? 'border-primary bg-primary/10 text-primary'
                     : isDark
@@ -880,8 +889,10 @@ const NFTGrid = React.memo(
                 <button
                   key={opt.value}
                   onClick={() => setGridCols(opt.value)}
+                  aria-label={`${opt.label} grid (${opt.value} per row)`}
                   className={cn(
                     'w-7 h-7 rounded-md flex items-center justify-center text-[10px] font-medium transition-[background-color,border-color]',
+                    'outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                     gridCols === opt.value
                       ? 'bg-primary/10 text-primary border border-primary/30'
                       : isDark
@@ -946,6 +957,7 @@ const NFTGrid = React.memo(
                           );
                           setFilterAttrs(updated);
                         }}
+                        aria-label={`Remove filter ${attr.trait_type}: ${v}`}
                       >
                         <X size={10} />
                       </button>
@@ -1026,8 +1038,9 @@ function CollectionCard({ collectionData, type, account, handleRemove }) {
           {isAdmin && (
             <button
               onClick={handleRemoveNft}
+              aria-label="Remove collection"
               className={cn(
-                'absolute top-1 right-1 z-10 w-5 h-5 rounded flex items-center justify-center',
+                'absolute top-1 right-1 z-10 w-5 h-5 rounded flex items-center justify-center outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                 isDark
                   ? 'bg-black/60 text-white/70 hover:text-red-500'
                   : 'bg-white/80 text-gray-500 hover:text-red-500'
@@ -1771,7 +1784,9 @@ const PriceChart = React.memo(({ slug }) => {
                   setSalesOpen(false);
                   setSalesData(null);
                 }}
+                aria-label="Close sales panel"
                 className={cn(
+                  'outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                   isDark ? 'text-white/30 hover:text-white/50' : 'text-gray-300 hover:text-gray-500'
                 )}
               >
@@ -1875,8 +1890,9 @@ const PriceChart = React.memo(({ slug }) => {
                   <button
                     onClick={() => setSalesOffset(Math.max(0, salesOffset - SALES_LIMIT))}
                     disabled={salesOffset === 0}
+                    aria-label="Previous sales page"
                     className={cn(
-                      'p-0.5 disabled:opacity-30',
+                      'p-0.5 disabled:opacity-30 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                       isDark ? 'text-white/40' : 'text-gray-400'
                     )}
                   >
@@ -1889,8 +1905,9 @@ const PriceChart = React.memo(({ slug }) => {
                   <button
                     onClick={() => setSalesOffset(salesOffset + SALES_LIMIT)}
                     disabled={salesOffset + SALES_LIMIT >= salesData.total}
+                    aria-label="Next sales page"
                     className={cn(
-                      'p-0.5 disabled:opacity-30',
+                      'p-0.5 disabled:opacity-30 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                       isDark ? 'text-white/40' : 'text-gray-400'
                     )}
                   >
@@ -2456,8 +2473,10 @@ const HoldersTab = React.memo(({ slug }) => {
             <button
               onClick={handleSearch}
               disabled={searching || !searchAddress.trim()}
+              aria-label="Search address"
               className={cn(
                 'px-3 py-1.5 rounded-lg border-[1.5px] text-[11px] font-medium transition-[background-color]',
+                'outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                 searching || !searchAddress.trim()
                   ? 'opacity-50 cursor-not-allowed'
                   : 'hover:bg-primary/10 hover:border-primary/50',
@@ -2500,7 +2519,8 @@ const HoldersTab = React.memo(({ slug }) => {
                   </div>
                   <button
                     onClick={() => setSearchResult(null)}
-                    className="text-red-500 hover:text-red-400"
+                    aria-label="Dismiss search error"
+                    className="text-red-500 hover:text-red-400 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]"
                   >
                     <X size={14} />
                   </button>
@@ -2534,7 +2554,8 @@ const HoldersTab = React.memo(({ slug }) => {
                   </div>
                   <button
                     onClick={() => setSearchResult(null)}
-                    className={cn('hover:text-primary', isDark ? 'text-white/40' : 'text-gray-400')}
+                    aria-label="Dismiss search result"
+                    className={cn('hover:text-primary outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]', isDark ? 'text-white/40' : 'text-gray-400')}
                   >
                     <X size={14} />
                   </button>
@@ -2832,8 +2853,9 @@ const TradersTab = React.memo(({ slug }) => {
           {search && (
             <button
               onClick={() => setSearch('')}
+              aria-label="Clear search"
               className={cn(
-                'absolute right-2 top-1/2 -translate-y-1/2',
+                'absolute right-2 top-1/2 -translate-y-1/2 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                 isDark ? 'text-white/40 hover:text-white' : 'text-gray-400 hover:text-gray-600'
               )}
             >
@@ -3532,8 +3554,9 @@ export default function CollectionView({ collection }) {
                         <span className="font-mono truncate max-w-[120px]">{account}</span>
                         <button
                           onClick={() => window.dispatchEvent(new CustomEvent('openDm', { detail: { user: account } }))}
-                          className={`p-1 rounded hover:bg-white/10 transition-[background-color] ${isDark ? 'text-white/50 hover:text-white' : 'text-gray-400 hover:text-gray-600'}`}
+                          className={`p-1 rounded hover:bg-white/10 transition-[background-color] outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] ${isDark ? 'text-white/50 hover:text-white' : 'text-gray-400 hover:text-gray-600'}`}
                           title="Message issuer"
+                          aria-label="Message issuer"
                         >
                           <MessageCircle size={14} />
                         </button>
@@ -3650,7 +3673,7 @@ export default function CollectionView({ collection }) {
         </div>
 
         {/* Stats Row */}
-        <div className="flex items-center gap-4 overflow-x-auto pb-1 scrollbar-hide">
+        <div className="flex items-center gap-6 overflow-x-auto pb-1 scrollbar-hide">
           {/* Floor Price - Primary Stat */}
           <div
             className={cn(
@@ -3736,6 +3759,10 @@ export default function CollectionView({ collection }) {
 
           {/* Top Offer */}
           {topOfferAmount > 0 && (
+            <>
+            <div
+              className={cn('w-px h-8 flex-shrink-0', isDark ? 'bg-white/10' : 'bg-gray-200')}
+            />
             <div className="flex-shrink-0">
               <div
                 className={cn(
@@ -3756,10 +3783,15 @@ export default function CollectionView({ collection }) {
                 </span>
               </div>
             </div>
+            </>
           )}
 
           {/* Listed */}
           {listedCount > 0 && (
+            <>
+            <div
+              className={cn('w-px h-8 flex-shrink-0', isDark ? 'bg-white/10' : 'bg-gray-200')}
+            />
             <div className="flex-shrink-0">
               <div
                 className={cn(
@@ -3785,10 +3817,15 @@ export default function CollectionView({ collection }) {
                 )}
               </div>
             </div>
+            </>
           )}
 
           {/* Bids (Buy Offers) */}
           {offers > 0 && (
+            <>
+            <div
+              className={cn('w-px h-8 flex-shrink-0', isDark ? 'bg-white/10' : 'bg-gray-200')}
+            />
             <div className="flex-shrink-0">
               <div
                 className={cn(
@@ -3807,6 +3844,7 @@ export default function CollectionView({ collection }) {
                 {fIntNumber(offers)}
               </span>
             </div>
+            </>
           )}
 
           {/* Daily Activity */}

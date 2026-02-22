@@ -1,5 +1,4 @@
 import api from 'src/utils/api';
-import { performance } from 'perf_hooks';
 import { cn } from 'src/utils/cn';
 
 // Context
@@ -70,18 +69,10 @@ export async function getServerSideProps(ctx) {
 
   try {
     const slug = ctx.params.slug;
-    const t1 = performance.now();
 
-    // Fetch collection with NFTs in single request
     const res = await api.get(
       `${BASE_URL}/nft/collections/${slug}?includeNFTs=true&nftLimit=20`,
-      {
-        timeout: 5000,
-        headers: {
-          'Accept-Encoding': 'gzip, deflate',
-          Accept: 'application/json'
-        }
-      }
+      { timeout: 8000 }
     );
 
     data = {
@@ -89,9 +80,6 @@ export async function getServerSideProps(ctx) {
       initialNfts: res.data.nfts || [],
       name: res.data.name
     };
-
-    const t2 = performance.now();
-    const dt = (t2 - t1).toFixed(2);
   } catch (error) {
     console.error('SSR Error:', error.message, error.response?.data);
     return { notFound: true };

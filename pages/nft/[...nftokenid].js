@@ -105,11 +105,11 @@ export async function getServerSideProps(ctx) {
     const params = ctx.params.nftokenid;
     const NFTokenID = params[0];
 
-    const res = await api.get(`${BASE_URL}/nft/${NFTokenID}`);
+    const res = await api.get(`${BASE_URL}/nft/${NFTokenID}`, { timeout: 8000 });
 
     data = { nft: res.data };
   } catch (e) {
-    // Error fetching NFT
+    return { notFound: true };
   }
   let ret = {};
   const nft = data?.nft;

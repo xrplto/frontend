@@ -48,7 +48,9 @@ export default function Overview({ collections, total, globalMetrics, tags, coll
   );
 }
 
-export async function getStaticProps() {
+export async function getServerSideProps({ res }) {
+  res.setHeader('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=300');
+
   const BASE_URL = 'https://api.xrpl.to/v1';
 
   let collections = [];
@@ -58,18 +60,19 @@ export async function getStaticProps() {
   let collectionCreation = [];
 
   try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000);
     const response = await apiFetch(
-      `${BASE_URL}/nft/collections?page=0&limit=20&sortBy=totalVol24h&order=desc&includeGlobalMetrics=true`
+      `${BASE_URL}/nft/collections?page=0&limit=20&sortBy=totalVol24h&order=desc&includeGlobalMetrics=true`,
+      { signal: controller.signal }
     );
+    clearTimeout(timeoutId);
     const data = await response.json();
 
     collections = data.collections || [];
     total = data.pagination?.total || data.count || 0;
     const gm = data.globalMetrics || null;
     if (gm) {
-      // Strip massive arrays to reduce page payload (~3MB → ~30KB)
-      // volumeHistory (759KB, 1200 items) is never used by the frontend
-      // daily (2.2MB, 1200 items) is only used as fallback for collectionCreation, and only last 30 items
       const { volumeHistory, daily, ...rest } = gm;
       globalMetrics = { ...rest, daily: (daily || []).slice(-30) };
     }
@@ -95,7 +98,6 @@ export async function getStaticProps() {
       globalMetrics,
       tags,
       collectionCreation
-    },
-    revalidate: 300 // Regenerate every 5 minutes
+    }
   };
 }

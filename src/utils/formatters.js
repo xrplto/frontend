@@ -338,7 +338,7 @@ export async function getTokens(
   try {
     const params = { start: 0, limit, sortBy, sortType, filter: '', tags, showNew, showSlug };
     if (tokenType) params.tokenType = tokenType;
-    const res = await api.get('https://api.xrpl.to/v1/tokens', { params });
+    const res = await api.get('https://api.xrpl.to/v1/tokens', { params, timeout: 8000 });
 
     return {
       ...res.data,

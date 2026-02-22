@@ -23,9 +23,17 @@ export default async function handler(req, res) {
   }
 
   try {
+    const clientIp = (req.headers['x-forwarded-for'] || '').split(',')[0].trim()
+      || req.headers['x-real-ip']
+      || req.socket?.remoteAddress
+      || '';
+
     const response = await fetch(
       `https://api.xrpl.to/api/chat/session?wallet=${encodeURIComponent(wallet)}`,
-      { headers: { 'X-Api-Key': CHAT_API_KEY } }
+      { headers: {
+        'X-Api-Key': CHAT_API_KEY,
+        ...(clientIp && { 'X-Forwarded-For': clientIp, 'X-Real-IP': clientIp }),
+      }}
     );
     const data = await response.json();
 

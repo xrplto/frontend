@@ -98,14 +98,15 @@ function TrendingPage({ data }) {
 
 export default TrendingPage;
 
-export async function getStaticProps() {
+export async function getServerSideProps({ res }) {
+  res.setHeader('Cache-Control', 'public, s-maxage=30, stale-while-revalidate=120');
+
   const data = await getTokens('trendingScore', 'desc');
 
   let ret = {};
   if (data) {
     let ogp = {};
 
-    // Enhanced SEO metadata for trending page
     ogp.canonical = 'https://xrpl.to/trending';
     ogp.title = 'Trending XRPL Tokens | Real-Time Charts & Market Data | XRP Ledger';
     ogp.url = 'https://xrpl.to/trending';
@@ -114,7 +115,6 @@ export async function getStaticProps() {
     ogp.desc =
       'Discover trending XRPL tokens with real-time price charts and market activity. Track the hottest tokens by trending score on the XRP Ledger ecosystem updated in real-time.';
 
-    // ItemList structured data
     const itemListSchema = {
       '@context': 'https://schema.org',
       '@type': 'ItemList',
@@ -144,7 +144,6 @@ export async function getStaticProps() {
   }
 
   return {
-    props: ret,
-    revalidate: 60
+    props: ret
   };
 }

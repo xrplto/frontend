@@ -115,8 +115,6 @@ export async function getServerSideProps({ res }) {
     ogp.desc =
       'Explore the most viewed XRPL tokens with highest community interest. Discover popular tokens getting the most attention on the XRP Ledger ecosystem.';
 
-    // Additional structured metadata for better SEO
-    ('most viewed XRPL tokens, popular XRP tokens, community interest, token popularity, crypto views, DEX tokens, XRP ecosystem popular');
     ogp.type = 'website';
     ogp.siteName = 'XRPL.to';
     ogp.locale = 'en_US';

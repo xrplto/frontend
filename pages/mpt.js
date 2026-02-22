@@ -84,7 +84,9 @@ function MPTTokensPage({ data }) {
 
 export default MPTTokensPage;
 
-export async function getStaticProps() {
+export async function getServerSideProps({ res }) {
+  res.setHeader('Cache-Control', 'public, s-maxage=30, stale-while-revalidate=120');
+
   const data = await getTokens('dateon', 'desc', 'yes', false, false, 100, 'mpt');
 
   let ret = {};
@@ -108,7 +110,6 @@ export async function getStaticProps() {
   }
 
   return {
-    props: ret,
-    revalidate: 60
+    props: ret
   };
 }

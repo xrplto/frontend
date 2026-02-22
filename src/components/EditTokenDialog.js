@@ -40,8 +40,9 @@ const EditDialog = ({ label, value, setValue, isDark }) => {
     <div>
       <button
         onClick={handleClickOpen}
+        aria-label="Edit token"
         className={cn(
-          'rounded-lg border-[1.5px] p-1.5 text-[13px] font-normal',
+          'rounded-lg border-[1.5px] p-1.5 text-[13px] font-normal outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
           isDark
             ? 'border-white/15 hover:border-primary hover:bg-primary/5'
             : 'border-gray-300 hover:bg-gray-100'
@@ -51,7 +52,7 @@ const EditDialog = ({ label, value, setValue, isDark }) => {
       </button>
 
       {open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm max-sm:h-dvh">
+        <div role="dialog" aria-modal="true" aria-label="Edit token" className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm max-sm:h-dvh">
           <div
             className={cn(
               'rounded-2xl border p-6 w-[400px] max-w-[90vw]',
@@ -373,7 +374,7 @@ export default function EditTokenDialog({ token, setToken }) {
         </div>
       )}
 
-      <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto max-sm:h-dvh">
+      <div role="dialog" aria-modal="true" aria-label="Edit token" className="fixed inset-0 z-40 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto max-sm:h-dvh">
         <div
           className={cn(
             'rounded-2xl border w-full max-w-4xl my-8',
@@ -416,8 +417,9 @@ export default function EditTokenDialog({ token, setToken }) {
               </button>
               <button
                 onClick={handleClose}
+                aria-label="Close"
                 className={cn(
-                  'rounded-lg border-[1.5px] p-2 text-[13px] font-normal',
+                  'rounded-lg border-[1.5px] p-2 text-[13px] font-normal outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                   'border-red-500/50 text-red-500 hover:bg-red-500/10'
                 )}
                 title="Cancel"

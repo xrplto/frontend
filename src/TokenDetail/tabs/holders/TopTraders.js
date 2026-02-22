@@ -28,7 +28,8 @@ const SORT_OPTIONS = [
   { key: 'volume', label: 'Volume' },
   { key: 'trades', label: 'Trades' },
   { key: 'pnl', label: 'PNL' },
-  { key: 'roi', label: 'ROI' }
+  { key: 'roi', label: 'ROI' },
+  { key: 'lastActive', label: 'Last Active' }
 ];
 
 export default function TopTraders({ token, walletLabels: walletLabelsProp = {}, onLabelsChange }) {
@@ -60,7 +61,7 @@ export default function TopTraders({ token, walletLabels: walletLabelsProp = {},
       onLabelsChange?.(newLabels);
       setEditingLabel(null);
       setLabelInput('');
-    } catch (e) {}
+    } catch (e) { console.error('[TopTraders] Label save failed:', e.message); }
     setLabelSaving(false);
   };
 
@@ -76,7 +77,7 @@ export default function TopTraders({ token, walletLabels: walletLabelsProp = {},
       onLabelsChange?.(newLabels);
       setEditingLabel(null);
       setLabelInput('');
-    } catch (e) {}
+    } catch (e) { console.error('[TopTraders] Label delete failed:', e.message); }
     setLabelSaving(false);
   };
 
@@ -288,7 +289,7 @@ export default function TopTraders({ token, walletLabels: walletLabelsProp = {},
                   key={period.key}
                   onClick={() => handlePeriodChange(period.key)}
                   className={cn(
-                    'px-2.5 py-1 text-[11px] font-medium rounded-md transition-[opacity,transform,background-color,border-color]',
+                    'px-2.5 py-1 text-[11px] font-medium rounded-md transition-[opacity,transform,background-color,border-color] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                     timePeriod === period.key
                       ? 'bg-primary text-white'
                       : isDark
@@ -310,7 +311,7 @@ export default function TopTraders({ token, walletLabels: walletLabelsProp = {},
                     key={option.key}
                     onClick={() => handleSortChange(option.key)}
                     className={cn(
-                      'px-2 py-1 text-[11px] font-medium rounded-md transition-[opacity,transform,background-color,border-color]',
+                      'px-2 py-1 text-[11px] font-medium rounded-md transition-[opacity,transform,background-color,border-color] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                       sortType === option.key
                         ? isDark
                           ? 'bg-white/10 text-white'
@@ -350,8 +351,9 @@ export default function TopTraders({ token, walletLabels: walletLabelsProp = {},
                   {searchAddress && (
                     <button
                       onClick={() => setSearchAddress('')}
+                      aria-label="Clear search"
                       className={cn(
-                        'absolute right-2 top-1/2 -translate-y-1/2',
+                        'absolute right-2 top-1/2 -translate-y-1/2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] rounded',
                         isDark
                           ? 'text-white/40 hover:text-white'
                           : 'text-gray-400 hover:text-gray-600'
@@ -527,8 +529,9 @@ export default function TopTraders({ token, walletLabels: walletLabelsProp = {},
                               {trader.address !== accountLogin && accountLogin && (
                                 <button
                                   onClick={() => { setEditingLabel(trader.address); setLabelInput(walletLabels[trader.address] || ''); }}
-                                  className={cn('p-0.5 rounded hover:bg-white/10', walletLabels[trader.address] ? 'text-primary' : isDark ? 'text-white/20 hover:text-primary' : 'text-gray-300 hover:text-primary')}
+                                  className={cn('p-0.5 rounded hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]', walletLabels[trader.address] ? 'text-primary' : isDark ? 'text-white/20 hover:text-primary' : 'text-gray-300 hover:text-primary')}
                                   title={walletLabels[trader.address] ? 'Edit label' : 'Add label'}
+                                  aria-label={walletLabels[trader.address] ? 'Edit label' : 'Add label'}
                                 >
                                   <Tag size={11} />
                                 </button>
@@ -536,8 +539,9 @@ export default function TopTraders({ token, walletLabels: walletLabelsProp = {},
                               {trader.address !== accountLogin && (
                                 <button
                                   onClick={() => window.dispatchEvent(new CustomEvent('openDm', { detail: { user: trader.address } }))}
-                                  className={cn('p-0.5 rounded hover:bg-white/10', isDark ? 'text-white/30 hover:text-[#650CD4]' : 'text-gray-300 hover:text-[#650CD4]')}
+                                  className={cn('p-0.5 rounded hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]', isDark ? 'text-white/30 hover:text-[#650CD4]' : 'text-gray-300 hover:text-[#650CD4]')}
                                   title="Message"
+                                  aria-label="Send direct message"
                                 >
                                   <MessageCircle size={12} />
                                 </button>
@@ -643,7 +647,7 @@ export default function TopTraders({ token, walletLabels: walletLabelsProp = {},
               disabled={!hasPrev}
               aria-label="Previous page"
               className={cn(
-                'p-1.5 rounded-md transition-[background-color,border-color]',
+                'p-1.5 rounded-md transition-[background-color,border-color] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                 !hasPrev ? 'opacity-30 cursor-not-allowed' : 'hover:bg-white/10',
                 isDark ? 'text-white/50' : 'text-gray-500'
               )}
@@ -664,7 +668,7 @@ export default function TopTraders({ token, walletLabels: walletLabelsProp = {},
               disabled={!hasNext}
               aria-label="Next page"
               className={cn(
-                'p-1.5 rounded-md transition-[background-color,border-color]',
+                'p-1.5 rounded-md transition-[background-color,border-color] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                 !hasNext ? 'opacity-30 cursor-not-allowed' : 'hover:bg-white/10',
                 isDark ? 'text-white/50' : 'text-gray-500'
               )}

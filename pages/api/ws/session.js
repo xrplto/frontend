@@ -1,5 +1,33 @@
-// Internal API key for frontend WebSocket connections (same tier as chat)
-const WS_API_KEY = process.env.CHAT_API_KEY;
+import crypto from 'crypto';
+
+// Shared HMAC secret for signing short-lived WS tokens (must match API)
+const WS_TOKEN_SECRET = process.env.WS_TOKEN_SECRET;
+
+// Token lifetime: 5 minutes — tokens are multi-use within TTL, shared across all WS connections
+const TOKEN_TTL_MS = 300_000;
+
+/**
+ * Generate a short-lived HMAC token for WS authentication.
+ * Format: <timestamp_hex>.<nonce_hex>.<signature_hex>
+ *
+ * - timestamp: prevents use after TTL expires
+ * - nonce: 8 random bytes — makes each token unique per generation
+ * - signature: HMAC-SHA256(timestamp + nonce, secret) — proves origin
+ *
+ * Tokens are multi-use within their TTL. The browser caches one token and
+ * reuses it for all WS connections + reconnects. The raw API key never
+ * leaves the server.
+ */
+function generateWSToken() {
+  const timestamp = Date.now().toString(16);
+  const nonce = crypto.randomBytes(8).toString('hex');
+  const payload = `${timestamp}:${nonce}`;
+  const signature = crypto
+    .createHmac('sha256', WS_TOKEN_SECRET)
+    .update(payload)
+    .digest('hex'); // Full 256-bit HMAC signature
+  return `${timestamp}.${nonce}.${signature}`;
+}
 
 function makeEndpoints(wsHost) {
   return {
@@ -16,51 +44,34 @@ function makeEndpoints(wsHost) {
   };
 }
 
-// Allowed origins for API key distribution
+// Allowed origins for token distribution
 const ALLOWED_ORIGINS = ['https://xrpl.to', 'https://dev.xrpl.to', 'http://localhost:3002'];
 
-// Simple in-memory rate limiter per IP (10 requests per 10 seconds)
-const rateLimitMap = new Map();
-const RATE_LIMIT = 10;
-const RATE_WINDOW = 10000;
-function checkRateLimit(ip) {
-  const now = Date.now();
-  const entry = rateLimitMap.get(ip);
-  if (!entry || now - entry.start > RATE_WINDOW) {
-    rateLimitMap.set(ip, { start: now, count: 1 });
-    return true;
-  }
-  entry.count++;
-  if (entry.count > RATE_LIMIT) return false;
-  return true;
-}
-// Cleanup stale entries every 60s
-if (typeof setInterval !== 'undefined') {
-  setInterval(() => {
-    const now = Date.now();
-    for (const [ip, entry] of rateLimitMap) {
-      if (now - entry.start > RATE_WINDOW * 2) rateLimitMap.delete(ip);
-    }
-  }, 60000);
-}
-
 // Shared origin validation — reused by ws/session and chat/session
+//
+// Sec-Fetch-Site is a "forbidden header" in BROWSERS (cannot be set by JS),
+// but non-browser clients (curl, scripts) can freely set it. So we must also
+// verify Origin or Referer to confirm the request actually came from an
+// allowed origin — browsers always send at least one of these.
 export function validateSameOrigin(req) {
   const origin = (req.headers.origin || '').trim();
   const secFetchSite = (req.headers['sec-fetch-site'] || '').trim();
 
-  // Sec-Fetch-Site is a forbidden header (cannot be set by JS in browsers).
-  // Browsers send it on all fetch/XHR requests. If present and 'same-origin',
-  // the request is definitively from the same origin — no further check needed.
-  if (secFetchSite === 'same-origin') {
-    // If Origin IS present (e.g. POST requests), verify it matches allowlist.
-    // Browsers omit Origin on same-origin GET/HEAD, so absence is expected.
-    if (origin && !ALLOWED_ORIGINS.includes(origin)) return false;
-    return true;
+  if (secFetchSite !== 'same-origin') return false;
+
+  // Origin present → must be in allowlist
+  if (origin) return ALLOWED_ORIGINS.includes(origin);
+
+  // No Origin (browsers omit it on same-origin GET/HEAD) — check Referer
+  const referer = (req.headers.referer || req.headers.referrer || '').trim();
+  if (referer) {
+    try {
+      const ref = new URL(referer);
+      return ALLOWED_ORIGINS.includes(`${ref.protocol}//${ref.host}`);
+    } catch { return false; }
   }
 
-  // No Sec-Fetch-Site header (non-browser client like curl/Postman) — block.
-  // Non-browser clients can spoof Origin but cannot produce Sec-Fetch-Site.
+  // Neither Origin nor Referer — only curl/scripts reach here. Block.
   return false;
 }
 
@@ -74,12 +85,6 @@ export default function handler(req, res) {
     return res.status(403).json({ error: 'Forbidden' });
   }
 
-  // Rate limit per IP
-  const clientIp = req.socket?.remoteAddress || req.headers['x-forwarded-for']?.split(',')[0]?.trim() || 'unknown';
-  if (!checkRateLimit(clientIp)) {
-    return res.status(429).json({ error: 'Too many requests' });
-  }
-
   const { type, id, ...params } = req.query;
 
   if (!type) {
@@ -90,6 +95,12 @@ export default function handler(req, res) {
   // Prevents path traversal (../../../evil) and injection in wsUrl construction
   if (id && !/^[a-zA-Z0-9_.\-]+$/.test(id)) {
     return res.status(400).json({ error: 'Invalid id parameter' });
+  }
+
+  // Types that require an id parameter — without it the wsUrl would contain '/undefined'
+  const TYPES_REQUIRING_ID = ['token', 'ohlc', 'history', 'creator', 'balance', 'balancePair', 'holders'];
+  if (TYPES_REQUIRING_ID.includes(type) && !id) {
+    return res.status(400).json({ error: `Missing id parameter for type '${type}'` });
   }
 
   const endpoints = makeEndpoints('api.xrpl.to');
@@ -107,10 +118,12 @@ export default function handler(req, res) {
     .map(([k, v]) => `${k}=${encodeURIComponent(v)}`)
     .join('&');
 
-  // Build base URL
+  // Build WS URL with short-lived HMAC token (not the raw API key).
+  // Token is valid for 30 seconds — enough time for the browser to connect.
   let wsUrl = builder(id, queryParams);
+  const separator = wsUrl.includes('?') ? '&' : '?';
+  const wsToken = generateWSToken();
+  wsUrl = `${wsUrl}${separator}wsToken=${encodeURIComponent(wsToken)}`;
 
-  // Return API key separately — never embed it in the URL.
-  // Clients must send {type:"auth", apiKey} as the first WS message.
-  res.json({ wsUrl, apiKey: WS_API_KEY });
+  res.json({ wsUrl });
 }

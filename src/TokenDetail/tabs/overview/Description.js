@@ -141,8 +141,9 @@ export default function Description({
         {isAdmin && (
           <button
             title={showEditor ? 'Save & close' : 'Edit'}
+            aria-label={showEditor ? 'Save and close editor' : 'Edit description'}
             className={cn(
-              'rounded-lg p-[5px] bg-transparent cursor-pointer flex items-center transition-[opacity,transform,background-color,border-color] duration-150',
+              'rounded-lg p-[5px] bg-transparent cursor-pointer flex items-center transition-[opacity,transform,background-color,border-color] duration-150 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
               'hover:bg-[rgba(59,130,246,0.08)] hover:text-[#3b82f6]',
               showEditor && 'hover:bg-[rgba(239,68,68,0.08)] hover:text-[#ef4444]'
             )}

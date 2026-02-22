@@ -190,7 +190,7 @@ const TokenSummary = memo(({ token }) => {
       .then(res => {
         if (!cancelled && res.data) setTweetCount(res.data.count || 0);
       })
-      .catch(() => {});
+      .catch(err => { console.warn('[TokenSummary] Tweet count fetch failed:', err.message); });
     return () => { cancelled = true; };
   }, [md5]);
 
@@ -347,8 +347,13 @@ const TokenSummary = memo(({ token }) => {
         toast.success('Dust sold on DEX!', { id: toastId, description: `Tx: ${txHash?.slice(0, 8)}...` });
       } else {
         // Check issuer flags via API (lsfRequireDestTag = 0x00020000)
-        const issuerInfo = await apiFetch(`https://api.xrpl.to/v1/account/info/${issuer}`).then(r => r.json());
-        const needsTag = (issuerInfo.flags & 0x00020000) !== 0;
+        let needsTag = false;
+        try {
+          const issuerInfo = await apiFetch(`https://api.xrpl.to/v1/account/info/${issuer}`).then(r => r.json());
+          needsTag = (issuerInfo?.flags & 0x00020000) !== 0;
+        } catch (err) {
+          console.warn('[TokenSummary] Could not check issuer flags:', err.message);
+        }
         const tx = {
           TransactionType: 'Payment',
           Account: accountProfile.account,
@@ -625,6 +630,9 @@ const TokenSummary = memo(({ token }) => {
         <div className="flex flex-col items-end min-w-0 max-w-[45%] sm:max-w-none sm:flex-shrink-0">
           <div className="flex items-center gap-1.5 mb-1 min-w-0">
             <span
+              role="status"
+              aria-live="polite"
+              aria-label={`Price: ${priceDisplay.symbol}${priceDisplay.isCompact ? `0.0${priceDisplay.zeros}${priceDisplay.significant}` : priceDisplay.price}`}
               className={cn(
                 'text-[20px] sm:text-[28px] font-black tracking-tighter leading-none truncate',
                 priceColor ? '' : isDark ? 'text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.1)]' : 'text-gray-900'
@@ -792,7 +800,7 @@ const TokenSummary = memo(({ token }) => {
           <button
             onClick={() => setShowVerifyModal(true)}
             className={cn(
-              'col-span-2 flex items-center justify-center gap-1.5 py-1.5 sm:py-2 rounded-lg text-[10px] sm:text-[11px] font-bold uppercase tracking-wider transition-[opacity,transform,background-color,border-color] duration-300 relative overflow-hidden group',
+              'col-span-2 flex items-center justify-center gap-1.5 py-1.5 sm:py-2 rounded-lg text-[10px] sm:text-[11px] font-bold uppercase tracking-wider transition-[opacity,transform,background-color,border-color] duration-300 relative overflow-hidden group outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
               currentVerified === 0
                 ? isDark
                   ? 'bg-blue-600 text-white hover:bg-blue-500 border border-blue-500/50'
@@ -808,37 +816,40 @@ const TokenSummary = memo(({ token }) => {
           </button>
         )}
 
-        <div className="col-span-2 grid grid-cols-3 sm:flex gap-1 sm:gap-1.5">
+        <div className="col-span-2 grid grid-cols-3 sm:flex gap-1 sm:gap-1.5 [&>*]:min-w-0">
           {/* Trustline button - only for non-XRP/MPT tokens when logged in */}
           {accountProfile?.account && CURRENCY_ISSUERS?.XRP_MD5 !== md5 && !isMPT && (
-            <button
-              onClick={handleSetTrust}
-              title={isRemove ? 'Remove trustline to free 0.2 XRP reserve' : 'Set trustline to hold this token'}
-              className={cn(
-                "group/trust h-6 sm:h-7 px-1.5 sm:px-2.5 flex items-center justify-center gap-1 rounded-md text-[9px] font-bold uppercase tracking-wide transition-[opacity,transform,background-color,border-color] duration-200",
-                isRemove
-                  ? isDark
-                    ? "bg-green-500/15 border border-green-500/30 text-green-400 hover:bg-red-500/15 hover:border-red-500/30 hover:text-red-400"
-                    : "bg-green-50 border border-green-200 text-green-600 hover:bg-red-50 hover:border-red-200 hover:text-red-500"
-                  : isDark
-                    ? "bg-white/[0.04] border border-white/[0.08] text-white/60 hover:bg-blue-500/15 hover:border-blue-500/30 hover:text-blue-400"
-                    : "bg-gray-50 border border-black/[0.04] text-gray-500 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-600"
-              )}
-            >
-              {isRemove ? (
-                <>
-                  <Check size={11} className="group-hover/trust:hidden" />
-                  <X size={11} className="hidden group-hover/trust:block" />
-                  <span className="hidden sm:inline group-hover/trust:hidden">Trusted</span>
-                  <span className="hidden group-hover/trust:sm:inline">Remove</span>
-                </>
-              ) : (
-                <>
-                  <Link2 size={11} />
-                  <span className="hidden sm:inline">Trust</span>
-                </>
-              )}
-            </button>
+            <div className="sm:flex-1">
+              <button
+                onClick={handleSetTrust}
+                title={isRemove ? 'Remove trustline to free 0.2 XRP reserve' : 'Set trustline to hold this token'}
+                aria-label={isRemove ? 'Remove trustline' : 'Set trustline'}
+                className={cn(
+                  "group/trust w-full h-6 sm:h-7 px-1.5 sm:px-2.5 flex items-center justify-center gap-1 rounded-md text-[9px] font-bold uppercase tracking-wide transition-[opacity,transform,background-color,border-color] duration-200 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]",
+                  isRemove
+                    ? isDark
+                      ? "bg-green-500/15 border border-green-500/30 text-green-400 hover:bg-red-500/15 hover:border-red-500/30 hover:text-red-400"
+                      : "bg-green-50 border border-green-200 text-green-600 hover:bg-red-50 hover:border-red-200 hover:text-red-500"
+                    : isDark
+                      ? "bg-white/[0.04] border border-white/[0.08] text-white/60 hover:bg-blue-500/15 hover:border-blue-500/30 hover:text-blue-400"
+                      : "bg-gray-50 border border-black/[0.04] text-gray-500 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-600"
+                )}
+              >
+                {isRemove ? (
+                  <>
+                    <Check size={11} className="group-hover/trust:hidden" />
+                    <X size={11} className="hidden group-hover/trust:block" />
+                    <span className="hidden sm:inline group-hover/trust:hidden">Trusted</span>
+                    <span className="hidden group-hover/trust:sm:inline">Remove</span>
+                  </>
+                ) : (
+                  <>
+                    <Link2 size={11} />
+                    <span className="hidden sm:inline">Trust</span>
+                  </>
+                )}
+              </button>
+            </div>
           )}
           <div className="sm:flex-1">
             <ApiButton
@@ -875,7 +886,7 @@ const TokenSummary = memo(({ token }) => {
               onClick={() => setShowBoostModal(true)}
               title="Boost trending position"
               className={cn(
-                "w-full h-6 sm:h-7 flex items-center justify-center gap-1 rounded-md text-[9px] font-bold uppercase tracking-wide transition-[opacity,transform,background-color,border-color] duration-200",
+                "w-full h-6 sm:h-7 flex items-center justify-center gap-1 rounded-md text-[9px] font-bold uppercase tracking-wide transition-[opacity,transform,background-color,border-color] duration-200 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]",
                 isDark ? "bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.08] text-white/60 hover:text-white/80" : "bg-gray-50 border border-black/[0.04] hover:bg-gray-100 text-gray-500 hover:text-gray-700"
               )}
             >
@@ -896,7 +907,7 @@ const TokenSummary = memo(({ token }) => {
             <button
               onClick={() => setEditToken(token)}
               className={cn(
-                'px-1.5 h-6 sm:h-7 rounded-md border text-[8px] font-bold uppercase tracking-wide transition-[opacity,transform,background-color,border-color] flex items-center justify-center',
+                'px-1.5 h-6 sm:h-7 rounded-md border text-[8px] font-bold uppercase tracking-wide transition-[opacity,transform,background-color,border-color] flex items-center justify-center outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                 isDark
                   ? 'border-amber-500/20 text-amber-500 hover:bg-amber-500/10'
                   : 'border-amber-200 text-amber-600 hover:bg-amber-50 shadow-sm'
@@ -919,6 +930,9 @@ const TokenSummary = memo(({ token }) => {
             onClick={() => setShowInfo(false)}
           >
             <div
+              role="dialog"
+              aria-modal="true"
+              aria-label="Token details"
               className={cn(
                 'w-full max-w-md rounded-2xl border-[1.5px] max-h-[85dvh] overflow-hidden',
                 isDark
@@ -955,8 +969,9 @@ const TokenSummary = memo(({ token }) => {
                 </div>
                 <button
                   onClick={() => setShowInfo(false)}
+                  aria-label="Close token details"
                   className={cn(
-                    'p-1 rounded-md',
+                    'p-1 rounded-md outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                     isDark ? 'hover:bg-white/[0.06] text-white/55' : 'hover:bg-gray-100 text-gray-400'
                   )}
                 >
@@ -984,8 +999,9 @@ const TokenSummary = memo(({ token }) => {
                         setCopiedField(item.label);
                         setTimeout(() => setCopiedField(null), 1200);
                       }}
+                      aria-label={`Copy ${item.label}`}
                       className={cn(
-                        'group w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-left',
+                        'group w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-left outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                         isDark ? 'hover:bg-white/[0.04]' : 'hover:bg-gray-50'
                       )}
                     >
@@ -1037,6 +1053,9 @@ const TokenSummary = memo(({ token }) => {
             onClick={() => setDustConfirm(null)}
           >
             <div
+              role="dialog"
+              aria-modal="true"
+              aria-label={dustConfirm === 'dex' ? 'Sell dust on DEX confirmation' : 'Burn tokens confirmation'}
               className={cn(
                 'w-full max-w-sm rounded-2xl border-[1.5px] p-5',
                 isDark ? 'bg-black/90 border-white/10' : 'bg-white border-gray-200'
@@ -1060,7 +1079,7 @@ const TokenSummary = memo(({ token }) => {
                 <button
                   onClick={() => setDustConfirm(null)}
                   className={cn(
-                    'flex-1 py-2 rounded-lg text-[12px] font-medium',
+                    'flex-1 py-2 rounded-lg text-[12px] font-medium outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                     isDark ? 'bg-white/5 text-white/70 hover:bg-white/10' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   )}
                 >
@@ -1069,7 +1088,7 @@ const TokenSummary = memo(({ token }) => {
                 <button
                   onClick={() => executeDustClear(dustConfirm)}
                   className={cn(
-                    'flex-1 py-2 rounded-lg text-[12px] font-medium',
+                    'flex-1 py-2 rounded-lg text-[12px] font-medium outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                     dustConfirm === 'dex'
                       ? 'bg-[#137DFE] text-white hover:bg-[#137DFE]/90'
                       : 'bg-[#F6AF01] text-black hover:bg-[#F6AF01]/90'

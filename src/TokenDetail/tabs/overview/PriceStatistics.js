@@ -322,7 +322,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
           setTokenFlow({ ...data.summary, recipients, linkedAddresses: data.linkedAddresses || [], exchangeBreakdown: data.exchangeBreakdown || [] });
         }
       })
-      .catch(() => { });
+      .catch(err => { console.warn('[PriceStatistics] Token flow fetch failed:', err.message); });
 
     return () => flowAbortRef.current?.abort();
   }, [token.md5, creator]);
@@ -1074,6 +1074,8 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                   <div className="flex flex-row items-center justify-end gap-[6px]">
                     <a
                       href={`/address/${issuer}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="inline-flex items-center rounded-lg font-normal px-[10px] h-[28px] overflow-hidden transition-[opacity,transform,background-color,border-color] duration-200 no-underline"
                       style={{
                         padding: '2px 10px',
@@ -1091,9 +1093,10 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                     </a>
                     <button
                       title="Copy issuer address"
+                      aria-label="Copy issuer address"
                       onClick={handleCopyIssuer}
                       className={cn(
-                        'flex items-center justify-center w-[26px] h-[26px] rounded-lg border transition-[opacity,transform,background-color,border-color] duration-150 cursor-pointer',
+                        'flex items-center justify-center w-[26px] h-[26px] rounded-lg border transition-[opacity,transform,background-color,border-color] duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                         isDark
                           ? 'bg-white/[0.04] border-white/[0.08] hover:bg-white/[0.08]'
                           : 'bg-black/[0.03] border-black/[0.05] hover:bg-black/[0.06]'
@@ -1148,8 +1151,9 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                     <div className="flex items-center bg-black/[0.03] dark:bg-white/[0.04] p-0.5 rounded-lg border border-black/[0.05] dark:border-white/[0.08]">
                       <button
                           title="Copy address"
+                          aria-label="Copy creator address"
                           onClick={handleCopyCreator}
-                          className="inline-flex items-center justify-center border-none bg-transparent cursor-pointer p-[4px] w-[26px] h-[26px] rounded-[6px]"
+                          className="inline-flex items-center justify-center border-none bg-transparent cursor-pointer p-[4px] w-[26px] h-[26px] rounded-[6px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]"
                         >
                           <Copy
                             size={13}
@@ -1711,7 +1715,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
             )}
 
             {/* Creator Token Flow - Compact Row */}
-            {creator && tokenFlow && (tokenFlow.totalTransferred || tokenFlow.totalSoldXrp > 0) && (
+            {creator && tokenFlow && (tokenFlow.totalTransferred || tokenFlow.totalSoldXrp > 0 || tokenFlow.creatorBoughtXrp > 0 || tokenFlow.creatorDepositXrp > 0) && (
               <tr
                 onClick={() => setFlowModalOpen(true)}
                 className={cn('transition-[background] duration-150 cursor-pointer border-l-[3px] border-l-[#8b5cf6]', isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-black/[0.015]')}
@@ -1725,23 +1729,33 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                   </span>
                 </td>
                 <td className="border-b-0 align-middle first-of-type:w-[45%] last-of-type:w-[55%] last-of-type:text-right p-[6px_10px]">
-                  <div className="flex items-center justify-end gap-2">
-                    <div className="flex items-center gap-1.5">
+                  <div className="flex items-center justify-end gap-1.5 flex-wrap">
+                    {tokenFlow.creatorBoughtXrp > 0 && (
+                      <span className="text-[10px] px-2 py-0.5 rounded-full font-bold border bg-emerald-500/10 text-emerald-500 border-emerald-500/20">
+                        Bought {fNumber(tokenFlow.creatorBoughtXrp)} <span className="text-[8px] opacity-70">XRP</span>
+                      </span>
+                    )}
+                    {tokenFlow.creatorSoldXrp > 0 && (
+                      <span className="text-[10px] px-2 py-0.5 rounded-full font-bold border bg-rose-500/10 text-rose-500 border-rose-500/20">
+                        Sold {fNumber(tokenFlow.creatorSoldXrp)} <span className="text-[8px] opacity-70">XRP</span>
+                      </span>
+                    )}
+                    {tokenFlow.creatorDepositXrp > 0 && (
+                      <span className="text-[10px] px-2 py-0.5 rounded-full font-bold border bg-indigo-500/10 text-indigo-400 border-indigo-500/20">
+                        Deposit AMM {fNumber(tokenFlow.creatorDepositXrp)} <span className="text-[8px] opacity-70">XRP</span>
+                      </span>
+                    )}
+                    {tokenFlow.creatorWithdrawXrp > 0 && (
+                      <span className="text-[10px] px-2 py-0.5 rounded-full font-bold border bg-amber-500/10 text-amber-500 border-amber-500/20">
+                        Withdraw AMM {fNumber(tokenFlow.creatorWithdrawXrp)} <span className="text-[8px] opacity-70">XRP</span>
+                      </span>
+                    )}
+                    {tokenFlow.totalTransferred > 0 && (
                       <span className="text-[10px] px-2 py-0.5 rounded-full bg-violet-500/10 text-violet-500 font-bold border border-violet-500/20">
                         {tokenFlow.recipientCount || 0} Wallets
                       </span>
-                      {tokenFlow.netFlowXrp != null && tokenFlow.netFlowXrp !== 0 && (
-                        <span className={cn(
-                          "text-[10px] px-2 py-0.5 rounded-full font-bold border",
-                          tokenFlow.netFlowXrp > 0 
-                            ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" 
-                            : "bg-rose-500/10 text-rose-500 border-rose-500/20"
-                        )}>
-                          {tokenFlow.netFlowXrp > 0 ? '+' : '-'}{fNumber(Math.abs(tokenFlow.netFlowXrp))} <span className="text-[8px] opacity-70 uppercase">XRP</span>
-                        </span>
-                      )}
-                    </div>
-                    <ChevronDown size={14} className="opacity-30 -rotate-90" />
+                    )}
+                    <ChevronDown size={14} className="opacity-30 -rotate-90 shrink-0" />
                   </div>
                 </td>
               </tr>
@@ -1776,10 +1790,13 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                     style={{ gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)' }}
                   >
                     {[
+                      ...(tokenFlow.creatorBoughtXrp > 0 ? [{ label: 'Bought', value: `${fNumber(tokenFlow.creatorBoughtXrp)} XRP`, sub: `${tokenFlow.creatorBoughtTokens ? fNumber(tokenFlow.creatorBoughtTokens) + ' tokens' : ''}`, color: '#22c55e', icon: <ArrowDownLeft size={14}/> }] : []),
+                      ...(tokenFlow.creatorSoldXrp > 0 ? [{ label: 'Sold', value: `${fNumber(tokenFlow.creatorSoldXrp)} XRP`, sub: `${tokenFlow.creatorSoldTokens ? fNumber(tokenFlow.creatorSoldTokens) + ' tokens' : ''}`, color: '#ef4444', icon: <ArrowUpRight size={14}/> }] : []),
+                      ...(tokenFlow.creatorDepositXrp > 0 ? [{ label: 'Deposit AMM', value: `${fNumber(tokenFlow.creatorDepositXrp)} XRP`, sub: `${tokenFlow.creatorDepositTokens ? fNumber(tokenFlow.creatorDepositTokens) + ' tokens' : 'Liquidity added'}`, color: '#6366f1', icon: <Droplet size={14}/> }] : []),
+                      ...(tokenFlow.creatorWithdrawXrp > 0 ? [{ label: 'Withdraw AMM', value: `${fNumber(tokenFlow.creatorWithdrawXrp)} XRP`, sub: `${tokenFlow.creatorWithdrawTokens ? fNumber(tokenFlow.creatorWithdrawTokens) + ' tokens' : 'Liquidity removed'}`, color: '#f59e0b', icon: <ArrowUpRight size={14}/> }] : []),
                       { label: 'Distribution', value: `${tokenFlow.recipientCount || 0} Wallets`, sub: 'Total Recipients', color: '#8b5cf6', icon: <Layers size={14}/> },
                       { label: 'CEX Outflow', value: `${fNumber(tokenFlow.totalToExchanges || 0)} XRP`, sub: 'Sent to Exchanges', color: '#f59e0b', icon: <ArrowUpRight size={14}/> },
-                      { label: 'Net Flow', value: `${fNumber(Math.abs(tokenFlow.netFlowXrp || 0))} XRP`, sub: tokenFlow.netFlowXrp > 0 ? 'Total Profit' : 'Total Loss', color: tokenFlow.netFlowXrp > 0 ? '#22c55e' : '#ef4444', icon: <BarChart2 size={14}/> },
-                      { label: 'Current Hold', value: `${tokenFlow.holdingCount || 0} Wallets`, sub: 'Still holding tokens', color: '#3b82f6', icon: <Droplet size={14}/> }
+                      { label: 'Holding', value: `${tokenFlow.holdingCount || 0} Wallets`, sub: 'Still holding tokens', color: '#3b82f6', icon: <Layers size={14}/> }
                     ].map((s, i) => (
                       <div key={i} className={cn(
                         'p-[12px] rounded-[12px] flex flex-col gap-[2px]',
@@ -2348,13 +2365,14 @@ export const CompactTags = memo(
           <a
             key={tag}
             href={`/view/${normalizeTag(tag)}`}
+            target="_blank"
+            rel="noopener noreferrer nofollow"
             className={cn(
               'inline-flex items-center gap-[3px] sm:gap-[4px] px-[5px] sm:px-[6px] py-[2px] sm:py-[3px] rounded-[4px] no-underline text-[9px] sm:text-[10px] font-medium uppercase tracking-[0.2px] border',
               isDark
                 ? 'bg-white/[0.03] border-white/[0.06] text-white/[0.55]'
                 : 'bg-black/[0.025] border-black/[0.05] text-black/60'
             )}
-            rel="noreferrer noopener nofollow"
           >
             {tag === 'aigent.run' && (
               <img src="/static/aigentrun.gif" alt="" className="w-[9px] h-[9px] sm:w-[10px] sm:h-[10px]" />

@@ -101,7 +101,7 @@ const RichList = ({ token, walletLabels: walletLabelsProp = {}, onLabelsChange }
       onLabelsChange?.(newLabels);
       setEditingLabel(null);
       setLabelInput('');
-    } catch (e) {}
+    } catch (e) { console.error('[RichList] Label save failed:', e.message); }
     setLabelSaving(false);
   };
 
@@ -117,7 +117,7 @@ const RichList = ({ token, walletLabels: walletLabelsProp = {}, onLabelsChange }
       onLabelsChange?.(newLabels);
       setEditingLabel(null);
       setLabelInput('');
-    } catch (e) {}
+    } catch (e) { console.error('[RichList] Label delete failed:', e.message); }
     setLabelSaving(false);
   };
 
@@ -153,18 +153,28 @@ const RichList = ({ token, walletLabels: walletLabelsProp = {}, onLabelsChange }
     }
 
     let unmounted = false;
-    (async () => {
+    let reconnectTimeout = null;
+    let retryCount = 0;
+
+    const connect = async () => {
+      if (unmounted) return;
       try {
-        const res = await fetch(`/api/ws/session?type=holders&id=${token.md5}&limit=${rowsPerPage}`);
-        if (unmounted) return;
-        const { wsUrl, apiKey } = await res.json();
-        if (unmounted || !wsUrl || !/^wss?:\/\//i.test(wsUrl)) return;
+        const { getSessionWsUrl } = await import('src/utils/wsToken');
+        const wsUrl = await getSessionWsUrl('holders', token.md5, { limit: rowsPerPage });
+        if (unmounted || !wsUrl) return;
         const ws = new WebSocket(wsUrl);
         wsRef.current = ws;
 
-        ws.onopen = () => { if (apiKey) ws.send(JSON.stringify({ type: 'auth', apiKey })); setWsConnected(true); };
-        ws.onclose = () => { if (!unmounted) setWsConnected(false); };
-        ws.onerror = () => { if (!unmounted) setWsConnected(false); };
+        ws.onopen = () => { setWsConnected(true); retryCount = 0; };
+        ws.onclose = () => {
+          if (!unmounted) {
+            setWsConnected(false);
+            if (retryCount < 5) {
+              reconnectTimeout = setTimeout(() => { retryCount++; connect(); }, Math.min(3000 * Math.pow(2, retryCount), 60000));
+            }
+          }
+        };
+        ws.onerror = () => {};
 
         ws.onmessage = (event) => {
           try {
@@ -180,19 +190,17 @@ const RichList = ({ token, walletLabels: walletLabelsProp = {}, onLabelsChange }
               }
               setLoading(false);
             }
-          } catch (e) {
-            console.error('WS parse error:', e);
-          }
+          } catch {}
         };
 
         if (unmounted) { ws.close(); wsRef.current = null; }
-      } catch (e) {
-        console.error('[Holders WS] Session error:', e);
-      }
-    })();
+      } catch {}
+    };
+    connect();
 
     return () => {
       unmounted = true;
+      if (reconnectTimeout) clearTimeout(reconnectTimeout);
       if (wsRef.current) wsRef.current.close();
       wsRef.current = null;
       setWsConnected(false);
@@ -318,7 +326,8 @@ const RichList = ({ token, walletLabels: walletLabelsProp = {}, onLabelsChange }
         {searchInput && (
           <button
             onClick={clearSearch}
-            className={cn('hover:text-primary', isDark ? 'text-white/40' : 'text-gray-400')}
+            aria-label="Clear search"
+            className={cn('hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] rounded', isDark ? 'text-white/40' : 'text-gray-400')}
           >
             <X size={14} />
           </button>
@@ -560,8 +569,9 @@ const RichList = ({ token, walletLabels: walletLabelsProp = {}, onLabelsChange }
                           {holder.account && holder.account !== accountLogin && accountLogin && (
                             <button
                               onClick={() => { setEditingLabel(holder.account); setLabelInput(walletLabels[holder.account] || ''); }}
-                              className={cn('p-0.5 rounded hover:bg-white/10', walletLabels[holder.account] ? 'text-primary' : isDark ? 'text-white/20 hover:text-primary' : 'text-gray-300 hover:text-primary')}
+                              className={cn('p-0.5 rounded hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]', walletLabels[holder.account] ? 'text-primary' : isDark ? 'text-white/20 hover:text-primary' : 'text-gray-300 hover:text-primary')}
                               title={walletLabels[holder.account] ? 'Edit label' : 'Add label'}
+                              aria-label={walletLabels[holder.account] ? 'Edit label' : 'Add label'}
                             >
                               <Tag size={11} />
                             </button>
@@ -569,8 +579,9 @@ const RichList = ({ token, walletLabels: walletLabelsProp = {}, onLabelsChange }
                           {holder.account && holder.account !== accountLogin && (
                             <button
                               onClick={() => window.dispatchEvent(new CustomEvent('openDm', { detail: { user: holder.account } }))}
-                              className={cn('p-0.5 rounded hover:bg-white/10', isDark ? 'text-white/30 hover:text-[#650CD4]' : 'text-gray-300 hover:text-[#650CD4]')}
+                              className={cn('p-0.5 rounded hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]', isDark ? 'text-white/30 hover:text-[#650CD4]' : 'text-gray-300 hover:text-[#650CD4]')}
                               title="Message"
+                              aria-label="Send direct message"
                             >
                               <MessageCircle size={12} />
                             </button>
@@ -762,7 +773,7 @@ const RichList = ({ token, walletLabels: walletLabelsProp = {}, onLabelsChange }
             disabled={page === 1}
             aria-label="Previous page"
             className={cn(
-              'p-1.5 rounded-md transition-[background-color,border-color]',
+              'p-1.5 rounded-md transition-[background-color,border-color] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
               page === 1 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-white/10',
               isDark ? 'text-white/50' : 'text-gray-500'
             )}
@@ -783,7 +794,7 @@ const RichList = ({ token, walletLabels: walletLabelsProp = {}, onLabelsChange }
             disabled={page === totalPages}
             aria-label="Next page"
             className={cn(
-              'p-1.5 rounded-md transition-[background-color,border-color]',
+              'p-1.5 rounded-md transition-[background-color,border-color] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
               page === totalPages ? 'opacity-30 cursor-not-allowed' : 'hover:bg-white/10',
               isDark ? 'text-white/50' : 'text-gray-500'
             )}

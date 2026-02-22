@@ -131,7 +131,7 @@ const SparklineChart = memo(
             sparklineCache.set(url, prices);
             processData(prices);
           })
-          .catch(() => {}),
+          .catch(err => { if (err?.name !== 'AbortError') console.warn('[TokenRow] Sparkline fetch failed:', err.message); }),
         url
       );
       return () => {
@@ -176,10 +176,8 @@ SparklineChart.displayName = 'SparklineChart';
 
 const StyledRow = ({ className, children, isDark, isNew, ...p }) => (
   <tr
-    className={cn('tr-row cursor-pointer', isNew && 'tr-row-new', className)}
+    className={cn('tr-row cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#137DFE]', isNew && 'tr-row-new', className)}
     style={{
-      contentVisibility: 'auto',
-      containIntrinsicSize: 'auto 52px',
       borderBottom: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)'}`
     }}
     {...p}
@@ -211,17 +209,12 @@ const StyledCell = ({ className, children, isDark, isTokenColumn, align, fontWei
 const MobileTokenCard = ({ className, children, isDark, isNew, ...p }) => (
   <div
     className={cn(
-      'mobile-card flex w-full items-center cursor-pointer box-border',
-      'py-[7px] px-2.5 border-b bg-transparent',
+      'mobile-card flex w-full items-center cursor-pointer box-border outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#137DFE]',
+      'py-[7px] px-2.5 border-b border-l-2 bg-transparent',
       isDark ? 'border-white/10' : 'border-black/[0.06]',
-      isNew && 'tr-row-new',
+      isNew ? 'border-l-green-500 tr-row-new' : 'border-l-transparent',
       className
     )}
-    style={{
-      contentVisibility: 'auto',
-      containIntrinsicSize: 'auto 44px',
-      ...(isNew ? { borderLeft: '2px solid #22c55e' } : {})
-    }}
     {...p}
   >
     {children}
@@ -240,7 +233,7 @@ const MobileTokenInfo = ({ className, children, ...p }) => (
 const MobilePriceCell = ({ className, children, isDark, ...p }) => (
   <div
     className={cn(
-      'text-right text-[12.5px] font-medium min-w-0 flex-[1.2] px-1 tracking-[0.01em]',
+      'text-right text-[12.5px] font-medium min-w-0 flex-[1.2] px-1 tracking-[0.01em] overflow-hidden text-ellipsis whitespace-nowrap',
       isDark ? 'text-white/90' : 'text-black',
       className
     )}
@@ -252,7 +245,7 @@ const MobilePriceCell = ({ className, children, isDark, ...p }) => (
 
 const MobilePercentCell = ({ className, children, isDark, ...p }) => (
   <div
-    className={cn('text-right text-[12.5px] font-medium min-w-0 flex-[0.8] px-1 tracking-[0.01em]', className)}
+    className={cn('text-right text-[12.5px] font-medium min-w-0 flex-[0.8] px-1 tracking-[0.01em] overflow-hidden text-ellipsis whitespace-nowrap', className)}
     {...p}
   >
     {children}
@@ -1244,10 +1237,11 @@ const DesktopTokenRow = ({
         }}
       >
         {isLoggedIn && (
-          <span
+          <button
             onClick={handleWatchlistClick}
+            aria-label={watchList.includes(md5) ? 'Remove from watchlist' : 'Add to watchlist'}
             className={cn(
-              'cursor-pointer inline-flex justify-center w-full transition-colors duration-150',
+              'cursor-pointer inline-flex justify-center w-full transition-colors duration-150 bg-transparent border-none p-0 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] rounded',
               watchList.includes(md5)
                 ? 'text-[#F59E0B]'
                 : darkMode
@@ -1256,7 +1250,7 @@ const DesktopTokenRow = ({
             )}
           >
             <Bookmark size={16} fill={watchList.includes(md5) ? 'currentColor' : 'none'} />
-          </span>
+          </button>
         )}
       </StyledCell>
 
@@ -1498,9 +1492,11 @@ export const MobileHeader = ({ className, children, isDark, ...p }) => (
 
 export const HeaderCell = ({ className, children, isDark, flex, align, sortable, ...p }) => (
   <div
+    role={sortable ? 'button' : undefined}
+    tabIndex={sortable ? 0 : undefined}
     className={cn(
       'transition-colors duration-150 px-[6px]',
-      sortable ? 'cursor-pointer' : 'cursor-default',
+      sortable ? 'cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] rounded' : 'cursor-default',
       className
     )}
     style={{

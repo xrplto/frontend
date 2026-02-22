@@ -28,7 +28,7 @@ export default function Watch({ token, className }) {
           setWatchList(res.data.watchlist || []);
         }
       })
-      .catch(() => { });
+      .catch(err => { console.warn('[Watch] Watchlist fetch failed:', err.message); });
   }, [accountProfile]);
 
   const onChangeWatchList = async () => {
@@ -58,7 +58,7 @@ export default function Watch({ token, className }) {
     <button
       onClick={onChangeWatchList}
       className={cn(
-        'flex items-center justify-center gap-1.5 rounded-lg border text-[11px] font-bold uppercase tracking-wider transition-[opacity,transform,background-color,border-color] duration-200',
+        'flex items-center justify-center gap-1.5 rounded-lg border text-[11px] font-bold uppercase tracking-wider transition-[opacity,transform,background-color,border-color] duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
         isActive
           ? 'border-amber-500/30 bg-amber-500/10 text-amber-500 hover:bg-amber-500/20'
           : isDark

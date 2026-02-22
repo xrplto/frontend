@@ -85,7 +85,7 @@ export async function getServerSideProps(ctx) {
     const slug = ctx.params.slug;
 
     // https://api.xrpl.to/api/nfts/test1
-    const res = await api.get(`${BASE_URL}/nfts/${slug}`);
+    const res = await api.get(`${BASE_URL}/nfts/${slug}`, { timeout: 8000 });
 
     data = res.data;
   } catch (e) {

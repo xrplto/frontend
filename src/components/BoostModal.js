@@ -322,8 +322,9 @@ export default function BoostModal({ token, onClose, onSuccess }) {
             <button
               onClick={() => setBoostAmount(Math.max(minXrp, boostAmount - 10))}
               disabled={boostAmount <= minXrp}
+              aria-label="Decrease amount"
               className={cn(
-                'w-10 h-10 rounded-xl border-[1.5px] flex items-center justify-center transition-all disabled:opacity-30',
+                'w-10 h-10 rounded-xl border-[1.5px] flex items-center justify-center transition-all disabled:opacity-30 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                 isDark ? 'border-white/10 hover:bg-white/5' : 'border-gray-200 hover:bg-gray-100'
               )}
             >
@@ -337,8 +338,9 @@ export default function BoostModal({ token, onClose, onSuccess }) {
             </div>
             <button
               onClick={() => setBoostAmount(boostAmount + 10)}
+              aria-label="Increase amount"
               className={cn(
-                'w-10 h-10 rounded-xl border-[1.5px] flex items-center justify-center transition-all',
+                'w-10 h-10 rounded-xl border-[1.5px] flex items-center justify-center transition-all outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                 isDark ? 'border-white/10 hover:bg-white/5' : 'border-gray-200 hover:bg-gray-100'
               )}
             >
@@ -591,6 +593,9 @@ export default function BoostModal({ token, onClose, onSuccess }) {
 
   return createPortal(
     <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Boost token"
       className={cn(
         'fixed inset-0 z-[9999] flex items-center justify-center p-4 backdrop-blur-md max-sm:h-dvh',
         isDark ? 'bg-black/70' : 'bg-white/60'
@@ -629,8 +634,9 @@ export default function BoostModal({ token, onClose, onSuccess }) {
           </div>
           <button
             onClick={onClose}
+            aria-label="Close"
             className={cn(
-              'p-1.5 rounded-lg transition-colors',
+              'p-1.5 rounded-lg transition-colors outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
               isDark ? 'hover:bg-white/10 text-white/50' : 'hover:bg-gray-100 text-gray-400'
             )}
           >
