@@ -83,8 +83,7 @@ const validateSeed = (seed) => {
 };
 const getAlgorithmFromSeed = (seed) => (seed.startsWith('sEd') ? 'ed25519' : 'secp256k1');
 
-// Note: Removed signature entropy functions - no longer deriving wallets from WebAuthn signatures
-// WebAuthn is now used only for authentication, not key derivation (2025 security standard)
+// Note: WebAuthn/passkey code fully removed — all wallet auth is password-based now
 
 // const pair = {
 //   '534F4C4F00000000000000000000000000000000': 'SOLO',
@@ -1755,8 +1754,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     }
   };
   const anchorRef = useRef(null);
-  const [showingSeed, setShowingSeed] = useState(false);
-  const [currentSeed, setCurrentSeed] = useState('');
   const [seedBlurred, setSeedBlurred] = useState(true);
   const [showAllAccounts, setShowAllAccounts] = useState(false);
   const [accountsActivation, setAccountsActivation] = useState(() => {
@@ -2256,7 +2253,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       const wallets = await walletStorage.unlockWithPassword(unlockPassword);
 
       if (!wallets || wallets.length === 0) {
-        securityUtils.rateLimiter.recordFailure('wallet_unlock');
+        // unlockWithPassword() already records rate-limit failure internally
         setUnlockError('Incorrect password');
         return;
       }
@@ -2303,11 +2300,11 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       } catch (e) { /* fall back to first wallet */ }
       doLogIn(activeProfile, allProfiles);
 
-      securityUtils.rateLimiter.recordSuccess('wallet_unlock');
+      // unlockWithPassword() already records rate-limit success internally
       setUnlockPassword('');
       setOpenWalletModal(false);
     } catch (error) {
-      securityUtils.rateLimiter.recordFailure('wallet_unlock');
+      // unlockWithPassword() already records rate-limit failure internally
       setUnlockError(error.message || 'Incorrect password');
     } finally {
       setIsUnlocking(false);
@@ -3281,31 +3278,30 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   // Clear all wallets
   const handleClearAllWallets = async () => {
     try {
-      // Close any existing connections first
-      const dbs = (await indexedDB.databases?.()) || [];
-      for (const db of dbs) {
-        if (db.name === 'XRPLWalletDB') {
-          indexedDB.deleteDatabase('XRPLWalletDB');
-        }
-      }
+      // Close shared DB connection BEFORE deleting (prevents deleteDatabase from being blocked)
+      EncryptedWalletStorage.closeSharedConnection();
 
-      // Fallback: directly delete database
-      const deleteRequest = indexedDB.deleteDatabase('XRPLWalletDB');
-      deleteRequest.onsuccess = () => {};
-      deleteRequest.onerror = () => {};
-      deleteRequest.onblocked = () => {};
+      // Wait for deleteDatabase to complete (with timeout so UI doesn't hang)
+      await new Promise((resolve) => {
+        const deleteRequest = indexedDB.deleteDatabase('XRPLWalletDB');
+        const timeout = setTimeout(resolve, 3000);
+        deleteRequest.onsuccess = () => { clearTimeout(timeout); resolve(); };
+        deleteRequest.onerror = () => { clearTimeout(timeout); resolve(); };
+        deleteRequest.onblocked = () => { clearTimeout(timeout); resolve(); };
+      });
 
       // Clear all wallet-related localStorage keys
       localStorage.removeItem('profiles');
       localStorage.removeItem('accountLogin');
       localStorage.removeItem('authMethod');
       localStorage.removeItem('user');
+      localStorage.removeItem('device_key_id');
 
-      // Clear all backup flags and encrypted items
+      // Clear all backup flags, encrypted items, and rate limiter state
       const keysToRemove = [];
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
-        if (key && (key.startsWith('wallet_') || key.startsWith('jwt') || key.endsWith('_enc'))) {
+        if (key && (key.startsWith('wallet_') || key.startsWith('jwt') || key.endsWith('_enc') || key.startsWith('rl_'))) {
           keysToRemove.push(key);
         }
       }

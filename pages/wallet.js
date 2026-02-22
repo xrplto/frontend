@@ -852,9 +852,6 @@ export default function WalletPage() {
   const [cancellingOffer, setCancellingOffer] = useState(null);
   const [withdrawalError, setWithdrawalError] = useState('');
 
-  // Debug info state
-  const [debugInfo, setDebugInfo] = useState(null);
-
   // Account status
   const [isInactive, setIsInactive] = useState(false);
 
@@ -867,73 +864,6 @@ export default function WalletPage() {
   const [tokenPnlMap, setTokenPnlMap] = useState(new Map());
   const [nftCollectionPnlMap, setNftCollectionPnlMap] = useState(new Map());
 
-
-  // Debug info loader
-  useEffect(() => {
-    const loadDebugInfo = async () => {
-      if (!accountProfile) {
-        setDebugInfo(null);
-        return;
-      }
-      let walletKeyId =
-        accountProfile.walletKeyId ||
-        (accountProfile.provider && accountProfile.provider_id
-          ? `${accountProfile.provider}_${accountProfile.provider_id}`
-          : null);
-      let seed = accountProfile.seed || null;
-
-      if (
-        !seed &&
-        (accountProfile.wallet_type === 'oauth' || accountProfile.wallet_type === 'social')
-      ) {
-        try {
-          const { EncryptedWalletStorage } = await import('src/utils/encryptedWalletStorage');
-          const walletStorage = new EncryptedWalletStorage();
-          const walletId = `${accountProfile.provider}_${accountProfile.provider_id}`;
-          const storedPassword = await walletStorage.getSecureItem(`wallet_pwd_${walletId}`);
-          if (storedPassword) {
-            const walletData = await walletStorage.getWallet(
-              accountProfile.account,
-              storedPassword
-            );
-            seed = walletData?.seed || 'encrypted';
-          }
-        } catch (e) {
-          seed = 'error: ' + e.message;
-        }
-      }
-
-      if (!seed && accountProfile.wallet_type === 'device') {
-        try {
-          const { EncryptedWalletStorage, deviceFingerprint } =
-            await import('src/utils/encryptedWalletStorage');
-          const walletStorage = new EncryptedWalletStorage();
-          const deviceKeyId = await deviceFingerprint.getDeviceId();
-          walletKeyId = deviceKeyId;
-          if (deviceKeyId) {
-            const storedPassword = await walletStorage.getWalletCredential(deviceKeyId);
-            if (storedPassword) {
-              const walletData = await walletStorage.getWallet(
-                accountProfile.account,
-                storedPassword
-              );
-              seed = walletData?.seed || 'encrypted';
-            }
-          }
-        } catch (e) {
-          seed = 'error: ' + e.message;
-        }
-      }
-
-      setDebugInfo({
-        wallet_type: accountProfile.wallet_type,
-        account: accountProfile.account,
-        walletKeyId,
-        seed: seed && seed.length > 10 ? `${seed.substring(0, 4)}...(${seed.length} chars)` : (seed || 'N/A')
-      });
-    };
-    loadDebugInfo();
-  }, [accountProfile]);
 
   // Token parsing helper
   const parseTokenLine = (line) => {
@@ -5189,35 +5119,6 @@ export default function WalletPage() {
           </div >
         </div >
       )
-      }
-
-      {/* Debug Info */}
-      {
-        debugInfo && (
-          <div
-            className={cn(
-              'max-w-5xl mx-auto px-4 py-4 mb-4 rounded-xl text-[11px] font-mono',
-              isDark ? 'bg-white/[0.02] border border-white/[0.15]' : 'bg-gray-50 border border-gray-200'
-            )}
-          >
-            <div className={isDark ? 'text-white/50' : 'text-gray-500'}>
-              wallet_type:{' '}
-              <span className="text-[#137DFE]">{debugInfo.wallet_type || 'undefined'}</span>
-            </div>
-            <div className={isDark ? 'text-white/50' : 'text-gray-500'}>
-              account: <span className="opacity-70">{debugInfo.account || 'undefined'}</span>
-            </div>
-            <div className={isDark ? 'text-white/50' : 'text-gray-500'}>
-              walletKeyId:{' '}
-              <span className={debugInfo.walletKeyId ? 'text-[#08AA09]' : 'text-red-400'}>
-                {debugInfo.walletKeyId || 'undefined'}
-              </span>
-            </div>
-            <div className={isDark ? 'text-white/50' : 'text-gray-500'}>
-              seed: <span className="text-[#08AA09] break-all">{debugInfo.seed}</span>
-            </div>
-          </div>
-        )
       }
 
       {/* P/L Card Modal */}

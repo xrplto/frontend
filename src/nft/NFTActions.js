@@ -193,79 +193,12 @@ export default function NFTActions({ nft }) {
   const [sync, setSync] = useState(0);
   const [lowestSellOffer, setLowestSellOffer] = useState(null);
   const [offerAmount, setOfferAmount] = useState('');
-  const [debugInfo, setDebugInfo] = useState(null);
   const [cancellingOffer, setCancellingOffer] = useState(null);
   const [creatingOffer, setCreatingOffer] = useState(false);
 
   // Simulation preview state
   const [simulating, setSimulating] = useState(false);
   const [txPreview, setTxPreview] = useState(null); // { type, willSucceed, error, tx, onConfirm }
-
-  // Debug info for wallet
-  useEffect(() => {
-    const loadDebugInfo = async () => {
-      if (!accountProfile) {
-        setDebugInfo(null);
-        return;
-      }
-      let walletKeyId =
-        accountProfile.walletKeyId ||
-        (accountProfile.wallet_type === 'device' ? accountProfile.deviceKeyId : null) ||
-        (accountProfile.provider && accountProfile.provider_id
-          ? `${accountProfile.provider}_${accountProfile.provider_id}`
-          : null);
-      let seed = accountProfile.seed || null;
-      if (
-        !seed &&
-        (accountProfile.wallet_type === 'oauth' || accountProfile.wallet_type === 'social')
-      ) {
-        try {
-          const { EncryptedWalletStorage } = await import('src/utils/encryptedWalletStorage');
-          const walletStorage = new EncryptedWalletStorage();
-          const walletId = `${accountProfile.provider}_${accountProfile.provider_id}`;
-          const storedPassword = await walletStorage.getSecureItem(`wallet_pwd_${walletId}`);
-          if (storedPassword) {
-            const walletData = await walletStorage.getWallet(
-              accountProfile.account,
-              storedPassword
-            );
-            seed = walletData?.seed || 'encrypted';
-          }
-        } catch (e) {
-          seed = 'error: ' + e.message;
-        }
-      }
-      // Handle device wallets
-      if (!seed && accountProfile.wallet_type === 'device') {
-        try {
-          const { EncryptedWalletStorage, deviceFingerprint } =
-            await import('src/utils/encryptedWalletStorage');
-          const walletStorage = new EncryptedWalletStorage();
-          const deviceKeyId = await deviceFingerprint.getDeviceId();
-          walletKeyId = deviceKeyId;
-          if (deviceKeyId) {
-            const storedPassword = await walletStorage.getWalletCredential(deviceKeyId);
-            if (storedPassword) {
-              const walletData = await walletStorage.getWallet(
-                accountProfile.account,
-                storedPassword
-              );
-              seed = walletData?.seed || 'encrypted';
-            }
-          }
-        } catch (e) {
-          seed = 'error: ' + e.message;
-        }
-      }
-      setDebugInfo({
-        wallet_type: accountProfile.wallet_type,
-        account: accountProfile.account,
-        walletKeyId,
-        seed: seed && seed.length > 10 ? `${seed.substring(0, 4)}...(${seed.length} chars)` : (seed || 'N/A')
-      });
-    };
-    loadDebugInfo();
-  }, [accountProfile]);
 
   // Close share dropdown on outside click
   useEffect(() => {
@@ -1992,22 +1925,6 @@ export default function NFTActions({ nft }) {
               <HistoryList nft={nft} />
             </div>
 
-            {/* Debug Info */}
-            {debugInfo && (
-              <div
-                className={cn(
-                  'mt-4 p-3 rounded-lg border text-[11px] font-mono',
-                  isDark ? 'border-gray-700/50 bg-white/5' : 'border-gray-200 bg-gray-50'
-                )}
-              >
-                <div className="text-gray-500 space-y-0.5">
-                  <div>wallet_type: {debugInfo.wallet_type}</div>
-                  <div>account: {debugInfo.account}</div>
-                  <div>walletKeyId: {debugInfo.walletKeyId}</div>
-                  <div>seed: {debugInfo.seed}</div>
-                </div>
-              </div>
-            )}
           </div>
         </div>
 

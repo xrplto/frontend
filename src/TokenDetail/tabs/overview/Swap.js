@@ -976,7 +976,14 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
         return;
       }
 
-      const walletData = await walletStorage.getWallet(accountProfile.account, storedPassword);
+      let walletData;
+      try {
+        walletData = await walletStorage.getWallet(accountProfile.account, storedPassword);
+      } catch (walletErr) {
+        toast.error('Wallet not found', { id: toastId, description: 'Could not retrieve wallet credentials' });
+        return;
+      }
+
       if (!walletData?.seed) {
         toast.error('Wallet error', { id: toastId, description: 'Could not retrieve credentials' });
         return;

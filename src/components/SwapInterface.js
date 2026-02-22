@@ -4015,10 +4015,13 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
 
                       {/* Name */}
                       <div className={cn(
-                        'text-[12px] sm:text-[13px] font-semibold truncate w-full text-center mb-1',
+                        'text-[12px] sm:text-[13px] font-semibold truncate w-full text-center mb-1 flex items-center justify-center gap-1',
                         darkMode ? 'text-[#F5F5F5]' : 'text-[#0F172A]'
                       )}>
-                        {t.name}
+                        <span className="truncate">{t.name}</span>
+                        {t.trendingBoost > 0 && t.trendingBoostExpires > Date.now() && (
+                          <Zap size={11} className="text-[#F6AF01] flex-shrink-0" fill="#F6AF01" />
+                        )}
                       </div>
 
                       {/* Price */}

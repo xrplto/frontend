@@ -9,70 +9,15 @@ const isDev = process.env.NODE_ENV === 'development';
 const devLog = isDev ? (...args) => console.log('[WalletStorage]', ...args) : () => {};
 const devError = isDev ? (...args) => console.error('[WalletStorage]', ...args) : () => {};
 
-// Device ID with WebAuthn hardware binding + HMAC integrity fallback
-// Uses platform authenticator (Face ID/Touch ID/Windows Hello) when available
+
+// Device ID with HMAC integrity verification
+// Generates a stable device ID stored in localStorage, signed with an HMAC key in IndexedDB.
+// The HMAC key is tied to the IndexedDB database — if the DB is cleared/different device,
+// HMAC verification fails and a new device ID is generated. This provides device-binding
+// without browser-specific WebAuthn issues.
 const deviceFingerprint = {
   _cachedDeviceId: null,
   _hmacKey: null,
-  _webAuthnSupported: null,
-
-  // Check if WebAuthn with platform authenticator is available
-  async _checkWebAuthnSupport() {
-    if (this._webAuthnSupported !== null) return this._webAuthnSupported;
-    if (typeof window === 'undefined' || !window.PublicKeyCredential) {
-      this._webAuthnSupported = false;
-      return false;
-    }
-    try {
-      this._webAuthnSupported = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
-    } catch {
-      this._webAuthnSupported = false;
-    }
-    return this._webAuthnSupported;
-  },
-
-  // Create WebAuthn credential for hardware binding
-  async _createWebAuthnCredential(deviceId) {
-    const challenge = crypto.getRandomValues(new Uint8Array(32));
-    const credential = await navigator.credentials.create({
-      publicKey: {
-        challenge,
-        rp: { name: 'XRPL.to Wallet', id: window.location.hostname },
-        user: {
-          id: new TextEncoder().encode(deviceId),
-          name: 'wallet-device',
-          displayName: 'Wallet Device'
-        },
-        pubKeyCredParams: [{ alg: -7, type: 'public-key' }, { alg: -257, type: 'public-key' }],
-        authenticatorSelection: {
-          authenticatorAttachment: 'platform',
-          userVerification: 'required',
-          residentKey: 'preferred'
-        },
-        timeout: 60000
-      }
-    });
-    return credential ? btoa(String.fromCharCode(...new Uint8Array(credential.rawId))) : null;
-  },
-
-  // Verify WebAuthn credential exists on this device
-  async _verifyWebAuthnCredential(credentialId) {
-    try {
-      const rawId = Uint8Array.from(atob(credentialId), c => c.charCodeAt(0));
-      const challenge = crypto.getRandomValues(new Uint8Array(32));
-      await navigator.credentials.get({
-        publicKey: {
-          challenge,
-          allowCredentials: [{ id: rawId, type: 'public-key' }],
-          userVerification: 'required',
-          timeout: 60000
-        }
-      });
-      return true;
-    } catch {
-      return false;
-    }
-  },
 
   async _getHmacKey() {
     if (this._hmacKey) return this._hmacKey;
@@ -93,9 +38,14 @@ const deviceFingerprint = {
     if (!hmacSeed) {
       hmacSeed = crypto.getRandomValues(new Uint8Array(32));
       try {
-        const tx = db.transaction(['keys'], 'readwrite');
-        tx.objectStore('keys').put({ id: 'hmac_seed', seed: hmacSeed });
-      } catch (e) { /* keys store may not exist yet */ }
+        await new Promise((resolve) => {
+          const tx = db.transaction(['keys'], 'readwrite');
+          const req = tx.objectStore('keys').put({ id: 'hmac_seed', seed: hmacSeed });
+          req.onsuccess = () => resolve();
+          req.onerror = () => resolve(); // Continue with in-memory key
+          tx.onabort = () => resolve();
+        });
+      } catch (e) { /* keys store may not exist yet — HMAC key is ephemeral until DB is initialized */ }
     }
 
     db.close();
@@ -130,74 +80,35 @@ const deviceFingerprint = {
     const stored = localStorage.getItem('device_key_id');
 
     if (stored) {
-      // Parse stored format: deviceId:hmac or deviceId:hmac:webauthn
-      // HMAC is base64 (A-Za-z0-9+/=), split only on first two colons
       const firstColon = stored.indexOf(':');
-      const secondColon = firstColon > -1 ? stored.indexOf(':', firstColon + 1) : -1;
-      let deviceId, hmac, webAuthnId;
       if (firstColon === -1) {
-        // No HMAC — regenerate
+        // Malformed — clear and fall through to generate new
         localStorage.removeItem('device_key_id');
-        return this.getDeviceId();
-      } else if (secondColon === -1) {
-        deviceId = stored.substring(0, firstColon);
-        hmac = stored.substring(firstColon + 1);
       } else {
-        deviceId = stored.substring(0, firstColon);
-        hmac = stored.substring(firstColon + 1, secondColon);
-        webAuthnId = stored.substring(secondColon + 1);
-      }
+        const deviceId = stored.substring(0, firstColon);
+        const hmac = stored.substring(firstColon + 1);
 
-      // Verify HMAC integrity first
-      const hmacValid = await this._verifyHmac(deviceId, hmac);
-      if (!hmacValid) {
-        // Corrupted or tampered — regenerate instead of throwing
-        console.warn('[deviceFingerprint] HMAC verification failed, regenerating device ID');
+        const hmacValid = await this._verifyHmac(deviceId, hmac);
+        if (hmacValid) {
+          this._cachedDeviceId = deviceId;
+          return deviceId;
+        }
+
+        // HMAC failed — clear and fall through to generate new
         localStorage.removeItem('device_key_id');
         this._cachedDeviceId = null;
-        return this.getDeviceId();
+        // Reset HMAC key cache so new key is generated fresh
+        this._hmacKey = null;
       }
-
-      // If WebAuthn credential exists, verify hardware binding
-      if (webAuthnId && await this._checkWebAuthnSupport()) {
-        const hwValid = await this._verifyWebAuthnCredential(webAuthnId);
-        if (!hwValid) {
-          throw new Error('Hardware binding verification failed - different device');
-        }
-      }
-
-      this._cachedDeviceId = deviceId;
-      return deviceId;
     }
 
-    // Generate new device ID
+    // Generate new device ID (no recursion — always falls through here)
     const deviceId = crypto.randomUUID();
     const hmac = await this._computeHmac(deviceId);
-
-    // Try to create WebAuthn hardware binding
-    let webAuthnId = null;
-    if (await this._checkWebAuthnSupport()) {
-      try {
-        webAuthnId = await this._createWebAuthnCredential(deviceId);
-      } catch (e) {
-        devLog('[WebAuthn] Hardware binding unavailable:', e.message);
-      }
-    }
-
-    // Store with or without WebAuthn
-    const storageValue = webAuthnId
-      ? `${deviceId}:${hmac}:${webAuthnId}`
-      : `${deviceId}:${hmac}`;
-    localStorage.setItem('device_key_id', storageValue);
+    localStorage.setItem('device_key_id', `${deviceId}:${hmac}`);
 
     this._cachedDeviceId = deviceId;
     return deviceId;
-  },
-
-  // Check if current device has hardware binding
-  async hasHardwareBinding() {
-    const stored = localStorage.getItem('device_key_id');
-    return stored && stored.split(':').length === 3;
   }
 };
 
@@ -461,10 +372,6 @@ export class UnifiedWalletStorage {
     this.keysStore = 'keys';
   }
 
-  _resetCacheTimeout() {
-    // No-op: timer is managed inside _credCache closure
-  }
-
   _clearCredentialCache() {
     _credCache.clear();
   }
@@ -504,6 +411,7 @@ export class UnifiedWalletStorage {
         return;
       }
       const tx = db.transaction([this.keysStore], 'readonly');
+      tx.onabort = () => resolve(null);
       const req = tx.objectStore(this.keysStore).get('master');
       req.onsuccess = () => resolve(req.result?.key || null);
       req.onerror = () => resolve(null);
@@ -525,6 +433,7 @@ export class UnifiedWalletStorage {
     // Store CryptoKey object in IndexedDB (structured clone preserves non-extractable property)
     await new Promise((resolve, reject) => {
       const tx = db.transaction([this.keysStore], 'readwrite');
+      tx.onabort = () => reject(tx.error || new Error('Transaction aborted'));
       const store = tx.objectStore(this.keysStore);
       const req = store.put({ id: 'master', key: masterKey, createdAt: Date.now() });
       req.onsuccess = () => resolve();
@@ -602,8 +511,8 @@ export class UnifiedWalletStorage {
     const db = await this.initDB();
 
     // initDB now handles store creation, this should always exist
+    // Never close shared connection here — only closeSharedConnection() should do that
     if (!db.objectStoreNames.contains(this.walletsStore)) {
-      db.close();
       throw new Error('Wallet store not initialized');
     }
 
@@ -611,6 +520,7 @@ export class UnifiedWalletStorage {
 
     return new Promise((resolve, reject) => {
       const transaction = db.transaction([this.walletsStore], 'readwrite');
+      transaction.onabort = () => reject(transaction.error || new Error('Transaction aborted'));
       const store = transaction.objectStore(this.walletsStore);
 
       // Use special ID format for password records
@@ -637,31 +547,29 @@ export class UnifiedWalletStorage {
         return null;
       }
 
-      return new Promise(async (resolve) => {
+      const record = await new Promise((resolve) => {
         const transaction = db.transaction([this.walletsStore], 'readonly');
+        transaction.onabort = () => resolve(null);
         const store = transaction.objectStore(this.walletsStore);
         const pwdKey = `__pwd__${providerId}`;
         const request = store.get(pwdKey);
-
-        request.onsuccess = async () => {
-          if (request.result && request.result.data) {
-            try {
-              const decrypted = await this.decryptFromLocalStorage(request.result.data);
-              devLog('Password retrieved from IndexedDB for provider:', providerId);
-              resolve(decrypted);
-            } catch (decryptError) {
-              devLog('Password decryption failed:', decryptError.message);
-              resolve(null);
-            }
-          } else {
-            devLog('No password found in IndexedDB for provider:', providerId);
-            resolve(null);
-          }
-        };
-        request.onerror = () => {
-          resolve(null);
-        };
+        request.onsuccess = () => resolve(request.result || null);
+        request.onerror = () => resolve(null);
       });
+
+      if (record?.data) {
+        try {
+          const decrypted = await this.decryptFromLocalStorage(record.data);
+          devLog('Password retrieved from IndexedDB for provider:', providerId);
+          return decrypted;
+        } catch (decryptError) {
+          devLog('Password decryption failed:', decryptError.message);
+          return null;
+        }
+      }
+
+      devLog('No password found in IndexedDB for provider:', providerId);
+      return null;
     } catch (error) {
       devError('Error getting provider password:', error);
       return null;
@@ -710,12 +618,44 @@ export class UnifiedWalletStorage {
   async initDB() {
     // Module-level singleton: reuse existing DB promise across ALL instances
     if (UnifiedWalletStorage._sharedDbPromise) {
-      return UnifiedWalletStorage._sharedDbPromise;
+      try {
+        const db = await UnifiedWalletStorage._sharedDbPromise;
+        // Validate connection is still alive — closed or deleted DBs throw on transaction()
+        if (db.objectStoreNames.contains(this.walletsStore)) {
+          db.transaction([this.walletsStore], 'readonly');
+        }
+        return db;
+      } catch {
+        // Connection is stale/closed — clear and reconnect
+        devLog('[initDB] Cached connection stale, reconnecting...');
+        UnifiedWalletStorage._sharedDbPromise = null;
+        UnifiedWalletStorage._masterKey = null;
+      }
     }
 
     devLog('[initDB] Creating new DB connection...');
-    UnifiedWalletStorage._sharedDbPromise = this._initDBInternal();
+    UnifiedWalletStorage._sharedDbPromise = this._initDBInternal().catch((err) => {
+      // Clear cached promise on failure so next call retries instead of returning stale rejection
+      UnifiedWalletStorage._sharedDbPromise = null;
+      throw err;
+    });
     return UnifiedWalletStorage._sharedDbPromise;
+  }
+
+  // Close the shared DB connection and clear caches (call before deleteDatabase)
+  static closeSharedConnection() {
+    if (UnifiedWalletStorage._sharedDbPromise) {
+      UnifiedWalletStorage._sharedDbPromise.then(db => {
+        try { db.close(); } catch {}
+      }).catch(() => {});
+      UnifiedWalletStorage._sharedDbPromise = null;
+    }
+    UnifiedWalletStorage._masterKey = null;
+    UnifiedWalletStorage._masterKeyPromise = null;
+    // Clear device fingerprint caches so they regenerate from fresh DB
+    deviceFingerprint._cachedDeviceId = null;
+    deviceFingerprint._hmacKey = null;
+    _credCache.clear();
   }
 
   async _initDBInternal() {
@@ -728,6 +668,13 @@ export class UnifiedWalletStorage {
       request.onsuccess = () => { clearTimeout(timeout); resolve(request.result); };
       request.onerror = () => { clearTimeout(timeout); reject(request.error); };
     });
+
+    // If another tab/process triggers a version change or deleteDatabase, close and invalidate cache
+    db.onversionchange = () => {
+      db.close();
+      UnifiedWalletStorage._sharedDbPromise = null;
+      UnifiedWalletStorage._masterKey = null;
+    };
 
     // If stores already exist, we're done
     if (db.objectStoreNames.contains(this.walletsStore) && db.objectStoreNames.contains(this.keysStore)) {
@@ -747,7 +694,17 @@ export class UnifiedWalletStorage {
       }, 5000);
       request.onblocked = () => { clearTimeout(timeout); reject(new Error('IndexedDB blocked - close other tabs')); };
       request.onerror = () => { clearTimeout(timeout); reject(request.error); };
-      request.onsuccess = () => { clearTimeout(timeout); devLog('[initDB] Stores created'); resolve(request.result); };
+      request.onsuccess = () => {
+        clearTimeout(timeout);
+        const upgradedDb = request.result;
+        upgradedDb.onversionchange = () => {
+          upgradedDb.close();
+          UnifiedWalletStorage._sharedDbPromise = null;
+          UnifiedWalletStorage._masterKey = null;
+        };
+        devLog('[initDB] Stores created');
+        resolve(upgradedDb);
+      };
       request.onupgradeneeded = (event) => {
         const upgradeDb = event.target.result;
         if (!upgradeDb.objectStoreNames.contains(this.walletsStore)) {
@@ -860,7 +817,6 @@ export class UnifiedWalletStorage {
 
     // initDB now handles store creation, this should always exist
     if (!db.objectStoreNames.contains(this.walletsStore)) {
-      db.close();
       throw new Error('Wallet store not initialized');
     }
 
@@ -882,6 +838,7 @@ export class UnifiedWalletStorage {
 
     return new Promise((resolve, reject) => {
       const transaction = db.transaction([this.walletsStore], 'readwrite');
+      transaction.onabort = () => reject(transaction.error || new Error('Transaction aborted'));
       const store = transaction.objectStore(this.walletsStore);
 
       // Store encrypted data with minimal public metadata
@@ -924,27 +881,24 @@ export class UnifiedWalletStorage {
     const addressHash = await crypto.subtle.digest('SHA-256', encoder.encode(address));
     const lookupHash = btoa(String.fromCharCode(...new Uint8Array(addressHash))).slice(0, 24);
 
-    return new Promise((resolve, reject) => {
+    const records = await new Promise((resolve, reject) => {
       const transaction = db.transaction([this.walletsStore], 'readonly');
       const store = transaction.objectStore(this.walletsStore);
       const index = store.index('lookupHash');
-
       const request = index.getAll(lookupHash);
-
       request.onerror = () => reject(request.error);
-      request.onsuccess = async () => {
-        if (request.result && request.result.length > 0) {
-          try {
-            const walletData = await this.decryptData(request.result[0].data, pin);
-            resolve(walletData);
-          } catch (error) {
-            reject(new Error('Invalid PIN'));
-          }
-        } else {
-          reject(new Error('Wallet not found'));
-        }
-      };
+      request.onsuccess = () => resolve(request.result);
     });
+
+    if (!records || records.length === 0) {
+      throw new Error('Wallet not found');
+    }
+
+    try {
+      return await this.decryptData(records[0].data, pin);
+    } catch (error) {
+      throw new Error('Invalid PIN');
+    }
   }
 
   async getAllWallets(pin) {
@@ -954,30 +908,29 @@ export class UnifiedWalletStorage {
       return [];
     }
 
-    return new Promise((resolve, reject) => {
+    const allRecords = await new Promise((resolve, reject) => {
       const transaction = db.transaction([this.walletsStore], 'readonly');
       const store = transaction.objectStore(this.walletsStore);
-
       const request = store.getAll();
-
       request.onerror = () => reject(request.error);
-      request.onsuccess = async () => {
-        const wallets = [];
-        for (const record of request.result) {
-          // Skip password records (stored with __pwd__ prefix)
-          if (record.id && typeof record.id === 'string' && record.id.startsWith('__pwd__')) {
-            continue;
-          }
-          try {
-            const walletData = await this.decryptData(record.data, pin);
-            wallets.push(walletData);
-          } catch (error) {
-            // Skip wallets that can't be decrypted with this PIN
-          }
-        }
-        resolve(wallets);
-      };
+      request.onsuccess = () => resolve(request.result);
     });
+
+    const wallets = [];
+    for (const record of allRecords) {
+      // Skip password records (stored with __pwd__ prefix)
+      if (record.id && typeof record.id === 'string' && record.id.startsWith('__pwd__')) {
+        continue;
+      }
+      try {
+        const walletData = await this.decryptData(record.data, pin);
+        wallets.push(walletData);
+      } catch (error) {
+        // Skip wallets that can't be decrypted with this password (expected for multi-password setups)
+        devLog('Skipped wallet', record.maskedAddress || record.id, '- decrypt failed');
+      }
+    }
+    return wallets;
   }
 
   async hasWallet() {
@@ -990,6 +943,7 @@ export class UnifiedWalletStorage {
 
       return new Promise((resolve, reject) => {
         const transaction = db.transaction([this.walletsStore], 'readonly');
+        transaction.onabort = () => reject(transaction.error || new Error('Transaction aborted'));
         const store = transaction.objectStore(this.walletsStore);
 
         const request = store.count();
@@ -1097,83 +1051,6 @@ export class UnifiedWalletStorage {
     }
   }
 
-  /**
-   * Check if any stored password exists (indicates returning user)
-   */
-  async hasStoredCredentials() {
-    try {
-      const db = await this.initDB();
-
-      if (!db.objectStoreNames.contains(this.walletsStore)) {
-        return false;
-      }
-
-      return new Promise((resolve) => {
-        const transaction = db.transaction([this.walletsStore], 'readonly');
-        const store = transaction.objectStore(this.walletsStore);
-        const request = store.getAll();
-
-        request.onerror = () => resolve(false);
-        request.onsuccess = () => {
-          const records = request.result || [];
-          // Check for password records
-          const hasPasswords = records.some(
-            (r) => r.id && typeof r.id === 'string' && r.id.startsWith('__pwd__')
-          );
-          // Check for device credentials in localStorage
-          const hasDeviceCreds =
-            typeof window !== 'undefined' &&
-            Object.keys(localStorage).some((k) => k.startsWith('device_pwd_'));
-
-          resolve(hasPasswords || hasDeviceCreds);
-        };
-      });
-    } catch (error) {
-      return false;
-    }
-  }
-
-  validatePin(pin) {
-    const pinStr = pin.toString();
-    const isValidLength = pinStr.length === 6;
-    const isAllNumbers = /^\d{6}$/.test(pinStr);
-    const isNotSequential = !this.isSequentialDigits(pinStr);
-    const isNotRepeating = !this.isRepeatingDigits(pinStr);
-
-    return {
-      isValid: isValidLength && isAllNumbers && isNotSequential && isNotRepeating,
-      requirements: {
-        correctLength: isValidLength,
-        onlyNumbers: isAllNumbers,
-        notSequential: isNotSequential,
-        notRepeating: isNotRepeating
-      }
-    };
-  }
-
-  isSequentialDigits(pin) {
-    // Check for sequential patterns like 123456, 654321
-    const ascending = pin
-      .split('')
-      .every((digit, i) => i === 0 || parseInt(digit) === parseInt(pin[i - 1]) + 1);
-    const descending = pin
-      .split('')
-      .every((digit, i) => i === 0 || parseInt(digit) === parseInt(pin[i - 1]) - 1);
-    return ascending || descending;
-  }
-
-  isRepeatingDigits(pin) {
-    // Check for repeating patterns like 111111, 121212
-    const allSame = pin.split('').every((digit) => digit === pin[0]);
-    const alternating =
-      pin.length === 6 &&
-      pin[0] === pin[2] &&
-      pin[2] === pin[4] &&
-      pin[1] === pin[3] &&
-      pin[3] === pin[5];
-    return allSame || alternating;
-  }
-
   async deleteWallet(address) {
     const db = await this.initDB();
 
@@ -1207,94 +1084,6 @@ export class UnifiedWalletStorage {
     });
   }
 
-  // Store passkey-wallet mapping
-  async storePasskeyWallet(passkeyId, walletData, pin) {
-    const db = await this.initDB();
-
-    // initDB now handles store creation, this should always exist
-    if (!db.objectStoreNames.contains(this.walletsStore)) {
-      db.close();
-      throw new Error('Wallet store not initialized');
-    }
-
-    // Include passkey ID in wallet data (inside encrypted blob only)
-    const fullWalletData = {
-      ...walletData,
-      passkeyId
-    };
-
-    // Encrypt and store
-    const encryptedData = await this.encryptData(fullWalletData, pin);
-
-    // Generate one-way lookup hash from address (no plaintext address stored)
-    const encoder = new TextEncoder();
-    const addressHash = await crypto.subtle.digest('SHA-256', encoder.encode(walletData.address));
-    const lookupHash = btoa(String.fromCharCode(...new Uint8Array(addressHash))).slice(0, 24);
-
-    // Hash passkeyId for lookup without exposing it in plaintext
-    const passkeyHash = await crypto.subtle.digest('SHA-256', encoder.encode(passkeyId));
-    const passkeyLookup = btoa(String.fromCharCode(...new Uint8Array(passkeyHash))).slice(0, 24);
-
-    return new Promise((resolve, reject) => {
-      const transaction = db.transaction([this.walletsStore], 'readwrite');
-      const store = transaction.objectStore(this.walletsStore);
-
-      const walletId = crypto.randomUUID();
-      const record = {
-        id: walletId,
-        lookupHash,
-        passkeyId: passkeyLookup, // Hashed, not plaintext
-        data: encryptedData,
-        timestamp: Date.now()
-      };
-
-      const request = store.add(record);
-
-      request.onerror = () => {
-        // If duplicate, that's fine - wallet already exists
-        resolve(null);
-      };
-      request.onsuccess = () => resolve(request.result);
-    });
-  }
-
-  // Get wallet by passkey ID (compares hashed passkeyId)
-  async getWalletByPasskey(passkeyId) {
-    const db = await this.initDB();
-
-    if (!db.objectStoreNames.contains(this.walletsStore)) {
-      return null;
-    }
-
-    // Hash the passkeyId for comparison (matches hashed storage format)
-    const encoder = new TextEncoder();
-    const passkeyHash = await crypto.subtle.digest('SHA-256', encoder.encode(passkeyId));
-    const passkeyLookup = btoa(String.fromCharCode(...new Uint8Array(passkeyHash))).slice(0, 24);
-
-    return new Promise((resolve, reject) => {
-      const transaction = db.transaction([this.walletsStore], 'readonly');
-      const store = transaction.objectStore(this.walletsStore);
-
-      const request = store.openCursor();
-
-      request.onsuccess = () => {
-        const cursor = request.result;
-        if (cursor) {
-          // Match against hashed passkeyId or legacy plaintext passkeyId
-          if (cursor.value.passkeyId === passkeyLookup || cursor.value.passkeyId === passkeyId) {
-            resolve(cursor.value);
-          } else {
-            cursor.continue();
-          }
-        } else {
-          resolve(null);
-        }
-      };
-
-      request.onerror = () => reject(request.error);
-    });
-  }
-
   // Store password for device wallets (encrypted with device-specific key)
   async storeWalletCredential(passkeyId, userSecret) {
     // Store password encrypted in localStorage for fast retrieval
@@ -1305,13 +1094,11 @@ export class UnifiedWalletStorage {
 
     // Cache in memory with auto-expiry (15 min or tab switch)
     _credCache.set(passkeyId, userSecret);
-    this._resetCacheTimeout();
   }
 
   async getWalletCredential(passkeyId) {
     // 1. Check memory cache first (expires after 15 min)
     if (_credCache.has(passkeyId)) {
-      this._resetCacheTimeout(); // Reset on access
       return _credCache.get(passkeyId);
     }
 
@@ -1321,7 +1108,6 @@ export class UnifiedWalletStorage {
       if (storedPassword) {
         // Cache in memory with expiry
         _credCache.set(passkeyId, storedPassword);
-        this._resetCacheTimeout();
         return storedPassword;
       }
     } catch (e) {
@@ -1335,16 +1121,8 @@ export class UnifiedWalletStorage {
       try { await this.setSecureItem(`device_pwd_${passkeyId}`, idbPassword); } catch (e) { /* non-critical */ }
       // Cache in memory with expiry
       _credCache.set(passkeyId, idbPassword);
-      this._resetCacheTimeout();
       devLog('[Credential] Recovered device password from IndexedDB');
       return idbPassword;
-    }
-
-    // Check if wallet exists with this passkey
-    const walletRecord = await this.getWalletByPasskey(passkeyId);
-    if (walletRecord) {
-      // Wallet exists but credential not found anywhere - return null to prompt
-      return null;
     }
 
     return null;
@@ -1365,33 +1143,6 @@ export class UnifiedWalletStorage {
         }
       }
       keysToRemove.forEach((key) => localStorage.removeItem(key));
-    }
-  }
-
-  async getWallets(pin) {
-    return this.getAllWallets(pin);
-  }
-
-  /**
-   * Get ALL wallets for a specific device/passkey
-   */
-  async getAllWalletsForDevice(deviceKeyId, password) {
-    try {
-      devLog('getAllWalletsForDevice called');
-
-      // Get ALL wallets with this password
-      const allWallets = await this.getAllWallets(password);
-
-      // Filter by deviceKeyId
-      const deviceWallets = allWallets.filter(
-        (w) => w.deviceKeyId === deviceKeyId || w.passkeyId === deviceKeyId
-      );
-
-      devLog('Found', deviceWallets.length, 'wallets for device');
-      return deviceWallets;
-    } catch (error) {
-      devError('Error getting device wallets:', error.message);
-      return [];
     }
   }
 
@@ -1468,39 +1219,27 @@ export class UnifiedWalletStorage {
       const addressHash = await crypto.subtle.digest('SHA-256', encoder.encode(address));
       const lookupHash = btoa(String.fromCharCode(...new Uint8Array(addressHash))).slice(0, 24);
 
-      return new Promise(async (resolve, reject) => {
+      const records = await new Promise((resolve, reject) => {
         const transaction = db.transaction([this.walletsStore], 'readonly');
         const store = transaction.objectStore(this.walletsStore);
         const index = store.index('lookupHash');
-
-        // Use index to find by lookupHash
         const request = index.getAll(lookupHash);
-
-        request.onsuccess = async () => {
-          const records = request.result;
-
-          if (!records || records.length === 0) {
-            resolve(null);
-            return;
-          }
-
-          // Try to decrypt the first matching record
-          try {
-            const decrypted = await this.decryptData(records[0].data, password);
-            resolve({
-              address: decrypted.address,
-              publicKey: decrypted.publicKey,
-              seed: decrypted.seed,
-              provider: decrypted.provider,
-              provider_id: decrypted.provider_id
-            });
-          } catch (e) {
-            reject(new Error('Incorrect password'));
-          }
-        };
-
+        request.onsuccess = () => resolve(request.result);
         request.onerror = () => reject(request.error);
       });
+
+      if (!records || records.length === 0) {
+        return null;
+      }
+
+      const decrypted = await this.decryptData(records[0].data, password);
+      return {
+        address: decrypted.address,
+        publicKey: decrypted.publicKey,
+        seed: decrypted.seed,
+        provider: decrypted.provider,
+        provider_id: decrypted.provider_id
+      };
     } catch (e) {
       devError('Error getting wallet by address:', e);
       return null;

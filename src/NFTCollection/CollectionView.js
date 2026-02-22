@@ -3110,7 +3110,6 @@ export default function CollectionView({ collection }) {
   const [openInfo, setOpenInfo] = useState(false);
   const [openFees, setOpenFees] = useState(false);
   const [value, setValue] = useState('tab-nfts');
-  const [debugInfo, setDebugInfo] = useState(null);
   const [showVerifyModal, setShowVerifyModal] = useState(false);
   const [currentVerified, setCurrentVerified] = useState(null);
   const [showChart, setShowChart] = useState(true);
@@ -3153,72 +3152,6 @@ export default function CollectionView({ collection }) {
       });
     }
   }, [collectionData?.slug, collectionData?.name, collectionData?.logoImage]);
-
-  // Debug info loader
-  useEffect(() => {
-    const loadDebugInfo = async () => {
-      if (!accountProfile) {
-        setDebugInfo(null);
-        return;
-      }
-      let walletKeyId =
-        accountProfile.walletKeyId ||
-        (accountProfile.wallet_type === 'device' ? accountProfile.deviceKeyId : null) ||
-        (accountProfile.provider && accountProfile.provider_id
-          ? `${accountProfile.provider}_${accountProfile.provider_id}`
-          : null);
-      let seed = accountProfile.seed || null;
-      if (
-        !seed &&
-        (accountProfile.wallet_type === 'oauth' || accountProfile.wallet_type === 'social')
-      ) {
-        try {
-          const { EncryptedWalletStorage } = await import('src/utils/encryptedWalletStorage');
-          const walletStorage = new EncryptedWalletStorage();
-          const walletId = `${accountProfile.provider}_${accountProfile.provider_id}`;
-          const storedPassword = await walletStorage.getSecureItem(`wallet_pwd_${walletId}`);
-          if (storedPassword) {
-            const walletData = await walletStorage.getWallet(
-              accountProfile.account,
-              storedPassword
-            );
-            seed = walletData?.seed || 'encrypted';
-          }
-        } catch (e) {
-          seed = 'error: ' + e.message;
-        }
-      }
-      // Handle device wallets
-      if (!seed && accountProfile.wallet_type === 'device') {
-        try {
-          const { EncryptedWalletStorage, deviceFingerprint } =
-            await import('src/utils/encryptedWalletStorage');
-          const walletStorage = new EncryptedWalletStorage();
-          const deviceKeyId = await deviceFingerprint.getDeviceId();
-          walletKeyId = deviceKeyId;
-          if (deviceKeyId) {
-            const storedPassword = await walletStorage.getWalletCredential(deviceKeyId);
-            if (storedPassword) {
-              const walletData = await walletStorage.getWallet(
-                accountProfile.account,
-                storedPassword
-              );
-              seed = walletData?.seed || 'encrypted';
-            }
-          }
-        } catch (e) {
-          seed = 'error: ' + e.message;
-        }
-      }
-      setDebugInfo({
-        wallet_type: accountProfile.wallet_type,
-        account: accountProfile.account,
-        walletKeyId,
-        seed: seed && seed.length > 10 ? `${seed.substring(0, 4)}...(${seed.length} chars)` : (seed || 'N/A')
-      });
-    };
-    loadDebugInfo();
-  }, [accountProfile]);
 
   useEffect(() => {
     const handleClickOutside = (e) => {

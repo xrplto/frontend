@@ -177,7 +177,9 @@ const TokenSummary = memo(({ token }) => {
     supply,
     tokenType,
     mptIssuanceID,
-    metadata
+    metadata,
+    trendingBoost,
+    trendingBoostExpires
   } = token;
 
   const isMPT = tokenType === 'mpt';
@@ -601,6 +603,14 @@ const TokenSummary = memo(({ token }) => {
                   <OriginIcon origin={origin || 'XRPL'} isDark={isDark} />
                   <span className="hidden sm:inline">{origin || 'XRPL'}</span>
                 </span>
+                {trendingBoost > 0 && trendingBoostExpires > Date.now() && (
+                  <span
+                    className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-[10px] font-bold tracking-wider bg-[#F6AF01]/10 text-[#F6AF01]"
+                    title="Boosted"
+                  >
+                    <Zap size={10} fill="#F6AF01" />
+                  </span>
+                )}
                 {tweetCount > 0 && (
                   <button
                     onClick={() => setShowPromoteModal(true)}
