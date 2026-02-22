@@ -1,11 +1,6 @@
-import PropTypes from 'prop-types';
 import { useEffect, useState, useContext } from 'react';
 import { cn } from 'src/utils/cn';
 import { ThemeContext } from 'src/context/AppContext';
-
-ScrollToTop.propTypes = {
-  window: PropTypes.func
-};
 
 export default function ScrollToTop(props) {
   const { window } = props;

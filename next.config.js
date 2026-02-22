@@ -21,9 +21,6 @@ const config = {
     MAINTENANCE: process.env.MAINTENANCE,
     RUN_ENV: process.env.RUN_ENV
   },
-  serverRuntimeConfig: {
-    API_URL: process.env.API_URL
-  },
   // Only generate production source maps when explicitly enabled elsewhere
   productionBrowserSourceMaps: false,
   images: {
@@ -72,7 +69,7 @@ const config = {
     const cspProd = [
       "default-src 'self'",
       "script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com", // unsafe-inline needed for Next.js inline scripts
-      "style-src 'self' 'unsafe-inline'", // emotion/styled-jsx needs inline styles
+      "style-src 'self' 'unsafe-inline'", // styled-jsx needs inline styles
       "img-src 'self' data: blob: https://s1.xrpl.to https://xrpl.to https://ipfs.io/ipfs/ https://content-api.changenow.io",
       "font-src 'self' data:",
       "connect-src 'self' https://api.xrpl.to https://dev.xrpl.to https://xrpl.to wss://api.xrpl.to wss://dev.xrpl.to wss://xrplcluster.com wss://s1.ripple.com wss://xrpl.ws https://cloudflareinsights.com",
@@ -294,8 +291,7 @@ const config = {
       '@reduxjs/toolkit',
       'axios',
       'xrpl',
-      'lightweight-charts',
-      'swiper'
+      'lightweight-charts'
     ]
   },
   turbopack: {
@@ -402,14 +398,6 @@ const config = {
                 chunks: 'async',
                 enforce: true
               },
-              // Swiper - lazy load
-              swiper: {
-                test: /[\\/]node_modules[\\/]swiper[\\/]/,
-                name: 'swiper',
-                priority: 26,
-                chunks: 'async',
-                enforce: true
-              },
               // Date utilities
               dateUtils: {
                 test: /[\\/]node_modules[\\/]date-fns[\\/]/,
@@ -419,7 +407,7 @@ const config = {
               },
               // Crypto and auth - lazy load
               crypto: {
-                test: /[\\/]node_modules[\\/](crypto-js|@simplewebauthn|scrypt-js)[\\/]/,
+                test: /[\\/]node_modules[\\/](crypto-js)[\\/]/,
                 name: 'crypto',
                 priority: 24,
                 chunks: 'async',

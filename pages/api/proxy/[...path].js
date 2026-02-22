@@ -20,7 +20,7 @@ const ALLOWED_PATH_PREFIXES = [
   'v1/keys/stripe/', 'v1/keys/purchase', 'v1/keys/verify-payment',
   'v1/user/',
   'v1/testnet/', 'v1/faucet', 'v1/boost/', 'v1/embed/', 'v1/spin/',
-  'v1/banxa/', 'v1/dex/',
+  'v1/banxa/', 'v1/dex/', 'v1/tweet/',
   'api/account/', 'api/traders/', 'api/history', 'api/lp-positions/',
   'api/amm', 'api/dex/', 'api/nft/', 'api/user/', 'api/trustlines/',
   'api/watchlist/', 'api/promotion/', 'api/chat/', 'api/tweet/',

@@ -1,6 +1,5 @@
 import { apiFetch, getWalletAuthHeaders } from 'src/utils/api';
 import Decimal from 'decimal.js-light';
-import PropTypes from 'prop-types';
 import { useState, useEffect, useContext, useRef, useMemo, useCallback, memo } from 'react';
 import { createPortal } from 'react-dom';
 import { useRouter } from 'next/router';
@@ -347,7 +346,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
       const fetches = [fetch(url, { signal }).then((r) => r.json())];
       if (filter === 'all') {
         fetches.push(
-          apiFetch(`https://api.xrpl.to/v1/tx/${creator}?limit=12`, { signal }).then((r) => r.json())
+          apiFetch(`https://api.xrpl.to/v1/account/tx/${creator}?limit=12`, { signal }).then((r) => r.json())
         );
       }
 
@@ -359,11 +358,11 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
         setHasWarning(data.signals?.length > 0 || data.warning || false);
         setSignals(data.signals || []);
         setCreatorStats(data.stats || null);
-      } else if (filter === 'all' && txData?.success && txData?.transactions) {
+      } else if (filter === 'all' && txData?.success && txData?.txs) {
         // Use pre-fetched tx fallback
         setNoTokenActivity(true);
-        const mapped = txData.transactions.map((t) => {
-          const tx = t.tx_json || t.tx || {};
+        const mapped = txData.txs.map((t) => {
+          const tx = t.tx_json || t.tx || t;
           const meta = t.meta || {};
           const amt = meta.delivered_amount || meta.DeliveredAmount || tx.Amount;
           const isXrp = typeof amt === 'string';
@@ -2184,10 +2183,6 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
     </>
   );
 }
-
-PriceStatistics.propTypes = {
-  token: PropTypes.object.isRequired
-};
 
 // Helper function to normalize tags for URL slugs
 function normalizeTag(tag) {

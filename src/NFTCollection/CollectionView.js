@@ -12,7 +12,6 @@ import { alpha } from 'src/utils/formatters';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import PropTypes from 'prop-types';
 
 // Lucide Icons
 import {
@@ -193,20 +192,6 @@ function Label({ color = 'default', variant = 'ghost', children, className = '' 
     </span>
   );
 }
-
-Label.propTypes = {
-  children: PropTypes.node,
-  color: PropTypes.oneOf([
-    'default',
-    'primary',
-    'secondary',
-    'info',
-    'success',
-    'warning',
-    'error'
-  ]),
-  variant: PropTypes.oneOf(['filled', 'outlined', 'ghost'])
-};
 
 // AttributeFilter Component - Compact horizontal layout
 function AttributeFilter({ attrs, setFilterAttrs, activeFilters = [] }) {

@@ -1,5 +1,5 @@
 import Head from 'next/head';
-import React, { memo, useMemo, lazy, Suspense, Component } from 'react';
+import React, { useCallback, useMemo, lazy, Suspense, Component } from 'react';
 import { useRouter } from 'next/router';
 import ThemeProvider from 'src/theme/ThemeProvider';
 import { ContextProvider, ThemeContext, WalletContext } from 'src/context/AppContext';
@@ -173,7 +173,7 @@ function AppProgressBar({ router }) {
 
 // Inline PageLayout component
 function AppPageLayout({ children }) {
-  const { accountProfile, open } = useContext(WalletContext);
+  const { accountProfile } = useContext(WalletContext);
   const router = useRouter();
 
   // Check if we're on the API docs page
@@ -229,7 +229,8 @@ function XRPLToApp({ Component, pageProps, router }) {
 
   // Sonner toast wrapper for backward compatibility
   // Uses message as ID to prevent duplicate toasts
-  const openSnackbar = async (msg, variant) => {
+  // Stable ref — passed as prop to ContextProvider, must not trigger re-renders
+  const openSnackbar = useCallback(async (msg, variant) => {
     const { toast } = await import('sonner');
     const id = msg;
     switch (variant) {
@@ -247,7 +248,7 @@ function XRPLToApp({ Component, pageProps, router }) {
         toast.info(msg, { id });
         break;
     }
-  };
+  }, []);
 
   // Defer non-critical components until after hydration + idle
   const deferredReady = useDeferredMount();
@@ -414,5 +415,4 @@ export function reportWebVitals(metric) {
   }
 }
 
-// Memoize the component to prevent unnecessary re-renders
-export default memo(XRPLToApp);
+export default XRPLToApp;

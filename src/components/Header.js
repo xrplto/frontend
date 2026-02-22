@@ -236,7 +236,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
   const router = useRouter();
   const isProcessing = useSelector(selectProcess);
   const metrics = useSelector(selectMetrics);
-  const { darkMode, setDarkMode, themeName, setTheme } = useContext(ThemeContext);
+  const { darkMode, themeName, setTheme } = useContext(ThemeContext);
   const { accountProfile, accountBalance, setOpenWalletModal, setPendingWalletAuth, profiles } = useContext(WalletContext);
   const { activeFiatCurrency, toggleFiatCurrency } = useContext(AppContext);
   const accountLogin = accountProfile?.account;

@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import api from 'src/utils/api';
 import Decimal from 'decimal.js-light';
-import PropTypes from 'prop-types';
 import dynamic from 'next/dynamic';
 // import { ColorExtractor } from 'react-color-extractor';
 // Native window size hook
@@ -63,12 +62,6 @@ function LinearProgressWithLabel({ value, progressColor, isDark }) {
     </div>
   );
 }
-
-LinearProgressWithLabel.propTypes = {
-  value: PropTypes.number.isRequired,
-  progressColor: PropTypes.string,
-  isDark: PropTypes.bool
-};
 
 export default function SpinNFT({ collection, setView }) {
   const BASE_URL = 'https://api.xrpl.to/v1';

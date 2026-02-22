@@ -62,9 +62,10 @@ const stripSeed = (profile) => {
 };
 const stripSeedArray = (profiles) => profiles.map(stripSeed);
 
+const BASE_URL = 'https://api.xrpl.to/v1';
+
 function ContextProviderInner({ children, data, openSnackbar }) {
   const dispatch = useDispatch();
-  const BASE_URL = 'https://api.xrpl.to/v1';
 
   // Define constants first before using them
   const KEY_ACCOUNT_PROFILE = 'account_profile';
@@ -151,26 +152,6 @@ function ContextProviderInner({ children, data, openSnackbar }) {
     window.localStorage.setItem('appFiatCurrency', newValue);
     setActiveFiatCurrency(newValue);
   };
-
-  useEffect(() => {
-    const savedThemeName = window.localStorage.getItem('appThemeName');
-    const isDarkMode = window.localStorage.getItem('appTheme');
-    // fiatCurrency already initialized synchronously from localStorage in useState
-    if (!window.localStorage.getItem('appFiatCurrency')) {
-      window.localStorage.setItem('appFiatCurrency', 'XRP');
-    }
-
-    // Load the theme
-    if (savedThemeName) {
-      setThemeName(savedThemeName);
-      setDarkMode(savedThemeName === 'XrplToDarkTheme');
-    } else if (isDarkMode !== null) {
-      // Backward compatibility: convert boolean to theme name
-      const theme = isDarkMode === 'false' ? 'XrplToLightTheme' : 'XrplToDarkTheme';
-      setThemeName(theme);
-      setDarkMode(isDarkMode !== 'false');
-    }
-  }, []);
 
   useEffect(() => {
     // Listen for device login messages from popup
@@ -487,7 +468,7 @@ function ContextProviderInner({ children, data, openSnackbar }) {
         ws.close();
       }
     };
-  }, [accountProfile?.account, sync]);
+  }, [accountProfile?.account]);
 
   // Fetch watchlist
   const accountAddress = accountProfile?.account;
@@ -508,7 +489,7 @@ function ContextProviderInner({ children, data, openSnackbar }) {
         .catch((err) => {});
     };
     getWatchList();
-  }, [accountAddress, sync, BASE_URL]);
+  }, [accountAddress, sync]);
 
   const updateWatchList = async (md5) => {
     const account = accountProfile?.account;
@@ -519,13 +500,13 @@ function ContextProviderInner({ children, data, openSnackbar }) {
       return false;
     }
 
-    const newWatchList = watchList.includes(md5)
+    const action = watchList.includes(md5) ? 'remove' : 'add';
+    const newWatchList = action === 'remove'
       ? watchList.filter((item) => item !== md5)
       : [...watchList, md5];
     setWatchList(newWatchList);
 
     try {
-      const action = watchList.includes(md5) ? 'remove' : 'add';
       const body = { md5, account, action };
 
       const res = await api.post(`${BASE_URL}/watchlist`, body);
@@ -552,7 +533,6 @@ function ContextProviderInner({ children, data, openSnackbar }) {
     () => ({
       toggleTheme,
       darkMode,
-      setDarkMode,
       themeName,
       setTheme
     }),
@@ -636,7 +616,7 @@ function ContextProviderInner({ children, data, openSnackbar }) {
 }
 
 export function ContextProvider({ children, data, openSnackbar }) {
-  const [store, setStore] = useState(() => configureRedux(data));
+  const store = useMemo(() => configureRedux(data), []);
 
   return (
     <Provider store={store}>
