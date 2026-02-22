@@ -2,8 +2,6 @@ import Head from 'next/head';
 import React, { memo, useMemo, lazy, Suspense, Component } from 'react';
 import { useRouter } from 'next/router';
 import ThemeProvider from 'src/theme/ThemeProvider';
-import { CacheProvider } from '@emotion/react';
-import createEmotionCache from 'src/theme/createEmotionCache';
 import { ContextProvider, ThemeContext, WalletContext } from 'src/context/AppContext';
 import { useContext, useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
@@ -100,7 +98,6 @@ const jsonLdSchema = [
   }
 ];
 
-const clientSideEmotionCache = createEmotionCache();
 
 // Inline ProgressBar component
 function AppProgressBar({ router }) {
@@ -226,7 +223,7 @@ const ThemedToaster = dynamic(
 );
 
 
-function XRPLToApp({ Component, pageProps, router, emotionCache = clientSideEmotionCache }) {
+function XRPLToApp({ Component, pageProps, router }) {
   // Treat MAINTENANCE env as boolean string ("true"/"false")
   const isUnderMaintenance = process.env.MAINTENANCE === 'true';
 
@@ -275,7 +272,6 @@ function XRPLToApp({ Component, pageProps, router, emotionCache = clientSideEmot
   }
 
   return (
-    <CacheProvider value={emotionCache}>
       <div className={inter.variable}>
         <style jsx global>{`
           body {
@@ -378,7 +374,6 @@ function XRPLToApp({ Component, pageProps, router, emotionCache = clientSideEmot
           </ContextProvider>
         </AppErrorBoundary>
       </div>
-    </CacheProvider>
   );
 }
 

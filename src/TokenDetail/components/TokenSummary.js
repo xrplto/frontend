@@ -206,7 +206,7 @@ const TokenSummary = memo(({ token }) => {
       setOpenWalletModal(true);
       return;
     }
-    if (accountProfile.wallet_type !== 'device' && accountProfile.wallet_type !== 'oauth') {
+    if (accountProfile.wallet_type !== 'device') {
       toast.error('Unsupported wallet type');
       return;
     }

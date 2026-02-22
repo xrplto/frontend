@@ -295,8 +295,6 @@ const config = {
       'axios',
       'xrpl',
       'lightweight-charts',
-      '@emotion/react',
-      '@emotion/styled',
       'swiper'
     ]
   },
@@ -380,13 +378,6 @@ const config = {
                 priority: 35,
                 chunks: 'async',
                 enforce: true
-              },
-              // Emotion styling
-              emotion: {
-                test: /[\\/]node_modules[\\/]@emotion[\\/]/,
-                name: 'emotion',
-                priority: 32,
-                chunks: 'all'
               },
               // Redux and state management
               redux: {

@@ -219,25 +219,14 @@ export default function NFTActions({ nft }) {
   const getWalletSeed = async () => {
     if (!accountProfile) return null;
     let seed = null;
-    if (accountProfile.wallet_type === 'oauth' || accountProfile.wallet_type === 'social') {
-      const { EncryptedWalletStorage } = await import('src/utils/encryptedWalletStorage');
-      const walletStorage = new EncryptedWalletStorage();
-      const walletId = `${accountProfile.provider}_${accountProfile.provider_id}`;
-      const storedPassword = await walletStorage.getSecureItem(`wallet_pwd_${walletId}`);
+    const { EncryptedWalletStorage, deviceFingerprint } = await import('src/utils/encryptedWalletStorage');
+    const walletStorage = new EncryptedWalletStorage();
+    const deviceKeyId = await deviceFingerprint.getDeviceId();
+    if (deviceKeyId) {
+      const storedPassword = await walletStorage.getWalletCredential(deviceKeyId);
       if (storedPassword) {
         const walletData = await walletStorage.getWallet(accountProfile.account, storedPassword);
         seed = walletData?.seed;
-      }
-    } else if (accountProfile.wallet_type === 'device') {
-      const { EncryptedWalletStorage, deviceFingerprint } = await import('src/utils/encryptedWalletStorage');
-      const walletStorage = new EncryptedWalletStorage();
-      const deviceKeyId = await deviceFingerprint.getDeviceId();
-      if (deviceKeyId) {
-        const storedPassword = await walletStorage.getWalletCredential(deviceKeyId);
-        if (storedPassword) {
-          const walletData = await walletStorage.getWallet(accountProfile.account, storedPassword);
-          seed = walletData?.seed;
-        }
       }
     }
     return seed;
@@ -642,25 +631,14 @@ export default function NFTActions({ nft }) {
 
     try {
       let seed = null;
-      if (accountProfile.wallet_type === 'oauth' || accountProfile.wallet_type === 'social') {
-        const { EncryptedWalletStorage } = await import('src/utils/encryptedWalletStorage');
-        const walletStorage = new EncryptedWalletStorage();
-        const walletId = `${accountProfile.provider}_${accountProfile.provider_id}`;
-        const storedPassword = await walletStorage.getSecureItem(`wallet_pwd_${walletId}`);
+      const { EncryptedWalletStorage, deviceFingerprint } = await import('src/utils/encryptedWalletStorage');
+      const walletStorage = new EncryptedWalletStorage();
+      const deviceKeyId = await deviceFingerprint.getDeviceId();
+      if (deviceKeyId) {
+        const storedPassword = await walletStorage.getWalletCredential(deviceKeyId);
         if (storedPassword) {
           const walletData = await walletStorage.getWallet(accountProfile.account, storedPassword);
           seed = walletData?.seed;
-        }
-      } else if (accountProfile.wallet_type === 'device') {
-        const { EncryptedWalletStorage, deviceFingerprint } = await import('src/utils/encryptedWalletStorage');
-        const walletStorage = new EncryptedWalletStorage();
-        const deviceKeyId = await deviceFingerprint.getDeviceId();
-        if (deviceKeyId) {
-          const storedPassword = await walletStorage.getWalletCredential(deviceKeyId);
-          if (storedPassword) {
-            const walletData = await walletStorage.getWallet(accountProfile.account, storedPassword);
-            seed = walletData?.seed;
-          }
         }
       }
 

@@ -29,7 +29,7 @@ function formatDecimal(decimal, decimalPlaces = null) {
   return parts.join('.');
 }
 
-// Minimal MUI shims for legacy compatibility
+// Lightweight UI shims (Tailwind-based)
 const alpha = (color, opacity) => {
   if (!color) return `rgba(0,0,0,${opacity})`;
   if (color.startsWith('#')) {
@@ -101,16 +101,6 @@ const Typography = ({ children, variant, component: C, sx, ...p }) => {
     </Tag>
   );
 };
-const Card = ({ children, sx, ...p }) => (
-  <div className="rounded-xl" style={sx2style(sx)} {...p}>
-    {children}
-  </div>
-);
-const CardContent = ({ children, sx, ...p }) => (
-  <div className="p-4" style={sx2style(sx)} {...p}>
-    {children}
-  </div>
-);
 const Chip = ({ label, sx, ...p }) => (
   <span
     className="inline-flex items-center rounded-full px-2 py-0.5 text-[12px]"
@@ -192,17 +182,6 @@ const Tooltip = ({ children, title, onOpen, ...p }) => {
     </span>
   );
 };
-const IconButton = ({ children, onClick, sx, ...p }) => (
-  <button
-    type="button"
-    className="bg-transparent border-none cursor-pointer p-2 rounded-full inline-flex"
-    style={sx2style(sx)}
-    onClick={onClick}
-    {...p}
-  >
-    {children}
-  </button>
-);
 const Divider = ({ sx, ...p }) => (
   <hr
     className="border-none border-t border-gray-500/20 my-2"
@@ -210,10 +189,6 @@ const Divider = ({ sx, ...p }) => (
     {...p}
   />
 );
-const FileCopyOutlinedIcon = ({ sx }) => <Copy size={sx?.fontSize ? parseInt(sx.fontSize) : 16} />;
-const SwapHorizIcon = () => <ArrowLeftRight size={18} />;
-const TrendingUpIcon = () => <TrendingUp size={18} />;
-const AccountBalanceWalletIcon = () => <Wallet size={18} />;
 const Grid = ({ children, container, spacing = 0, size, sx, ...p }) => {
   if (container)
     return (
@@ -797,16 +772,6 @@ const TokenLinkWithTooltip = ({ slug, currency, rawCurrency, md5, variant = 'bod
       onOpen={handleFetchTokenInfo}
       placement="top"
       arrow
-      PopperProps={{
-        sx: {
-          '& .MuiTooltip-tooltip': {
-            bgcolor: 'background.paper',
-            color: 'text.primary',
-            border: `1px solid ${theme.palette.divider}`,
-            maxWidth: 'none'
-          }
-        }
-      }}
     >
       <Box sx={{ cursor: 'pointer', display: 'inline-flex' }}>{link}</Box>
     </Tooltip>
@@ -876,16 +841,6 @@ const XrpDisplay = ({ variant = 'body2', showText = true }) => {
       onOpen={handleFetchXrpInfo}
       placement="top"
       arrow
-      PopperProps={{
-        sx: {
-          '& .MuiTooltip-tooltip': {
-            bgcolor: 'background.paper',
-            color: 'text.primary',
-            border: `1px solid ${theme.palette.divider}`,
-            maxWidth: 'none'
-          }
-        }
-      }}
     >
       <Box sx={{ cursor: 'pointer', display: 'inline-flex' }}>{xrpElement}</Box>
     </Tooltip>
@@ -937,16 +892,6 @@ const AmountDisplay = ({ amount, variant = 'body1' }) => {
         onOpen={handleFetchXrpInfo}
         placement="top"
         arrow
-        PopperProps={{
-          sx: {
-            '& .MuiTooltip-tooltip': {
-              bgcolor: 'background.paper',
-              color: 'text.primary',
-              border: `1px solid ${theme.palette.divider}`,
-              maxWidth: 'none'
-            }
-          }
-        }}
       >
         <Box sx={{ cursor: 'pointer', display: 'inline-flex' }}>{xrpElement}</Box>
       </Tooltip>
@@ -979,16 +924,6 @@ const AmountDisplay = ({ amount, variant = 'body1' }) => {
           onOpen={handleFetchXrpInfo}
           placement="top"
           arrow
-          PopperProps={{
-            sx: {
-              '& .MuiTooltip-tooltip': {
-                bgcolor: 'background.paper',
-                color: 'text.primary',
-                border: `1px solid ${theme.palette.divider}`,
-                maxWidth: 'none'
-              }
-            }
-          }}
         >
           <Box sx={{ cursor: 'pointer', display: 'inline-flex' }}>{xrpElement}</Box>
         </Tooltip>
@@ -4827,22 +4762,6 @@ const TxPage = ({ txData, error }) => {
       </Head>
       <Header />
       <div className={cn('flex-1 max-w-[1920px] mx-auto w-full px-2 sm:px-4 mt-4 overflow-hidden')}>
-        {/* NOTE: This file contains extensive MUI components that need manual migration to Tailwind.
-            The imports have been updated, but the component JSX still uses many MUI components like:
-            Box, Typography, Paper, Card, CardContent, Stack, Grid, Chip, Avatar, Tooltip, etc.
-            This is a very large and complex file (4000+ lines) with many sub-components.
-
-            Key areas to migrate:
-            - Replace all Box with div + Tailwind classes
-            - Replace Typography with appropriate HTML tags (h1-h6, p, span) + text-* classes
-            - Replace Card/Paper with div + rounded-xl + border-[1.5px] styling
-            - Replace MUI icons with Lucide React icons (already imported)
-            - Replace alpha() color function calls with Tailwind opacity classes (e.g., text-white/60)
-            - Replace theme.palette references with isDark conditional classes
-            - Sub-components like JsonViewer, DetailRow, TokenTooltipContent, etc. all need migration
-
-            See pages/nft-traders.js for a complete migration example.
-        */}
         <div className="mb-4 sm:mb-8">
           <h1 className="text-2xl sm:text-3xl font-normal mb-2">Transaction Details</h1>
         </div>

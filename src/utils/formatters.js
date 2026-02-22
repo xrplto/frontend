@@ -8,8 +8,6 @@ const getHashicon = () => {
   }
   return _hashicon;
 };
-import { useContext } from 'react';
-import { ThemeContext } from 'src/context/AppContext';
 
 // ==== THEME COMPATIBILITY ====
 
@@ -30,32 +28,6 @@ export function alpha(color, opacity) {
   return color;
 }
 
-// MUI-compatible useTheme hook for legacy code
-export function useTheme() {
-  const { themeName } = useContext(ThemeContext);
-  const isDark = themeName === 'XrplToDarkTheme';
-
-  return {
-    palette: {
-      mode: isDark ? 'dark' : 'light',
-      primary: { main: '#4285f4', light: '#6ba3f7', dark: '#2d5bb7' },
-      secondary: { main: '#8B92A8' },
-      success: { main: '#10b981' },
-      warning: { main: '#f59e0b' },
-      error: { main: '#ef4444' },
-      info: { main: '#3b82f6' },
-      text: {
-        primary: isDark ? '#ffffff' : '#000000',
-        secondary: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)'
-      },
-      background: {
-        default: isDark ? '#000000' : '#ffffff',
-        paper: isDark ? '#111111' : '#ffffff'
-      },
-      divider: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'
-    }
-  };
-}
 
 // ==== NUMBER FORMATTING ====
 

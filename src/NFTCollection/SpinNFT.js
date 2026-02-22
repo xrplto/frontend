@@ -443,8 +443,6 @@ export default function SpinNFT({ collection, setView }) {
         </div>
       </div>
 
-      {/* <Stack sx={{mt:5, minHeight: '20vh'}}>
-            </Stack> */}
     </>
   );
 }

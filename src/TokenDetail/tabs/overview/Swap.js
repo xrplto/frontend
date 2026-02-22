@@ -1,5 +1,4 @@
 import React, { useContext, useEffect, useMemo, useState, useRef } from 'react';
-import { keyframes, css } from '@emotion/react';
 import { ArrowUpDown, RefreshCw, EyeOff, X, ChevronDown, ChevronUp, Settings, CheckCircle, AlertTriangle } from 'lucide-react';
 import { AppContext, WalletContext, ThemeContext } from 'src/context/AppContext';
 import { cn } from 'src/utils/cn';
@@ -52,22 +51,7 @@ const formatCompactPrice = (price) => {
 import { configureMemos } from 'src/utils/parseUtils';
 import Image from 'next/image';
 import { PuffLoader } from '../../../components/Spinners';
-import { alpha } from 'src/utils/formatters';
 
-const pulse = keyframes`
-  0% {
-    transform: scale(0.95);
-    opacity: 1;
-  }
-  70% {
-    transform: scale(1);
-    opacity: 0.7;
-  }
-  100% {
-    transform: scale(0.95);
-    opacity: 1;
-  }
-`;
 
 
 const CurrencyContent = ({ isDark, className, children, ...p }) => (
@@ -2846,13 +2830,6 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
             <div className="mt-2">
               <ConnectWallet
                 text="Connect Wallet"
-                py={{ xs: 1, sm: 0.75 }}
-                fontSize={{ xs: '12px', sm: '12px' }}
-                sx={{
-                  borderRadius: '8px',
-                  fontWeight: 400,
-                  width: '100%'
-                }}
               />
             </div>
           )}

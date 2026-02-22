@@ -32,8 +32,6 @@ import {
   Info,
   Check,
   AlertTriangle,
-  Send,
-  History,
   ArrowUpRight,
   ArrowDownLeft,
   ArrowLeftRight,
@@ -42,7 +40,6 @@ import {
   RefreshCw,
   ChevronRight,
   Camera,
-  SwitchCamera,
   WifiOff,
   LogOut,
   Wallet2
@@ -58,7 +55,6 @@ import { ThemeContext, WalletContext, WalletUIContext, AppContext } from 'src/co
 import { getHashIcon } from 'src/utils/formatters';
 import { EncryptedWalletStorage, securityUtils, deviceFingerprint } from 'src/utils/encryptedWalletStorage';
 import { cn } from 'src/utils/cn';
-import { alpha } from 'src/utils/formatters';
 import dynamic from 'next/dynamic';
 const QRCode = dynamic(() => import('react-qr-code'), { ssr: false });
 
@@ -83,21 +79,12 @@ const validateSeed = (seed) => {
 };
 const getAlgorithmFromSeed = (seed) => (seed.startsWith('sEd') ? 'ed25519' : 'secp256k1');
 
-// Note: WebAuthn/passkey code fully removed — all wallet auth is password-based now
-
-// const pair = {
-//   '534F4C4F00000000000000000000000000000000': 'SOLO',
-//   XRP: 'XRP'
-// };
-
-// Removed PinField component - now using password for all authentication methods
-
 // ============================================
-// MUI Replacement Components (Tailwind-based)
+// UI Components (Tailwind-based)
 // ============================================
 
 // Dialog component - Enhanced with smooth animations and mobile support
-const Dialog = ({ open, onClose, children, maxWidth, fullWidth, sx, ...props }) => {
+const Dialog = ({ open, onClose, children, ...props }) => {
   const { themeName } = useContext(ThemeContext);
   const isDark = themeName === 'XrplToDarkTheme';
   const [isVisible, setIsVisible] = useState(false);
@@ -185,7 +172,6 @@ const Dialog = ({ open, onClose, children, maxWidth, fullWidth, sx, ...props }) 
             : '-translate-y-2 opacity-0 scale-[0.98]'
         )}
         onClick={(e) => e.stopPropagation()}
-        style={sx?.['& .MuiDialog-paper'] || {}}
       >
         {children}
       </div>
@@ -210,337 +196,6 @@ const StyledPopoverPaper = ({ children, isDark, isMobile }) => (
     {children}
   </div>
 );
-
-// Box component
-const Box = ({ children, component, sx, onClick, className, ...props }) => {
-  const Component = component || 'div';
-  const style = sx ? convertSxToStyle(sx) : {};
-  return (
-    <Component style={style} onClick={onClick} className={className} {...props}>
-      {children}
-    </Component>
-  );
-};
-
-// Stack component
-const Stack = ({
-  children,
-  direction = 'column',
-  spacing = 0,
-  alignItems,
-  justifyContent,
-  sx,
-  ...props
-}) => {
-  const style = {
-    display: 'flex',
-    flexDirection: direction === 'row' ? 'row' : 'column',
-    gap: spacing * 8,
-    alignItems,
-    justifyContent,
-    ...convertSxToStyle(sx || {})
-  };
-  return (
-    <div style={style} {...props}>
-      {children}
-    </div>
-  );
-};
-
-// Typography component
-const Typography = ({ children, variant, sx, onClick, ...props }) => {
-  const style = convertSxToStyle(sx || {});
-  return (
-    <span style={style} onClick={onClick} {...props}>
-      {children}
-    </span>
-  );
-};
-
-// Button component
-const Button = ({
-  children,
-  variant = 'text',
-  size,
-  fullWidth,
-  disabled,
-  onClick,
-  sx,
-  startIcon,
-  ...props
-}) => {
-  const baseStyle = {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    padding: size === 'small' ? '4px 10px' : '8px 16px',
-    borderRadius: 12,
-    fontSize: 14,
-    fontWeight: 400,
-    cursor: disabled ? 'not-allowed' : 'pointer',
-    width: fullWidth ? '100%' : 'auto',
-    border: variant === 'outlined' ? '1.5px solid rgba(156,163,175,0.3)' : 'none',
-    background: variant === 'contained' ? (disabled ? '#94a3b8' : '#4285f4') : 'transparent',
-    color: variant === 'contained' ? '#fff' : '#4285f4',
-    opacity: disabled && variant !== 'contained' ? 0.5 : 1,
-    ...convertSxToStyle(sx || {})
-  };
-  return (
-    <button style={baseStyle} disabled={disabled} onClick={onClick} {...props}>
-      {startIcon}
-      {children}
-    </button>
-  );
-};
-
-// TextField component
-const TextField = ({
-  label,
-  placeholder,
-  value,
-  onChange,
-  onKeyDown,
-  onKeyPress,
-  type = 'text',
-  fullWidth,
-  disabled,
-  autoFocus,
-  autoComplete,
-  multiline,
-  rows,
-  size,
-  helperText,
-  error,
-  InputProps,
-  inputProps,
-  sx,
-  FormHelperTextProps,
-  isDark = true,
-  ...props
-}) => {
-  const [focused, setFocused] = useState(false);
-  const inputStyle = {
-    width: fullWidth ? '100%' : 'auto',
-    padding: size === 'small' ? '8px 12px' : '12px 14px',
-    fontSize: 16,
-    borderRadius: 12,
-    border: isDark ? '1.5px solid rgba(156,163,175,0.25)' : '1.5px solid rgba(156,163,175,0.4)',
-    background: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(249,250,251,1)',
-    color: isDark ? '#fff' : '#000',
-    outline: 'none',
-    fontFamily: inputProps?.style?.fontFamily || 'inherit',
-    ...convertSxToStyle(sx?.['& .MuiInputBase-input'] || {})
-  };
-  return (
-    <div className={fullWidth ? 'w-full' : 'w-auto'}>
-      {label && (
-        <label className="block mb-1 text-xs opacity-70">
-          {label}
-        </label>
-      )}
-      <div className="relative flex items-center">
-        {multiline ? (
-          <textarea
-            placeholder={placeholder}
-            value={value}
-            onChange={onChange}
-            onKeyDown={onKeyDown}
-            onKeyPress={onKeyPress}
-            disabled={disabled}
-            autoFocus={autoFocus}
-            autoComplete={autoComplete}
-            rows={rows}
-            style={inputStyle}
-            {...inputProps}
-          />
-        ) : (
-          <input
-            type={type}
-            placeholder={placeholder}
-            value={value}
-            onChange={onChange}
-            onKeyDown={onKeyDown}
-            onKeyPress={onKeyPress}
-            disabled={disabled}
-            autoFocus={autoFocus}
-            autoComplete={autoComplete}
-            style={{ ...inputStyle, paddingRight: InputProps?.endAdornment ? 40 : 12 }}
-            {...inputProps}
-          />
-        )}
-        {InputProps?.endAdornment && (
-          <div className="absolute right-2">{InputProps.endAdornment}</div>
-        )}
-      </div>
-      {helperText && (
-        <div className="mt-1 text-[11px] opacity-70" {...FormHelperTextProps}>
-          {helperText}
-        </div>
-      )}
-    </div>
-  );
-};
-
-// Alert component
-const Alert = ({ children, severity = 'info', icon, onClose, sx }) => {
-  const colors = {
-    error: { bg: 'rgba(244,67,54,0.1)', border: '#f44336', icon: <AlertTriangle size={16} /> },
-    warning: { bg: 'rgba(255,152,0,0.1)', border: '#ff9800', icon: <AlertTriangle size={16} /> },
-    info: { bg: 'rgba(33,150,243,0.1)', border: '#2196f3', icon: <Info size={16} /> },
-    success: { bg: 'rgba(76,175,80,0.1)', border: '#4caf50', icon: <Check size={16} /> }
-  };
-  const c = colors[severity];
-  return (
-    <div
-      className="px-4 py-3 rounded-lg flex items-start gap-2 border-l-[3px]"
-      style={{
-        background: c.bg,
-        borderLeftColor: c.border,
-        ...convertSxToStyle(sx || {})
-      }}
-    >
-      {icon !== false && <span className="flex" style={{ color: c.border }}>{icon || c.icon}</span>}
-      <div className="flex-1">{children}</div>
-      {onClose && (
-        <button
-          onClick={onClose}
-          className="bg-transparent border-none cursor-pointer opacity-70"
-        >
-          <XIcon size={14} />
-        </button>
-      )}
-    </div>
-  );
-};
-
-// IconButton component
-const IconButton = ({ children, onClick, size, disabled, edge, sx, ...props }) => (
-  <button
-    onClick={onClick}
-    disabled={disabled}
-    className={cn(
-      'bg-transparent border-none rounded-full flex items-center justify-center',
-      size === 'small' ? 'p-1' : 'p-2',
-      disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer opacity-100'
-    )}
-    style={convertSxToStyle(sx || {})}
-    {...props}
-  >
-    {children}
-  </button>
-);
-
-// InputAdornment component
-const InputAdornment = ({ children, position }) => (
-  <div className="flex items-center">{children}</div>
-);
-
-// FormControlLabel component
-const FormControlLabel = ({ control, label }) => (
-  <label className="flex items-start gap-2 cursor-pointer">
-    {control}
-    {label}
-  </label>
-);
-
-// Checkbox component
-const Checkbox = ({ checked, onChange, size }) => (
-  <input
-    type="checkbox"
-    checked={checked}
-    onChange={onChange}
-    className={cn(
-      'cursor-pointer',
-      size === 'small' ? 'w-3.5 h-3.5' : 'w-[18px] h-[18px]'
-    )}
-  />
-);
-
-// Visibility icons (replacing MUI icons)
-const Visibility = () => <Eye size={18} />;
-const VisibilityOff = () => <EyeOff size={18} />;
-
-// Helper to convert MUI sx prop to inline styles
-const convertSxToStyle = (sx) => {
-  if (!sx) return {};
-  const style = {};
-  Object.entries(sx).forEach(([key, value]) => {
-    if (key.startsWith('&') || key.startsWith('.')) return; // Skip pseudo-selectors
-    if (typeof value === 'number') {
-      // Convert spacing values (multiply by 8)
-      if (
-        [
-          'p',
-          'px',
-          'py',
-          'pt',
-          'pb',
-          'pl',
-          'pr',
-          'm',
-          'mx',
-          'my',
-          'mt',
-          'mb',
-          'ml',
-          'mr',
-          'gap'
-        ].includes(key)
-      ) {
-        const pixels = value * 8;
-        if (key === 'p') {
-          style.padding = pixels;
-        } else if (key === 'px') {
-          style.paddingLeft = pixels;
-          style.paddingRight = pixels;
-        } else if (key === 'py') {
-          style.paddingTop = pixels;
-          style.paddingBottom = pixels;
-        } else if (key === 'pt') {
-          style.paddingTop = pixels;
-        } else if (key === 'pb') {
-          style.paddingBottom = pixels;
-        } else if (key === 'pl') {
-          style.paddingLeft = pixels;
-        } else if (key === 'pr') {
-          style.paddingRight = pixels;
-        } else if (key === 'm') {
-          style.margin = pixels;
-        } else if (key === 'mx') {
-          style.marginLeft = pixels;
-          style.marginRight = pixels;
-        } else if (key === 'my') {
-          style.marginTop = pixels;
-          style.marginBottom = pixels;
-        } else if (key === 'mt') {
-          style.marginTop = pixels;
-        } else if (key === 'mb') {
-          style.marginBottom = pixels;
-        } else if (key === 'ml') {
-          style.marginLeft = pixels;
-        } else if (key === 'mr') {
-          style.marginRight = pixels;
-        } else if (key === 'gap') {
-          style.gap = pixels;
-        }
-      } else {
-        style[key] = value;
-      }
-    } else {
-      style[key] = value;
-    }
-  });
-  return style;
-};
-
-// Converted styled components to regular components with Tailwind
-
-// function truncate(str, n) {
-//   if (!str) return '';
-//   //return (str.length > n) ? str.substr(0, n-1) + '&hellip;' : str;
-//   return str.length > n ? str.substr(0, n - 1) + ' ...' : str;
-// }
 
 function truncateAccount(str, length = 9) {
   if (!str) return '';
@@ -571,7 +226,6 @@ function formatXrpBalance(value, opts = {}) {
 
 // Shared component for consistent wallet content across both modes
 const WalletContent = ({
-  theme,
   isDark,
   accountLogin,
   accountBalance,
@@ -688,13 +342,14 @@ const WalletContent = ({
     }
   };
 
-  // Check unlock status
+  // Check unlock status via device credential
   useEffect(() => {
     const checkUnlock = async () => {
-      if (!accountProfile?.provider || !accountProfile?.provider_id || !walletStorage) return;
+      if (!accountLogin || !walletStorage) return;
       try {
-        const walletId = `${accountProfile.provider}_${accountProfile.provider_id}`;
-        const pwd = await walletStorage.getSecureItem(`wallet_pwd_${walletId}`);
+        const deviceKeyId = await deviceFingerprint.getDeviceId();
+        if (!deviceKeyId) return;
+        const pwd = await walletStorage.getWalletCredential(deviceKeyId);
         if (pwd) {
           const walletData = await walletStorage.getWalletByAddress(accountLogin, pwd);
           if (walletData?.seed) {
@@ -707,7 +362,7 @@ const WalletContent = ({
       }
     };
     checkUnlock();
-  }, [accountProfile, accountLogin, walletStorage]);
+  }, [accountLogin, walletStorage]);
 
 
   const availableBalance = parseFloat(accountBalance?.curr1?.value || '0');
@@ -736,13 +391,7 @@ const WalletContent = ({
 
     try {
       const pwdToUse = isUnlocked && storedPasswordRef.current ? storedPasswordRef.current : sendPassword;
-      let wallet;
-      if (accountProfile?.wallet_type === 'oauth') {
-        const walletId = `${accountProfile.provider}_${accountProfile.provider_id}`;
-        wallet = await walletStorage.findWalletBySocialId(walletId, pwdToUse, accountLogin);
-      } else {
-        wallet = await walletStorage.getWalletByAddress(accountLogin, pwdToUse);
-      }
+      const wallet = await walletStorage.getWalletByAddress(accountLogin, pwdToUse);
 
       if (!wallet?.seed) throw new Error('Incorrect password');
 
@@ -1701,26 +1350,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   // Prevent wallet modal from rendering on auth pages
   const isAuthPage = router.pathname === '/callback' || router.pathname === '/wallet-setup';
 
-  // Create a simple theme object to replace MUI's useTheme
-  const theme = {
-    palette: {
-      divider: isDark ? 'rgba(59,130,246,0.15)' : 'rgba(59,130,246,0.2)',
-      success: { main: '#4caf50' },
-      warning: { main: '#ff9800', dark: '#f57c00' },
-      error: { main: '#f44336' },
-      primary: { main: '#4285f4' },
-      text: {
-        primary: isDark ? '#fff' : '#000',
-        secondary: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)'
-      },
-      background: { default: isDark ? '#000000' : '#fff', paper: isDark ? '#070b12' : '#fff' },
-      action: {
-        hover: isDark ? 'rgba(59,130,246,0.05)' : 'rgba(59,130,246,0.05)',
-        disabled: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.26)'
-      }
-    },
-    spacing: (...args) => args.map((v) => v * 8).join('px ') + 'px'
-  };
   // Translation removed - using hardcoded English text
 
   // Cache avatars from localStorage once (avoid JSON.parse in render)
@@ -1766,12 +1395,15 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     } catch {}
     return {};
   });
-  const [isCheckingActivation, setIsCheckingActivation] = useState(false);
   const [showSeedDialog, setShowSeedDialog] = useState(false);
   const [walletPage, setWalletPage] = useState(0);
   const walletsPerPage = 5;
   const [seedAuthStatus, setSeedAuthStatus] = useState('idle');
-  const [displaySeed, setDisplaySeed] = useState('');
+  // Security: backup seed stored in ref (not state) to avoid React DevTools exposure
+  const displaySeedRef = useRef('');
+  const [displaySeedFlag, setDisplaySeedFlag] = useState(false);
+  const setDisplaySeed = useCallback((val) => { displaySeedRef.current = val; setDisplaySeedFlag(!!val); }, []);
+  const displaySeed = displaySeedRef.current;
   const [seedPassword, setSeedPassword] = useState('');
   const [showSeedPassword, setShowSeedPassword] = useState(false);
   const [seedWarningAgreed, setSeedWarningAgreed] = useState(false);
@@ -1783,7 +1415,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   // Auto-clear seed from memory after 30s, on tab switch, and on unmount
   const [seedCountdown, setSeedCountdown] = useState(0);
   useEffect(() => {
-    if (!displaySeed) { setSeedCountdown(0); return; }
+    if (!displaySeedFlag) { setSeedCountdown(0); return; }
     setSeedCountdown(30);
     const tick = setInterval(() => {
       setSeedCountdown((c) => {
@@ -1795,8 +1427,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     const onVisChange = () => { if (document.hidden) setDisplaySeed(''); };
     document.addEventListener('visibilitychange', onVisChange);
     return () => { clearInterval(tick); document.removeEventListener('visibilitychange', onVisChange); };
-  }, [displaySeed]);
-  useEffect(() => () => setDisplaySeed(''), []);
+  }, [displaySeedFlag, setDisplaySeed]);
+  useEffect(() => () => setDisplaySeed(''), [setDisplaySeed]);
   const [showNewAccountFlow, setShowNewAccountFlow] = useState(false);
   const [newAccountPassword, setNewAccountPassword] = useState('');
   const [showNewAccountPassword, setShowNewAccountPassword] = useState(false);
@@ -2104,7 +1736,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     }
 
     // Audit (Temple/Thanos): rate-limit seed reveal to prevent brute force
-    const rateCheck = securityUtils.rateLimiter.check('seed_reveal');
+    const rateCheck = await securityUtils.rateLimiter.check('seed_reveal');
     if (!rateCheck.allowed) {
       openSnackbar(rateCheck.error, 'error');
       return;
@@ -2112,24 +1744,13 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
     try {
       let wallet;
-
-      // OAuth wallets are stored differently - use OAuth ID lookup
-      if (profile.wallet_type === 'oauth' || profile.wallet_type === 'social') {
-        const walletId = `${profile.provider}_${profile.provider_id}`;
-        wallet = await walletStorage.findWalletBySocialId(walletId, seedPassword);
-      } else if (profile.wallet_type === 'device') {
-        // Device wallets - try multiple retrieval methods
-        try {
-          // First try getting by address directly
-          wallet = await walletStorage.getWallet(profile.address, seedPassword);
-        } catch (e) {
-          // If that fails, try getting all wallets
-          const wallets = await walletStorage.getAllWallets(seedPassword);
-          wallet = wallets.find((w) => w.address === profile.address);
-        }
-      } else {
-        // Other wallets use address lookup
+      try {
+        // First try getting by address directly
         wallet = await walletStorage.getWallet(profile.address, seedPassword);
+      } catch (e) {
+        // If that fails, try getting all wallets
+        const wallets = await walletStorage.getAllWallets(seedPassword);
+        wallet = wallets.find((w) => w.address === profile.address);
       }
 
       if (wallet && wallet.seed) {
@@ -2155,7 +1776,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     }
   };
 
-  // OAuth provider functions (handleImportSeed, handleImportWallet) removed — dead code
+  // Legacy OAuth functions removed — only device wallets supported
 
   const { darkMode } = useContext(ThemeContext);
   const {
@@ -2240,7 +1861,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     }
 
     // Audit (Temple/Thanos): rate-limit unlock attempts to prevent brute force
-    const rateCheck = securityUtils.rateLimiter.check('wallet_unlock');
+    const rateCheck = await securityUtils.rateLimiter.check('wallet_unlock');
     if (!rateCheck.allowed) {
       setUnlockError(rateCheck.error);
       return;
@@ -2258,16 +1879,12 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         return;
       }
 
-      // Get device fingerprint ID for device wallets (survives storage clearing)
-      const hasDeviceWallets = wallets.some((w) => w.wallet_type === 'device');
-      let deviceKeyId = null;
-      if (hasDeviceWallets) {
-        const { deviceFingerprint } = await import('src/utils/encryptedWalletStorage');
-        deviceKeyId = await deviceFingerprint.getDeviceId();
-      }
+      // Get device fingerprint ID (survives storage clearing)
+      const { deviceFingerprint: df } = await import('src/utils/encryptedWalletStorage');
+      const deviceKeyId = await df.getDeviceId();
 
-      // Store password for auto-retrieval on device wallets
-      if (hasDeviceWallets && deviceKeyId) {
+      // Store password for auto-retrieval
+      if (deviceKeyId) {
         await walletStorage.storeWalletCredential(deviceKeyId, unlockPassword);
       }
 
@@ -2276,11 +1893,9 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         account: w.address,
         address: w.address,
         publicKey: w.publicKey,
-        wallet_type: w.wallet_type || 'oauth',
-        provider: w.provider,
-        provider_id: w.provider_id,
-        deviceKeyId: w.wallet_type === 'device' ? w.deviceKeyId || deviceKeyId : w.deviceKeyId,
-        walletKeyId: w.walletKeyId || (w.wallet_type === 'device' ? w.deviceKeyId || deviceKeyId : null),
+        wallet_type: 'device',
+        deviceKeyId: w.deviceKeyId || deviceKeyId,
+        walletKeyId: w.walletKeyId || w.deviceKeyId || deviceKeyId,
         accountIndex: w.accountIndex ?? index,
         createdAt: w.createdAt || Date.now(),
         tokenCreatedAt: Date.now()
@@ -2442,12 +2057,13 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       const deviceKeyId = await deviceFingerprint.getDeviceId();
       await walletStorage.storeWalletCredential(deviceKeyId, createPassword);
 
-      // Create profile for localStorage
+      // Create profile for localStorage (wallet_type: 'device' enables auto-unlock)
       const newProfile = {
         account: imported.address,
         address: imported.address,
         publicKey: imported.publicKey,
-        wallet_type: 'imported',
+        wallet_type: 'device',
+        deviceKeyId: deviceKeyId,
         importedAt: Date.now(),
         importedVia: 'qr_sync'
       };
@@ -3152,11 +2768,13 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       if (currentProfiles.find((p) => p.account === imported.address)) {
         openSnackbar('Wallet already exists', 'warning');
       } else {
+        const dkId = await deviceFingerprint.getDeviceId();
         currentProfiles.push({
           account: imported.address,
           address: imported.address,
           publicKey: imported.publicKey,
-          wallet_type: 'imported',
+          wallet_type: 'device',
+          deviceKeyId: dkId,
           importedAt: Date.now(),
           importedVia: 'qr_sync'
         });
@@ -3296,12 +2914,15 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       localStorage.removeItem('authMethod');
       localStorage.removeItem('user');
       localStorage.removeItem('device_key_id');
+      localStorage.removeItem('__user_avatars__');
+      localStorage.removeItem('accountsActivation');
+      localStorage.removeItem('referral_code');
 
       // Clear all backup flags, encrypted items, and rate limiter state
       const keysToRemove = [];
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
-        if (key && (key.startsWith('wallet_') || key.startsWith('jwt') || key.endsWith('_enc') || key.startsWith('rl_'))) {
+        if (key && (key.startsWith('wallet_') || key.startsWith('jwt') || key.endsWith('_enc') || key.startsWith('rl_') || key.startsWith('bridge_tx_') || key.startsWith('device_pwd_'))) {
           keysToRemove.push(key);
         }
       }
@@ -3347,19 +2968,11 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       }
 
       // Get stored password and compare directly
-      let storedPassword;
-      let rateLimitKey;
-      if (accountProfile.wallet_type === 'device') {
-        storedPassword = await walletStorage.getWalletCredential(accountProfile.deviceKeyId);
-        rateLimitKey = `new_account_${accountProfile.deviceKeyId}`;
-      } else {
-        const walletId = `${accountProfile.provider}_${accountProfile.provider_id}`;
-        storedPassword = await walletStorage.getSecureItem(`wallet_pwd_${walletId}`);
-        rateLimitKey = `new_account_${walletId}`;
-      }
+      const storedPassword = await walletStorage.getWalletCredential(accountProfile.deviceKeyId);
+      const rateLimitKey = `new_account_${accountProfile.deviceKeyId}`;
 
       // Rate limiting check
-      const rateCheck = securityUtils.rateLimiter.check(rateLimitKey);
+      const rateCheck = await securityUtils.rateLimiter.check(rateLimitKey);
       if (!rateCheck.allowed) {
         openSnackbar(rateCheck.error, 'error');
         setNewAccountPassword('');
@@ -3404,9 +3017,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         account: wallet.address,
         address: wallet.address,
         publicKey: wallet.publicKey,
-        wallet_type: accountProfile.wallet_type, // Inherit from current (device/oauth/social)
-        provider: accountProfile.provider, // Inherit OAuth provider (google/twitter/email)
-        provider_id: accountProfile.provider_id, // Inherit OAuth ID
+        wallet_type: 'device',
         xrp: '0',
         createdAt: Date.now(),
         seed: wallet.seed
@@ -3418,12 +3029,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
       // Store encrypted with same password
       await walletStorage.storeWallet(walletData, newAccountPassword);
-
-      // For OAuth wallets, ensure password is stored for provider
-      if (accountProfile.wallet_type === 'oauth' || accountProfile.wallet_type === 'social') {
-        const walletId = `${accountProfile.provider}_${accountProfile.provider_id}`;
-        await walletStorage.setSecureItem(`wallet_pwd_${walletId}`, newAccountPassword);
-      }
 
       // Update profiles (strip seed - seeds only go in encrypted IndexedDB)
       const { seed: _seed, ...profileData } = walletData;
@@ -3606,30 +3211,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
           // Just close the modal
           setOpen(false);
           setOpenWalletModal(false);
-        }}
-        disableScrollLock={true}
-        maxWidth="sm"
-        fullWidth
-        disableEnforceFocus
-        disableAutoFocus
-        disableRestoreFocus
-        hideBackdrop
-        TransitionProps={{ timeout: 0 }}
-        sx={{
-          '& .MuiDialog-paper': {
-            borderRadius: '12px',
-            width: '380px',
-            maxWidth: '380px',
-            background: 'transparent',
-            boxShadow: 'none',
-            position: 'fixed',
-            top: '60px',
-            right: '12px',
-            left: 'auto',
-            transform: 'none !important',
-            margin: 0
-          },
-          zIndex: 9999
         }}
       >
         <DialogContent sx={{ p: 0 }}>
@@ -4280,7 +3861,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
               <>
                 {!showSeedDialog && !showNewAccountFlow ? (
                   <WalletContent
-                    theme={theme}
                     isDark={isDark}
                     accountLogin={accountLogin}
                     accountBalance={accountBalance}
@@ -5174,7 +4754,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                           <button
                             onClick={() => {
                               navigator.clipboard.writeText(qrSyncData);
-                              openSnackbar('QR data copied', 'success');
+                              openSnackbar('QR data copied - clipboard clears in 30s', 'success');
+                              setTimeout(() => navigator.clipboard.writeText('').catch(() => {}), 30000);
                             }}
                             className={cn(
                               'flex-1 px-3 py-1.5 rounded-lg border-[1.5px] text-[13px] transition-colors flex items-center justify-center gap-1.5',

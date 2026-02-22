@@ -22,9 +22,6 @@ import {
   Search,
   ArrowLeft,
   TrendingUp,
-  ToggleLeft,
-  ToggleRight,
-  List,
   Settings,
   Zap
 } from 'lucide-react';
@@ -38,152 +35,6 @@ import { cn } from 'src/utils/cn';
 // Context
 import { useContext } from 'react';
 import { ThemeContext, WalletContext, AppContext } from 'src/context/AppContext';
-
-// Basic MUI component replacements
-const Box = ({ children, sx, style, className, component, onClick, ...props }) => {
-  const Component = component || 'div';
-  return (
-    <Component style={style} className={className} onClick={onClick} {...props}>
-      {children}
-    </Component>
-  );
-};
-
-const Stack = ({
-  children,
-  direction = 'column',
-  spacing = 0,
-  alignItems,
-  justifyContent,
-  style,
-  className,
-  ...props
-}) => (
-  <div
-    className={cn('flex', direction === 'row' ? 'flex-row' : 'flex-col', className)}
-    style={{ gap: spacing * 8, alignItems, justifyContent, ...style }}
-    {...props}
-  >
-    {children}
-  </div>
-);
-
-const Typography = ({ children, variant, sx, style, className, ...props }) => (
-  <span style={style} className={className} {...props}>
-    {children}
-  </span>
-);
-
-const Chip = ({ label, onClick, style, className, ...props }) => (
-  <span
-    onClick={onClick}
-    className={cn(
-      'inline-flex items-center px-3 py-1 rounded-[12px] text-[10px]',
-      onClick ? 'cursor-pointer' : 'cursor-default',
-      className
-    )}
-    style={style}
-    {...props}
-  >
-    {label}
-  </span>
-);
-
-const Button = ({
-  children,
-  variant = 'text',
-  size,
-  fullWidth,
-  disabled,
-  onClick,
-  sx,
-  startIcon,
-  style,
-  className,
-  ...props
-}) => {
-  return (
-    <button
-      className={cn(
-        'inline-flex items-center justify-center gap-2 rounded-lg text-[14px] font-normal',
-        size === 'small' ? 'px-2.5 py-1' : 'px-4 py-2',
-        disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer opacity-100',
-        fullWidth ? 'w-full' : 'w-auto',
-        variant === 'outlined' && 'border border-white/20',
-        variant !== 'outlined' && 'border-none',
-        variant === 'contained' ? 'bg-[#4285f4] text-white' : 'bg-transparent text-[#4285f4]',
-        className
-      )}
-      style={style}
-      disabled={disabled}
-      onClick={onClick}
-      {...props}
-    >
-      {startIcon}
-      {children}
-    </button>
-  );
-};
-
-const IconButton = ({ children, onClick, size, disabled, style, className, ...props }) => (
-  <button
-    onClick={onClick}
-    disabled={disabled}
-    className={cn(
-      'bg-transparent border-none rounded-full flex items-center justify-center',
-      size === 'small' ? 'p-1' : 'p-2',
-      disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer opacity-100',
-      className
-    )}
-    style={style}
-    {...props}
-  >
-    {children}
-  </button>
-);
-
-// ShareIcon using lucide Share2
-const ShareIcon = ({ sx }) => <Share2 size={sx?.width || sx?.fontSize || 16} />;
-
-// ArrowDropDownIcon
-const ArrowDropDownIcon = ({ sx, className }) => (
-  <ChevronDown size={sx?.fontSize || 18} className={className} />
-);
-
-// Input component (MUI replacement)
-const Input = ({
-  inputRef,
-  placeholder,
-  value,
-  onChange,
-  onFocus,
-  onBlur,
-  disableUnderline,
-  sx,
-  inputProps,
-  ...props
-}) => (
-  <input
-    ref={inputRef}
-    placeholder={placeholder}
-    value={value}
-    onChange={onChange}
-    onFocus={onFocus}
-    onBlur={onBlur}
-    className="border-none outline-none bg-transparent w-full text-[inherit] font-[inherit]"
-    style={{ color: 'inherit', ...sx }}
-    {...inputProps}
-    {...props}
-  />
-);
-
-// SwapHorizIcon using lucide ArrowLeftRight
-const SwapHorizIcon = ({ sx }) => <ArrowLeftRight size={sx?.width || sx?.fontSize || 20} />;
-
-// Toggle icons using lucide
-const ToggleOnIcon = ({ sx }) => <ToggleRight size={sx?.width || sx?.fontSize || 14} />;
-
-const ToggleOffIcon = ({ sx }) => <ToggleLeft size={sx?.width || sx?.fontSize || 14} />;
 
 // Redux
 import { useDispatch, useSelector } from 'react-redux';
@@ -332,21 +183,6 @@ const TokenImage = ({ className, ...props }) => (
   <img className={cn('rounded-full overflow-hidden border border-white/10', className)} {...props} />
 );
 
-const SelectTokenButton = ({ className, children, ...props }) => (
-  <Stack
-    className={cn(
-      'px-2.5 py-1.5 rounded-xl cursor-pointer backdrop-blur-[10px] border transition-all',
-      'dark:bg-[#020a1a]/40 dark:border-white/[0.08] dark:hover:bg-[#020a1a]/60',
-      'bg-white/40 border-black/[0.08] hover:bg-white/60',
-      'hover:border-blue-500/20 hover:scale-[1.02] active:scale-[0.98]',
-      '[&:hover_.arrow-icon]:text-blue-500',
-      className
-    )}
-    {...props}
-  >
-    {children}
-  </Stack>
-);
 
 const PanelContainer = ({ className, children, ...props }) => (
   <div

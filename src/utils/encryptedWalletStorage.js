@@ -154,7 +154,13 @@ const securityUtils = {
       };
     }
     // Check for common weak passwords
-    const weak = ['password', '12345678', 'qwerty12', 'letmein1', 'welcome1'];
+    const weak = [
+      'password', '12345678', 'qwerty12', 'letmein1', 'welcome1',
+      'iloveyou', 'sunshine', 'princess', 'football', 'charlie',
+      'shadow12', 'master12', 'dragon12', 'monkey12', 'abc12345',
+      'trustno1', 'baseball', 'superman', 'michael1', 'access14',
+      'mustang1', 'summer20', 'passw0rd', 'p@ssword', 'pa$$word'
+    ];
     if (weak.some((w) => password.toLowerCase().includes(w))) {
       return { valid: false, error: 'Password is too common' };
     }
@@ -181,57 +187,52 @@ const securityUtils = {
     },
 
     // IndexedDB layer (survives localStorage clear, harder to tamper)
+    // Shared connection pool — avoids opening N connections per call
+    _idbPromise: null,
+    async _getIdb() {
+      if (this._idbPromise) {
+        try { return await this._idbPromise; } catch { this._idbPromise = null; }
+      }
+      this._idbPromise = new Promise((resolve, reject) => {
+        const req = indexedDB.open('XRPLRateLimit', 1);
+        req.onupgradeneeded = () => { const db = req.result; if (!db.objectStoreNames.contains('rl')) db.createObjectStore('rl'); };
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error);
+      });
+      return this._idbPromise;
+    },
     async _getIdbRecord(key) {
       try {
-        const req = indexedDB.open('XRPLRateLimit', 1);
-        const db = await new Promise((resolve, reject) => {
-          req.onupgradeneeded = () => { const db = req.result; if (!db.objectStoreNames.contains('rl')) db.createObjectStore('rl'); };
-          req.onsuccess = () => resolve(req.result);
-          req.onerror = () => reject(req.error);
-        });
-        const result = await new Promise((resolve) => {
+        const db = await this._getIdb();
+        return await new Promise((resolve) => {
           const tx = db.transaction('rl', 'readonly');
           const r = tx.objectStore('rl').get(key);
           r.onsuccess = () => resolve(r.result || null);
           r.onerror = () => resolve(null);
         });
-        db.close();
-        return result;
-      } catch { return null; }
+      } catch { this._idbPromise = null; return null; }
     },
     async _setIdbRecord(key, record) {
       try {
-        const req = indexedDB.open('XRPLRateLimit', 1);
-        const db = await new Promise((resolve, reject) => {
-          req.onupgradeneeded = () => { const db = req.result; if (!db.objectStoreNames.contains('rl')) db.createObjectStore('rl'); };
-          req.onsuccess = () => resolve(req.result);
-          req.onerror = () => reject(req.error);
-        });
+        const db = await this._getIdb();
         await new Promise((resolve) => {
           const tx = db.transaction('rl', 'readwrite');
           tx.objectStore('rl').put(record, key);
           tx.oncomplete = () => resolve();
           tx.onerror = () => resolve();
         });
-        db.close();
-      } catch {}
+      } catch { this._idbPromise = null; }
     },
     async _deleteIdbRecord(key) {
       try {
-        const req = indexedDB.open('XRPLRateLimit', 1);
-        const db = await new Promise((resolve, reject) => {
-          req.onupgradeneeded = () => { const db = req.result; if (!db.objectStoreNames.contains('rl')) db.createObjectStore('rl'); };
-          req.onsuccess = () => resolve(req.result);
-          req.onerror = () => reject(req.error);
-        });
+        const db = await this._getIdb();
         await new Promise((resolve) => {
           const tx = db.transaction('rl', 'readwrite');
           tx.objectStore('rl').delete(key);
           tx.oncomplete = () => resolve();
           tx.onerror = () => resolve();
         });
-        db.close();
-      } catch {}
+      } catch { this._idbPromise = null; }
     },
 
     // Merge: take worst-case (highest count / latest lockout) across all layers
@@ -264,9 +265,10 @@ const securityUtils = {
       this._deleteIdbRecord(key);
     },
 
-    // Sync: pull IDB record into memory/localStorage on first check (async, best-effort)
-    _syncFromIdb(key) {
-      this._getIdbRecord(key).then(idbRec => {
+    // Sync: pull IDB record into memory/localStorage
+    async _syncFromIdb(key) {
+      try {
+        const idbRec = await this._getIdbRecord(key);
         if (!idbRec) return;
         const current = this._merge(this._mem[key], this._getLsRecord(key));
         const worst = this._merge(current, idbRec);
@@ -274,13 +276,22 @@ const securityUtils = {
           this._mem[key] = worst;
           this._setLsRecord(key, worst);
         }
-      }).catch(() => {});
+      } catch {}
     },
 
-    check(key) {
+    // _idbSynced tracks keys that have been synced from IDB at least once
+    _idbSynced: Object.create(null),
+
+    async check(key) {
       const now = Date.now();
-      // Kick off async IDB sync for future checks
-      this._syncFromIdb(key);
+      // If mem+LS are both empty and we haven't synced IDB yet, await it (prevents bypass after LS clear)
+      if (!this._mem[key] && !this._getLsRecord(key) && !this._idbSynced[key]) {
+        await this._syncFromIdb(key);
+        this._idbSynced[key] = true;
+      } else if (!this._idbSynced[key]) {
+        // Fire-and-forget sync for future checks
+        this._syncFromIdb(key).then(() => { this._idbSynced[key] = true; });
+      }
       const record = this._getRecord(key);
       if (!record) return { allowed: true };
 
@@ -364,7 +375,6 @@ export class UnifiedWalletStorage {
   // Static master key cache - non-extractable CryptoKey
   static _masterKey = null;
   static _masterKeyPromise = null;
-  static _visibilityHandler = null;
 
   constructor() {
     this.dbName = 'XRPLWalletDB';
@@ -506,7 +516,7 @@ export class UnifiedWalletStorage {
     }
   }
 
-  // Store provider password in IndexedDB alongside wallets
+  // Store encrypted password in IndexedDB alongside wallets
   async storeProviderPassword(providerId, password) {
     const db = await this.initDB();
 
@@ -719,15 +729,15 @@ export class UnifiedWalletStorage {
     });
   }
 
-  async deriveKey(pin, salt) {
+  async deriveKey(password, salt) {
     const encoder = new TextEncoder();
 
-    // Enhance PIN security by adding static entropy
-    const enhancedPin = `xrpl-wallet-pin-v1-${pin}`;
+    // Static prefix kept for backward compatibility with existing encrypted wallets
+    const enhancedPassword = `xrpl-wallet-pin-v1-${password}`;
 
     const keyMaterial = await crypto.subtle.importKey(
       'raw',
-      encoder.encode(enhancedPin),
+      encoder.encode(enhancedPassword),
       'PBKDF2',
       false,
       ['deriveBits', 'deriveKey']
@@ -748,10 +758,10 @@ export class UnifiedWalletStorage {
     );
   }
 
-  async encryptData(data, pin, { deviceBound = true } = {}) {
+  async encryptData(data, password, { deviceBound = true } = {}) {
     const salt = crypto.getRandomValues(new Uint8Array(16));
     const iv = crypto.getRandomValues(new Uint8Array(12));
-    const key = await this.deriveKey(pin, salt);
+    const key = await this.deriveKey(password, salt);
 
     const encoder = new TextEncoder();
     const plaintext = encoder.encode(JSON.stringify(data));
@@ -780,7 +790,7 @@ export class UnifiedWalletStorage {
     return btoa(String.fromCharCode(...combinedBuffer));
   }
 
-  async decryptData(encryptedString, pin) {
+  async decryptData(encryptedString, password) {
     const combinedBuffer = new Uint8Array(
       atob(encryptedString)
         .split('')
@@ -797,7 +807,7 @@ export class UnifiedWalletStorage {
     const iv = combinedBuffer.slice(17, 29);
     const encrypted = combinedBuffer.slice(29);
 
-    const key = await this.deriveKey(pin, salt);
+    const key = await this.deriveKey(password, salt);
 
     // v3: include device fingerprint as AAD (device-bound)
     // v1: no AAD (legacy, backward compatible)
@@ -812,7 +822,7 @@ export class UnifiedWalletStorage {
     return JSON.parse(new TextDecoder().decode(decrypted));
   }
 
-  async storeWallet(walletData, pin) {
+  async storeWallet(walletData, password) {
     const db = await this.initDB();
 
     // initDB now handles store creation, this should always exist
@@ -829,7 +839,7 @@ export class UnifiedWalletStorage {
       id: walletId,
       storedAt: Date.now()
     };
-    const encryptedData = await this.encryptData(fullData, pin);
+    const encryptedData = await this.encryptData(fullData, password);
 
     // Generate lookup hash (one-way, can't reverse to get address)
     const encoder = new TextEncoder();
@@ -846,12 +856,13 @@ export class UnifiedWalletStorage {
         ? `${walletData.address.slice(0, 6)}...${walletData.address.slice(-4)}`
         : null;
 
-      // Check for existing wallet with same lookupHash to prevent duplicates
-      const getAllReq = store.getAll();
-      getAllReq.onerror = () => reject(getAllReq.error);
-      getAllReq.onsuccess = () => {
-        const existing = (getAllReq.result || []).find(
-          (r) => r.lookupHash === lookupHash && !r.id.startsWith('__pwd__') && !r.id.startsWith('__entropy')
+      // Check for existing wallet with same lookupHash to prevent duplicates (O(1) index lookup)
+      const index = store.index('lookupHash');
+      const indexReq = index.getAll(lookupHash);
+      indexReq.onerror = () => reject(indexReq.error);
+      indexReq.onsuccess = () => {
+        const existing = (indexReq.result || []).find(
+          (r) => r.id && typeof r.id === 'string' && !r.id.startsWith('__pwd__') && !r.id.startsWith('__entropy')
         );
 
         const record = {
@@ -869,7 +880,7 @@ export class UnifiedWalletStorage {
     });
   }
 
-  async getWallet(address, pin) {
+  async getWallet(address, password) {
     const db = await this.initDB();
 
     if (!db.objectStoreNames.contains(this.walletsStore)) {
@@ -895,13 +906,13 @@ export class UnifiedWalletStorage {
     }
 
     try {
-      return await this.decryptData(records[0].data, pin);
+      return await this.decryptData(records[0].data, password);
     } catch (error) {
-      throw new Error('Invalid PIN');
+      throw new Error('Invalid password');
     }
   }
 
-  async getAllWallets(pin) {
+  async getAllWallets(password) {
     const db = await this.initDB();
 
     if (!db.objectStoreNames.contains(this.walletsStore)) {
@@ -923,7 +934,7 @@ export class UnifiedWalletStorage {
         continue;
       }
       try {
-        const walletData = await this.decryptData(record.data, pin);
+        const walletData = await this.decryptData(record.data, password);
         wallets.push(walletData);
       } catch (error) {
         // Skip wallets that can't be decrypted with this password (expected for multi-password setups)
@@ -958,7 +969,7 @@ export class UnifiedWalletStorage {
 
   /**
    * Get wallet metadata WITHOUT requiring password (for UI display)
-   * Returns list of wallets with masked addresses and provider info
+   * Returns list of wallets with masked addresses
    */
   async getWalletMetadata() {
     try {
@@ -1022,7 +1033,7 @@ export class UnifiedWalletStorage {
     const rateLimitKey = 'wallet_unlock';
 
     // Rate limiting check
-    const rateCheck = securityUtils.rateLimiter.check(rateLimitKey);
+    const rateCheck = await securityUtils.rateLimiter.check(rateLimitKey);
     if (!rateCheck.allowed) {
       throw new Error(rateCheck.error);
     }
@@ -1147,63 +1158,6 @@ export class UnifiedWalletStorage {
   }
 
   /**
-   * Find wallet in IndexedDB for OAuth user
-   * Now requires password since all data is encrypted
-   */
-  async findWalletBySocialId(walletId, password, knownAddress = null) {
-    try {
-      devLog('findWalletBySocialId called with:', walletId, 'knownAddress:', knownAddress);
-
-      // OPTIMIZATION: If we have the address, look up directly by address (much faster!)
-      if (knownAddress) {
-        try {
-          const wallet = await this.getWalletByAddress(knownAddress, password);
-          if (wallet) {
-            devLog('✅ Found wallet by address (fast path):', wallet.address);
-            return wallet;
-          }
-        } catch (err) {
-          devLog('Fast path failed, falling back to full search:', err.message);
-        }
-      }
-
-      // SLOW PATH: Extract provider and provider_id from walletId (format: "provider_id")
-      const [provider, ...idParts] = walletId.split('_');
-      const providerId = idParts.join('_'); // Handle IDs that might contain underscores
-
-      devLog('Searching for provider:', provider, 'ID:', providerId);
-
-      // Get all wallets and filter by provider/provider_id
-      const allWallets = await this.getAllWallets(password);
-
-      devLog('Total wallets decrypted:', allWallets.length);
-
-      // Find the first wallet matching this provider and provider_id
-      const wallet = allWallets.find(
-        (w) => w.provider === provider && w.provider_id === providerId
-      );
-
-      if (wallet) {
-        devLog('✅ Found wallet for social ID:', wallet.address);
-        return {
-          address: wallet.address,
-          publicKey: wallet.publicKey,
-          seed: wallet.seed,
-          provider: wallet.provider,
-          provider_id: wallet.provider_id,
-          found: true
-        };
-      } else {
-        devLog('❌ No wallet found for provider:', provider, 'ID:', providerId);
-        return null;
-      }
-    } catch (e) {
-      devError('Error finding wallet:', e);
-      return null;
-    }
-  }
-
-  /**
    * Get wallet by address (fast lookup using lookupHash index)
    */
   async getWalletByAddress(address, password) {
@@ -1236,9 +1190,7 @@ export class UnifiedWalletStorage {
       return {
         address: decrypted.address,
         publicKey: decrypted.publicKey,
-        seed: decrypted.seed,
-        provider: decrypted.provider,
-        provider_id: decrypted.provider_id
+        seed: decrypted.seed
       };
     } catch (e) {
       devError('Error getting wallet by address:', e);
@@ -1249,8 +1201,7 @@ export class UnifiedWalletStorage {
   // REMOVED: deriveOAuthKey - No longer using deterministic generation
 
   /**
-   * Generate TRUE RANDOM wallet for social profile - NO DETERMINISTIC FALLBACK
-   * 2025 Standard: Real entropy only
+   * Generate TRUE RANDOM wallet with real entropy
    */
   async generateRandomWallet() {
     // Generate true random entropy - NO DERIVATION
@@ -1332,7 +1283,7 @@ export class UnifiedWalletStorage {
       address: payload.a,
       publicKey: testWallet.publicKey,
       seed: payload.s,
-      wallet_type: 'imported',
+      wallet_type: 'device',
       importedAt: Date.now(),
       importedVia: 'qr_sync'
     };

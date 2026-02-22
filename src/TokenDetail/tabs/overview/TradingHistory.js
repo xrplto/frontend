@@ -1446,21 +1446,12 @@ const MyActivityTabInner = ({ token, isDark, isMobile, onTransactionClick, ammPo
       const walletStorage = new EncryptedWalletStorage();
       let seed = null;
 
-      if (accountProfile.wallet_type === 'oauth' || accountProfile.wallet_type === 'social') {
-        const walletId = `${accountProfile.provider}_${accountProfile.provider_id}`;
-        const storedPassword = await walletStorage.getSecureItem(`wallet_pwd_${walletId}`);
+      const deviceKeyId = await deviceFingerprint.getDeviceId();
+      if (deviceKeyId) {
+        const storedPassword = await walletStorage.getWalletCredential(deviceKeyId);
         if (storedPassword) {
           const walletData = await walletStorage.getWallet(account, storedPassword);
           seed = walletData?.seed;
-        }
-      } else if (accountProfile.wallet_type === 'device') {
-        const deviceKeyId = await deviceFingerprint.getDeviceId();
-        if (deviceKeyId) {
-          const storedPassword = await walletStorage.getWalletCredential(deviceKeyId);
-          if (storedPassword) {
-            const walletData = await walletStorage.getWallet(account, storedPassword);
-            seed = walletData?.seed;
-          }
         }
       }
 

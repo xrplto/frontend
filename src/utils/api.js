@@ -127,16 +127,10 @@ export async function getWalletAuthHeaders(accountProfile) {
   const ws = new EncryptedWalletStorage();
   let seed = null;
 
-  if (accountProfile.wallet_type === 'oauth' || accountProfile.wallet_type === 'social') {
-    const walletId = `${accountProfile.provider}_${accountProfile.provider_id}`;
-    const pwd = await ws.getSecureItem(`wallet_pwd_${walletId}`);
+  const deviceKeyId = await deviceFingerprint.getDeviceId();
+  if (deviceKeyId) {
+    const pwd = await ws.getWalletCredential(deviceKeyId);
     if (pwd) seed = (await ws.getWallet(address, pwd))?.seed;
-  } else if (accountProfile.wallet_type === 'device') {
-    const deviceKeyId = await deviceFingerprint.getDeviceId();
-    if (deviceKeyId) {
-      const pwd = await ws.getWalletCredential(deviceKeyId);
-      if (pwd) seed = (await ws.getWallet(address, pwd))?.seed;
-    }
   }
   if (!seed) throw new Error('Could not retrieve wallet credentials');
 

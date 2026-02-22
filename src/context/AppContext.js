@@ -257,34 +257,18 @@ function ContextProviderInner({ children, data, openSnackbar }) {
         // Auto-decrypt seed on load — seed stays in React state only (never localStorage)
         if (accountProfile && !accountProfile.seed) {
           try {
-            if (accountProfile.wallet_type === 'oauth' || accountProfile.wallet_type === 'social') {
-              // OAuth/social: use provider password from IndexedDB
-              const walletId = `${accountProfile.provider}_${accountProfile.provider_id}`;
-              const storedPassword = await walletStorage.getSecureItem(`wallet_pwd_${walletId}`);
+            // Device: use device fingerprint + encrypted credential
+            const { deviceFingerprint } = await import('src/utils/encryptedWalletStorage');
+            const deviceKeyId = await deviceFingerprint.getDeviceId();
+            if (deviceKeyId) {
+              const storedPassword = await walletStorage.getWalletCredential(deviceKeyId);
               if (storedPassword) {
-                const wallet = await walletStorage.findWalletBySocialId(
-                  walletId,
-                  storedPassword,
-                  accountProfile.account || accountProfile.address
+                const wallet = await walletStorage.getWalletByAddress(
+                  accountProfile.account || accountProfile.address,
+                  storedPassword
                 );
                 if (wallet?.seed) {
                   setAccountProfile(prev => prev ? { ...prev, seed: wallet.seed } : prev);
-                }
-              }
-            } else if (accountProfile.wallet_type === 'device') {
-              // Device: use device fingerprint + encrypted credential
-              const { deviceFingerprint } = await import('src/utils/encryptedWalletStorage');
-              const deviceKeyId = await deviceFingerprint.getDeviceId();
-              if (deviceKeyId) {
-                const storedPassword = await walletStorage.getWalletCredential(deviceKeyId);
-                if (storedPassword) {
-                  const wallet = await walletStorage.getWalletByAddress(
-                    accountProfile.account || accountProfile.address,
-                    storedPassword
-                  );
-                  if (wallet?.seed) {
-                    setAccountProfile(prev => prev ? { ...prev, seed: wallet.seed } : prev);
-                  }
                 }
               }
             }
@@ -333,33 +317,6 @@ function ContextProviderInner({ children, data, openSnackbar }) {
       // Generate token from account address for API authentication
       token: profile.token || profile.account
     };
-
-    // For OAuth wallets, ensure seed is included
-    if (
-      (profileWithTimestamp.wallet_type === 'oauth' ||
-        profileWithTimestamp.wallet_type === 'social') &&
-      !profileWithTimestamp.seed
-    ) {
-      try {
-        const walletStorage = await getWalletStorage();
-        const walletId = `${profileWithTimestamp.provider}_${profileWithTimestamp.provider_id}`;
-        const storedPassword = await walletStorage.getSecureItem(`wallet_pwd_${walletId}`);
-
-        if (storedPassword) {
-          // Pass known address for fast lookup (only decrypts 1 wallet instead of 25!)
-          const wallet = await walletStorage.findWalletBySocialId(
-            walletId,
-            storedPassword,
-            profileWithTimestamp.account || profileWithTimestamp.address
-          );
-          if (wallet?.seed) {
-            profileWithTimestamp.seed = wallet.seed;
-          }
-        }
-      } catch (err) {
-        // Could not decrypt seed during login
-      }
-    }
 
     setAccountProfile(profileWithTimestamp); // seed stays in memory
     localStorage.setItem(KEY_ACCOUNT_PROFILE, JSON.stringify(stripSeed(profileWithTimestamp)));
