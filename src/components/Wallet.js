@@ -1,4 +1,4 @@
-import { apiFetch, submitTransaction } from 'src/utils/api';
+import { apiFetch } from 'src/utils/api';
 import { useRef, useState, useEffect, useCallback, useMemo, useContext } from 'react';
 import { useRouter } from 'next/router';
 
@@ -294,44 +294,6 @@ const WalletContent = ({
   const [addressCopied, setAddressCopied] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
 
-  // Send state
-  const [recipient, setRecipient] = useState('');
-  const [amount, setAmount] = useState('');
-  const [destinationTag, setDestinationTag] = useState('');
-  const [sendPassword, setSendPassword] = useState('');
-  const [showSendPassword, setShowSendPassword] = useState(false);
-  const [isSending, setIsSending] = useState(false);
-  const [sendError, setSendError] = useState('');
-  const [txResult, setTxResult] = useState(null);
-  const [isUnlocked, setIsUnlocked] = useState(false);
-  // Security: password in ref (not state) — invisible to React DevTools
-  const storedPasswordRef = useRef(null);
-
-  // Security: clear sensitive state on tab hide + 5min inactivity auto-lock (audit)
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const clearSensitive = () => {
-      storedPasswordRef.current = null;
-      setIsUnlocked(false);
-      setSendPassword('');
-    };
-    const handleVisibility = () => { if (document.hidden) clearSensitive(); };
-    // Inactivity auto-lock: re-lock wallet after 5 min of no interaction
-    let idleTimer = null;
-    const resetIdle = () => {
-      if (idleTimer) clearTimeout(idleTimer);
-      idleTimer = setTimeout(clearSensitive, 5 * 60 * 1000);
-    };
-    const events = ['mousedown', 'keydown', 'touchstart', 'scroll'];
-    events.forEach((e) => document.addEventListener(e, resetIdle, { passive: true }));
-    document.addEventListener('visibilitychange', handleVisibility);
-    resetIdle();
-    return () => {
-      if (idleTimer) clearTimeout(idleTimer);
-      events.forEach((e) => document.removeEventListener(e, resetIdle));
-      document.removeEventListener('visibilitychange', handleVisibility);
-    };
-  }, []);
 
   const handleCopyAddress = () => {
     if (accountLogin) {
@@ -342,93 +304,6 @@ const WalletContent = ({
     }
   };
 
-  // Check unlock status via device credential
-  useEffect(() => {
-    const checkUnlock = async () => {
-      if (!accountLogin || !walletStorage) return;
-      try {
-        const deviceKeyId = await deviceFingerprint.getDeviceId();
-        if (!deviceKeyId) return;
-        const pwd = await walletStorage.getWalletCredential(deviceKeyId);
-        if (pwd) {
-          const walletData = await walletStorage.getWalletByAddress(accountLogin, pwd);
-          if (walletData?.seed) {
-            storedPasswordRef.current = pwd;
-            setIsUnlocked(true);
-          }
-        }
-      } catch (err) {
-        /* ignore */
-      }
-    };
-    checkUnlock();
-  }, [accountLogin, walletStorage]);
-
-
-  const availableBalance = parseFloat(accountBalance?.curr1?.value || '0');
-  const maxSendable = Math.max(0, availableBalance - 10.000012);
-
-  const validateSend = () => {
-    if (!recipient) return 'Enter recipient address';
-    if (!/^r[1-9A-HJ-NP-Za-km-z]{24,34}$/.test(recipient)) return 'Invalid XRPL address';
-    if (recipient === accountLogin) return 'Cannot send to yourself';
-    if (!amount || parseFloat(amount) <= 0) return 'Enter amount';
-    if (parseFloat(amount) > maxSendable) return 'Insufficient balance';
-    if (!isUnlocked && !sendPassword) return 'Enter password';
-    return null;
-  };
-
-  const handleSend = async () => {
-    const error = validateSend();
-    if (error) {
-      setSendError(error);
-      return;
-    }
-
-    setIsSending(true);
-    setSendError('');
-    setTxResult(null);
-
-    try {
-      const pwdToUse = isUnlocked && storedPasswordRef.current ? storedPasswordRef.current : sendPassword;
-      const wallet = await walletStorage.getWalletByAddress(accountLogin, pwdToUse);
-
-      if (!wallet?.seed) throw new Error('Incorrect password');
-
-      const { Wallet: XRPLWallet, xrpToDrops } = await getXrpl();
-      const payment = {
-        TransactionType: 'Payment',
-        Account: accountLogin,
-        Destination: recipient,
-        Amount: xrpToDrops(amount),
-        SourceTag: 161803
-      };
-      if (destinationTag) payment.DestinationTag = parseInt(destinationTag);
-
-      const algorithm = wallet.seed.startsWith('sEd') ? 'ed25519' : 'secp256k1';
-      const xrplWallet = XRPLWallet.fromSeed(wallet.seed, { algorithm });
-      // Best-effort memory zeroing (audit: clear sensitive data post-use)
-      wallet.seed = '';
-      wallet.privateKey = '';
-
-      const result = await submitTransaction(xrplWallet, payment);
-
-      if (result.success) {
-        setTxResult({ success: true, hash: result.hash, amount, recipient });
-        openSnackbar('Transaction successful', 'success');
-        setRecipient('');
-        setAmount('');
-        setDestinationTag('');
-        if (!isUnlocked) setSendPassword('');
-      } else {
-        throw new Error(result.engine_result);
-      }
-    } catch (err) {
-      setSendError(err.message || 'Transaction failed');
-    } finally {
-      setIsSending(false);
-    }
-  };
 
   const formatDate = (timestamp) => {
     if (!timestamp) return '';
@@ -1505,7 +1380,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   const [newWalletData, setNewWalletData] = useState(null);
   const [showNewWalletScreen, setShowNewWalletScreen] = useState(false);
   const [backupConfirmed, setBackupConfirmed] = useState(false);
-  const [showNewSeed, setShowNewSeed] = useState(false);
   const [newSeedCopied, setNewSeedCopied] = useState(false);
   const [newAddressCopied, setNewAddressCopied] = useState(false);
 
@@ -1523,13 +1397,12 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         if (c <= 1) {
           newWalletSeedRef.current = null;
           setNewSeedAvailable(false);
-          setShowNewSeed(false);
           return 0;
         }
         return c - 1;
       });
     }, 1000);
-    const onVis = () => { if (document.hidden) { newWalletSeedRef.current = null; setNewSeedAvailable(false); setShowNewSeed(false); } };
+    const onVis = () => { if (document.hidden) { newWalletSeedRef.current = null; setNewSeedAvailable(false); } };
     document.addEventListener('visibilitychange', onVis);
     return () => { clearInterval(tick); document.removeEventListener('visibilitychange', onVis); };
   }, [newSeedAvailable]);
@@ -1573,6 +1446,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         clearInterval(interval);
         setQrSyncData('');
         setQrSyncExpiry(null);
+        setQrSyncPassword('');
         setSeedAuthStatus('select-mode');
         openSnackbar('QR code expired', 'warning');
       }
@@ -1860,13 +1734,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       return;
     }
 
-    // Audit (Temple/Thanos): rate-limit unlock attempts to prevent brute force
-    const rateCheck = await securityUtils.rateLimiter.check('wallet_unlock');
-    if (!rateCheck.allowed) {
-      setUnlockError(rateCheck.error);
-      return;
-    }
-
     setIsUnlocking(true);
     setUnlockError('');
 
@@ -1880,8 +1747,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       }
 
       // Get device fingerprint ID (survives storage clearing)
-      const { deviceFingerprint: df } = await import('src/utils/encryptedWalletStorage');
-      const deviceKeyId = await df.getDeviceId();
+      const deviceKeyId = await deviceFingerprint.getDeviceId();
 
       // Store password for auto-retrieval
       if (deviceKeyId) {
@@ -1960,7 +1826,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       }
 
       // Generate stable device fingerprint ID (survives storage clearing)
-      const { deviceFingerprint } = await import('src/utils/encryptedWalletStorage');
       const deviceKeyId = await deviceFingerprint.getDeviceId();
 
       const walletData = {
@@ -1980,7 +1845,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       wallet.privateKey = '';
 
       await walletStorage.storeWallet(walletData, createPassword);
-      // Store password for auto-retrieval (like OAuth wallets do)
+      // Store password for auto-retrieval on next session
       await walletStorage.storeWalletCredential(deviceKeyId, createPassword);
 
       const profile = {
@@ -1999,16 +1864,14 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       localStorage.setItem('profiles', JSON.stringify([profile]));
       doLogIn(profile, [profile]);
 
-      // Auto-register for referral program if referred
+      // Auto-register for referral program
       const storedRef = localStorage.getItem('referral_code');
-      if (storedRef || true) { // Always register, with or without referral
-        apiFetch('https://api.xrpl.to/api/referral/register', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ address: wallet.address, ...(storedRef && { referredBy: storedRef }) })
-        }).catch(err => { console.warn('[Wallet] Referral register failed:', err.message); });
-        localStorage.removeItem('referral_code');
-      }
+      apiFetch('https://api.xrpl.to/api/referral/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ address: wallet.address, ...(storedRef && { referredBy: storedRef }) })
+      }).catch(err => { console.warn('[Wallet] Referral register failed:', err.message); });
+      localStorage.removeItem('referral_code');
 
       // For new wallets, show backup screen. For imports, skip (user already has seed)
       if (createMode === 'new') {
@@ -2020,7 +1883,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         setNewWalletData({ ...safeWalletData, profile });
         setShowNewWalletScreen(true);
         setBackupConfirmed(false);
-        setShowNewSeed(false);
         setNewSeedCopied(false);
         setNewAddressCopied(false);
         setShowBridgeForm(false);
@@ -2381,6 +2243,12 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     const profile = backupTargetProfile || accountProfile;
     if (!profile || !qrSyncPassword) return;
 
+    const exportRateCheck = await securityUtils.rateLimiter.check('qr_export');
+    if (!exportRateCheck.allowed) {
+      setQrSyncError(exportRateCheck.error || 'Too many attempts. Please wait before trying again.');
+      return;
+    }
+
     setQrSyncLoading(true);
     setQrSyncError('');
 
@@ -2565,7 +2433,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
               if (code?.data) {
                 devLog('QR code detected');
                 // Check if it's our wallet QR format
-                if (code.data.startsWith('XRPLTO:') || code.data.startsWith('XRPL:')) {
+                if (code.data.startsWith('XRPLTO:')) {
                   setQrImportData(code.data);
                   stopQrScanner();
                   openSnackbar('QR code scanned successfully', 'success');
@@ -2664,7 +2532,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       const code = jsQR(imageData.data, width, height);
 
       if (code?.data) {
-        if (code.data.startsWith('XRPLTO:') || code.data.startsWith('XRPL:')) {
+        if (code.data.startsWith('XRPLTO:')) {
           setQrImportData(code.data);
           stopQrScanner();
           openSnackbar('QR code captured successfully!', 'success');
@@ -2715,7 +2583,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       const code = jsQR(imageData.data, canvas.width, canvas.height);
 
       if (code?.data) {
-        if (code.data.startsWith('XRPLTO:') || code.data.startsWith('XRPL:')) {
+        if (code.data.startsWith('XRPLTO:')) {
           setQrImportData(code.data);
           openSnackbar('QR code scanned from image!', 'success');
         } else {
@@ -2748,6 +2616,12 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   // QR Sync - Import wallet from QR data
   const handleQrImport = async () => {
     if (!qrImportData || !qrSyncPassword) return;
+
+    const importRateCheck = await securityUtils.rateLimiter.check('qr_import');
+    if (!importRateCheck.allowed) {
+      setQrSyncError(importRateCheck.error || 'Too many attempts. Please wait before trying again.');
+      return;
+    }
 
     setQrSyncLoading(true);
     setQrSyncError('');
@@ -3208,7 +3082,10 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
               setUnlockPassword('');
             }
           }
-          // Just close the modal
+          // Clear sensitive form state on any close
+          setCreatePassword('');
+          setCreatePasswordConfirm('');
+          setCreateError('');
           setOpen(false);
           setOpenWalletModal(false);
         }}
@@ -4779,6 +4656,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                               setQrSyncMode(null);
                               setQrSyncData('');
                               setQrSyncExpiry(null);
+                              setQrSyncPassword('');
                             }}
                             className="flex-1 px-3 py-1.5 rounded-lg bg-primary hover:bg-primary/90 text-white text-[13px] transition-colors"
                           >
@@ -4842,17 +4720,17 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                                     : 'bg-primary text-white hover:bg-primary/90'
                                 )}
                               >
-                                📸 Capture
+                                <Camera size={14} /> Capture
                               </button>
                               <label
                                 className={cn(
-                                  'flex-1 py-2 rounded-lg text-[12px] font-medium transition-colors text-center cursor-pointer',
+                                  'flex-1 py-2 rounded-lg text-[12px] font-medium transition-colors text-center cursor-pointer flex items-center justify-center gap-1',
                                   isDark
                                     ? 'bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30'
                                     : 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'
                                 )}
                               >
-                                📁 Upload
+                                <Download size={14} /> Upload
                                 <input
                                   type="file"
                                   accept="image/*"
@@ -4877,7 +4755,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                                     : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                                 )}
                               >
-                                ✕
+                                <XIcon size={14} />
                               </button>
                             </div>
                           </div>
@@ -4906,7 +4784,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
                             {/* Manual Paste */}
                             <textarea
-                              placeholder="XRPL:..."
+                              placeholder="XRPLTO:..."
                               value={qrImportData}
                               onChange={(e) => {
                                 setQrImportData(e.target.value);
@@ -5137,6 +5015,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             value={unlockPassword}
                             onChange={(e) => setUnlockPassword(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && handlePasswordUnlock()}
+                            autoFocus
                             placeholder="Enter password to unlock"
                             className={cn(
                               'w-full px-4 py-2.5 pr-12 rounded-xl text-[16px] outline-none transition-all duration-300 font-medium',
@@ -5359,17 +5238,17 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                                       : 'bg-primary text-white hover:bg-primary/90'
                                   )}
                                 >
-                                  📸 Capture
+                                  <Camera size={14} /> Capture
                                 </button>
                                 <label
                                   className={cn(
-                                    'flex-1 py-2 rounded-lg text-[12px] font-medium transition-colors text-center cursor-pointer',
+                                    'flex-1 py-2 rounded-lg text-[12px] font-medium transition-colors text-center cursor-pointer flex items-center justify-center gap-1',
                                     isDark
                                       ? 'bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30'
                                       : 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'
                                   )}
                                 >
-                                  📁 Upload
+                                  <Download size={14} /> Upload
                                   <input
                                     type="file"
                                     accept="image/*"
@@ -5394,7 +5273,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                                       : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                                   )}
                                 >
-                                  ✕
+                                  <XIcon size={14} />
                                 </button>
                               </div>
                             </div>
@@ -5423,7 +5302,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
                               {/* Manual Paste */}
                               <textarea
-                                placeholder="Paste QR data (XRPL:...)"
+                                placeholder="Paste QR data (XRPLTO:...)"
                                 value={qrImportData}
                                 onChange={(e) => {
                                   setQrImportData(e.target.value);

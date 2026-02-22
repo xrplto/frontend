@@ -333,8 +333,7 @@ const securityUtils = {
 // Closure-scoped credential cache — not accessible via class properties, console, or DevTools
 // Values are XOR-masked with a random pad so plaintext passwords never appear in heap dumps
 const _credCache = (() => {
-  const _map = new Map(); // stores { pad: Uint8Array, masked: Uint8Array }
-  let _timeout = null;
+  const _map = new Map(); // stores { pad: Uint8Array, masked: Uint8Array, timer: number }
   const TTL = 15 * 60 * 1000; // 15 minutes
   const _enc = new TextEncoder();
   const _dec = new TextDecoder();
@@ -350,21 +349,37 @@ const _credCache = (() => {
     for (let i = 0; i < masked.length; i++) raw[i] = masked[i] ^ pad[i];
     return _dec.decode(raw);
   };
+  const _evict = (key) => {
+    const entry = _map.get(key);
+    if (entry) {
+      if (entry.pad) entry.pad.fill(0);
+      if (entry.masked) entry.masked.fill(0);
+      if (entry.timer) clearTimeout(entry.timer);
+      _map.delete(key);
+    }
+  };
   const _clear = () => {
-    // Zero out pads before clearing
-    _map.forEach(v => { if (v.pad) v.pad.fill(0); if (v.masked) v.masked.fill(0); });
+    _map.forEach((v, k) => {
+      if (v.pad) v.pad.fill(0);
+      if (v.masked) v.masked.fill(0);
+      if (v.timer) clearTimeout(v.timer);
+    });
     _map.clear();
-    if (_timeout) { clearTimeout(_timeout); _timeout = null; }
     devLog('[Security] Credential cache cleared');
   };
-  const _resetTimer = () => {
-    if (_timeout) clearTimeout(_timeout);
-    _timeout = setTimeout(_clear, TTL);
-  };
   return {
-    get(key) { if (_map.has(key)) { _resetTimer(); return _unmask(_map.get(key)); } return undefined; },
+    get(key) {
+      const entry = _map.get(key);
+      if (!entry) return undefined;
+      return _unmask(entry);
+    },
     has(key) { return _map.has(key); },
-    set(key, value) { _map.set(key, _mask(value)); _resetTimer(); },
+    set(key, value) {
+      _evict(key); // clear previous entry + timer
+      const entry = _mask(value);
+      entry.timer = setTimeout(() => _evict(key), TTL);
+      _map.set(key, entry);
+    },
     clear: _clear
   };
 })();
@@ -517,7 +532,7 @@ export class UnifiedWalletStorage {
   }
 
   // Store encrypted password in IndexedDB alongside wallets
-  async storeProviderPassword(providerId, password) {
+  async storeEncryptedPassword(keyId, password) {
     const db = await this.initDB();
 
     // initDB now handles store creation, this should always exist
@@ -533,10 +548,9 @@ export class UnifiedWalletStorage {
       transaction.onabort = () => reject(transaction.error || new Error('Transaction aborted'));
       const store = transaction.objectStore(this.walletsStore);
 
-      // Use special ID format for password records
       const record = {
-        id: `__pwd__${providerId}`,
-        lookupHash: `__pwd__${providerId}`,
+        id: `__pwd__${keyId}`,
+        lookupHash: `__pwd__${keyId}`,
         data: encrypted,
         timestamp: Date.now()
       };
@@ -547,13 +561,11 @@ export class UnifiedWalletStorage {
     });
   }
 
-  async getProviderPassword(providerId) {
+  async getEncryptedPassword(keyId) {
     try {
       const db = await this.initDB();
 
-      // Check if store exists
       if (!db.objectStoreNames.contains(this.walletsStore)) {
-        devLog('Wallets store does not exist yet');
         return null;
       }
 
@@ -561,27 +573,23 @@ export class UnifiedWalletStorage {
         const transaction = db.transaction([this.walletsStore], 'readonly');
         transaction.onabort = () => resolve(null);
         const store = transaction.objectStore(this.walletsStore);
-        const pwdKey = `__pwd__${providerId}`;
-        const request = store.get(pwdKey);
+        const request = store.get(`__pwd__${keyId}`);
         request.onsuccess = () => resolve(request.result || null);
         request.onerror = () => resolve(null);
       });
 
       if (record?.data) {
         try {
-          const decrypted = await this.decryptFromLocalStorage(record.data);
-          devLog('Password retrieved from IndexedDB for provider:', providerId);
-          return decrypted;
+          return await this.decryptFromLocalStorage(record.data);
         } catch (decryptError) {
           devLog('Password decryption failed:', decryptError.message);
           return null;
         }
       }
 
-      devLog('No password found in IndexedDB for provider:', providerId);
       return null;
     } catch (error) {
-      devError('Error getting provider password:', error);
+      devError('Error getting encrypted password:', error);
       return null;
     }
   }
@@ -589,12 +597,6 @@ export class UnifiedWalletStorage {
   // Secure localStorage wrapper methods
   async setSecureItem(key, value) {
     if (typeof window === 'undefined') return;
-
-    // For wallet passwords, use IndexedDB instead
-    if (key.startsWith('wallet_pwd_')) {
-      const providerId = key.replace('wallet_pwd_', '');
-      return await this.storeProviderPassword(providerId, value);
-    }
 
     const encrypted = await this.encryptForLocalStorage(value);
     localStorage.setItem(key + '_enc', encrypted);
@@ -606,23 +608,10 @@ export class UnifiedWalletStorage {
   async getSecureItem(key) {
     if (typeof window === 'undefined') return null;
 
-    // For wallet passwords, use dedicated method
-    if (key.startsWith('wallet_pwd_')) {
-      const providerId = key.replace('wallet_pwd_', '');
-      return await this.getProviderPassword(providerId);
-    }
-
     const encrypted = localStorage.getItem(key + '_enc');
     if (!encrypted) return null;
 
     return await this.decryptFromLocalStorage(encrypted);
-  }
-
-  removeSecureItem(key) {
-    if (typeof window === 'undefined') return;
-
-    localStorage.removeItem(key);
-    localStorage.removeItem(key + '_enc');
   }
 
   async initDB() {
@@ -732,7 +721,7 @@ export class UnifiedWalletStorage {
   async deriveKey(password, salt) {
     const encoder = new TextEncoder();
 
-    // Static prefix kept for backward compatibility with existing encrypted wallets
+    // Domain separator — prevents password reuse across different services from producing same key
     const enhancedPassword = `xrpl-wallet-pin-v1-${password}`;
 
     const keyMaterial = await crypto.subtle.importKey(
@@ -874,7 +863,7 @@ export class UnifiedWalletStorage {
         };
 
         const request = store.put(record);
-        request.onerror = () => resolve(null);
+        request.onerror = () => reject(request.error || new Error('Failed to store wallet'));
         request.onsuccess = () => resolve(request.result);
       };
     });
@@ -957,10 +946,19 @@ export class UnifiedWalletStorage {
         transaction.onabort = () => reject(transaction.error || new Error('Transaction aborted'));
         const store = transaction.objectStore(this.walletsStore);
 
-        const request = store.count();
-
+        // Use cursor to check for actual wallet records (skip __pwd__ and other special entries)
+        const request = store.openCursor();
         request.onerror = () => reject(request.error);
-        request.onsuccess = () => resolve(request.result > 0);
+        request.onsuccess = () => {
+          const cursor = request.result;
+          if (!cursor) { resolve(false); return; }
+          const id = cursor.value?.id;
+          if (typeof id === 'string' && (id.startsWith('__pwd__') || id.startsWith('__entropy') || id.startsWith('__lookup__'))) {
+            cursor.continue();
+          } else {
+            resolve(true);
+          }
+        };
       });
     } catch (error) {
       return false;
@@ -1101,7 +1099,7 @@ export class UnifiedWalletStorage {
     await this.setSecureItem(`device_pwd_${passkeyId}`, userSecret);
 
     // Also persist to IndexedDB as durable backup (survives localStorage clears)
-    await this.storeProviderPassword(`device_${passkeyId}`, userSecret);
+    await this.storeEncryptedPassword(`device_${passkeyId}`, userSecret);
 
     // Cache in memory with auto-expiry (15 min or tab switch)
     _credCache.set(passkeyId, userSecret);
@@ -1126,7 +1124,7 @@ export class UnifiedWalletStorage {
     }
 
     // 3. Fallback to IndexedDB (survives localStorage clears)
-    const idbPassword = await this.getProviderPassword(`device_${passkeyId}`);
+    const idbPassword = await this.getEncryptedPassword(`device_${passkeyId}`);
     if (idbPassword) {
       // Restore to localStorage for fast future access
       try { await this.setSecureItem(`device_pwd_${passkeyId}`, idbPassword); } catch (e) { /* non-critical */ }
@@ -1198,20 +1196,6 @@ export class UnifiedWalletStorage {
     }
   }
 
-  // REMOVED: deriveOAuthKey - No longer using deterministic generation
-
-  /**
-   * Generate TRUE RANDOM wallet with real entropy
-   */
-  async generateRandomWallet() {
-    // Generate true random entropy - NO DERIVATION
-    const entropy = crypto.getRandomValues(new Uint8Array(32));
-
-    // Create wallet from random entropy
-    const Wallet = await getXrplWallet();
-    return Wallet.fromEntropy(Array.from(entropy));
-  }
-
   // ============ QR Sync - Transfer wallet between devices ============
 
   /**
@@ -1245,12 +1229,11 @@ export class UnifiedWalletStorage {
    * Requires the same password used during export
    */
   async importFromQRSync(qrData, password, localPassword = null) {
-    // Support both old XRPL: and new XRPLTO: prefix
-    if (!qrData.startsWith('XRPLTO:') && !qrData.startsWith('XRPL:')) {
+    if (!qrData.startsWith('XRPLTO:')) {
       throw new Error('Invalid QR format');
     }
 
-    const encrypted = qrData.startsWith('XRPLTO:') ? qrData.slice(7) : qrData.slice(5);
+    const encrypted = qrData.slice(7);
 
     // Decrypt with password
     let payload;
@@ -1300,7 +1283,7 @@ export class UnifiedWalletStorage {
   }
 }
 
-// Backward compatibility
+// Alias for import convenience
 export const EncryptedWalletStorage = UnifiedWalletStorage;
 
 // Singleton instance for shared use (prevents multiple DB connections)

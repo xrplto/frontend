@@ -1003,7 +1003,7 @@ const Chat = () => {
   const getLoggedInWallet = () => {
     if (typeof window === 'undefined') return null;
     try {
-      const profile = JSON.parse(localStorage.getItem('account_profile_2') || 'null');
+      const profile = JSON.parse(localStorage.getItem('account_profile') || 'null');
       return profile?.account || null;
     } catch { return null; }
   };
@@ -1097,8 +1097,8 @@ const Chat = () => {
   // Sync authUser wallet with localStorage (event-driven, no polling)
   useEffect(() => {
     const handleStorage = (e) => {
-      // null key = clear(), otherwise only react to account_profile_2
-      if (e && e.key !== null && e.key !== 'account_profile_2') return;
+      // null key = clear(), otherwise only react to account_profile
+      if (e && e.key !== null && e.key !== 'account_profile') return;
       const acc = getLoggedInWallet();
       if (acc !== (authUser?.wallet || null)) {
         setAuthUser(prev => acc ? { ...prev, wallet: acc } : { ...prev, wallet: null });

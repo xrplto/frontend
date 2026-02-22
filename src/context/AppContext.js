@@ -67,8 +67,8 @@ function ContextProviderInner({ children, data, openSnackbar }) {
   const BASE_URL = 'https://api.xrpl.to/v1';
 
   // Define constants first before using them
-  const KEY_ACCOUNT_PROFILE = 'account_profile_2';
-  const KEY_ACCOUNT_PROFILES = 'account_profiles_2';
+  const KEY_ACCOUNT_PROFILE = 'account_profile';
+  const KEY_ACCOUNT_PROFILES = 'account_profiles';
 
   const [sync, setSync] = useState(0);
   const [trustlineUpdate, setTrustlineUpdate] = useState(null); // { issuer, currency, hasTrustline }
@@ -240,8 +240,8 @@ function ContextProviderInner({ children, data, openSnackbar }) {
         const walletStorage = await getWalletStorage();
 
         // Handle encrypted profile migration (if exists)
-        const encryptedProfile = localStorage.getItem(KEY_ACCOUNT_PROFILE + '_enc');
-        if (encryptedProfile) {
+        const encProfile = localStorage.getItem(KEY_ACCOUNT_PROFILE + '_enc');
+        if (encProfile) {
           try {
             const profile = await walletStorage.getSecureItem(KEY_ACCOUNT_PROFILE);
             if (profile) {
@@ -278,14 +278,14 @@ function ContextProviderInner({ children, data, openSnackbar }) {
         }
 
         // Handle encrypted profiles migration (if exists)
-        const encryptedProfiles = localStorage.getItem('account_profiles_2_enc');
-        if (encryptedProfiles) {
+        const encKey = localStorage.getItem(KEY_ACCOUNT_PROFILES + '_enc');
+        if (encKey) {
           try {
             const migratedProfiles = await walletStorage.getSecureItem(KEY_ACCOUNT_PROFILES);
             if (migratedProfiles) {
               const safeMigrated = Array.isArray(migratedProfiles) ? stripSeedArray(migratedProfiles) : migratedProfiles;
               localStorage.setItem('profiles', JSON.stringify(safeMigrated));
-              localStorage.removeItem('account_profiles_2_enc');
+              localStorage.removeItem(KEY_ACCOUNT_PROFILES + '_enc');
               setProfiles(safeMigrated);
             }
           } catch (err) {
@@ -346,9 +346,7 @@ function ContextProviderInner({ children, data, openSnackbar }) {
 
   const doLogOut = async () => {
     // CRITICAL: Preserve keys that must survive logout
-    // Without entropy, encrypted data in IndexedDB becomes unrecoverable
     // Without device_key_id, stored credentials in IndexedDB become orphaned
-    const entropy = localStorage.getItem('__wk_entropy__');
     const avatars = localStorage.getItem('__user_avatars__');
     const deviceKeyId = localStorage.getItem('device_key_id');
 
@@ -360,9 +358,6 @@ function ContextProviderInner({ children, data, openSnackbar }) {
     sessionStorage.clear();
 
     // Restore keys that must persist across sessions
-    if (entropy) {
-      localStorage.setItem('__wk_entropy__', entropy);
-    }
     if (avatars) {
       localStorage.setItem('__user_avatars__', avatars);
     }
