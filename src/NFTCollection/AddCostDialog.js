@@ -94,6 +94,7 @@ export default function AddCostDialog({ open, setOpen, openSnackbar, onAddCost }
                 <div className="flex flex-row gap-2 items-center">
                   <input
                     type="text"
+                    inputMode="decimal"
                     id="id_txt_costamountpermint"
                     className={cn(
                       'flex-1 rounded-lg border-[1.5px] px-3 py-2 text-[13px] font-normal',

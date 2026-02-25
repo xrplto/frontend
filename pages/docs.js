@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import Head from 'next/head';
 import api from 'src/utils/api';
 import {
@@ -37,7 +37,8 @@ import {
   Droplets,
   Radio,
   Shield,
-  Info
+  Info,
+  Flame
 } from 'lucide-react';
 import { ThemeContext } from 'src/context/AppContext';
 import { cn } from 'src/utils/cn';
@@ -51,6 +52,7 @@ const ApiDocsPage = ({ apiDocs, ogp }) => {
   const isDark = themeName === 'XrplToDarkTheme';
   const [currentSection, setCurrentSection] = useState('info');
   const [searchTerm, setSearchTerm] = useState('');
+
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [apiResponse, setApiResponse] = useState(null);
@@ -142,7 +144,10 @@ const ApiDocsPage = ({ apiDocs, ogp }) => {
         { id: 'info', title: 'What is xrpl.to', icon: Info },
         { id: 'handshake', title: 'Handshake', icon: Shield },
         { id: 'platform-fees', title: 'Platform Fees', icon: Zap },
-        { id: 'security', title: 'Security', icon: Key }
+        { id: 'trending-guide', title: 'Trending', icon: TrendingUp },
+        { id: 'boost-guide', title: 'Boost', icon: Flame },
+        { id: 'security', title: 'Security', icon: Key },
+        { id: 'terms', title: 'Terms of Service', icon: FileText }
       ]
     },
     {
@@ -196,6 +201,15 @@ const ApiDocsPage = ({ apiDocs, ogp }) => {
   const toggleGroup = (name) => {
     setExpandedGroups((prev) => ({ ...prev, [name]: !prev[name] }));
   };
+
+  // Navigate to section from URL hash (e.g. /docs#trending-guide)
+  useEffect(() => {
+    const hash = window.location.hash.slice(1);
+    if (hash) {
+      const validIds = sidebarGroups.flatMap(g => g.items.map(i => i.id));
+      if (validIds.includes(hash)) setCurrentSection(hash);
+    }
+  }, []);
 
   // Flat list of all sections for prev/next navigation
   const allSections = sidebarGroups.flatMap((group) => group.items);
@@ -3244,6 +3258,133 @@ curl -X POST https://api.xrpl.to/v1/faucet \\
           </div>
         );
 
+      case 'trending-guide':
+        return (
+          <div className="space-y-8">
+            <div>
+              <h2 className="text-2xl font-normal text-primary mb-2">Trending</h2>
+              <p className={cn('text-[14px] leading-relaxed', isDark ? 'text-white/60' : 'text-gray-600')}>
+                Every token and NFT collection on xrpl.to is assigned a Trending Score based on recent market activity and community engagement. This score determines ranking on the trending page and homepage.
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              {[
+                { title: 'Market Activity', desc: 'Trading volume, liquidity, and number of unique traders all contribute to the score.' },
+                { title: 'Community Engagement', desc: 'Page views and watchlist activity signal interest from the community.' },
+                { title: 'Verification', desc: 'Tokens with verified info receive a scoring advantage.' },
+                { title: 'Boosts', desc: 'Active Boosts apply a multiplier to the base trending score.' },
+                { title: 'Proprietary Algorithm', desc: 'The exact formula and weighting are not disclosed to prevent gaming and exploitation of the ranking system.' }
+              ].map((item) => (
+                <div
+                  key={item.title}
+                  className={cn(
+                    'p-4 rounded-xl border-[1.5px]',
+                    isDark ? 'border-white/5 bg-white/[0.02]' : 'border-gray-100 bg-gray-50/50'
+                  )}
+                >
+                  <div className={cn('text-[13px] font-medium mb-1', isDark ? 'text-white/80' : 'text-gray-800')}>{item.title}</div>
+                  <div className={cn('text-[12px] leading-relaxed', isDark ? 'text-white/50' : 'text-gray-500')}>{item.desc}</div>
+                </div>
+              ))}
+            </div>
+
+            <p className={cn('text-[12px]', isDark ? 'text-white/40' : 'text-gray-500')}>
+              Scores are recalculated continuously. A token with zero activity will naturally fall off the trending page.
+            </p>
+          </div>
+        );
+
+      case 'boost-guide':
+        return (
+          <div className="space-y-8">
+            <div>
+              <h2 className="text-2xl font-normal text-primary mb-2">Boost</h2>
+              <p className={cn('text-[14px] leading-relaxed', isDark ? 'text-white/60' : 'text-gray-600')}>
+                Boosts are a powerful way to amplify a token or NFT collection's presence on xrpl.to. By purchasing a Boost pack you temporarily increase a token's Trending Score, helping it gain more visibility. The number of active Boosts is displayed next to the token across the platform. The more Boosts, the higher the score.
+              </p>
+            </div>
+
+            <div
+              className={cn(
+                'flex items-center gap-3 rounded-xl p-4 border-[1.5px]',
+                isDark ? 'border-[#FFD700]/20 bg-[#FFD700]/5' : 'border-amber-300/40 bg-amber-50'
+              )}
+            >
+              <Flame size={18} className="text-[#FFD700] shrink-0" />
+              <div>
+                <div className={cn('text-[13px] font-medium mb-0.5', isDark ? 'text-[#FFD700]' : 'text-amber-700')}>Golden Ticker</div>
+                <div className={cn('text-[12px] leading-relaxed', isDark ? 'text-white/50' : 'text-gray-600')}>
+                  The ultimate flex for any token. Unlocked when 500+ Boosts are active, it changes the token's symbol to a striking golden color on the screener and token pages. Lasts as long as there are 500+ active Boosts.
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <h3 className={cn('text-lg font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+                How to Boost
+              </h3>
+              <ol className={cn('text-[13px] leading-relaxed space-y-2 list-decimal list-inside ml-1', isDark ? 'text-white/60' : 'text-gray-600')}>
+                <li>Click the <span className="inline-flex items-center align-middle"><Flame size={12} className="text-orange-500 mx-0.5" /></span> icon next to any token or collection in the Trending or New panels.</li>
+                <li>Select a boost pack with a multiplier and duration (12-24h).</li>
+                <li>Pay with XRP from your wallet or by card/crypto via Stripe.</li>
+                <li>Your boost is applied immediately. Multiple boosts stack on top of each other.</li>
+              </ol>
+            </div>
+
+            <div className="space-y-4">
+              <h3 className={cn('text-lg font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+                Boost Packs
+              </h3>
+              <div className={cn('rounded-xl border-[1.5px] overflow-hidden', isDark ? 'border-white/5' : 'border-gray-100')}>
+                <table className="w-full text-[13px]">
+                  <thead className={isDark ? 'bg-white/5' : 'bg-gray-50'}>
+                    <tr>
+                      <th className={cn('text-left px-4 py-2.5 font-medium', isDark ? 'text-white/60' : 'text-gray-600')}>Tier</th>
+                      <th className={cn('text-left px-4 py-2.5 font-medium', isDark ? 'text-white/60' : 'text-gray-600')}>Multiplier</th>
+                      <th className={cn('text-left px-4 py-2.5 font-medium', isDark ? 'text-white/60' : 'text-gray-600')}>Effect</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[
+                      ['Starter', '10x', 'Entry-level visibility bump'],
+                      ['Power', '30x', 'Noticeable ranking increase'],
+                      ['Mega', '50x', 'Strong push up the trending page'],
+                      ['Ultra', '100x', 'Dominant trending position'],
+                      ['Legendary', '500x', 'Activates Golden Ticker']
+                    ].map(([tier, mult, effect]) => (
+                      <tr key={tier} className={isDark ? 'border-t border-white/5' : 'border-t border-gray-100'}>
+                        <td className={cn('px-4 py-2.5 font-medium', isDark ? 'text-white/80' : 'text-gray-800')}>{tier}</td>
+                        <td className="px-4 py-2.5 text-primary">{mult}</td>
+                        <td className={cn('px-4 py-2.5', isDark ? 'text-white/50' : 'text-gray-500')}>{effect}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <h3 className={cn('text-lg font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+                FAQ
+              </h3>
+              <div className="space-y-4">
+                {[
+                  ['Do Boosts guarantee that a token will trend?', 'No. Boosts enhance a token\'s existing Trending Score by applying a multiplier, but they don\'t replace the other on-chain and off-chain metrics in the ranking algorithm. A token with weak fundamentals won\'t automatically rank #1 just by using Boosts.'],
+                  ['Can any token be boosted?', 'Most tokens and NFT collections on xrpl.to can be boosted. Tokens that have been inactive for over 24 hours or those flagged with potential security risks are ineligible.'],
+                  ['Are Boosts refundable?', 'No, Boosts are non-refundable. Boosts may be removed from a token if it is flagged as malicious by our moderators.'],
+                  ['What payment methods are accepted?', 'XRP (direct from your wallet) or card/crypto via Stripe.']
+                ].map(([q, a]) => (
+                  <div key={q} className={cn('rounded-xl p-4', isDark ? 'bg-white/[0.03]' : 'bg-gray-50')}>
+                    <div className={cn('text-[13px] font-medium mb-1.5', isDark ? 'text-white/80' : 'text-gray-800')}>{q}</div>
+                    <div className={cn('text-[12px] leading-relaxed', isDark ? 'text-white/50' : 'text-gray-500')}>{a}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+
       case 'security':
         return (
           <div className="space-y-8">
@@ -3438,6 +3579,83 @@ curl -X POST https://api.xrpl.to/v1/faucet \\
                 <p className={cn('text-[13px] leading-relaxed', isDark ? 'text-white/70' : 'text-gray-700')}>
                   xrpl.to has taken extensive measures to create a secure platform. However, the security of the platform is often irrelevant if a user is deceived into providing their private keys. It is important to understand your responsibility in guarding your key. Use the proper security measures described above: store your seed offline, never share it with anyone, verify you are on the correct domain, and check your Handshake code before entering any information. Never enter your seed anywhere if you have already set up your account. If you need help, contact <a href="https://x.com/xrplto" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">@xrplto on X</a>.
                 </p>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'terms':
+        return (
+          <div className="space-y-8">
+            <div>
+              <h2 className="text-2xl font-normal text-primary mb-2">Terms of Service</h2>
+              <p className={cn('text-[14px] leading-relaxed', isDark ? 'text-white/60' : 'text-gray-600')}>
+                By using xrpl.to you agree to the following terms.
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              <h3 className={cn('text-lg font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+                Non-Refundable Services
+              </h3>
+              <div
+                className={cn(
+                  'p-4 rounded-xl border-[1.5px]',
+                  isDark ? 'border-primary/20 bg-primary/5' : 'border-primary/20 bg-blue-50/50'
+                )}
+              >
+                <p className={cn('text-[13px] leading-relaxed', isDark ? 'text-white/70' : 'text-gray-700')}>
+                  All services sold by xrpl.to are non-refundable. This includes Boosts, API key subscriptions, token launches, and any other paid features on the platform.
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <h3 className={cn('text-lg font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+                Irreversible Trades
+              </h3>
+              <div
+                className={cn(
+                  'p-4 rounded-xl border-[1.5px]',
+                  isDark ? 'border-amber-500/20 bg-amber-500/5' : 'border-amber-500/20 bg-amber-50/50'
+                )}
+              >
+                <p className={cn('text-[13px] leading-relaxed', isDark ? 'text-white/70' : 'text-gray-700')}>
+                  Trades on the XRP Ledger DEX are irreversible. Once a trade is executed it cannot be undone due to the fully decentralized nature of the XRP Ledger. There is no central authority that can reverse, cancel, or modify any transaction.
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <h3 className={cn('text-lg font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+                What xrpl.to Is
+              </h3>
+              <p className={cn('text-[13px] leading-relaxed', isDark ? 'text-white/60' : 'text-gray-600')}>
+                xrpl.to is a trading interface and data aggregator for the XRP Ledger. It does not custody funds, execute trades on your behalf, or control the underlying ledger. All trades happen directly on the decentralized XRP Ledger DEX. xrpl.to simply provides the UI to interact with it.
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              <h3 className={cn('text-lg font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+                User Responsibility
+              </h3>
+              <div className="space-y-3">
+                {[
+                  'You are solely responsible for your trading decisions and their outcomes.',
+                  'You are responsible for securing your wallet and private keys.',
+                  'xrpl.to is not liable for any losses resulting from trades, market conditions, or user error.',
+                  'Token listings on xrpl.to do not constitute an endorsement. Always do your own research.'
+                ].map((item, i) => (
+                  <div
+                    key={i}
+                    className={cn(
+                      'flex items-start gap-2.5 px-4 py-2.5 rounded-xl border-[1.5px]',
+                      isDark ? 'border-white/5 bg-white/[0.02]' : 'border-gray-100 bg-gray-50/50'
+                    )}
+                  >
+                    <span className={cn('text-[13px] leading-relaxed', isDark ? 'text-white/60' : 'text-gray-600')}>{item}</span>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
@@ -4300,7 +4518,7 @@ syncWs.onopen = () => {
 
       <Header />
 
-      <div className={cn('min-h-dvh scroll-smooth overflow-x-hidden pt-[52px]', isDark ? 'bg-black' : 'bg-white')}>
+      <div className={cn('min-h-dvh scroll-smooth overflow-x-hidden', isDark ? 'bg-black' : 'bg-white')}>
         {/* Mobile top bar */}
         <div className={cn(
           'md:hidden sticky top-0 z-50 flex items-center justify-between px-4 py-2.5 border-b mt-0',
@@ -4334,7 +4552,7 @@ syncWs.onopen = () => {
           {/* Mobile sidebar overlay */}
           {isSidebarOpen && (
             <div
-              className="md:hidden fixed inset-0 top-[52px] z-30 bg-black/50 backdrop-blur-sm"
+              className="md:hidden fixed inset-0 z-30 bg-black/50 backdrop-blur-sm"
               onClick={() => setIsSidebarOpen(false)}
             />
           )}
@@ -4343,7 +4561,7 @@ syncWs.onopen = () => {
           <div
             className={cn(
               'w-[240px] border-r overflow-y-auto scrollbar-hide transition-all duration-300 pt-4',
-              'fixed md:sticky top-[52px] h-[calc(100dvh-52px)] z-40',
+              'fixed md:sticky top-0 h-dvh z-40',
               isDark
                 ? 'bg-black border-white/10'
                 : 'bg-white border-[rgba(59,130,246,0.15)]',

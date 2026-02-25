@@ -7,7 +7,12 @@ import { cn } from 'src/utils/cn';
 import { fVolume, fIntNumber, normalizeTag } from 'src/utils/formatters';
 import { ThemeContext } from 'src/context/AppContext';
 import { X, Search, Flame, TrendingUp, Sparkles, Clock } from 'lucide-react';
+import { TIER_CONFIG } from 'src/components/VerificationBadge';
 import { ApiButton } from 'src/components/ApiEndpointsModal';
+import Link from 'next/link';
+import { fNumber, normalizeCollectionName } from 'src/utils/formatters';
+import dynamic from 'next/dynamic';
+const BoostModal = dynamic(() => import('src/components/BoostModal'), { ssr: false });
 
 // Constants
 const CollectionListType = {
@@ -17,17 +22,17 @@ const CollectionListType = {
 };
 
 // Styled Components - matching Summary.js
-const Container = ({ className, children, ...p }) => (
+const Container = ({ isDark, className, children, ...p }) => (
   <div className={cn('relative z-[2] mb-3 w-full max-w-full bg-transparent overflow-visible max-sm:my-2 max-sm:p-0', className)} {...p}>{children}</div>
 );
 
 const Grid = ({ className, children, ...p }) => (
   <div
     className={cn(
-      'grid grid-cols-[repeat(5,1fr)_1.5fr] gap-[10px] w-full',
+      'grid grid-cols-[repeat(4,1fr)_repeat(2,1.3fr)] gap-[5px] w-full',
       'max-[1400px]:grid-cols-3',
       'max-[900px]:grid-cols-3',
-      'max-sm:flex max-sm:overflow-x-auto max-sm:gap-2 max-sm:pb-1 max-sm:[scrollbar-width:none] max-sm:[&::-webkit-scrollbar]:hidden',
+      'max-sm:grid-cols-2 max-sm:gap-[3px]',
       className
     )}
     style={{ WebkitOverflowScrolling: 'touch' }}
@@ -38,27 +43,35 @@ const Grid = ({ className, children, ...p }) => (
 const MetricBox = ({ isDark, className, children, ...p }) => (
   <div
     className={cn(
-      'py-[12px] px-[14px] h-[86px] flex flex-col justify-between items-start rounded-xl bg-transparent border-[1.5px] transition-[background-color,border-color] duration-150',
-      'max-sm:py-[10px] max-sm:px-3 max-sm:h-[72px] max-sm:flex-none max-sm:min-w-[100px]',
-      isDark ? 'border-white/10 hover:border-white/[0.15] hover:bg-white/[0.02]' : 'border-black/[0.06] hover:border-black/10 hover:bg-black/[0.01]',
+      'py-[6px] px-[10px] flex flex-col justify-between items-start rounded-xl border-[1.5px] backdrop-blur-[4px] transition-[background-color,border-color,opacity,transform] duration-200 gap-0',
+      'max-sm:py-[8px] max-sm:px-[7px] max-sm:flex-none max-sm:min-w-[100px] max-sm:gap-0 max-sm:rounded-[10px]',
+      isDark ? 'bg-white/[0.02] border-white/[0.08]' : 'bg-black/[0.01] border-black/[0.06]',
       className
     )}
+    onMouseEnter={(e) => {
+      e.currentTarget.style.borderColor = isDark ? 'rgba(19, 125, 254, 0.25)' : 'rgba(19, 125, 254, 0.15)';
+      e.currentTarget.style.background = isDark ? 'rgba(19, 125, 254, 0.05)' : 'rgba(19, 125, 254, 0.03)';
+    }}
+    onMouseLeave={(e) => {
+      e.currentTarget.style.borderColor = isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)';
+      e.currentTarget.style.background = isDark ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.01)';
+    }}
     {...p}
   >{children}</div>
 );
 
 const MetricTitle = ({ isDark, className, children, ...p }) => (
-  <span className={cn('text-[0.75rem] font-normal tracking-[0.02em] max-sm:text-[0.6rem]', isDark ? 'text-white/50' : 'text-[#212B36]/50', className)} {...p}>{children}</span>
+  <span className={cn('text-[0.85rem] font-normal tracking-[0.02em] max-sm:text-[0.65rem]', isDark ? 'text-white/50' : 'text-[#212B36]/50', className)} {...p}>{children}</span>
 );
 
 const MetricValue = ({ isDark, className, children, ...p }) => (
-  <span className={cn('text-[1.35rem] font-semibold leading-none tracking-[-0.02em] whitespace-nowrap max-sm:text-[1rem]', isDark ? 'text-white' : 'text-[#212B36]', className)} {...p}>{children}</span>
+  <span className={cn('text-[1.75rem] font-semibold leading-none tracking-[-0.02em] whitespace-nowrap max-sm:text-[1.1rem]', isDark ? 'text-white' : 'text-[#212B36]', className)} {...p}>{children}</span>
 );
 
 const PercentageChange = ({ isPositive, className, children, ...p }) => (
   <span
     className={cn(
-      'text-[0.75rem] inline-flex items-center gap-[2px] font-medium tracking-[-0.01em] px-1.5 py-0.5 rounded max-sm:text-[0.6rem] max-sm:px-[4px]',
+      'text-[0.85rem] inline-flex items-center gap-[2px] font-medium tracking-[-0.01em] px-2 py-1 rounded max-sm:text-[0.65rem] max-sm:px-[5px]',
       isPositive ? 'text-emerald-500 bg-emerald-500/10' : 'text-red-500 bg-red-500/10',
       className
     )}
@@ -67,7 +80,7 @@ const PercentageChange = ({ isPositive, className, children, ...p }) => (
 );
 
 const VolumePercentage = ({ isDark, className, children, ...p }) => (
-  <span className={cn('text-[0.65rem] font-normal max-sm:text-[0.54rem]', isDark ? 'text-white/60' : 'text-[#212B36]/60', className)} {...p}>{children}</span>
+  <span className={cn('text-[0.75rem] font-normal max-sm:text-[0.58rem]', isDark ? 'text-white/60' : 'text-[#212B36]/60', className)} {...p}>{children}</span>
 );
 
 const ChartMetricBox = ({ isDark, className, children, ...p }) => (
@@ -754,12 +767,123 @@ const formatNumberWithDecimals = (num) => {
   return Math.round(num).toLocaleString('en-US');
 };
 
+// Discover panel helpers
+const fmtFloor = (v) => v >= 1e6 ? `${(v / 1e6).toFixed(1)}M` : v >= 1e3 ? `${(v / 1e3).toFixed(0)}K` : v > 0 ? fNumber(v) : '0';
+
+const timeAgo = (ts) => {
+  if (!ts) return '';
+  const diff = Date.now() - ts;
+  const mins = Math.floor(diff / 60000);
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  if (days < 30) return `${days}d ago`;
+  const months = Math.floor(days / 30);
+  if (months < 12) return `${months}mo ago`;
+  return `${Math.floor(months / 12)}y ago`;
+};
+
+const DiscoverCollectionRow = ({ collection, idx, isDark, onBoost }) => {
+  const name = normalizeCollectionName(collection.name);
+  const logoUrl = collection.logoImage ? `https://s1.xrpl.to/nft-collection/${collection.logoImage}` : null;
+  const change = collection.floor1dPercent || 0;
+  const isUp = change >= 0;
+
+  return (
+    <Link
+      href={`/nfts/${collection.slug}`}
+      prefetch={false}
+      className={cn(
+        'flex items-center gap-[6px] py-[2px] px-[6px] no-underline transition-colors duration-150 rounded-md',
+        'max-[600px]:py-[2px] max-[600px]:px-[4px] max-[600px]:gap-[4px]',
+        isDark ? 'hover:bg-white/[0.04]' : 'hover:bg-black/[0.02]'
+      )}
+    >
+      <span className={cn('text-[10px] tabular-nums font-medium w-[14px] text-center flex-shrink-0 max-[600px]:hidden', isDark ? 'text-white/25' : 'text-black/25')}>
+        {idx + 1}
+      </span>
+      <div className="relative flex-shrink-0">
+        <div className={cn('w-[20px] h-[20px] min-w-[20px] max-[600px]:w-[16px] max-[600px]:h-[16px] max-[600px]:min-w-[16px] rounded-md max-[600px]:rounded overflow-hidden flex items-center justify-center', isDark ? 'bg-white/[0.06]' : 'bg-black/[0.04]')}>
+          {logoUrl ? (
+            <img src={logoUrl} alt="" className="w-full h-full object-cover" loading="lazy" onError={(e) => { e.target.style.display = 'none'; }} />
+          ) : (
+            <span className="text-[9px] font-bold opacity-40">{name?.[0]}</span>
+          )}
+        </div>
+        {(() => { const tier = TIER_CONFIG[collection.verified]; return tier ? (
+          <div className={cn('absolute -bottom-[2px] -right-[2px] rounded-full p-[1px]', isDark ? 'ring-[1px] ring-[#0a0a0a]' : 'ring-[1px] ring-white', tier.bg)} title={tier.label}>
+            {tier.icon(6)}
+          </div>
+        ) : null; })()}
+      </div>
+      <span className={cn('text-[11px] max-[600px]:text-[10px] font-semibold truncate leading-none flex-1 min-w-0', isDark ? 'text-white' : 'text-[#1a1f2e]')}>{name}</span>
+      <span className={cn('text-[9px] tabular-nums font-medium flex-shrink-0 ml-[4px] max-[600px]:ml-[1px] w-[40px] max-[600px]:w-[32px] text-right', isDark ? 'text-white/30' : 'text-black/30')}>
+        ✕{fmtFloor(collection.floor || 0)}
+      </span>
+      <span className={cn('text-[9px] tabular-nums font-medium flex-shrink-0 ml-[6px] max-[600px]:hidden w-[34px] text-right', isDark ? 'text-white/25' : 'text-black/25')}>
+        {timeAgo(collection.created)}
+      </span>
+      <span className="ml-[4px] max-[600px]:ml-[1px] w-[50px] max-[600px]:w-[40px] flex justify-end">
+        <div className={cn(
+          'text-[10px] max-[600px]:text-[8px] font-bold tabular-nums px-[6px] py-[3px] max-[600px]:px-[3px] max-[600px]:py-[1px] rounded-md max-[600px]:rounded leading-tight flex-shrink-0',
+          isUp ? 'text-[#10b981] bg-[rgba(16,185,129,0.1)]' : 'text-[#ef4444] bg-[rgba(239,68,68,0.1)]'
+        )}>
+          {isUp ? '+' : ''}{change.toFixed(1)}%
+        </div>
+      </span>
+      <button
+        onClick={(e) => { e.preventDefault(); e.stopPropagation(); onBoost(collection); }}
+        title="Boost"
+        className={cn(
+          'flex-shrink-0 ml-[4px] max-[600px]:ml-[1px] w-[20px] h-[20px] max-[600px]:w-[18px] max-[600px]:h-[18px] rounded-md flex items-center justify-center transition-colors duration-150 border-none cursor-pointer',
+          isDark ? 'bg-white/[0.04] hover:bg-orange-500/20 text-white/25 hover:text-orange-400' : 'bg-black/[0.03] hover:bg-orange-500/10 text-black/20 hover:text-orange-500'
+        )}
+      >
+        <Flame size={10} />
+      </button>
+    </Link>
+  );
+};
+
+const DiscoverPanel = ({ title, icon: Icon, href, collections, isDark, onBoost }) => {
+  if (!collections || collections.length === 0) return null;
+  return (
+    <div className={cn(
+      'rounded-xl max-[600px]:rounded-[10px] border-[1.5px] overflow-hidden flex flex-col',
+      isDark ? 'border-white/[0.08] bg-white/[0.02]' : 'border-black/[0.06] bg-black/[0.01]'
+    )}>
+      <div className={cn(
+        'flex items-center justify-between px-[8px] py-[2px] max-[600px]:px-[6px] max-[600px]:py-[2px]',
+        isDark ? 'border-b border-white/[0.06]' : 'border-b border-black/[0.05]'
+      )}>
+        <div className="flex items-center gap-[4px]">
+          <Icon size={11} className={cn('max-[600px]:w-[10px] max-[600px]:h-[10px]', isDark ? 'text-white/40' : 'text-black/40')} />
+          <span className={cn('text-[10px] max-[600px]:text-[9px] font-semibold', isDark ? 'text-white/70' : 'text-black/70')}>
+            {title}
+          </span>
+        </div>
+        <Link href={href} prefetch={false} className="text-[9px] max-[600px]:text-[8px] text-[#137DFE] no-underline font-medium hover:underline">
+          View All
+        </Link>
+      </div>
+      <div className="flex-1 flex flex-col justify-evenly py-0">
+        {collections.map((c, i) => (
+          <DiscoverCollectionRow key={c.slug} collection={c} idx={i} isDark={isDark} onBoost={onBoost} />
+        ))}
+      </div>
+    </div>
+  );
+};
+
 function Collections({
   initialCollections,
   initialTotal,
   initialGlobalMetrics,
   collectionCreation,
-  tags
+  tags,
+  trendingCollections: trendingProp = [],
+  newCollections: newProp = []
 }) {
   const router = useRouter();
   const { themeName } = useContext(ThemeContext);
@@ -778,6 +902,9 @@ function Collections({
   const [isMobile, setIsMobile] = useState(false);
   const [visibleTagCount, setVisibleTagCount] = useState(0);
   const tagsContainerRef = useRef(null);
+  const trendingCollections = trendingProp;
+  const newCollections = newProp;
+  const [boostCollection, setBoostCollection] = useState(null);
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 600);
@@ -964,260 +1091,139 @@ function Collections({
       )}
 
       {/* Global Metrics Section */}
-      <Container>
+      <Container isDark={isDark}>
         {globalMetrics && (
-          <div className="w-full">
-            <Grid>
-              <MetricBox isDark={isDark}>
-                <MetricTitle isDark={isDark}>24h Volume</MetricTitle>
+          <Grid>
+            {/* 24h Volume & Sales (combined) */}
+            <MetricBox isDark={isDark}>
+              <MetricTitle isDark={isDark}>24h Volume / Sales</MetricTitle>
+              <div className="flex items-baseline gap-2">
                 <MetricValue isDark={isDark}>
                   ✕{fVolume(globalMetrics.total24hVolume || 0)}
                 </MetricValue>
+                <MetricValue isDark={isDark} className="!text-[1rem] max-sm:!text-[0.8rem] opacity-50">
+                  {formatNumberWithDecimals(globalMetrics.total24hSales || 0)}
+                </MetricValue>
+              </div>
+              <div className="flex items-center gap-2">
                 <PercentageChange isPositive={(globalMetrics.volumePct || 0) >= 0}>
                   {(globalMetrics.volumePct || 0) >= 0 ? '↑' : '↓'}
                   {Math.abs(globalMetrics.volumePct || 0).toFixed(1)}%
                 </PercentageChange>
-              </MetricBox>
-
-              <MetricBox isDark={isDark}>
-                <MetricTitle isDark={isDark}>24h Sales</MetricTitle>
-                <MetricValue isDark={isDark}>
-                  {formatNumberWithDecimals(globalMetrics.total24hSales || 0)}
-                </MetricValue>
                 <PercentageChange isPositive={(globalMetrics.salesPct || 0) >= 0}>
                   {(globalMetrics.salesPct || 0) >= 0 ? '↑' : '↓'}
                   {Math.abs(globalMetrics.salesPct || 0).toFixed(1)}%
                 </PercentageChange>
-              </MetricBox>
+              </div>
+            </MetricBox>
 
-              <MetricBox isDark={isDark}>
-                <MetricTitle isDark={isDark}>Collections</MetricTitle>
-                <MetricValue isDark={isDark}>
-                  {formatNumberWithDecimals(globalMetrics.totalCollections || 0)}
-                </MetricValue>
-                <VolumePercentage isDark={isDark}>
-                  {formatNumberWithDecimals(globalMetrics.activeCollections24h || 0)} active |{' '}
-                  {formatNumberWithDecimals(globalMetrics.total24hMints || 0)} mints
-                </VolumePercentage>
-              </MetricBox>
+            <MetricBox isDark={isDark}>
+              <MetricTitle isDark={isDark}>Collections</MetricTitle>
+              <MetricValue isDark={isDark}>
+                {formatNumberWithDecimals(globalMetrics.totalCollections || 0)}
+              </MetricValue>
+              <VolumePercentage isDark={isDark}>
+                {formatNumberWithDecimals(globalMetrics.activeCollections24h || 0)} active |{' '}
+                {formatNumberWithDecimals(globalMetrics.total24hMints || 0)} mints
+              </VolumePercentage>
+            </MetricBox>
 
-              <MetricBox isDark={isDark}>
-                <MetricTitle isDark={isDark}>24h Fees</MetricTitle>
-                <MetricValue isDark={isDark}>
-                  ✕
-                  {formatNumberWithDecimals(
-                    (globalMetrics.total24hBrokerFees || 0) + (globalMetrics.total24hRoyalties || 0)
-                  )}
-                </MetricValue>
-                <VolumePercentage isDark={isDark}>
-                  ✕{formatNumberWithDecimals(globalMetrics.total24hRoyalties || 0)} royalties | ✕
-                  {formatNumberWithDecimals(globalMetrics.total24hBrokerFees || 0)} broker
-                </VolumePercentage>
-              </MetricBox>
+            <MetricBox isDark={isDark}>
+              <MetricTitle isDark={isDark}>24h Fees</MetricTitle>
+              <MetricValue isDark={isDark}>
+                ✕
+                {formatNumberWithDecimals(
+                  (globalMetrics.total24hBrokerFees || 0) + (globalMetrics.total24hRoyalties || 0)
+                )}
+              </MetricValue>
+              <VolumePercentage isDark={isDark}>
+                ✕{formatNumberWithDecimals(globalMetrics.total24hRoyalties || 0)} royalties | ✕
+                {formatNumberWithDecimals(globalMetrics.total24hBrokerFees || 0)} broker
+              </VolumePercentage>
+            </MetricBox>
 
-              <MetricBox isDark={isDark} style={{ minWidth: isMobile ? '130px' : '160px' }}>
-                <MetricTitle isDark={isDark}>Market</MetricTitle>
-                {(() => {
-                  const sentiment = globalMetrics.sentimentScore || 50;
-                  const rsi = globalMetrics.marketRSI || 50;
-
-                  const getSentimentColor = (v) =>
-                    v >= 55 ? '#10b981' : v >= 45 ? '#fbbf24' : '#ef4444';
-                  const getRsiColor = (v) =>
-                    v >= 70 ? '#ef4444' : v <= 30 ? '#8b5cf6' : v >= 50 ? '#10b981' : '#fbbf24';
-
-                  const sentColor = getSentimentColor(sentiment);
-                  const rsiColor = getRsiColor(rsi);
-
-                  return (
-                    <div className={cn('flex items-end w-full', isMobile ? 'gap-4 justify-evenly' : 'gap-0 justify-evenly')}>
-                      {/* Sentiment gauge */}
-                      <div className="flex flex-col items-center gap-1">
-                        <div className="relative w-9 h-5">
-                          <div
-                            className="absolute w-9 h-[18px] rounded-t-[18px] opacity-20"
-                            style={{ background: 'conic-gradient(from 180deg, #ef4444 0deg, #fbbf24 90deg, #10b981 180deg)' }}
-                          />
-                          <div
-                            className="absolute bottom-0 left-1/2 w-0.5 h-[14px] rounded-[1px] origin-bottom"
-                            style={{
-                              background: sentColor,
-                              transform: `translateX(-50%) rotate(${(sentiment - 50) * 1.8}deg)`
-                            }}
-                          />
-                          <div
-                            className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full"
-                            style={{ background: sentColor }}
-                          />
-                        </div>
-                        <div className="flex items-baseline gap-0.5">
-                          <span
-                            className="text-lg font-semibold leading-none"
-                            style={{ color: sentColor }}
-                          >
-                            {sentiment}
-                          </span>
-                          <span className={cn('text-[0.58rem]', isDark ? 'text-white/60' : 'text-black/60')}>
-                            Sentiment
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* RSI gauge */}
-                      <div className="flex flex-col items-center gap-1">
-                        <div className="relative w-9 h-5">
-                          <div
-                            className="absolute w-9 h-[18px] rounded-t-[18px] opacity-20"
-                            style={{ background: 'conic-gradient(from 180deg, #8b5cf6 0deg, #10b981 90deg, #ef4444 180deg)' }}
-                          />
-                          <div
-                            className="absolute bottom-0 left-1/2 w-0.5 h-[14px] rounded-[1px] origin-bottom"
-                            style={{
-                              background: rsiColor,
-                              transform: `translateX(-50%) rotate(${(rsi - 50) * 1.8}deg)`
-                            }}
-                          />
-                          <div
-                            className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full"
-                            style={{ background: rsiColor }}
-                          />
-                        </div>
-                        <div className="flex items-baseline gap-0.5">
-                          <span
-                            className="text-lg font-semibold leading-none"
-                            style={{ color: rsiColor }}
-                          >
-                            {rsi}
-                          </span>
-                          <span className={cn('text-[0.58rem]', isDark ? 'text-white/60' : 'text-black/60')}>
-                            RSI
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })()}
-              </MetricBox>
-
-              <ChartMetricBox isDark={isDark}>
-                {(() => {
-                  // Use collectionCreation prop, fallback to daily data
-                  const creationData = collectionCreation?.length
-                    ? collectionCreation
-                    : globalMetrics.daily || [];
-                  const chartData = creationData.slice(-30);
-                  const todayData = chartData[chartData.length - 1] || {};
-                  const yesterdayData = chartData[chartData.length - 2] || {};
-                  // collectionCreation uses totalCollections, daily uses mints
-                  const today = todayData.totalCollections ?? todayData.mints ?? 0;
-                  const yesterday = yesterdayData.totalCollections ?? yesterdayData.mints ?? 0;
-                  const isUp = today >= yesterday;
-                  // collectionCreation uses collectionsInvolved, daily uses topCollections
-                  const latestCollection = (todayData.collectionsInvolved ||
-                    todayData.topCollections ||
-                    [])[0];
-                  return (
-                    <>
-                      <div className="flex items-center justify-between mb-0.5">
-                        <MetricTitle isDark={isDark}>New Collections</MetricTitle>
-                        <div className="flex items-center gap-1.5">
-                          <span
-                            className={cn('text-[0.95rem] font-semibold', isDark ? 'text-white' : 'text-[#212B36]')}
-                          >
-                            {formatNumberWithDecimals(today)}
-                          </span>
-                          <span className={cn('text-[0.58rem]', isDark ? 'text-white/60' : 'text-black/60')}>
-                            today
-                          </span>
-                          <span
-                            className="text-[0.7rem]"
-                            style={{ color: isUp ? '#10b981' : '#ef4444' }}
-                          >
-                            {isUp ? '↑' : '↓'}
-                          </span>
-                          {latestCollection && (
-                            <a
-                              href={`/nft/collection/${latestCollection.slug}`}
-                              className={cn('text-[0.6rem] no-underline flex items-center gap-1 pl-1.5', isDark ? 'text-white/50 border-l border-white/10' : 'text-black/50 border-l border-black/10')}
-                            >
-                              <span className="max-w-[55px] overflow-hidden text-ellipsis whitespace-nowrap">
-                                {latestCollection.name}
-                              </span>
-                              <span className="text-emerald-500 font-medium">
-                                ✕
-                                {formatNumberWithDecimals(
-                                  latestCollection.volume || latestCollection.items || 0
-                                )}
-                              </span>
-                            </a>
-                          )}
-                        </div>
-                      </div>
-                      <CollectionCreationChart data={chartData} isDark={isDark} />
-                    </>
-                  );
-                })()}
-              </ChartMetricBox>
-            </Grid>
-
-            <MobileChartBox isDark={isDark}>
+            <MetricBox isDark={isDark}>
+              <MetricTitle isDark={isDark}>Market</MetricTitle>
               {(() => {
-                const creationData = collectionCreation?.length
-                  ? collectionCreation
-                  : globalMetrics.daily || [];
-                const chartData = creationData.slice(-30);
-                const todayData = chartData[chartData.length - 1] || {};
-                const yesterdayData = chartData[chartData.length - 2] || {};
-                const today = todayData.totalCollections ?? todayData.mints ?? 0;
-                const yesterday = yesterdayData.totalCollections ?? yesterdayData.mints ?? 0;
-                const isUp = today >= yesterday;
-                const latestCollection = (todayData.collectionsInvolved ||
-                  todayData.topCollections ||
-                  [])[0];
-                return (
-                  <>
-                    <div className="flex items-center justify-between">
-                      <MetricTitle isDark={isDark}>New Collections</MetricTitle>
-                      <div className="flex items-center gap-1">
-                        <span className={cn('text-[0.85rem] font-semibold', isDark ? 'text-white' : 'text-[#212B36]')}>
-                          {formatNumberWithDecimals(today)}
-                        </span>
-                        <span className={cn('text-[0.5rem]', isDark ? 'text-white/60' : 'text-black/60')}>
-                          today
-                        </span>
-                        <span className="text-[0.65rem]" style={{ color: isUp ? '#10b981' : '#ef4444' }}>
-                          {isUp ? '↑' : '↓'}
-                        </span>
-                        {latestCollection && (
-                          <a
-                            href={`/nft/collection/${latestCollection.slug}`}
-                            className={cn('text-[0.45rem] no-underline flex items-center gap-[3px] pl-1', isDark ? 'text-white/50 border-l border-white/10' : 'text-black/50 border-l border-black/10')}
-                          >
-                            <span className="max-w-[40px] overflow-hidden text-ellipsis whitespace-nowrap">
-                              {latestCollection.name}
-                            </span>
-                            <span className="text-emerald-500 font-medium">
-                              ✕
-                              {formatNumberWithDecimals(
-                                latestCollection.volume || latestCollection.items || 0
-                              )}
-                            </span>
-                          </a>
-                        )}
+                const sentiment = globalMetrics.sentimentScore || 50;
+                const rsi = globalMetrics.marketRSI || 50;
+                const getSentimentColor = (v) => v >= 55 ? '#10b981' : v >= 45 ? '#fbbf24' : '#ef4444';
+                const getRsiColor = (v) => v >= 70 ? '#ef4444' : v <= 30 ? '#8b5cf6' : v >= 50 ? '#10b981' : '#fbbf24';
+                const sentColor = getSentimentColor(sentiment);
+                const rsiColor = getRsiColor(rsi);
+
+                if (isMobile) {
+                  return (
+                    <div className="flex-1 flex items-end w-full gap-0 justify-evenly">
+                      <div className="flex flex-col items-center gap-[3px]">
+                        <div className="relative w-10 h-[22px]">
+                          <div className="absolute w-10 h-[20px] rounded-t-[20px] opacity-20 bg-[#fbbf24]" />
+                          <div className="absolute bottom-0 left-1/2 w-[2px] h-[17px] rounded-[1px] origin-bottom"
+                            style={{ background: sentColor, transform: `translateX(-50%) rotate(${(sentiment - 50) * 1.8}deg)` }} />
+                          <div className="absolute -bottom-[1px] left-1/2 -translate-x-1/2 w-[6px] h-[6px] rounded-full" style={{ background: sentColor }} />
+                        </div>
+                        <div className="flex items-baseline gap-[2px]">
+                          <span className="text-[0.85rem] font-semibold leading-none" style={{ color: sentColor }}>{sentiment}</span>
+                          <span className={cn('text-[0.4rem]', isDark ? 'text-white/50' : 'text-black/50')}>Sent</span>
+                        </div>
+                      </div>
+                      <div className="flex flex-col items-center gap-[3px]">
+                        <div className="relative w-10 h-[22px]">
+                          <div className="absolute w-10 h-[20px] rounded-t-[20px] opacity-20 bg-[#10b981]" />
+                          <div className="absolute bottom-0 left-1/2 w-[2px] h-[17px] rounded-[1px] origin-bottom"
+                            style={{ background: rsiColor, transform: `translateX(-50%) rotate(${(rsi - 50) * 1.8}deg)` }} />
+                          <div className="absolute -bottom-[1px] left-1/2 -translate-x-1/2 w-[6px] h-[6px] rounded-full" style={{ background: rsiColor }} />
+                        </div>
+                        <div className="flex items-baseline gap-[2px]">
+                          <span className="text-[0.85rem] font-semibold leading-none" style={{ color: rsiColor }}>{rsi}</span>
+                          <span className={cn('text-[0.4rem]', isDark ? 'text-white/50' : 'text-black/50')}>RSI</span>
+                        </div>
                       </div>
                     </div>
-                    <CollectionCreationChart data={chartData} isDark={isDark} />
-                  </>
+                  );
+                }
+
+                return (
+                  <div className="flex-1 flex items-center w-full justify-evenly">
+                    <div className="flex flex-col items-center gap-[8px]">
+                      <div className="relative w-20 h-[42px]">
+                        <div className="absolute opacity-20 bg-[#fbbf24] w-20 h-10 rounded-t-[40px]" />
+                        <div className="absolute bottom-0 left-1/2 w-[2px] rounded-[1px] origin-bottom h-9"
+                          style={{ background: sentColor, transform: `translateX(-50%) rotate(${(sentiment - 50) * 1.8}deg)` }} />
+                        <div className="absolute -bottom-[2px] left-1/2 -translate-x-1/2 rounded-full w-[9px] h-[9px]" style={{ background: sentColor }} />
+                      </div>
+                      <div className="flex items-baseline gap-[4px]">
+                        <span className="font-semibold leading-[1] text-[1.75rem]" style={{ color: sentColor }}>{sentiment}</span>
+                        <span className={cn('text-[0.8rem]', isDark ? 'text-white/60' : 'text-black/60')}>Sent</span>
+                      </div>
+                    </div>
+                    <div className="flex flex-col items-center gap-[8px]">
+                      <div className="relative w-20 h-[42px]">
+                        <div className="absolute opacity-20 bg-[#10b981] w-20 h-10 rounded-t-[40px]" />
+                        <div className="absolute bottom-0 left-1/2 w-[2px] rounded-[1px] origin-bottom h-9"
+                          style={{ background: rsiColor, transform: `translateX(-50%) rotate(${(rsi - 50) * 1.8}deg)` }} />
+                        <div className="absolute -bottom-[2px] left-1/2 -translate-x-1/2 rounded-full w-[9px] h-[9px]" style={{ background: rsiColor }} />
+                      </div>
+                      <div className="flex items-baseline gap-[4px]">
+                        <span className="font-semibold leading-[1] text-[1.75rem]" style={{ color: rsiColor }}>{rsi}</span>
+                        <span className={cn('text-[0.8rem]', isDark ? 'text-white/60' : 'text-black/60')}>RSI</span>
+                      </div>
+                    </div>
+                  </div>
                 );
               })()}
-            </MobileChartBox>
-          </div>
+            </MetricBox>
+
+            {/* Trending & New Collections inline */}
+            <DiscoverPanel title="Trending" icon={TrendingUp} href="/nfts?sort=trendingScore" collections={trendingCollections} isDark={isDark} onBoost={setBoostCollection} />
+            <DiscoverPanel title="New Collections" icon={Sparkles} href="/nfts?sort=created" collections={newCollections} isDark={isDark} onBoost={setBoostCollection} />
+          </Grid>
         )}
       </Container>
 
       {/* Tags Bar */}
       {tags && tags.length > 0 && (
-        <Container>
+        <Container isDark={isDark}>
           <TagsContainer isDark={isDark} ref={tagsContainerRef}>
             {/* Row 1: Categories + All button */}
             <TagsRow>
@@ -1346,7 +1352,7 @@ function Collections({
       )}
 
       {/* Table Section - aligned with metric boxes */}
-      <Container>
+      <Container isDark={isDark}>
         <div className="min-h-[50vh] relative z-[1]">
           <CollectionList
             type={CollectionListType.ALL}
@@ -1366,6 +1372,13 @@ function Collections({
           />
         </div>
       </Container>
+      {boostCollection && (
+        <BoostModal
+          collection={boostCollection}
+          onClose={() => setBoostCollection(null)}
+          onSuccess={() => setBoostCollection(null)}
+        />
+      )}
     </div>
   );
 }

@@ -2555,58 +2555,41 @@ const HoldersTab = React.memo(({ slug }) => {
           {/* Holders Table */}
           <div
             className={cn(
-              'overflow-x-auto rounded-xl border-[1.5px]',
-              isDark ? 'border-white/[0.08]' : 'border-gray-200'
+              'overflow-x-auto rounded-xl border-[1.5px] backdrop-blur-[4px]',
+              isDark ? 'border-white/[0.08] bg-white/[0.02]' : 'border-black/[0.06] bg-black/[0.01]'
             )}
           >
-            <table className="w-full min-w-[360px] sm:min-w-[500px]">
+            <table className="w-full min-w-[360px] sm:min-w-[500px] border-collapse" style={{ tableLayout: 'fixed', contain: 'layout style' }}>
+              <colgroup>
+                <col style={{ width: '8%' }} />
+                <col style={{ width: '52%' }} />
+                <col style={{ width: '20%' }} />
+                <col style={{ width: '20%' }} />
+              </colgroup>
               <thead
                 className={cn(
-                  'sticky top-0 z-10',
-                  isDark ? 'bg-black/50 backdrop-blur-lg' : 'bg-gray-50/50 backdrop-blur-lg'
+                  'relative z-[100] backdrop-blur-[12px]',
+                  isDark ? 'bg-black/90' : 'bg-white'
                 )}
               >
                 <tr>
-                  <th
-                    className={cn(
-                      'px-4 py-3 text-left text-[11px] font-medium uppercase tracking-wide w-12',
-                      isDark
-                        ? 'text-gray-400 border-b border-white/5'
-                        : 'text-gray-600 border-b border-gray-200'
-                    )}
-                  >
-                    Rank
-                  </th>
-                  <th
-                    className={cn(
-                      'px-4 py-3 text-left text-[11px] font-medium uppercase tracking-wide',
-                      isDark
-                        ? 'text-gray-400 border-b border-white/5'
-                        : 'text-gray-600 border-b border-gray-200'
-                    )}
-                  >
-                    Address
-                  </th>
-                  <th
-                    className={cn(
-                      'px-4 py-3 text-right text-[11px] font-medium uppercase tracking-wide',
-                      isDark
-                        ? 'text-gray-400 border-b border-white/5'
-                        : 'text-gray-600 border-b border-gray-200'
-                    )}
-                  >
-                    NFTs
-                  </th>
-                  <th
-                    className={cn(
-                      'px-4 py-3 text-right text-[11px] font-medium uppercase tracking-wide w-20',
-                      isDark
-                        ? 'text-gray-400 border-b border-white/5'
-                        : 'text-gray-600 border-b border-gray-200'
-                    )}
-                  >
-                    Share
-                  </th>
+                  {[
+                    { label: 'Rank', align: 'left' },
+                    { label: 'Address', align: 'left' },
+                    { label: 'NFTs', align: 'right' },
+                    { label: 'Share', align: 'right' }
+                  ].map((col) => (
+                    <th
+                      key={col.label}
+                      className={cn(
+                        'font-medium text-[11px] tracking-[0.04em] uppercase whitespace-nowrap box-border first-of-type:pl-3 last-of-type:pr-3',
+                        isDark ? 'text-white/60 border-b border-white/[0.08]' : 'text-black/60 border-b border-black/[0.06]'
+                      )}
+                      style={{ padding: '14px 4px', textAlign: col.align }}
+                    >
+                      {col.label}
+                    </th>
+                  ))}
                 </tr>
               </thead>
               <tbody>
@@ -2629,35 +2612,18 @@ const HoldersTab = React.memo(({ slug }) => {
                       <tr
                         key={holder.address}
                         className={cn(
-                          'transition-[background-color]',
-                          isDark
-                            ? 'border-b border-white/5 hover:bg-white/5'
-                            : 'border-b border-gray-100 hover:bg-gray-50'
+                          'tr-row cursor-pointer',
+                          isDark ? 'border-b-[1.5px] border-white/10' : 'border-b-[1.5px] border-black/[0.06]'
                         )}
                       >
-                        <td className="px-4 py-2.5">
-                          <span
-                            className={cn(
-                              'w-6 h-6 rounded flex items-center justify-center text-[10px] font-medium',
-                              rank === 1
-                                ? 'bg-yellow-500/20 text-yellow-500'
-                                : rank === 2
-                                  ? 'bg-gray-400/20 text-gray-400'
-                                  : rank === 3
-                                    ? 'bg-amber-600/20 text-amber-600'
-                                    : isDark
-                                      ? 'text-white/30'
-                                      : 'text-gray-400'
-                            )}
-                          >
-                            {rank}
-                          </span>
+                        <td className={cn('py-[7px] pl-4 pr-2 text-[14px] align-middle font-mono tabular-nums', isDark ? 'text-white/35' : 'text-black/40')}>
+                          <span className="font-medium text-[14px]">{rank}</span>
                         </td>
-                        <td className="px-4 py-2.5">
+                        <td className="py-[7px] px-2 text-[14px] align-middle">
                           <Link
                             href={`/address/${holder.address}`}
                             className={cn(
-                              'text-[11px] font-mono hover:text-primary',
+                              'text-[13px] font-mono hover:text-primary overflow-hidden text-ellipsis whitespace-nowrap block',
                               isDark ? 'text-white/70' : 'text-gray-600'
                             )}
                           >
@@ -2669,15 +2635,15 @@ const HoldersTab = React.memo(({ slug }) => {
                         </td>
                         <td
                           className={cn(
-                            'px-4 py-2.5 text-right text-[11px] font-medium tabular-nums',
-                            isDark ? 'text-white' : 'text-gray-900'
+                            'py-[7px] px-2 text-right text-[14px] font-mono tabular-nums align-middle',
+                            isDark ? 'text-white/85' : 'text-[#1a1a2e]'
                           )}
                         >
                           {fIntNumber(holder.count)}
                         </td>
                         <td
                           className={cn(
-                            'px-4 py-2.5 text-right text-[10px] tabular-nums',
+                            'py-[7px] pl-2 pr-4 text-right text-[14px] font-mono tabular-nums align-middle',
                             isDark ? 'text-white/40' : 'text-gray-500'
                           )}
                         >
@@ -2855,82 +2821,48 @@ const TradersTab = React.memo(({ slug }) => {
 
       {/* Table */}
       <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead>
-            <tr className={cn('border-b', isDark ? 'border-white/5' : 'border-gray-100')}>
-              <th
-                className={cn(
-                  'py-2 pr-2 text-left text-[10px] font-medium uppercase tracking-wider',
-                  isDark ? 'text-white/40' : 'text-gray-400'
-                )}
-              >
-                #
-              </th>
-              <th
-                className={cn(
-                  'py-2 px-2 text-left text-[10px] font-medium uppercase tracking-wider',
-                  isDark ? 'text-white/40' : 'text-gray-400'
-                )}
-              >
-                Trader
-              </th>
-              <th
-                className={cn(
-                  'py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider',
-                  isDark ? 'text-white/40' : 'text-gray-400'
-                )}
-              >
-                Volume
-              </th>
-              <th
-                className={cn(
-                  'py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider',
-                  isDark ? 'text-white/40' : 'text-gray-400'
-                )}
-              >
-                Trades
-              </th>
-              <th className="py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider text-green-500/70">
-                Bought
-              </th>
-              <th className="py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider text-red-500/70">
-                Sold
-              </th>
-              <th
-                className={cn(
-                  'py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider',
-                  isDark ? 'text-white/40' : 'text-gray-400'
-                )}
-              >
-                PNL
-              </th>
-              <th
-                className={cn(
-                  'py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider',
-                  isDark ? 'text-white/40' : 'text-gray-400'
-                )}
-              >
-                ROI
-              </th>
-              <th
-                className={cn(
-                  'py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider',
-                  isDark ? 'text-white/40' : 'text-gray-400'
-                )}
-              >
-                Win%
-              </th>
-              <th className="py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider text-amber-500/70">
-                Flips
-              </th>
-              <th
-                className={cn(
-                  'py-2 pl-2 text-right text-[10px] font-medium uppercase tracking-wider',
-                  isDark ? 'text-white/40' : 'text-gray-400'
-                )}
-              >
-                Last Active
-              </th>
+        <table className="w-full border-collapse" style={{ tableLayout: 'fixed', contain: 'layout style' }}>
+          <colgroup>
+            <col style={{ width: '3%' }} />
+            <col style={{ width: '13%' }} />
+            <col style={{ width: '9%' }} />
+            <col style={{ width: '7%' }} />
+            <col style={{ width: '10%' }} />
+            <col style={{ width: '10%' }} />
+            <col style={{ width: '9%' }} />
+            <col style={{ width: '7%' }} />
+            <col style={{ width: '7%' }} />
+            <col style={{ width: '6%' }} />
+            <col style={{ width: '10%' }} />
+          </colgroup>
+          <thead className={cn('relative z-[100] backdrop-blur-[12px]', isDark ? 'bg-black/90' : 'bg-white')}>
+            <tr>
+              {[
+                { label: '#', align: 'left' },
+                { label: 'Trader', align: 'left' },
+                { label: 'Volume', align: 'right' },
+                { label: 'Trades', align: 'right' },
+                { label: 'Bought', align: 'right', color: 'text-green-500/70' },
+                { label: 'Sold', align: 'right', color: 'text-red-500/70' },
+                { label: 'PNL', align: 'right' },
+                { label: 'ROI', align: 'right' },
+                { label: 'Win%', align: 'right' },
+                { label: 'Flips', align: 'right', color: 'text-amber-500/70' },
+                { label: 'Last Active', align: 'right' }
+              ].map((col) => (
+                <th
+                  key={col.label}
+                  className={cn(
+                    'font-medium text-[11px] tracking-[0.04em] uppercase whitespace-nowrap box-border first-of-type:pl-3 last-of-type:pr-3',
+                    col.color
+                      ? cn(col.color, isDark ? 'border-b border-white/[0.08]' : 'border-b border-black/[0.06]')
+                      : (isDark ? 'text-white/60 border-b border-white/[0.08]' : 'text-black/60 border-b border-black/[0.06]')
+                  )}
+                  style={{ padding: '14px 4px', textAlign: col.align }}
+                >
+                  {col.label}
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody>
@@ -2947,128 +2879,64 @@ const TradersTab = React.memo(({ slug }) => {
                 <tr
                   key={addr}
                   className={cn(
-                    'border-b',
-                    isDark
-                      ? 'border-white/5 hover:bg-white/[0.02]'
-                      : 'border-gray-100 hover:bg-gray-50'
+                    'tr-row cursor-pointer',
+                    isDark ? 'border-b-[1.5px] border-white/10' : 'border-b-[1.5px] border-black/[0.06]'
                   )}
                 >
-                  <td className="py-2.5 pr-2">
-                    <span
-                      className={cn(
-                        'text-[11px] font-medium',
-                        isTop
-                          ? idx === 0
-                            ? 'text-yellow-500'
-                            : idx === 1
-                              ? 'text-gray-400'
-                              : 'text-amber-600'
-                          : isDark
-                            ? 'text-white/30'
-                            : 'text-gray-400'
-                      )}
-                    >
-                      {idx + 1}
-                    </span>
+                  <td className={cn('py-[7px] pl-4 pr-2 text-[14px] align-middle font-mono tabular-nums', isDark ? 'text-white/35' : 'text-black/40')}>
+                    <span className="font-medium text-[14px]">{idx + 1}</span>
                   </td>
-                  <td className="py-2.5 px-2">
+                  <td className="py-[7px] px-2 text-[14px] align-middle whitespace-nowrap overflow-hidden text-ellipsis">
                     <Link
                       href={`/address/${addr}`}
                       target="_blank"
                       className={cn(
-                        'text-[12px] font-mono hover:text-primary transition-[background-color]',
+                        'text-[13px] font-mono hover:text-primary',
                         isDark ? 'text-white/80' : 'text-gray-700'
                       )}
                     >
                       {addr.slice(0, 6)}...{addr.slice(-6)}
                     </Link>
                   </td>
-                  <td
-                    className={cn(
-                      'py-2.5 px-2 text-right text-[12px] tabular-nums',
-                      isDark ? 'text-white/70' : 'text-gray-600'
-                    )}
-                  >
+                  <td className={cn('py-[7px] px-2 text-right text-[14px] font-mono tabular-nums align-middle whitespace-nowrap', isDark ? 'text-white/85' : 'text-[#1a1a2e]')}>
                     {fVolume(vol)}
                   </td>
-                  <td
-                    className={cn(
-                      'py-2.5 px-2 text-right text-[12px] tabular-nums',
-                      isDark ? 'text-white/70' : 'text-gray-600'
-                    )}
-                  >
+                  <td className={cn('py-[7px] px-2 text-right text-[14px] font-mono tabular-nums align-middle whitespace-nowrap', isDark ? 'text-white/85' : 'text-[#1a1a2e]')}>
                     {trades}
                   </td>
-                  <td className="py-2.5 px-2 text-right">
-                    <div className="text-[12px] tabular-nums text-green-500">
+                  <td className="py-[7px] px-2 text-right align-middle whitespace-nowrap">
+                    <div className="text-[14px] font-mono tabular-nums text-green-500">
                       {fVolume(t.buyVolume || 0)}
                     </div>
-                    <div
-                      className={cn(
-                        'text-[9px] tabular-nums',
-                        isDark ? 'text-white/30' : 'text-gray-400'
-                      )}
-                    >
+                    <div className={cn('text-[9px] tabular-nums', isDark ? 'text-white/30' : 'text-gray-400')}>
                       {t.buys || 0} NFTs
                     </div>
                   </td>
-                  <td className="py-2.5 px-2 text-right">
-                    <div className="text-[12px] tabular-nums text-red-500">
+                  <td className="py-[7px] px-2 text-right align-middle whitespace-nowrap">
+                    <div className="text-[14px] font-mono tabular-nums text-red-500">
                       {fVolume(t.sellVolume || 0)}
                     </div>
-                    <div
-                      className={cn(
-                        'text-[9px] tabular-nums',
-                        isDark ? 'text-white/30' : 'text-gray-400'
-                      )}
-                    >
+                    <div className={cn('text-[9px] tabular-nums', isDark ? 'text-white/30' : 'text-gray-400')}>
                       {t.sells || 0} NFTs
                     </div>
                   </td>
-                  <td className="py-2.5 px-2 text-right">
-                    <span
-                      className={cn(
-                        'text-[12px] font-medium tabular-nums',
-                        profit >= 0 ? 'text-green-500' : 'text-red-500'
-                      )}
-                    >
-                      {profit >= 0 ? '+' : ''}
-                      {fVolume(profit)}
+                  <td className="py-[7px] px-2 text-right align-middle whitespace-nowrap">
+                    <span className={cn('text-[14px] font-mono font-medium tabular-nums', profit >= 0 ? 'text-green-500' : 'text-red-500')}>
+                      {profit >= 0 ? '+' : ''}{fVolume(profit)}
                     </span>
                   </td>
-                  <td className="py-2.5 px-2 text-right">
-                    <span
-                      className={cn(
-                        'text-[12px] tabular-nums',
-                        roi >= 0 ? 'text-green-500' : 'text-red-500'
-                      )}
-                    >
-                      {roi >= 0 ? '+' : ''}
-                      {roi.toFixed(1)}%
+                  <td className="py-[7px] px-2 text-right align-middle whitespace-nowrap">
+                    <span className={cn('text-[14px] font-mono tabular-nums', roi >= 0 ? 'text-green-500' : 'text-red-500')}>
+                      {roi >= 0 ? '+' : ''}{roi.toFixed(1)}%
                     </span>
                   </td>
-                  <td
-                    className={cn(
-                      'py-2.5 px-2 text-right text-[12px] tabular-nums',
-                      winRate >= 50 ? 'text-green-500' : 'text-red-500'
-                    )}
-                  >
+                  <td className={cn('py-[7px] px-2 text-right text-[14px] font-mono tabular-nums align-middle whitespace-nowrap', winRate >= 50 ? 'text-green-500' : 'text-red-500')}>
                     {winRate.toFixed(0)}%
                   </td>
-                  <td
-                    className={cn(
-                      'py-2.5 px-2 text-right text-[12px] tabular-nums',
-                      t.flips > 0 ? 'text-amber-500' : isDark ? 'text-white/30' : 'text-gray-300'
-                    )}
-                  >
+                  <td className={cn('py-[7px] px-2 text-right text-[14px] font-mono tabular-nums align-middle whitespace-nowrap', t.flips > 0 ? 'text-amber-500' : isDark ? 'text-white/30' : 'text-gray-300')}>
                     {t.flips > 0 ? t.flips : '-'}
                   </td>
-                  <td
-                    className={cn(
-                      'py-2.5 pl-2 text-right text-[11px] tabular-nums',
-                      isDark ? 'text-white/50' : 'text-gray-500'
-                    )}
-                  >
+                  <td className={cn('py-[7px] pl-2 pr-4 text-right text-[13px] font-mono tabular-nums align-middle whitespace-nowrap', isDark ? 'text-white/50' : 'text-gray-500')}>
                     {t.lastTrade ? new Date(t.lastTrade).toLocaleDateString() : '-'}
                   </td>
                 </tr>

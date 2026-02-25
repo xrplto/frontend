@@ -2215,6 +2215,7 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
                   </div>
                   <div className="flex-1 text-right">
                     <input
+                      inputMode="decimal"
                       placeholder="0.00"
                       autoComplete="new-password"
                       className={cn('outline-none', isDark ? 'text-white placeholder:text-white/55' : 'text-[#212B36] placeholder:text-black/40')}
@@ -2268,6 +2269,7 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
                   </div>
                   <div className="flex-1 text-right">
                     <input
+                      inputMode="decimal"
                       placeholder="0.00"
                       autoComplete="new-password"
                       className={cn('outline-none', isDark ? 'text-white placeholder:text-white/55' : 'text-[#212B36] placeholder:text-black/40')}

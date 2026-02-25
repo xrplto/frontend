@@ -297,7 +297,6 @@ export const TokenListHead = memo(function TokenListHead({
         id: 'star',
         label: '',
         align: 'center',
-        width: '40px',
         order: false,
         sticky: false,
         mobileHide: true
@@ -306,7 +305,6 @@ export const TokenListHead = memo(function TokenListHead({
         id: 'rank',
         label: '#',
         align: 'center',
-        width: '40px',
         order: false,
         sticky: false,
         mobileHide: true
@@ -315,7 +313,6 @@ export const TokenListHead = memo(function TokenListHead({
         id: 'token',
         label: 'TOKEN',
         align: 'left',
-        width: '250px',
         order: true,
         sticky: false,
         mobileHide: false
@@ -549,7 +546,6 @@ export const TokenListHead = memo(function TokenListHead({
             id: 'star',
             label: '',
             align: 'center',
-            width: '40px',
             order: false,
             sticky: false,
             mobileHide: true
@@ -558,7 +554,6 @@ export const TokenListHead = memo(function TokenListHead({
             id: 'rank',
             label: '#',
             align: 'center',
-            width: '40px',
             order: false,
             sticky: false,
             mobileHide: true
@@ -567,7 +562,6 @@ export const TokenListHead = memo(function TokenListHead({
             id: 'token',
             label: 'TOKEN',
             align: 'left',
-            width: '250px',
             order: true,
             sticky: false,
             mobileHide: false
@@ -777,8 +771,8 @@ export const TokenListHead = memo(function TokenListHead({
 
   const TABLE_HEAD = getTableHeaders();
 
-  // Always include star column to prevent layout shift when login state changes
-  const filteredTableHead = TABLE_HEAD;
+  // Hide star column when not logged in to save horizontal space
+  const filteredTableHead = isLoggedIn ? TABLE_HEAD : TABLE_HEAD.filter(h => h.id !== 'star');
 
   return (
     <>

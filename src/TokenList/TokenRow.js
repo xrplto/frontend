@@ -223,7 +223,7 @@ const MobileTokenCard = ({ className, children, isDark, isNew, ...p }) => (
 
 const MobileTokenInfo = ({ className, children, ...p }) => (
   <div
-    className={cn('flex items-center gap-2 min-w-0 flex-[1.8] px-0.5', className)}
+    className={cn('flex items-center gap-2 min-w-0 flex-[2] px-0.5', className)}
     {...p}
   >
     {children}
@@ -245,7 +245,7 @@ const MobilePriceCell = ({ className, children, isDark, ...p }) => (
 
 const MobilePercentCell = ({ className, children, isDark, ...p }) => (
   <div
-    className={cn('text-right text-[12.5px] font-medium min-w-0 flex-[0.7] px-1 tracking-[0.01em] overflow-hidden text-ellipsis whitespace-nowrap', className)}
+    className={cn('text-right text-[12.5px] font-medium min-w-0 flex-[0.8] px-1 tracking-[0.01em] overflow-hidden text-ellipsis whitespace-nowrap', className)}
     {...p}
   >
     {children}
@@ -255,7 +255,7 @@ const MobilePercentCell = ({ className, children, isDark, ...p }) => (
 const MobileVolumeCell = ({ className, children, isDark, ...p }) => (
   <div
     className={cn(
-      'text-right text-[12.5px] font-medium min-w-0 flex-[1] px-1 tracking-[0.01em] overflow-hidden text-ellipsis whitespace-nowrap',
+      'text-right text-[12.5px] font-medium min-w-0 flex-[0.8] px-1 tracking-[0.01em] overflow-hidden text-ellipsis whitespace-nowrap',
       isDark ? 'text-white/90' : 'text-black',
       className
     )}
@@ -738,8 +738,7 @@ const DesktopTokenRow = ({
         isDark={darkMode}
         isTokenColumn={true}
         style={{
-          width: 'auto',
-          paddingRight: '8px'
+          paddingRight: '4px'
         }}
       >
         <div className="flex items-center gap-[10px]">
@@ -754,8 +753,8 @@ const DesktopTokenRow = ({
               noCache={noImageCache}
             />
           </TokenImage>
-          <div className="min-w-0">
-            <span className="flex items-center gap-1">
+          <div className="min-w-0 overflow-hidden">
+            <span className="flex items-center gap-1 max-w-full">
               <TokenName isDark={darkMode} title={displayName} golden={isGolden}>
                 {truncate(displayName, 16)}
               </TokenName>
@@ -778,7 +777,7 @@ const DesktopTokenRow = ({
       const rawPrice = activeFiatCurrency === 'XRP' ? exch : exch / exchRate;
       const formatted = formatPrice(rawPrice);
       return (
-        <StyledCell align="right" isDark={darkMode} style={{ minWidth: 100 }}>
+        <StyledCell align="right" isDark={darkMode}>
           <PriceText flashColor={flashColor} isDark={darkMode}>
             {formatted?.compact ? (
               <>
@@ -1271,16 +1270,12 @@ const DesktopTokenRow = ({
 
   return (
     <StyledRow onClick={handleRowClick} isDark={darkMode} isNew={isNew}>
-      <StyledCell
-        align="center"
-        isDark={darkMode}
-        style={{
-          width: '40px',
-          minWidth: '40px',
-          maxWidth: '40px'
-        }}
-      >
-        {isLoggedIn && (
+      {isLoggedIn && (
+        <StyledCell
+          align="center"
+          isDark={darkMode}
+          style={{ padding: '14px 0 14px 8px' }}
+        >
           <button
             onClick={handleWatchlistClick}
             aria-label={watchList.includes(md5) ? 'Remove from watchlist' : 'Add to watchlist'}
@@ -1295,18 +1290,13 @@ const DesktopTokenRow = ({
           >
             <Bookmark size={16} fill={watchList.includes(md5) ? 'currentColor' : 'none'} />
           </button>
-        )}
-      </StyledCell>
+        </StyledCell>
+      )}
 
       <StyledCell
         className="tr-idx"
         align="center"
         isDark={darkMode}
-        style={{
-          width: '50px',
-          minWidth: '50px',
-          maxWidth: '50px'
-        }}
       >
         <span
           className={cn(

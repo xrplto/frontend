@@ -711,6 +711,7 @@ const WalletContent = ({
                 <div className="flex items-center gap-3 mt-2">
                   <input
                     type="number"
+                    inputMode="decimal"
                     value={bridgeAmount}
                     onChange={(e) => setBridgeAmount(e.target.value)}
                     placeholder={minAmount ? `Min: ${minAmount}` : '0.00'}
@@ -3692,6 +3693,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             <div className="flex items-center gap-2 mt-1">
                               <input
                                 type="number"
+                                inputMode="decimal"
                                 value={bridgeAmount}
                                 onChange={(e) => setBridgeAmount(e.target.value)}
                                 placeholder={minAmount ? `Min: ${minAmount}` : '0.00'}

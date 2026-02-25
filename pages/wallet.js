@@ -5547,6 +5547,7 @@ export default function WalletPage() {
                   <div className="relative">
                     <input
                       type="text"
+                      inputMode="decimal"
                       value={burnAmount}
                       onChange={(e) => setBurnAmount(e.target.value.replace(/[^0-9.]/g, ''))}
                       placeholder="0.00"
@@ -5660,6 +5661,7 @@ export default function WalletPage() {
                   <div className={cn("flex items-center rounded-xl border transition-colors", isDark ? "bg-white/[0.03] border-white/10 focus-within:border-[#137DFE]/40" : "bg-gray-50 border-gray-200 focus-within:border-[#137DFE]")}>
                     <input
                       type="text"
+                      inputMode="decimal"
                       value={tradeAmount}
                       onChange={(e) => setTradeAmount(e.target.value.replace(/[^0-9.]/g, ''))}
                       placeholder="0"
@@ -5735,6 +5737,7 @@ export default function WalletPage() {
                         {v === 'custom' ? (
                           <input
                             type="text"
+                            inputMode="decimal"
                             value={![0.5, 1, 2].includes(tradeSlippage) ? tradeSlippage : ''}
                             onChange={(e) => {
                               const val = e.target.value.replace(/[^0-9.]/g, '');

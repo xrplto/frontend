@@ -42,8 +42,8 @@ const Container = ({ className, children, ...p }) => (
 const TableWrapper = ({ className, children, darkMode, ...p }) => (
   <div
     className={cn(
-      'rounded-xl bg-transparent overflow-clip border-[1.5px]',
-      darkMode ? 'border-white/10' : 'border-black/[0.06]',
+      'rounded-xl overflow-clip border-[1.5px] backdrop-blur-[4px]',
+      darkMode ? 'border-white/[0.08] bg-white/[0.02]' : 'border-black/[0.06] bg-black/[0.01]',
       className
     )}
     style={{ minHeight: '680px', contain: 'content', ...p.style }}
@@ -67,7 +67,8 @@ const TableContainer = React.forwardRef(({ className, children, isMobile, ...p }
 const StyledTable = React.forwardRef(({ className, children, isMobile, ...p }, ref) => (
   <table
     ref={ref}
-    className={cn('m-0 p-0 table-auto w-auto min-w-full border-collapse', className)}
+    className={cn('w-full border-collapse m-0 p-0', className)}
+    style={{ tableLayout: 'fixed', contain: 'layout style' }}
     {...p}
   >
     {children}
@@ -908,7 +909,7 @@ function TokenListComponent({
           <MobileContainer>
             <MobileHeader isDark={darkMode} role="row">
               <HeaderCell
-                flex={1.8}
+                flex={2}
                 align="left"
                 isDark={darkMode}
                 sortable
@@ -971,7 +972,7 @@ function TokenListComponent({
                 })()}
               </HeaderCell>
               <HeaderCell
-                flex={0.7}
+                flex={0.8}
                 align="right"
                 isDark={darkMode}
                 sortable
@@ -1025,7 +1026,7 @@ function TokenListComponent({
                 })()}
               </HeaderCell>
               <HeaderCell
-                flex={1}
+                flex={0.8}
                 align="right"
                 isDark={darkMode}
                 sortable
@@ -1107,6 +1108,26 @@ function TokenListComponent({
         <TableWrapper darkMode={darkMode}>
           <TableContainer ref={tableContainerRef} isMobile={isMobile} className="table-container-hide-scrollbar">
             <StyledTable ref={tableRef} isMobile={isMobile}>
+              {viewMode === 'classic' && (
+                <colgroup>
+                  {hasMounted && !!accountProfile?.account && <col style={{ width: '2%' }} />}
+                  <col style={{ width: '2.5%' }} />
+                  <col style={{ width: '12%' }} />
+                  <col style={{ width: '7%' }} />
+                  <col style={{ width: '8%' }} />
+                  <col style={{ width: '5%' }} />
+                  <col style={{ width: '5%' }} />
+                  <col style={{ width: '5%' }} />
+                  <col style={{ width: '5%' }} />
+                  <col style={{ width: '7%' }} />
+                  <col style={{ width: '6%' }} />
+                  <col style={{ width: '5.5%' }} />
+                  <col style={{ width: '7%' }} />
+                  <col style={{ width: '8%' }} />
+                  <col style={{ width: '5.5%' }} />
+                  <col style={{ width: '6%' }} />
+                </colgroup>
+              )}
               <TokenListHead
                 order={order}
                 orderBy={orderBy}

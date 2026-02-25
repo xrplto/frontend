@@ -291,6 +291,13 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
   const [mobileEmailLoading, setMobileEmailLoading] = useState(false);
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const [commandQuery, setCommandQuery] = useState('');
+  const [walletBannerDismissed, setWalletBannerDismissed] = useState(true);
+
+  useEffect(() => {
+    try {
+      setWalletBannerDismissed(localStorage.getItem('wallet_banner_dismissed') === '1');
+    } catch {}
+  }, []);
 
   // Direct auth handlers for mobile (skip wallet modal)
   const handleDirectTwitterAuth = async () => {
@@ -801,7 +808,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
     <>
       <header
         className={cn(
-          'fixed left-0 right-0 top-0 z-[1100] flex h-[52px] items-center',
+          'z-[1100] flex h-[52px] items-center',
           isDark
             ? 'bg-transparent backdrop-blur-md border-b border-white/10'
             : 'bg-white/95 backdrop-blur-md border-b border-gray-200'
@@ -2525,6 +2532,36 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
         </div>
       </div>
       </header>
+
+      {/* Embedded wallet notice */}
+      {!walletBannerDismissed && (
+        <div
+          className={cn(
+            'flex items-center justify-center gap-2 px-4 py-1.5 text-[12px]',
+            isDark
+              ? 'bg-[#137DFE]/10 text-[#5fa8ff] border-b border-white/5'
+              : 'bg-blue-50 text-blue-600 border-b border-blue-100'
+          )}
+        >
+          <Info size={13} className="shrink-0 opacity-70" />
+          <span>
+            xrpl.to now uses embedded non-custodial wallets. Xaman, Crossmark &amp; GEM Wallet login is no longer supported.
+          </span>
+          <button
+            onClick={() => {
+              setWalletBannerDismissed(true);
+              try { localStorage.setItem('wallet_banner_dismissed', '1'); } catch {}
+            }}
+            className={cn(
+              'ml-1 shrink-0 rounded p-0.5 transition-colors',
+              isDark ? 'hover:bg-white/10' : 'hover:bg-blue-100'
+            )}
+            aria-label="Dismiss"
+          >
+            <X size={13} />
+          </button>
+        </div>
+      )}
 
       {/* Mobile Drawer */}
       {openDrawer && (

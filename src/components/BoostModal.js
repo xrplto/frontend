@@ -470,6 +470,10 @@ export default function BoostModal({ token, collection, onClose, onSuccess }) {
 
         <p className={cn('text-[9px] text-center', isDark ? 'text-white/25' : 'text-gray-400')}>
           {paymentMethod === 'xrp' ? 'Payment on XRPL' : 'Card, Cash App, Link, Crypto - powered by Stripe'}
+          {' · '}
+          <a href="/docs#trending-guide" target="_blank" rel="noopener noreferrer" className="underline hover:text-blue-400">How Trending Works</a>
+          {' · '}
+          <a href="/docs#terms" target="_blank" rel="noopener noreferrer" className="underline hover:text-blue-400">Terms of Service</a>
         </p>
       </div>
     );

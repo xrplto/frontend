@@ -181,12 +181,7 @@ function AppPageLayout({ children }) {
 
   return (
     <div style={{ position: 'relative', zIndex: 1 }}>
-      {/* Main content with padding for fixed headers */}
-      <main
-        style={{
-          paddingTop: isApiDocsPage ? '0' : '56px'
-        }}
-      >
+      <main>
         {children}
       </main>
     </div>

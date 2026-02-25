@@ -35,7 +35,8 @@ const InputField = ({
   type = 'text',
   min,
   max,
-  className
+  className,
+  inputMode
 }) => (
   <div className={cn('flex-1', className)}>
     <label className="block text-[11px] opacity-60 mb-1">{label}</label>
@@ -58,6 +59,7 @@ const InputField = ({
     ) : (
       <input
         type={type}
+        inputMode={inputMode}
         value={value}
         onChange={onChange}
         placeholder={placeholder}
@@ -1190,6 +1192,7 @@ function CreatePage() {
                 <InputField
                   label="Total supply"
                   type="number"
+                  inputMode="numeric"
                   value={formData.tokenSupply}
                   onChange={handleInputChange('tokenSupply')}
                   error={formData.tokenSupply < 1000}
@@ -1200,6 +1203,7 @@ function CreatePage() {
                 <InputField
                   label="Your allocation %"
                   type="number"
+                  inputMode="numeric"
                   placeholder="0-90"
                   value={formData.userCheckPercent === 0 ? '' : formData.userCheckPercent}
                   onChange={handleInputChange('userCheckPercent')}
@@ -1296,6 +1300,7 @@ function CreatePage() {
                   {formData.platformRetentionPercent > 0 && (
                     <input
                       type="number"
+                      inputMode="numeric"
                       min={0}
                       max={10}
                       value={formData.platformRetentionPercent}
@@ -1474,6 +1479,7 @@ function CreatePage() {
                             <div className="flex items-center gap-1">
                               <input
                                 type="number"
+                                inputMode="decimal"
                                 min={0.01}
                                 max={50}
                                 step={0.1}
@@ -1569,6 +1575,7 @@ function CreatePage() {
               <InputField
                 label="XRP for AMM pool"
                 type="number"
+                inputMode="decimal"
                 value={formData.ammXrpAmount}
                 onChange={handleInputChange('ammXrpAmount')}
                 error={formData.ammXrpAmount < 10}

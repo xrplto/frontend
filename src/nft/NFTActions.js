@@ -1059,6 +1059,7 @@ export default function NFTActions({ nft }) {
                     <div className="flex items-center gap-2 mb-3">
                       <input
                         type="text"
+                        inputMode="decimal"
                         placeholder="0.00"
                         value={offerAmount}
                         onChange={(e) => setOfferAmount(e.target.value.replace(/[^0-9.]/g, ''))}
@@ -1447,6 +1448,7 @@ export default function NFTActions({ nft }) {
                           <div className="flex items-center gap-2 mb-2">
                             <input
                               type="text"
+                              inputMode="decimal"
                               placeholder="0.00"
                               value={offerAmount}
                               onChange={(e) =>

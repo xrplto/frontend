@@ -1318,6 +1318,7 @@ const ApiEndpointsModal = memo(({ open, onClose, token = null }) => {
 });
 
 // Standalone button + modal combo
+// Default height is h-8 / max-sm:h-[26px]. Parents can override via className prop.
 export const ApiButton = memo(({ className = '', token = null }) => {
   const { themeName } = useContext(ThemeContext);
   const isDark = themeName === 'XrplToDarkTheme';

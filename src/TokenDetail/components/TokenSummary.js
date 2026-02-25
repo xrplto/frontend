@@ -829,7 +829,7 @@ const TokenSummary = memo(({ token }) => {
           </button>
         )}
 
-        <div className="col-span-2 grid grid-cols-3 sm:flex gap-1 sm:gap-1.5 [&>*]:min-w-0">
+        <div className="col-span-2 grid grid-cols-4 sm:flex gap-1 sm:gap-1.5 [&>*]:min-w-0">
           {/* Trustline button - only for non-XRP/MPT tokens when logged in */}
           {accountProfile?.account && CURRENCY_ISSUERS?.XRP_MD5 !== md5 && !isMPT && (
             <div className="sm:flex-1">
@@ -868,7 +868,7 @@ const TokenSummary = memo(({ token }) => {
             <ApiButton
               token={token}
               className={cn(
-                "w-full h-6 sm:h-7 flex items-center justify-center gap-1 rounded-md text-[9px] font-bold uppercase tracking-wide transition-[opacity,transform,background-color,border-color] duration-200",
+                "w-full h-6 max-sm:h-6 sm:h-7 flex items-center justify-center gap-1 rounded-md text-[9px] font-bold uppercase tracking-wide transition-[opacity,transform,background-color,border-color] duration-200",
                 isDark ? "bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.08]" : "bg-gray-50 border border-black/[0.04] hover:bg-gray-100"
               )}
             />

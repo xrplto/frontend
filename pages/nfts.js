@@ -7,7 +7,7 @@ import { registerApiCalls } from 'src/components/ApiEndpointsModal';
 import { useEffect } from 'react';
 import { apiFetch } from 'src/utils/api';
 
-export default function Overview({ collections, total, globalMetrics, tags, collectionCreation }) {
+export default function Overview({ collections, total, globalMetrics, tags, collectionCreation, trendingCollections, newCollections }) {
   useEffect(() => {
     registerApiCalls(['https://api.xrpl.to/v1/nft/collections']);
   }, []);
@@ -38,6 +38,8 @@ export default function Overview({ collections, total, globalMetrics, tags, coll
           initialGlobalMetrics={globalMetrics}
           collectionCreation={collectionCreation}
           tags={tags}
+          trendingCollections={trendingCollections}
+          newCollections={newCollections}
         />
       </div>
 
@@ -58,17 +60,20 @@ export async function getServerSideProps({ res }) {
   let globalMetrics = null;
   let tags = [];
   let collectionCreation = [];
+  let trendingCollections = [];
+  let newCollections = [];
 
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 8000);
-    const response = await apiFetch(
-      `${BASE_URL}/nft/collections?page=0&limit=20&sortBy=totalVol24h&order=desc&includeGlobalMetrics=true`,
-      { signal: controller.signal }
-    );
+    const [mainRes, trendingRes, newRes] = await Promise.all([
+      apiFetch(`${BASE_URL}/nft/collections?page=0&limit=20&sortBy=totalVol24h&order=desc&includeGlobalMetrics=true`, { signal: controller.signal }),
+      apiFetch(`${BASE_URL}/nft/collections?sortBy=trendingScore&order=desc&limit=3`, { signal: controller.signal }),
+      apiFetch(`${BASE_URL}/nft/collections?sortBy=created&order=desc&limit=3`, { signal: controller.signal })
+    ]);
     clearTimeout(timeoutId);
-    const data = await response.json();
 
+    const data = await mainRes.json();
     collections = data.collections || [];
     total = data.pagination?.total || data.count || 0;
     const gm = data.globalMetrics || null;
@@ -78,6 +83,12 @@ export async function getServerSideProps({ res }) {
     }
     tags = data.tags || [];
     collectionCreation = data.collectionCreation || [];
+
+    const trendingData = await trendingRes.json();
+    trendingCollections = trendingData.collections || [];
+
+    const newData = await newRes.json();
+    newCollections = newData.collections || [];
   } catch (error) {
     console.error('Failed to fetch collections:', error);
   }
@@ -97,7 +108,9 @@ export async function getServerSideProps({ res }) {
       total,
       globalMetrics,
       tags,
-      collectionCreation
+      collectionCreation,
+      trendingCollections,
+      newCollections
     }
   };
 }

@@ -5372,7 +5372,7 @@ const TradingHistory = ({
                               )}
                             </div>
                             <div className="relative">
-                              <TextField value={depositAmount1} onChange={(e) => handleAmount1Change(e.target.value)} type="number" placeholder="0.00" isDark={isDark} />
+                              <TextField value={depositAmount1} onChange={(e) => handleAmount1Change(e.target.value)} type="number" inputMode="decimal" placeholder="0.00" isDark={isDark} />
                             </div>
                           </div>
                         )}
@@ -5398,7 +5398,7 @@ const TradingHistory = ({
                               )}
                             </div>
                             <div className="relative">
-                              <TextField value={depositAmount2} onChange={(e) => handleAmount2Change(e.target.value)} type="number" placeholder="0.00" isDark={isDark} />
+                              <TextField value={depositAmount2} onChange={(e) => handleAmount2Change(e.target.value)} type="number" inputMode="decimal" placeholder="0.00" isDark={isDark} />
                             </div>
                           </div>
                         )}
@@ -5528,7 +5528,7 @@ const TradingHistory = ({
                               })()}
                             </div>
                             <div className="relative">
-                              <TextField value={withdrawAmount1} onChange={(e) => handleWithdrawAmount1Change(e.target.value)} type="number" placeholder="0.00" isDark={isDark} />
+                              <TextField value={withdrawAmount1} onChange={(e) => handleWithdrawAmount1Change(e.target.value)} type="number" inputMode="decimal" placeholder="0.00" isDark={isDark} />
                             </div>
                             {/* Percentage buttons */}
                             {(() => {
@@ -5572,7 +5572,7 @@ const TradingHistory = ({
                               })()}
                             </div>
                             <div className="relative">
-                              <TextField value={withdrawAmount2} onChange={(e) => handleWithdrawAmount2Change(e.target.value)} type="number" placeholder="0.00" isDark={isDark} />
+                              <TextField value={withdrawAmount2} onChange={(e) => handleWithdrawAmount2Change(e.target.value)} type="number" inputMode="decimal" placeholder="0.00" isDark={isDark} />
                             </div>
                             {/* Percentage buttons */}
                             {(() => {
@@ -5801,7 +5801,7 @@ const TradingHistory = ({
                             </div>
                           )}
                         </div>
-                        <TextField value={createPoolAmount1} onChange={(e) => { setCreatePoolAmount1(e.target.value); setPendingCreatePool(null); }} type="number" placeholder="0.00" isDark={isDark} />
+                        <TextField value={createPoolAmount1} onChange={(e) => { setCreatePoolAmount1(e.target.value); setPendingCreatePool(null); }} type="number" inputMode="decimal" placeholder="0.00" isDark={isDark} />
                       </div>
 
                       {/* Amount 2 */}
@@ -5823,7 +5823,7 @@ const TradingHistory = ({
                             </div>
                           )}
                         </div>
-                        <TextField value={createPoolAmount2} onChange={(e) => { setCreatePoolAmount2(e.target.value); setPendingCreatePool(null); }} type="number" placeholder="0.00" isDark={isDark} />
+                        <TextField value={createPoolAmount2} onChange={(e) => { setCreatePoolAmount2(e.target.value); setPendingCreatePool(null); }} type="number" inputMode="decimal" placeholder="0.00" isDark={isDark} />
                       </div>
 
                       {/* Trading Fee Slider */}

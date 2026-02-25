@@ -231,6 +231,7 @@ export default function BuyMintDialog({
                 </span>
                 <input
                   type="text"
+                  inputMode="numeric"
                   id="input-with-sx2"
                   value={quantity}
                   autoComplete="new-password"

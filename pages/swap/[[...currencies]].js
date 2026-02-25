@@ -64,8 +64,6 @@ function SwapPage({ data }) {
         Swap XRPL Tokens
       </h1>
 
-      {/* Spacer for fixed header (52px) */}
-      <div className="flex-shrink-0 h-[52px]" />
 
       <div className="flex-1 flex items-start justify-center overflow-y-auto overflow-x-hidden px-4 py-2 sm:py-4">
         <Swap pair={pair} setPair={setPair} revert={revert} setRevert={setRevert} />

@@ -14,8 +14,8 @@ const Container = ({ className, children, ...p }) => (
 const TableContainer = ({ darkMode, className, children, ...p }) => (
   <div
     className={cn(
-      'flex justify-start gap-0 p-0 overflow-x-auto overflow-y-visible w-full min-w-0 box-border bg-transparent rounded-xl backdrop-blur-[12px] border-[1.5px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
-      darkMode ? 'border-white/10' : 'border-black/[0.06]',
+      'flex justify-start gap-0 p-0 overflow-x-auto overflow-y-visible w-full min-w-0 box-border rounded-xl backdrop-blur-[4px] border-[1.5px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
+      darkMode ? 'border-white/[0.08] bg-white/[0.02]' : 'border-black/[0.06] bg-black/[0.01]',
       className
     )}
     {...p}
@@ -47,7 +47,7 @@ const StyledRow = ({ darkMode, className, children, ...p }) => (
 const StyledCell = ({ isFirst, isLast, isCollectionColumn, align, fontWeight, color, darkMode, className, children, ...p }) => (
   <td
     className={cn(
-      'py-3.5 text-[14px] align-middle font-mono tabular-nums',
+      'py-[7px] text-[14px] align-middle font-mono tabular-nums',
       isCollectionColumn ? 'whitespace-normal' : 'whitespace-nowrap',
       className
     )}
@@ -70,7 +70,7 @@ const MobileCollectionCard = ({ darkMode, className, children, ...p }) => (
       darkMode ? 'border-white/10' : 'border-black/[0.06]',
       className
     )}
-    style={{ contentVisibility: 'auto', containIntrinsicSize: 'auto 54px' }}
+    style={{ contentVisibility: 'auto', containIntrinsicSize: 'auto 48px' }}
     {...p}
   >{children}</div>
 );
@@ -81,7 +81,7 @@ const MobileCollectionInfo = ({ className, children, ...p }) => (
 
 const MobileCell = ({ flex, align, fontWeight, color, darkMode, minWidth, wordBreak, lineHeight, className, children, ...p }) => (
   <div
-    className={cn('px-[6px] text-[14px] font-mono tabular-nums', className)}
+    className={cn('px-[6px] text-[14px] font-mono tabular-nums overflow-hidden text-ellipsis whitespace-nowrap', className)}
     style={{ flex: flex || 1, textAlign: align || 'right', fontWeight: fontWeight || 400, color: color || (darkMode ? 'rgba(255,255,255,0.85)' : '#1a1a2e'), minWidth: minWidth || 'auto', wordBreak: wordBreak || 'normal', lineHeight: lineHeight || 'normal' }}
     {...p}
   >{children}</div>
@@ -206,10 +206,9 @@ const CenterBox = ({ className, children, ...p }) => (
   <div className={cn('grow flex justify-center', className)} {...p}>{children}</div>
 );
 
-const StyledTableHead = ({ scrollTopLength, className, children, ...p }) => (
+const StyledTableHead = ({ scrollTopLength, darkMode, className, children, ...p }) => (
   <thead
-    className={cn('sticky z-[100] bg-transparent backdrop-blur-[12px]', className)}
-    style={{ top: scrollTopLength || 0 }}
+    className={cn('relative z-[100] backdrop-blur-[12px]', darkMode ? 'bg-black/90' : 'bg-white', className)}
     {...p}
   >{children}</thead>
 );
@@ -217,16 +216,15 @@ const StyledTableHead = ({ scrollTopLength, className, children, ...p }) => (
 const StyledTableCell = ({ isFirst, isLast, darkMode, isCollectionColumn, align, width, sortable, className, children, ...p }) => (
   <th
     className={cn(
-      'font-semibold text-[11px] tracking-[0.06em] uppercase py-3.5 border-b-[1.5px] box-border',
-      isCollectionColumn ? 'whitespace-normal' : 'whitespace-nowrap',
+      'font-medium text-[11px] tracking-[0.04em] uppercase whitespace-nowrap box-border font-[inherit]',
+      'first-of-type:pl-3 last-of-type:pr-3',
       sortable ? 'cursor-pointer' : 'cursor-default',
-      darkMode ? 'text-white/30 border-white/10' : 'text-[#919EAB] border-black/[0.06]',
-      sortable && (darkMode ? 'hover:text-white/60' : 'hover:text-black/60'),
+      darkMode ? 'text-white/60 border-b border-white/[0.08]' : 'text-black/60 border-b border-black/[0.06]',
+      sortable && (darkMode ? 'hover:text-white/80' : 'hover:text-black/80'),
       className
     )}
     style={{
-      paddingLeft: isCollectionColumn ? '8px' : isFirst ? '16px' : '8px',
-      paddingRight: isLast ? '16px' : '8px',
+      padding: '14px 4px',
       textAlign: align || 'left'
     }}
     {...p}
@@ -247,7 +245,7 @@ const SortIndicator = ({ active, darkMode, direction, className, children, ...p 
 
 const MobileContainer = ({ darkMode, className, children, ...p }) => (
   <div
-    className={cn('w-full flex flex-col gap-0 p-0 m-0 bg-transparent rounded-xl backdrop-blur-[12px] border-[1.5px]', darkMode ? 'border-white/10' : 'border-black/[0.06]', className)}
+    className={cn('w-full flex flex-col gap-0 p-0 m-0 rounded-xl backdrop-blur-[4px] border-[1.5px]', darkMode ? 'border-white/[0.08] bg-white/[0.02]' : 'border-black/[0.06] bg-black/[0.01]', className)}
     {...p}
   >{children}</div>
 );
@@ -255,8 +253,8 @@ const MobileContainer = ({ darkMode, className, children, ...p }) => (
 const StyledMobileHeader = ({ isDark, className, children, ...p }) => (
   <div
     className={cn(
-      'flex w-full py-3.5 px-4 bg-transparent backdrop-blur-[12px] border-b-[1.5px] text-[11px] font-semibold uppercase tracking-[0.06em] sticky top-0 z-10 box-border',
-      isDark ? 'border-white/10 text-white/30' : 'border-black/[0.06] text-[#919EAB]',
+      'flex w-full py-3.5 px-4 bg-transparent backdrop-blur-[12px] border-b text-[11px] font-medium uppercase tracking-[0.04em] sticky top-0 z-10 box-border',
+      isDark ? 'border-white/[0.08] text-white/60' : 'border-black/[0.06] text-black/60',
       className
     )}
     {...p}
@@ -296,12 +294,12 @@ const TABLE_HEAD_MOBILE = [
     tooltip: '24h floor price change'
   },
   {
-    id: 'totalVolume',
-    label: 'VOLUME',
+    id: 'totalVol24h',
+    label: 'VOL 24H',
     align: 'right',
     width: '20%',
     order: true,
-    tooltip: 'All-time trading volume'
+    tooltip: '24h trading volume'
   }
 ];
 
@@ -411,7 +409,7 @@ const TABLE_HEAD_DESKTOP = [
     width: 'auto',
     order: true,
     tooltip: 'Origin marketplace'
-  }
+  },
 ];
 
 // ListHead Component
@@ -540,7 +538,7 @@ OptimizedImage.displayName = 'OptimizedImage';
 
 // Mobile Collection Row Component
 const MobileCollectionRow = ({ collection, darkMode, handleRowClick }) => {
-  const { name, slug, logoImage, floor, floor1dPercent, totalVolume } = collection;
+  const { name, slug, logoImage, floor, floor1dPercent, totalVol24h } = collection;
 
   const collectionName = normalizeCollectionName(name);
   const logoImageUrl = `https://s1.xrpl.to/nft-collection/${logoImage}`;
@@ -576,7 +574,7 @@ const MobileCollectionRow = ({ collection, darkMode, handleRowClick }) => {
       </MobileCollectionInfo>
 
       <MobileCell flex={1.2} align="right" darkMode={darkMode} fontWeight={400}>
-        ✕ {fNumber(floorPrice)}
+        {fNumber(floorPrice)}
       </MobileCell>
 
       <MobileCell
@@ -590,7 +588,7 @@ const MobileCollectionRow = ({ collection, darkMode, handleRowClick }) => {
       </MobileCell>
 
       <MobileCell flex={1} align="right" darkMode={darkMode} fontWeight={400}>
-        ✕ {fVolume(totalVolume || 0)}
+        {fVolume(totalVol24h || 0)}
       </MobileCell>
     </MobileCollectionCard>
   );
@@ -670,7 +668,7 @@ const DesktopCollectionRow = ({ collection, idx, darkMode, handleRowClick }) => 
       </StyledCell>
 
       <StyledCell align="right" darkMode={darkMode} fontWeight={400}>
-        ✕ {fNumber(floorPrice)}
+        {fNumber(floorPrice)}
       </StyledCell>
 
       <StyledCell
@@ -693,11 +691,11 @@ const DesktopCollectionRow = ({ collection, idx, darkMode, handleRowClick }) => 
       </StyledCell>
 
       <StyledCell align="right" darkMode={darkMode} fontWeight={400}>
-        ✕ {volume24h}
+        {volume24h}
       </StyledCell>
 
       <StyledCell align="right" darkMode={darkMode} fontWeight={400}>
-        ✕ {fVolume(totalVolume || 0)}
+        {fVolume(totalVolume || 0)}
       </StyledCell>
 
       <StyledCell align="right" darkMode={darkMode} fontWeight={400}>
@@ -715,7 +713,7 @@ const DesktopCollectionRow = ({ collection, idx, darkMode, handleRowClick }) => 
       </StyledCell>
 
       <StyledCell align="right" darkMode={darkMode} color={getMarketCapColor()} fontWeight={400}>
-        ✕ {fVolume(marketCapAmount)}
+        {fVolume(marketCapAmount)}
       </StyledCell>
 
       <StyledCell align="right" darkMode={darkMode} fontWeight={400}>
@@ -1074,7 +1072,7 @@ export default function CollectionList({
               24H %
             </StyledHeaderCell>
             <StyledHeaderCell flex={1} align="right">
-              VOL
+              VOL 24H
             </StyledHeaderCell>
           </StyledMobileHeader>
           {collections.map((collection, idx) => {
