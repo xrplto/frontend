@@ -39,7 +39,8 @@ import {
   LayoutDashboard,
   FileText,
   Info,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Flame
 } from 'lucide-react';
 import VerificationBadge from 'src/components/VerificationBadge';
 
@@ -1224,13 +1225,19 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                                 </div>
                                 <div className="flex-1 min-w-0">
                                   <div className="flex items-center gap-2">
-                                    <span className={cn('text-[13.5px] font-semibold truncate', isDark ? 'text-white/90' : 'text-gray-900')}>
+                                    <span className={cn('text-[13.5px] font-semibold truncate', token.trendingBoost >= 500 && token.trendingBoostExpires > Date.now() ? 'text-[#FFD700]' : isDark ? 'text-white/90' : 'text-gray-900')}>
                                       {token.user}
                                     </span>
                                     <span className={cn('text-[11px] font-medium px-1.5 py-0.5 rounded uppercase tracking-wider',
                                       isDark ? 'bg-white/5 text-white/60' : 'bg-gray-100 text-gray-500')}>
                                       {token.name}
                                     </span>
+                                    {token.trendingBoost > 0 && token.trendingBoostExpires > Date.now() && (
+                                      <span className="inline-flex items-center gap-0.5 flex-shrink-0 text-[#F6AF01]">
+                                        <Flame size={10} fill="#F6AF01" />
+                                        <span className="text-[9px] font-bold">{token.trendingBoost}</span>
+                                      </span>
+                                    )}
                                   </div>
                                   <span className={cn('text-[11px] truncate block opacity-50 font-mono', isDark ? 'text-white' : 'text-gray-600')}>
                                     {truncateAccount(token.issuer, 8)}
@@ -1524,13 +1531,19 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2">
-                              <span className={cn('text-[13.5px] font-semibold truncate', isDark ? 'text-white/90' : 'text-gray-900')}>
+                              <span className={cn('text-[13.5px] font-semibold truncate', token.trendingBoost >= 500 && token.trendingBoostExpires > Date.now() ? 'text-[#FFD700]' : isDark ? 'text-white/90' : 'text-gray-900')}>
                                 {token.user}
                               </span>
                               <span className={cn('text-[11px] font-medium px-1.5 py-0.5 rounded uppercase tracking-wider',
                                 isDark ? 'bg-white/5 text-white/60' : 'bg-gray-100 text-gray-500')}>
                                 {token.name}
                               </span>
+                              {token.trendingBoost > 0 && token.trendingBoostExpires > Date.now() && (
+                                <span className="inline-flex items-center gap-0.5 flex-shrink-0 text-[#F6AF01]">
+                                  <Flame size={10} fill="#F6AF01" />
+                                  <span className="text-[9px] font-bold">{token.trendingBoost}</span>
+                                </span>
+                              )}
                             </div>
                             <span className={cn('text-[11px] truncate block opacity-50 font-mono', isDark ? 'text-white' : 'text-gray-600')}>
                               {truncateAccount(token.issuer, 8)}
@@ -1727,13 +1740,19 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2">
-                              <span className={cn('text-[14px] font-semibold truncate', isDark ? 'text-white/90' : 'text-gray-900')}>
+                              <span className={cn('text-[14px] font-semibold truncate', token.trendingBoost >= 500 && token.trendingBoostExpires > Date.now() ? 'text-[#FFD700]' : isDark ? 'text-white/90' : 'text-gray-900')}>
                                 {token.user}
                               </span>
                               <span className={cn('text-[11px] font-medium px-1.5 py-0.5 rounded uppercase tracking-wider',
                                 isDark ? 'bg-white/5 text-white/60' : 'bg-gray-100 text-gray-500')}>
                                 {token.name}
                               </span>
+                              {token.trendingBoost > 0 && token.trendingBoostExpires > Date.now() && (
+                                <span className="inline-flex items-center gap-0.5 flex-shrink-0 text-[#F6AF01]">
+                                  <Flame size={10} fill="#F6AF01" />
+                                  <span className="text-[9px] font-bold">{token.trendingBoost}</span>
+                                </span>
+                              )}
                             </div>
                             <span className={cn('text-[11px] truncate block opacity-50 font-mono', isDark ? 'text-white' : 'text-gray-600')}>
                               {truncateAccount(token.issuer, 8)}
@@ -2025,13 +2044,19 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2">
-                              <span className={cn('text-[13.5px] font-semibold truncate', isDark ? 'text-white/90' : 'text-gray-900')}>
+                              <span className={cn('text-[13.5px] font-semibold truncate', token.trendingBoost >= 500 && token.trendingBoostExpires > Date.now() ? 'text-[#FFD700]' : isDark ? 'text-white/90' : 'text-gray-900')}>
                                 {token.user}
                               </span>
                               <span className={cn('text-[11px] font-medium px-1.5 py-0.5 rounded uppercase tracking-wider',
                                 isDark ? 'bg-white/5 text-white/60' : 'bg-gray-100 text-gray-500')}>
                                 {token.name}
                               </span>
+                              {token.trendingBoost > 0 && token.trendingBoostExpires > Date.now() && (
+                                <span className="inline-flex items-center gap-0.5 flex-shrink-0 text-[#F6AF01]">
+                                  <Flame size={10} fill="#F6AF01" />
+                                  <span className="text-[9px] font-bold">{token.trendingBoost}</span>
+                                </span>
+                              )}
                             </div>
                             <span className={cn('text-[11px] truncate block opacity-50 font-mono', isDark ? 'text-white' : 'text-gray-600')}>
                               {truncateAccount(token.issuer, 8)}

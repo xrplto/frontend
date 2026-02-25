@@ -22,7 +22,7 @@ import api from 'src/utils/api';
 import { toast } from 'sonner';
 
 const BASE_URL = 'https://api.xrpl.to/v1';
-const TESTNET_EXPLORER = 'https://testnet.xrpl.org/transactions/';
+const EXPLORER = 'https://xrpl.org/transactions/';
 
 // Tier configurations with visual styling (matches TokenSummary badges)
 // Hierarchy: Green (Basic) → Yellow (Standard) → Violet (Premium) → Blue (Official)
@@ -92,7 +92,7 @@ export default function VerifyBadgeModal({ token, onClose, onSuccess, itemType =
   const currentVerified = token?.verified || 0;
 
   const copyToClipboard = (text, id) => {
-    navigator.clipboard.writeText(text);
+    navigator.clipboard.writeText(text).catch(() => {});
     setCopied(id);
     setTimeout(() => setCopied(null), 2000);
   };
@@ -152,7 +152,7 @@ export default function VerifyBadgeModal({ token, onClose, onSuccess, itemType =
     }
   };
 
-  // Execute payment on testnet (XRP)
+  // Execute payment with XRP
   const handlePayment = async () => {
     if (!accountProfile?.account) {
       setOpenWalletModal(true);
@@ -164,10 +164,10 @@ export default function VerifyBadgeModal({ token, onClose, onSuccess, itemType =
     setError(null);
 
     try {
-      const { Client, Wallet, xrpToDrops } = await import('xrpl');
+      const { Wallet } = await import('xrpl');
+      const { submitTransaction } = await import('src/utils/api');
       const { EncryptedWalletStorage, deviceFingerprint } = await import('src/utils/encryptedWalletStorage');
 
-      // Get wallet credentials
       const walletStorage = new EncryptedWalletStorage();
       const deviceKeyId = await deviceFingerprint.getDeviceId();
       const storedPassword = await walletStorage.getWalletCredential(deviceKeyId);
@@ -185,50 +185,25 @@ export default function VerifyBadgeModal({ token, onClose, onSuccess, itemType =
         return;
       }
 
-      // Create wallet from seed
       const algorithm = walletData.seed.startsWith('sEd') ? 'ed25519' : 'secp256k1';
       const wallet = Wallet.fromSeed(walletData.seed, { algorithm });
 
-      // Connect to TESTNET
-      let client;
-      try {
-        client = new Client('wss://s.altnet.rippletest.net:51233');
-        await client.connect();
+      const payment = {
+        TransactionType: 'Payment',
+        Account: wallet.address,
+        Destination: paymentInfo.destination,
+        DestinationTag: paymentInfo.destinationTag,
+        Amount: paymentInfo.amountDrops,
+        SourceTag: 161803
+      };
 
-        // Prepare payment transaction with destination tag
-        const payment = {
-          TransactionType: 'Payment',
-          Account: wallet.address,
-          Destination: paymentInfo.destination,
-          DestinationTag: paymentInfo.destinationTag,
-          Amount: paymentInfo.amountDrops
-        };
-
-        // Autofill, sign, and submit
-        let prepared;
-        try {
-          prepared = await client.autofill(payment);
-        } catch (autofillErr) {
-          if (autofillErr.message?.includes('Account not found') || autofillErr.data?.error === 'actNotFound') {
-            setError('Account not activated. Please fund your wallet with at least 10 XRP first, or pay with card.');
-            setStep(1);
-            return;
-          }
-          throw autofillErr;
-        }
-        const signed = wallet.sign(prepared);
-        const result = await client.submitAndWait(signed.tx_blob);
-
-        if (result?.result?.meta?.TransactionResult === 'tesSUCCESS') {
-          setTxHash(result.result.hash);
-          // Confirm with API
-          await confirmPayment(result.result.hash);
-        } else {
-          setError(`Transaction failed: ${result?.result?.meta?.TransactionResult || 'Unknown error'}`);
-          setStep(1);
-        }
-      } finally {
-        try { await client?.disconnect(); } catch {}
+      const result = await submitTransaction(wallet, payment);
+      if (result.success) {
+        setTxHash(result.hash);
+        await confirmPayment(result.hash);
+      } else {
+        setError(`Transaction failed: ${result.engine_result || 'Unknown error'}`);
+        setStep(1);
       }
     } catch (err) {
       console.error('Payment error:', err);
@@ -242,24 +217,36 @@ export default function VerifyBadgeModal({ token, onClose, onSuccess, itemType =
     }
   };
 
-  // Confirm payment with API
+  // Confirm payment with API (polls with retry for on-chain indexing delay)
   const confirmPayment = async (hash) => {
-    try {
-      const res = await api.post(`${BASE_URL}/verify/confirm`, { txHash: hash });
+    const maxAttempts = 6;
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      try {
+        const res = await api.post(`${BASE_URL}/verify/confirm`, { txHash: hash });
 
-      if (res.data.success) {
-        setStep(3);
-        toast.success(`${res.data.tierName} verification applied!`);
-        if (onSuccess) {
-          onSuccess(res.data.tier);
+        if (res.data.success) {
+          setStep(3);
+          toast.success(`${res.data.tierName} verification applied!`);
+          if (onSuccess) {
+            onSuccess(res.data.tier);
+          }
+          return;
         }
-      } else {
+        // If payment not found yet and retries remain, wait and retry
+        if (attempt < maxAttempts - 1) {
+          await new Promise(r => setTimeout(r, 2000 * (attempt + 1)));
+          continue;
+        }
         setError(res.data.error || 'Verification failed');
         setStep(1);
+      } catch (err) {
+        if (attempt < maxAttempts - 1) {
+          await new Promise(r => setTimeout(r, 2000 * (attempt + 1)));
+          continue;
+        }
+        setError(err.response?.data?.error || 'Failed to confirm verification');
+        setStep(1);
       }
-    } catch (err) {
-      setError(err.response?.data?.error || 'Failed to confirm verification');
-      setStep(1);
     }
   };
 
@@ -305,6 +292,7 @@ export default function VerifyBadgeModal({ token, onClose, onSuccess, itemType =
         const Icon = config.icon;
         const isDisabled = currentVerified > 0 && currentVerified <= tier;
         const isSelected = selectedTier === tier;
+        const dynamicUsd = pricing?.tiers?.[tier]?.priceUsd ?? config.priceUsd;
         const xrpPrice = pricing?.tiers?.[tier]?.priceXrp;
 
         return (
@@ -363,10 +351,10 @@ export default function VerifyBadgeModal({ token, onClose, onSuccess, itemType =
               {/* Price - USD with XRP equivalent */}
               <div className="text-right flex-shrink-0">
                 <div className={cn('text-sm font-black', config.text)}>
-                  ${config.priceUsd}
+                  ${dynamicUsd}
                 </div>
                 <div className={cn('text-[9px]', isDark ? 'text-white/40' : 'text-gray-400')}>
-                  ≈ {xrpPrice || '...'} XRP
+                  ~{xrpPrice || '...'} XRP
                 </div>
               </div>
 
@@ -412,7 +400,12 @@ export default function VerifyBadgeModal({ token, onClose, onSuccess, itemType =
             </div>
           </div>
           <div className="text-right">
-            <div className={cn('font-bold text-sm', config.text)}>${config.priceUsd}</div>
+            <div className={cn('font-bold text-sm', config.text)}>${pricing?.tiers?.[selectedTier]?.priceUsd ?? config.priceUsd}</div>
+            {pricing?.tiers?.[selectedTier]?.priceXrp && (
+              <div className={cn('text-[9px]', isDark ? 'text-white/40' : 'text-gray-400')}>
+                ~{pricing.tiers[selectedTier].priceXrp} XRP
+              </div>
+            )}
           </div>
         </div>
 
@@ -519,7 +512,7 @@ export default function VerifyBadgeModal({ token, onClose, onSuccess, itemType =
               )}
             >
               {loading ? <Loader2 size={16} className="animate-spin" /> : <CreditCard size={16} />}
-              Pay ${config.priceUsd}
+              Pay ${pricing?.tiers?.[selectedTier]?.priceUsd ?? config.priceUsd}
             </button>
           )}
         </div>
@@ -543,7 +536,7 @@ export default function VerifyBadgeModal({ token, onClose, onSuccess, itemType =
           Processing Payment
         </div>
         <div className={cn('text-xs', isDark ? 'text-white/50' : 'text-gray-500')}>
-          Submitting to XRPL Testnet...
+          Submitting to XRPL...
         </div>
         <div className={cn('text-[10px] mt-2', isDark ? 'text-white/30' : 'text-gray-400')}>
           This may take a few seconds
@@ -581,7 +574,7 @@ export default function VerifyBadgeModal({ token, onClose, onSuccess, itemType =
 
         {txHash && (
           <a
-            href={`${TESTNET_EXPLORER}${txHash}`}
+            href={`${EXPLORER}${txHash}`}
             target="_blank"
             rel="noopener noreferrer"
             className={cn(
@@ -623,7 +616,7 @@ export default function VerifyBadgeModal({ token, onClose, onSuccess, itemType =
     >
       <div
         className={cn(
-          'w-full max-w-sm rounded-2xl border-[1.5px] overflow-hidden',
+          'w-full max-w-xl rounded-2xl border-[1.5px] overflow-hidden',
           isDark
             ? 'bg-black/95 backdrop-blur-2xl border-white/[0.08] shadow-2xl shadow-black/50'
             : 'bg-white backdrop-blur-2xl border-gray-200 shadow-2xl shadow-gray-300/30'
@@ -647,7 +640,7 @@ export default function VerifyBadgeModal({ token, onClose, onSuccess, itemType =
                 Get Verified
               </div>
               <div className={cn('text-[9px]', isDark ? 'text-white/40' : 'text-gray-400')}>
-                XRPL Testnet
+                XRPL
               </div>
             </div>
           </div>

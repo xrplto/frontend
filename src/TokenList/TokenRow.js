@@ -2,7 +2,7 @@ import Decimal from 'decimal.js-light';
 import { useState, useEffect, useContext, memo, useMemo, useCallback, useRef } from 'react';
 import React from 'react';
 
-import { Bookmark } from 'lucide-react';
+import { Bookmark, Flame } from 'lucide-react';
 import api from 'src/utils/api';
 import { cn } from 'src/utils/cn';
 
@@ -223,7 +223,7 @@ const MobileTokenCard = ({ className, children, isDark, isNew, ...p }) => (
 
 const MobileTokenInfo = ({ className, children, ...p }) => (
   <div
-    className={cn('flex items-center gap-2 min-w-0 flex-[2] px-0.5', className)}
+    className={cn('flex items-center gap-2 min-w-0 flex-[1.8] px-0.5', className)}
     {...p}
   >
     {children}
@@ -233,7 +233,7 @@ const MobileTokenInfo = ({ className, children, ...p }) => (
 const MobilePriceCell = ({ className, children, isDark, ...p }) => (
   <div
     className={cn(
-      'text-right text-[12.5px] font-medium min-w-0 flex-[1.2] px-1 tracking-[0.01em] overflow-hidden text-ellipsis whitespace-nowrap',
+      'text-right text-[12.5px] font-medium min-w-0 flex-[1] px-1 tracking-[0.01em] overflow-hidden text-ellipsis whitespace-nowrap',
       isDark ? 'text-white/90' : 'text-black',
       className
     )}
@@ -245,7 +245,20 @@ const MobilePriceCell = ({ className, children, isDark, ...p }) => (
 
 const MobilePercentCell = ({ className, children, isDark, ...p }) => (
   <div
-    className={cn('text-right text-[12.5px] font-medium min-w-0 flex-[0.8] px-1 tracking-[0.01em] overflow-hidden text-ellipsis whitespace-nowrap', className)}
+    className={cn('text-right text-[12.5px] font-medium min-w-0 flex-[0.7] px-1 tracking-[0.01em] overflow-hidden text-ellipsis whitespace-nowrap', className)}
+    {...p}
+  >
+    {children}
+  </div>
+);
+
+const MobileVolumeCell = ({ className, children, isDark, ...p }) => (
+  <div
+    className={cn(
+      'text-right text-[12.5px] font-medium min-w-0 flex-[1] px-1 tracking-[0.01em] overflow-hidden text-ellipsis whitespace-nowrap',
+      isDark ? 'text-white/90' : 'text-black',
+      className
+    )}
     {...p}
   >
     {children}
@@ -273,12 +286,12 @@ const TokenDetails = ({ className, children, ...p }) => (
   </div>
 );
 
-const TokenName = ({ className, children, isDark, isMobile, ...p }) => (
+const TokenName = ({ className, children, isDark, isMobile, golden, ...p }) => (
   <span
     className={cn(
       'font-medium overflow-hidden text-ellipsis whitespace-nowrap block leading-[1.4]',
       isMobile ? 'text-[13px] max-w-[110px]' : 'tr-name text-[15px] max-w-[180px]',
-      isDark ? 'text-white' : 'text-[#1a1a1a]',
+      golden ? 'text-[#FFD700]' : isDark ? 'text-white' : 'text-[#1a1a1a]',
       className
     )}
     {...p}
@@ -493,8 +506,13 @@ const MobileTokenRow = ({
     isNew,
     tokenType,
     mptIssuanceID,
-    metadata
+    metadata,
+    trendingBoost,
+    trendingBoostExpires
   } = token;
+
+  const boostActive = trendingBoost > 0 && trendingBoostExpires > Date.now();
+  const isGolden = trendingBoost >= 500 && trendingBoostExpires > Date.now();
 
   // MPT token display name fallback
   const displayName = name || metadata?.name || metadata?.ticker || 'MPT';
@@ -528,6 +546,7 @@ const MobileTokenRow = ({
   // Get mobile column preferences - use customColumns when available
   const mobilePriceColumn = customColumns && customColumns[0] ? customColumns[0] : 'price';
   const mobilePercentColumn = customColumns && customColumns[1] ? customColumns[1] : 'pro24h';
+  const mobileVolumeColumn = customColumns && customColumns[2] ? customColumns[2] : 'volume24h';
 
   // Format value based on column type - handles all field types
   const formatMobileValue = (columnId) => {
@@ -605,9 +624,17 @@ const MobileTokenRow = ({
           />
         </TokenImage>
         <TokenDetails>
-          <TokenName isMobile={true} isDark={darkMode}>
-            {displayName}
-          </TokenName>
+          <span className="flex items-center gap-1">
+            <TokenName isMobile={true} isDark={darkMode} golden={isGolden}>
+              {displayName}
+            </TokenName>
+            {boostActive && (
+              <span className="inline-flex items-center gap-0.5 flex-shrink-0 text-[#F6AF01]">
+                <Flame size={10} fill="#F6AF01" />
+                <span className="text-[9px] font-bold">{trendingBoost}</span>
+              </span>
+            )}
+          </span>
           <UserName isMobile={true} isDark={darkMode}>
             {displayUser}
           </UserName>
@@ -619,6 +646,10 @@ const MobileTokenRow = ({
       <MobilePercentCell isDark={darkMode}>
         {formatMobileValue(mobilePercentColumn)}
       </MobilePercentCell>
+
+      <MobileVolumeCell isDark={darkMode}>
+        {formatMobileValue(mobileVolumeColumn)}
+      </MobileVolumeCell>
     </MobileTokenCard>
   );
 };
@@ -662,8 +693,13 @@ const DesktopTokenRow = ({
     isNew,
     tokenType,
     mptIssuanceID,
-    metadata
+    metadata,
+    trendingBoost,
+    trendingBoostExpires
   } = token;
+
+  const boostActive = trendingBoost > 0 && trendingBoostExpires > Date.now();
+  const isGolden = trendingBoost >= 500 && trendingBoostExpires > Date.now();
 
   // MPT token display name fallback
   const displayName = name || metadata?.name || metadata?.ticker || 'MPT';
@@ -719,9 +755,17 @@ const DesktopTokenRow = ({
             />
           </TokenImage>
           <div className="min-w-0">
-            <TokenName isDark={darkMode} title={displayName}>
-              {truncate(displayName, 16)}
-            </TokenName>
+            <span className="flex items-center gap-1">
+              <TokenName isDark={darkMode} title={displayName} golden={isGolden}>
+                {truncate(displayName, 16)}
+              </TokenName>
+              {boostActive && (
+                <span className="inline-flex items-center gap-0.5 flex-shrink-0 text-[#F6AF01]">
+                  <Flame size={10} fill="#F6AF01" />
+                  <span className="text-[9px] font-bold">{trendingBoost}</span>
+                </span>
+              )}
+            </span>
             <UserName isDark={darkMode} title={displayUser}>
               {truncate(displayUser, 12)}
             </UserName>

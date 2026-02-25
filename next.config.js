@@ -72,7 +72,7 @@ const config = {
       "style-src 'self' 'unsafe-inline'", // styled-jsx needs inline styles
       "img-src 'self' data: blob: https://s1.xrpl.to https://xrpl.to https://ipfs.io/ipfs/ https://content-api.changenow.io",
       "font-src 'self' data:",
-      "connect-src 'self' https://api.xrpl.to https://dev.xrpl.to https://xrpl.to wss://api.xrpl.to wss://dev.xrpl.to wss://xrplcluster.com wss://s1.ripple.com wss://xrpl.ws https://cloudflareinsights.com",
+      "connect-src 'self' https://api.xrpl.to https://dev.xrpl.to https://xrpl.to wss://api.xrpl.to wss://dev.xrpl.to wss://xrplcluster.com wss://s1.ripple.com wss://s2.ripple.com wss://xrpl.ws wss://s.altnet.rippletest.net:51233 https://cloudflareinsights.com",
       "frame-src 'self'",
       "frame-ancestors 'none'",
       "base-uri 'self'",

@@ -411,7 +411,12 @@ export default function TokenTradersPage({ traders = [], pagination = {}, trader
                           darkMode={darkMode}
                           className="font-medium text-xs"
                         >
-                          {fVolume(totalVol)}
+                          <div>{fVolume(totalVol)}</div>
+                          {trader.volume24h > 0 && (
+                            <div className={cn('text-[10px] font-normal', darkMode ? 'text-white/40' : 'text-black/35')}>
+                              24h: {fVolume(trader.volume24h)}
+                            </div>
+                          )}
                         </StyledTd>
                         <StyledTd align="right" darkMode={darkMode} className="text-[11px]">
                           {fNumber(trader.totalTrades || 0)}
@@ -519,6 +524,9 @@ export default function TokenTradersPage({ traders = [], pagination = {}, trader
                         <div>
                           <div className={cn('text-[9px] uppercase tracking-[0.06em] font-semibold', darkMode ? 'text-white/50' : 'text-black/30')}>Vol</div>
                           <div className={cn('text-[12px] font-medium', darkMode ? 'text-white/85' : 'text-[#1a1a2e]')}>{fVolume(trader.totalVolume || 0)}</div>
+                          {trader.volume24h > 0 && (
+                            <div className={cn('text-[10px]', darkMode ? 'text-white/35' : 'text-black/30')}>24h: {fVolume(trader.volume24h)}</div>
+                          )}
                         </div>
                         <div>
                           <div className={cn('text-[9px] uppercase tracking-[0.06em] font-semibold', darkMode ? 'text-white/50' : 'text-black/30')}>Trades</div>
@@ -621,19 +629,26 @@ export async function getServerSideProps({ query, res }) {
   const allowedSorts = ['totalProfit', 'totalVolume', 'totalTrades', 'buyVolume', 'sellVolume', 'avgROI', 'winRate', 'washTradingScore', 'lastActive', 'xrpBalance'];
   const safeSortBy = allowedSorts.includes(sortBy) ? sortBy : 'totalProfit';
 
+  const fetchData = () => Promise.all([
+    api.get(
+      `${BASE_URL}/token/analytics/traders?sortBy=${safeSortBy}&limit=${ROWS_PER_PAGE}&page=${safePage}`,
+      { timeout: 8000 }
+    ),
+    api.get(`${BASE_URL}/token/analytics/traders/summary`, { timeout: 8000 })
+  ]);
+
   try {
-    const [tradersRes, summaryRes] = await Promise.all([
-      api.get(
-        `${BASE_URL}/token/analytics/traders?sortBy=${safeSortBy}&limit=${ROWS_PER_PAGE}&page=${safePage}`,
-        { timeout: 8000 }
-      ),
-      api.get(`${BASE_URL}/token/analytics/traders/summary`, { timeout: 8000 })
-    ]);
+    let tradersRes, summaryRes;
+    try {
+      [tradersRes, summaryRes] = await fetchData();
+    } catch {
+      [tradersRes, summaryRes] = await fetchData();
+    }
     const rawTraders = tradersRes.data.data || [];
     const traders = rawTraders.map(t => ({
       address: t.address,
       xrpBalance: t.xrpBalance || 0,
-      totalVolume: t.totalVolume || 0,
+      totalVolume: (t.dexVolume || 0) + (t.ammVolume || 0),
       totalTrades: t.totalTrades || 0,
       buyVolume: t.buyVolume || 0,
       sellVolume: t.sellVolume || 0,
@@ -643,6 +658,7 @@ export async function getServerSideProps({ query, res }) {
       dexVolume: t.dexVolume || 0,
       ammVolume: t.ammVolume || 0,
       sourceTagStats: t.sourceTagStats || [],
+      volume24h: t.volume24h || 0,
       washTradingScore: t.washTradingScore || 0,
       lastTradeDate: t.lastTradeDate || null
     }));

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useContext, useEffect } from 'react';
+import React, { useState, useRef, useContext, useEffect, useMemo } from 'react';
 import api from 'src/utils/api';
 import * as xrpl from 'xrpl';
 import { ThemeContext, WalletContext, AppContext } from 'src/context/AppContext';
@@ -167,6 +167,7 @@ function CreatePage() {
   const [errors, setErrors] = useState({});
   const [dragging, setDragging] = useState(false);
   const [launchStep, setLaunchStep] = useState('');
+  const [isRestoring, setIsRestoring] = useState(true); // true until session restore check completes
   const [sessionData, setSessionData] = useState(null);
   const [launchError, setLaunchError] = useState('');
   const [userWallet, setUserWallet] = useState('');
@@ -177,17 +178,25 @@ function CreatePage() {
   const [claiming, setClaiming] = useState(false);
   const [claimStep, setClaimStep] = useState(null); // 'connecting' | 'trustline' | 'cashing' | null
   const [showSummary, setShowSummary] = useState(false);
-  const [decryptedSeed, setDecryptedSeed] = useState(null);
+  const decryptedSeedRef = useRef(null);
   const [costBreakdown, setCostBreakdown] = useState(null);
   const [loadingCost, setLoadingCost] = useState(false);
   const [walletBalance, setWalletBalance] = useState(null);
   const [fundingSending, setFundingSending] = useState(false);
+  const [cancelConfirm, setCancelConfirm] = useState(false);
+  const [fundConfirm, setFundConfirm] = useState(false);
   const [fundingStep, setFundingStep] = useState(null); // 'connecting' | 'signing' | 'submitted' | 'confirmed'
   const [fundingTxHash, setFundingTxHash] = useState(null);
   const [antiSnipeRemaining, setAntiSnipeRemaining] = useState(null); // seconds remaining
   const [bundleClaimed, setBundleClaimed] = useState({}); // { [checkId]: boolean }
   const [bundleClaiming, setBundleClaiming] = useState({}); // { [checkId]: 'connecting' | 'trustline' | 'cashing' }
   const [bundleBalances, setBundleBalances] = useState({}); // { [address]: number | null }
+
+  // Stable key for bundle percent changes — avoids JSON.stringify in useEffect deps
+  const bundlePercentKey = useMemo(
+    () => formData.bundleRecipients.map(b => b.percent).join(','),
+    [formData.bundleRecipients]
+  );
 
   // Get signing wallet from cached credentials (no password prompt needed)
   const safeParseSeed = (seed) => {
@@ -228,9 +237,9 @@ function CreatePage() {
 
   const getSigningWallet = async () => {
     if (!accountProfile) return null;
-    if (decryptedSeed) return safeParseSeed(decryptedSeed);
+    if (decryptedSeedRef.current) return safeParseSeed(decryptedSeedRef.current);
     const w = await getSigningWalletForProfile(accountProfile);
-    if (w) setDecryptedSeed(w.seed); // Cache for next time
+    if (w) decryptedSeedRef.current = w.seed; // Cache for next time
     return w;
   };
 
@@ -242,19 +251,23 @@ function CreatePage() {
       return;
     }
     let cancelled = false;
+    let activeClient = null;
     const fetchBalance = async () => {
       try {
-        const client = new xrpl.Client('wss://s.altnet.rippletest.net:51233');
+        const client = new xrpl.Client('wss://s.altnet.rippletest.net:51233', { connectionTimeout: 10000 });
+        activeClient = client;
         await client.connect();
+        if (cancelled) { try { await client.disconnect(); } catch {} return; }
         const info = await client.request({
           command: 'account_info',
           account: addr,
           ledger_index: 'validated'
         });
-        await client.disconnect();
         if (!cancelled) {
           setWalletBalance(parseInt(info.result.account_data.Balance) / 1000000);
         }
+        try { await client.disconnect(); } catch {}
+        activeClient = null;
       } catch {
         if (!cancelled) setWalletBalance(null);
       }
@@ -263,7 +276,11 @@ function CreatePage() {
     // Poll on form page (10s) and funding page (6s) so balance updates without reload
     const pollMs = launchStep === 'funding' ? 6000 : !launchStep ? 10000 : null;
     const interval = pollMs ? setInterval(fetchBalance, pollMs) : null;
-    return () => { cancelled = true; if (interval) clearInterval(interval); };
+    return () => {
+      cancelled = true;
+      if (interval) clearInterval(interval);
+      if (activeClient) { try { activeClient.disconnect(); } catch {} }
+    };
   }, [accountProfile, userWallet, launchStep]);
 
   // Fetch balances for bundle recipient addresses
@@ -278,12 +295,16 @@ function CreatePage() {
     }
 
     let cancelled = false;
+    let activeClient = null;
     const fetchBalances = async () => {
       const balances = {};
-      const client = new xrpl.Client('wss://s.altnet.rippletest.net:51233');
+      const client = new xrpl.Client('wss://s.altnet.rippletest.net:51233', { connectionTimeout: 10000 });
+      activeClient = client;
       try {
         await client.connect();
+        if (cancelled) { try { await client.disconnect(); } catch {} return; }
         for (const addr of addresses) {
+          if (cancelled) break;
           try {
             const info = await client.request({
               command: 'account_info',
@@ -295,7 +316,8 @@ function CreatePage() {
             balances[addr] = null;
           }
         }
-        await client.disconnect();
+        try { await client.disconnect(); } catch {}
+        activeClient = null;
         if (!cancelled) setBundleBalances(balances);
       } catch {
         if (!cancelled) setBundleBalances({});
@@ -303,7 +325,10 @@ function CreatePage() {
     };
 
     fetchBalances();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+      if (activeClient) { try { activeClient.disconnect(); } catch {} }
+    };
   }, [formData.bundleRecipients]);
 
   // Clear stale launch session when account changes
@@ -342,12 +367,12 @@ function CreatePage() {
   useEffect(() => {
     const decryptSeed = async () => {
       if (!accountProfile) {
-        setDecryptedSeed(null);
+        decryptedSeedRef.current = null;
         return;
       }
 
       if (accountProfile.seed) {
-        setDecryptedSeed(accountProfile.seed);
+        decryptedSeedRef.current = accountProfile.seed;
         return;
       }
 
@@ -368,7 +393,7 @@ function CreatePage() {
               );
 
               if (wallet?.seed) {
-                setDecryptedSeed(wallet.seed);
+                decryptedSeedRef.current = wallet.seed;
               }
             } catch (walletError) {
               // Password exists but decryption failed - likely device fingerprint changed
@@ -390,7 +415,7 @@ function CreatePage() {
                 storedPassword
               );
               if (walletData?.seed) {
-                setDecryptedSeed(walletData.seed);
+                decryptedSeedRef.current = walletData.seed;
               }
             }
           }
@@ -407,7 +432,7 @@ function CreatePage() {
   useEffect(() => {
     let cancelled = false;
     const fetchCost = async (retries = 2) => {
-      if (formData.ammXrpAmount < 1) return;
+      if (formData.ammXrpAmount < 10) return;
       setLoadingCost(true);
       try {
         const userCheckAmount = Math.floor(formData.tokenSupply * (formData.userCheckPercent / 100));
@@ -427,29 +452,31 @@ function CreatePage() {
     };
     const timeout = setTimeout(fetchCost, 300);
     return () => { cancelled = true; clearTimeout(timeout); };
-  }, [formData.ammXrpAmount, formData.antiSnipe, formData.tokenSupply, formData.userCheckPercent, formData.platformRetentionPercent, formData.bundleRecipients.length,
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    JSON.stringify(formData.bundleRecipients.map(b => b.percent))]);
+  }, [formData.ammXrpAmount, formData.antiSnipe, formData.tokenSupply, formData.userCheckPercent, formData.platformRetentionPercent, formData.bundleRecipients.length, bundlePercentKey]);
 
   // Restore session from localStorage on mount
   useEffect(() => {
     const savedSession = localStorage.getItem('tokenLaunchSession');
-    if (savedSession) {
-      try {
-        const parsed = JSON.parse(savedSession);
-        setSessionData(parsed);
-        setUserWallet(parsed.userWallet || '');
+    if (!savedSession) {
+      setIsRestoring(false);
+      return;
+    }
+    try {
+      const parsed = JSON.parse(savedSession);
+      setSessionData(parsed);
+      setUserWallet(parsed.userWallet || '');
 
-        // Restore form data if available
-        if (parsed.formData) {
-          setFormData((prev) => ({ ...prev, ...parsed.formData, bundleRecipients: parsed.formData.bundleRecipients || [] }));
-          if (parsed.formData.image) {
-            setFileName(parsed.formData.image.name || 'uploaded-file');
-          }
+      // Restore form data if available
+      if (parsed.formData) {
+        setFormData((prev) => ({ ...prev, ...parsed.formData, bundleRecipients: parsed.formData.bundleRecipients || [] }));
+        if (parsed.formData.image) {
+          setFileName(parsed.formData.image.name || 'uploaded-file');
         }
+      }
 
-        // Poll status to get current state
-        (async () => {
+      // Poll status to get current state
+      (async () => {
+        try {
           const response = await api.get(
             `https://api.xrpl.to/v1/launch-token/status/${parsed.sessionId}`
           );
@@ -486,7 +513,8 @@ function CreatePage() {
               'creating_checks',
               'creating_bundle_checks',
               'creating_amm',
-              'scheduling_blackhole'
+              'scheduling_blackhole',
+              'resuming'
             ].includes(status.status)
           ) {
             setLaunchStep('processing');
@@ -499,11 +527,18 @@ function CreatePage() {
           } else {
             setLaunchStep('funding');
           }
-        })();
-      } catch (e) {
-        console.error('Failed to restore session:', e);
-        localStorage.removeItem('tokenLaunchSession');
-      }
+        } catch {
+          // Status fetch failed — clear stale session and show form
+          localStorage.removeItem('tokenLaunchSession');
+          setSessionData(null);
+        } finally {
+          setIsRestoring(false);
+        }
+      })();
+    } catch (e) {
+      console.error('Failed to restore session:', e);
+      localStorage.removeItem('tokenLaunchSession');
+      setIsRestoring(false);
     }
   }, []);
 
@@ -575,7 +610,7 @@ function CreatePage() {
     if (!file) return;
 
     const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-    const maxSize = 15 * 1024 * 1024; // 15MB for images
+    const maxSize = 500 * 1024; // 500KB — matches API server-side limit
 
     if (!validTypes.includes(file.type)) {
       setErrors((prev) => ({ ...prev, file: 'Invalid file type. Use PNG, JPG, GIF, or WEBP' }));
@@ -583,7 +618,7 @@ function CreatePage() {
     }
 
     if (file.size > maxSize) {
-      setErrors((prev) => ({ ...prev, file: 'File too large (max 15MB)' }));
+      setErrors((prev) => ({ ...prev, file: 'File too large (max 500KB)' }));
       return;
     }
 
@@ -634,7 +669,7 @@ function CreatePage() {
       formData.ticker.length < 3 ||
       formData.ticker.length > 20 ||
       formData.tokenSupply < 1000 ||
-      formData.ammXrpAmount < 1 ||
+      formData.ammXrpAmount < 10 ||
       Object.keys(errors).length
     ) return false;
 
@@ -664,18 +699,8 @@ function CreatePage() {
     return true;
   };
 
-  // Polling function to check funding status
-  const checkFundingStatus = async (sessionId) => {
-    try {
-      const response = await api.get(`https://api.xrpl.to/v1/launch-token/status/${sessionId}`);
-      return response.data;
-    } catch (error) {
-      return null;
-    }
-  };
-
-  // Polling function to check launch status
-  const pollLaunchStatus = async (sessionId) => {
+  // Poll session status (used by both funding and processing pollers)
+  const pollSessionStatus = async (sessionId) => {
     try {
       const response = await api.get(`https://api.xrpl.to/v1/launch-token/status/${sessionId}`);
       return response.data;
@@ -852,7 +877,7 @@ function CreatePage() {
       // Guard: if launchStep changed since this interval was created, stop polling
       if (cleared) return;
 
-      const status = await checkFundingStatus(sessionData.sessionId);
+      const status = await pollSessionStatus(sessionData.sessionId);
 
       if (!status) {
         return;
@@ -888,7 +913,8 @@ function CreatePage() {
           'creating_checks',
           'creating_bundle_checks',
           'creating_amm',
-          'scheduling_blackhole'
+          'scheduling_blackhole',
+          'resuming'
         ].includes(status.status)
       ) {
         // Backend is processing - transition to processing view and stop this poll
@@ -933,7 +959,7 @@ function CreatePage() {
     if (launchStep !== 'processing' || !sessionData?.sessionId) return;
 
     const pollInterval = setInterval(async () => {
-      const status = await pollLaunchStatus(sessionData.sessionId);
+      const status = await pollSessionStatus(sessionData.sessionId);
       if (!status) return;
 
       // Update status and session data — preserve existing fields the API may not have yet
@@ -1009,7 +1035,7 @@ function CreatePage() {
       const wsUrl = sessionData?.network === 'mainnet'
         ? 'wss://xrplcluster.com'
         : 'wss://s.altnet.rippletest.net:51233';
-      const client = new xrpl.Client(wsUrl);
+      const client = new xrpl.Client(wsUrl, { connectionTimeout: 10000 });
       try {
         await client.connect();
         for (const entry of allCheckIds) {
@@ -1031,20 +1057,20 @@ function CreatePage() {
             }
           }
         }
-        await client.disconnect();
       } catch {
         // Connection failed — leave states as-is
+      } finally {
+        try { await client.disconnect(); } catch {}
       }
     };
 
     // Initial check after 10s, then poll every 30s to detect claimed checks
+    let intervalRef = null;
     const timeout = setTimeout(() => {
       if (cancelled) return;
       checkOnChain();
-      const interval = setInterval(checkOnChain, 30000);
-      if (!cancelled) intervalRef = interval;
+      intervalRef = setInterval(checkOnChain, 30000);
     }, 10000);
-    let intervalRef = null;
     return () => { cancelled = true; clearTimeout(timeout); if (intervalRef) clearInterval(intervalRef); };
   }, [launchStep, sessionData?.sessionId, sessionData?.userCheckId, sessionData?.data?.userCheckId]);
 
@@ -1053,9 +1079,19 @@ function CreatePage() {
       <Header />
       <h1 className="sr-only">Launch Token on XRPL</h1>
 
+      {/* Restoring session */}
+      {isRestoring && (
+        <div className="max-w-[640px] mx-auto px-5 py-20 w-full flex-1 flex flex-col items-center gap-3">
+          <Spinner size={28} />
+          <p className="text-[13px] opacity-50">Restoring session...</p>
+        </div>
+      )}
+
       {/* Main Form */}
-      {!launchStep && !showSummary && (
-        <div className="max-w-[640px] mx-auto px-5 py-6 w-full flex-1">
+      {!isRestoring && !launchStep && !showSummary && (
+        <div className="max-w-[1060px] mx-auto px-5 py-6 w-full flex-1 flex gap-6">
+         {/* Left: Form */}
+         <div className="max-w-[640px] w-full flex-1">
           <div className="mb-4 flex items-center justify-between">
             <div>
               <h2 className="text-lg font-normal mb-0.5">Launch Token</h2>
@@ -1361,43 +1397,61 @@ function CreatePage() {
                       return (
                         <div key={idx} className="flex items-start gap-2">
                           <div className="flex-1">
-                            <select
-                              value={r.address}
-                              onChange={(e) => {
-                                const updated = [...formData.bundleRecipients];
-                                updated[idx] = { ...updated[idx], address: e.target.value };
-                                setFormData((prev) => ({ ...prev, bundleRecipients: updated }));
-                              }}
-                              className={cn(
-                                'w-full px-2.5 py-2 rounded-lg border text-[12px] bg-transparent transition-colors appearance-none cursor-pointer',
-                                dupeAddr
-                                  ? 'border-red-500/40'
-                                  : r.address
-                                    ? 'border-green-500/40'
-                                    : isDark
+                            <div className="flex gap-1.5">
+                              <input
+                                type="text"
+                                placeholder="rAddress..."
+                                value={r.address}
+                                onChange={(e) => {
+                                  const updated = [...formData.bundleRecipients];
+                                  updated[idx] = { ...updated[idx], address: e.target.value.trim() };
+                                  setFormData((prev) => ({ ...prev, bundleRecipients: updated }));
+                                }}
+                                className={cn(
+                                  'flex-1 px-2.5 py-2 rounded-lg border text-[12px] bg-transparent transition-colors font-mono',
+                                  dupeAddr
+                                    ? 'border-red-500/40'
+                                    : r.address && /^r[1-9A-HJ-NP-Za-km-z]{24,34}$/.test(r.address)
+                                      ? 'border-green-500/40'
+                                      : isDark
+                                        ? 'border-white/10 hover:border-white/20'
+                                        : 'border-gray-200 hover:border-gray-300',
+                                  'focus:outline-none focus:border-[#3b82f6] placeholder:opacity-40'
+                                )}
+                              />
+                              {availableProfiles.length > 0 && (
+                                <select
+                                  value=""
+                                  onChange={(e) => {
+                                    if (!e.target.value) return;
+                                    const updated = [...formData.bundleRecipients];
+                                    updated[idx] = { ...updated[idx], address: e.target.value };
+                                    setFormData((prev) => ({ ...prev, bundleRecipients: updated }));
+                                  }}
+                                  className={cn(
+                                    'px-1.5 py-2 rounded-lg border text-[11px] bg-transparent transition-colors cursor-pointer',
+                                    isDark
                                       ? 'border-white/10 hover:border-white/20'
                                       : 'border-gray-200 hover:border-gray-300',
-                                'focus:outline-none focus:border-[#3b82f6]'
+                                    'focus:outline-none focus:border-[#3b82f6]'
+                                  )}
+                                  title="Pick from connected wallets"
+                                >
+                                  <option value="" className={isDark ? 'bg-[#111]' : 'bg-white'}>My wallets</option>
+                                  {availableProfiles.map((p) => {
+                                    const addr = p.account || p.address;
+                                    const typeLabel = p.wallet_type === 'oauth' || p.wallet_type === 'social'
+                                      ? p.provider || 'social'
+                                      : p.wallet_type || 'wallet';
+                                    return (
+                                      <option key={addr} value={addr} className={isDark ? 'bg-[#111]' : 'bg-white'}>
+                                        {addr.slice(0, 8)}...{addr.slice(-4)} ({typeLabel})
+                                      </option>
+                                    );
+                                  })}
+                                </select>
                               )}
-                            >
-                              <option value="" className={isDark ? 'bg-[#111]' : 'bg-white'}>Select wallet...</option>
-                              {availableProfiles.map((p) => {
-                                const addr = p.account || p.address;
-                                const typeLabel = p.wallet_type === 'oauth' || p.wallet_type === 'social'
-                                  ? p.provider || 'social'
-                                  : p.wallet_type || 'wallet';
-                                return (
-                                  <option key={addr} value={addr} className={isDark ? 'bg-[#111]' : 'bg-white'}>
-                                    {addr.slice(0, 8)}...{addr.slice(-4)} ({typeLabel})
-                                  </option>
-                                );
-                              })}
-                              {r.address && !availableProfiles.some((p) => (p.account || p.address) === r.address) && (
-                                <option value={r.address} className={isDark ? 'bg-[#111]' : 'bg-white'}>
-                                  {r.address.slice(0, 8)}...{r.address.slice(-4)}
-                                </option>
-                              )}
-                            </select>
+                            </div>
                             {dupeAddr && (
                               <span className="text-[10px] text-red-500">Duplicate address</span>
                             )}
@@ -1462,11 +1516,7 @@ function CreatePage() {
                     {(() => {
                       const totalBundlePercent = formData.bundleRecipients.reduce((s, x) => s + x.percent, 0);
                       const totalAllocated = formData.userCheckPercent + totalBundlePercent + formData.platformRetentionPercent;
-                      const activeAddr = accountProfile?.account || accountProfile?.address;
-                      const usedAddrs = new Set(formData.bundleRecipients.map((x) => x.address));
-                      const canAddMore = formData.bundleRecipients.length < 10 && (profiles || []).some(
-                        (p) => (p.account || p.address) && (p.account || p.address) !== activeAddr && !usedAddrs.has(p.account || p.address)
-                      );
+                      const canAddMore = formData.bundleRecipients.length < 10;
                       return (
                         <>
                           {totalAllocated > 92 && (
@@ -1521,10 +1571,10 @@ function CreatePage() {
                 type="number"
                 value={formData.ammXrpAmount}
                 onChange={handleInputChange('ammXrpAmount')}
-                error={formData.ammXrpAmount < 1}
-                helperText={formData.ammXrpAmount < 1 ? 'Minimum 1 XRP' : null}
+                error={formData.ammXrpAmount < 10}
+                helperText={formData.ammXrpAmount < 10 ? 'Minimum 10 XRP' : null}
                 isDark={isDark}
-                min={1}
+                min={10}
               />
             </div>
 
@@ -1714,7 +1764,7 @@ function CreatePage() {
                   <Upload size={20} className="opacity-20" />
                   <div className="text-left">
                     <p className="text-[12px] opacity-60">Drop image or click to browse</p>
-                    <p className="text-[10px] opacity-40">PNG, JPG, GIF, WEBP • Max 15MB</p>
+                    <p className="text-[10px] opacity-40">PNG, JPG, GIF, WEBP • Max 500KB</p>
                   </div>
                 </div>
               )}
@@ -1753,7 +1803,7 @@ function CreatePage() {
                   if (!formData.tokenName) missing.push('Token name');
                   if (!formData.ticker || formData.ticker.length < 3 || formData.ticker.length > 20) missing.push('Ticker');
                   if (formData.tokenSupply < 1000) missing.push('Total supply');
-                  if (formData.ammXrpAmount < 1) missing.push('AMM amount');
+                  if (formData.ammXrpAmount < 10) missing.push('AMM amount (min 10 XRP)');
                   if (!accountProfile && !userWallet) missing.push('Connect wallet');
                   const requiredFunding = costBreakdown?.requiredFunding || Math.ceil(9 + formData.ammXrpAmount);
                   if (walletBalance !== null && walletBalance < requiredFunding) {
@@ -1776,11 +1826,193 @@ function CreatePage() {
                     : 'Launch Token';
                 })()}
           </Button>
+         </div>
+
+         {/* Right: Live Preview */}
+         <div className="hidden lg:block w-[340px] flex-shrink-0">
+          <div className="sticky top-6 flex flex-col gap-3">
+            <div className={cn(
+              'rounded-2xl border overflow-hidden transition-[border-color] duration-200',
+              isDark ? 'border-white/[0.06] bg-transparent' : 'border-black/[0.06] bg-transparent'
+            )}>
+              {/* Preview header */}
+              <div className={cn(
+                'px-4 py-2 text-[10px] uppercase tracking-widest',
+                isDark ? 'text-white/25' : 'text-black/25'
+              )}>
+                Preview
+              </div>
+
+              {/* Token identity */}
+              <div className="px-4 pb-4">
+                <div className="flex items-center gap-3 mb-3">
+                  {imagePreview ? (
+                    <img src={imagePreview} alt="" className="w-10 h-10 rounded-full object-cover flex-shrink-0" />
+                  ) : (
+                    <div className={cn(
+                      'w-10 h-10 rounded-full flex items-center justify-center text-[15px] font-semibold flex-shrink-0 transition-colors duration-200',
+                      isDark ? 'bg-white/[0.06] text-white/20' : 'bg-black/[0.04] text-black/20'
+                    )}>
+                      {formData.ticker ? formData.ticker.charAt(0) : '?'}
+                    </div>
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <span className={cn('text-[14px] font-medium truncate block', !formData.tokenName && 'opacity-20')}>
+                      {formData.tokenName || 'Token Name'}
+                    </span>
+                    <span className={cn('text-[12px] font-mono', !formData.ticker ? 'opacity-15' : 'text-[#137DFE]')}>
+                      {formData.ticker || 'TKR'}
+                    </span>
+                  </div>
+                </div>
+
+                {formData.description && (
+                  <p className={cn('text-[11px] leading-relaxed mb-3 line-clamp-3', isDark ? 'text-white/40' : 'text-black/40')}>{formData.description}</p>
+                )}
+
+                {(formData.website || formData.twitter || formData.telegram) && (
+                  <div className="flex flex-wrap gap-1.5 mb-3">
+                    {formData.website && (
+                      <span className={cn('flex items-center gap-1 text-[10px] px-2 py-[3px] rounded-[8px]', isDark ? 'bg-white/[0.04] text-white/40' : 'bg-black/[0.03] text-black/40')}>
+                        <Globe size={9} /> Website
+                      </span>
+                    )}
+                    {formData.twitter && (
+                      <span className={cn('flex items-center gap-1 text-[10px] px-2 py-[3px] rounded-[8px]', isDark ? 'bg-white/[0.04] text-white/40' : 'bg-black/[0.03] text-black/40')}>
+                        <Twitter size={9} /> {formData.twitter}
+                      </span>
+                    )}
+                    {formData.telegram && (
+                      <span className={cn('flex items-center gap-1 text-[10px] px-2 py-[3px] rounded-[8px]', isDark ? 'bg-white/[0.04] text-white/40' : 'bg-black/[0.03] text-black/40')}>
+                        <Send size={9} /> Telegram
+                      </span>
+                    )}
+                  </div>
+                )}
+
+                {/* Stats */}
+                <div className={cn(
+                  'rounded-[10px] border p-3 space-y-[7px] transition-colors duration-200',
+                  isDark ? 'bg-white/[0.025] border-white/[0.06]' : 'bg-black/[0.015] border-black/[0.06]'
+                )}>
+                  <div className="flex items-center justify-between">
+                    <span className={cn('text-[11px]', isDark ? 'text-white/30' : 'text-black/35')}>Supply</span>
+                    <span className="text-[12px] font-mono">{formData.tokenSupply.toLocaleString()}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className={cn('text-[11px]', isDark ? 'text-white/30' : 'text-black/35')}>Liquidity</span>
+                    <span className="text-[12px] font-mono">{formData.ammXrpAmount} XRP</span>
+                  </div>
+                  {formData.userCheckPercent > 0 && (
+                    <div className="flex items-center justify-between">
+                      <span className={cn('text-[11px]', isDark ? 'text-white/30' : 'text-black/35')}>Your allocation</span>
+                      <span className="text-[12px] font-mono text-[#08AA09]">{formData.userCheckPercent}%</span>
+                    </div>
+                  )}
+                  {formData.platformRetentionPercent > 0 && (
+                    <div className="flex items-center justify-between">
+                      <span className={cn('text-[11px]', isDark ? 'text-white/30' : 'text-black/35')}>Platform share</span>
+                      <span className={cn('text-[12px] font-mono', isDark ? 'text-white/20' : 'text-black/25')}>{formData.platformRetentionPercent}%</span>
+                    </div>
+                  )}
+                  {formData.bundleRecipients.length > 0 && (
+                    <div>
+                      <div className="flex items-center justify-between">
+                        <span className={cn('text-[11px]', isDark ? 'text-white/30' : 'text-black/35')}>Bundle</span>
+                        <span className="text-[12px] font-mono text-[#650CD4]">
+                          {formData.bundleRecipients.length} addr · {formData.bundleRecipients.reduce((s, r) => s + r.percent, 0)}%
+                        </span>
+                      </div>
+                      {formData.bundleRecipients.some(r => !r.address) && (
+                        <span className="text-[10px] text-red-400 mt-0.5 block">Missing wallet address</span>
+                      )}
+                    </div>
+                  )}
+                  {formData.antiSnipe && (
+                    <div className="flex items-center justify-between">
+                      <span className={cn('text-[11px]', isDark ? 'text-white/30' : 'text-black/35')}>Anti-snipe</span>
+                      <span className="text-[12px] text-[#137DFE]">2 min</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Distribution bar */}
+                {(() => {
+                  const userPct = formData.userCheckPercent;
+                  const platPct = formData.platformRetentionPercent;
+                  const bundlePct = formData.bundleRecipients.reduce((s, r) => s + r.percent, 0);
+                  const ammPct = Math.max(0, 100 - userPct - platPct - bundlePct);
+                  return (
+                    <div className="mt-3">
+                      <div className="flex h-[6px] rounded-full overflow-hidden gap-[1px]">
+                        {ammPct > 0 && <div className="bg-[#137DFE] transition-all duration-300" style={{ width: `${ammPct}%` }} />}
+                        {userPct > 0 && <div className="bg-[#08AA09] transition-all duration-300" style={{ width: `${userPct}%` }} />}
+                        {platPct > 0 && <div className={cn('transition-all duration-300', isDark ? 'bg-white/15' : 'bg-black/10')} style={{ width: `${platPct}%` }} />}
+                        {bundlePct > 0 && <div className="bg-[#650CD4] transition-all duration-300" style={{ width: `${bundlePct}%` }} />}
+                      </div>
+                      <div className="flex flex-wrap gap-x-3 gap-y-0 mt-1.5">
+                        {ammPct > 0 && <span className={cn('flex items-center gap-1 text-[10px]', isDark ? 'text-white/30' : 'text-black/30')}><span className="w-1.5 h-1.5 rounded-full bg-[#137DFE]" />AMM {ammPct}%</span>}
+                        {userPct > 0 && <span className={cn('flex items-center gap-1 text-[10px]', isDark ? 'text-white/30' : 'text-black/30')}><span className="w-1.5 h-1.5 rounded-full bg-[#08AA09]" />You {userPct}%</span>}
+                        {platPct > 0 && <span className={cn('flex items-center gap-1 text-[10px]', isDark ? 'text-white/30' : 'text-black/30')}><span className={cn('w-1.5 h-1.5 rounded-full', isDark ? 'bg-white/15' : 'bg-black/10')} />Platform {platPct}%</span>}
+                        {bundlePct > 0 && <span className={cn('flex items-center gap-1 text-[10px]', isDark ? 'text-white/30' : 'text-black/30')}><span className="w-1.5 h-1.5 rounded-full bg-[#650CD4]" />Bundle {bundlePct}%</span>}
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+            </div>
+
+            {/* Unused optional settings */}
+            {(() => {
+              const unused = [];
+              if (!formData.description) unused.push('Description');
+              if (!formData.website) unused.push('Website');
+              if (!formData.twitter) unused.push('Twitter');
+              if (!formData.telegram) unused.push('Telegram');
+              if (!formData.image) unused.push('Image');
+              if (!formData.antiSnipe) unused.push('Anti-snipe');
+              if (formData.userCheckPercent === 0) unused.push('Allocation');
+              if (formData.platformRetentionPercent === 0) unused.push('Platform share');
+              if (formData.bundleRecipients.length === 0) unused.push('Bundle');
+              // Warn about bundle recipients with missing addresses
+              const bundleMissing = formData.bundleRecipients.length > 0 && formData.bundleRecipients.some(r => !r.address);
+              if (unused.length === 0 && !bundleMissing) return null;
+              return (
+                <div className={cn(
+                  'rounded-[10px] border px-3 py-2.5 transition-colors duration-200',
+                  isDark ? 'border-white/[0.04] bg-white/[0.015]' : 'border-black/[0.04] bg-black/[0.01]'
+                )}>
+                  {bundleMissing && (
+                    <div className="flex items-center gap-1.5 mb-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-red-400 flex-shrink-0" />
+                      <span className="text-[10px] text-red-400">Bundle recipient needs a wallet address</span>
+                    </div>
+                  )}
+                  {unused.length > 0 && (
+                    <>
+                      <span className={cn('text-[10px] block mb-1.5', isDark ? 'text-white/20' : 'text-black/20')}>Not configured</span>
+                      <div className="flex flex-wrap gap-1.5">
+                        {unused.map(item => (
+                          <span key={item} className={cn(
+                            'text-[10px] px-2 py-[2px] rounded-[6px] transition-colors duration-200',
+                            isDark ? 'bg-white/[0.03] text-white/15' : 'bg-black/[0.025] text-black/20'
+                          )}>
+                            {item}
+                          </span>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
+              );
+            })()}
+          </div>
+         </div>
         </div>
       )}
 
       {/* Summary Confirmation */}
-      {showSummary && (
+      {!isRestoring && showSummary && (
         <div className="max-w-[640px] mx-auto px-5 py-10 w-full flex-1">
           <div className="mb-6">
             <h2 className="text-xl font-normal mb-1">Review Details</h2>
@@ -1885,13 +2117,25 @@ function CreatePage() {
                 )}
                 {formData.bundleRecipients.length > 0 && formData.bundleRecipients.map((r, idx) => (
                   <div key={idx} className="flex items-center justify-between py-1 pl-3">
-                    <span className="text-[11px] opacity-40 font-mono truncate max-w-[200px]">{r.address}</span>
+                    {r.address ? (
+                      <span className="text-[11px] opacity-40 font-mono truncate max-w-[200px]">{r.address}</span>
+                    ) : (
+                      <span className="text-[11px] text-red-400">No wallet selected</span>
+                    )}
                     <span className="text-[11px] opacity-40">
                       {r.percent}% · {Math.floor(formData.tokenSupply * (r.percent / 100)).toLocaleString()} tokens
                     </span>
                   </div>
                 ))}
               </div>
+              {formData.bundleRecipients.length > 0 && formData.bundleRecipients.some(r => !r.address) && (
+                <div className={cn(
+                  'px-4 py-2 text-[11px]',
+                  isDark ? 'bg-red-500/[0.06] text-red-400' : 'bg-red-50 text-red-500'
+                )}>
+                  Bundle recipient missing wallet address — go back and select one.
+                </div>
+              )}
               {formData.userCheckPercent === 0 && (
                 <div className={cn(
                   'px-4 py-2 text-[11px]',
@@ -1963,7 +2207,7 @@ function CreatePage() {
       )}
 
       {/* Launch Status */}
-      {launchStep && (
+      {!isRestoring && launchStep && (
         <div className="max-w-[640px] mx-auto px-5 py-4 w-full flex-1">
           <div className="flex items-center gap-2 mb-3">
             <h2 className="text-lg font-normal">
@@ -2016,7 +2260,8 @@ function CreatePage() {
                                 creating_checks: 'Creating check...',
                                 creating_bundle_checks: 'Creating bundle checks...',
                                 creating_amm: 'Creating AMM pool...',
-                                scheduling_blackhole: 'Finalizing...'
+                                scheduling_blackhole: 'Finalizing...',
+                                resuming: 'Resuming launch...'
                               }[sessionData?.status] || 'Processing...'}
                         </span>
                         <span className="text-[13px] text-[#3b82f6]">{sessionData?.progress || 0}%</span>
@@ -2046,14 +2291,16 @@ function CreatePage() {
 
                   {/* Processing step indicators */}
                   {launchStep === 'processing' && (() => {
+                    const hasBundles = sessionData?.bundleRecipients?.length > 0 || formData.bundleRecipients?.length > 0;
+                    const hasUserCheck = sessionData?.userCheckId || formData.userCheckPercent > 0;
                     const allSteps = [
                       { key: 'funded', label: 'Funded' },
                       { key: 'configuring_issuer', label: 'Configuring issuer' },
                       { key: 'registering_token', label: 'Registering token' },
                       { key: 'creating_trustline', label: 'Creating trustline' },
                       { key: 'sending_tokens', label: 'Minting tokens' },
-                      { key: 'creating_checks', label: 'Creating check' },
-                      { key: 'creating_bundle_checks', label: 'Creating bundle checks' },
+                      ...(hasUserCheck ? [{ key: 'creating_checks', label: 'Creating check' }] : []),
+                      ...(hasBundles ? [{ key: 'creating_bundle_checks', label: 'Creating bundle checks' }] : []),
                       { key: 'creating_amm', label: 'Creating AMM pool' },
                       { key: 'scheduling_blackhole', label: 'Finalizing' }
                     ];
@@ -2337,65 +2584,10 @@ function CreatePage() {
                         )}
                       </div>
                     )}
-                    {!fundingStep && (
+                    {!fundingStep && !fundConfirm && (
                       <button
                         disabled={fundingSending}
-                        onClick={async () => {
-                          if (!sessionData?.issuerAddress || !accountProfile) return;
-                          setFundingSending(true);
-                          setFundingStep('connecting');
-                          setFundingTxHash(null);
-                          try {
-                            const wallet = await getSigningWallet();
-                            if (!wallet) {
-                              openSnackbar?.('Wallet locked - please reconnect your wallet', 'error');
-                              setFundingSending(false);
-                              setFundingStep(null);
-                              return;
-                            }
-                            const wsUrl = sessionData?.network === 'mainnet'
-                              ? 'wss://xrplcluster.com'
-                              : 'wss://s.altnet.rippletest.net:51233';
-                            const client = new xrpl.Client(wsUrl);
-                            await client.connect();
-
-                            setFundingStep('signing');
-                            const amountDrops = String(
-                              Math.ceil((sessionData.requiredFunding || fundingAmount.required) * 1000000)
-                            );
-                            const paymentTx = {
-                              TransactionType: 'Payment',
-                              Account: wallet.address,
-                              Destination: sessionData.issuerAddress,
-                              Amount: amountDrops,
-                              SourceTag: 161803
-                            };
-
-                            setFundingStep('submitted');
-                            const result = await client.submitAndWait(paymentTx, {
-                              autofill: true,
-                              wallet
-                            });
-                            await client.disconnect();
-
-                            if (result.result.meta.TransactionResult === 'tesSUCCESS') {
-                              setFundingTxHash(result.result.hash);
-                              setFundingStep('confirmed');
-                            } else {
-                              openSnackbar?.(
-                                'Payment failed: ' + result.result.meta.TransactionResult,
-                                'error'
-                              );
-                              setFundingStep(null);
-                            }
-                          } catch (error) {
-                            console.error('[FundWallet] Error:', error.message, error.stack);
-                            openSnackbar?.(error.message || 'Failed to send funding', 'error');
-                            setFundingStep(null);
-                          } finally {
-                            setFundingSending(false);
-                          }
-                        }}
+                        onClick={() => setFundConfirm(true)}
                         className={cn(
                           'w-full flex items-center justify-center gap-2 py-2.5 text-[13px] font-medium transition-colors',
                           'hover:opacity-90 cursor-pointer',
@@ -2406,9 +2598,144 @@ function CreatePage() {
                         Fund with Wallet ({sessionData.requiredFunding || fundingAmount.required} XRP)
                       </button>
                     )}
+                    {!fundingStep && fundConfirm && (
+                      <div className="p-4 space-y-3">
+                        <p className={cn(
+                          'text-[12px] text-center',
+                          isDark ? 'text-white/60' : 'text-gray-600'
+                        )}>
+                          Send <span className="font-semibold text-white">{sessionData.requiredFunding || fundingAmount.required} XRP</span> to launch <span className="font-semibold text-white">{formData.tokenName || sessionData?.formData?.tokenName || 'your token'}</span>?
+                        </p>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => setFundConfirm(false)}
+                            className={cn(
+                              'flex-1 py-2 rounded-lg text-[12px] font-medium transition-colors',
+                              isDark
+                                ? 'bg-white/[0.06] text-white/60 hover:bg-white/10'
+                                : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                            )}
+                          >
+                            Go Back
+                          </button>
+                          <button
+                            disabled={fundingSending}
+                            onClick={async () => {
+                              if (!sessionData?.issuerAddress || !accountProfile) return;
+                              setFundConfirm(false);
+                              setFundingSending(true);
+                              setFundingStep('connecting');
+                              setFundingTxHash(null);
+                              try {
+                                const wallet = await getSigningWallet();
+                                if (!wallet) {
+                                  openSnackbar?.('Wallet locked - please reconnect your wallet', 'error');
+                                  setFundingSending(false);
+                                  setFundingStep(null);
+                                  return;
+                                }
+                                const wsUrl = sessionData?.network === 'mainnet'
+                                  ? 'wss://xrplcluster.com'
+                                  : 'wss://s.altnet.rippletest.net:51233';
+                                const client = new xrpl.Client(wsUrl, { connectionTimeout: 10000 });
+                                await client.connect();
+
+                                setFundingStep('signing');
+                                const amountDrops = String(
+                                  Math.ceil((sessionData.requiredFunding || fundingAmount.required) * 1000000)
+                                );
+                                const paymentTx = {
+                                  TransactionType: 'Payment',
+                                  Account: wallet.address,
+                                  Destination: sessionData.issuerAddress,
+                                  Amount: amountDrops,
+                                  SourceTag: 161803
+                                };
+
+                                setFundingStep('submitted');
+                                const result = await client.submitAndWait(paymentTx, {
+                                  autofill: true,
+                                  wallet
+                                });
+
+                                if (result.result.meta.TransactionResult === 'tesSUCCESS') {
+                                  setFundingTxHash(result.result.hash);
+                                  setFundingStep('confirmed');
+                                } else {
+                                  openSnackbar?.(
+                                    'Payment failed: ' + result.result.meta.TransactionResult,
+                                    'error'
+                                  );
+                                  setFundingStep(null);
+                                }
+                                try { await client.disconnect(); } catch {}
+                              } catch (error) {
+                                console.error('[FundWallet] Error:', error.message, error.stack);
+                                openSnackbar?.(error.message || 'Failed to send funding', 'error');
+                                setFundingStep(null);
+                              } finally {
+                                setFundingSending(false);
+                              }
+                            }}
+                            className="flex-1 py-2 rounded-lg text-[12px] font-medium bg-[#137DFE] text-white hover:opacity-90 transition-colors"
+                          >
+                            Confirm & Pay
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
 
+                {/* Cancel — only before any payment is sent */}
+                {launchStep === 'funding' && fundingProgress === 0 && !fundingStep && !fundingSending && (
+                  <div className="pt-4 mt-2">
+                    {cancelConfirm ? (
+                      <div className={cn(
+                        'rounded-xl border p-4 space-y-3',
+                        isDark ? 'border-red-500/20 bg-red-500/[0.04]' : 'border-red-200 bg-red-50/50'
+                      )}>
+                        <p className={cn(
+                          'text-[12px] text-center',
+                          isDark ? 'text-white/60' : 'text-gray-600'
+                        )}>
+                          Are you sure? The session will expire and you'll need to start over.
+                        </p>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => setCancelConfirm(false)}
+                            className={cn(
+                              'flex-1 py-2 rounded-lg text-[12px] font-medium transition-colors',
+                              isDark
+                                ? 'bg-white/[0.06] text-white/60 hover:bg-white/10'
+                                : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                            )}
+                          >
+                            Keep Going
+                          </button>
+                          <button
+                            onClick={() => { setCancelConfirm(false); resetLaunchState(); }}
+                            className="flex-1 py-2 rounded-lg text-[12px] font-medium bg-red-500 text-white hover:bg-red-600 transition-colors"
+                          >
+                            Yes, Cancel
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => setCancelConfirm(true)}
+                        className={cn(
+                          'w-full py-2 text-[11px] transition-colors',
+                          isDark
+                            ? 'text-white/20 hover:text-white/40'
+                            : 'text-gray-300 hover:text-gray-400'
+                        )}
+                      >
+                        Cancel launch
+                      </button>
+                    )}
+                  </div>
+                )}
 
               </div>
             )}
@@ -2440,8 +2767,8 @@ function CreatePage() {
                   <div className="flex justify-between">
                     <span className="opacity-60">Token</span>
                     <span>
-                      {sessionData.originalCurrencyCode || formData.tokenName} (
-                      {sessionData.currencyCode || formData.ticker})
+                      {formData.tokenName || sessionData.originalCurrencyCode} (
+                      {sessionData.originalCurrencyCode || formData.ticker})
                     </span>
                   </div>
                   <div className="flex justify-between">
@@ -2588,6 +2915,7 @@ function CreatePage() {
                             : String(Math.floor(supply * (checkPercent / 100)));
 
                           // Step 1: Create trustline to issuer (required before CheckCash)
+                          // Use total supply as limit so wallet can receive more tokens later via trading
                           setClaimStep('trustline');
                           const trustSetTx = {
                             TransactionType: 'TrustSet',
@@ -2595,7 +2923,7 @@ function CreatePage() {
                             LimitAmount: {
                               currency: currencyCode,
                               issuer: issuerAddr,
-                              value: claimAmount
+                              value: String(supply)
                             },
                             SourceTag: 161803
                           };
@@ -2608,6 +2936,9 @@ function CreatePage() {
                               'Trustline failed: ' + trustResult.result.meta.TransactionResult,
                               'error'
                             );
+                            try { await client?.disconnect(); } catch {}
+                            setClaiming(false);
+                            setClaimStep(null);
                             return;
                           }
 
@@ -2750,6 +3081,11 @@ function CreatePage() {
                                 <CheckCircle size={12} /> Claimed
                               </Alert>
                             )}
+                            {!canClaim && !isClaimed && (
+                              <p className="text-[10px] opacity-50 mb-1">
+                                This wallet is not connected on this device. The recipient must claim from their own device.
+                              </p>
+                            )}
                             <Button
                               variant="primary"
                               fullWidth
@@ -2797,6 +3133,8 @@ function CreatePage() {
                                     sessionData.issuer ||
                                     sessionData.data?.issuer;
 
+                                  // Use total supply as limit so wallet can receive more tokens later via trading
+                                  const totalSupply = sessionData.tokenSupply || sessionData.data?.tokenSupply || formData.tokenSupply;
                                   setBundleClaiming((prev) => ({ ...prev, [b.checkId]: 'trustline' }));
                                   const trustSetTx = {
                                     TransactionType: 'TrustSet',
@@ -2804,7 +3142,7 @@ function CreatePage() {
                                     LimitAmount: {
                                       currency: currencyCode,
                                       issuer: issuerAddr,
-                                      value: String(b.amount)
+                                      value: String(totalSupply)
                                     },
                                     SourceTag: 161803
                                   };
@@ -2814,6 +3152,8 @@ function CreatePage() {
                                   });
                                   if (trustResult.result.meta.TransactionResult !== 'tesSUCCESS') {
                                     openSnackbar?.('Trustline failed: ' + trustResult.result.meta.TransactionResult, 'error');
+                                    try { await client?.disconnect(); } catch {}
+                                    setBundleClaiming((prev) => { const n = { ...prev }; delete n[b.checkId]; return n; });
                                     return;
                                   }
 

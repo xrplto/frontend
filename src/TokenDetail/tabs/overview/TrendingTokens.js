@@ -4,7 +4,7 @@ import { cn } from 'src/utils/cn';
 import { useSelector } from 'react-redux';
 import { selectMetrics } from 'src/redux/statusSlice';
 import api from 'src/utils/api';
-import { Bookmark, Zap } from 'lucide-react';
+import { Bookmark, Flame } from 'lucide-react';
 
 const SYMBOLS = { USD: '$', EUR: '€', JPY: '¥', CNH: '¥', XRP: '✕' };
 
@@ -266,9 +266,12 @@ const TrendingTokens = ({ token = null }) => {
               {/* Name + subtitle */}
               <div className="min-w-0 flex flex-col">
                 <div className={cn('overflow-hidden text-ellipsis whitespace-nowrap text-[11px] sm:text-xs font-semibold leading-tight flex items-center gap-1', darkMode ? 'text-white' : 'text-[#1a1f2e]')}>
-                  <span className="truncate">{t.name}</span>
+                  <span className={cn('truncate', t.trendingBoost >= 500 && t.trendingBoostExpires > Date.now() && 'text-[#FFD700]')}>{t.name}</span>
                   {t.trendingBoost > 0 && t.trendingBoostExpires > Date.now() && (
-                    <Zap size={10} className="text-[#F6AF01] flex-shrink-0" fill="#F6AF01" />
+                    <span className="inline-flex items-center gap-0.5 flex-shrink-0 text-[#F6AF01]">
+                      <Flame size={10} fill="#F6AF01" />
+                      <span className="text-[9px] font-bold">{t.trendingBoost}</span>
+                    </span>
                   )}
                 </div>
                 <div className="text-[8px] font-medium opacity-40 overflow-hidden text-ellipsis whitespace-nowrap leading-tight mt-px" suppressHydrationWarning>

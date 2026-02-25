@@ -4,7 +4,7 @@ import Footer from 'src/components/Footer';
 import TokenList from 'src/TokenList';
 import ScrollToTop from 'src/components/ScrollToTop';
 import Summary from 'src/TokenList/Summary';
-import { getTokens } from 'src/utils/formatters';
+import { getTokens, getSummaryTokens } from 'src/utils/formatters';
 import { ThemeContext } from 'src/context/AppContext';
 
 function getInitialTokens(data) {
@@ -12,7 +12,7 @@ function getInitialTokens(data) {
   return [];
 }
 
-function MPTTokensPage({ data }) {
+function MPTTokensPage({ data, summaryTokens }) {
   const { themeName } = useContext(ThemeContext);
   const isDark = themeName === 'XrplToDarkTheme';
   const [tokens, setTokens] = useState(() => getInitialTokens(data));
@@ -55,7 +55,7 @@ function MPTTokensPage({ data }) {
         }
       >
         <div className="w-full px-0 py-0">
-          <Summary />
+          <Summary tokens={tokens} trendingTokens={summaryTokens?.trendingTokens} newTokens={summaryTokens?.newTokens} />
         </div>
       </div>
 
@@ -87,7 +87,10 @@ export default MPTTokensPage;
 export async function getServerSideProps({ res }) {
   res.setHeader('Cache-Control', 'public, s-maxage=30, stale-while-revalidate=120');
 
-  const data = await getTokens('dateon', 'desc', 'yes', false, false, 100, 'mpt');
+  const [data, summaryTokens] = await Promise.all([
+    getTokens('dateon', 'desc', 'yes', false, false, 100, 'mpt'),
+    getSummaryTokens()
+  ]);
 
   let ret = {};
   if (data) {
@@ -106,7 +109,7 @@ export async function getServerSideProps({ res }) {
     ogp.twitterCard = 'summary_large_image';
     ogp.twitterCreator = '@xrplto';
 
-    ret = { data, ogp };
+    ret = { data, ogp, summaryTokens };
   }
 
   return {

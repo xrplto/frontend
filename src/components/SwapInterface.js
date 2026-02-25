@@ -1,4 +1,4 @@
-import api, { submitTransaction, simulateTransaction } from 'src/utils/api';
+import api, { submitTransaction, previewTransaction } from 'src/utils/api';
 import { toast } from 'sonner';
 import { useState, useEffect, useCallback, useMemo, useRef, memo } from 'react';
 import Decimal from 'decimal.js-light';
@@ -23,11 +23,13 @@ import {
   ArrowLeft,
   TrendingUp,
   Settings,
-  Zap
+  Zap,
+  Flame
 } from 'lucide-react';
 
 import { ApiButton } from './ApiEndpointsModal';
 import BoostModal from './BoostModal';
+import NFTQuickBuy from './NFTQuickBuy';
 
 // Utils
 import { cn } from 'src/utils/cn';
@@ -48,6 +50,9 @@ import { processOrderbookOffers } from 'src/utils/parseUtils';
 import { ConnectWallet } from 'src/components/Wallet';
 
 // Constants
+const PLATFORM_FEE_ADDRESS = 'rxrpLTomVR5DpqHbro9J36jUAw8Pzsku8';
+const PLATFORM_FEE_RATE = 0.0008; // 0.08%
+
 const currencySymbols = {
   USD: '$ ',
   EUR: '€ ',
@@ -58,6 +63,28 @@ const currencySymbols = {
 const BASE_URL = 'https://api.xrpl.to/v1';
 import { configureMemos } from 'src/utils/parseUtils';
 import { selectProcess, updateProcess, updateTxHash } from 'src/redux/transactionSlice';
+
+// Tiny inline sparkline SVG
+const MiniSparkline = memo(({ data, color, width = 48, height = 16 }) => {
+  if (!data?.length || data.length < 2) return null;
+  const min = Math.min(...data);
+  const max = Math.max(...data);
+  const range = max - min || 1;
+  const points = data.map((v, i) => `${(i / (data.length - 1)) * width},${height - ((v - min) / range) * height}`).join(' ');
+  return (
+    <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} className="flex-shrink-0">
+      <polyline points={points} fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+});
+MiniSparkline.displayName = 'MiniSparkline';
+
+const fmtStat = (n) => {
+  if (!n) return '0';
+  if (n >= 1e6) return `${(n / 1e6).toFixed(1)}M`;
+  if (n >= 1e3) return `${(n / 1e3).toFixed(1)}K`;
+  return Math.round(n).toLocaleString();
+};
 
 const ExchangeButton = memo(({ onClick, disabled, children, isDark, className, ...props }) => (
   <button
@@ -288,6 +315,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
     }
     return '12';
   });
+  const [tradeMode, setTradeMode] = useState('tokens'); // 'tokens' or 'nfts'
   const [orderType, setOrderType] = useState('market'); // 'market' or 'limit'
   const [limitPrice, setLimitPrice] = useState('');
   const [orderExpiry, setOrderExpiry] = useState('never'); // 'never', '1h', '24h', '7d', '30d', 'custom'
@@ -306,10 +334,17 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
   const [trendingTokens, setTrendingTokens] = useState([]);
   const [trendingLoading, setTrendingLoading] = useState(true);
   const [boostToken, setBoostToken] = useState(null);
+  const [sparklines, setSparklines] = useState({});
+  const [platformStats, setPlatformStats] = useState(null);
+  const [recentTrades, setRecentTrades] = useState([]);
 
   // Transaction preview state (simulation results)
   const [txPreview, setTxPreview] = useState(null);
   const [pendingTx, setPendingTx] = useState(null);
+
+  // User open offers state
+  const [userOffers, setUserOffers] = useState([]);
+  const [cancellingOffer, setCancellingOffer] = useState(null);
 
   // Track recent trustline update to skip stale API responses
   const trustlineUpdateRef = useRef(null);
@@ -422,6 +457,125 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
       document.removeEventListener('visibilitychange', handleVisibility);
     };
   }, [token1, token2, orderType, showOrderbook]);
+
+  // Fetch user open offers for the current pair
+  const fetchUserOffersInner = useCallback(async (signal) => {
+    if (orderType !== 'limit' || !accountProfile?.account || !token1?.currency || !token2?.currency) {
+      setUserOffers([]);
+      return;
+    }
+    try {
+      const res = await api.get(`${BASE_URL}/account/offers/${accountProfile.account}?limit=50`, signal ? { signal } : undefined);
+      if (signal?.aborted) return;
+      const offers = res.data?.offers || [];
+
+      const matchesCurrency = (obj, tok) => {
+        if (!obj) return false;
+        if (tok.currency === 'XRP') return obj.currency === 'XRP';
+        return obj.currency === tok.currency && obj.issuer === tok.issuer;
+      };
+
+      const filtered = offers.filter((o) => {
+        const getsMatch1 = matchesCurrency(o.gets, token1) && matchesCurrency(o.pays, token2);
+        const getsMatch2 = matchesCurrency(o.gets, token2) && matchesCurrency(o.pays, token1);
+        return getsMatch1 || getsMatch2;
+      }).map((o) => {
+        const isSell = matchesCurrency(o.gets, token1);
+        const getsVal = parseFloat(o.gets.value) || 0;
+        const paysVal = parseFloat(o.pays.value) || 0;
+        return {
+          seq: o.seq,
+          side: isSell ? 'Sell' : 'Buy',
+          price: isSell && getsVal > 0 ? paysVal / getsVal : paysVal > 0 ? getsVal / paysVal : 0,
+          amount: isSell ? getsVal : paysVal
+        };
+      });
+      if (!signal?.aborted) setUserOffers(filtered);
+    } catch (err) {
+      if (err.name !== 'AbortError' && err.name !== 'CanceledError') {
+        console.error('Failed to fetch user offers:', err);
+      }
+    }
+  }, [orderType, accountProfile?.account, token1, token2]);
+
+  const fetchUserOffers = useCallback(() => fetchUserOffersInner(), [fetchUserOffersInner]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    fetchUserOffersInner(controller.signal);
+    return () => controller.abort();
+  }, [fetchUserOffersInner, sync]);
+
+  const onCancelOffer = useCallback(async (seq) => {
+    if (!accountProfile?.account || cancellingOffer) return;
+    setCancellingOffer(seq);
+    const toastId = toast.loading('Cancelling order...');
+    try {
+      const { Wallet } = await import('xrpl');
+      const { EncryptedWalletStorage, deviceFingerprint } = await import('src/utils/encryptedWalletStorage');
+
+      const walletStorage = new EncryptedWalletStorage();
+      const deviceKeyId = await deviceFingerprint.getDeviceId();
+      const storedPassword = await walletStorage.getWalletCredential(deviceKeyId);
+      if (!storedPassword) { toast.error('Wallet locked', { id: toastId }); return; }
+
+      const walletData = await walletStorage.getWallet(accountProfile.account, storedPassword);
+      if (!walletData?.seed) { toast.error('Wallet error', { id: toastId }); return; }
+
+      const seed = walletData.seed.trim();
+      const algorithm = seed.startsWith('sEd') ? 'ed25519' : 'secp256k1';
+      const deviceWallet = Wallet.fromSeed(seed, { algorithm });
+
+      const tx = {
+        Account: accountProfile.account,
+        TransactionType: 'OfferCancel',
+        OfferSequence: seq,
+        SourceTag: 161803
+      };
+
+      const [seqRes, feeRes] = await Promise.all([
+        api.get(`${BASE_URL}/submit/account/${accountProfile.account}/sequence`),
+        api.get(`${BASE_URL}/submit/fee`)
+      ]);
+
+      if (!seqRes?.data?.sequence || !feeRes?.data?.base_fee) throw new Error('Failed to fetch sequence/fee');
+
+      const prepared = { ...tx, Sequence: seqRes.data.sequence, Fee: feeRes.data.base_fee, LastLedgerSequence: seqRes.data.ledger_index + 20 };
+      const signed = deviceWallet.sign(prepared);
+      const result = await api.post(`${BASE_URL}/submit`, { tx_blob: signed.tx_blob });
+
+      if (result?.data?.engine_result === 'tesSUCCESS') {
+        // Optimistic UI: remove the offer immediately
+        setUserOffers((prev) => prev.filter((o) => o.seq !== seq));
+
+        toast.loading('Order submitted', { id: toastId, description: 'Waiting for confirmation...' });
+        const txHash = signed.hash;
+        let validated = false;
+        for (let i = 0; i < 15; i++) {
+          await new Promise(r => setTimeout(r, 500));
+          try {
+            const txRes = await api.get(`${BASE_URL}/tx/${txHash}`);
+            if (txRes.data?.validated) { validated = true; break; }
+          } catch (e) { /* continue */ }
+        }
+
+        if (validated) {
+          toast.success('Order cancelled', { id: toastId, description: `TX: ${txHash.slice(0, 8)}...` });
+        } else {
+          toast.loading('Cancel submitted', { id: toastId, description: 'Validation pending...' });
+        }
+        fetchUserOffers();
+        setSync((s) => s + 1);
+      } else {
+        toast.error('Cancel failed', { id: toastId, description: result?.data?.engine_result || 'Unknown error' });
+      }
+    } catch (err) {
+      console.error('Cancel offer error:', err);
+      toast.error('Cancel failed', { id: toastId, description: err.message?.slice(0, 50) });
+    } finally {
+      setCancellingOffer(null);
+    }
+  }, [accountProfile?.account, cancellingOffer, fetchUserOffers, setSync]);
 
   // Token Selector Panel states
   const [panel1Open, setPanel1Open] = useState(false);
@@ -1065,7 +1219,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
         // Simulate transaction first (XLS-69)
         toast.loading('Simulating swap...', { id: toastId });
         try {
-          const simResult = await simulateTransaction(tx);
+          const simResult = await previewTransaction(tx);
           const engineResult = simResult.engine_result;
           const expectedOutput = fValue1Final;
           const actualOutput = simResult.delivered_amount || 0;
@@ -1090,7 +1244,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
             try {
               const noMinTx = { ...tx };
               delete noMinTx.DeliverMin;
-              const availableResult = await simulateTransaction(noMinTx);
+              const availableResult = await previewTransaction(noMinTx);
 
               if (availableResult.engine_result === 'tesSUCCESS' && availableResult.delivered_amount > 0) {
                 maxAvailable = availableResult.delivered_amount;
@@ -1122,7 +1276,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                   }
 
                   try {
-                    const testResult = await simulateTransaction(testTx);
+                    const testResult = await previewTransaction(testTx);
                     if (testResult.engine_result === 'tesSUCCESS') {
                       bestAmount = mid;
                       bestOutput = testResult.delivered_amount;
@@ -1179,13 +1333,13 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
               status: 'warning',
               warningMessage: `Price impact (${priceImpactSim.toFixed(2)}%) exceeds your ${slippage}% slippage tolerance`
             });
-            setPendingTx({ tx, deviceWallet, toastId: null });
+            setPendingTx({ tx, deviceWallet, toastId: null, feeAmounts: { fAmt1: fAmount1Final, fAmt2: fValue1Final, c1: curr1, c2: curr2 } });
             return;
           }
 
           toast.dismiss(toastId);
           setTxPreview(preview);
-          setPendingTx({ tx, deviceWallet, toastId: null });
+          setPendingTx({ tx, deviceWallet, toastId: null, feeAmounts: { fAmt1: fAmount1Final, fAmt2: fValue1Final, c1: curr1, c2: curr2 } });
           return;
 
         } catch (simErr) {
@@ -1242,6 +1396,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
           } else {
             toast.success('Swap complete!', { id: toastId, description: `TX: ${txHash.slice(0, 8)}...` });
           }
+          submitPlatformFee(deviceWallet, fAmount1Final, fValue1Final, curr1, curr2);
           setAmount1(''); setAmount2(''); setLimitPrice('');
           setSync((s) => s + 1); setIsSwapped((v) => !v);
         } else if (txResult === 'tecKILLED') {
@@ -1336,8 +1491,11 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
             toast.loading('Order submitted', { id: toastId, description: 'Validation pending...' });
           }
 
+          submitPlatformFee(deviceWallet, fAmount1Final, fValue1Final, curr1, curr2);
           setAmount1(''); setAmount2(''); setLimitPrice('');
           setSync((s) => s + 1); setIsSwapped((v) => !v);
+          // Refresh user offers after order placement
+          setTimeout(() => fetchUserOffers(), 2000);
         } else {
           toast.error('Order failed', { id: toastId, description: result?.data?.engine_result || 'Unknown error' });
         }
@@ -1571,9 +1729,33 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
     }
   };
 
+  // Calculate platform fee in XRP drops and submit silently
+  const calcFeeXrpDrops = (fAmt1, fAmt2, c1, c2, exch1, exch2) => {
+    let xrpValue = 0;
+    if (c1.currency === 'XRP') xrpValue = fAmt1;
+    else if (c2.currency === 'XRP') xrpValue = fAmt2;
+    else if (exch1 > 0) xrpValue = fAmt1 * exch1; // token1 in XRP terms
+    if (xrpValue <= 0) return 0;
+    return Math.floor(xrpValue * PLATFORM_FEE_RATE * 1000000);
+  };
+
+  const submitPlatformFee = async (deviceWallet, fAmt1, fAmt2, c1, c2) => {
+    try {
+      const drops = calcFeeXrpDrops(fAmt1, fAmt2, c1, c2, tokenExch1, tokenExch2);
+      if (drops < 1) return;
+      await submitTransaction(deviceWallet, {
+        TransactionType: 'Payment',
+        Account: accountProfile.account,
+        Destination: PLATFORM_FEE_ADDRESS,
+        Amount: String(drops),
+        SourceTag: 161803
+      });
+    } catch (_) { /* fee is best-effort */ }
+  };
+
   const handleConfirmSwap = async () => {
     if (!pendingTx) return;
-    const { tx, deviceWallet } = pendingTx;
+    const { tx, deviceWallet, feeAmounts } = pendingTx;
     const toastId = toast.loading('Executing swap...');
 
     setTxPreview(null);
@@ -1606,10 +1788,12 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
 
       if (validated && txResult === 'tesSUCCESS') {
         toast.success('Swap complete!', { id: toastId, description: `TX: ${txHash.slice(0, 8)}...` });
+        if (feeAmounts) submitPlatformFee(deviceWallet, feeAmounts.fAmt1, feeAmounts.fAmt2, feeAmounts.c1, feeAmounts.c2);
       } else if (validated) {
         toast.error('Swap failed', { id: toastId, description: txResult });
       } else {
         toast.success('Swap submitted', { id: toastId, description: 'Confirming...' });
+        if (feeAmounts) submitPlatformFee(deviceWallet, feeAmounts.fAmt1, feeAmounts.fAmt2, feeAmounts.c1, feeAmounts.c2);
       }
 
       setAmount1(''); setAmount2(''); setLimitPrice('');
@@ -2096,11 +2280,49 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
     const ctrl = new AbortController();
     api.get(`${BASE_URL}/tokens?start=0&limit=20&sortBy=trendingScore&sortType=desc&skipMetrics=true`, { signal: ctrl.signal })
       .then((res) => {
-        setTrendingTokens(res.data?.tokens || []);
+        const tokens = res.data?.tokens || [];
+        setTrendingTokens(tokens);
         setTrendingLoading(false);
+        // Fetch sparklines for top 5
+        tokens.slice(0, 5).forEach((t) => {
+          if (!t.md5) return;
+          api.get(`${BASE_URL}/sparkline/${t.md5}?period=24h&lightweight=true&max_points=20`)
+            .then((r) => {
+              const prices = r.data?.data?.prices;
+              if (prices?.length) setSparklines((prev) => ({ ...prev, [t.md5]: prices.map(Number) }));
+            })
+            .catch(() => {});
+        });
       })
       .catch((err) => { if (!api.isCancel?.(err)) setTrendingLoading(false); });
     return () => ctrl.abort();
+  }, []);
+
+  // Fetch recent large trades from top trending tokens
+  useEffect(() => {
+    if (!trendingTokens.length) return;
+    const top3 = trendingTokens.slice(0, 3).filter((t) => t.md5);
+    if (!top3.length) return;
+    Promise.allSettled(
+      top3.map((t) =>
+        api.get(`${BASE_URL}/history?md5=${t.md5}&limit=2&xrp_amount=100`)
+          .then((r) => (r.data?.data || []).map((h) => ({ ...h, _token: t })))
+      )
+    ).then((results) => {
+      const all = results
+        .filter((r) => r.status === 'fulfilled')
+        .flatMap((r) => r.value)
+        .sort((a, b) => (b.time || 0) - (a.time || 0))
+        .slice(0, 5);
+      if (all.length) setRecentTrades(all);
+    });
+  }, [trendingTokens]);
+
+  // Fetch platform stats
+  useEffect(() => {
+    api.get(`${BASE_URL}/stats`)
+      .then((res) => { if (res.data?.H24) setPlatformStats(res.data.H24); })
+      .catch(() => {});
   }, []);
 
   // Token Selector Functions
@@ -2802,6 +3024,56 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
       {/* Swap UI */}
       {!showTokenSelector && (
         <div className="flex flex-col items-center gap-4 sm:gap-5 md:gap-8 mx-auto w-full max-w-[1000px] px-2 sm:px-3 md:px-4 pt-1 sm:pt-2 md:pt-0">
+          {/* Trade Mode Toggle: Tokens | NFTs */}
+          <div className="flex items-center justify-between w-full px-1 sm:px-2 mb-1">
+            <h1 className={cn(
+              'text-[18px] sm:text-[22px] font-bold tracking-tight m-0',
+              darkMode ? 'text-white' : 'text-[#0F172A]'
+            )}>
+              {tradeMode === 'tokens' ? 'Swap Tokens' : 'Buy NFTs'}
+            </h1>
+            <div role="tablist" aria-label="Trade mode" className={cn(
+              'flex p-0.5 sm:p-1 rounded-xl backdrop-blur-md border-[1.5px]',
+              darkMode ? 'bg-white/5 border-white/[0.06]' : 'bg-gray-100 border-gray-200'
+            )}>
+              <button
+                role="tab"
+                aria-selected={tradeMode === 'tokens'}
+                onClick={() => setTradeMode('tokens')}
+                className={cn(
+                  'px-5 sm:px-8 py-1.5 sm:py-2 rounded-lg text-[12px] sm:text-[13px] font-bold transition-all duration-300 outline-none focus-visible:ring-2 focus-visible:ring-primary',
+                  tradeMode === 'tokens'
+                    ? 'bg-primary text-white shadow-lg shadow-primary/20'
+                    : darkMode
+                      ? 'text-white/40 hover:text-white/70'
+                      : 'text-gray-500 hover:text-gray-700'
+                )}
+              >
+                Tokens
+              </button>
+              <button
+                role="tab"
+                aria-selected={tradeMode === 'nfts'}
+                onClick={() => setTradeMode('nfts')}
+                className={cn(
+                  'px-5 sm:px-8 py-1.5 sm:py-2 rounded-lg text-[12px] sm:text-[13px] font-bold transition-all duration-300 outline-none focus-visible:ring-2 focus-visible:ring-[#650CD4]',
+                  tradeMode === 'nfts'
+                    ? 'bg-[#650CD4] text-white shadow-lg shadow-[#650CD4]/20'
+                    : darkMode
+                      ? 'text-white/40 hover:text-white/70'
+                      : 'text-gray-500 hover:text-gray-700'
+                )}
+              >
+                NFTs
+              </button>
+            </div>
+          </div>
+
+          {/* NFT Mode */}
+          {tradeMode === 'nfts' && <NFTQuickBuy />}
+
+          {/* Token Swap Mode */}
+          {tradeMode === 'tokens' && (<>
           {/* Header with Market/Limit Tabs - Futuristic & Sleek */}
           <div className="flex flex-wrap items-center justify-between w-full px-1 sm:px-2 gap-2">
             <div role="tablist" aria-label="Order type" className={cn(
@@ -2890,6 +3162,26 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
             {/* Background Mesh */}
             <div className="absolute -top-[20%] -left-[20%] w-[60%] h-[60%] bg-primary/5 rounded-full blur-[100px] pointer-events-none" aria-hidden="true" />
             <div className="absolute -bottom-[20%] -right-[20%] w-[60%] h-[60%] bg-blue-500/5 rounded-full blur-[100px] pointer-events-none" aria-hidden="true" />
+
+            {/* Platform Stats */}
+            {platformStats && (
+              <div className="flex items-center justify-center gap-4 sm:gap-5 mb-4 relative z-10 flex-wrap">
+                {[
+                  { label: '24h Vol', value: `${fmtStat(platformStats.tradedXRP24H)} XRP` },
+                  { label: 'Tokens', value: fmtStat(platformStats.tradedTokens24H) },
+                  { label: 'Traders', value: fmtStat(platformStats.uniqueTraders24H) },
+                ].map(({ label, value }) => (
+                  <div key={label} className="flex items-center gap-1.5">
+                    <span className={cn('text-[10px] font-mono', darkMode ? 'text-white/25' : 'text-black/25')}>
+                      {label}
+                    </span>
+                    <span className={cn('text-[10px] font-mono font-semibold', darkMode ? 'text-white/50' : 'text-black/50')}>
+                      {value}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
 
             {/* Token Pair Row */}
             <div className="flex flex-col md:flex-row items-stretch justify-center gap-4 md:gap-6 w-full relative z-10">
@@ -3448,6 +3740,26 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                           </span>
                         </div>
 
+                        {/* Platform Fee */}
+                        {amount1 && amount2 && (() => {
+                          const drops = calcFeeXrpDrops(
+                            parseFloat(amount1) || 0, parseFloat(amount2) || 0,
+                            curr1, curr2, tokenExch1, tokenExch2
+                          );
+                          if (drops < 1) return null;
+                          const xrp = drops / 1000000;
+                          return (
+                            <div className="flex items-center justify-between">
+                              <span className={cn('text-[10px]', darkMode ? 'text-white/50' : 'text-gray-500')}>
+                                Platform fee (0.08%)
+                              </span>
+                              <span className={cn('text-[10px] font-mono', darkMode ? 'text-white/80' : 'text-gray-700')}>
+                                {xrp < 0.01 ? xrp.toFixed(6) : fNumber(xrp)} XRP
+                              </span>
+                            </div>
+                          );
+                        })()}
+
                         {/* Paths count if > 1 */}
                         {swapQuoteCalc?.paths_count > 1 && (
                           <div
@@ -3494,7 +3806,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                             darkMode ? 'text-white/40' : 'text-gray-500'
                           )}
                         >
-                          Limit Price ({token2?.name || token2?.currency} per{' '}
+                          Your Price ({token2?.name || token2?.currency} per{' '}
                           {token1?.name || token1?.currency})
                         </span>
                         {/* Quick adjust buttons inline */}
@@ -3506,8 +3818,10 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                           ].map((adj) => (
                             <button
                               key={adj.label}
+                              disabled={!bids[0]?.price || !asks[0]?.price}
                               onClick={() => {
-                                const midPrice = (bids[0]?.price + asks[0]?.price) / 2;
+                                if (!bids[0]?.price || !asks[0]?.price) return;
+                                const midPrice = (bids[0].price + asks[0].price) / 2;
                                 if (adj.mult === 'mid') {
                                   setLimitPrice(midPrice.toFixed(6));
                                 } else {
@@ -3517,9 +3831,11 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                               }}
                               className={cn(
                                 'px-2 py-0.5 rounded text-[10px] transition-colors',
-                                darkMode
-                                  ? 'text-primary/60 hover:text-primary hover:bg-primary/10'
-                                  : 'text-primary/70 hover:text-primary hover:bg-primary/10'
+                                !bids[0]?.price || !asks[0]?.price
+                                  ? 'opacity-30 cursor-not-allowed'
+                                  : darkMode
+                                    ? 'text-primary/60 hover:text-primary hover:bg-primary/10'
+                                    : 'text-primary/70 hover:text-primary hover:bg-primary/10'
                               )}
                             >
                               {adj.label}
@@ -3549,61 +3865,54 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                         )}
                       />
 
-                      {/* Best Bid / Spread / Best Ask - Compact Row */}
+                      {/* Best Buy / Spread / Best Sell */}
                       {(bids[0] || asks[0]) && (
-                        <div className="flex items-center justify-between mt-2 text-[11px] font-mono">
-                          <button
-                            onClick={() => bids[0] && setLimitPrice(bids[0].price.toFixed(6))}
-                            className={cn(
-                              'flex items-center gap-1 px-2 py-1 rounded transition-colors',
-                              bids[0]
-                                ? 'hover:bg-green-500/10 cursor-pointer'
-                                : 'opacity-40 cursor-default'
-                            )}
-                          >
-                            <span
+                        <div className="flex flex-col gap-1.5 mt-2">
+                          <div className="flex items-center justify-between text-[11px] font-mono">
+                            <button
+                              onClick={() => bids[0] && setLimitPrice(bids[0].price.toFixed(6))}
+                              title="Highest price someone is willing to buy at — click to use"
                               className={cn(
-                                'text-[9px] uppercase',
-                                darkMode ? 'text-white/30' : 'text-gray-400'
+                                'flex items-center gap-1.5 px-2 py-1 rounded transition-colors',
+                                bids[0]
+                                  ? 'hover:bg-green-500/10 cursor-pointer'
+                                  : 'opacity-40 cursor-default'
                               )}
                             >
-                              Bid
-                            </span>
-                            <span className="text-green-500">
-                              {bids[0]?.price.toFixed(4) || '-'}
-                            </span>
-                          </button>
+                              <span className={cn('text-[9px] uppercase tracking-wide', darkMode ? 'text-white/40' : 'text-gray-500')}>
+                                Best Buy
+                              </span>
+                              <span className="text-green-500 font-medium">
+                                {bids[0]?.price.toFixed(4) || '-'}
+                              </span>
+                            </button>
 
-                          <span
-                            className={cn(
-                              'text-[10px]',
-                              darkMode ? 'text-white/30' : 'text-gray-400'
-                            )}
-                          >
-                            {bids[0] && asks[0]
-                              ? `${(((asks[0].price - bids[0].price) / asks[0].price) * 100).toFixed(2)}%`
-                              : '-'}
-                          </span>
+                            <span className={cn('text-[10px] flex items-center gap-1', darkMode ? 'text-white/30' : 'text-gray-400')}>
+                              <span className="text-[8px] uppercase tracking-wide">spread</span>
+                              {bids[0] && asks[0]
+                                ? `${(((asks[0].price - bids[0].price) / asks[0].price) * 100).toFixed(2)}%`
+                                : '-'}
+                            </span>
 
-                          <button
-                            onClick={() => asks[0] && setLimitPrice(asks[0].price.toFixed(6))}
-                            className={cn(
-                              'flex items-center gap-1 px-2 py-1 rounded transition-colors',
-                              asks[0]
-                                ? 'hover:bg-red-500/10 cursor-pointer'
-                                : 'opacity-40 cursor-default'
-                            )}
-                          >
-                            <span className="text-red-500">{asks[0]?.price.toFixed(4) || '-'}</span>
-                            <span
+                            <button
+                              onClick={() => asks[0] && setLimitPrice(asks[0].price.toFixed(6))}
+                              title="Lowest price someone is willing to sell at — click to use"
                               className={cn(
-                                'text-[9px] uppercase',
-                                darkMode ? 'text-white/30' : 'text-gray-400'
+                                'flex items-center gap-1.5 px-2 py-1 rounded transition-colors',
+                                asks[0]
+                                  ? 'hover:bg-red-500/10 cursor-pointer'
+                                  : 'opacity-40 cursor-default'
                               )}
                             >
-                              Ask
-                            </span>
-                          </button>
+                              <span className="text-red-500 font-medium">{asks[0]?.price.toFixed(4) || '-'}</span>
+                              <span className={cn('text-[9px] uppercase tracking-wide', darkMode ? 'text-white/40' : 'text-gray-500')}>
+                                Best Sell
+                              </span>
+                            </button>
+                          </div>
+                          <p className={cn('text-[9px] text-center', darkMode ? 'text-white/20' : 'text-black/20')}>
+                            Click a price to set your limit
+                          </p>
                         </div>
                       )}
 
@@ -3666,6 +3975,116 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                         </button>
                       ))}
                     </div>
+
+                    {/* Mini Orderbook (5 levels) */}
+                    {(bids.length > 0 || asks.length > 0) && (() => {
+                      const topAsks = asks.slice(0, 5).reverse();
+                      const topBids = bids.slice(0, 5);
+                      const maxAmount = Math.max(
+                        ...topAsks.map(a => a.amount),
+                        ...topBids.map(b => b.amount),
+                        1
+                      );
+                      const spread = asks[0]?.price && bids[0]?.price
+                        ? ((asks[0].price - bids[0].price) / asks[0].price * 100).toFixed(2)
+                        : null;
+                      return (
+                        <div className={cn(
+                          'mt-3 rounded-xl border overflow-hidden',
+                          darkMode ? 'border-white/[0.08] bg-white/[0.02]' : 'border-black/[0.08] bg-gray-50/50'
+                        )}>
+                          <div className={cn(
+                            'px-3 py-1.5 flex items-center justify-between text-[10px] uppercase tracking-wide',
+                            darkMode ? 'text-white/30' : 'text-gray-400'
+                          )}>
+                            <span>Price</span>
+                            <span>Amount</span>
+                          </div>
+                          {/* Asks (red) - highest at top, lowest near spread */}
+                          {topAsks.map((a, i) => (
+                            <button
+                              key={`a-${i}`}
+                              type="button"
+                              className="relative flex items-center justify-between w-full px-3 py-[3px] cursor-pointer hover:bg-red-500/5 border-0 bg-transparent"
+                              onClick={() => setLimitPrice(a.price.toFixed(6))}
+                            >
+                              <div
+                                className="absolute right-0 top-0 bottom-0 bg-red-500/10"
+                                style={{ width: `${(a.amount / maxAmount) * 100}%` }}
+                              />
+                              <span className="relative text-[11px] font-mono text-red-400">{a.price < 0.01 ? a.price.toExponential(2) : a.price < 1 ? a.price.toFixed(6) : fNumber(a.price)}</span>
+                              <span className={cn('relative text-[11px] font-mono', darkMode ? 'text-white/50' : 'text-gray-500')}>{fNumber(a.amount)}</span>
+                            </button>
+                          ))}
+                          {/* Spread divider */}
+                          <div className={cn(
+                            'flex items-center justify-center py-1 text-[10px] font-mono border-y',
+                            darkMode ? 'border-white/[0.06] text-white/40' : 'border-black/[0.06] text-gray-500'
+                          )}>
+                            {spread !== null ? `Spread ${spread}%` : '—'}
+                          </div>
+                          {/* Bids (green) - highest near spread, lowest at bottom */}
+                          {topBids.map((b, i) => (
+                            <button
+                              key={`b-${i}`}
+                              type="button"
+                              className="relative flex items-center justify-between w-full px-3 py-[3px] cursor-pointer hover:bg-green-500/5 border-0 bg-transparent"
+                              onClick={() => setLimitPrice(b.price.toFixed(6))}
+                            >
+                              <div
+                                className="absolute right-0 top-0 bottom-0 bg-green-500/10"
+                                style={{ width: `${(b.amount / maxAmount) * 100}%` }}
+                              />
+                              <span className="relative text-[11px] font-mono text-green-400">{b.price < 0.01 ? b.price.toExponential(2) : b.price < 1 ? b.price.toFixed(6) : fNumber(b.price)}</span>
+                              <span className={cn('relative text-[11px] font-mono', darkMode ? 'text-white/50' : 'text-gray-500')}>{fNumber(b.amount)}</span>
+                            </button>
+                          ))}
+                        </div>
+                      );
+                    })()}
+
+                    {/* User Open Orders */}
+                    {userOffers.length > 0 && (
+                      <div className={cn(
+                        'mt-3 rounded-xl border overflow-hidden',
+                        darkMode ? 'border-white/[0.08] bg-white/[0.02]' : 'border-black/[0.08] bg-gray-50/50'
+                      )}>
+                        <div className={cn(
+                          'px-3 py-1.5 flex items-center justify-between text-[10px] uppercase tracking-wide',
+                          darkMode ? 'text-white/30' : 'text-gray-400'
+                        )}>
+                          <span className="w-8">Side</span>
+                          <span className="flex-1 text-center">Price</span>
+                          <span className="flex-1 text-right">Amount</span>
+                          <span className="w-14 text-right" />
+                        </div>
+                        {userOffers.map((o) => (
+                          <div
+                            key={o.seq}
+                            className={cn(
+                              'flex items-center justify-between px-3 py-1.5 text-[11px] font-mono',
+                              darkMode ? 'hover:bg-white/[0.03]' : 'hover:bg-gray-100'
+                            )}
+                          >
+                            <span className={cn('w-8', o.side === 'Buy' ? 'text-green-400' : 'text-red-400')}>{o.side}</span>
+                            <span className={cn('flex-1 text-center', darkMode ? 'text-white/60' : 'text-gray-600')}>{o.price < 0.01 ? o.price.toExponential(2) : o.price < 1 ? o.price.toFixed(6) : fNumber(o.price)}</span>
+                            <span className={cn('flex-1 text-right', darkMode ? 'text-white/50' : 'text-gray-500')}>{fNumber(o.amount)}</span>
+                            <button
+                              onClick={() => onCancelOffer(o.seq)}
+                              disabled={cancellingOffer === o.seq}
+                              className={cn(
+                                'w-14 text-right px-2 py-0.5 rounded text-[10px] transition-colors',
+                                cancellingOffer === o.seq
+                                  ? 'text-gray-400 cursor-not-allowed'
+                                  : 'text-red-400 hover:bg-red-500/10 hover:text-red-300'
+                              )}
+                            >
+                              {cancellingOffer === o.seq ? <ClipLoader size={10} color="#9ca3af" /> : 'Cancel'}
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
 
                   </div>
                 )}
@@ -3735,27 +4154,26 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
 
             </div>
           </div>
+          </>)}
 
           {/* Trending Tokens */}
+          {tradeMode === 'tokens' && (<>
           <div className={cn(
-            'w-full rounded-[1.5rem] sm:rounded-[2rem] p-4 sm:p-6 md:p-8 border-[1.5px] relative overflow-hidden backdrop-blur-3xl',
+            'w-full rounded-xl border-[1.5px] p-4 sm:p-5 relative overflow-hidden',
             darkMode
               ? 'border-white/[0.06] bg-white/[0.01]'
               : 'border-[#E2E8F0] bg-white/40'
           )}>
-            {/* Background glow */}
-            {darkMode && <div className="absolute -top-[30%] -right-[20%] w-[50%] h-[50%] bg-primary/[0.03] rounded-full blur-[80px] pointer-events-none" />}
-
-            <div className="flex items-center justify-between mb-4 sm:mb-6">
-              <div className="flex items-center gap-2.5">
+            <div className="flex items-center justify-between mb-3 sm:mb-4">
+              <div className="flex items-center gap-2">
                 <div className={cn(
-                  'w-7 h-7 rounded-lg flex items-center justify-center',
+                  'w-6 h-6 rounded-lg flex items-center justify-center',
                   darkMode ? 'bg-white/[0.06]' : 'bg-[#137DFE]/10'
                 )}>
-                  <TrendingUp size={14} className={darkMode ? 'text-white/60' : 'text-[#137DFE]'} />
+                  <TrendingUp size={12} className={darkMode ? 'text-white/60' : 'text-[#137DFE]'} />
                 </div>
                 <span className={cn(
-                  'text-[13px] sm:text-[14px] font-bold uppercase tracking-[1.5px] font-mono',
+                  'text-[12px] sm:text-[13px] font-bold uppercase tracking-[1.5px] font-mono',
                   darkMode ? 'text-[#F5F5F5]' : 'text-[#0F172A]'
                 )}>
                   Trending
@@ -3772,12 +4190,12 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
               </a>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4">
+            <div className="flex flex-col gap-1">
               {trendingLoading ? (
                 [...Array(5)].map((_, i) => (
                   <div key={i} className={cn(
-                    'rounded-xl h-[160px] sm:h-[170px] animate-pulse border-[1.5px]',
-                    darkMode ? 'bg-white/[0.02] border-white/[0.04]' : 'bg-[#F1F5F9] border-[#E2E8F0]'
+                    'h-12 rounded-lg animate-pulse',
+                    darkMode ? 'bg-white/[0.03]' : 'bg-gray-100'
                   )} />
                 ))
               ) : (
@@ -3787,6 +4205,9 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                   const rate = metrics[activeFiatCurrency] || 1;
                   const sym = currencySymbols[activeFiatCurrency] || '$';
                   const price = activeFiatCurrency === 'XRP' ? t.exch : (t.exch ? t.exch / rate : 0);
+                  const isBoosted = t.trendingBoost > 0 && t.trendingBoostExpires > Date.now();
+                  const rankColors = ['text-[#FFD700]', 'text-[#C0C0C0]', 'text-[#CD7F32]'];
+                  const pressure = t.buyerPressure || 0;
 
                   const fmtPrice = (p) => {
                     if (!p) return `${sym}0`;
@@ -3806,85 +4227,73 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                       key={t.md5 || i}
                       href={`/token/${t.slug}`}
                       className={cn(
-                        'flex flex-col items-center justify-center rounded-xl p-4 sm:p-5 no-underline relative overflow-hidden group transition-all duration-300 border-[1.5px]',
-                        'hover:scale-[1.02] active:scale-[0.98]',
-                        darkMode
-                          ? 'bg-[#111111] border-white/[0.06] hover:border-white/[0.12]'
-                          : 'bg-[#F8FAFD] border-[#E2E8F0] hover:border-[#137DFE]/30'
+                        'grid items-center gap-2 w-full px-2 py-1.5 rounded-lg transition-all duration-200 no-underline',
+                        darkMode ? 'hover:bg-white/[0.04]' : 'hover:bg-gray-50'
                       )}
-                      style={darkMode ? {
-                        boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.03)',
-                        transition: 'box-shadow 0.3s, border-color 0.3s, transform 0.3s',
-                      } : undefined}
-                      onMouseEnter={(e) => { if (darkMode) e.currentTarget.style.boxShadow = `0 4px 20px -4px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06)`; }}
-                      onMouseLeave={(e) => { if (darkMode) e.currentTarget.style.boxShadow = 'inset 0 1px 0 rgba(255,255,255,0.03)'; }}
+                      style={{ gridTemplateColumns: '20px 28px 1fr 72px 56px 64px 48px 80px 52px' }}
                     >
-
                       {/* Rank */}
-                      <div className={cn(
-                        'absolute top-2 right-2.5 text-[9px] font-mono font-bold',
-                        darkMode ? 'text-white/15' : 'text-[#137DFE]/15'
+                      <span className={cn(
+                        'text-[11px] font-mono font-bold text-center',
+                        i < 3 ? rankColors[i] : darkMode ? 'text-white/20' : 'text-gray-300'
                       )}>
-                        #{i + 1}
-                      </div>
+                        {i + 1}
+                      </span>
 
                       {/* Token image */}
                       <div className={cn(
-                        'w-11 h-11 sm:w-12 sm:h-12 rounded-xl overflow-hidden mb-3 border-[1.5px] flex-shrink-0',
+                        'w-7 h-7 rounded-lg overflow-hidden border-[1.5px]',
                         darkMode ? 'border-white/[0.06] bg-white/[0.03]' : 'border-[#E2E8F0] bg-white'
                       )}>
                         {t.md5 ? (
-                          <img
-                            src={`https://s1.xrpl.to/thumb/${t.md5}_32`}
-                            alt=""
-                            className="w-full h-full object-cover"
-                            loading="lazy"
-                            onError={(e) => { e.target.style.display = 'none'; }}
-                          />
+                          <img src={`https://s1.xrpl.to/thumb/${t.md5}_32`} alt="" className="w-full h-full object-cover" loading="lazy" onError={(e) => { e.target.style.display = 'none'; }} />
                         ) : (
-                          <div className={cn(
-                            'w-full h-full flex items-center justify-center text-[12px] font-bold',
-                            darkMode ? 'text-white/20' : 'text-[#64748B]/30'
-                          )}>{t.currency?.[0]}</div>
+                          <div className={cn('w-full h-full flex items-center justify-center text-[10px] font-bold', darkMode ? 'text-white/20' : 'text-[#64748B]/30')}>{t.currency?.[0]}</div>
                         )}
                       </div>
 
-                      {/* Name */}
-                      <div className={cn(
-                        'text-[12px] sm:text-[13px] font-semibold truncate w-full text-center mb-1 flex items-center justify-center gap-1',
-                        darkMode ? 'text-[#F5F5F5]' : 'text-[#0F172A]'
-                      )}>
-                        <span className="truncate">{t.name}</span>
-                        {t.trendingBoost > 0 && t.trendingBoostExpires > Date.now() && (
-                          <Zap size={11} className="text-[#F6AF01] flex-shrink-0" fill="#F6AF01" />
-                        )}
-                      </div>
-
-                      {/* Price */}
-                      <div className={cn(
-                        'text-[11px] sm:text-[12px] font-mono font-medium mb-1.5',
-                        darkMode ? 'text-[#9CA3AF]' : 'text-[#64748B]'
-                      )}>
-                        {fmtPrice(price)}
-                      </div>
-
-                      {/* Change + score */}
-                      <div className="flex items-center gap-1.5">
+                      {/* Name + boost */}
+                      <div className="flex items-center gap-1.5 min-w-0 overflow-hidden">
                         <span className={cn(
-                          'text-[10px] sm:text-[11px] font-bold font-mono',
-                          isUp ? 'text-[#08AA09]' : 'text-[#ef4444]'
+                          'text-[12px] font-semibold truncate',
+                          isBoosted && t.trendingBoost >= 500 ? 'text-[#FFD700]' : darkMode ? 'text-[#F5F5F5]' : 'text-[#0F172A]'
                         )}>
-                          {isUp ? '+' : ''}{change.toFixed(1)}%
+                          {t.name}
                         </span>
-                        {t.trendingScore > 0 && (
-                          <span className={cn(
-                            'text-[8px] font-mono',
-                            darkMode ? 'text-white/20' : 'text-black/20'
-                          )}>
-                            {t.trendingScore >= 1000 ? `${(t.trendingScore / 1000).toFixed(1)}k` : Math.round(t.trendingScore)}
+                        {isBoosted && (
+                          <span className="inline-flex items-center gap-0.5 flex-shrink-0 text-[#F6AF01]">
+                            <Flame size={10} fill="#F6AF01" />
+                            <span className="text-[9px] font-bold">{t.trendingBoost}</span>
                           </span>
                         )}
                       </div>
+
+                      {/* Traders */}
+                      <span className={cn('text-[11px] font-mono text-right tabular-nums', darkMode ? 'text-white/50' : 'text-black/50')}>
+                        {fmtStat(t.uniqueTraders24h)} <span className={cn('text-[9px]', darkMode ? 'text-white/30' : 'text-black/30')}>traders</span>
+                      </span>
+
+                      {/* Buyer pressure */}
+                      <span className={cn('text-[11px] font-mono font-bold text-right tabular-nums', pressure >= 0.5 ? 'text-[#22c55e]' : 'text-[#ef4444]')}>
+                        {pressure > 0 ? `${Math.round(pressure * 100)}%` : '-'} <span className={cn('text-[9px] font-normal', darkMode ? 'text-white/30' : 'text-black/30')}>buy</span>
+                      </span>
+
+                      {/* Volume */}
+                      <span className={cn('text-[11px] font-mono text-right tabular-nums', darkMode ? 'text-white/50' : 'text-black/50')}>
+                        {fmtStat(t.vol24h)} <span className={cn('text-[9px]', darkMode ? 'text-white/30' : 'text-black/30')}>vol</span>
+                      </span>
+
+                      {/* Sparkline */}
+                      <MiniSparkline data={sparklines[t.md5]} color={isUp ? '#08AA09' : '#ef4444'} width={48} height={16} />
+
+                      {/* Price */}
+                      <span className={cn('text-[11px] font-mono font-medium text-right tabular-nums', darkMode ? 'text-white/70' : 'text-[#0F172A]/70')}>
+                        {fmtPrice(price)}
+                      </span>
+                      {/* 24h change */}
+                      <span className={cn('text-[11px] font-mono font-bold text-right tabular-nums min-w-[48px]', isUp ? 'text-[#22c55e]' : 'text-[#ef4444]')}>
+                        {isUp ? '+' : ''}{change.toFixed(1)}%
+                      </span>
                     </a>
                   );
                 })
@@ -3894,20 +4303,20 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
             {/* Boost CTA */}
             {!trendingLoading && trendingTokens.length > 0 && (
               <div className={cn(
-                'flex items-center justify-between mt-3 sm:mt-4 pt-3 sm:pt-4 border-t',
+                'flex items-center justify-between mt-2 pt-3 border-t',
                 darkMode ? 'border-white/[0.06]' : 'border-black/[0.06]'
               )}>
                 <div className="flex items-center gap-2">
-                  <Zap size={13} className={darkMode ? 'text-[#F6AF01]' : 'text-[#F6AF01]'} />
-                  <span className={cn('text-[11px] sm:text-[12px]', darkMode ? 'text-white/40' : 'text-black/40')}>
+                  <Flame size={12} className="text-[#F6AF01]" fill="#F6AF01" />
+                  <span className={cn('text-[11px]', darkMode ? 'text-white/40' : 'text-black/40')}>
                     Want your token here?
                   </span>
                 </div>
                 <button
                   onClick={() => setBoostToken(trendingTokens[0])}
                   className={cn(
-                    'px-3 py-1.5 rounded-lg text-[10px] sm:text-[11px] font-bold tracking-wide transition-all',
-                    'bg-[#F6AF01]/10 text-[#F6AF01] border border-[#F6AF01]/20',
+                    'px-2.5 py-1 rounded-lg text-[10px] sm:text-[11px] font-bold tracking-wide transition-all border cursor-pointer',
+                    'bg-[#F6AF01]/10 text-[#F6AF01] border-[#F6AF01]/20',
                     'hover:bg-[#F6AF01]/20 hover:border-[#F6AF01]/40'
                   )}
                 >
@@ -3917,6 +4326,108 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
             )}
           </div>
 
+          {/* Recent Large Trades */}
+          {recentTrades.length > 0 && (
+          <div className={cn(
+            'w-full mt-4 rounded-xl border-[1.5px] p-4 sm:p-5 relative overflow-hidden',
+            darkMode
+              ? 'border-white/[0.06] bg-white/[0.01]'
+              : 'border-[#E2E8F0] bg-white/40'
+          )}>
+            <div className="flex items-center gap-2 mb-3 sm:mb-4">
+              <div className={cn(
+                'w-6 h-6 rounded-lg flex items-center justify-center',
+                darkMode ? 'bg-white/[0.06]' : 'bg-[#137DFE]/10'
+              )}>
+                <Zap size={12} className={darkMode ? 'text-white/60' : 'text-[#137DFE]'} />
+              </div>
+              <span className={cn(
+                'text-[12px] sm:text-[13px] font-bold uppercase tracking-[1.5px] font-mono',
+                darkMode ? 'text-[#F5F5F5]' : 'text-[#0F172A]'
+              )}>
+                Recent Large Trades
+              </span>
+            </div>
+            <div className="flex flex-col gap-1">
+              {recentTrades.map((trade, i) => {
+                const t = trade._token;
+                const isBuy = trade.paid?.currency === 'XRP';
+                const xrpSide = isBuy ? trade.paid : trade.got?.currency === 'XRP' ? trade.got : null;
+                const tokenSide = isBuy ? trade.got : trade.paid;
+                const xrpAmt = xrpSide ? parseFloat(xrpSide.value || xrpSide.amount || 0) : 0;
+                const tokenAmt = tokenSide ? parseFloat(tokenSide.value || tokenSide.amount || 0) : 0;
+                const trader = trade.taker || '';
+                const maxXrp = Math.max(...recentTrades.map((tr) => {
+                  const s = tr.paid?.currency === 'XRP' ? tr.paid : tr.got?.currency === 'XRP' ? tr.got : null;
+                  return s ? parseFloat(s.value || s.amount || 0) : 0;
+                }));
+                const barPct = maxXrp > 0 ? Math.max(8, Math.min(100, Math.sqrt(xrpAmt / maxXrp) * 100)) : 8;
+                const barBg = isBuy
+                  ? (darkMode ? 'linear-gradient(90deg, rgba(34,197,94,0.18) 0%, rgba(34,197,94,0.05) 100%)' : 'linear-gradient(90deg, rgba(34,197,94,0.12) 0%, rgba(34,197,94,0.03) 100%)')
+                  : (darkMode ? 'linear-gradient(90deg, rgba(239,68,68,0.18) 0%, rgba(239,68,68,0.05) 100%)' : 'linear-gradient(90deg, rgba(239,68,68,0.12) 0%, rgba(239,68,68,0.03) 100%)');
+                const barBorder = isBuy ? (darkMode ? '#22c55e' : '#16a34a') : (darkMode ? '#ef4444' : '#dc2626');
+                const elapsed = trade.time ? (() => {
+                  const s = Math.floor((Date.now() - trade.time) / 1000);
+                  if (s < 60) return `${s}s ago`;
+                  if (s < 3600) return `${Math.floor(s / 60)}m ago`;
+                  if (s < 86400) return `${Math.floor(s / 3600)}h ago`;
+                  return `${Math.floor(s / 86400)}d ago`;
+                })() : '';
+                return (
+                  <a
+                    key={trade.hash || i}
+                    href={`/token/${t?.slug}`}
+                    className={cn(
+                      'grid items-center gap-2 w-full px-2 py-1.5 rounded-lg transition-all duration-200 no-underline',
+                      darkMode ? 'hover:bg-white/[0.04]' : 'hover:bg-gray-50'
+                    )}
+                    style={{ gridTemplateColumns: '52px 36px 1fr 1fr 72px' }}
+                  >
+                    {/* Time */}
+                    <span suppressHydrationWarning className={cn('text-[11px] font-semibold tabular-nums', darkMode ? 'text-white/60' : 'text-black/60')}>
+                      {elapsed}
+                    </span>
+                    {/* Buy/Sell */}
+                    <span className={cn('text-[11px] font-extrabold uppercase tracking-[0.04em]', isBuy ? 'text-[#22c55e]' : 'text-[#ef4444]')}>
+                      {isBuy ? 'Buy' : 'Sell'}
+                    </span>
+                    {/* Token amount with bar */}
+                    <div className="relative flex items-center h-7 px-[10px] rounded-[6px] overflow-hidden">
+                      <div className="absolute left-0 top-1/2 -translate-y-1/2 h-[80%] rounded-sm" style={{ width: `${barPct}%`, background: barBg, borderLeft: `3px solid ${barBorder}`, transition: 'width 0.4s cubic-bezier(0.4,0,0.2,1)' }} />
+                      <span className={cn('relative z-[1] text-[11px] font-mono font-medium truncate', darkMode ? 'text-white' : 'text-[#1a1a1a]')}>
+                        {fmtStat(tokenAmt)}{' '}
+                        <span className="opacity-60 text-[9px] font-normal">{t?.name}</span>
+                      </span>
+                    </div>
+                    {/* XRP amount with bar */}
+                    <div className="relative flex items-center h-7 px-[10px] rounded-[6px] overflow-hidden">
+                      <div className="absolute left-0 top-1/2 -translate-y-1/2 h-[80%] rounded-sm" style={{ width: `${barPct}%`, background: barBg, borderLeft: `3px solid ${barBorder}`, transition: 'width 0.4s cubic-bezier(0.4,0,0.2,1)' }} />
+                      <span className={cn('relative z-[1] text-[11px] font-mono font-medium', darkMode ? 'text-white' : 'text-[#1a1a1a]')}>
+                        {fmtStat(xrpAmt)}{' '}
+                        <span className="opacity-60 text-[9px] font-normal">XRP</span>
+                      </span>
+                    </div>
+                    {/* Trader address */}
+                    <a
+                      href={`/address/${trader}`}
+                      onClick={(e) => e.stopPropagation()}
+                      className={cn(
+                        'inline-flex items-center px-1.5 py-0.5 rounded-md border text-[10px] font-mono no-underline truncate',
+                        darkMode
+                          ? 'bg-white/[0.03] border-white/[0.06] text-white/50 hover:text-white/80'
+                          : 'bg-black/[0.02] border-black/[0.04] text-gray-500 hover:text-gray-900'
+                      )}
+                      title={trader}
+                    >
+                      {trader ? `${trader.slice(0, 4)}...${trader.slice(-4)}` : '-'}
+                    </a>
+                  </a>
+                );
+              })}
+            </div>
+          </div>
+          )}
+
           {/* Boost Modal */}
           {boostToken && (
             <BoostModal
@@ -3925,6 +4436,9 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
               onSuccess={() => setBoostToken(null)}
             />
           )}
+          </>)}
+
+          {/* NFT Quick Buy moved into trade mode toggle above */}
         </div>
       )}
 

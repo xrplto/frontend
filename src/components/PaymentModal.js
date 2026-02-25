@@ -220,7 +220,7 @@ export default function PaymentModal({
     >
       <div
         className={cn(
-          'w-full max-w-md rounded-2xl border-[1.5px] overflow-hidden',
+          'w-full max-w-xl rounded-2xl border-[1.5px] overflow-hidden',
           isDark
             ? 'bg-black/95 backdrop-blur-2xl border-white/[0.08] shadow-2xl shadow-black/50'
             : 'bg-white backdrop-blur-2xl border-gray-200 shadow-2xl shadow-gray-300/30'
@@ -261,7 +261,14 @@ export default function PaymentModal({
           )}>
             <div className="flex items-center justify-between mb-2">
               <span className={cn('font-semibold', isDark ? 'text-white' : 'text-gray-900')}>{item?.name}</span>
-              <span className={cn('text-xl font-bold', isDark ? 'text-white' : 'text-gray-900')}>${price}</span>
+              <div className="text-right">
+                <span className={cn('text-xl font-bold', isDark ? 'text-white' : 'text-gray-900')}>${price}</span>
+                {xrpAmount && (
+                  <div className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-gray-400')}>
+                    ~{xrpAmount} XRP
+                  </div>
+                )}
+              </div>
             </div>
             {item?.credits && (
               <div className={cn('text-[12px]', isDark ? 'text-white/50' : 'text-gray-500')}>
@@ -381,7 +388,7 @@ export default function PaymentModal({
             ) : paymentMethod === 'stripe' ? (
               <><CreditCard size={18} /> Pay ${price}</>
             ) : (
-              <><Wallet size={18} /> Pay {xrpAmount || '...'} XRP</>
+              <><Wallet size={18} /> Pay ${price} (~{xrpAmount || '...'} XRP)</>
             )}
           </button>
 

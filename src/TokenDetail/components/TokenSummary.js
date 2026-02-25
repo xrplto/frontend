@@ -15,14 +15,14 @@ import {
   X,
   Link2,
   Unlink2,
-  Zap
+  Zap,
+  Flame
 } from 'lucide-react';
 import Decimal from 'decimal.js-light';
 import Image from 'next/image';
 import VerificationBadge from 'src/components/VerificationBadge';
 import api, { apiFetch } from 'src/utils/api';
 import { toast } from 'sonner';
-import { TokenShareModal as Share } from 'src/components/ShareButtons';
 import Watch from './Watch';
 import EditTokenDialog from 'src/components/EditTokenDialog';
 import { ApiButton } from 'src/components/ApiEndpointsModal';
@@ -453,11 +453,12 @@ const TokenSummary = memo(({ token }) => {
       ? new Decimal(tvl).div(metrics[activeFiatCurrency] || metrics.CNY || 1).toNumber()
       : tvl || 0;
 
-  const tokenImageUrl = `https://s1.xrpl.to/thumb/${md5}_128`;
   const fallbackImageUrl = issuer ? getHashIcon(issuer) : '/static/account_logo.webp';
+  const [imgSrc, setImgSrc] = useState(`https://s1.xrpl.to/thumb/${md5}_128`);
+  useEffect(() => { setImgSrc(`https://s1.xrpl.to/thumb/${md5}_128`); }, [md5]);
   const handleGoogleLensSearch = () =>
     window.open(
-      `https://lens.google.com/uploadbyurl?url=${encodeURIComponent(tokenImageUrl)}`,
+      `https://lens.google.com/uploadbyurl?url=${encodeURIComponent(`https://s1.xrpl.to/thumb/${md5}_128`)}`,
       '_blank'
     );
   const isExpired = checkExpiration(expiration);
@@ -555,19 +556,18 @@ const TokenSummary = memo(({ token }) => {
             onClick={handleGoogleLensSearch}
           >
             <Image
-              src={tokenImageUrl}
+              src={imgSrc}
               alt={name}
               width={52}
               height={52}
               sizes="52px"
               priority
+              unoptimized={imgSrc.startsWith('data:')}
               className={cn(
                 'w-[52px] h-[52px] rounded-2xl object-cover border shadow-sm transition-[opacity,transform,background-color,border-color] duration-300 group-hover:scale-105 group-hover:shadow-lg',
                 isDark ? 'border-white/10 shadow-black/20' : 'border-black/[0.08] shadow-gray-200'
               )}
-              onError={(e) => {
-                e.currentTarget.src = fallbackImageUrl;
-              }}
+              onError={() => setImgSrc(fallbackImageUrl)}
             />
             {/* Verification Badge by Tier */}
             <VerificationBadge verified={currentVerified} size="md" isDark={isDark} />
@@ -577,7 +577,9 @@ const TokenSummary = memo(({ token }) => {
               <span
                 className={cn(
                   'text-lg font-bold truncate tracking-tight',
-                  isDark ? 'text-white' : 'text-gray-900'
+                  trendingBoost >= 500 && trendingBoostExpires > Date.now()
+                    ? 'text-[#FFD700]'
+                    : isDark ? 'text-white' : 'text-gray-900'
                 )}
               >
                 {name}
@@ -606,9 +608,10 @@ const TokenSummary = memo(({ token }) => {
                 {trendingBoost > 0 && trendingBoostExpires > Date.now() && (
                   <span
                     className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-[10px] font-bold tracking-wider bg-[#F6AF01]/10 text-[#F6AF01]"
-                    title="Boosted"
+                    title={`${trendingBoost} active boosts`}
                   >
-                    <Zap size={10} fill="#F6AF01" />
+                    <Flame size={10} fill="#F6AF01" />
+                    {trendingBoost}
                   </span>
                 )}
                 {tweetCount > 0 && (
@@ -903,15 +906,6 @@ const TokenSummary = memo(({ token }) => {
               <Zap size={11} />
               Boost
             </button>
-          </div>
-          <div className="sm:flex-1">
-            <Share
-              token={token}
-              className={cn(
-                "w-full h-6 sm:h-7 flex items-center justify-center gap-1 rounded-md text-[9px] font-bold uppercase tracking-wide transition-[opacity,transform,background-color,border-color] duration-200",
-                isDark ? "bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.08]" : "bg-gray-50 border border-black/[0.04] hover:bg-gray-100"
-              )}
-            />
           </div>
           {accountProfile?.admin && (
             <button

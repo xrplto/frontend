@@ -115,8 +115,7 @@ export const API_REFERENCE = {
         desc: 'Token details by md5, slug (issuer-currency), or issuer_currency'
       },
       { method: 'POST', path: '/search', desc: 'Search tokens, NFTs, collections, accounts' },
-      { method: 'GET', path: '/tags', desc: 'List all token tags' },
-      { method: 'GET', path: '/creator-activity/:id', desc: 'Creator activity by md5 or address' }
+      { method: 'GET', path: '/tags', desc: 'List all token tags' }
     ]
   },
   charts: {
@@ -126,6 +125,7 @@ export const API_REFERENCE = {
       { method: 'GET', path: '/sparkline/:md5', desc: 'Price sparkline for mini-charts' },
       { method: 'GET', path: '/rsi', desc: 'RSI indicator data for tokens' },
       { method: 'GET', path: '/stats', desc: 'Platform metrics (token count, 24h volume)' },
+      { method: 'POST', path: '/stats/metrics', desc: 'Historical metrics by timestamps' },
       { method: 'GET', path: '/holders/info/:md5', desc: 'Top holder concentration percentages' },
       { method: 'GET', path: '/holders/graph/:md5', desc: 'Holder count history graph' },
       {
@@ -182,6 +182,7 @@ export const API_REFERENCE = {
         desc: 'XRP balance with reserves and rank'
       },
       { method: 'POST', path: '/account/balance', desc: 'Batch balance lookup (max 100)' },
+      { method: 'GET', path: '/account/balance/pair/:account', desc: 'Token pair balances' },
       { method: 'GET', path: '/account/offers/:account', desc: 'Open DEX offers' },
       { method: 'GET', path: '/account/tx/:account', desc: 'Full tx history via Clio' },
       { method: 'GET', path: '/account/trustlines/:account', desc: 'Live trustlines from XRPL' },
@@ -203,11 +204,17 @@ export const API_REFERENCE = {
       },
       { method: 'GET', path: '/account/noripple/:account', desc: 'NoRipple check for trustlines' },
       { method: 'GET', path: '/account/channels/:account', desc: 'Payment channels' },
-      { method: 'GET', path: '/account/info/live/:account', desc: 'Live account info from XRPL' },
+      { method: 'GET', path: '/account/trustline/:account/:issuer/:currency', desc: 'Single trustline lookup' },
+      { method: 'GET', path: '/account/info/:account', desc: 'Account info with DB enrichment' },
       { method: 'GET', path: '/account/deposit-authorized', desc: 'Check deposit authorization' },
       { method: 'POST', path: '/account/path-find', desc: 'Find payment paths' },
+      { method: 'GET', path: '/account/ancestry/:account', desc: 'Account ancestry tree' },
+      { method: 'GET', path: '/account/token-stats/:account/:md5', desc: 'Per-token trading stats for account' },
       { method: 'GET', path: '/trustlines/:account', desc: 'Trustlines with token values' },
-      { method: 'GET', path: '/watchlist', desc: 'User watchlist tokens' }
+      { method: 'GET', path: '/watchlist', desc: 'Get token watchlist' },
+      { method: 'POST', path: '/watchlist', desc: 'Update token watchlist (add/remove)' },
+      { method: 'GET', path: '/watchlist/nft', desc: 'Get NFT watchlist' },
+      { method: 'POST', path: '/watchlist/nft', desc: 'Update NFT watchlist (add/remove)' }
     ]
   },
   ledger: {
@@ -218,7 +225,7 @@ export const API_REFERENCE = {
       { method: 'GET', path: '/ledger/entry', desc: 'Fetch specific ledger object' },
       { method: 'GET', path: '/tx/:hash', desc: 'Transaction by hash (with fallback nodes)' },
       { method: 'POST', path: '/submit', desc: 'Submit signed transaction' },
-      { method: 'POST', path: '/submit/simulate', desc: 'Dry-run transaction simulation' },
+      { method: 'POST', path: '/submit/preview', desc: 'Dry-run transaction preview' },
       { method: 'GET', path: '/submit/types', desc: 'List valid transaction types' },
       { method: 'GET', path: '/submit/fee', desc: 'Current network fees' },
       { method: 'GET', path: '/submit/account/:address/sequence', desc: 'Account sequence number' }
@@ -228,13 +235,8 @@ export const API_REFERENCE = {
     label: 'AI Analysis',
     endpoints: [
       { method: 'GET', path: '/tx-explain/:hash', desc: 'AI-generated transaction explanation' },
-      {
-        method: 'GET',
-        path: '/tx-explain/stats',
-        desc: 'AI provider stats and circuit breaker status'
-      },
-      { method: 'GET', path: '/ai/token/:md5', desc: 'AI token risk analysis (safety score)' },
-      { method: 'GET', path: '/account-tx-explain/:account', desc: 'AI wallet activity analysis' }
+      { method: 'GET', path: '/account-tx-explain/:account', desc: 'AI wallet activity analysis' },
+      { method: 'GET', path: '/token/review/:id', desc: 'Token risk assessment (score 0-100)' }
     ]
   },
   traders: {
@@ -336,7 +338,8 @@ export const API_REFERENCE = {
       { method: 'GET', path: '/nft/account/:account/offers', desc: "Account's NFT offers" },
       { method: 'GET', path: '/nft/stats/global', desc: 'Global NFT market stats' },
       { method: 'GET', path: '/nft/global-metrics', desc: 'Global NFT metrics' },
-      { method: 'GET', path: '/nft/brokers/stats', desc: 'Broker fee statistics' }
+      { method: 'GET', path: '/nft/brokers/stats', desc: 'Broker fee statistics' },
+      { method: 'GET', path: '/nft/floor/history/:cid', desc: 'Floor history by collection ID' }
     ]
   },
   nftAnalytics: {
@@ -391,10 +394,173 @@ export const API_REFERENCE = {
       { method: 'GET', path: '/news/sentiment-chart', desc: 'Sentiment chart data' }
     ]
   },
+  tokenFlow: {
+    label: 'Token Flow',
+    endpoints: [
+      { method: 'GET', path: '/token/flow/:id', desc: 'Token distribution analysis from creator wallet' }
+    ]
+  },
   creatorActivity: {
     label: 'Creator Activity',
     endpoints: [
       { method: 'GET', path: '/creator-activity/:identifier', desc: 'Creator activity by md5 or address' }
+    ]
+  },
+  launch: {
+    label: 'Token Launch',
+    endpoints: [
+      { method: 'POST', path: '/launch-token', desc: 'Create new token with AMM' },
+      { method: 'GET', path: '/launch-token/status/:sessionId', desc: 'Launch session status' },
+      { method: 'GET', path: '/launch-token/queue-status/:sessionId', desc: 'Queue position status' },
+      { method: 'POST', path: '/launch-token/authorize', desc: 'Authorize trustline (anti-snipe)' },
+      { method: 'GET', path: '/launch-token/auth-info/:issuer/:currency', desc: 'Token authorization info' },
+      { method: 'GET', path: '/launch-token/check-auth/:issuer/:currency/:address', desc: 'Check if address is authorized' },
+      { method: 'GET', path: '/launch-token/calculate-funding', desc: 'Calculate required XRP funding' },
+      { method: 'GET', path: '/launch-token/my-launches', desc: 'User launch history (requires API key)' },
+      { method: 'POST', path: '/launch-token/:sessionId/image', desc: 'Upload token image (base64, max 500KB)' }
+    ]
+  },
+  keys: {
+    label: 'API Keys',
+    endpoints: [
+      { method: 'POST', path: '/keys', desc: 'Create new API key (max 5 per wallet, wallet-signed)' },
+      { method: 'GET', path: '/keys/:wallet', desc: 'List API keys for wallet' },
+      { method: 'DELETE', path: '/keys/:wallet/:id', desc: 'Delete API key (wallet-signed)' },
+      { method: 'GET', path: '/keys/:wallet/credits', desc: 'Remaining credits and billing info' },
+      { method: 'GET', path: '/keys/:wallet/usage', desc: 'Usage breakdown by key and endpoint' },
+      { method: 'GET', path: '/keys/:wallet/subscription', desc: 'Subscription details and upgrades' },
+      { method: 'GET', path: '/keys/tiers', desc: 'Available API tiers with live XRP pricing' },
+      { method: 'GET', path: '/keys/packages', desc: 'Credit top-up packages with pricing' },
+      { method: 'GET', path: '/keys/costs', desc: 'Per-endpoint credit costs' },
+      { method: 'POST', path: '/keys/purchase', desc: 'Create XRP payment request' },
+      { method: 'POST', path: '/keys/verify-payment', desc: 'Verify XRP payment and apply credits/tier' },
+      { method: 'GET', path: '/keys/xrp/status/:txHash', desc: 'Check XRP payment status' },
+      { method: 'POST', path: '/keys/stripe/checkout', desc: 'Create Stripe checkout session' },
+      { method: 'GET', path: '/keys/stripe/status/:sessionId', desc: 'Check Stripe payment status' },
+      { method: 'GET', path: '/keys/payment/:txHash', desc: 'Look up processed payment by tx hash' }
+    ]
+  },
+  user: {
+    label: 'User',
+    endpoints: [
+      { method: 'GET', path: '/user/tiers', desc: 'User tiers with pricing' },
+      { method: 'GET', path: '/user/:account', desc: 'Get user profile' },
+      { method: 'POST', path: '/user/:account', desc: 'Create user profile' },
+      { method: 'PUT', path: '/user/:account', desc: 'Update user profile' },
+      { method: 'GET', path: '/user/:account/perks', desc: 'Resolved perks (tier + roles merged)' },
+      { method: 'GET', path: '/user/:account/badges', desc: 'All unlocked badges' },
+      { method: 'PUT', path: '/user/:account/display-badge', desc: 'Set active display badge' },
+      { method: 'GET', path: '/user/:account/labels', desc: 'Get wallet labels' },
+      { method: 'POST', path: '/user/:account/labels', desc: 'Create/update wallet label' },
+      { method: 'DELETE', path: '/user/:account/labels/:wallet', desc: 'Delete wallet label' },
+      { method: 'GET', path: '/user/:account/nfts', desc: 'NFTs owned (with thumbnails)' },
+      { method: 'PUT', path: '/user/:account/avatar', desc: 'Set avatar from owned NFT' },
+      { method: 'POST', path: '/user/tier/purchase', desc: 'Create XRP payment for tier upgrade' },
+      { method: 'GET', path: '/user/tier/verify/:invoiceId', desc: 'Verify XRP tier payment' },
+      { method: 'POST', path: '/user/tier/stripe', desc: 'Create Stripe checkout for tier upgrade' },
+      { method: 'GET', path: '/user/tier/stripe/:sessionId', desc: 'Check Stripe tier payment status' },
+      { method: 'GET', path: '/user/badges/meta', desc: 'Badge system metadata' },
+      { method: 'GET', path: '/user/badges/:badge/holders', desc: 'Users holding a specific badge' }
+    ]
+  },
+  referral: {
+    label: 'Referral',
+    endpoints: [
+      { method: 'POST', path: '/referral/register', desc: 'Register with optional referral code' },
+      { method: 'GET', path: '/referral/:address', desc: 'Get soldier profile' },
+      { method: 'GET', path: '/referral/:address/stats', desc: 'Badge progress and tier stats' },
+      { method: 'PUT', path: '/referral/:address/code', desc: 'Update referral code (wallet-signed)' },
+      { method: 'PUT', path: '/referral/:address/tier', desc: 'Set active tier (wallet-signed)' },
+      { method: 'GET', path: '/referral/leaderboard/:type', desc: 'Leaderboard (recruits, streak, season, whales)' },
+      { method: 'POST', path: '/referral/:address/sync', desc: 'Force sync badges (wallet-signed)' },
+      { method: 'GET', path: '/referral/meta/tiers', desc: 'Tier definitions' },
+      { method: 'GET', path: '/referral/meta/badges', desc: 'Badge definitions' },
+      { method: 'GET', path: '/referral/meta/missions', desc: 'Mission quest chains' },
+      { method: 'GET', path: '/referral/meta/season', desc: 'Seasonal leaderboard rewards' }
+    ]
+  },
+  promotion: {
+    label: 'Promotion Rewards',
+    endpoints: [
+      { method: 'GET', path: '/promotion/pool/:md5', desc: 'Get promotion pool info' },
+      { method: 'GET', path: '/promotion/reward/:md5/:account', desc: 'Get reward status for a token' },
+      { method: 'POST', path: '/promotion/claim', desc: 'Claim earned reward (wallet-signed)' },
+      { method: 'GET', path: '/promotion/leaderboard/:md5', desc: 'Per-token promoter leaderboard' },
+      { method: 'GET', path: '/promotion/profile/:account', desc: 'Global promotion stats' },
+      { method: 'GET', path: '/promotion/tiers', desc: 'Promoter tier metadata' }
+    ]
+  },
+  verify: {
+    label: 'Verification',
+    endpoints: [
+      { method: 'GET', path: '/verify/pricing', desc: 'Verification tier pricing' },
+      { method: 'POST', path: '/verify/request', desc: 'Request token/collection verification' },
+      { method: 'POST', path: '/verify/confirm', desc: 'Confirm payment and apply badge' },
+      { method: 'POST', path: '/verify/stripe/checkout', desc: 'Create Stripe checkout for verification' },
+      { method: 'GET', path: '/verify/stripe/status/:sessionId', desc: 'Check Stripe verification payment status' }
+    ]
+  },
+  tweetVerify: {
+    label: 'Tweet Verify',
+    endpoints: [
+      { method: 'POST', path: '/tweet/verify', desc: 'Submit tweet for social verification (5/hour)' },
+      { method: 'GET', path: '/tweet/token/:id', desc: 'Tweet verifications for a token' },
+      { method: 'GET', path: '/tweet/account/:account', desc: 'Tweet verifications by account' }
+    ]
+  },
+  boost: {
+    label: 'Boost',
+    endpoints: [
+      { method: 'GET', path: '/boost/quote/:md5', desc: 'Get quote for boosting a token' },
+      { method: 'POST', path: '/boost/purchase', desc: 'Create boost payment request' },
+      { method: 'GET', path: '/boost/verify/:invoiceId', desc: 'Verify payment and apply boost' },
+      { method: 'POST', path: '/boost/stripe', desc: 'Create Stripe checkout for boost' },
+      { method: 'GET', path: '/boost/stripe/:sessionId', desc: 'Check Stripe boost payment status' }
+    ]
+  },
+  scams: {
+    label: 'Scams',
+    endpoints: [
+      { method: 'GET', path: '/scams', desc: 'Full scam report with abuse statistics' },
+      { method: 'GET', path: '/scams/tokens', desc: 'Flagged scam tokens' },
+      { method: 'GET', path: '/scams/domains', desc: 'Known scam domains with registrar info' },
+      { method: 'GET', path: '/scams/issuers', desc: 'Impersonation scam issuers' },
+      { method: 'GET', path: '/scams/nft', desc: 'NFT scam accounts and recent sales' },
+      { method: 'GET', path: '/scams/check/:account', desc: 'Check if account is a known scam' },
+      { method: 'POST', path: '/scams/report', desc: 'Confirm domain was reported' },
+      { method: 'POST', path: '/scams/report-scam', desc: 'Submit a scam report' },
+      { method: 'GET', path: '/scams/report-scam', desc: 'List community scam reports' },
+      { method: 'GET', path: '/scams/report/:domain', desc: 'Reports for a domain' }
+    ]
+  },
+  embed: {
+    label: 'Embed',
+    endpoints: [
+      { method: 'GET', path: '/embed/:md5', desc: 'Embeddable candlestick chart (HTML iframe)' }
+    ]
+  },
+  lpPositions: {
+    label: 'LP Positions',
+    endpoints: [
+      { method: 'GET', path: '/lp-positions/:account', desc: 'AMM LP positions with impermanent loss analysis' }
+    ]
+  },
+  thumbnails: {
+    label: 'Thumbnails',
+    endpoints: [
+      { method: 'GET', path: '/thumb/:md5', desc: 'Token thumbnail (WebP, sizes: 16-128px)' }
+    ]
+  },
+  webSearch: {
+    label: 'Web Search',
+    endpoints: [
+      { method: 'GET', path: '/web-search', desc: 'Web search via SearXNG' }
+    ]
+  },
+  utilities: {
+    label: 'Utilities',
+    endpoints: [
+      { method: 'GET', path: '/testnet/:address', desc: 'Testnet XRP balance lookup' }
     ]
   },
   faucet: {
@@ -428,9 +594,7 @@ export const API_REFERENCE = {
       { method: 'WS', path: '/ws/account/balance/:account', desc: 'Account XRP balance stream' },
       { method: 'WS', path: '/ws/account/balance/pair/:account', desc: 'Token pair balance stream' },
       { method: 'WS', path: '/ws/account/offers/:account', desc: 'Account open DEX offers stream' },
-      { method: 'WS', path: '/ws/amm/info', desc: 'Live AMM pool info (asset, asset2 params)' },
-      { method: 'WS', path: '/ws/creator/:identifier', desc: 'Creator activity stream (md5 or address)' },
-      { method: 'WS', path: '/ws/chat', desc: 'Real-time chat messages' }
+      { method: 'WS', path: '/ws/amm/info', desc: 'Live AMM pool info (asset, asset2 params)' }
     ]
   }
 };
@@ -627,7 +791,7 @@ const ApiEndpointsModal = memo(({ open, onClose, token = null }) => {
         aria-label="API endpoints"
         onClick={(e) => e.stopPropagation()}
         className={cn(
-          'relative z-[1401] rounded-2xl border-[1.5px] w-full max-w-[480px] max-h-[85dvh] overflow-hidden flex flex-col',
+          'relative z-[1401] rounded-2xl border-[1.5px] w-full max-w-xl max-h-[85dvh] overflow-hidden flex flex-col',
           isDark ? 'bg-black border-white/[0.08]' : 'bg-white border-black/[0.06]'
         )}
       >

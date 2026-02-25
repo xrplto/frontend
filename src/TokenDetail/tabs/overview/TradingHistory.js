@@ -1,4 +1,4 @@
-import api, { apiFetch, submitTransaction, simulateTransaction } from 'src/utils/api';
+import api, { apiFetch, submitTransaction, previewTransaction } from 'src/utils/api';
 import React, {
   useState,
   useEffect,
@@ -3252,7 +3252,7 @@ const TradingHistory = ({
         Memos: configureMemos('', '', 'AMM Create via https://xrpl.to')
       };
 
-      const simResult = await simulateTransaction(tx);
+      const simResult = await previewTransaction(tx);
       toast.dismiss(toastId);
 
       if (simResult.engine_result !== 'tesSUCCESS') {
@@ -3551,7 +3551,7 @@ const TradingHistory = ({
       }
 
       // Simulate only — wait for user confirmation before submitting
-      const simResult = await simulateTransaction(tx);
+      const simResult = await previewTransaction(tx);
       toast.dismiss(toastId);
 
       if (simResult.engine_result !== 'tesSUCCESS') {
@@ -3682,7 +3682,7 @@ const TradingHistory = ({
       }
 
       // Simulate only — wait for user confirmation before submitting
-      const simResult = await simulateTransaction(tx);
+      const simResult = await previewTransaction(tx);
       toast.dismiss(toastId);
 
       if (simResult.engine_result !== 'tesSUCCESS') {

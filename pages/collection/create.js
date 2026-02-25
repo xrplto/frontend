@@ -12,7 +12,8 @@ const OverviewWrapper = ({ className, ...props }) => (
 
 export default function Overview({ data }) {
   const handleCreate = (slug) => {
-    window.location.href = `/congrats/nfts/${data.slug}`;
+    const safeSlug = String(data.slug || '').replace(/[^a-zA-Z0-9_-]/g, '');
+    if (safeSlug) window.location.href = `/congrats/nfts/${safeSlug}`;
   };
 
   return (

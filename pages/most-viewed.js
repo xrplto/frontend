@@ -5,7 +5,7 @@ import TokenList from 'src/TokenList';
 import ScrollToTop from 'src/components/ScrollToTop';
 import Summary from 'src/TokenList/Summary';
 import { useRouter } from 'next/router';
-import { getTokens } from 'src/utils/formatters';
+import { getTokens, getSummaryTokens } from 'src/utils/formatters';
 import { ThemeContext } from 'src/context/AppContext';
 
 function getInitialTokens(data) {
@@ -13,7 +13,7 @@ function getInitialTokens(data) {
   return [];
 }
 
-function MostViewedPage({ data }) {
+function MostViewedPage({ data, summaryTokens }) {
   const { themeName } = useContext(ThemeContext);
   const isDark = themeName === 'XrplToDarkTheme';
   const [tokens, setTokens] = useState(() => getInitialTokens(data));
@@ -68,7 +68,7 @@ function MostViewedPage({ data }) {
         }
       >
         <div className="w-full px-0 py-0">
-          <Summary mostViewedTokens={data?.tokens?.slice(0, 5)} />
+          <Summary tokens={tokens} trendingTokens={summaryTokens?.trendingTokens} newTokens={summaryTokens?.newTokens} />
         </div>
       </div>
 
@@ -100,7 +100,10 @@ export default MostViewedPage;
 
 export async function getServerSideProps({ res }) {
   res.setHeader('Cache-Control', 'public, s-maxage=30, stale-while-revalidate=120');
-  const data = await getTokens('nginxScore', 'desc');
+  const [data, summaryTokens] = await Promise.all([
+    getTokens('nginxScore', 'desc'),
+    getSummaryTokens()
+  ]);
 
   let ret = {};
   if (data) {
@@ -149,7 +152,7 @@ export async function getServerSideProps({ res }) {
     };
     ogp.jsonLd = itemListSchema;
 
-    ret = { data, ogp };
+    ret = { data, ogp, summaryTokens };
   }
 
   return {

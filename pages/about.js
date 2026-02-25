@@ -13,13 +13,13 @@ const PageWrapper = ({ className, children, ...p }) => <div className={cn('min-h
 
 const Container = ({ className, children, ...p }) => <div className={cn('max-w-[1920px] mx-auto px-4 w-full flex-1', className)} {...p}>{children}</div>;
 
-const HeroSection = ({ className, children, ...p }) => <div className={cn('text-center pt-10 pb-6 relative', className)} {...p}>{children}</div>;
+const HeroSection = ({ className, children, ...p }) => <div className={cn('text-center pt-10 pb-8 relative', className)} {...p}>{children}</div>;
 
 const HeroTitle = ({ isDark, className, children, ...p }) => <h1 className={cn('text-[2.5rem] font-semibold mb-3 hidden max-md:text-[2rem]', isDark ? 'text-white' : 'text-black', className)} {...p}>{children}</h1>;
 
 const HeroSubtitle = ({ isDark, className, children, ...p }) => <p className={cn('text-sm max-w-[500px] mx-auto mb-8', isDark ? 'text-white/50' : 'text-black/50', className)} {...p}>{children}</p>;
 
-const StatsRow = ({ className, children, ...p }) => <div className={cn('grid grid-cols-4 gap-3 mb-8 max-sm:grid-cols-2', className)} {...p}>{children}</div>;
+const StatsRow = ({ className, children, ...p }) => <div className={cn('grid grid-cols-4 gap-4 max-sm:grid-cols-2', className)} {...p}>{children}</div>;
 
 const StatCard = ({ isDark, className, children, ...p }) => <div className={cn('text-center py-5 px-4 bg-transparent rounded-lg border', isDark ? 'border-white/[0.08]' : 'border-black/[0.08]', className)} {...p}>{children}</div>;
 
@@ -27,33 +27,33 @@ const StatNumber = ({ className, children, ...p }) => <h2 className={cn('text-2x
 
 const StatLabel = ({ isDark, className, children, ...p }) => <p className={cn('text-[10px] uppercase tracking-[0.5px]', isDark ? 'text-white/50' : 'text-black/50', className)} {...p}>{children}</p>;
 
-const FeaturesSection = ({ className, children, ...p }) => <div className={cn('my-8', className)} {...p}>{children}</div>;
+const FeaturesSection = ({ className, children, ...p }) => <div className={cn('py-8', className)} {...p}>{children}</div>;
 
-const SectionTitle = ({ isDark, className, children, ...p }) => <h2 className={cn('text-center text-sm font-medium mb-5 tracking-[0.5px]', isDark ? 'text-white/90' : 'text-black', className)} {...p}>{children}</h2>;
+const SectionTitle = ({ isDark, className, children, ...p }) => <h2 className={cn('text-center text-sm font-medium mb-6 tracking-[0.5px]', isDark ? 'text-white/90' : 'text-black', className)} {...p}>{children}</h2>;
 
-const FeatureGrid = ({ className, children, ...p }) => <div className={cn('grid grid-cols-4 gap-3 max-[800px]:grid-cols-2 max-[500px]:grid-cols-1', className)} {...p}>{children}</div>;
+const FeatureGrid = ({ className, children, ...p }) => <div className={cn('grid grid-cols-3 gap-4 max-[600px]:grid-cols-2 max-[400px]:grid-cols-1', className)} {...p}>{children}</div>;
 
 const FeatureCard = ({ isDark, className, children, ...p }) => <div className={cn('relative p-4 bg-transparent rounded-lg border', isDark ? 'border-white/[0.08] hover:border-white/[0.15]' : 'border-black/[0.08] hover:border-black/[0.15]', className)} {...p}>{children}</div>;
 
-const FeatureIcon = ({ isDark, className, children, ...p }) => <div className={cn('w-8 h-8 mb-[10px] flex items-center justify-center bg-transparent rounded-md border text-[#3b82f6] [&_svg]:w-4 [&_svg]:h-4', isDark ? 'border-white/[0.12]' : 'border-black/[0.12]', className)} {...p}>{children}</div>;
+const FeatureIcon = ({ isDark, className, children, ...p }) => <div className={cn('w-7 h-7 mb-2 flex items-center justify-center bg-transparent rounded-md border text-[#3b82f6] [&_svg]:w-3.5 [&_svg]:h-3.5', isDark ? 'border-white/[0.12]' : 'border-black/[0.12]', className)} {...p}>{children}</div>;
 
 const FeatureTitle = ({ isDark, className, children, ...p }) => <h3 className={cn('text-xs font-medium mb-1', isDark ? 'text-white/90' : 'text-black', className)} {...p}>{children}</h3>;
 
 const FeatureText = ({ isDark, className, children, ...p }) => <p className={cn('text-[11px] leading-[1.5]', isDark ? 'text-white/50' : 'text-black/50', className)} {...p}>{children}</p>;
 
-const FeesSection = ({ className, children, ...p }) => <div className={cn('my-8', className)} {...p}>{children}</div>;
+const FeesSection = ({ className, children, ...p }) => <div className={cn('py-8', className)} {...p}>{children}</div>;
 
-const FeesGrid = ({ className, children, ...p }) => <div className={cn('grid grid-cols-2 gap-3 max-w-[500px] mx-auto max-[500px]:grid-cols-1', className)} {...p}>{children}</div>;
+const FeesGrid = ({ className, children, ...p }) => <div className={cn('grid grid-cols-2 gap-4 max-[500px]:grid-cols-1', className)} {...p}>{children}</div>;
 
-const FeeCard = ({ isDark, className, children, ...p }) => <div className={cn('text-center py-5 px-4 bg-transparent rounded-lg border', isDark ? 'border-white/[0.08]' : 'border-black/[0.08]', className)} {...p}>{children}</div>;
+const FeeCard = ({ isDark, className, children, ...p }) => <div className={cn('text-center py-6 px-4 bg-transparent rounded-lg border', isDark ? 'border-white/[0.08]' : 'border-black/[0.08]', className)} {...p}>{children}</div>;
 
 const FeeAmount = ({ className, children, ...p }) => <div className={cn('text-2xl font-medium text-[#3b82f6] mb-1', className)} {...p}>{children}</div>;
 
 const FeeLabel = ({ isDark, className, children, ...p }) => <div className={cn('text-[11px]', isDark ? 'text-white/50' : 'text-black/50', className)} {...p}>{children}</div>;
 
-const TimelineSection = ({ className, children, ...p }) => <div className={cn('my-8', className)} {...p}>{children}</div>;
+const TimelineSection = ({ className, children, ...p }) => <div className={cn('py-8', className)} {...p}>{children}</div>;
 
-const Timeline = ({ className, children, ...p }) => <div className={cn('grid grid-cols-5 gap-3 max-[700px]:grid-cols-3 max-[450px]:grid-cols-2', className)} {...p}>{children}</div>;
+const Timeline = ({ className, children, ...p }) => <div className={cn('grid grid-cols-3 gap-4 max-[600px]:grid-cols-2', className)} {...p}>{children}</div>;
 
 const TimelineItem = ({ isDark, className, children, ...p }) => <div className={cn('flex flex-col items-center justify-center py-[14px] px-3 bg-transparent rounded-lg border', isDark ? 'border-white/[0.08]' : 'border-black/[0.08]', className)} {...p}>{children}</div>;
 
@@ -63,9 +63,9 @@ const TimelineDate = ({ className, children, ...p }) => <div className={cn('text
 
 const TimelineText = ({ isDark, className, children, ...p }) => <div className={cn('text-[11px]', isDark ? 'text-white/60' : 'text-black/60', className)} {...p}>{children}</div>;
 
-const SocialSection = ({ className, children, ...p }) => <div className={cn('my-8', className)} {...p}>{children}</div>;
+const SocialSection = ({ className, children, ...p }) => <div className={cn('py-8', className)} {...p}>{children}</div>;
 
-const SocialGrid = ({ className, children, ...p }) => <div className={cn('grid grid-cols-4 gap-3 max-w-[600px] mx-auto max-[500px]:grid-cols-2', className)} {...p}>{children}</div>;
+const SocialGrid = ({ className, children, ...p }) => <div className={cn('grid grid-cols-4 gap-4 max-[500px]:grid-cols-2', className)} {...p}>{children}</div>;
 
 const SocialCard = ({ isDark, className, children, ...p }) => (
   <a
@@ -103,7 +103,7 @@ const SOCIALS = [
   { href: 'https://xrpl.to/discord/', label: 'Discord', Icon: DiscordIcon }
 ];
 
-const FaqSection = ({ isDark, className, children, ...p }) => <div className={cn('mt-8 pt-8 border-t', isDark ? 'border-white/[0.08]' : 'border-black/[0.08]', className)} {...p}>{children}</div>;
+const FaqSection = ({ isDark, className, children, ...p }) => <div className={cn('py-8 mt-4 border-t', isDark ? 'border-white/[0.08]' : 'border-black/[0.08]', className)} {...p}>{children}</div>;
 
 const FaqHeader = ({ className, children, ...p }) => <div className={cn('text-center mb-5', className)} {...p}>{children}</div>;
 
@@ -111,7 +111,7 @@ const FaqTitle = ({ isDark, className, children, ...p }) => <h2 className={cn('t
 
 const FaqSubtitle = ({ isDark, className, children, ...p }) => <h3 className={cn('text-xs mx-auto font-normal', isDark ? 'text-white/50' : 'text-black/50', className)} {...p}>{children}</h3>;
 
-const FaqList = ({ className, children, ...p }) => <div className={cn('flex flex-col gap-2', className)} {...p}>{children}</div>;
+const FaqList = ({ className, children, ...p }) => <div className={cn('flex flex-col gap-3', className)} {...p}>{children}</div>;
 
 const AccordionItem = ({ isDark, className, children, ...p }) => <div className={cn('bg-transparent rounded-lg border overflow-hidden', isDark ? 'border-white/[0.08]' : 'border-black/[0.08]', className)} {...p}>{children}</div>;
 
@@ -195,14 +195,19 @@ function AboutPage() {
           "A decentralized exchange (DEX), like xrpl.to, operates on a blockchain network and allows users to trade tokens directly from their wallets without relying on a centralized intermediary. In contrast, a centralized exchange (CEX) functions as a third-party platform that holds users' funds and facilitates trading on their behalf, requiring users to deposit their assets before trading."
       },
       {
+        question: 'What kind of wallet does xrpl.to use?',
+        answer:
+          'xrpl.to uses an embedded client-side encrypted wallet powered by device binding and password protection. All encryption and decryption happens entirely in your browser using industry-standard methods (AES-GCM). The wallet is fully non-custodial — xrpl.to never has access to your private keys. You are solely responsible for managing your private seed and storing it securely as a backup. If you lose your seed and your device, there is no way to recover your funds.'
+      },
+      {
         question: 'How secure is xrpl.to?',
         answer:
-          'Xrpl.to operates as a non-custodial interface to the XRP Ledger, meaning your funds never leave your wallet and remain under your complete control. The platform leverages the proven security of the XRP Ledger, which has operated without downtime since 2012 and uses a unique consensus mechanism validated by a global network of independent servers. All transactions are executed directly on-chain, eliminating counterparty risk. For maximum security, always verify transaction details before signing, use hardware wallets when possible, and never share your private keys or seed phrases.'
+          'Xrpl.to operates as a non-custodial interface to the XRP Ledger, meaning your funds never leave your device and are protected by device binding and password. The platform leverages the proven security of the XRP Ledger, which has operated without downtime since 2012 and uses a unique consensus mechanism validated by a global network of independent servers. All transactions are executed directly on-chain, eliminating counterparty risk. For maximum security, always verify transaction details before signing, use hardware wallets when possible, and never share your private keys or seed phrases.'
       },
       {
         question: 'What are the fees for trading on xrpl.to?',
         answer:
-          "Xrpl.to charges a 1% trading fee for both token and NFT trades. Additionally, you will encounter standard XRP Ledger network fees (typically a few drops of XRP) for each transaction, which go directly to the blockchain network. Some wallets may also charge their own fees, so we recommend checking your wallet's fee structure."
+          "Xrpl.to charges a 0.8% trading fee for token trades. NFT trading is completely free with 0% fees. Additionally, you will encounter standard XRP Ledger network fees (typically a few drops of XRP) for each transaction, which go directly to the blockchain network. Some wallets may also charge their own fees, so we recommend checking your wallet's fee structure."
       },
       {
         question: 'How do I list my token on xrpl.to?',
@@ -237,13 +242,13 @@ function AboutPage() {
     {
       icon: LineChart,
       title: 'Live Price Tracking',
-      text: 'Real-time prices for 19,000+ tokens with advanced charts and analytics',
+      text: 'Real-time prices for 19,000+ tokens with advanced charts and analytics. All token and NFT images hosted directly, optimized for speed.',
       gradient: 'linear-gradient(135deg, #667eea, #764ba2)'
     },
     {
       icon: ArrowLeftRight,
       title: 'DEX Trading',
-      text: 'Trade directly on XRPL DEX with professional tools and order books',
+      text: 'Trade tokens and NFTs directly on the XRPL DEX with a built-in social layer. No third-party dependencies.',
       gradient: 'linear-gradient(135deg, #f093fb, #f5576c)'
     },
     {
@@ -261,13 +266,13 @@ function AboutPage() {
     {
       icon: Code,
       title: 'API Access',
-      text: 'Developer-friendly APIs for seamless integration and data access',
+      text: '140+ endpoints covering tokens, NFTs, AMM pools, trader analytics, and market history. LLM and AI friendly.',
       gradient: 'linear-gradient(135deg, #fa709a, #fee140)'
     },
     {
       icon: Zap,
       title: 'Lightning Fast',
-      text: '3-5 second transactions with minimal fees on XRP Ledger',
+      text: '3,000+ transactions per second with lightning-fast confirmation. High-speed data feeds for bots and algorithmic strategies.',
       gradient: 'linear-gradient(135deg, #30cfd0, #330867)'
     }
   ];
@@ -277,7 +282,8 @@ function AboutPage() {
     { date: 'Jul 2022', event: 'XRPL Grants Wave 3' },
     { date: 'Feb 2023', event: 'Full XRPL History' },
     { date: 'Apr 2023', event: 'Public API Released' },
-    { date: 'Aug 2025', event: '40,000 Monthly Users' }
+    { date: 'Aug 2025', event: '40,000 Monthly Users' },
+    { date: 'Feb 2026', event: 'Relaunch New xrpl.to Platform Rebuild' }
   ];
 
   return (
@@ -306,7 +312,7 @@ function AboutPage() {
         <HeroSection>
           <HeroTitle>XRPL.to</HeroTitle>
           <HeroSubtitle isDark={isDark}>
-            The premier analytics platform for the XRP Ledger ecosystem
+            A high-performance SocialFi trading platform built entirely on the XRP Ledger
           </HeroSubtitle>
 
           <StatsRow>
@@ -357,12 +363,12 @@ function AboutPage() {
           <SectionTitle isDark={isDark}>Trading Fees</SectionTitle>
           <FeesGrid>
             <FeeCard isDark={isDark}>
-              <FeeAmount>1%</FeeAmount>
-              <FeeLabel isDark={isDark}>Token Trading</FeeLabel>
+              <FeeAmount>0.8%</FeeAmount>
+              <FeeLabel isDark={isDark}>Token Trading (currently FREE)</FeeLabel>
             </FeeCard>
             <FeeCard isDark={isDark}>
-              <FeeAmount>1%</FeeAmount>
-              <FeeLabel isDark={isDark}>NFT Trading</FeeLabel>
+              <FeeAmount>0%</FeeAmount>
+              <FeeLabel isDark={isDark}>Free NFT Trading</FeeLabel>
             </FeeCard>
           </FeesGrid>
         </FeesSection>
@@ -442,7 +448,7 @@ export async function getStaticProps() {
     canonical: 'https://xrpl.to/about',
     imgUrl: 'https://xrpl.to/api/og/about',
     imgType: 'image/png',
-    desc: 'XRPL.to tracks 19,000+ tokens with 40,000+ monthly users. Comprehensive XRP Ledger analytics, DEX trading, NFT marketplace, and real-time price data.',
+    desc: 'XRPL.to is a high-performance DEX and SocialFi platform on the XRP Ledger. 19,000+ tokens, 40,000+ monthly users, 140+ API endpoints, and no third-party dependencies.',
     jsonLd: {
       '@context': 'https://schema.org',
       '@type': 'FAQPage',
@@ -452,7 +458,7 @@ export async function getStaticProps() {
           name: 'What is xrpl.to?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'Xrpl.to is a comprehensive platform designed to facilitate seamless interactions within the XRP Ledger (XRPL) ecosystem. As a decentralized exchange (DEX) and analytics hub, xrpl.to enables users to trade tokens and NFTs directly on the XRPL blockchain without intermediaries.'
+            text: 'Xrpl.to is a high-speed decentralized exchange (DEX) and SocialFi platform on the XRP Ledger. Users can trade tokens and NFTs, communicate through a built-in social layer, and interact with 140+ API endpoints. All data is sourced directly from the XRP Ledger with no third-party dependencies.'
           }
         },
         {
@@ -460,7 +466,7 @@ export async function getStaticProps() {
           name: 'How secure is xrpl.to?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'Xrpl.to operates as a non-custodial interface to the XRP Ledger, meaning your funds never leave your wallet and remain under your complete control. The platform leverages the proven security of the XRP Ledger, which has operated without downtime since 2012.'
+            text: 'Xrpl.to operates as a non-custodial interface to the XRP Ledger, meaning your funds never leave your device and are protected by device binding and password. The platform leverages the proven security of the XRP Ledger, which has operated without downtime since 2012.'
           }
         },
         {
@@ -468,7 +474,7 @@ export async function getStaticProps() {
           name: 'What are the fees for trading on xrpl.to?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'Xrpl.to charges a 1% trading fee for both token and NFT trades. Additionally, you will encounter standard XRP Ledger network fees (typically a few drops of XRP) for each transaction.'
+            text: 'Xrpl.to charges a 0.8% trading fee for token trades. NFT trading is completely free with 0% fees. Additionally, you will encounter standard XRP Ledger network fees (typically a few drops of XRP) for each transaction.'
           }
         },
         {

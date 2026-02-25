@@ -4,7 +4,7 @@ import Footer from 'src/components/Footer';
 import TokenList from 'src/TokenList';
 import ScrollToTop from 'src/components/ScrollToTop';
 import Summary from 'src/TokenList/Summary';
-import { getTokens } from 'src/utils/formatters';
+import { getTokens, getSummaryTokens } from 'src/utils/formatters';
 import { cn } from 'src/utils/cn';
 
 const OverviewWrapper = ({ className, ...props }) => (
@@ -16,7 +16,7 @@ function getInitialTokens(data) {
   return [];
 }
 
-function GainersPage({ data, period, sortBy }) {
+function GainersPage({ data, period, sortBy, summaryTokens }) {
   const [tokens, setTokens] = useState(() => getInitialTokens(data));
   const tMap = useMemo(() => {
     const map = new Map();
@@ -55,7 +55,7 @@ function GainersPage({ data, period, sortBy }) {
 
       <div id="back-to-top-anchor" className="mx-auto max-w-[1920px] px-0 md:px-4 mt-4">
         <div className="w-full px-0 py-0">
-          <Summary />
+          <Summary tokens={tokens} trendingTokens={summaryTokens?.trendingTokens} newTokens={summaryTokens?.newTokens} />
         </div>
       </div>
 
@@ -97,7 +97,10 @@ export async function getServerSideProps({ params, res }) {
 
   res.setHeader('Cache-Control', 'public, s-maxage=30, stale-while-revalidate=120');
 
-  const data = await getTokens(sortBy, 'desc');
+  const [data, summaryTokens] = await Promise.all([
+    getTokens(sortBy, 'desc'),
+    getSummaryTokens()
+  ]);
 
   let ret = {};
   if (data) {
@@ -142,7 +145,7 @@ export async function getServerSideProps({ params, res }) {
     };
     ogp.jsonLd = itemListSchema;
 
-    ret = { data, ogp, period: params.period, sortBy };
+    ret = { data, ogp, period: params.period, sortBy, summaryTokens };
   }
 
   return {

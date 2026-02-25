@@ -5,7 +5,7 @@ import TokenList from 'src/TokenList';
 import ScrollToTop from 'src/components/ScrollToTop';
 import Summary from 'src/TokenList/Summary';
 import { useRouter } from 'next/router';
-import { getTokens } from 'src/utils/formatters';
+import { getTokens, getSummaryTokens } from 'src/utils/formatters';
 import { ThemeContext } from 'src/context/AppContext';
 
 function getInitialTokens(data) {
@@ -13,7 +13,7 @@ function getInitialTokens(data) {
   return [];
 }
 
-function NewTokensPage({ data }) {
+function NewTokensPage({ data, summaryTokens }) {
   const { themeName } = useContext(ThemeContext);
   const isDark = themeName === 'XrplToDarkTheme';
   const [tokens, setTokens] = useState(() => getInitialTokens(data));
@@ -68,7 +68,7 @@ function NewTokensPage({ data }) {
         }
       >
         <div className="w-full px-0 py-0">
-          <Summary />
+          <Summary tokens={tokens} trendingTokens={summaryTokens?.trendingTokens} newTokens={summaryTokens?.newTokens} />
         </div>
       </div>
 
@@ -102,7 +102,10 @@ export default NewTokensPage;
 export async function getServerSideProps({ res }) {
   res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
 
-  const data = await getTokens('dateon', 'desc');
+  const [data, summaryTokens] = await Promise.all([
+    getTokens('dateon', 'desc'),
+    getSummaryTokens()
+  ]);
 
   let ret = {};
   if (data) {
@@ -148,7 +151,7 @@ export async function getServerSideProps({ res }) {
     };
     ogp.jsonLd = itemListSchema;
 
-    ret = { data, ogp };
+    ret = { data, ogp, summaryTokens };
   }
 
   return {

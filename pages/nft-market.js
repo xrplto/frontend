@@ -1,4 +1,4 @@
-import { useState, useContext, useMemo, useRef, useCallback, useEffect } from 'react';
+import { useState, useContext, useMemo, useRef, useCallback, useEffect, forwardRef } from 'react';
 import api from 'src/utils/api';
 import { ThemeContext } from 'src/context/AppContext';
 import Header from 'src/components/Header';
@@ -63,7 +63,7 @@ const ButtonGroup = ({ className, children, ...p }) => <div className={cn('flex 
 const ToggleBtn = ({ active, darkMode, className, children, ...p }) => (
   <button className={cn('py-[6px] px-3 text-[11px] font-medium rounded-md border-none cursor-pointer transition-[background-color] duration-150', active ? 'bg-[#3b82f6] text-white hover:bg-[#2563eb]' : darkMode ? 'bg-[#1a1a1a] text-[#e5e5e5] hover:bg-[rgba(59,130,246,0.1)]' : 'bg-black/[0.05] text-black/60 hover:bg-[rgba(59,130,246,0.1)]', className)} {...p}>{children}</button>
 );
-const MetricSelect = ({ className, children, ...p }) => <div className={cn('relative inline-block', className)} {...p}>{children}</div>;
+const MetricSelect = forwardRef(({ className, children, ...p }, ref) => <div ref={ref} className={cn('relative inline-block', className)} {...p}>{children}</div>);
 const MetricButton = ({ darkMode, className, children, ...p }) => (
   <button className={cn('flex items-center gap-[6px] py-2 px-[14px] text-[13px] font-medium rounded-lg border cursor-pointer transition-[background-color,border-color] duration-150 hover:border-[#3b82f6]', darkMode ? 'border-white/10 bg-white/[0.03] text-white' : 'border-black/10 bg-white text-[#212B36]', className)} {...p}>{children}</button>
 );
@@ -565,7 +565,7 @@ export default function NFTMarketPage({ stats }) {
                     </linearGradient>
                   ))}
                 </defs>
-                {metric === 'volume' ? (
+                {metric === 'volume' && platformNames.length > 0 ? (
                   platformNames
                     .slice()
                     .reverse()
@@ -1047,7 +1047,7 @@ export default function NFTMarketPage({ stats }) {
 
 export async function getServerSideProps() {
   try {
-    const response = await api.get(`${BASE_URL}/nft/analytics/market`, { timeout: 8000 });
+    const response = await api.get(`${BASE_URL}/nft/analytics/market`, { params: { includeDailyHistory: 'true' }, timeout: 8000 });
     const data = response.data;
 
     // Map new API structure

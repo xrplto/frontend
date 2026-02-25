@@ -39,9 +39,9 @@ export const apiFetch = (url, options = {}) => {
 const pendingSequences = new Map();
 
 // Submit transaction via API
-// Simulate transaction to preview results (XLS-69)
+// Preview transaction results (XLS-69)
 // Returns { success, engine_result, delivered_amount, meta } without submitting
-export async function simulateTransaction(tx) {
+export async function previewTransaction(tx) {
   const base = isServer ? REMOTE_BASE : PROXY_BASE;
   const headers = isServer ? { 'X-Api-Key': process.env.CHAT_API_KEY } : {};
 
@@ -57,10 +57,10 @@ export async function simulateTransaction(tx) {
     Sequence: seqRes.sequence,
     Fee: feeRes.open_ledger_fee || feeRes.median_fee || '12',
     LastLedgerSequence: seqRes.ledger_index + 20,
-    SigningPubKey: '' // Must be empty for simulate
+    SigningPubKey: '' // Must be empty for preview
   };
 
-  const simRes = await fetch(`${base}/v1/submit/simulate`, {
+  const simRes = await fetch(`${base}/v1/submit/preview`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...headers },
     body: JSON.stringify({ tx_json: prepared })

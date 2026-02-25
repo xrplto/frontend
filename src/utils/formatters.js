@@ -295,8 +295,30 @@ const essentialFields = [
   'marketcap',
   'tokenType',
   'mptIssuanceID',
-  'metadata'
+  'metadata',
+  'trendingBoost',
+  'trendingBoostExpires',
+  'trendingScore',
+  'verified'
 ];
+
+export async function getSummaryTokens() {
+  try {
+    const summaryFields = ['md5', 'name', 'slug', 'currency', 'pro24h', 'vol24hxrp', 'isOMCF', 'origin', 'dateon', 'trendingScore', 'holders', 'marketcap', 'verified'];
+    const pick = (t) => summaryFields.reduce((a, f) => (t[f] !== undefined && (a[f] = t[f]), a), {});
+    const [tRes, nRes] = await Promise.all([
+      api.get('https://api.xrpl.to/v1/tokens', { params: { start: 0, limit: 3, sortBy: 'trendingScore', sortType: 'desc', filter: '' }, timeout: 5000 }),
+      api.get('https://api.xrpl.to/v1/tokens', { params: { start: 0, limit: 3, sortBy: 'dateon', sortType: 'desc', filter: '' }, timeout: 5000 })
+    ]);
+    return {
+      trendingTokens: (tRes.data?.tokens || []).map(pick),
+      newTokens: (nRes.data?.tokens || []).map(pick)
+    };
+  } catch (e) {
+    console.error('getSummaryTokens error:', e);
+    return { trendingTokens: [], newTokens: [] };
+  }
+}
 
 export async function getTokens(
   sortBy = 'vol24hxrp',

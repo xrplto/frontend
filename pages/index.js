@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { getTokens } from 'src/utils/formatters';
+import { getTokens, getSummaryTokens } from 'src/utils/formatters';
 import { cn } from 'src/utils/cn';
 
 // Import all components directly
@@ -45,7 +45,7 @@ function MaintenanceView({ isDark }) {
   );
 }
 
-function Overview({ data }) {
+function Overview({ data, summaryTokens }) {
   const [tokens, setTokens] = useState(() => getInitialTokens(data));
   const [notificationPanelOpen, setNotificationPanelOpen] = useState(false);
   const tMap = useMemo(() => {
@@ -107,7 +107,7 @@ function Overview({ data }) {
         id="back-to-top-anchor"
         className="mx-auto max-w-[1920px] px-4 mt-4"
       >
-        <Summary />
+        <Summary tokens={tokens} trendingTokens={summaryTokens?.trendingTokens} newTokens={summaryTokens?.newTokens} />
       </div>
 
       <section aria-label="Token list" className="mx-auto max-w-[1920px] px-4">
@@ -137,7 +137,10 @@ export async function getServerSideProps({ res }) {
   res.setHeader('Cache-Control', 'public, s-maxage=30, stale-while-revalidate=120');
 
   // Fetch only 50 tokens initially to reduce page data size
-  const data = await getTokens('vol24hxrp', 'desc', 'yes', false, false, 50);
+  const [data, summaryTokens] = await Promise.all([
+    getTokens('vol24hxrp', 'desc', 'yes', false, false, 50),
+    getSummaryTokens()
+  ]);
 
   let ret = {};
   if (data) {
@@ -185,7 +188,7 @@ export async function getServerSideProps({ res }) {
     };
     ogp.jsonLd = itemListSchema;
 
-    ret = { data, ogp };
+    ret = { data, ogp, summaryTokens };
   }
 
   return {

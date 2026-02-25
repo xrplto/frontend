@@ -53,7 +53,7 @@ import { ThemeContext, WalletContext, WalletUIContext, AppContext } from 'src/co
 // Utils
 
 import { getHashIcon } from 'src/utils/formatters';
-import { EncryptedWalletStorage, securityUtils, deviceFingerprint } from 'src/utils/encryptedWalletStorage';
+import { EncryptedWalletStorage, securityUtils, deviceFingerprint, generateAntiPhishingEmojis } from 'src/utils/encryptedWalletStorage';
 import { cn } from 'src/utils/cn';
 import dynamic from 'next/dynamic';
 const QRCode = dynamic(() => import('react-qr-code'), { ssr: false });
@@ -282,7 +282,9 @@ const WalletContent = ({
   setDestAddress,
   // QR Sync props
   onQrSyncExport,
-  onQrSyncImport
+  onQrSyncImport,
+  // Anti-phishing
+  antiPhishingEmojis
 }) => {
   const needsBackup =
     typeof window !== 'undefined' && localStorage.getItem(`wallet_needs_backup_${accountLogin}`);
@@ -846,17 +848,30 @@ const WalletContent = ({
             )}
           </div>
         </button>
-        <button
-          onClick={onClose}
-          className={cn(
-            'p-2 rounded-full transition-all duration-300 hover:rotate-90',
-            isDark
-              ? 'hover:bg-white/10 text-white/40 hover:text-white'
-              : 'hover:bg-gray-100 text-gray-400 hover:text-gray-900'
+        <div className="flex items-center gap-1">
+          {antiPhishingEmojis && (
+            <span
+              className={cn(
+                'text-[11px] tracking-[0.06em] px-1.5 py-0.5 rounded-md cursor-default',
+                isDark ? 'bg-white/[0.04] text-white/50' : 'bg-gray-100 text-gray-500'
+              )}
+              title="Handshake"
+            >
+              {antiPhishingEmojis}
+            </span>
           )}
-        >
-          <XIcon size={18} />
-        </button>
+          <button
+            onClick={onClose}
+            className={cn(
+              'p-2 rounded-full transition-all duration-300 hover:rotate-90',
+              isDark
+                ? 'hover:bg-white/10 text-white/40 hover:text-white'
+                : 'hover:bg-gray-100 text-gray-400 hover:text-gray-900'
+            )}
+          >
+            <XIcon size={18} />
+          </button>
+        </div>
       </div>
 
       {/* Balance - symmetric card layout */}
@@ -910,31 +925,31 @@ const WalletContent = ({
       </Link>
 
       {/* Actions - symmetric 3-column grid */}
-      <div className="px-4 pb-5">
-        <div className="grid grid-cols-3 gap-3">
+      <div className="px-4 pb-4">
+        <div className="grid grid-cols-3 gap-2">
           <a
             href="/wallet?tab=send"
             className={cn(
-              'flex flex-col items-center justify-center gap-2.5 py-4 rounded-2xl text-[11px] font-bold uppercase tracking-wider transition-all duration-200 active:scale-95',
+              'flex flex-col items-center justify-center gap-1.5 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all duration-200 active:scale-95',
               'bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/25 hover:-translate-y-0.5'
             )}
           >
-            <div className="p-2.5 rounded-xl bg-white/15">
-              <ArrowUpRight size={18} strokeWidth={2.5} />
+            <div className="p-2 rounded-lg bg-white/15">
+              <ArrowUpRight size={16} strokeWidth={2.5} />
             </div>
             Send
           </a>
           <a
             href="/wallet?tab=receive"
             className={cn(
-              'flex flex-col items-center justify-center gap-2.5 py-4 rounded-2xl text-[11px] font-bold uppercase tracking-wider transition-all duration-200 active:scale-95 hover:-translate-y-0.5',
+              'flex flex-col items-center justify-center gap-1.5 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all duration-200 active:scale-95 hover:-translate-y-0.5',
               isDark
                 ? 'bg-white/[0.04] hover:bg-white/[0.07] text-white/80 border border-white/[0.08] hover:border-emerald-400/20'
                 : 'bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 hover:border-emerald-200'
             )}
           >
-            <div className={cn('p-2.5 rounded-xl transition-colors duration-200', isDark ? 'bg-emerald-400/10' : 'bg-emerald-50')}>
-              <ArrowDownLeft size={18} strokeWidth={2.5} className={isDark ? 'text-emerald-400' : 'text-emerald-600'} />
+            <div className={cn('p-2 rounded-lg transition-colors duration-200', isDark ? 'bg-emerald-400/10' : 'bg-emerald-50')}>
+              <ArrowDownLeft size={16} strokeWidth={2.5} className={isDark ? 'text-emerald-400' : 'text-emerald-600'} />
             </div>
             Receive
           </a>
@@ -944,14 +959,14 @@ const WalletContent = ({
               setShowBridgeInDropdown(true);
             }}
             className={cn(
-              'flex flex-col items-center justify-center gap-2.5 py-4 rounded-2xl text-[11px] font-bold uppercase tracking-wider transition-all duration-200 active:scale-95 hover:-translate-y-0.5',
+              'flex flex-col items-center justify-center gap-1.5 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all duration-200 active:scale-95 hover:-translate-y-0.5',
               isDark
                 ? 'bg-white/[0.04] hover:bg-white/[0.07] text-white/80 border border-white/[0.08] hover:border-purple-400/20'
                 : 'bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 hover:border-purple-200'
             )}
           >
-            <div className={cn('p-2.5 rounded-xl transition-colors duration-200', isDark ? 'bg-purple-400/10' : 'bg-purple-50')}>
-              <ArrowLeftRight size={18} strokeWidth={2.5} className={isDark ? 'text-purple-400' : 'text-purple-600'} />
+            <div className={cn('p-2 rounded-lg transition-colors duration-200', isDark ? 'bg-purple-400/10' : 'bg-purple-50')}>
+              <ArrowLeftRight size={16} strokeWidth={2.5} className={isDark ? 'text-purple-400' : 'text-purple-600'} />
             </div>
             Bridge
           </button>
@@ -959,220 +974,238 @@ const WalletContent = ({
       </div>
 
       {/* Accounts - unified section with inline actions */}
-      <div
-        className={cn(
-          'mx-4 mb-4 rounded-2xl overflow-hidden transition-all duration-200',
-          isDark
-            ? 'bg-white/[0.02] border border-white/[0.08]'
-            : 'bg-gray-50/80 border border-gray-200'
-        )}
-      >
-        <button
-          onClick={() => setShowAllAccounts(!showAllAccounts)}
-          className={cn(
-            'w-full px-4 py-3 flex items-center justify-between transition-all duration-200',
-            isDark ? 'hover:bg-white/[0.04]' : 'hover:bg-gray-100'
-          )}
-        >
-          <div className="flex items-center gap-2.5">
-            <span className={cn('text-[11px] font-bold uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-500')}>
-              Accounts
-            </span>
-            <span
+      {(() => {
+        const currentAccount = profiles.find((p) => p.account === accountLogin);
+        const others = profiles.filter((p) => p.account !== accountLogin);
+        const sorted = [...(currentAccount ? [currentAccount] : []), ...others];
+        const hasMore = sorted.length > 5;
+        const visible = showAllAccounts ? sorted : sorted.slice(0, 5);
+
+        const renderAccount = (profile) => {
+          const isCurrent = profile.account === accountLogin;
+          const isInactive = accountsActivation[profile.account] === false && !(isCurrent && parseFloat(accountBalance?.curr1?.value));
+          const isDeleting = deleteConfirm === profile.account;
+          return (
+            <div
+              key={profile.account}
               className={cn(
-                'min-w-[20px] h-5 px-1.5 flex items-center justify-center rounded-full text-[10px] font-bold',
-                isDark ? 'bg-white/[0.06] text-white/40' : 'bg-gray-200/80 text-gray-500'
+                'group relative w-full px-4 py-2.5 flex items-center gap-3 transition-all duration-200',
+                isCurrent
+                  ? isDark
+                    ? 'bg-primary/10 border-l-2 border-l-primary'
+                    : 'bg-primary/5 border-l-2 border-l-primary'
+                  : isDark
+                    ? 'hover:bg-white/[0.03] border-l-2 border-l-transparent'
+                    : 'hover:bg-gray-100/50 border-l-2 border-l-transparent'
               )}
             >
-              {profiles.length}
-            </span>
-          </div>
-          <ChevronDown
-            size={16}
-            className={cn(
-              'transition-transform duration-300 ease-out',
-              showAllAccounts && 'rotate-180',
-              isDark ? 'text-white/20' : 'text-gray-300'
-            )}
-          />
-        </button>
+              <button
+                onClick={() => !isCurrent && onAccountSwitch(profile.account)}
+                className="flex items-center gap-3 flex-1 min-w-0 text-left"
+                disabled={isCurrent}
+              >
+                <div className="w-3.5 flex items-center justify-center flex-shrink-0">
+                  {isCurrent ? (
+                    <Check size={14} className="text-primary" />
+                  ) : (
+                    <div
+                      className={cn(
+                        'w-2 h-2 rounded-full',
+                        isInactive ? 'bg-amber-400/60' : 'bg-white/20'
+                      )}
+                    />
+                  )}
+                </div>
+                <span
+                  className={cn(
+                    'font-mono text-[12px] flex-1 truncate',
+                    isCurrent
+                      ? isDark
+                        ? 'text-white font-medium'
+                        : 'text-gray-900 font-medium'
+                      : isDark
+                        ? 'text-white/60'
+                        : 'text-gray-600'
+                  )}
+                >
+                  {truncateAccount(profile.account, 8)}
+                </span>
+                {isInactive && (
+                  <span
+                    className="text-[10px] font-medium text-amber-500 px-2 py-0.5 rounded-full bg-amber-500/10"
+                    title="Fund with 1 XRP to activate"
+                  >
+                    Inactive
+                  </span>
+                )}
+              </button>
+              {/* Inline actions - visible on hover or when confirming delete */}
+              <div className={cn(
+                'flex items-center gap-0.5 transition-opacity duration-200',
+                isDeleting ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+              )}>
+                {isDeleting ? (
+                  <div className="flex items-center gap-1.5 animate-in fade-in">
+                    <button
+                      onClick={() => {
+                        onRemoveProfile(profile.account);
+                        setDeleteConfirm(null);
+                      }}
+                      className="px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-red-500 hover:bg-red-600 text-white transition-colors duration-200"
+                    >
+                      Delete
+                    </button>
+                    <button
+                      onClick={() => setDeleteConfirm(null)}
+                      className={cn(
+                        'px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-colors duration-200',
+                        isDark ? 'bg-white/[0.06] text-white/50 hover:bg-white/10' : 'bg-gray-200 text-gray-500 hover:bg-gray-300'
+                      )}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => onBackupSeed(profile, true)}
+                      className={cn(
+                        'p-1.5 rounded-lg transition-colors',
+                        isDark
+                          ? 'text-white/30 hover:text-amber-400 hover:bg-amber-500/10'
+                          : 'text-gray-400 hover:text-amber-600 hover:bg-amber-50'
+                      )}
+                      title="Backup seed"
+                    >
+                      <Shield size={13} />
+                    </button>
+                    {!isCurrent && (
+                      <button
+                        onClick={() => setDeleteConfirm(profile.account)}
+                        className={cn(
+                          'p-1.5 rounded-lg transition-colors',
+                          isDark
+                            ? 'text-white/30 hover:text-red-400 hover:bg-red-500/10'
+                            : 'text-gray-400 hover:text-red-500 hover:bg-red-50'
+                        )}
+                        title="Remove account"
+                      >
+                        <Trash2 size={13} />
+                      </button>
+                    )}
+                  </>
+                )}
+              </div>
+            </div>
+          );
+        };
 
-        {showAllAccounts && (<>
+        return (
           <div
             className={cn(
-              'border-t max-h-[320px] overflow-y-auto',
-              isDark ? 'border-white/[0.06]' : 'border-gray-100'
+              'mx-4 mb-4 rounded-2xl overflow-hidden transition-all duration-200',
+              isDark
+                ? 'bg-white/[0.02] border border-white/[0.08]'
+                : 'bg-gray-50/80 border border-gray-200'
             )}
           >
-            {(() => {
-              const currentAccount = profiles.find((p) => p.account === accountLogin);
-              const others = profiles.filter((p) => p.account !== accountLogin);
-              const sorted = [...(currentAccount ? [currentAccount] : []), ...others];
-              return sorted.map((profile) => {
-                const isCurrent = profile.account === accountLogin;
-                const isInactive = accountsActivation[profile.account] === false && !(isCurrent && parseFloat(accountBalance?.curr1?.value));
-                const isDeleting = deleteConfirm === profile.account;
-                return (
-                  <div
-                    key={profile.account}
-                    className={cn(
-                      'group relative w-full px-4 py-2.5 flex items-center gap-3 transition-all duration-200',
-                      isCurrent
-                        ? isDark
-                          ? 'bg-primary/10 border-l-2 border-l-primary'
-                          : 'bg-primary/5 border-l-2 border-l-primary'
-                        : isDark
-                          ? 'hover:bg-white/[0.03] border-l-2 border-l-transparent'
-                          : 'hover:bg-gray-100/50 border-l-2 border-l-transparent'
-                    )}
-                  >
-                    <button
-                      onClick={() => !isCurrent && onAccountSwitch(profile.account)}
-                      className="flex items-center gap-3 flex-1 min-w-0 text-left"
-                      disabled={isCurrent}
-                    >
-                      {isCurrent ? (
-                        <Check size={14} className="text-primary flex-shrink-0" />
-                      ) : (
-                        <div
-                          className={cn(
-                            'w-2 h-2 rounded-full flex-shrink-0',
-                            isInactive ? 'bg-amber-400/60' : 'bg-white/20'
-                          )}
-                        />
-                      )}
-                      <span
-                        className={cn(
-                          'font-mono text-[12px] flex-1 truncate',
-                          isCurrent
-                            ? isDark
-                              ? 'text-white font-medium'
-                              : 'text-gray-900 font-medium'
-                            : isDark
-                              ? 'text-white/60'
-                              : 'text-gray-600'
-                        )}
-                      >
-                        {truncateAccount(profile.account, 8)}
-                      </span>
-                      {isInactive && (
-                        <span
-                          className="text-[10px] font-medium text-amber-500 px-2 py-0.5 rounded-full bg-amber-500/10"
-                          title="Fund with 1 XRP to activate"
-                        >
-                          Inactive
-                        </span>
-                      )}
-                    </button>
-                    {/* Inline actions - visible on hover or when confirming delete */}
-                    <div className={cn(
-                      'flex items-center gap-0.5 transition-opacity duration-200',
-                      isDeleting ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
-                    )}>
-                      {isDeleting ? (
-                        <div className="flex items-center gap-1.5 animate-in fade-in">
-                          <button
-                            onClick={() => {
-                              onRemoveProfile(profile.account);
-                              setDeleteConfirm(null);
-                            }}
-                            className="px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-red-500 hover:bg-red-600 text-white transition-colors duration-200"
-                          >
-                            Delete
-                          </button>
-                          <button
-                            onClick={() => setDeleteConfirm(null)}
-                            className={cn(
-                              'px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-colors duration-200',
-                              isDark ? 'bg-white/[0.06] text-white/50 hover:bg-white/10' : 'bg-gray-200 text-gray-500 hover:bg-gray-300'
-                            )}
-                          >
-                            Cancel
-                          </button>
-                        </div>
-                      ) : (
-                        <>
-                          <button
-                            onClick={() => onBackupSeed(profile, true)}
-                            className={cn(
-                              'p-1.5 rounded-lg transition-colors',
-                              isDark
-                                ? 'text-white/30 hover:text-amber-400 hover:bg-amber-500/10'
-                                : 'text-gray-400 hover:text-amber-600 hover:bg-amber-50'
-                            )}
-                            title="Backup seed"
-                          >
-                            <Shield size={13} />
-                          </button>
-                          {!isCurrent && (
-                            <button
-                              onClick={() => setDeleteConfirm(profile.account)}
-                              className={cn(
-                                'p-1.5 rounded-lg transition-colors',
-                                isDark
-                                  ? 'text-white/30 hover:text-red-400 hover:bg-red-500/10'
-                                  : 'text-gray-400 hover:text-red-500 hover:bg-red-50'
-                              )}
-                              title="Remove account"
-                            >
-                              <Trash2 size={13} />
-                            </button>
-                          )}
-                        </>
-                      )}
-                    </div>
-                  </div>
-                );
-              });
-            })()}
+            {/* Header */}
+            <div className="px-4 py-3 flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <span className={cn('text-[11px] font-bold uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-500')}>
+                  Accounts
+                </span>
+                <span
+                  className={cn(
+                    'min-w-[20px] h-5 px-1.5 flex items-center justify-center rounded-full text-[10px] font-bold',
+                    isDark ? 'bg-white/[0.06] text-white/40' : 'bg-gray-200/80 text-gray-500'
+                  )}
+                >
+                  {profiles.length}
+                </span>
+              </div>
+            </div>
+
+            {/* Account list - always visible, up to 5 shown by default */}
+            <div
+              className={cn(
+                'border-t max-h-[320px] overflow-y-auto',
+                isDark ? 'border-white/[0.06]' : 'border-gray-100'
+              )}
+            >
+              {visible.map(renderAccount)}
+            </div>
+
+            {/* Show more/less toggle - only when > 5 accounts */}
+            {hasMore && (
+              <button
+                onClick={() => setShowAllAccounts(!showAllAccounts)}
+                className={cn(
+                  'w-full px-4 py-2 flex items-center justify-center gap-1.5 text-[11px] font-medium transition-colors border-t',
+                  isDark
+                    ? 'border-white/[0.06] text-white/40 hover:text-white/70 hover:bg-white/[0.03]'
+                    : 'border-gray-100 text-gray-400 hover:text-gray-600 hover:bg-gray-50'
+                )}
+              >
+                {showAllAccounts ? 'Show less' : `Show all ${sorted.length} accounts`}
+                <ChevronDown
+                  size={14}
+                  className={cn(
+                    'transition-transform duration-300 ease-out',
+                    showAllAccounts && 'rotate-180'
+                  )}
+                />
+              </button>
+            )}
+
+            {/* Quick actions row - always visible */}
+            <div className={cn(
+              'px-3 py-2.5 border-t flex items-center gap-1',
+              isDark ? 'border-white/[0.06]' : 'border-gray-100'
+            )}>
+              <button
+                onClick={onCreateNewAccount}
+                disabled={!onCreateNewAccount || profiles.length >= 25}
+                className={cn(
+                  'flex items-center gap-1.5 px-3 py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all duration-200',
+                  !onCreateNewAccount || profiles.length >= 25 ? 'opacity-30 cursor-not-allowed' : '',
+                  isDark
+                    ? 'text-white/40 hover:text-white hover:bg-white/[0.06]'
+                    : 'text-gray-400 hover:text-gray-700 hover:bg-gray-100'
+                )}
+              >
+                <Plus size={13} />
+                Add
+              </button>
+              <div className={cn('w-px h-4 mx-0.5', isDark ? 'bg-white/[0.06]' : 'bg-gray-200')} />
+              <button
+                onClick={() => onQrSyncExport?.()}
+                className={cn(
+                  'flex items-center gap-1.5 px-3 py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all duration-200',
+                  isDark
+                    ? 'text-white/40 hover:text-white hover:bg-white/[0.06]'
+                    : 'text-gray-400 hover:text-gray-700 hover:bg-gray-100'
+                )}
+              >
+                <QrCode size={13} />
+                Export
+              </button>
+              <button
+                onClick={() => onQrSyncImport?.()}
+                className={cn(
+                  'flex items-center gap-1.5 px-3 py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all duration-200',
+                  isDark
+                    ? 'text-white/40 hover:text-white hover:bg-white/[0.06]'
+                    : 'text-gray-400 hover:text-gray-700 hover:bg-gray-100'
+                )}
+              >
+                <Download size={13} />
+                Import
+              </button>
+            </div>
           </div>
-          {/* Quick actions row */}
-          <div className={cn(
-            'px-3 py-2.5 border-t flex items-center gap-1',
-            isDark ? 'border-white/[0.06]' : 'border-gray-100'
-          )}>
-            <button
-              onClick={onCreateNewAccount}
-              disabled={!onCreateNewAccount || profiles.length >= 25}
-              className={cn(
-                'flex items-center gap-1.5 px-3 py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all duration-200',
-                !onCreateNewAccount || profiles.length >= 25 ? 'opacity-30 cursor-not-allowed' : '',
-                isDark
-                  ? 'text-white/40 hover:text-white hover:bg-white/[0.06]'
-                  : 'text-gray-400 hover:text-gray-700 hover:bg-gray-100'
-              )}
-            >
-              <Plus size={13} />
-              Add
-            </button>
-            <div className={cn('w-px h-4 mx-0.5', isDark ? 'bg-white/[0.06]' : 'bg-gray-200')} />
-            <button
-              onClick={() => onQrSyncExport?.()}
-              className={cn(
-                'flex items-center gap-1.5 px-3 py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all duration-200',
-                isDark
-                  ? 'text-white/40 hover:text-white hover:bg-white/[0.06]'
-                  : 'text-gray-400 hover:text-gray-700 hover:bg-gray-100'
-              )}
-            >
-              <QrCode size={13} />
-              Export
-            </button>
-            <button
-              onClick={() => onQrSyncImport?.()}
-              className={cn(
-                'flex items-center gap-1.5 px-3 py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all duration-200',
-                isDark
-                  ? 'text-white/40 hover:text-white hover:bg-white/[0.06]'
-                  : 'text-gray-400 hover:text-gray-700 hover:bg-gray-100'
-              )}
-            >
-              <Download size={13} />
-              Import
-            </button>
-          </div>
-        </>)}
-      </div>
+        );
+      })()}
 
       {/* Footer - logout */}
       <div className="mx-4 mb-4">
@@ -1375,6 +1408,9 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     if (score === 3) return { level: 3, label: 'Good', color: '#08AA09' };
     return { level: 4, label: 'Strong', color: '#08AA09' };
   }, [createPassword]);
+
+  // Anti-phishing emoji state
+  const [antiPhishingEmojis, setAntiPhishingEmojis] = useState(null);
 
   // Post-creation backup screen state
   const [newWalletData, setNewWalletData] = useState(null);
@@ -1677,6 +1713,13 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   } = useContext(WalletUIContext);
   const { openSnackbar } = useContext(AppContext);
 
+  // Sync anti-phishing emojis from auto-unlock (AppContext)
+  useEffect(() => {
+    if (accountProfile?.antiPhishingEmojis && !antiPhishingEmojis) {
+      setAntiPhishingEmojis(accountProfile.antiPhishingEmojis);
+    }
+  }, [accountProfile?.antiPhishingEmojis]);
+
   // Auto-open modal if there's pending wallet setup flow
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -1720,6 +1763,11 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         const metadata = hasWallet ? await walletStorage.getWalletMetadata() : [];
         setHasExistingWallet(hasWallet && metadata.length > 0);
         setWalletMetadata(metadata);
+        // Load anti-phishing emojis (unencrypted metadata, no password needed)
+        if (hasWallet && !antiPhishingEmojis) {
+          const emojis = await walletStorage.getAntiPhishingEmojis();
+          if (emojis) setAntiPhishingEmojis(emojis);
+        }
       } catch (e) {
         console.error('[Wallet] Error checking existing wallets:', e);
       }
@@ -1781,6 +1829,10 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       } catch (e) { /* fall back to first wallet */ }
       doLogIn(activeProfile, allProfiles);
 
+      // Sync anti-phishing emojis (already shown pre-unlock, just keep state in sync)
+      const emojis = wallets[0]?.antiPhishingEmojis;
+      if (emojis) setAntiPhishingEmojis(emojis);
+
       // unlockWithPassword() already records rate-limit success internally
       setUnlockPassword('');
       setOpenWalletModal(false);
@@ -1828,6 +1880,9 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       // Generate stable device fingerprint ID (survives storage clearing)
       const deviceKeyId = await deviceFingerprint.getDeviceId();
 
+      // Generate anti-phishing emojis for new wallet
+      const emojis = generateAntiPhishingEmojis();
+
       const walletData = {
         account: wallet.address,
         address: wallet.address,
@@ -1837,7 +1892,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         walletKeyId: deviceKeyId,
         xrp: '0',
         createdAt: Date.now(),
-        seed: wallet.seed
+        seed: wallet.seed,
+        antiPhishingEmojis: emojis
       };
 
       // Audit: zero seed from wallet object after copying to walletData
@@ -1863,6 +1919,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       setProfiles([profile]);
       localStorage.setItem('profiles', JSON.stringify([profile]));
       doLogIn(profile, [profile]);
+      setAntiPhishingEmojis(emojis);
 
       // Auto-register for referral program
       const storedRef = localStorage.getItem('referral_code');
@@ -2894,7 +2951,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         wallet_type: 'device',
         xrp: '0',
         createdAt: Date.now(),
-        seed: wallet.seed
+        seed: wallet.seed,
+        antiPhishingEmojis: antiPhishingEmojis || generateAntiPhishingEmojis()
       };
 
       // Audit: zero seed from wallet object after copying to walletData
@@ -3148,6 +3206,30 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                       Fund with 1+ XRP to activate
                     </p>
                   </div>
+
+                  {/* Anti-Phishing Security Code */}
+                  {antiPhishingEmojis && (
+                    <div className={cn(
+                      'flex items-center gap-3 py-2.5 px-3.5 rounded-xl',
+                      isDark ? 'bg-white/[0.03]' : 'bg-gray-50'
+                    )}>
+                      <div className={cn(
+                        'flex items-center justify-center w-7 h-7 rounded-lg flex-shrink-0',
+                        isDark ? 'bg-emerald-500/10' : 'bg-emerald-50'
+                      )}>
+                        <Shield size={14} className="text-emerald-500" />
+                      </div>
+                      <div className="flex flex-col min-w-0">
+                        <span className="text-[16px] leading-tight tracking-[0.15em]">{antiPhishingEmojis}</span>
+                        <span className={cn(
+                          'text-[9px] font-medium uppercase tracking-wider mt-0.5',
+                          isDark ? 'text-white/25' : 'text-gray-400'
+                        )}>
+                          Handshake — verify on each login
+                        </span>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Backup Warning */}
                   <div
@@ -3822,6 +3904,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                       setQrSyncError('');
                       setQrImportData('');
                     }}
+                    antiPhishingEmojis={antiPhishingEmojis}
                   />
                 ) : showNewAccountFlow ? (
                   <div className={cn('p-5', isDark ? 'text-white' : 'text-gray-900')}>
@@ -4918,7 +5001,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                       isDark ? 'bg-primary/10' : 'bg-primary/5'
                     )}>
                       {hasExistingWallet
-                        ? <Shield size={18} className="text-primary" />
+                        ? <Lock size={18} className="text-primary" />
                         : <Wallet2 size={18} className="text-primary" />
                       }
                     </div>
@@ -4996,6 +5079,30 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                           return null;
                         } catch { return null; }
                       })()}
+                      {/* Handshake — shown BEFORE password entry */}
+                      {antiPhishingEmojis && (
+                        <div className={cn(
+                          'flex items-center gap-3 py-2 px-3.5 rounded-xl',
+                          isDark ? 'bg-white/[0.03]' : 'bg-gray-50'
+                        )}>
+                          <div className={cn(
+                            'flex items-center justify-center w-7 h-7 rounded-lg flex-shrink-0',
+                            isDark ? 'bg-emerald-500/10' : 'bg-emerald-50'
+                          )}>
+                            <Shield size={14} className="text-emerald-500" />
+                          </div>
+                          <div className="flex flex-col min-w-0">
+                            <span className="text-[16px] leading-tight tracking-[0.15em]">{antiPhishingEmojis}</span>
+                            <span className={cn(
+                              'text-[9px] font-medium uppercase tracking-wider mt-0.5',
+                              isDark ? 'text-white/25' : 'text-gray-400'
+                            )}>
+                              Handshake
+                            </span>
+                          </div>
+                        </div>
+                      )}
+
                       <div className={cn(
                         'p-5 rounded-2xl border transition-all duration-300',
                         isDark ? 'bg-white/[0.03] border-white/[0.06]' : 'bg-gray-50/80 border-gray-100'

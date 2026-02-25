@@ -1,8 +1,8 @@
 import { useState, useEffect, useContext, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { cn } from 'src/utils/cn';
-import { ThemeContext, WalletContext } from 'src/context/AppContext';
-import { Check, Loader2, ExternalLink, AlertCircle, X, Gift, Trophy, Crown, Award, Megaphone, Info } from 'lucide-react';
+import { ThemeContext, WalletContext, AppContext } from 'src/context/AppContext';
+import { Check, Loader2, ExternalLink, AlertCircle, X, Gift, Trophy, Crown, Award, Megaphone, Send, MessageCircle, Facebook, Linkedin, Mail, Copy, Share2, Clock, Info, Timer } from 'lucide-react';
 import api from 'src/utils/api';
 
 const BASE_URL = 'https://api.xrpl.to';
@@ -11,6 +11,18 @@ const XSocialIcon = ({ size = 16 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
     <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
   </svg>
+);
+
+const ShareAction = ({ icon: Icon, color, onClick, label, isDark }) => (
+  <button onClick={onClick} className="flex flex-col items-center gap-1.5 group transition-all">
+    <div className={cn(
+      "w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-110 active:scale-95",
+      isDark ? "bg-white/[0.03] border border-white/[0.05] group-hover:bg-white/[0.08]" : "bg-gray-50 border border-gray-100 group-hover:bg-white"
+    )}>
+      <Icon size={18} style={{ color }} />
+    </div>
+    <span className={cn("text-[9px] font-medium opacity-50 group-hover:opacity-100", isDark ? "text-white" : "text-gray-900")}>{label}</span>
+  </button>
 );
 
 const TIER_CONFIG = {
@@ -26,9 +38,10 @@ function TierIcon({ tierId, size = 12 }) {
   return <Icon size={size} className={config.color} />;
 }
 
-export default function TweetPromoteModal({ token, tweetCount = 0, onCountChange, open: externalOpen, onOpenChange, wrapperClassName, className }) {
+export default function TweetPromoteModal({ token, tweetCount = 0, onCountChange, open: externalOpen, onOpenChange, wrapperClassName, className, type = 'token' }) {
   const { themeName } = useContext(ThemeContext);
   const { accountProfile } = useContext(WalletContext);
+  const { openSnackbar } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
 
   const [internalOpen, setInternalOpen] = useState(false);
@@ -43,6 +56,7 @@ export default function TweetPromoteModal({ token, tweetCount = 0, onCountChange
   const [claiming, setClaiming] = useState(false);
   const [claimResult, setClaimResult] = useState(null);
   const [profileStats, setProfileStats] = useState(null);
+  const [cooldownLeft, setCooldownLeft] = useState(null); // ms remaining, null = no cooldown
 
   useEffect(() => setMounted(true), []);
 
@@ -52,11 +66,12 @@ export default function TweetPromoteModal({ token, tweetCount = 0, onCountChange
     else setInternalOpen(v);
   };
 
-  const { md5, name, user, issuer, currency } = token || {};
+  const isNft = type === 'nft';
+  const { md5, name, user, issuer, currency, slug: nftSlug } = token || {};
   const ticker = user || name;
-  const tokenSlug = `${issuer}-${currency}`;
-  const tokenPageUrl = `https://xrpl.to/token/${tokenSlug}`;
-  const tweetText = `Check out $${ticker || name} on XRPL!`;
+  const tokenSlug = isNft ? nftSlug : `${issuer}-${currency}`;
+  const tokenPageUrl = isNft ? `https://xrpl.to/nfts/${tokenSlug}` : `https://xrpl.to/token/${tokenSlug}`;
+  const tweetText = isNft ? `Check out ${name} NFT collection on XRPL!` : `Check out $${ticker || name} on XRPL!`;
   const tweetIntentUrl = `https://x.com/intent/tweet?text=${encodeURIComponent(tweetText)}&url=${encodeURIComponent(tokenPageUrl)}`;
 
   const account = accountProfile?.account;
@@ -98,12 +113,25 @@ export default function TweetPromoteModal({ token, tweetCount = 0, onCountChange
 
   useEffect(() => {
     if (isOpen) {
-      fetchPoolInfo();
-      fetchRewardInfo();
+      if (!isNft) { fetchPoolInfo(); fetchRewardInfo(); }
       fetchLeaderboard();
       fetchProfile();
     }
-  }, [isOpen, fetchPoolInfo, fetchRewardInfo, fetchLeaderboard, fetchProfile]);
+  }, [isOpen, isNft, fetchPoolInfo, fetchRewardInfo, fetchLeaderboard, fetchProfile]);
+
+  // Cooldown countdown timer
+  useEffect(() => {
+    const cd = profileStats?.cooldown;
+    if (!cd?.onCooldown || !cd.cooldownEndsAt) { setCooldownLeft(null); return; }
+    const tick = () => {
+      const remaining = cd.cooldownEndsAt - Date.now();
+      if (remaining <= 0) { setCooldownLeft(null); fetchProfile(); return; }
+      setCooldownLeft(remaining);
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [profileStats?.cooldown?.cooldownEndsAt, profileStats?.cooldown?.onCooldown, fetchProfile]);
 
   const handleVerify = async () => {
     if (!tweetUrl.trim()) return;
@@ -119,23 +147,45 @@ export default function TweetPromoteModal({ token, tweetCount = 0, onCountChange
     setVerifyMessage('');
 
     try {
+      // Sign request with wallet private key for ownership verification
+      const wallet = await getSigningWallet();
+      if (!wallet) {
+        setVerifyStatus('error');
+        setVerifyMessage('Could not access wallet for signing. Please reconnect.');
+        setVerifying(false);
+        return;
+      }
+
+      const { sign } = await import('ripple-keypairs');
+      const timestamp = Date.now();
+      const message = `${account}:${timestamp}`;
+      const messageHex = Buffer.from(message).toString('hex');
+      const signature = sign(messageHex, wallet.privateKey);
+
       const res = await api.post(`${BASE_URL}/api/tweet/verify`, {
         md5,
         tweetUrl: tweetUrl.trim(),
-        account
+        account,
+        ...(isNft && { type: 'nft' })
+      }, {
+        headers: {
+          'X-Wallet': account,
+          'X-Timestamp': timestamp.toString(),
+          'X-Signature': signature,
+          'X-Public-Key': wallet.publicKey
+        }
       });
 
       if (res.data?.success) {
         setVerifyStatus('success');
-        if (res.data.reward?.earned) {
+        if (!isNft && res.data.reward?.earned) {
           setVerifyMessage(`Tweet verified! You earned ${res.data.reward.amount} ${res.data.reward.tokenName || ticker} tokens. Claim below!`);
         } else {
           setVerifyMessage('Tweet verified! Promoter badge updated.');
         }
         setTweetUrl('');
         fetchLeaderboard();
-        fetchPoolInfo();
-        fetchRewardInfo();
+        if (!isNft) { fetchPoolInfo(); fetchRewardInfo(); }
         fetchProfile();
       } else {
         setVerifyStatus('error');
@@ -180,7 +230,6 @@ export default function TweetPromoteModal({ token, tweetCount = 0, onCountChange
     setClaimResult(null);
 
     try {
-      // Sign claim request with wallet private key (decentralized verification)
       const wallet = await getSigningWallet();
       if (!wallet) {
         setClaimResult({ success: false, error: 'Could not access wallet for signing. Please reconnect.' });
@@ -218,10 +267,8 @@ export default function TweetPromoteModal({ token, tweetCount = 0, onCountChange
     }
   };
 
-  const poolActive = poolInfo?.exists && poolInfo?.status === 'active' && !poolInfo?.expired;
-  const MIN_TRUSTLINES = 100;
-  const tokenTrustlines = token?.trustlines || 0;
-  const eligible = tokenTrustlines >= MIN_TRUSTLINES || poolActive;
+  const poolActive = !isNft && poolInfo?.exists && poolInfo?.status === 'active' && !poolInfo?.expired;
+  const poolExpiredButClaimable = !isNft && poolInfo?.exists && (poolInfo?.expired || poolInfo?.status === 'depleted') && rewardInfo?.exists && (rewardInfo.status === 'earned' || rewardInfo.status === 'failed');
 
   const modal = isOpen && mounted && createPortal(
     <div
@@ -232,16 +279,16 @@ export default function TweetPromoteModal({ token, tweetCount = 0, onCountChange
       <div
         onClick={(e) => e.stopPropagation()}
         className={cn(
-          'relative w-full max-w-[380px] rounded-3xl border shadow-2xl animate-in zoom-in-95 duration-200 overflow-hidden',
+          'relative w-full max-w-xl rounded-3xl border shadow-2xl animate-in zoom-in-95 duration-200 overflow-hidden',
           isDark ? 'bg-[#0a0a0a] border-white/10' : 'bg-white border-gray-100'
         )}
       >
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4">
           <div className="flex items-center gap-2">
-            <XSocialIcon size={14} />
+            <Share2 size={14} className="opacity-40" />
             <span className={cn('text-sm font-bold uppercase tracking-widest opacity-40', isDark ? 'text-white' : 'text-gray-900')}>
-              Promote {ticker}
+              Share {ticker}
             </span>
           </div>
           <button
@@ -254,44 +301,60 @@ export default function TweetPromoteModal({ token, tweetCount = 0, onCountChange
 
         {/* Body */}
         <div className="px-5 pb-5 space-y-3">
-          {/* Tweet button */}
-          <a
-            href={tweetIntentUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={cn(
-              'w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-[12px] font-semibold transition-colors',
-              isDark
-                ? 'bg-white text-black hover:bg-white/90'
-                : 'bg-black text-white hover:bg-black/90'
-            )}
-          >
-            <XSocialIcon size={14} />
-            Tweet about {ticker}
-          </a>
+          {/* Share platforms */}
+          <div className="grid grid-cols-7 gap-1.5">
+            <ShareAction icon={XSocialIcon} color={isDark ? '#fff' : '#000'} label="X" isDark={isDark}
+              onClick={() => window.open(tweetIntentUrl, '_blank')} />
+            <ShareAction icon={Send} color="#229ED9" label="Telegram" isDark={isDark}
+              onClick={() => window.open(`https://t.me/share/url?url=${encodeURIComponent(tokenPageUrl)}&text=${encodeURIComponent(tweetText)}`, '_blank')} />
+            <ShareAction icon={MessageCircle} color="#25D366" label="WhatsApp" isDark={isDark}
+              onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(`${tweetText} ${tokenPageUrl}`)}`, '_blank')} />
+            <ShareAction icon={Facebook} color="#1877F2" label="Facebook" isDark={isDark}
+              onClick={() => window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(tokenPageUrl)}`, '_blank')} />
+            <ShareAction icon={Linkedin} color="#0A66C2" label="LinkedIn" isDark={isDark}
+              onClick={() => window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(tokenPageUrl)}`, '_blank')} />
+            <ShareAction icon={Mail} color="#6B7280" label="Email" isDark={isDark}
+              onClick={() => { window.location.href = `mailto:?subject=${encodeURIComponent(tweetText)}&body=${encodeURIComponent(tokenPageUrl)}`; }} />
+            <ShareAction icon={Copy} color="#3f96fe" label="Copy" isDark={isDark}
+              onClick={() => { navigator.clipboard.writeText(tokenPageUrl); if (openSnackbar) openSnackbar('Link copied!', 'success'); }} />
+          </div>
 
-          {/* Non-pool: badge/tier info */}
-          {!poolActive && (
-            <div className={cn(
-              'rounded-xl border px-3 py-2.5 flex items-start gap-2.5',
-              isDark ? 'bg-white/[0.03] border-white/[0.06]' : 'bg-gray-50 border-gray-100'
-            )}>
-              <Trophy size={14} className="text-[#F6AF01] shrink-0 mt-0.5" />
-              <div className={cn('text-[11px] leading-[1.5]', isDark ? 'text-white/50' : 'text-gray-500')}>
-                <span className={cn('font-semibold', isDark ? 'text-white/80' : 'text-gray-700')}>Earn promoter rank.</span> Verify tweets to climb from Advocate to Legend. Ranks show as profile badges.
-              </div>
+          {/* Verify tweet for promoter credit */}
+          <div className={cn(
+            'rounded-xl border px-3 py-2.5 flex items-start gap-2.5',
+            isDark ? 'bg-white/[0.03] border-white/[0.06]' : 'bg-gray-50 border-gray-100'
+          )}>
+            <Trophy size={14} className="text-[#F6AF01] shrink-0 mt-0.5" />
+            <div className={cn('text-[11px] leading-[1.5]', isDark ? 'text-white/50' : 'text-gray-500')}>
+              <span className={cn('font-semibold', isDark ? 'text-white/80' : 'text-gray-700')}>Earn promoter rank.</span> Tweet about {ticker}, then paste your tweet URL below to verify and climb from Advocate to Legend.
             </div>
-          )}
+          </div>
 
-          {/* Reward pool — only when pool exists */}
+          {/* Reward pool — expired but user has unclaimed reward */}
+          {poolExpiredButClaimable && !poolActive && (() => {
+            const rewardToken = poolInfo.tokenName || ticker;
+            return (
+              <div className={cn(
+                'rounded-xl border px-3 py-2.5 flex items-start gap-2.5',
+                isDark ? 'bg-[#F6AF01]/10 border-[#F6AF01]/20' : 'bg-amber-50 border-amber-100'
+              )}>
+                <Gift size={14} className="text-[#F6AF01] shrink-0 mt-0.5" />
+                <div className={cn('text-[11px] leading-[1.5]', isDark ? 'text-white/50' : 'text-gray-500')}>
+                  <span className={cn('font-semibold', isDark ? 'text-white/80' : 'text-gray-700')}>You have an unclaimed reward.</span> The promotion period has ended but your <span className={cn('font-semibold', isDark ? 'text-white/80' : 'text-gray-700')}>{Number(parseFloat(rewardInfo.amount) || 0).toLocaleString()} {rewardToken}</span> tokens are still available to claim.
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* Reward pool — only when pool exists (tokens only) */}
           {poolActive && (() => {
-            const total = parseFloat(poolInfo.totalAmount) || 0;
             const perUser = parseFloat(poolInfo.rewardPerPromoter) || 0;
-            const claimed = poolInfo.claimedCount || 0;
-            const max = poolInfo.maxPromoters || 100;
-            const remaining = total - (claimed * perUser);
-            const sharePct = (3 / 100).toFixed(2);
-            const progressPct = Math.min((claimed / max) * 100, 100);
+            const totalPool = parseFloat(poolInfo.totalAmount) || 0;
+            const rewardToken = poolInfo.tokenName || ticker;
+            const earned = poolInfo.earnedCount || 0;
+            const max = poolInfo.maxPromoters || 500;
+            const remaining = max - earned;
+            const progressPct = Math.min((earned / max) * 100, 100);
 
             const msLeft = (poolInfo.expiresAt || 0) - Date.now();
             const daysLeft = Math.max(0, Math.ceil(msLeft / (24 * 60 * 60 * 1000)));
@@ -310,6 +373,9 @@ export default function TweetPromoteModal({ token, tweetCount = 0, onCountChange
                     <span className={cn('text-[12px] font-semibold', isDark ? 'text-white/90' : 'text-gray-800')}>
                       Reward Pool
                     </span>
+                    <span className={cn('text-[10px] font-medium', isDark ? 'text-white/40' : 'text-gray-400')}>
+                      {Number(totalPool).toLocaleString()} {rewardToken}
+                    </span>
                   </div>
                   <span className={cn(
                     'text-[10px] font-semibold px-2 py-0.5 rounded-full',
@@ -317,15 +383,13 @@ export default function TweetPromoteModal({ token, tweetCount = 0, onCountChange
                       ? 'text-red-500 bg-red-500/10'
                       : 'text-[#650CD4] bg-[#650CD4]/10'
                   )}>
-                    {claimed === 0 ? `New — ${expiryLabel}` : expiryLabel}
+                    {earned === 0 ? `New — ${expiryLabel}` : expiryLabel}
                   </span>
                 </div>
 
-                <div className={cn('text-[11px] leading-[1.6] space-y-0.5', isDark ? 'text-white/50' : 'text-gray-500')}>
-                  <div className="flex gap-2"><span className="text-[#650CD4] font-bold shrink-0">1.</span><span>Tweet about {ticker} — mention the name or link to xrpl.to</span></div>
-                  <div className="flex gap-2"><span className="text-[#650CD4] font-bold shrink-0">2.</span><span>Paste your tweet URL and hit verify</span></div>
-                  <div className="flex gap-2"><span className="text-[#650CD4] font-bold shrink-0">3.</span><span>Claim your token reward — each promoter gets <span className="font-semibold text-[#650CD4]">{sharePct}%</span> of total supply</span></div>
-                </div>
+                <p className={cn('text-[11px] leading-[1.4]', isDark ? 'text-white/50' : 'text-gray-500')}>
+                  The token creator has allocated <span className={cn('font-semibold', isDark ? 'text-white/80' : 'text-gray-700')}>{Number(totalPool).toLocaleString()} {rewardToken}</span> for promoters. Post about this token on X, then verify your tweet URL to receive <span className={cn('font-semibold', isDark ? 'text-white/80' : 'text-gray-700')}>{Number(perUser).toLocaleString()} {rewardToken}</span>. {remaining > 0 ? `${remaining} spot${remaining !== 1 ? 's' : ''} remaining.` : 'All spots filled.'}
+                </p>
 
                 <div className="grid grid-cols-3 gap-2">
                   <div className={cn('rounded-lg px-2 py-1.5 text-center', isDark ? 'bg-white/[0.04]' : 'bg-white/80')}>
@@ -333,64 +397,106 @@ export default function TweetPromoteModal({ token, tweetCount = 0, onCountChange
                       {Number(perUser).toLocaleString()}
                     </div>
                     <div className={cn('text-[9px] uppercase tracking-wide', isDark ? 'text-white/30' : 'text-gray-400')}>
-                      Per user
-                    </div>
-                  </div>
-                  <div className={cn('rounded-lg px-2 py-1.5 text-center', isDark ? 'bg-white/[0.04]' : 'bg-white/80')}>
-                    <div className="text-[12px] font-bold text-[#650CD4]">
-                      {sharePct}%
-                    </div>
-                    <div className={cn('text-[9px] uppercase tracking-wide', isDark ? 'text-white/30' : 'text-gray-400')}>
-                      Your share
+                      {rewardToken} / user
                     </div>
                   </div>
                   <div className={cn('rounded-lg px-2 py-1.5 text-center', isDark ? 'bg-white/[0.04]' : 'bg-white/80')}>
                     <div className={cn('text-[12px] font-bold', isDark ? 'text-white' : 'text-gray-900')}>
-                      {Number(remaining.toFixed(0)).toLocaleString()}
+                      {remaining}
                     </div>
                     <div className={cn('text-[9px] uppercase tracking-wide', isDark ? 'text-white/30' : 'text-gray-400')}>
-                      Remaining
+                      Spots open
+                    </div>
+                  </div>
+                  <div className={cn('rounded-lg px-2 py-1.5 text-center', isDark ? 'bg-white/[0.04]' : 'bg-white/80')}>
+                    <div className={cn('text-[12px] font-bold', isDark ? 'text-white' : 'text-gray-900')}>
+                      {earned}/{max}
+                    </div>
+                    <div className={cn('text-[9px] uppercase tracking-wide', isDark ? 'text-white/30' : 'text-gray-400')}>
+                      Earned
                     </div>
                   </div>
                 </div>
 
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <span className={cn('text-[10px]', isDark ? 'text-white/40' : 'text-gray-400')}>
-                      {claimed} of {max} promoters claimed
-                    </span>
-                    <span className={cn('text-[10px] font-medium', isDark ? 'text-white/50' : 'text-gray-500')}>
-                      {max - claimed} slots left
-                    </span>
-                  </div>
-                  <div className={cn('h-1.5 rounded-full overflow-hidden', isDark ? 'bg-white/[0.06]' : 'bg-gray-200')}>
-                    <div
-                      className="h-full rounded-full bg-[#650CD4] transition-all duration-500"
-                      style={{ width: `${progressPct}%` }}
-                    />
-                  </div>
+                <div className={cn('h-1.5 rounded-full overflow-hidden', isDark ? 'bg-white/[0.06]' : 'bg-gray-200')}>
+                  <div
+                    className="h-full rounded-full bg-[#650CD4] transition-all duration-500"
+                    style={{ width: `${progressPct}%` }}
+                  />
                 </div>
-
-                <p className={cn('text-[10px]', isDark ? 'text-white/25' : 'text-gray-400')}>
-                  3% of supply split across {max} promoters. Trustline required to claim.
-                </p>
               </div>
             );
           })()}
 
-          {/* Ineligible notice */}
-          {!eligible && (
+          {/* How it works — show when pool is active */}
+          {poolActive && (
             <div className={cn(
-              'flex items-center gap-2 px-3 py-2 rounded-lg text-[11px]',
-              isDark ? 'bg-white/[0.04] text-white/40' : 'bg-gray-50 text-gray-500'
+              'rounded-xl border px-3 py-2.5 space-y-1.5',
+              isDark ? 'bg-white/[0.02] border-white/[0.06]' : 'bg-gray-50/50 border-gray-100'
             )}>
-              <Info size={12} className="shrink-0" />
-              This token needs at least {MIN_TRUSTLINES.toLocaleString()} trustlines to be eligible for promotion. Currently {tokenTrustlines.toLocaleString()}.
+              <div className="flex items-center gap-1.5">
+                <Info size={11} className={cn(isDark ? 'text-white/30' : 'text-gray-400')} />
+                <span className={cn('text-[10px] font-semibold uppercase tracking-wide', isDark ? 'text-white/40' : 'text-gray-400')}>
+                  How it works
+                </span>
+              </div>
+              <ul className={cn('text-[10px] leading-[1.6] space-y-0.5 pl-4', isDark ? 'text-white/40' : 'text-gray-400')}>
+                <li className="list-disc">Post a unique tweet about this token on X, then paste the URL below</li>
+                <li className="list-disc">Up to <span className={cn('font-semibold', isDark ? 'text-white/60' : 'text-gray-600')}>6 verifications per day</span> across different tokens</li>
+                <li className="list-disc"><span className={cn('font-semibold', isDark ? 'text-white/60' : 'text-gray-600')}>2 hour cooldown</span> between each verification</li>
+                <li className="list-disc">Each tweet can only be used for one token — no reuse</li>
+              </ul>
+            </div>
+          )}
+
+          {/* Cooldown timer — show when user is on cooldown */}
+          {account && cooldownLeft !== null && (() => {
+            const hrs = Math.floor(cooldownLeft / 3600000);
+            const mins = Math.floor((cooldownLeft % 3600000) / 60000);
+            const secs = Math.floor((cooldownLeft % 60000) / 1000);
+            const timeStr = hrs > 0 ? `${hrs}h ${mins}m ${secs}s` : `${mins}m ${secs}s`;
+            const cd = profileStats?.cooldown;
+            const dailyUsed = cd?.dailyUsed || 0;
+            const dailyLimit = cd?.dailyLimit || 6;
+            const dailyRemaining = Math.max(0, dailyLimit - dailyUsed);
+            return (
+              <div className={cn(
+                'rounded-xl border px-3 py-2.5 flex items-center gap-2.5',
+                isDark ? 'bg-[#137DFE]/10 border-[#137DFE]/20' : 'bg-blue-50 border-blue-100'
+              )}>
+                <Timer size={14} className="text-[#137DFE] shrink-0 animate-pulse" />
+                <div className={cn('text-[11px] leading-[1.5] flex-1', isDark ? 'text-white/50' : 'text-gray-500')}>
+                  <span className={cn('font-semibold tabular-nums', isDark ? 'text-white/80' : 'text-gray-700')}>{timeStr}</span> until next verification
+                  <span className={cn('ml-2 text-[10px]', isDark ? 'text-white/30' : 'text-gray-400')}>
+                    {dailyRemaining}/{dailyLimit} left today
+                  </span>
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* Daily limit reached */}
+          {account && cooldownLeft === null && profileStats?.cooldown?.dailyUsed >= 6 && (
+            <div className={cn(
+              'rounded-xl border px-3 py-2.5 flex items-center gap-2.5',
+              isDark ? 'bg-[#F6AF01]/10 border-[#F6AF01]/20' : 'bg-amber-50 border-amber-100'
+            )}>
+              <AlertCircle size={14} className="text-[#F6AF01] shrink-0" />
+              <div className={cn('text-[11px] leading-[1.5]', isDark ? 'text-white/50' : 'text-gray-500')}>
+                You've used all <span className={cn('font-semibold', isDark ? 'text-white/80' : 'text-gray-700')}>6 verifications</span> for today. Come back tomorrow!
+              </div>
             </div>
           )}
 
           {/* Verify input */}
-          <div className={cn('flex gap-2', !eligible && 'opacity-40 pointer-events-none')}>
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-1.5">
+              <XSocialIcon size={11} />
+              <span className={cn('text-[10px] font-medium', isDark ? 'text-white/40' : 'text-gray-400')}>
+                Only x.com / twitter.com links are supported
+              </span>
+            </div>
+            <div className="flex gap-2">
             <input
               type="text"
               value={tweetUrl}
@@ -399,8 +505,7 @@ export default function TweetPromoteModal({ token, tweetCount = 0, onCountChange
                 setVerifyStatus(null);
                 setVerifyMessage('');
               }}
-              placeholder="Paste your tweet URL..."
-              disabled={!eligible}
+              placeholder="Paste your X (Twitter) post URL..."
               className={cn(
                 'flex-1 px-3 py-2 rounded-lg text-[12px] border outline-none transition-colors',
                 isDark
@@ -410,7 +515,7 @@ export default function TweetPromoteModal({ token, tweetCount = 0, onCountChange
             />
             <button
               onClick={handleVerify}
-              disabled={!eligible || verifying || !tweetUrl.trim()}
+              disabled={verifying || !tweetUrl.trim()}
               className={cn(
                 'px-4 py-2 rounded-lg text-[12px] font-semibold transition-colors flex items-center gap-1.5',
                 verifying || !tweetUrl.trim()
@@ -423,6 +528,7 @@ export default function TweetPromoteModal({ token, tweetCount = 0, onCountChange
               {verifying ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} />}
               Verify
             </button>
+            </div>
           </div>
 
           {/* Status message */}
@@ -440,7 +546,7 @@ export default function TweetPromoteModal({ token, tweetCount = 0, onCountChange
             </div>
           )}
 
-          {/* Claim button — shown for earned or failed (retry) */}
+          {/* Claim button — shown when reward earned or failed (retry) */}
           {rewardInfo?.exists && (rewardInfo.status === 'earned' || rewardInfo.status === 'failed') && (
             <button
               onClick={handleClaim}
@@ -459,17 +565,6 @@ export default function TweetPromoteModal({ token, tweetCount = 0, onCountChange
             </button>
           )}
 
-          {/* Failed reason */}
-          {rewardInfo?.exists && rewardInfo.status === 'failed' && rewardInfo.failReason && !claimResult && (
-            <div className={cn(
-              'flex items-center gap-2 px-3 py-2 rounded-lg text-[11px]',
-              isDark ? 'bg-red-500/10 text-red-400' : 'bg-red-50 text-red-600'
-            )}>
-              <AlertCircle size={12} />
-              Previous claim failed: {rewardInfo.failReason}
-            </div>
-          )}
-
           {/* Claim result */}
           {claimResult && (
             <div className={cn(
@@ -486,7 +581,7 @@ export default function TweetPromoteModal({ token, tweetCount = 0, onCountChange
             </div>
           )}
 
-          {/* Already claimed indicator */}
+          {/* Already claimed */}
           {rewardInfo?.exists && rewardInfo.status === 'claimed' && !claimResult && (
             <div className={cn(
               'flex items-center gap-2 px-3 py-2 rounded-lg text-[11px]',
@@ -646,7 +741,7 @@ export default function TweetPromoteModal({ token, tweetCount = 0, onCountChange
         onClick={() => setIsOpen(true)}
         className={className}
       >
-        <XSocialIcon size={11} /> Promote
+        <Share2 size={11} /> Share
         {tweetCount > 0 && (
           <span className={cn(
             'ml-0.5 px-1 py-px rounded-full text-[8px] font-bold',

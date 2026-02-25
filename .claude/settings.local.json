@@ -26,7 +26,9 @@
       "Bash(for sid in a5f9d684f2646b72b82a5230824d9c13 ad6fde27ed4126bb931e6e03bd2fd5a9 9168367a68d2360f210aa9cd39f3bb2f a1a3631bd5a1e41e0e5aee06f6c23527 2847598702caab6002ce1d66995889ee)",
       "Bash(do)",
       "Bash(jq -c \"{sid: \"\"$sid:0:8\"\", result: .cancelled}\")",
-      "Bash(pm2 restart:*)"
+      "Bash(pm2 restart:*)",
+      "Bash(sleep 3 && pm2 logs api --lines 30 --nostream 2>&1)",
+      "Bash(mongosh:*)"
     ],
     "deny": []
   }

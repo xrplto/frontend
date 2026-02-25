@@ -35,7 +35,9 @@ import {
   BadgeCheck,
   Play,
   Droplets,
-  Radio
+  Radio,
+  Shield,
+  Info
 } from 'lucide-react';
 import { ThemeContext } from 'src/context/AppContext';
 import { cn } from 'src/utils/cn';
@@ -47,7 +49,7 @@ import { API_REFERENCE, getTotalEndpointCount, ApiButton } from 'src/components/
 const ApiDocsPage = ({ apiDocs, ogp }) => {
   const { themeName } = useContext(ThemeContext);
   const isDark = themeName === 'XrplToDarkTheme';
-  const [currentSection, setCurrentSection] = useState('overview');
+  const [currentSection, setCurrentSection] = useState('info');
   const [searchTerm, setSearchTerm] = useState('');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -77,6 +79,7 @@ const ApiDocsPage = ({ apiDocs, ogp }) => {
   };
 
   const [expandedGroups, setExpandedGroups] = useState({
+    'User Guide': true,
     'Get Started': true,
     'Token APIs': true,
     'Account & NFT': true,
@@ -89,10 +92,10 @@ const ApiDocsPage = ({ apiDocs, ogp }) => {
     version: apiDocs?.version || '1.0',
     baseUrl: apiDocs?.baseUrl || 'https://api.xrpl.to/v1',
     tiers: apiDocs?.tiers || [
-      { name: 'Free', price: '$0/mo', credits: '1M', rate: '10 req/sec' },
-      { name: 'Developer', price: '$49/mo', credits: '10M', rate: '50 req/sec' },
-      { name: 'Business', price: '$499/mo', credits: '100M', rate: '200 req/sec' },
-      { name: 'Professional', price: '$999/mo', credits: '200M', rate: '500 req/sec' }
+      { name: 'Free', price: '$0/mo', credits: '1M', rate: '10 req/sec', submit: '1 tx/sec', support: 'Community' },
+      { name: 'Developer', price: '$49/mo', credits: '10M', rate: '50 req/sec', submit: '5 tx/sec', support: 'Chat' },
+      { name: 'Business', price: '$499/mo', credits: '100M', rate: '200 req/sec', submit: '50 tx/sec', support: 'Priority chat' },
+      { name: 'Professional', price: '$999/mo', credits: '200M', rate: '500 req/sec', submit: '100 tx/sec', support: 'Telegram + Slack' }
     ],
     creditPacks: apiDocs?.keys?.creditPacks || [
       { pack: 'starter', price: '$5', credits: '1M' },
@@ -120,8 +123,7 @@ const ApiDocsPage = ({ apiDocs, ogp }) => {
     boost: apiDocs?.boost || [
       { method: 'GET', path: '/boost/quote/{md5}', desc: 'Get quote for token ranking boost' },
       { method: 'POST', path: '/boost/purchase', desc: 'Create payment request for boost' },
-      { method: 'GET', path: '/boost/verify/{invoiceId}', desc: 'Verify payment and activate boost' },
-      { method: 'GET', path: '/boost/active', desc: 'List currently boosted tokens' }
+      { method: 'GET', path: '/boost/verify/{invoiceId}', desc: 'Verify payment and activate boost' }
     ],
     bridge: apiDocs?.bridge || [
       { method: 'GET', path: '/bridge/currencies', desc: 'List supported exchange currencies' },
@@ -135,12 +137,20 @@ const ApiDocsPage = ({ apiDocs, ogp }) => {
 
   const sidebarGroups = [
     {
+      name: 'User Guide',
+      items: [
+        { id: 'info', title: 'What is xrpl.to', icon: Info },
+        { id: 'handshake', title: 'Handshake', icon: Shield },
+        { id: 'platform-fees', title: 'Platform Fees', icon: Zap },
+        { id: 'security', title: 'Security', icon: Key }
+      ]
+    },
+    {
       name: 'Get Started',
       items: [
         { id: 'overview', title: 'Overview', icon: BookOpen },
         { id: 'reference', title: 'Reference (md5)', icon: Hash },
         { id: 'endpoint-reference', title: 'All Endpoints', icon: List },
-        { id: 'fees', title: 'Fees', icon: Zap },
         { id: 'errors', title: 'Error Codes', icon: AlertTriangle }
       ]
     },
@@ -203,9 +213,27 @@ const ApiDocsPage = ({ apiDocs, ogp }) => {
       id: `ref-${key}`,
       label: cat.label
     })),
-    fees: [
-      { id: 'trading-fees', label: 'Trading Fees' },
-      { id: 'token-launch-fees', label: 'Token Launch Fees' }
+    info: [
+      { id: 'info-platform', label: 'The Platform' },
+      { id: 'info-api', label: 'API & Data' },
+      { id: 'info-build', label: 'Build with xrpl.to' }
+    ],
+    handshake: [
+      { id: 'what-is-handshake', label: 'What is Handshake?' },
+      { id: 'how-it-works', label: 'How It Works' },
+      { id: 'handshake-faq', label: 'FAQ' }
+    ],
+    'platform-fees': [
+      { id: 'pf-trading', label: 'Trading Fee' },
+      { id: 'pf-launch', label: 'Token Launch' }
+    ],
+    security: [
+      { id: 'self-custody', label: 'Self Custody' },
+      { id: 'seed-safety', label: 'Seed Safety' },
+      { id: 'cross-contamination', label: 'Cross Contamination' },
+      { id: 'verify-domain', label: 'Verify Domain' },
+      { id: 'backup', label: 'Backup' },
+      { id: 'user-responsibility', label: 'Your Responsibility' }
     ],
     'api-keys': [
       { id: 'create-key', label: 'Create API Key' },
@@ -477,11 +505,7 @@ GET /nft/history - NFT transaction history (NFTokenID, account, limit)
 GET /nft/traders/{account}/volume - Trader volume stats
 GET /nft/account/{account}/nfts - NFTs owned by account (limit, offset)
 GET /nft/stats/global - Global NFT stats
-GET /nft/brokers/stats - Broker fees and volumes
-
-POST /nft/mint - Create NFT mint transaction payload
-POST /nft/pin - Pin NFT metadata to IPFS (body: { metadata })
-GET /nft/pin/status/{hash} - Get IPFS pin status`,
+GET /nft/brokers/stats - Broker fees and volumes`,
 
     xrpl: `## XRPL Node API
 Base URL: https://api.xrpl.to/v1
@@ -523,8 +547,9 @@ GET /token/analytics/traders/summary - Trader balance snapshots summary`,
 Base URL: https://api.xrpl.to/v1
 
 POST /launch-token - Initialize token launch
-Body: { currencyCode (1-20 chars, not "XRP"), tokenSupply (max ~10^16), ammXrpAmount (min 1), name, origin, user, userAddress (required if userCheckAmount>0), userCheckAmount (max 95%), antiSnipe (bool), domain, description, telegram, twitter, imageData (base64) }
+Body: { currencyCode (1-20 chars, not "XRP"), tokenSupply (max ~10^16), ammXrpAmount (min 1), name, origin, user, userAddress (required if userCheckAmount>0), userCheckAmount (max 95%), antiSnipe (bool), platformRetentionPercent (0-10%, social rewards), bundleRecipients ([{address, percent}]), domain, description, telegram, twitter, imageData (base64) }
 Typical cost: 6-20 XRP depending on configuration
+Platform token share: optional 0-10% of supply allocated to reward up to 100 users who tweet about the token. xrpl.to receives no tokens from this allocation.
 Response: { success, sessionId, status, issuerAddress, requiredFunding, fundingBreakdown }
 
 GET /launch-token/status/{sessionId} - Poll launch status (every 3s recommended)
@@ -534,7 +559,9 @@ GET /launch-token/auth-info/{issuer}/{currency} - Token auth info
 GET /launch-token/check-auth/{issuer}/{currency}/{address} - Check authorization
 GET /launch-token/calculate-funding - Calculate required XRP funding
 GET /launch-token/my-launches - User launch history (API key required)
-POST /launch-token/{sessionId}/image - Upload token image (base64, max 500KB)`,
+POST /launch-token/{sessionId}/image - Upload token image (base64, max 500KB)
+
+Revenue Sharing: Partner platforms earn 50% of launch fees (platform fee + bundle fees) for every token launched through their API key. Contact us for a partner key.`,
 
     tools: `## Tools API
 Base URL: https://api.xrpl.to/v1
@@ -565,7 +592,7 @@ Patterns:
 - txHash: ^[A-Fa-f0-9]{64}$
 
 Caching: Default Live (no caching), platformStatus 30s, News 5min, Cumulative Stats 10min, OHLC varies by range
-Rate Limits: Anonymous (1 req/sec, 100K credits/mo), Free (10 req/sec, 1M credits/mo), Developer (50 req/sec, 10M credits/mo), Business (200 req/sec, 100M credits/mo), Professional (500 req/sec, 200M credits/mo)`
+Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/sec, 1 tx/sec, 1M credits/mo), Developer (50 req/sec, 5 tx/sec, 10M credits/mo), Business (200 req/sec, 50 tx/sec, 100M credits/mo), Professional (500 req/sec, 100 tx/sec, 200M credits/mo)`
   };
 
   const CopyButton = ({ text, id, label = 'Copy for LLM' }) => (
@@ -829,7 +856,7 @@ Rate Limits: Anonymous (1 req/sec, 100K credits/mo), Free (10 req/sec, 1M credit
                   {
                     icon: Clock,
                     title: 'Rate Limits',
-                    desc: 'Free: 10 req/sec. Professional: 500 req/sec. See API Keys for tiers.',
+                    desc: 'Free: 10 req/sec, 1 tx/sec. Professional: 500 req/sec, 100 tx/sec. See API Keys for tiers.',
                     action: 'api-keys'
                   },
                   {
@@ -897,192 +924,6 @@ Rate Limits: Anonymous (1 req/sec, 100K credits/mo), Free (10 req/sec, 1M credit
           </div>
         );
 
-      case 'fees':
-        return (
-          <div className="space-y-6">
-            <div>
-              <h2 className="text-2xl font-normal text-primary mb-2">Fees</h2>
-              <p className={cn('text-[14px]', isDark ? 'text-white/60' : 'text-gray-600')}>
-                Transparent fee structure for trading and token launches on XRPL.to
-              </p>
-            </div>
-
-            {/* Trading Fees */}
-            <div
-              id="trading-fees"
-              className={cn(
-                'rounded-xl border-[1.5px] p-5',
-                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
-              )}
-            >
-              <div
-                className={cn(
-                  'text-[11px] font-medium uppercase tracking-wide mb-4',
-                  isDark ? 'text-white/40' : 'text-gray-500'
-                )}
-              >
-                Trading Fees
-              </div>
-              <div
-                className={cn(
-                  'rounded-xl border-[1.5px] p-4 mb-4',
-                  isDark ? 'border-primary/30 bg-primary/5' : 'border-primary/20 bg-primary/5'
-                )}
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-[15px] font-medium">Platform Trading Fee</span>
-                  <span className="text-2xl font-medium text-primary">1%</span>
-                </div>
-              </div>
-              <div
-                className={cn('space-y-3 text-[13px]', isDark ? 'text-white/60' : 'text-gray-600')}
-              >
-                <p>
-                  A <span className="text-primary font-medium">1% fee</span> is applied to all
-                  trades executed through the XRPL.to swap interface. This fee helps maintain and
-                  improve the platform.
-                </p>
-                <div className={cn('rounded-lg p-3', isDark ? 'bg-white/5' : 'bg-gray-50')}>
-                  <div className="font-medium mb-2">Example</div>
-                  <div>Swapping 1,000 XRP worth of tokens:</div>
-                  <div className="mt-1">
-                    Fee: <span className="text-primary">10 XRP</span> (1% of 1,000)
-                  </div>
-                </div>
-                <p className={cn('text-[12px]', isDark ? 'text-white/40' : 'text-gray-500')}>
-                  Note: This fee is separate from any AMM pool fees or network transaction costs.
-                </p>
-              </div>
-            </div>
-
-            {/* Token Launch Fees */}
-            <div
-              id="token-launch-fees"
-              className={cn(
-                'rounded-xl border-[1.5px] p-5',
-                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
-              )}
-            >
-              <div
-                className={cn(
-                  'text-[11px] font-medium uppercase tracking-wide mb-4',
-                  isDark ? 'text-white/40' : 'text-gray-500'
-                )}
-              >
-                Token Launch Fees
-              </div>
-              <p className={cn('text-[13px] mb-4', isDark ? 'text-white/60' : 'text-gray-600')}>
-                Launch your token on the XRP Ledger with our streamlined token creation service.
-              </p>
-
-              <div
-                className={cn(
-                  'rounded-lg overflow-hidden border-[1.5px] mb-4',
-                  isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
-                )}
-              >
-                <table className="w-full text-[13px]">
-                  <thead className={isDark ? 'bg-white/5' : 'bg-gray-50'}>
-                    <tr>
-                      <th
-                        className={cn(
-                          'text-left px-4 py-3 font-medium',
-                          isDark ? 'text-white/60' : 'text-gray-600'
-                        )}
-                      >
-                        Fee Type
-                      </th>
-                      <th
-                        className={cn(
-                          'text-left px-4 py-3 font-medium',
-                          isDark ? 'text-white/60' : 'text-gray-600'
-                        )}
-                      >
-                        Amount
-                      </th>
-                      <th
-                        className={cn(
-                          'text-left px-4 py-3 font-medium',
-                          isDark ? 'text-white/60' : 'text-gray-600'
-                        )}
-                      >
-                        Description
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr
-                      className={
-                        isDark
-                          ? 'border-t border-[rgba(59,130,246,0.1)]'
-                          : 'border-t border-[rgba(59,130,246,0.15)]'
-                      }
-                    >
-                      <td className="px-4 py-3 font-medium">Platform Fee</td>
-                      <td className="px-4 py-3 text-primary">2 - 12 XRP</td>
-                      <td className={cn('px-4 py-3', isDark ? 'text-white/60' : 'text-gray-600')}>
-                        Scales with developer allocation %
-                      </td>
-                    </tr>
-                    <tr
-                      className={
-                        isDark
-                          ? 'border-t border-[rgba(59,130,246,0.1)]'
-                          : 'border-t border-[rgba(59,130,246,0.15)]'
-                      }
-                    >
-                      <td className="px-4 py-3 font-medium">Base Reserve</td>
-                      <td className="px-4 py-3 text-primary">1 XRP</td>
-                      <td className={cn('px-4 py-3', isDark ? 'text-white/60' : 'text-gray-600')}>
-                        XRPL account reserve requirement
-                      </td>
-                    </tr>
-                    <tr
-                      className={
-                        isDark
-                          ? 'border-t border-[rgba(59,130,246,0.1)]'
-                          : 'border-t border-[rgba(59,130,246,0.15)]'
-                      }
-                    >
-                      <td className="px-4 py-3 font-medium">AMM Pool</td>
-                      <td className="px-4 py-3 text-primary">Min 1 XRP</td>
-                      <td className={cn('px-4 py-3', isDark ? 'text-white/60' : 'text-gray-600')}>
-                        Initial liquidity for AMM pool
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-
-              <div className={cn('rounded-lg p-4', isDark ? 'bg-white/5' : 'bg-gray-50')}>
-                <div className="font-medium mb-2 text-[13px]">Typical Total Cost</div>
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl font-medium text-primary">6 - 20 XRP</span>
-                  <span className={cn('text-[12px]', isDark ? 'text-white/40' : 'text-gray-500')}>
-                    depending on configuration
-                  </span>
-                </div>
-              </div>
-
-              <div
-                className={cn(
-                  'mt-4 space-y-2 text-[13px]',
-                  isDark ? 'text-white/60' : 'text-gray-600'
-                )}
-              >
-                <div className="font-medium">What's included:</div>
-                <ul className="list-disc list-inside space-y-1 ml-2">
-                  <li>Token creation and configuration</li>
-                  <li>Issuer account setup</li>
-                  <li>Trustline creation</li>
-                  <li>AMM pool initialization</li>
-                  <li>Optional anti-snipe protection</li>
-                  <li>Optional developer token allocation (up to 95%)</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        );
 
       case 'tokens':
         return (
@@ -2115,10 +1956,7 @@ Rate Limits: Anonymous (1 req/sec, 100K credits/mo), Free (10 req/sec, 1M credit
                   ['GET', '/v1/nft/traders/{account}/volume', 'Trader volume stats'],
                   ['GET', '/v1/nft/account/{account}/nfts', 'NFTs owned by account (limit, offset)'],
                   ['GET', '/v1/nft/stats/global', 'Global NFT stats'],
-                  ['GET', '/v1/nft/brokers/stats', 'Broker fees and volumes'],
-                  ['POST', '/v1/nft/mint', 'Create NFT mint transaction payload'],
-                  ['POST', '/v1/nft/pin', 'Pin NFT metadata to IPFS'],
-                  ['GET', '/v1/nft/pin/status/{hash}', 'Get IPFS pin status']
+                  ['GET', '/v1/nft/brokers/stats', 'Broker fees and volumes']
                 ].map(([method, path, desc]) => (
                   <div key={path} className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
                     <span
@@ -2428,6 +2266,8 @@ Rate Limits: Anonymous (1 req/sec, 100K credits/mo), Free (10 req/sec, 1M credit
                       ['antiSnipe', 'bool - Enable trustline authorization'],
                       ['domain', 'Optional domain'],
                       ['description', 'Token description'],
+                      ['platformRetentionPercent', 'Social reward allocation (0-10% of supply)'],
+                      ['bundleRecipients', 'Array of { address, percent } for bundle distribution'],
                       ['telegram', 'Telegram link'],
                       ['twitter', 'Twitter handle'],
                       ['imageData', 'Base64 token image']
@@ -2459,14 +2299,14 @@ Rate Limits: Anonymous (1 req/sec, 100K credits/mo), Free (10 req/sec, 1M credit
               >
                 <div className="font-medium mb-2">Costs</div>
                 <div className={cn('space-y-1', isDark ? 'text-white/60' : 'text-gray-600')}>
-                  <div>
-                    Platform fee: <span className="text-primary">2-12 XRP</span> (varies by configuration)
-                  </div>
-                  <div>
-                    XRPL reserves and transaction fees apply
-                  </div>
+                  <div>AMM liquidity: <span className="text-primary">min 10 XRP</span> (you choose)</div>
+                  <div>Platform fee: <span className="text-primary">2-12 XRP</span> (scales with dev allocation %)</div>
+                  <div>Reserves + fees: <span className="text-primary">~3 XRP</span> (XRPL accounts + tx fees)</div>
+                  <div>Anti-snipe: <span className="text-primary">~2 XRP</span> (optional)</div>
+                  <div>Bundle: <span className="text-primary">1 XRP/recipient</span> (optional)</div>
+                  <div>Platform token share: <span className="text-primary">0 XRP</span> (0-10% of supply for social rewards, no XRP cost)</div>
                   <div className="mt-2">
-                    Typical total: <span className="text-primary font-medium">6-20 XRP</span>
+                    Typical total: <span className="text-primary font-medium">15-25 XRP</span>
                   </div>
                   <div className={cn('text-[11px] mt-1', isDark ? 'text-white/40' : 'text-gray-400')}>
                     Use <code>/calculate-funding</code> for exact cost breakdown
@@ -2511,6 +2351,21 @@ Rate Limits: Anonymous (1 req/sec, 100K credits/mo), Free (10 req/sec, 1M credit
                 <div className="font-medium mb-2">Final State</div>
                 <div className={isDark ? 'text-white/60' : 'text-gray-600'}>
                   Issuer account is permanently locked after launch, ensuring token supply cannot be modified.
+                </div>
+              </div>
+              <div
+                className={cn(
+                  'mt-3 p-3 rounded-lg text-[12px]',
+                  isDark ? 'bg-white/5' : 'bg-gray-50'
+                )}
+              >
+                <div className="font-medium mb-2">Platform Token Share (Social Rewards)</div>
+                <div className={cn('space-y-1', isDark ? 'text-white/60' : 'text-gray-600')}>
+                  <div>Optional 0-10% of total supply allocated via <code className="text-primary">platformRetentionPercent</code></div>
+                  <div>Distributed to up to <strong>100 users</strong> who tweet about your token</div>
+                  <div>Each user receives a small equal share of the allocated supply</div>
+                  <div>xrpl.to receives <strong>no tokens</strong> from this allocation, 100% goes to users</div>
+                  <div>No additional XRP cost, only affects token supply distribution</div>
                 </div>
               </div>
             </div>
@@ -2583,6 +2438,48 @@ Rate Limits: Anonymous (1 req/sec, 100K credits/mo), Free (10 req/sec, 1M credit
                     <span className={isDark ? 'text-white/40' : 'text-gray-500'}>- {desc}</span>
                   </div>
                 ))}
+              </div>
+            </div>
+
+            {/* Revenue Sharing */}
+            <div
+              className={cn(
+                'rounded-xl border-[1.5px] p-5',
+                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+              )}
+            >
+              <div
+                className={cn(
+                  'text-[11px] font-medium uppercase tracking-wide mb-3',
+                  isDark ? 'text-white/40' : 'text-gray-500'
+                )}
+              >
+                Revenue Sharing
+              </div>
+              <p className={cn('text-[13px] leading-relaxed mb-3', isDark ? 'text-white/60' : 'text-gray-600')}>
+                Integrate the Token Launch API into your platform and earn <span className="text-primary font-medium">50% of launch fees</span> for every token launched through your API key.
+              </p>
+              <div className="space-y-2 text-[13px]">
+                <div className={cn('flex items-start gap-2', isDark ? 'text-white/50' : 'text-gray-500')}>
+                  <span className="text-primary mt-0.5">1.</span>
+                  <span>Apply for a <span className={isDark ? 'text-white/80' : 'text-gray-800'}>Partner API key</span> with your platform name</span>
+                </div>
+                <div className={cn('flex items-start gap-2', isDark ? 'text-white/50' : 'text-gray-500')}>
+                  <span className="text-primary mt-0.5">2.</span>
+                  <span>Use your API key when calling <code className="font-mono text-[12px]">/v1/launch-token</code></span>
+                </div>
+                <div className={cn('flex items-start gap-2', isDark ? 'text-white/50' : 'text-gray-500')}>
+                  <span className="text-primary mt-0.5">3.</span>
+                  <span>Every successful launch is tracked with your platform identity and revenue is split automatically</span>
+                </div>
+              </div>
+              <div
+                className={cn(
+                  'mt-4 rounded-lg p-3 text-[12px]',
+                  isDark ? 'bg-white/5 text-white/40' : 'bg-gray-50 text-gray-500'
+                )}
+              >
+                Revenue share applies to platform fees and bundle fees. Contact us to set up a partner key.
               </div>
             </div>
           </div>
@@ -3046,6 +2943,506 @@ curl -X POST https://api.xrpl.to/v1/faucet \\
           </div>
         );
 
+      case 'info':
+        return (
+          <div className="space-y-8">
+            <div>
+              <h2 className="text-2xl font-normal text-primary mb-2">What is xrpl.to</h2>
+              <p className={cn('text-[14px] mb-4', isDark ? 'text-white/60' : 'text-gray-600')}>
+                A high-performance SocialFi trading platform built entirely on the XRP Ledger.
+              </p>
+            </div>
+
+            <div id="info-platform" className="space-y-4">
+              <h3 className={cn('text-lg font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+                The Platform
+              </h3>
+              <div
+                className={cn(
+                  'p-4 rounded-xl border-[1.5px]',
+                  isDark ? 'border-primary/20 bg-primary/5' : 'border-primary/20 bg-blue-50/50'
+                )}
+              >
+                <p className={cn('text-[13px] leading-relaxed', isDark ? 'text-white/70' : 'text-gray-700')}>
+                  xrpl.to is a high-speed decentralized exchange (DEX) on the XRP Ledger with APIs optimized for performance. It is a fully standalone SocialFi platform where users can trade tokens and NFTs, communicate through a built-in social layer, and interact with a comprehensive API. All data is sourced directly from the xrpl.to API and the XRP Ledger itself. There are no third-party dependencies. The platform also hosts and serves all token and NFT images directly, optimized for speed.
+                </p>
+              </div>
+            </div>
+
+            <div id="info-api" className="space-y-4">
+              <h3 className={cn('text-lg font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+                API & Data
+              </h3>
+              <div className="space-y-3">
+                {[
+                  { title: '140+ custom endpoints', desc: 'Comprehensive data coverage for tokens, NFTs, AMM pools, trader analytics, market history, and more.' },
+                  { title: 'Transaction submission', desc: 'Stream-based transaction submission capable of handling 3,000+ transactions per second with lightning-fast confirmation responses.' },
+                  { title: 'Live trading data', desc: 'High-speed real-time data feeds designed for live trading systems, bots, and algorithmic strategies.' },
+                  { title: 'LLM and AI friendly', desc: 'Structured, well-documented API responses designed for easy consumption by large language models and AI agents.' }
+                ].map((item, i) => (
+                  <div
+                    key={i}
+                    className={cn(
+                      'flex gap-3 p-3 rounded-xl border-[1.5px]',
+                      isDark ? 'border-white/5 bg-white/[0.02]' : 'border-gray-100 bg-gray-50/50'
+                    )}
+                  >
+                    <div
+                      className={cn(
+                        'flex items-center justify-center w-6 h-6 rounded-full flex-shrink-0 mt-0.5',
+                        isDark ? 'bg-primary/10' : 'bg-blue-50'
+                      )}
+                    >
+                      <Zap size={12} className="text-primary" />
+                    </div>
+                    <div>
+                      <div className={cn('text-[13px] font-medium', isDark ? 'text-white/90' : 'text-gray-900')}>
+                        {item.title}
+                      </div>
+                      <div className={cn('text-[12px] mt-0.5', isDark ? 'text-white/50' : 'text-gray-500')}>
+                        {item.desc}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div id="info-build" className="space-y-4">
+              <h3 className={cn('text-lg font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+                Build with xrpl.to
+              </h3>
+              <div
+                className={cn(
+                  'p-4 rounded-xl border-[1.5px]',
+                  isDark ? 'border-primary/20 bg-primary/5' : 'border-primary/20 bg-blue-50/50'
+                )}
+              >
+                <p className={cn('text-[13px] leading-relaxed', isDark ? 'text-white/70' : 'text-gray-700')}>
+                  xrpl.to is a complete toolkit for building decentralized applications on the XRP Ledger. Developers can build full applications such as NFT marketplaces or trading platforms using xrpl.to entirely on its own. The platform takes the complexity out of building on the ledger so you can focus on managing your business. From real-time market data to transaction submission, everything you need is available through a single, unified API.
+                </p>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'handshake':
+        return (
+          <div className="space-y-8">
+            <div>
+              <h2 className="text-2xl font-normal text-primary mb-2">Handshake</h2>
+              <p className={cn('text-[14px] mb-4', isDark ? 'text-white/60' : 'text-gray-600')}>
+                Anti-phishing protection that verifies you are on the real xrpl.to before you enter your password.
+              </p>
+            </div>
+
+            <div id="what-is-handshake" className="space-y-4">
+              <h3 className={cn('text-lg font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+                What is Handshake?
+              </h3>
+              <p className={cn('text-[13px] leading-relaxed', isDark ? 'text-white/60' : 'text-gray-600')}>
+                Handshake is a unique 4-emoji security code assigned to your wallet when you create it. Every time you open the login screen, your Handshake is displayed <strong>before</strong> you type your password. If the emojis match what you remember, you know you are on the real site.
+              </p>
+              <div
+                className={cn(
+                  'flex items-center gap-3 py-3 px-4 rounded-xl border-[1.5px]',
+                  isDark ? 'border-emerald-500/20 bg-emerald-500/5' : 'border-emerald-500/20 bg-emerald-50'
+                )}
+              >
+                <div
+                  className={cn(
+                    'flex items-center justify-center w-8 h-8 rounded-lg flex-shrink-0',
+                    isDark ? 'bg-emerald-500/10' : 'bg-emerald-100'
+                  )}
+                >
+                  <Shield size={16} className="text-emerald-500" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[20px] leading-tight tracking-[0.15em]">{'🐶🌈💎🚀'}</span>
+                  <span className={cn('text-[9px] font-medium uppercase tracking-wider mt-0.5', isDark ? 'text-white/25' : 'text-gray-400')}>
+                    Handshake
+                  </span>
+                </div>
+              </div>
+              <p className={cn('text-[12px]', isDark ? 'text-white/40' : 'text-gray-500')}>
+                Example only. Your actual Handshake will be different.
+              </p>
+            </div>
+
+            <div id="how-it-works" className="space-y-4">
+              <h3 className={cn('text-lg font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+                How It Works
+              </h3>
+              <div className="space-y-3">
+                {[
+                  { step: '1', title: 'Generated on wallet creation', desc: 'A random 4-emoji sequence is created from a set of 64 emojis (over 16 million possible combinations).' },
+                  { step: '2', title: 'Encrypted and stored locally', desc: 'Your Handshake is encrypted with a non-extractable key and stored in your browser\'s IndexedDB. No server involved.' },
+                  { step: '3', title: 'Origin-bound protection', desc: 'IndexedDB is scoped to the site\'s domain. A phishing site on a different domain cannot access your data, so it can never show your Handshake.' },
+                  { step: '4', title: 'Shown before password entry', desc: 'When you open the wallet unlock screen, your Handshake appears above the password field. Verify it matches before typing.' }
+                ].map((item) => (
+                  <div
+                    key={item.step}
+                    className={cn(
+                      'flex gap-3 p-3 rounded-xl border-[1.5px]',
+                      isDark ? 'border-white/5 bg-white/[0.02]' : 'border-gray-100 bg-gray-50/50'
+                    )}
+                  >
+                    <div
+                      className={cn(
+                        'flex items-center justify-center w-6 h-6 rounded-full text-[11px] font-bold flex-shrink-0 mt-0.5',
+                        isDark ? 'bg-primary/10 text-primary' : 'bg-primary/10 text-primary'
+                      )}
+                    >
+                      {item.step}
+                    </div>
+                    <div>
+                      <div className={cn('text-[13px] font-medium', isDark ? 'text-white/90' : 'text-gray-900')}>
+                        {item.title}
+                      </div>
+                      <div className={cn('text-[12px] mt-0.5', isDark ? 'text-white/50' : 'text-gray-500')}>
+                        {item.desc}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div id="handshake-faq" className="space-y-4">
+              <h3 className={cn('text-lg font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+                FAQ
+              </h3>
+              <div className="space-y-4">
+                {[
+                  { q: 'I don\'t see my Handshake on the unlock screen', a: 'If you cleared your browser data or are using a new browser, your Handshake will be regenerated on your next login. Memorize the new one.' },
+                  { q: 'The emojis look wrong or different', a: 'Do NOT enter your password. You may be on a phishing site. Check the URL carefully, it should be xrpl.to.' },
+                  { q: 'Can I change my Handshake?', a: 'Your Handshake is tied to your encrypted wallet. If you re-import your wallet, a new Handshake will be generated.' },
+                  { q: 'Does Handshake work across devices?', a: 'Each device has its own Handshake since the encryption key is device-specific. When you sync via QR code, the Handshake transfers to the new device.' }
+                ].map((item, i) => (
+                  <div key={i} className="space-y-1">
+                    <div className={cn('text-[13px] font-medium', isDark ? 'text-white/90' : 'text-gray-900')}>
+                      {item.q}
+                    </div>
+                    <div className={cn('text-[12px]', isDark ? 'text-white/50' : 'text-gray-500')}>
+                      {item.a}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'platform-fees':
+        return (
+          <div className="space-y-8">
+            <div>
+              <h2 className="text-2xl font-normal text-primary mb-2">Platform Fees</h2>
+              <p className={cn('text-[14px]', isDark ? 'text-white/60' : 'text-gray-600')}>
+                Transparent fee structure for trading and launching tokens on xrpl.to.
+              </p>
+            </div>
+
+            <div id="pf-trading" className="space-y-4">
+              <h3 className={cn('text-lg font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+                Trading Fee
+              </h3>
+              <div
+                className={cn(
+                  'rounded-xl border-[1.5px] p-4',
+                  isDark ? 'border-primary/20 bg-primary/5' : 'border-primary/20 bg-blue-50/50'
+                )}
+              >
+                <div className="flex items-center justify-between">
+                  <span className={cn('text-[14px] font-medium', isDark ? 'text-white/80' : 'text-gray-800')}>Swap Fee</span>
+                  <span className="text-2xl font-medium text-primary">0.08%</span>
+                </div>
+              </div>
+              <p className={cn('text-[13px] leading-relaxed', isDark ? 'text-white/60' : 'text-gray-600')}>
+                A 0.08% fee is applied to all trades executed through the xrpl.to swap interface. This fee helps maintain and improve the platform.
+              </p>
+              <div className={cn('rounded-xl p-3', isDark ? 'bg-white/5' : 'bg-gray-50')}>
+                <div className={cn('text-[12px] font-medium mb-1.5', isDark ? 'text-white/70' : 'text-gray-700')}>Example</div>
+                <div className={cn('text-[13px]', isDark ? 'text-white/60' : 'text-gray-600')}>
+                  Swapping 1,000 XRP worth of tokens:
+                </div>
+                <div className={cn('text-[13px] mt-1', isDark ? 'text-white/60' : 'text-gray-600')}>
+                  Fee: <span className="text-primary font-medium">0.8 XRP</span> (0.08% of 1,000)
+                </div>
+              </div>
+              <p className={cn('text-[12px]', isDark ? 'text-white/40' : 'text-gray-500')}>
+                This fee is separate from any AMM pool fees or network transaction costs on the XRP Ledger.
+              </p>
+            </div>
+
+            <div id="pf-launch" className="space-y-4">
+              <h3 className={cn('text-lg font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+                Token Launch
+              </h3>
+              <p className={cn('text-[13px] leading-relaxed', isDark ? 'text-white/60' : 'text-gray-600')}>
+                Launch your own token on the XRP Ledger. The total cost depends on your configuration.
+              </p>
+              <div
+                className={cn(
+                  'rounded-xl border-[1.5px] overflow-hidden',
+                  isDark ? 'border-white/5' : 'border-gray-100'
+                )}
+              >
+                <table className="w-full text-[13px]">
+                  <thead className={isDark ? 'bg-white/5' : 'bg-gray-50'}>
+                    <tr>
+                      <th className={cn('text-left px-4 py-2.5 font-medium', isDark ? 'text-white/60' : 'text-gray-600')}>Fee</th>
+                      <th className={cn('text-left px-4 py-2.5 font-medium', isDark ? 'text-white/60' : 'text-gray-600')}>Amount</th>
+                      <th className={cn('text-left px-4 py-2.5 font-medium', isDark ? 'text-white/60' : 'text-gray-600')}>Details</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[
+                      ['AMM Liquidity', 'Min 10 XRP', 'Initial XRP paired with your tokens in the AMM pool. You choose the amount.'],
+                      ['Platform Fee', '2 - 12 XRP', 'Scales with developer allocation %. Higher dev allocation = higher fee.'],
+                      ['Reserves + Fees', '~3 XRP', 'XRPL account reserves (issuer + holder) and on-ledger transaction fees.'],
+                      ['Anti-Snipe', '~2 XRP', 'Optional. 2-minute authorization window preventing bot sniping at launch.'],
+                      ['Bundle Distribution', '1 XRP per recipient', 'Optional. Distributes tokens to additional wallets at launch.'],
+                      ['Platform Token Share', '0 XRP', 'Optional 0-10% of token supply for social rewards. No XRP cost.']
+                    ].map(([fee, amount, details]) => (
+                      <tr key={fee} className={isDark ? 'border-t border-white/5' : 'border-t border-gray-100'}>
+                        <td className={cn('px-4 py-2.5 font-medium', isDark ? 'text-white/80' : 'text-gray-800')}>{fee}</td>
+                        <td className="px-4 py-2.5 text-primary whitespace-nowrap">{amount}</td>
+                        <td className={cn('px-4 py-2.5', isDark ? 'text-white/50' : 'text-gray-500')}>{details}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div
+                className={cn(
+                  'flex items-center gap-3 rounded-xl p-4 border-[1.5px]',
+                  isDark ? 'border-emerald-500/20 bg-emerald-500/5' : 'border-emerald-500/20 bg-emerald-50'
+                )}
+              >
+                <div>
+                  <div className={cn('text-[12px] font-medium mb-0.5', isDark ? 'text-white/70' : 'text-gray-700')}>Typical Total Cost</div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl font-medium text-primary">6 - 20 XRP</span>
+                    <span className={cn('text-[12px]', isDark ? 'text-white/40' : 'text-gray-500')}>depending on configuration</span>
+                  </div>
+                </div>
+              </div>
+              <div className={cn('text-[13px] leading-relaxed', isDark ? 'text-white/60' : 'text-gray-600')}>
+                <div className={cn('font-medium mb-2', isDark ? 'text-white/80' : 'text-gray-800')}>Included with every launch:</div>
+                <ul className="list-disc list-inside space-y-1 ml-1">
+                  <li>Token creation and configuration</li>
+                  <li>Issuer account setup</li>
+                  <li>Trustline creation</li>
+                  <li>AMM pool initialization</li>
+                  <li>Optional anti-snipe protection</li>
+                  <li>Optional developer token allocation (up to 95%)</li>
+                  <li>Optional platform token share for social rewards</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'security':
+        return (
+          <div className="space-y-8">
+            <div>
+              <h2 className="text-2xl font-normal text-primary mb-2">Security</h2>
+              <p className={cn('text-[14px] mb-4', isDark ? 'text-white/60' : 'text-gray-600')}>
+                Your wallet, your responsibility. xrpl.to is a fully self-custody platform where only you control your funds.
+              </p>
+            </div>
+
+            <div id="self-custody" className="space-y-4">
+              <h3 className={cn('text-lg font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+                Self Custody
+              </h3>
+              <div
+                className={cn(
+                  'p-4 rounded-xl border-[1.5px]',
+                  isDark ? 'border-primary/20 bg-primary/5' : 'border-primary/20 bg-blue-50/50'
+                )}
+              >
+                <p className={cn('text-[13px] leading-relaxed', isDark ? 'text-white/70' : 'text-gray-700')}>
+                  xrpl.to is a decentralized platform. Its architecture is designed for full self-custody and user control. There are no custodial accounts, no recovery mechanisms, and no way for anyone, including the xrpl.to team, to access your funds. It is up to you to be your own bank and keep your private key safe, since it gives full access to your funds.
+                </p>
+              </div>
+            </div>
+
+            <div id="device-binding" className="space-y-4">
+              <h3 className={cn('text-lg font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+                Device Binding & Encryption
+              </h3>
+              <div
+                className={cn(
+                  'p-4 rounded-xl border-[1.5px]',
+                  isDark ? 'border-primary/20 bg-primary/5' : 'border-primary/20 bg-blue-50/50'
+                )}
+              >
+                <p className={cn('text-[13px] leading-relaxed', isDark ? 'text-white/70' : 'text-gray-700')}>
+                  xrpl.to uses device binding and password protection to secure your wallet. All encryption and decryption happens entirely client-side using industry-standard encryption methods. Your private keys are encrypted with AES-GCM and stored in IndexedDB, bound to your device. They never leave your browser and are never transmitted to any server.
+                </p>
+              </div>
+            </div>
+
+            <div id="seed-safety" className="space-y-4">
+              <h3 className={cn('text-lg font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+                Seed Safety
+              </h3>
+              <div className="space-y-3">
+                {[
+                  { title: 'Store offline only', desc: 'If backing up your seed, always store it offline. Write it on paper or engrave it on metal. Never save it in a text file, screenshot, cloud storage, or password manager connected to the internet.' },
+                  { title: 'Never share your seed', desc: 'No one from xrpl.to will ever ask for your private seed. Anyone claiming to be xrpl.to support staff requesting your seed is a scammer. There are no exceptions.' },
+                  { title: 'Your seed = your funds', desc: 'Anyone with your seed has complete, irreversible access to your wallet. There is no recovery process, no dispute resolution, and no way to reverse transactions on the XRP Ledger.' }
+                ].map((item, i) => (
+                  <div
+                    key={i}
+                    className={cn(
+                      'flex gap-3 p-3 rounded-xl border-[1.5px]',
+                      isDark ? 'border-white/5 bg-white/[0.02]' : 'border-gray-100 bg-gray-50/50'
+                    )}
+                  >
+                    <div
+                      className={cn(
+                        'flex items-center justify-center w-6 h-6 rounded-full flex-shrink-0 mt-0.5',
+                        isDark ? 'bg-red-500/10' : 'bg-red-50'
+                      )}
+                    >
+                      <AlertTriangle size={12} className="text-red-500" />
+                    </div>
+                    <div>
+                      <div className={cn('text-[13px] font-medium', isDark ? 'text-white/90' : 'text-gray-900')}>
+                        {item.title}
+                      </div>
+                      <div className={cn('text-[12px] mt-0.5', isDark ? 'text-white/50' : 'text-gray-500')}>
+                        {item.desc}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div id="cross-contamination" className="space-y-4">
+              <h3 className={cn('text-lg font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+                Cross Contamination
+              </h3>
+              <div
+                className={cn(
+                  'p-4 rounded-xl border-[1.5px]',
+                  isDark ? 'border-amber-500/20 bg-amber-500/5' : 'border-amber-500/20 bg-amber-50/50'
+                )}
+              >
+                <p className={cn('text-[13px] leading-relaxed', isDark ? 'text-white/70' : 'text-gray-700')}>
+                  <strong>Not recommended:</strong> importing wallet private keys generated on xrpl.to into other platforms, or vice versa. Each platform has its own security model, storage methods, and potential vulnerabilities. Reusing the same seed across multiple platforms increases the attack surface. If any one platform is compromised, all platforms sharing that seed are compromised. Generate a separate wallet for each platform you use.
+                </p>
+              </div>
+            </div>
+
+            <div id="verify-domain" className="space-y-4">
+              <h3 className={cn('text-lg font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+                Verify Domain
+              </h3>
+              <p className={cn('text-[13px] leading-relaxed', isDark ? 'text-white/60' : 'text-gray-600')}>
+                Always verify you are on the correct domain before entering your password or interacting with your wallet.
+              </p>
+              <div className="space-y-2">
+                {[
+                  { label: 'Correct', value: 'xrpl.to', ok: true },
+                  { label: 'Suspicious', value: 'xrpl-to.com, xrpI.to, xrpl.to.xyz', ok: false }
+                ].map((item, i) => (
+                  <div
+                    key={i}
+                    className={cn(
+                      'flex items-center gap-3 px-4 py-2.5 rounded-xl border-[1.5px]',
+                      item.ok
+                        ? isDark ? 'border-emerald-500/20 bg-emerald-500/5' : 'border-emerald-500/20 bg-emerald-50'
+                        : isDark ? 'border-red-500/20 bg-red-500/5' : 'border-red-500/20 bg-red-50'
+                    )}
+                  >
+                    <span className={cn('text-[11px] font-medium uppercase tracking-wider w-20', item.ok ? 'text-emerald-500' : 'text-red-500')}>
+                      {item.label}
+                    </span>
+                    <code className={cn('text-[13px] font-mono', isDark ? 'text-white/80' : 'text-gray-800')}>
+                      {item.value}
+                    </code>
+                  </div>
+                ))}
+              </div>
+              <p className={cn('text-[13px] leading-relaxed mt-3', isDark ? 'text-white/60' : 'text-gray-600')}>
+                Use your <a href="/docs?section=handshake" className="text-primary hover:underline">Handshake</a> emoji code as an additional verification. If it does not appear or looks wrong, do not enter any information. Never enter your seed anywhere if you have already set up your account. If you have any questions, reach out to <a href="https://x.com/xrplto" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">@xrplto on X</a>, but never provide your private seed to anyone under any circumstances.
+              </p>
+            </div>
+
+            <div id="backup" className="space-y-4">
+              <h3 className={cn('text-lg font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+                Backup
+              </h3>
+              <div
+                className={cn(
+                  'p-4 rounded-xl border-[1.5px]',
+                  isDark ? 'border-primary/20 bg-primary/5' : 'border-primary/20 bg-blue-50/50'
+                )}
+              >
+                <p className={cn('text-[13px] leading-relaxed', isDark ? 'text-white/70' : 'text-gray-700')}>
+                  Backup was added for your own control and ownership of your XRP Ledger account. You are your own bank. xrpl.to provides a way to back up your seed natively on the XRP Ledger, not through some platform-specific method that could be exploited. It is your responsibility to back up your seed. If you ever have issues logging in, you can use your seed to recreate your account. xrpl.to does not use keystores, mnemonics, or any other backup method, only your seed.
+                </p>
+              </div>
+              <div className="space-y-3">
+                <p className={cn('text-[13px] font-medium', isDark ? 'text-white/80' : 'text-gray-800')}>
+                  Your seed is a short string that looks like this:
+                </p>
+                <div
+                  className={cn(
+                    'px-4 py-3 rounded-xl border-[1.5px] font-mono text-[13px]',
+                    isDark ? 'border-white/10 bg-white/[0.02] text-white/70' : 'border-gray-200 bg-gray-50 text-gray-700'
+                  )}
+                >
+                  sEdxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+                </div>
+                <p className={cn('text-[12px]', isDark ? 'text-white/40' : 'text-gray-400')}>
+                  Example format only. This is not a real seed.
+                </p>
+              </div>
+              <div
+                className={cn(
+                  'flex gap-3 p-3 rounded-xl border-[1.5px]',
+                  isDark ? 'border-red-500/20 bg-red-500/5' : 'border-red-100 bg-red-50/50'
+                )}
+              >
+                <div
+                  className={cn(
+                    'flex items-center justify-center w-6 h-6 rounded-full flex-shrink-0 mt-0.5',
+                    isDark ? 'bg-red-500/10' : 'bg-red-50'
+                  )}
+                >
+                  <AlertTriangle size={12} className="text-red-500" />
+                </div>
+                <p className={cn('text-[13px] leading-relaxed', isDark ? 'text-white/70' : 'text-gray-700')}>
+                  Keep your seed safe. Anyone with access to it has full control of your funds. Store it offline, never share it, and never enter it on any site other than xrpl.to.
+                </p>
+              </div>
+            </div>
+
+            <div id="user-responsibility" className="space-y-4">
+              <h3 className={cn('text-lg font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+                Your Responsibility
+              </h3>
+              <div
+                className={cn(
+                  'p-4 rounded-xl border-[1.5px]',
+                  isDark ? 'border-primary/20 bg-primary/5' : 'border-primary/20 bg-blue-50/50'
+                )}
+              >
+                <p className={cn('text-[13px] leading-relaxed', isDark ? 'text-white/70' : 'text-gray-700')}>
+                  xrpl.to has taken extensive measures to create a secure platform. However, the security of the platform is often irrelevant if a user is deceived into providing their private keys. It is important to understand your responsibility in guarding your key. Use the proper security measures described above: store your seed offline, never share it with anyone, verify you are on the correct domain, and check your Handshake code before entering any information. Never enter your seed anywhere if you have already set up your account. If you need help, contact <a href="https://x.com/xrplto" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">@xrplto on X</a>.
+                </p>
+              </div>
+            </div>
+          </div>
+        );
+
       case 'api-keys':
         return (
           <div className="space-y-8">
@@ -3291,7 +3688,13 @@ const { apiKey, keyPrefix } = await response.json();
                         Credits
                       </th>
                       <th className={cn('text-left px-4 py-3 font-medium', isDark ? 'text-white/60' : 'text-gray-600')}>
-                        Rate Limit
+                        Requests
+                      </th>
+                      <th className={cn('text-left px-4 py-3 font-medium', isDark ? 'text-white/60' : 'text-gray-600')}>
+                        Submit TX
+                      </th>
+                      <th className={cn('text-left px-4 py-3 font-medium', isDark ? 'text-white/60' : 'text-gray-600')}>
+                        Support
                       </th>
                     </tr>
                   </thead>
@@ -3312,6 +3715,12 @@ const { apiKey, keyPrefix } = await response.json();
                         </td>
                         <td className={cn('px-4 py-3', isDark ? 'text-white/60' : 'text-gray-600')}>
                           {row.rate}
+                        </td>
+                        <td className={cn('px-4 py-3', isDark ? 'text-white/60' : 'text-gray-600')}>
+                          {row.submit || '-'}
+                        </td>
+                        <td className={cn('px-4 py-3', isDark ? 'text-white/60' : 'text-gray-600')}>
+                          {row.support || '-'}
                         </td>
                       </tr>
                     ))}
@@ -3891,10 +4300,10 @@ syncWs.onopen = () => {
 
       <Header />
 
-      <div className={cn('min-h-dvh scroll-smooth overflow-x-hidden', isDark ? 'bg-black' : 'bg-white')}>
+      <div className={cn('min-h-dvh scroll-smooth overflow-x-hidden pt-[52px]', isDark ? 'bg-black' : 'bg-white')}>
         {/* Mobile top bar */}
         <div className={cn(
-          'md:hidden sticky top-0 z-50 flex items-center justify-between px-4 py-2.5 border-b',
+          'md:hidden sticky top-0 z-50 flex items-center justify-between px-4 py-2.5 border-b mt-0',
           isDark
             ? 'bg-black/95 backdrop-blur-md border-white/10'
             : 'bg-white/95 backdrop-blur-md border-black/10'
@@ -3925,7 +4334,7 @@ syncWs.onopen = () => {
           {/* Mobile sidebar overlay */}
           {isSidebarOpen && (
             <div
-              className="md:hidden fixed inset-0 z-30 bg-black/50 backdrop-blur-sm h-dvh"
+              className="md:hidden fixed inset-0 top-[52px] z-30 bg-black/50 backdrop-blur-sm"
               onClick={() => setIsSidebarOpen(false)}
             />
           )}
@@ -3934,7 +4343,7 @@ syncWs.onopen = () => {
           <div
             className={cn(
               'w-[240px] border-r overflow-y-auto scrollbar-hide transition-all duration-300 pt-4',
-              'fixed md:sticky top-0 h-dvh z-40',
+              'fixed md:sticky top-[52px] h-[calc(100dvh-52px)] z-40',
               isDark
                 ? 'bg-black border-white/10'
                 : 'bg-white border-[rgba(59,130,246,0.15)]',
@@ -4195,11 +4604,11 @@ syncWs.onopen = () => {
           {/* On this page - Right sidebar (desktop only) */}
           <div
             className={cn(
-              'hidden xl:block w-[200px] pt-20 pr-4',
+              'hidden xl:block w-[200px] pt-6 pr-4',
               isDark ? 'border-white/[0.05]' : 'border-gray-100'
             )}
           >
-            <div className="sticky top-20">
+            <div className="sticky top-[68px]">
               <div
                 className={cn(
                   'text-[11px] font-semibold uppercase tracking-wider mb-4 flex items-center gap-2',

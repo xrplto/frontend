@@ -47,7 +47,9 @@ import {
   Link2,
   MessageCircle,
   Shield,
-  ImageOff
+  ImageOff,
+  Zap,
+  Flame
 } from 'lucide-react';
 import VerificationBadge, { VerificationLabel } from 'src/components/VerificationBadge';
 import VerifyBadgeModal from 'src/components/VerifyBadgeModal';
@@ -91,7 +93,8 @@ import { ThemeContext, WalletContext, AppContext } from 'src/context/AppContext'
 import AccountTransactions from 'src/components/CollectionActivity';
 import { fNumber, fIntNumber, fVolume, formatMonthYear, isEqual } from 'src/utils/formatters';
 import { getNftCoverUrl, getNftFilesUrls, normalizeCurrencyCode } from 'src/utils/parseUtils';
-import { NFTShareModal } from '../components/ShareButtons';
+import BoostModal from 'src/components/BoostModal';
+import TweetPromoteModal from 'src/components/TweetPromoteModal';
 import TokenTabs from 'src/TokenDetail/components/TokenTabs';
 import { addTokenToTabs } from 'src/hooks/useTokenTabs';
 import { ApiButton, registerApiCalls } from 'src/components/ApiEndpointsModal';
@@ -3098,6 +3101,9 @@ export default function CollectionView({ collection }) {
   const [showVerifyModal, setShowVerifyModal] = useState(false);
   const [currentVerified, setCurrentVerified] = useState(null);
   const [showChart, setShowChart] = useState(true);
+  const [showBoostModal, setShowBoostModal] = useState(false);
+  const [tweetCount, setTweetCount] = useState(0);
+  const [showPromoteModal, setShowPromoteModal] = useState(false);
   useEffect(() => {
     const saved = localStorage.getItem('nft_show_chart');
     if (saved === 'false') setShowChart(false);
@@ -3113,6 +3119,17 @@ export default function CollectionView({ collection }) {
       registerApiCalls([`https://api.xrpl.to/v1/nft/collections/${collection.slug}`]);
     }
   }, [collection?.slug]);
+
+  // Fetch tweet verification count for this collection
+  const collectionSlug = collection?.collection?.slug || collection?.slug;
+  useEffect(() => {
+    if (!collectionSlug) return;
+    let cancelled = false;
+    api.get(`https://api.xrpl.to/v1/tweet/token/${collectionSlug}?limit=0`)
+      .then(res => { if (!cancelled && res.data) setTweetCount(res.data.count || 0); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [collectionSlug]);
 
   // Persist chart visibility
   useEffect(() => {
@@ -3197,7 +3214,9 @@ export default function CollectionView({ collection }) {
     floor30dPercent,
     daily_txs,
     daily_users,
-    uuid
+    uuid,
+    trendingBoost,
+    trendingBoostExpires
   } = collection?.collection || collection || {};
 
   // Royalty fee: API may return as transferFee (basis points 0-50000) or royaltyFee (percentage)
@@ -3325,10 +3344,37 @@ export default function CollectionView({ collection }) {
           </div>
           <div className="flex items-center gap-2 flex-wrap">
             <span
-              className={cn('text-base font-semibold', isDark ? 'text-white' : 'text-gray-900')}
+              className={cn(
+                'text-base font-semibold',
+                trendingBoost >= 500 && trendingBoostExpires > Date.now()
+                  ? 'text-[#FFD700]'
+                  : isDark ? 'text-white' : 'text-gray-900'
+              )}
             >
               {name}
             </span>
+            {trendingBoost > 0 && trendingBoostExpires > Date.now() && (
+              <span
+                className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-[10px] font-bold tracking-wider bg-[#F6AF01]/10 text-[#F6AF01]"
+                title={`${trendingBoost} active boosts`}
+              >
+                <Flame size={10} fill="#F6AF01" />
+                {trendingBoost}
+              </span>
+            )}
+            {tweetCount > 0 && (
+              <button
+                onClick={() => setShowPromoteModal(true)}
+                className={cn(
+                  'inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-bold tracking-wider cursor-pointer transition-[background-color]',
+                  isDark ? 'bg-white/[0.06] text-white/60 hover:bg-white/[0.1]' : 'bg-black/[0.04] text-gray-500 hover:bg-black/[0.08]'
+                )}
+                title={`${tweetCount} verified tweets`}
+              >
+                <svg width={10} height={10} viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>
+                {tweetCount}
+              </button>
+            )}
             <VerificationLabel verified={displayVerified} isDark={isDark} />
             {tags?.length > 0 &&
               tags.slice(0, 4).map((tag, i) => (
@@ -3572,8 +3618,35 @@ export default function CollectionView({ collection }) {
                 </div>
               )}
             </div>
-            {/* Share */}
-            <NFTShareModal name={shareTitle} imageUrl={`https://s1.xrpl.to/nft-collection/${logoImage}`} url={shareUrl} />
+            {/* Promote */}
+            <TweetPromoteModal
+              token={{ md5: slug, name, slug, issuer: issuer || '' }}
+              type="nft"
+              tweetCount={tweetCount}
+              onCountChange={setTweetCount}
+              open={showPromoteModal}
+              onOpenChange={setShowPromoteModal}
+              className={cn(
+                'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium transition-[background-color]',
+                isDark
+                  ? 'bg-white/5 text-white/70 hover:bg-white/10'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              )}
+            />
+            {/* Boost */}
+            <button
+              onClick={() => setShowBoostModal(true)}
+              title="Boost trending position"
+              className={cn(
+                'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium transition-[background-color]',
+                isDark
+                  ? 'bg-white/5 text-white/70 hover:bg-white/10'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              )}
+            >
+              <Zap size={13} />
+              Boost
+            </button>
             {accountLogin === collection.account && (
               <Link
                 href={`/nfts/${slug}/edit`}
@@ -4079,6 +4152,14 @@ export default function CollectionView({ collection }) {
             setCurrentVerified(newTier);
             setShowVerifyModal(false);
           }}
+        />
+      )}
+
+      {showBoostModal && (
+        <BoostModal
+          collection={{ slug, name, logoImage }}
+          onClose={() => setShowBoostModal(false)}
+          onSuccess={() => setShowBoostModal(false)}
         />
       )}
     </div>

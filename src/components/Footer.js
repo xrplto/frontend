@@ -9,7 +9,7 @@ const NAV_LINKS = [
   { href: '/nfts', label: 'NFTs' },
   { href: '/swap', label: 'Swap' },
   { href: '/news', label: 'News' },
-  { href: '/docs', label: 'API' },
+  { href: '/docs', label: 'Docs' },
   { href: '/about', label: 'About' }
 ];
 

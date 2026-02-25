@@ -67,6 +67,8 @@ import {
   ImageOff
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import BadgeShield from 'src/components/BadgeShield';
+import { achievementBadges, tierConfig, rankStyles, knownRoles, knownTiers, defaultBadge } from 'src/components/badgeConfig';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 const QRCode = dynamic(() => import('react-qr-code'), { ssr: false });
@@ -195,6 +197,7 @@ export default function WalletPage() {
   const [referralUser, setReferralUser] = useState(null);
   const [referralStats, setReferralStats] = useState(null);
   const [referralLoading, setReferralLoading] = useState(false);
+  const [referralFetched, setReferralFetched] = useState(false);
   const [referralForm, setReferralForm] = useState({ referralCode: '', referredBy: '' });
   const [referralError, setReferralError] = useState('');
   const [referralCopied, setReferralCopied] = useState(false);
@@ -223,6 +226,7 @@ export default function WalletPage() {
 
   // Tier state
   const [tiers, setTiers] = useState({});
+  const [tierXrpUsd, setTierXrpUsd] = useState(null);
   const [userPerks, setUserPerks] = useState(null);
   const [tiersLoading, setTiersLoading] = useState(false);
   const [purchaseLoading, setPurchaseLoading] = useState(null);
@@ -1286,6 +1290,7 @@ export default function WalletPage() {
         }
       } catch (e) { }
       setReferralLoading(false);
+      setReferralFetched(true);
     };
     fetchReferral();
   }, [activeTab, address, router.query.ref]);
@@ -1557,7 +1562,10 @@ export default function WalletPage() {
         ]);
         if (tiersRes.ok) {
           const data = await tiersRes.json();
-          if (data.success && data.config && typeof data.config === 'object') setTiers(data.config);
+          if (data.success && data.config && typeof data.config === 'object') {
+            setTiers(data.config);
+            if (data.xrpUsd > 0) setTierXrpUsd(data.xrpUsd);
+          }
         }
         if (perksRes?.ok) {
           const data = await perksRes.json();
@@ -1624,6 +1632,25 @@ export default function WalletPage() {
     setVerifyingPayment(false);
   };
 
+  const verifyTierWithRetry = async (invoiceId) => {
+    const maxAttempts = 6;
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      const res = await apiFetch(`${BASE_URL}/api/user/tier/verify/${invoiceId}`);
+      const data = await res.json();
+      if (data.tier || data.status === 'paid') {
+        if (data.perks && typeof data.perks === 'object') setUserPerks(data.perks);
+        if (data.tier) setProfileUser(u => u ? { ...u, tier: data.tier } : u);
+        setXrpInvoice(null);
+        toast.success(`Upgraded to ${data.tier || 'new tier'}!`);
+        return;
+      }
+      if (attempt < maxAttempts - 1) {
+        await new Promise(r => setTimeout(r, 2000 * (attempt + 1)));
+      }
+    }
+    throw new Error('Payment not yet confirmed. Click "I have paid" to try again.');
+  };
+
   const handleWalletPayTier = async () => {
     if (!xrpInvoice || !address) return;
     setWalletPayStatus('signing');
@@ -1660,16 +1687,9 @@ export default function WalletPage() {
         return;
       }
 
-      // Auto-verify
+      // Auto-verify with retry (on-chain indexing may take a few seconds)
       setWalletPayStatus('verifying');
-      const res = await apiFetch(`${BASE_URL}/api/user/tier/verify/${xrpInvoice.invoiceId}`);
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Payment not verified');
-      if (data.status === 'pending') throw new Error('Payment not yet confirmed. Try verifying again in a moment.');
-      if (data.perks && typeof data.perks === 'object') setUserPerks(data.perks);
-      if (data.tier) setProfileUser(u => u ? { ...u, tier: data.tier } : u);
-      setXrpInvoice(null);
-      toast.success(`Upgraded to ${data.tier || 'new tier'}!`);
+      await verifyTierWithRetry(xrpInvoice.invoiceId);
     } catch (e) {
       console.error('Wallet pay error:', e);
       setProfileError(e.message || 'Payment failed');
@@ -3675,7 +3695,7 @@ export default function WalletPage() {
             {/* XRP Army Referral Tab */}
             {activeTab === 'referral' && (
               <section role="tabpanel" id="tabpanel-referral" aria-label="Referral" className="space-y-4">
-                {referralLoading ? (
+                {referralLoading || !referralFetched ? (
                   <div className={cn('rounded-xl p-12 text-center', isDark ? 'bg-black/50 border-[1.5px] border-white/10' : 'bg-white border-[1.5px] border-gray-200')}>
                     <p className={cn('text-sm', isDark ? 'text-white/40' : 'text-gray-400')}>Loading...</p>
                   </div>
@@ -3769,21 +3789,6 @@ export default function WalletPage() {
                         </div>
 
                         {(() => {
-                          const allBadges = {
-                            first_recruit: { icon: Users, label: 'First Recruit', color: '#CD7F32' },
-                            squad_leader: { icon: Users, label: 'Squad Leader', color: '#137DFE' },
-                            daily_duty: { icon: Zap, label: 'Daily Duty', color: '#F6AF01' },
-                            platoon_leader: { icon: Medal, label: 'Platoon Leader', color: '#C0C0C0' },
-                            whale_spotter: { icon: Gem, label: 'Whale Spotter', color: '#137DFE' },
-                            dedicated: { icon: Flame, label: 'Dedicated', color: '#F6AF01' },
-                            battalion_leader: { icon: Medal, label: 'Battalion Leader', color: '#F6AF01' },
-                            chain_of_command: { icon: Target, label: 'Chain of Command', color: '#650CD4' },
-                            iron_will: { icon: Shield, label: 'Iron Will', color: '#08AA09' },
-                            whale_hunter: { icon: Gem, label: 'Whale Hunter', color: '#650CD4' },
-                            army_commander: { icon: Crown, label: 'Army Commander', color: '#650CD4' },
-                            war_hero: { icon: Swords, label: 'War Hero', color: '#F6AF01' },
-                            supreme: { icon: Crown, label: 'Supreme', color: '#F6AF01' },
-                          };
                           const progress = referralStats?.badges?.progress || {};
                           const earned = referralStats?.badges?.list || referralUser.badges || [];
                           const badgeKeys = Object.keys(progress).length > 0 ? Object.keys(progress) : earned;
@@ -3791,17 +3796,12 @@ export default function WalletPage() {
                           return badgeKeys.length > 0 ? (
                             <div className="space-y-2">
                               {badgeKeys.map((key) => {
-                                const cfg = allBadges[key] || { icon: Award, label: key.replace(/_/g, ' '), color: '#888' };
-                                const Icon = cfg.icon;
+                                const cfg = achievementBadges[key] || { ...defaultBadge, label: key.replace(/_/g, ' ') };
                                 const done = progress[key]?.done ?? earned.includes(key);
                                 const pct = progress[key]?.pct || (done ? 100 : 0);
                                 return (
                                   <div key={key} className="flex items-center gap-3">
-                                    <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center shrink-0 border-[1.5px]',
-                                      done ? 'border-transparent' : isDark ? 'border-white/10' : 'border-gray-200'
-                                    )} style={{ backgroundColor: done ? `${cfg.color}20` : isDark ? 'rgba(255,255,255,0.03)' : '#f9fafb' }}>
-                                      <Icon size={15} style={{ color: done ? cfg.color : isDark ? 'rgba(255,255,255,0.2)' : '#d1d5db' }} />
-                                    </div>
+                                    <BadgeShield badgeKey={key} earned={done} size="sm" />
                                     <div className="flex-1 min-w-0">
                                       <div className="flex items-center justify-between mb-0.5">
                                         <span className={cn('text-[11px] font-semibold capitalize truncate', done ? (isDark ? 'text-white' : 'text-gray-900') : isDark ? 'text-white/30' : 'text-gray-400')}>{cfg.label}</span>
@@ -4118,34 +4118,69 @@ export default function WalletPage() {
                         </div>
                       </div>
 
-                      {/* Memberships & Badges */}
-                      <div className="md:absolute md:top-0 md:right-0 flex flex-wrap items-center justify-center md:justify-end gap-1.5">
-                        {(userPerks?.groups?.length > 0 || userPerks?.roles?.length > 0) && (
-                          [...new Set([...(userPerks.roles || []).filter(r => r !== 'member'), ...(userPerks.groups || [])])].map(tierName => {
-                            const tc = { admin: { icon: Shield, bg: 'bg-rose-500/10', text: 'text-rose-400', border: 'border-rose-500/20' }, moderator: { icon: Shield, bg: 'bg-orange-500/10', text: 'text-orange-400', border: 'border-orange-500/20' }, verified: { icon: Check, bg: 'bg-gradient-to-r from-[#FFD700]/10 via-[#FF6B9D]/10 to-[#00FFFF]/10', text: 'text-white', border: 'border-[#FFD700]/30', gradient: true }, diamond: { icon: Gem, bg: 'bg-violet-500/10', text: 'text-violet-400', border: 'border-violet-500/20' }, nova: { icon: Star, bg: 'bg-amber-500/10', text: 'text-amber-400', border: 'border-amber-500/20' }, vip: { icon: Sparkles, bg: 'bg-emerald-500/10', text: 'text-emerald-400', border: 'border-emerald-500/20' }, private: { icon: Crown, bg: 'bg-purple-500/10', text: 'text-purple-400', border: 'border-purple-500/20' } };
-                            const config = tc[tierName] || { icon: Trophy, bg: isDark ? 'bg-white/5' : 'bg-gray-100', text: isDark ? 'text-white/50' : 'text-gray-500', border: isDark ? 'border-white/10' : 'border-gray-200' };
+                      {/* Role / Tier / Rank / Badges — separated into labeled groups */}
+                      <div className="md:absolute md:top-0 md:right-0 flex flex-col items-center md:items-end gap-2">
+                        {(() => {
+                          const allItems = [...new Set([...(userPerks?.roles || []).filter(r => r !== 'member'), ...(userPerks?.groups || [])])];
+                          const roles = allItems.filter(r => knownRoles.includes(r));
+                          const tiers = allItems.filter(r => knownTiers.includes(r));
+                          const rankItem = allItems.find(r => r.startsWith('rank:'));
+                          const rankName = rankItem ? rankItem.split(':')[1] : null;
+                          if (roles.length === 0 && tiers.length === 0 && !rankName) return null;
+
+                          const defaultPill = { icon: Trophy, bg: isDark ? 'bg-white/5' : 'bg-gray-100', text: isDark ? 'text-white/50' : 'text-gray-500', border: isDark ? 'border-white/10' : 'border-gray-200' };
+                          const defaultRankStyle = { bg: isDark ? 'bg-white/5' : 'bg-gray-100', text: isDark ? 'text-white/50' : 'text-gray-500', border: isDark ? 'border-white/10' : 'border-gray-200' };
+
+                          const renderPill = (name, config) => {
                             const Icon = config.icon;
                             return (
-                              <span key={tierName} className={cn('px-3 py-1.5 rounded-full text-[11px] font-bold tracking-tight flex items-center gap-1.5 border backdrop-blur-md whitespace-nowrap', config.bg, config.border)}>
+                              <span key={name} className={cn('px-3 py-1.5 rounded-full text-[11px] font-bold tracking-tight flex items-center gap-1.5 border backdrop-blur-md whitespace-nowrap', config.bg, config.border)}>
                                 {Icon && <Icon size={12} className={config.gradient ? 'text-[#FFD700]' : config.text} />}
-                                <span className={cn(config.gradient ? 'bg-gradient-to-r from-[#FFD700] via-[#FF6B9D] to-[#00FFFF] bg-clip-text text-transparent' : config.text)}>{tierName.toUpperCase()}</span>
+                                <span className={cn(config.gradient ? 'bg-gradient-to-r from-[#FFD700] via-[#FF6B9D] to-[#00FFFF] bg-clip-text text-transparent' : config.text)}>{name.toUpperCase()}</span>
                               </span>
                             );
-                          })
-                        )}
-                        {displayBadges.available.filter(b => b.startsWith('badge:')).map(badgeId => {
-                          const name = badgeId.split(':')[1];
-                          const ac = { first_recruit: { icon: Users, bg: 'bg-[#137DFE]/15', text: 'text-[#137DFE]', border: 'border-[#137DFE]/20', label: 'First Recruit' }, squad_leader: { icon: Swords, bg: 'bg-[#F6AF01]/15', text: 'text-[#F6AF01]', border: 'border-[#F6AF01]/20', label: 'Squad Leader' }, early_adopter: { icon: Zap, bg: 'bg-[#08AA09]/15', text: 'text-[#08AA09]', border: 'border-[#08AA09]/20', label: 'Early Adopter' }, top_trader: { icon: TrendingUp, bg: 'bg-[#137DFE]/15', text: 'text-[#137DFE]', border: 'border-[#137DFE]/20', label: 'Top Trader' }, whale: { icon: Gem, bg: 'bg-[#650CD4]/15', text: 'text-[#a855f7]', border: 'border-[#650CD4]/20', label: 'Whale' }, og: { icon: Medal, bg: 'bg-[#F6AF01]/15', text: 'text-[#F6AF01]', border: 'border-[#F6AF01]/20', label: 'OG' }, contributor: { icon: Gift, bg: 'bg-[#08AA09]/15', text: 'text-[#08AA09]', border: 'border-[#08AA09]/20', label: 'Contributor' }, army_general: { icon: Crown, bg: 'bg-[#650CD4]/15', text: 'text-[#a855f7]', border: 'border-[#650CD4]/20', label: 'Army General' } };
-                          const defaultCfg = { icon: Award, bg: isDark ? 'bg-white/5' : 'bg-gray-100', text: isDark ? 'text-white/50' : 'text-gray-500', border: isDark ? 'border-white/10' : 'border-gray-200' };
-                          const config = ac[name] || defaultCfg;
-                          const Icon = config.icon;
+                          };
+
                           return (
-                            <span key={badgeId} className={cn('px-2.5 py-1 rounded-md text-[10px] font-semibold tracking-wide flex items-center gap-1.5 border', config.bg, config.border)}>
-                              {Icon && <Icon size={11} className={config.text} />}
-                              <span className={config.text}>{config.label || name.replace(/_/g, ' ').toUpperCase()}</span>
-                            </span>
+                            <div className="flex flex-wrap items-center justify-center md:justify-end gap-1.5">
+                              {roles.length > 0 && (
+                                <>
+                                  <span className={cn('text-[9px] font-bold uppercase tracking-widest mr-1', isDark ? 'text-white/20' : 'text-gray-300')}>Role</span>
+                                  {roles.map(r => renderPill(r, tierConfig[r] || defaultPill))}
+                                </>
+                              )}
+                              {tiers.length > 0 && (
+                                <>
+                                  <span className={cn('text-[9px] font-bold uppercase tracking-widest', roles.length > 0 ? 'ml-2 mr-1' : 'mr-1', isDark ? 'text-white/20' : 'text-gray-300')}>Tier</span>
+                                  {tiers.map(t => renderPill(t, tierConfig[t] || defaultPill))}
+                                </>
+                              )}
+                              {rankName && (
+                                <>
+                                  <span className={cn('text-[9px] font-bold uppercase tracking-widest', (roles.length > 0 || tiers.length > 0) ? 'ml-2 mr-1' : 'mr-1', isDark ? 'text-white/20' : 'text-gray-300')}>Rank</span>
+                                  {(() => {
+                                    const rs = rankStyles[rankName] || defaultRankStyle;
+                                    return (
+                                      <span className={cn('px-3 py-1.5 rounded-full text-[11px] font-bold tracking-tight flex items-center gap-1.5 border backdrop-blur-md whitespace-nowrap', rs.bg, rs.border)}>
+                                        <Swords size={12} className={rs.gradient ? 'text-[#FFD700]' : rs.text} />
+                                        <span className={cn(rs.gradient ? 'bg-gradient-to-r from-[#FFD700] via-[#FF6B9D] to-[#00FFFF] bg-clip-text text-transparent' : rs.text)}>{rankName.toUpperCase()}</span>
+                                      </span>
+                                    );
+                                  })()}
+                                </>
+                              )}
+                            </div>
                           );
-                        })}
+                        })()}
+                        {/* Achievement Badges — shield SVGs */}
+                        {displayBadges.available.filter(b => b.startsWith('badge:')).length > 0 && (
+                          <div className="flex flex-wrap items-center justify-center md:justify-end gap-1">
+                            <span className={cn('text-[9px] font-bold uppercase tracking-widest mr-1', isDark ? 'text-white/20' : 'text-gray-300')}>Badges</span>
+                            {displayBadges.available.filter(b => b.startsWith('badge:')).map(badgeId => (
+                              <BadgeShield key={badgeId} badgeKey={badgeId.split(':')[1]} earned={true} size="md" />
+                            ))}
+                          </div>
+                        )}
                       </div>
                     </div>
 
@@ -4348,7 +4383,7 @@ export default function WalletPage() {
                   {displayBadges.available.filter(b => b.startsWith('tier:')).length > 1 && (
                     <div className={cn('px-4 py-3 border-b', isDark ? 'border-white/[0.08]' : 'border-gray-100')}>
                       <div className="flex items-center justify-between">
-                        <p className={cn('text-[11px] font-semibold uppercase tracking-wider', isDark ? 'text-white/30' : 'text-gray-400')}>Active Badge</p>
+                        <p className={cn('text-[11px] font-semibold uppercase tracking-wider', isDark ? 'text-white/30' : 'text-gray-400')}>Active Tier</p>
                         <div className="flex flex-wrap items-center justify-end gap-1.5">
                           {displayBadges.available.filter(b => b.startsWith('tier:')).map(badgeId => {
                             const name = badgeId.split(':')[1];
@@ -4524,6 +4559,11 @@ export default function WalletPage() {
                                         </span>
                                       )}
                                     </div>
+                                    {tier.price > 0 && tierXrpUsd > 0 && (
+                                      <div className={cn('text-[10px] mt-0.5', isDark ? 'text-white/30' : 'text-gray-400')}>
+                                        ≈ {Math.ceil(tier.price / tierXrpUsd)} XRP
+                                      </div>
+                                    )}
                                   </div>
                                 </div>
 
@@ -4539,7 +4579,21 @@ export default function WalletPage() {
                                         <span className={cn('text-xs font-medium', isDark ? 'text-white/50' : 'text-gray-500')}>Custom username</span>
                                       </div>
                                     )}
-                                    {tier.perks.verifiedBadge && (
+                                    <div className="flex items-center gap-2">
+                                      <div className={cn('w-1.5 h-1.5 rounded-full', isCurrentTier ? 'bg-white' : config.text)} />
+                                      <span className={cn('text-xs font-medium', isDark ? 'text-white/50' : 'text-gray-500')}>Unique chat color</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      <div className={cn('w-1.5 h-1.5 rounded-full', isCurrentTier ? 'bg-white' : config.text)} />
+                                      <span className={cn('text-xs font-medium', isDark ? 'text-white/50' : 'text-gray-500')}>
+                                        <span className={cn('capitalize font-semibold', config.text)}>{name}</span> tier badge
+                                      </span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      <div className={cn('w-1.5 h-1.5 rounded-full', isCurrentTier ? 'bg-white' : config.text)} />
+                                      <span className={cn('text-xs font-medium', isDark ? 'text-white/50' : 'text-gray-500')}>Platform support</span>
+                                    </div>
+                                    {tier.perks.verifiedBadge && name !== 'verified' && (
                                       <div className="flex items-center gap-2">
                                         <div className={cn('w-1.5 h-1.5 rounded-full', isCurrentTier ? 'bg-white' : config.text)} />
                                         <span className={cn('text-xs font-medium', isDark ? 'text-white/50' : 'text-gray-500')}>Verified badge</span>

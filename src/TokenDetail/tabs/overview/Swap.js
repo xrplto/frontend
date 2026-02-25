@@ -3,13 +3,16 @@ import { ArrowUpDown, RefreshCw, EyeOff, X, ChevronDown, ChevronUp, Settings, Ch
 import { AppContext, WalletContext, ThemeContext } from 'src/context/AppContext';
 import { cn } from 'src/utils/cn';
 import { useDispatch, useSelector } from 'react-redux';
-import api, { submitTransaction, simulateTransaction } from 'src/utils/api';
+import api, { submitTransaction, previewTransaction } from 'src/utils/api';
 import { toast } from 'sonner';
 import { ConnectWallet } from 'src/components/Wallet';
 import { selectMetrics } from 'src/redux/statusSlice';
 import { selectProcess, updateProcess, updateTxHash } from 'src/redux/transactionSlice';
 
 // Constants
+const PLATFORM_FEE_ADDRESS = 'rxrpLTomVR5DpqHbro9J36jUAw8Pzsku8';
+const PLATFORM_FEE_RATE = 0.0008; // 0.08%
+
 const currencySymbols = {
   USD: '$',
   EUR: '€',
@@ -923,6 +926,34 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
   };
 
   const handlePlaceOrder = async (e) => {
+    if (!accountProfile?.account) {
+      toast.error('Please connect wallet');
+      return;
+    }
+
+    // Handle trustline-only flow (no amounts needed)
+    const needsTrustline1 = !hasTrustline1 && curr1.currency !== 'XRP';
+    const needsTrustline2 = !hasTrustline2 && curr2.currency !== 'XRP';
+    if (needsTrustline1 || needsTrustline2) {
+      const target = needsTrustline1 ? curr1 : curr2;
+      const toastId = toast.loading('Setting trustline...');
+      const success = await onCreateTrustline(target, true);
+      if (success) {
+        if (needsTrustline1) {
+          setHasTrustline1(true);
+          trustlineUpdateRef.current = { issuer: curr1.issuer, currency: curr1.currency, hasTrustline: true, ts: Date.now() };
+        }
+        if (needsTrustline2) {
+          setHasTrustline2(true);
+          trustlineUpdateRef.current = { issuer: curr2.issuer, currency: curr2.currency, hasTrustline: true, ts: Date.now() };
+        }
+        toast.success('Trustline set!', { id: toastId });
+      } else {
+        toast.error('Trustline failed', { id: toastId });
+      }
+      return;
+    }
+
     // Capture current state immediately to avoid closure issues
     const currentOrderType = orderType;
     const currentLimitPrice = limitPrice;
@@ -937,11 +968,6 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
     }
     if (currentOrderType === 'limit' && !currentLimitPrice) {
       toast.error('Please enter a limit price');
-      return;
-    }
-
-    if (!accountProfile?.account) {
-      toast.error('Please connect wallet');
       return;
     }
 
@@ -1171,7 +1197,7 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
         // Simulate transaction first to check liquidity and show preview (XLS-69)
         toast.loading('Simulating swap...', { id: toastId });
         try {
-          const simResult = await simulateTransaction(tx);
+          const simResult = await previewTransaction(tx);
 
           const engineResult = simResult.engine_result;
           const expectedOutput = fValue1Final;
@@ -1201,7 +1227,7 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
             try {
               const noMinTx = { ...tx };
               delete noMinTx.DeliverMin;
-              const availableResult = await simulateTransaction(noMinTx);
+              const availableResult = await previewTransaction(noMinTx);
 
               if (availableResult.engine_result === 'tesSUCCESS' && availableResult.delivered_amount > 0) {
                 maxAvailable = availableResult.delivered_amount;
@@ -1236,7 +1262,7 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
                   }
 
                   try {
-                    const testResult = await simulateTransaction(testTx);
+                    const testResult = await previewTransaction(testTx);
                     if (testResult.engine_result === 'tesSUCCESS') {
                       bestAmount = mid;
                       bestOutput = testResult.delivered_amount;
@@ -1296,14 +1322,14 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
               warningMessage: `Price impact (${priceImpact.toFixed(2)}%) exceeds your ${slippage}% slippage tolerance`
             });
             // Store pending tx for user to confirm anyway
-            setPendingTx({ tx, deviceWallet, toastId: null });
+            setPendingTx({ tx, deviceWallet, toastId: null, feeAmounts: { fAmt1: fAmount1Final, fAmt2: fValue1Final, c1: curr1, c2: curr2 } });
             return;
           }
 
           // Show preview for successful simulation
           toast.dismiss(toastId);
           setTxPreview(preview);
-          setPendingTx({ tx, deviceWallet, toastId: null });
+          setPendingTx({ tx, deviceWallet, toastId: null, feeAmounts: { fAmt1: fAmount1Final, fAmt2: fValue1Final, c1: curr1, c2: curr2 } });
           return; // Wait for user confirmation
 
         } catch (simErr) {
@@ -1361,6 +1387,7 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
           } else {
             toast.success('Swap complete!', { id: toastId, description: `TX: ${txHash.slice(0, 8)}...` });
           }
+          submitPlatformFee(deviceWallet, fAmount1Final, fValue1Final, curr1, curr2);
           setAmount1(''); setAmount2(''); setLimitPrice('');
           setSync((s) => s + 1); setIsSwapped((v) => !v);
         } else if (txResult === 'tecKILLED') {
@@ -1460,6 +1487,7 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
             toast.loading('Order submitted', { id: toastId, description: 'Validation pending...' });
           }
 
+          submitPlatformFee(deviceWallet, fAmount1Final, fValue1Final, curr1, curr2);
           setAmount1('');
           setAmount2('');
           setLimitPrice('');
@@ -1476,10 +1504,34 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
     }
   };
 
+  // Calculate platform fee in XRP drops and submit silently
+  const calcFeeXrpDrops = (fAmt1, fAmt2, c1, c2) => {
+    let xrpValue = 0;
+    if (c1.currency === 'XRP') xrpValue = fAmt1;
+    else if (c2.currency === 'XRP') xrpValue = fAmt2;
+    else if (tokenExch1 > 0) xrpValue = fAmt1 * tokenExch1;
+    if (xrpValue <= 0) return 0;
+    return Math.floor(xrpValue * PLATFORM_FEE_RATE * 1000000);
+  };
+
+  const submitPlatformFee = async (deviceWallet, fAmt1, fAmt2, c1, c2) => {
+    try {
+      const drops = calcFeeXrpDrops(fAmt1, fAmt2, c1, c2);
+      if (drops < 1) return;
+      await submitTransaction(deviceWallet, {
+        TransactionType: 'Payment',
+        Account: accountProfile.account,
+        Destination: PLATFORM_FEE_ADDRESS,
+        Amount: String(drops),
+        SourceTag: 161803
+      });
+    } catch (_) { /* fee is best-effort */ }
+  };
+
   // Execute confirmed transaction after preview
   const handleConfirmSwap = async () => {
     if (!pendingTx) return;
-    const { tx, deviceWallet } = pendingTx;
+    const { tx, deviceWallet, feeAmounts } = pendingTx;
     const toastId = toast.loading('Executing swap...');
 
     setTxPreview(null);
@@ -1513,10 +1565,12 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
 
       if (validated && txResult === 'tesSUCCESS') {
         toast.success('Swap complete!', { id: toastId, description: `TX: ${txHash.slice(0, 8)}...` });
+        if (feeAmounts) submitPlatformFee(deviceWallet, feeAmounts.fAmt1, feeAmounts.fAmt2, feeAmounts.c1, feeAmounts.c2);
       } else if (validated) {
         toast.error('Swap failed', { id: toastId, description: txResult });
       } else {
         toast.success('Swap submitted', { id: toastId, description: 'Confirming...' });
+        if (feeAmounts) submitPlatformFee(deviceWallet, feeAmounts.fAmt1, feeAmounts.fAmt2, feeAmounts.c1, feeAmounts.c2);
       }
 
       setAmount1(''); setAmount2(''); setLimitPrice('');
@@ -1709,22 +1763,15 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
       const result = await api.post(`${BASE_URL}/submit`, { tx_blob: signed.tx_blob });
 
       if (result?.data?.engine_result === 'tesSUCCESS') {
-        // Poll for transaction validation
         const txHash = signed.hash;
         let attempts = 0;
-        const maxAttempts = 10;
-
-        while (attempts < maxAttempts) {
+        while (attempts < 10) {
           attempts++;
           await new Promise(r => setTimeout(r, 400));
           try {
             const txRes = await api.get(`${BASE_URL}/tx/${txHash}`);
-            if (txRes.data?.validated === true || txRes.data?.meta?.TransactionResult === 'tesSUCCESS') {
-              break;
-            }
-          } catch (e) {
-            // Continue polling
-          }
+            if (txRes.data?.validated === true || txRes.data?.meta?.TransactionResult === 'tesSUCCESS') break;
+          } catch (e) {}
         }
 
         if (!silent) {
@@ -2524,6 +2571,22 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
                               <span className="text-[#3b82f6]">AMM</span>
                             ) : null}
                             {feeStr && <span className="opacity-60"> · {feePct}% fee</span>}
+                          </span>
+                        </div>
+                      );
+                    })()}
+                    {/* Platform Fee */}
+                    {amount1 && amount2 && (() => {
+                      const drops = calcFeeXrpDrops(parseFloat(amount1) || 0, parseFloat(amount2) || 0, curr1, curr2);
+                      if (drops < 1) return null;
+                      const xrp = drops / 1000000;
+                      return (
+                        <div className="flex flex-row items-center justify-between">
+                          <span style={{ fontSize: '10px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
+                            Platform fee (0.08%)
+                          </span>
+                          <span className="font-mono" style={{ fontSize: '10px', color: isDark ? 'rgba(255,255,255,0.9)' : '#212B36' }}>
+                            {xrp < 0.01 ? xrp.toFixed(6) : fNumber(xrp)} XRP
                           </span>
                         </div>
                       );

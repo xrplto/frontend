@@ -409,7 +409,12 @@ export default function NFTTradersPage({ traders = [], pagination = {}, traderBa
                           darkMode={darkMode}
                           className="font-medium text-xs"
                         >
-                          {fVolume(trader.totalVolume || 0)}
+                          <div>{fVolume(trader.totalVolume || 0)}</div>
+                          {trader.vol24h > 0 && (
+                            <div className={cn('text-[10px] font-normal', darkMode ? 'text-white/40' : 'text-black/35')}>
+                              24h: {fVolume(trader.vol24h)}
+                            </div>
+                          )}
                         </StyledTd>
                         <StyledTd align="right" darkMode={darkMode} className="text-[11px]">
                           {fNumber(trader.totalTrades || 0)}
@@ -498,6 +503,9 @@ export default function NFTTradersPage({ traders = [], pagination = {}, traderBa
                         <div>
                           <div className={cn('text-[9px] uppercase tracking-[0.06em] font-semibold', darkMode ? 'text-white/25' : 'text-black/30')}>Vol</div>
                           <div className={cn('text-[12px] font-medium', darkMode ? 'text-white/85' : 'text-[#1a1a2e]')}>{fVolume(trader.totalVolume || 0)}</div>
+                          {trader.vol24h > 0 && (
+                            <div className={cn('text-[10px]', darkMode ? 'text-white/35' : 'text-black/30')}>24h: {fVolume(trader.vol24h)}</div>
+                          )}
                         </div>
                         <div>
                           <div className={cn('text-[9px] uppercase tracking-[0.06em] font-semibold', darkMode ? 'text-white/25' : 'text-black/30')}>Trades</div>
@@ -588,18 +596,32 @@ export default function NFTTradersPage({ traders = [], pagination = {}, traderBa
   );
 }
 
-export async function getServerSideProps({ query }) {
+export async function getServerSideProps({ query, res }) {
+  res.setHeader('Cache-Control', 'public, s-maxage=30, stale-while-revalidate=120');
+
   const page = parseInt(query.page) || 1;
   const sortBy = query.sortBy || 'combinedProfit';
 
+  // Validate inputs to prevent abuse
+  const safePage = Math.min(Math.max(1, page), 10000);
+  const allowedSorts = ['combinedProfit', 'totalVolume', 'totalTrades', 'flips', 'buyVolume', 'sellVolume', 'roi', 'winRate', 'holdingsCount', 'lastTrade', 'xrpBalance'];
+  const safeSortBy = allowedSorts.includes(sortBy) ? sortBy : 'combinedProfit';
+
+  const fetchData = () => Promise.all([
+    api.get(
+      `${BASE_URL}/nft/analytics/traders?sortBy=${safeSortBy}&limit=${ROWS_PER_PAGE}&page=${safePage}`,
+      { timeout: 8000 }
+    ),
+    api.get(`${BASE_URL}/nft/analytics/market`, { timeout: 8000 })
+  ]);
+
   try {
-    const [tradersRes, marketRes] = await Promise.all([
-      api.get(
-        `${BASE_URL}/nft/analytics/traders?sortBy=${sortBy}&limit=${ROWS_PER_PAGE}&page=${page}`,
-        { timeout: 8000 }
-      ),
-      api.get(`${BASE_URL}/nft/analytics/market`, { timeout: 8000 })
-    ]);
+    let tradersRes, marketRes;
+    try {
+      [tradersRes, marketRes] = await fetchData();
+    } catch {
+      [tradersRes, marketRes] = await fetchData();
+    }
     const traders = tradersRes.data.traders || [];
     const pagination = tradersRes.data.pagination || {};
     const traderBalances = marketRes.data.traderBalances || {};

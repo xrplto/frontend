@@ -14,6 +14,8 @@ import { fCurrency5, fDateTime } from 'src/utils/formatters';
 import { getNftCoverUrl, BLACKHOLE_ACCOUNTS } from 'src/utils/parseUtils';
 import VerificationBadge from 'src/components/VerificationBadge';
 import { formatDistanceToNow } from 'date-fns';
+import BadgeShield from 'src/components/BadgeShield';
+import { tierConfig, rankStyles, knownRoles, knownTiers } from 'src/components/badgeConfig';
 import Link from 'next/link';
 import {
   Wallet,
@@ -53,6 +55,7 @@ import {
   ImageOff
 } from 'lucide-react';
 import { ApiButton } from 'src/components/ApiEndpointsModal';
+import GiftTierModal from 'src/components/GiftTierModal';
 import AccountHistory from 'src/components/AccountHistory';
 // NFT image with error fallback
 const NftImg = ({ src, alt, isDark }) => {
@@ -77,7 +80,7 @@ const AccountInfoDetails = ({ accountInfo, isDark, data }) => {
     accountInfo.inception && { label: 'Created', value: new Date(accountInfo.inception).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) },
     accountInfo.reserve > 0 && { label: 'Reserve', value: `${accountInfo.reserve} XRP` },
     accountInfo.ownerCount > 0 && { label: 'Obj', value: accountInfo.ownerCount.toLocaleString() },
-    accountInfo.domain && { label: 'Domain', value: <a href={`https://${accountInfo.domain}`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">{accountInfo.domain}</a> },
+    accountInfo.domain && /^[a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(accountInfo.domain) && { label: 'Domain', value: <a href={`https://${accountInfo.domain}`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">{accountInfo.domain}</a> },
     accountInfo.parent && { label: 'By', value: <a href={`/address/${accountInfo.parent}`} className="text-primary hover:underline">{`${accountInfo.parent.slice(0, 6)}...`}</a> },
     data?.firstTradeDate && { label: 'First', value: new Date(data.firstTradeDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) },
     data?.lastTradeDate && { label: 'Last', value: new Date(data.lastTradeDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) }
@@ -288,6 +291,7 @@ const OverView = ({ account }) => {
   // User profile (for avatar)
   const [userProfile, setUserProfile] = useState(null);
   const [displayBadges, setDisplayBadges] = useState({ current: null, available: [] });
+  const [showGiftTier, setShowGiftTier] = useState(false);
 
   // Set XRP price from holdings data
   useEffect(() => {
@@ -730,7 +734,7 @@ const OverView = ({ account }) => {
                       </div>
                     )}
                     {userProfile?.tier && (
-                      <div className={cn('absolute -bottom-1 -right-1 w-6 h-6 rounded-full border-4', isDark ? 'border-[#0a0a0a]' : 'border-white', userProfile.tier === 'verified' ? 'bg-[#FFD700]' : userProfile.tier === 'diamond' ? 'bg-violet-500' : userProfile.tier === 'nova' ? 'bg-amber-500' : userProfile.tier === 'vip' ? 'bg-emerald-500' : 'bg-gray-400')} />
+                      <div className={cn('absolute -bottom-1 -right-1 w-6 h-6 rounded-full border-4', isDark ? 'border-[#0a0a0a]' : 'border-white', userProfile.tier === 'verified' ? 'bg-gradient-to-r from-[#FFD700] via-[#FF6B9D] to-[#00FFFF]' : userProfile.tier === 'diamond' ? 'bg-violet-500' : userProfile.tier === 'nova' ? 'bg-amber-500' : userProfile.tier === 'vip' ? 'bg-emerald-500' : 'bg-gray-400')} />
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -802,6 +806,20 @@ const OverView = ({ account }) => {
                             <MessageCircle size={15} />
                           </button>
                         )}
+                        {!isOwnAccount && accountProfile?.account && (
+                          <button
+                            onClick={() => setShowGiftTier(true)}
+                            className={cn(
+                              'p-2 rounded-xl transition-all hover:scale-105',
+                              isDark
+                                ? 'bg-white/5 text-white/30 hover:text-white/60'
+                                : 'bg-gray-100 text-gray-400 hover:text-gray-600'
+                            )}
+                            title="Gift Tier"
+                          >
+                            <Gift size={15} />
+                          </button>
+                        )}
                         <ApiButton />
                         {!accountAI && !accountAILoading && (
                           <button
@@ -834,11 +852,58 @@ const OverView = ({ account }) => {
                       )}
                     </div>
                     <AccountInfoDetails accountInfo={accountInfo} isDark={isDark} data={data} />
-                    {/* Tier, Rank & Badges */}
+                    {/* Role / Tier / Rank / Badges — consistent with wallet.js profile */}
                     <div className="flex items-center gap-2.5 flex-wrap mt-2">
-                      {(userPerks?.groups?.length > 0 || userProfile?.armyRank || typeof data?.washTradingScore === 'number' || data?.isAMM || isBlackholed) && (
-                        <span className={cn('text-[10px] uppercase font-bold tracking-widest', isDark ? 'text-white/50' : 'text-gray-400')}>Tier</span>
-                      )}
+                      {(() => {
+                        const allItems = [...new Set([...(userPerks?.roles || []).filter(r => r !== 'member'), ...(userPerks?.groups || [])])];
+                        const roles = allItems.filter(r => knownRoles.includes(r));
+                        const tiers = allItems.filter(r => knownTiers.includes(r));
+                        const rankItem = allItems.find(r => r.startsWith('rank:'));
+                        const rankName = rankItem ? rankItem.split(':')[1] : (userProfile?.armyRank?.toLowerCase() || null);
+                        const defaultPill = { icon: Trophy, bg: isDark ? 'bg-white/5' : 'bg-gray-100', text: isDark ? 'text-white/50' : 'text-gray-500', border: isDark ? 'border-white/10' : 'border-gray-200' };
+                        const defaultRankStyle = { bg: isDark ? 'bg-white/5' : 'bg-gray-100', text: isDark ? 'text-white/50' : 'text-gray-500', border: isDark ? 'border-white/10' : 'border-gray-200' };
+
+                        const renderPill = (name, config) => {
+                          const Icon = config.icon;
+                          return (
+                            <span key={name} className={cn('px-2.5 py-1 rounded-full text-[10px] font-bold tracking-tight flex items-center gap-1.5 border backdrop-blur-md whitespace-nowrap', config.bg, config.border)}>
+                              {Icon && <Icon size={11} className={config.gradient ? 'text-[#FFD700]' : config.text} />}
+                              <span className={cn(config.gradient ? 'bg-gradient-to-r from-[#FFD700] via-[#FF6B9D] to-[#00FFFF] bg-clip-text text-transparent' : config.text)}>{name.toUpperCase()}</span>
+                            </span>
+                          );
+                        };
+
+                        return (
+                          <>
+                            {roles.length > 0 && (
+                              <>
+                                <span className={cn('text-[9px] font-bold uppercase tracking-widest', isDark ? 'text-white/20' : 'text-gray-300')}>Role</span>
+                                {roles.map(r => renderPill(r, tierConfig[r] || defaultPill))}
+                              </>
+                            )}
+                            {tiers.length > 0 && (
+                              <>
+                                <span className={cn('text-[9px] font-bold uppercase tracking-widest', isDark ? 'text-white/20' : 'text-gray-300')}>Tier</span>
+                                {tiers.map(t => renderPill(t, tierConfig[t] || defaultPill))}
+                              </>
+                            )}
+                            {rankName && (
+                              <>
+                                <span className={cn('text-[9px] font-bold uppercase tracking-widest', isDark ? 'text-white/20' : 'text-gray-300')}>Rank</span>
+                                {(() => {
+                                  const rs = rankStyles[rankName] || defaultRankStyle;
+                                  return (
+                                    <span className={cn('px-2.5 py-1 rounded-full text-[10px] font-bold tracking-tight flex items-center gap-1.5 border backdrop-blur-md whitespace-nowrap', rs.bg, rs.border)}>
+                                      <Swords size={11} className={rs.gradient ? 'text-[#FFD700]' : rs.text} />
+                                      <span className={cn(rs.gradient ? 'bg-gradient-to-r from-[#FFD700] via-[#FF6B9D] to-[#00FFFF] bg-clip-text text-transparent' : rs.text)}>{rankName.toUpperCase()}</span>
+                                    </span>
+                                  );
+                                })()}
+                              </>
+                            )}
+                          </>
+                        );
+                      })()}
                       {typeof data?.washTradingScore === 'number' && (
                         <div
                           className={cn(
@@ -860,46 +925,6 @@ const OverView = ({ account }) => {
                           AMM
                         </span>
                       )}
-                      {userPerks?.groups?.map(group => {
-                        const groupConfig = {
-                          member: { icon: User, bg: isDark ? 'bg-white/[0.03]' : 'bg-gray-100', text: isDark ? 'text-white/60' : 'text-gray-600', border: isDark ? 'border-white/10' : 'border-gray-200' },
-                          admin: { icon: Shield, bg: 'bg-red-500/10', text: 'text-red-400', border: 'border-red-500/20' },
-                          verified: { icon: Check, bg: 'bg-[#FFD700]/10', text: 'text-[#FFD700]', border: 'border-[#FFD700]/30' },
-                          diamond: { icon: Gem, bg: 'bg-[#650CD4]/10', text: 'text-[#a855f7]', border: 'border-[#650CD4]/20' },
-                          nova: { icon: Star, bg: 'bg-[#F6AF01]/10', text: 'text-[#F6AF01]', border: 'border-[#F6AF01]/20' },
-                          vip: { icon: Sparkles, bg: 'bg-[#08AA09]/10', text: 'text-[#08AA09]', border: 'border-[#08AA09]/20' }
-                        };
-                        const config = groupConfig[group] || { icon: null, bg: isDark ? 'bg-white/[0.03]' : 'bg-gray-100', text: isDark ? 'text-white/60' : 'text-gray-600', border: isDark ? 'border-white/10' : 'border-gray-200' };
-                        const Icon = config.icon;
-                        return (
-                          <div key={group} className={cn('flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold border', config.bg, config.border)}>
-                            {Icon && <Icon size={11} style={{ color: 'inherit' }} />}
-                            <span className={config.text}>{group.charAt(0).toUpperCase() + group.slice(1)}</span>
-                          </div>
-                        );
-                      })}
-                      {userProfile?.armyRank && (() => {
-                        const rankConfig = {
-                          recruit: { icon: Swords, color: 'text-amber-700', bg: 'bg-amber-800/10', border: 'border-amber-700/20' },
-                          private: { icon: Shield, color: 'text-sky-400', bg: 'bg-sky-500/10', border: 'border-sky-500/20' },
-                          corporal: { icon: Shield, color: 'text-[#137DFE]', bg: 'bg-[#137DFE]/10', border: 'border-[#137DFE]/20' },
-                          sergeant: { icon: Star, color: 'text-[#08AA09]', bg: 'bg-[#08AA09]/10', border: 'border-[#08AA09]/20' },
-                          lieutenant: { icon: Star, color: 'text-[#F6AF01]', bg: 'bg-[#F6AF01]/10', border: 'border-[#F6AF01]/20' },
-                          captain: { icon: Medal, color: 'text-orange-400', bg: 'bg-orange-500/10', border: 'border-orange-500/20' },
-                          major: { icon: Award, color: 'text-[#a855f7]', bg: 'bg-[#650CD4]/10', border: 'border-[#650CD4]/20' },
-                          colonel: { icon: Crown, color: 'text-rose-400', bg: 'bg-rose-500/10', border: 'border-rose-500/20' },
-                          general: { icon: Crown, color: 'text-[#FFD700]', bg: 'bg-[#FFD700]/10', border: 'border-[#FFD700]/20' }
-                        };
-                        const key = userProfile.armyRank.toLowerCase();
-                        const rc = rankConfig[key] || rankConfig.recruit;
-                        const RankIcon = rc.icon;
-                        return (
-                          <div className={cn('flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold border', rc.bg, rc.border)}>
-                            <RankIcon size={11} className={rc.color} />
-                            <span className={rc.color}>{key.charAt(0).toUpperCase() + key.slice(1)}</span>
-                          </div>
-                        );
-                      })()}
                       {isBlackholed && (
                         <div className="relative group/blackhole">
                           <span className="text-[10px] px-2.5 py-1 rounded-lg bg-red-500/10 text-red-400 border border-red-500/20 font-bold flex items-center cursor-help">
@@ -933,27 +958,16 @@ const OverView = ({ account }) => {
                           </div>
                         </div>
                       )}
-                      {/* Divider */}
-                      {(userPerks?.groups?.length > 0 || userProfile?.armyRank || typeof data?.washTradingScore === 'number' || data?.isAMM || isBlackholed) && displayBadges.available.filter(b => b.startsWith('badge:')).length > 0 && (
-                        <span className={cn('text-[14px] font-thin select-none', isDark ? 'text-white/10' : 'text-gray-200')}>|</span>
-                      )}
-                      {/* Badges */}
+                      {/* Achievement Badges */}
                       {displayBadges.available.filter(b => b.startsWith('badge:')).length > 0 && (
-                        <span className={cn('text-[10px] uppercase font-bold tracking-widest', isDark ? 'text-white/50' : 'text-gray-400')}>Badges</span>
+                        <>
+                          <span className={cn('text-[14px] font-thin select-none', isDark ? 'text-white/10' : 'text-gray-200')}>|</span>
+                          <span className={cn('text-[9px] font-bold uppercase tracking-widest', isDark ? 'text-white/20' : 'text-gray-300')}>Badges</span>
+                          {displayBadges.available.filter(b => b.startsWith('badge:')).map(badgeId => (
+                            <BadgeShield key={badgeId} badgeKey={badgeId.split(':')[1]} earned={true} size="sm" />
+                          ))}
+                        </>
                       )}
-                      {displayBadges.available.filter(b => b.startsWith('badge:')).map(badgeId => {
-                        const name = badgeId.split(':')[1];
-                        const badgeConfig = { first_recruit: { icon: Users, color: '#137DFE', label: 'First Recruit' }, squad_leader: { icon: Swords, color: '#F6AF01', label: 'Squad Leader' }, early_adopter: { icon: Zap, color: '#08AA09', label: 'Early Adopter' }, top_trader: { icon: TrendingUp, color: '#137DFE', label: 'Top Trader' }, whale: { icon: Gem, color: '#a855f7', label: 'Whale' }, og: { icon: Medal, color: '#F6AF01', label: 'OG' }, contributor: { icon: Gift, color: '#08AA09', label: 'Contributor' }, army_general: { icon: Crown, color: '#a855f7', label: 'Army General' } };
-                        const defaultCfg = { icon: Award, color: isDark ? '#666' : '#999' };
-                        const config = badgeConfig[name] || defaultCfg;
-                        const Icon = config.icon;
-                        return (
-                          <span key={badgeId} className={cn('flex items-center gap-1 text-[10px] font-medium', isDark ? 'text-white/50' : 'text-gray-500')}>
-                            {Icon && <Icon size={11} style={{ color: config.color }} />}
-                            <span>{config.label || name.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}</span>
-                          </span>
-                        );
-                      })}
                     </div>
                   </div>
                   {/* Key Stats - fill remaining space on desktop */}
@@ -2979,6 +2993,12 @@ const OverView = ({ account }) => {
       </div >
       <ScrollToTop />
       <Footer />
+      <GiftTierModal
+        open={showGiftTier}
+        onClose={() => setShowGiftTier(false)}
+        recipientAddress={account}
+        gifterAddress={accountProfile?.account}
+      />
     </PageWrapper >
   );
 };

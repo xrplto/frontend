@@ -249,7 +249,11 @@ function ContextProviderInner({ children, data, openSnackbar }) {
                   storedPassword
                 );
                 if (wallet?.seed) {
-                  setAccountProfile(prev => prev ? { ...prev, seed: wallet.seed } : prev);
+                  setAccountProfile(prev => prev ? {
+                    ...prev,
+                    seed: wallet.seed,
+                    antiPhishingEmojis: wallet.antiPhishingEmojis
+                  } : prev);
                 }
               }
             }

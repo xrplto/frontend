@@ -40,7 +40,7 @@ import TxPreviewModal from 'src/components/TxPreviewModal';
 // XRPL - lazy loaded to avoid bundling ~150KB synchronously
 const getXrpl = () => import('xrpl');
 import { toast } from 'sonner';
-import { submitTransaction, simulateTransaction } from 'src/utils/api';
+import { submitTransaction, previewTransaction } from 'src/utils/api';
 
 const getAlgorithmFromSeed = (seed) => seed.startsWith('sEd') ? 'ed25519' : 'secp256k1';
 
@@ -257,7 +257,7 @@ export default function NFTActions({ nft }) {
         } catch (e) { console.warn('Balance check failed:', e); }
       }
 
-      const result = await simulateTransaction(tx);
+      const result = await previewTransaction(tx);
       const willSucceed = result.engine_result === 'tesSUCCESS';
       setTxPreview({
         type,

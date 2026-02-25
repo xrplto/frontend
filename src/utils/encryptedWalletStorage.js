@@ -9,6 +9,23 @@ const isDev = process.env.NODE_ENV === 'development';
 const devLog = isDev ? (...args) => console.log('[WalletStorage]', ...args) : () => {};
 const devError = isDev ? (...args) => console.error('[WalletStorage]', ...args) : () => {};
 
+// Anti-phishing emoji set (64 emojis = 16.7M combinations for 4-emoji sequence)
+const ANTI_PHISHING_EMOJI_SET = [
+  '🐶','🐱','🐻','🦊','🐸','🐵','🦁','🐼','🐷','🐨','🐙','🦋',
+  '🌈','🌻','🌵','🍀','🌊','🌙','⭐','🔥','❄️','🍄',
+  '🍎','🍕','🍩','🍉','🍋','🍒','🎂','🍔','🌮','🍇',
+  '🎯','🎪','🎸','🎨','🎲','🔔','💎','🔮','🏆','🎭','🎈','🎩',
+  '🚀','🎡','🏠','⛵','🗻','🌋','🏝️','🎢',
+  '💜','🧡','💚','❤️','💙','💛',
+  '👑','🎵','🌀','⚡','🦄','🐉'
+];
+
+const generateAntiPhishingEmojis = () => {
+  const indices = crypto.getRandomValues(new Uint8Array(4));
+  return Array.from(indices)
+    .map(byte => ANTI_PHISHING_EMOJI_SET[byte % ANTI_PHISHING_EMOJI_SET.length])
+    .join('');
+};
 
 // Device ID with HMAC integrity verification
 // Generates a stable device ID stored in localStorage, signed with an HMAC key in IndexedDB.
@@ -822,6 +839,14 @@ export class UnifiedWalletStorage {
     // Generate unique ID for this wallet
     const walletId = crypto.randomUUID();
 
+    // Auto-generate anti-phishing emojis if missing
+    if (!walletData.antiPhishingEmojis) {
+      walletData.antiPhishingEmojis = generateAntiPhishingEmojis();
+    }
+
+    // Persist emojis as unencrypted metadata so they can be shown before password entry
+    this.saveAntiPhishingEmojis(walletData.antiPhishingEmojis).catch(() => {});
+
     // Encrypt ALL wallet data including metadata - NOTHING in plaintext
     const fullData = {
       ...walletData,
@@ -1024,6 +1049,52 @@ export class UnifiedWalletStorage {
   }
 
   /**
+   * Store anti-phishing emojis encrypted with the non-extractable master key.
+   * No password needed — decryption requires the CryptoKey object stored in
+   * this origin's IndexedDB (non-extractable = can't be read via JS, only used
+   * for encrypt/decrypt). A cloned site on a different origin has no master key
+   * and cannot decrypt.
+   */
+  async saveAntiPhishingEmojis(emojis) {
+    try {
+      const encrypted = await this.encryptForLocalStorage(emojis);
+      const db = await this.initDB();
+      if (!db.objectStoreNames.contains(this.walletsStore)) return;
+      await new Promise((resolve) => {
+        const tx = db.transaction([this.walletsStore], 'readwrite');
+        tx.objectStore(this.walletsStore).put({
+          id: '__meta__anti_phishing',
+          lookupHash: '__meta__anti_phishing',
+          data: encrypted,
+          timestamp: Date.now()
+        });
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => resolve();
+      });
+    } catch (e) { devError('Failed to save anti-phishing emojis:', e); }
+  }
+
+  /**
+   * Read anti-phishing emojis — decrypted with the non-extractable master key.
+   * No password required, but only works on the original origin (master key is
+   * origin-scoped in IndexedDB and non-extractable).
+   */
+  async getAntiPhishingEmojis() {
+    try {
+      const db = await this.initDB();
+      if (!db.objectStoreNames.contains(this.walletsStore)) return null;
+      const record = await new Promise((resolve) => {
+        const tx = db.transaction([this.walletsStore], 'readonly');
+        const req = tx.objectStore(this.walletsStore).get('__meta__anti_phishing');
+        req.onsuccess = () => resolve(req.result || null);
+        req.onerror = () => resolve(null);
+      });
+      if (!record?.data) return null;
+      return await this.decryptFromLocalStorage(record.data);
+    } catch (e) { return null; }
+  }
+
+  /**
    * Try to unlock all wallets with just a password (for returning users)
    * Returns all decrypted wallets if password is correct
    */
@@ -1043,6 +1114,18 @@ export class UnifiedWalletStorage {
         securityUtils.rateLimiter.recordFailure(rateLimitKey);
         return []; // No wallets found - not necessarily wrong password
       }
+
+      // Migration: ensure all wallets have anti-phishing emojis
+      let canonicalEmojis = allWallets.find(w => w.antiPhishingEmojis)?.antiPhishingEmojis;
+      if (!canonicalEmojis) canonicalEmojis = generateAntiPhishingEmojis();
+      for (const wallet of allWallets) {
+        if (!wallet.antiPhishingEmojis) {
+          wallet.antiPhishingEmojis = canonicalEmojis;
+          this.storeWallet({ ...wallet }, password).catch(() => {});
+        }
+      }
+      // Ensure unencrypted metadata is up to date
+      this.saveAntiPhishingEmojis(canonicalEmojis).catch(() => {});
 
       // Success
       securityUtils.rateLimiter.recordSuccess(rateLimitKey);
@@ -1188,7 +1271,8 @@ export class UnifiedWalletStorage {
       return {
         address: decrypted.address,
         publicKey: decrypted.publicKey,
-        seed: decrypted.seed
+        seed: decrypted.seed,
+        antiPhishingEmojis: decrypted.antiPhishingEmojis || null
       };
     } catch (e) {
       devError('Error getting wallet by address:', e);
@@ -1214,6 +1298,7 @@ export class UnifiedWalletStorage {
       v: 1,
       s: wallet.seed,
       a: wallet.address,
+      e: wallet.antiPhishingEmojis || '',
       t: Date.now() + 300000 // Expires in 5 minutes
     };
 
@@ -1266,6 +1351,7 @@ export class UnifiedWalletStorage {
       address: payload.a,
       publicKey: testWallet.publicKey,
       seed: payload.s,
+      antiPhishingEmojis: payload.e || undefined,
       wallet_type: 'device',
       importedAt: Date.now(),
       importedVia: 'qr_sync'
@@ -1300,3 +1386,6 @@ export { securityUtils };
 
 // Export device fingerprint for fraud detection
 export { deviceFingerprint };
+
+// Export anti-phishing emoji utilities
+export { ANTI_PHISHING_EMOJI_SET, generateAntiPhishingEmojis };

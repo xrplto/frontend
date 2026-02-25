@@ -255,8 +255,10 @@ function TokenListComponent({
         const parsed = JSON.parse(saved);
         const mobile = window.innerWidth < 960;
         // On mobile, allow any combination of fields
-        if (mobile && parsed.length >= 2) {
-          return [parsed[0], parsed[1]];
+        if (mobile && parsed.length >= 3) {
+          return [parsed[0], parsed[1], parsed[2]];
+        } else if (mobile && parsed.length >= 2) {
+          return [parsed[0], parsed[1], 'volume24h'];
         }
         return parsed;
       }
@@ -271,13 +273,13 @@ function TokenListComponent({
   // Sync temp columns when opening settings
   useEffect(() => {
     if (customSettingsOpen) {
-      // On mobile, ensure we have 2 columns selected
+      // On mobile, ensure we have 3 columns selected
       if (isMobile) {
         // Use existing mobile columns or defaults
-        if (customColumns && customColumns.length >= 2) {
-          setTempCustomColumns([customColumns[0], customColumns[1]]);
+        if (customColumns && customColumns.length >= 3) {
+          setTempCustomColumns([customColumns[0], customColumns[1], customColumns[2]]);
         } else {
-          setTempCustomColumns(['price', 'pro24h']);
+          setTempCustomColumns(['price', 'pro24h', 'volume24h']);
         }
       } else {
         setTempCustomColumns(customColumns);
@@ -313,11 +315,11 @@ function TokenListComponent({
     }
     // Update customColumns for mobile based on view mode
     const mobileColumnPresets = {
-      classic: ['price', 'pro24h'],
-      priceChange: ['pro5m', 'pro24h'],
-      marketData: ['marketCap', 'volume24h'],
-      topGainers: ['price', 'pro5m'],
-      trader: ['pro5m', 'pro1h']
+      classic: ['price', 'pro24h', 'volume24h'],
+      priceChange: ['pro5m', 'pro24h', 'volume24h'],
+      marketData: ['marketCap', 'volume24h', 'holders'],
+      topGainers: ['price', 'pro5m', 'volume24h'],
+      trader: ['pro5m', 'pro1h', 'volume24h']
     };
     const preset = mobileColumnPresets[newMode];
     if (preset) {
@@ -906,7 +908,7 @@ function TokenListComponent({
           <MobileContainer>
             <MobileHeader isDark={darkMode} role="row">
               <HeaderCell
-                flex={2}
+                flex={1.8}
                 align="left"
                 isDark={darkMode}
                 sortable
@@ -915,7 +917,7 @@ function TokenListComponent({
                 Token
               </HeaderCell>
               <HeaderCell
-                flex={1.2}
+                flex={1}
                 align="right"
                 isDark={darkMode}
                 sortable
@@ -1020,6 +1022,60 @@ function TokenListComponent({
                     pro30d: '30D'
                   };
                   return labels[col] || 'VALUE';
+                })()}
+              </HeaderCell>
+              <HeaderCell
+                flex={1}
+                align="right"
+                isDark={darkMode}
+                sortable
+                onClick={() => {
+                  const col = customColumns && customColumns[2] ? customColumns[2] : 'volume24h';
+                  const sortCol =
+                    col === 'price'
+                      ? 'exch'
+                      : col === 'volume24h'
+                        ? 'vol24hxrp'
+                        : col === 'volume7d'
+                          ? 'vol7d'
+                          : col === 'marketCap'
+                            ? 'marketcap'
+                            : col === 'holders'
+                              ? 'holders'
+                              : col === 'trades'
+                                ? 'vol24htx'
+                                : col === 'created'
+                                  ? 'dateon'
+                                  : col === 'supply'
+                                    ? 'supply'
+                                    : col === 'origin'
+                                      ? 'origin'
+                                      : col === 'tvl'
+                                        ? 'tvl'
+                                        : col;
+                  handleRequestSort(null, sortCol);
+                }}
+              >
+                {(() => {
+                  const col = customColumns && customColumns[2] ? customColumns[2] : 'volume24h';
+                  const labels = {
+                    price: 'PRICE',
+                    volume24h: 'VOL',
+                    volume7d: 'V7D',
+                    marketCap: 'MCAP',
+                    tvl: 'TVL',
+                    holders: 'HLDR',
+                    trades: 'TXS',
+                    supply: 'SUPPLY',
+                    created: 'AGE',
+                    origin: 'SRC',
+                    pro5m: '5M',
+                    pro1h: '1H',
+                    pro24h: '24H',
+                    pro7d: '7D',
+                    pro30d: '30D'
+                  };
+                  return labels[col] || 'VOL';
                 })()}
               </HeaderCell>
             </MobileHeader>
