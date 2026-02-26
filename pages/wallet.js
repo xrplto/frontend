@@ -2132,7 +2132,7 @@ export default function WalletPage() {
                                     }}
                                     placeholder={`Search ${dropdownTokens.length} tokens...`}
                                     className={cn(
-                                      "w-full pl-8 pr-3 py-2 rounded-md text-[13px] outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]",
+                                      "w-full pl-8 pr-3 py-2 rounded-md text-[13px] max-sm:text-base outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]",
                                       isDark ? "bg-white/[0.04] text-white placeholder:text-white/20" : "bg-gray-50 text-gray-900 placeholder:text-gray-400"
                                     )}
                                   />
@@ -2238,7 +2238,7 @@ export default function WalletPage() {
                             onBlur={() => setTimeout(() => setShowAddressSuggestions(false), 150)}
                             placeholder="r..."
                             className={cn(
-                              "w-full px-3.5 py-3 rounded-xl text-sm font-mono outline-none border transition-all",
+                              "w-full px-3.5 py-3 rounded-xl text-sm max-sm:text-base font-mono outline-none border transition-all",
                               isDark ? "bg-white/[0.03] border-white/[0.08] text-white focus:border-[#137DFE]/40 placeholder:text-white/15" : "bg-gray-50 border-gray-200 text-gray-900 focus:border-[#137DFE] placeholder:text-gray-300"
                             )}
                           />
@@ -2274,7 +2274,7 @@ export default function WalletPage() {
                               onChange={(e) => setSendTag(e.target.value.replace(/\D/g, ''))}
                               placeholder="—"
                               className={cn(
-                                "w-full px-3.5 py-3 rounded-xl text-sm font-mono outline-none border transition-all",
+                                "w-full px-3.5 py-3 rounded-xl text-sm max-sm:text-base font-mono outline-none border transition-all",
                                 isDark ? "bg-white/[0.03] border-white/[0.08] text-white focus:border-[#137DFE]/40 placeholder:text-white/15" : "bg-gray-50 border-gray-200 text-gray-900 focus:border-[#137DFE] placeholder:text-gray-300"
                               )}
                             />
@@ -2802,7 +2802,7 @@ export default function WalletPage() {
                             onChange={(e) => setTokenSearch(e.target.value)}
                             placeholder="Search tokens..."
                             className={cn(
-                              'w-full pl-10 pr-4 py-2.5 rounded-lg text-[13px] outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] transition-colors duration-150',
+                              'w-full pl-10 pr-4 py-2.5 rounded-lg text-[13px] max-sm:text-base outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] transition-colors duration-150',
                               isDark
                                 ? 'bg-white/[0.04] text-white border border-white/[0.15] placeholder:text-white/30 focus:border-[#137DFE]/40'
                                 : 'bg-gray-50 border border-gray-200 placeholder:text-gray-400 focus:border-[#137DFE]'
@@ -3461,7 +3461,7 @@ export default function WalletPage() {
                             }
                             placeholder="e.g. Binance, Coinbase"
                             className={cn(
-                              'w-full px-4 py-3 rounded-lg text-[13px] outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] transition-colors duration-150',
+                              'w-full px-4 py-3 rounded-lg text-[13px] max-sm:text-base outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] transition-colors duration-150',
                               isDark
                                 ? 'bg-white/[0.04] text-white border border-white/[0.15] placeholder:text-white/30 focus:border-[#137DFE]/40'
                                 : 'bg-gray-50 border border-gray-200 placeholder:text-gray-400 focus:border-[#137DFE]'
@@ -3485,7 +3485,7 @@ export default function WalletPage() {
                             }
                             placeholder="rAddress..."
                             className={cn(
-                              'w-full px-4 py-3 rounded-lg text-[13px] font-mono outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] transition-colors duration-150',
+                              'w-full px-4 py-3 rounded-lg text-[13px] max-sm:text-base font-mono outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] transition-colors duration-150',
                               isDark
                                 ? 'bg-white/[0.04] text-white border border-white/[0.15] placeholder:text-white/30 focus:border-[#137DFE]/40'
                                 : 'bg-gray-50 border border-gray-200 placeholder:text-gray-400 focus:border-[#137DFE]'
@@ -3512,7 +3512,7 @@ export default function WalletPage() {
                             }
                             placeholder="e.g. 12345678"
                             className={cn(
-                              'w-full px-4 py-3 rounded-lg text-[13px] font-mono outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] transition-colors duration-150',
+                              'w-full px-4 py-3 rounded-lg text-[13px] max-sm:text-base font-mono outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] transition-colors duration-150',
                               isDark
                                 ? 'bg-white/[0.04] text-white border border-white/[0.15] placeholder:text-white/30 focus:border-[#137DFE]/40'
                                 : 'bg-gray-50 border border-gray-200 placeholder:text-gray-400 focus:border-[#137DFE]'
@@ -3907,7 +3907,7 @@ export default function WalletPage() {
                                 type="text"
                                 value={newReferralCode}
                                 onChange={(e) => setNewReferralCode(e.target.value.replace(/[^a-zA-Z0-9_]/g, '').slice(0, 20))}
-                                className={cn('w-full px-4 py-3 rounded-xl text-sm font-mono outline-none border-[1.5px] transition-all', isDark ? 'bg-white/5 border-white/10 text-white focus:border-[#137DFE]/50' : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-blue-500')}
+                                className={cn('w-full px-4 py-3 rounded-xl text-sm max-sm:text-base font-mono outline-none border-[1.5px] transition-all', isDark ? 'bg-white/5 border-white/10 text-white focus:border-[#137DFE]/50' : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-blue-500')}
                               />
                               {newReferralCode && (
                                 <p className={cn('text-[11px] mt-1.5 font-mono', isDark ? 'text-white/20' : 'text-gray-400')}>
@@ -3956,7 +3956,7 @@ export default function WalletPage() {
                               value={referralForm.referralCode}
                               onChange={(e) => setReferralForm(f => ({ ...f, referralCode: e.target.value.replace(/[^a-zA-Z0-9_]/g, '').slice(0, 20) }))}
                               placeholder="Leave empty for auto-generated code"
-                              className={cn('w-full px-4 py-3.5 rounded-xl text-sm font-mono outline-none border-[1.5px] transition-all', isDark ? 'bg-white/5 border-white/10 text-white placeholder:text-white/20 focus:border-[#137DFE]/50' : 'bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-300 focus:border-blue-400')}
+                              className={cn('w-full px-4 py-3.5 rounded-xl text-sm max-sm:text-base font-mono outline-none border-[1.5px] transition-all', isDark ? 'bg-white/5 border-white/10 text-white placeholder:text-white/20 focus:border-[#137DFE]/50' : 'bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-300 focus:border-blue-400')}
                             />
                           </div>
 
@@ -4295,7 +4295,7 @@ export default function WalletPage() {
                           value={newUsername}
                           onChange={(e) => setNewUsername(e.target.value.replace(/[^a-zA-Z0-9_]/g, '').toLowerCase().slice(0, 14))}
                           placeholder="2-14 characters"
-                          className={cn('w-full px-4 py-3 rounded-xl text-sm outline-none transition-colors', isDark ? 'bg-white/[0.04] text-white border border-white/[0.15] placeholder:text-white/25 focus:border-[#137DFE]/40' : 'bg-gray-50 border border-gray-200 placeholder:text-gray-400 focus:border-[#137DFE]')}
+                          className={cn('w-full px-4 py-3 rounded-xl text-sm max-sm:text-base outline-none transition-colors', isDark ? 'bg-white/[0.04] text-white border border-white/[0.15] placeholder:text-white/25 focus:border-[#137DFE]/40' : 'bg-gray-50 border border-gray-200 placeholder:text-gray-400 focus:border-[#137DFE]')}
                         />
                       </div>
 
@@ -4331,7 +4331,7 @@ export default function WalletPage() {
                         if (val === '' || /^r[a-zA-Z0-9]*$/.test(val)) setNewLabelWallet(val.slice(0, 35));
                       }}
                       placeholder="rAddress..."
-                      className={cn('flex-1 px-3 py-2.5 rounded-xl text-[13px] font-mono outline-none', isDark ? 'bg-white/[0.04] text-white border border-white/[0.15] placeholder:text-white/25' : 'bg-white text-gray-900 border border-gray-200 placeholder:text-gray-400')}
+                      className={cn('flex-1 px-3 py-2.5 rounded-xl text-[13px] max-sm:text-base font-mono outline-none', isDark ? 'bg-white/[0.04] text-white border border-white/[0.15] placeholder:text-white/25' : 'bg-white text-gray-900 border border-gray-200 placeholder:text-gray-400')}
                     />
                     <div className="flex gap-2">
                       <input
@@ -4339,7 +4339,7 @@ export default function WalletPage() {
                         value={newLabelName}
                         onChange={(e) => setNewLabelName(e.target.value.slice(0, 30))}
                         placeholder="Label"
-                        className={cn('flex-1 sm:w-36 px-3 py-2.5 rounded-xl text-[13px] outline-none', isDark ? 'bg-white/[0.04] text-white border border-white/[0.15] placeholder:text-white/25' : 'bg-white text-gray-900 border border-gray-200 placeholder:text-gray-400')}
+                        className={cn('flex-1 sm:w-36 px-3 py-2.5 rounded-xl text-[13px] max-sm:text-base outline-none', isDark ? 'bg-white/[0.04] text-white border border-white/[0.15] placeholder:text-white/25' : 'bg-white text-gray-900 border border-gray-200 placeholder:text-gray-400')}
                       />
                       <button
                         onClick={handleAddLabel}
@@ -4739,7 +4739,7 @@ export default function WalletPage() {
                             onChange={(e) => setNftRecipient(e.target.value)}
                             placeholder="rAddress..."
                             className={cn(
-                              'w-full px-4 py-3 rounded-lg text-[13px] font-mono outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] transition-colors duration-150',
+                              'w-full px-4 py-3 rounded-lg text-[13px] max-sm:text-base font-mono outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] transition-colors duration-150',
                               isDark
                                 ? 'bg-white/[0.04] text-white border border-white/[0.15] placeholder:text-white/30 focus:border-[#137DFE]/40'
                                 : 'bg-gray-50 border border-gray-200 placeholder:text-gray-400 focus:border-[#137DFE]'
@@ -5745,7 +5745,7 @@ export default function WalletPage() {
                               setTradeSlippage(Math.max(0.1, Math.min(50, parseFloat(val) || 0.5)));
                             }}
                             placeholder="Custom"
-                            className={cn("w-full text-center bg-transparent outline-none text-[10px] font-medium", isDark ? "placeholder:text-white/30" : "placeholder:text-gray-400")}
+                            className={cn("w-full text-center bg-transparent outline-none text-[10px] max-sm:text-base font-medium", isDark ? "placeholder:text-white/30" : "placeholder:text-gray-400")}
                           />
                         ) : `${v}%`}
                       </button>

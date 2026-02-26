@@ -759,7 +759,7 @@ const OverView = ({ account }) => {
                               onChange={(e) => setLabelInput(e.target.value.slice(0, 30))}
                               placeholder="Label"
                               autoFocus
-                              className={cn('w-28 px-2 py-1 rounded-md text-[12px] outline-none', isDark ? 'bg-white/10 text-white border border-white/20' : 'bg-white text-gray-900 border border-gray-300')}
+                              className={cn('w-28 px-2 py-1 rounded-md text-[12px] max-sm:text-base outline-none', isDark ? 'bg-white/10 text-white border border-white/20' : 'bg-white text-gray-900 border border-gray-300')}
                             />
                             <button onClick={handleSaveLabel} disabled={labelSaving || !labelInput.trim()} className="px-3 py-1 rounded-md text-[11px] bg-primary text-white disabled:opacity-50 font-bold hover:bg-primary/90 transition-colors">Save</button>
                             {walletLabel && <button onClick={handleDeleteLabel} disabled={labelSaving} aria-label="Delete label" className={cn('p-1.5 rounded-md transition-colors outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]', isDark ? 'text-red-400 hover:bg-red-500/10' : 'text-red-500 hover:bg-red-50')}><Trash2 size={14} /></button>}
@@ -2029,7 +2029,7 @@ const OverView = ({ account }) => {
                               value={tokenSearch}
                               onChange={(e) => setTokenSearch(e.target.value)}
                               className={cn(
-                                'text-[10px] px-1.5 py-1.5 bg-transparent border-none outline-none w-24 font-medium',
+                                'text-[10px] max-sm:text-base px-1.5 py-1.5 bg-transparent border-none outline-none w-24 font-medium',
                                 isDark
                                   ? 'text-white/70 placeholder:text-white/30'
                                   : 'text-gray-600 placeholder:text-gray-400'

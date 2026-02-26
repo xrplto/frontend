@@ -3534,7 +3534,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                                   setSlippage(val === '' ? '' : parseFloat(val) || val);
                                 }
                               }}
-                              className={`w-5 bg-transparent border-none outline-none text-[13px] font-medium text-center ${darkMode ? 'text-white' : 'text-gray-900'}`}
+                              className={`w-5 bg-transparent border-none outline-none text-[13px] max-sm:text-base font-medium text-center ${darkMode ? 'text-white' : 'text-gray-900'}`}
                             />
                             <span
                               className={`text-[12px] ${darkMode ? 'text-white/40' : 'text-gray-400'}`}
@@ -3600,7 +3600,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                                 const val = e.target.value.replace(/[^0-9]/g, '');
                                 setTxFee(val);
                               }}
-                              className={`w-8 bg-transparent border-none outline-none text-[13px] font-medium text-center ${darkMode ? 'text-white' : 'text-gray-900'}`}
+                              className={`w-8 bg-transparent border-none outline-none text-[13px] max-sm:text-base font-medium text-center ${darkMode ? 'text-white' : 'text-gray-900'}`}
                             />
                           </div>
                         </div>

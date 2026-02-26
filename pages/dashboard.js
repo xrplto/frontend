@@ -1576,7 +1576,7 @@ const DashboardPage = () => {
 
                 <div className={cn('flex items-center gap-2 px-3 py-2 rounded-lg border-[1.5px]', isDark ? 'border-white/10 bg-white/5' : 'border-gray-200 bg-white')}>
                   <Search size={16} className="opacity-40" />
-                  <input type="text" placeholder="Search by wallet address..." value={adminSearchQuery} onChange={(e) => setAdminSearchQuery(e.target.value)} className="flex-1 bg-transparent text-[13px] outline-none placeholder:opacity-40" />
+                  <input type="text" placeholder="Search by wallet address..." value={adminSearchQuery} onChange={(e) => setAdminSearchQuery(e.target.value)} className="flex-1 bg-transparent text-[13px] max-sm:text-base outline-none placeholder:opacity-40" />
                 </div>
 
                 <div className={cn('rounded-xl border-[1.5px] overflow-hidden', isDark ? 'border-white/10' : 'border-gray-200')}>
@@ -1625,7 +1625,7 @@ const DashboardPage = () => {
 
                 <div className={cn('flex items-center gap-2 px-3 py-2 rounded-lg border-[1.5px]', isDark ? 'border-white/10 bg-white/5' : 'border-gray-200 bg-white')}>
                   <Search size={16} className="opacity-40" />
-                  <input type="text" placeholder="Search by wallet address..." value={adminSearchQuery} onChange={(e) => setAdminSearchQuery(e.target.value)} className="flex-1 bg-transparent text-[13px] outline-none placeholder:opacity-40" />
+                  <input type="text" placeholder="Search by wallet address..." value={adminSearchQuery} onChange={(e) => setAdminSearchQuery(e.target.value)} className="flex-1 bg-transparent text-[13px] max-sm:text-base outline-none placeholder:opacity-40" />
                 </div>
 
                 <div className={cn('rounded-xl border-[1.5px] overflow-hidden', isDark ? 'border-white/10' : 'border-gray-200')}>
@@ -1743,7 +1743,7 @@ const DashboardPage = () => {
         <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/50">
           <div className={cn('w-full max-w-md sm:mx-4 p-5 pb-20 sm:pb-5 md:p-6 rounded-t-2xl sm:rounded-xl border-[1.5px]', isDark ? 'bg-black border-white/10' : 'bg-white border-gray-200')}>
             <h3 className={cn('text-lg font-medium mb-4', isDark ? 'text-white' : 'text-gray-900')}>Create API Key</h3>
-            <input type="text" placeholder="Key name (e.g., Production Bot)" value={newKeyName} onChange={(e) => setNewKeyName(e.target.value)} className={cn('w-full px-4 py-3 rounded-lg border-[1.5px] text-[14px] mb-4', isDark ? 'bg-white/[0.02] border-white/10' : 'bg-gray-50 border-gray-200')} autoFocus />
+            <input type="text" placeholder="Key name (e.g., Production Bot)" value={newKeyName} onChange={(e) => setNewKeyName(e.target.value)} className={cn('w-full px-4 py-3 rounded-lg border-[1.5px] text-[14px] max-sm:text-base mb-4', isDark ? 'bg-white/[0.02] border-white/10' : 'bg-gray-50 border-gray-200')} autoFocus />
             <div className="flex gap-3">
               <button onClick={() => { setShowCreateForm(false); setNewKeyName(''); }} className={cn('flex-1 py-2.5 rounded-lg text-[13px] font-medium border-[1.5px]', isDark ? 'border-white/10 hover:bg-white/5' : 'border-gray-200 hover:bg-gray-50')}>Cancel</button>
               <button onClick={createApiKey} disabled={!newKeyName.trim() || creating} className="flex-1 py-2.5 rounded-lg text-[13px] font-medium bg-primary text-white hover:bg-primary/90 disabled:opacity-50">
@@ -1759,8 +1759,8 @@ const DashboardPage = () => {
           <div className={cn('w-full max-w-md sm:mx-4 p-5 pb-20 sm:pb-5 md:p-6 rounded-t-2xl sm:rounded-xl border-[1.5px]', isDark ? 'bg-black border-white/10' : 'bg-white border-gray-200')}>
             <h3 className={cn('text-lg font-medium mb-4', isDark ? 'text-white' : 'text-gray-900')}>Create Partner API Key</h3>
             <div className="space-y-3">
-              <input type="text" placeholder="Wallet address (rXXX...)" value={adminFormData.wallet || ''} onChange={(e) => setAdminFormData({ ...adminFormData, wallet: e.target.value })} className={cn('w-full px-4 py-3 rounded-lg border-[1.5px] text-[14px] font-mono', isDark ? 'bg-white/[0.02] border-white/10' : 'bg-gray-50 border-gray-200')} />
-              <input type="text" placeholder="Key name" value={adminFormData.name || ''} onChange={(e) => setAdminFormData({ ...adminFormData, name: e.target.value })} className={cn('w-full px-4 py-3 rounded-lg border-[1.5px] text-[14px]', isDark ? 'bg-white/[0.02] border-white/10' : 'bg-gray-50 border-gray-200')} />
+              <input type="text" placeholder="Wallet address (rXXX...)" value={adminFormData.wallet || ''} onChange={(e) => setAdminFormData({ ...adminFormData, wallet: e.target.value })} className={cn('w-full px-4 py-3 rounded-lg border-[1.5px] text-[14px] max-sm:text-base font-mono', isDark ? 'bg-white/[0.02] border-white/10' : 'bg-gray-50 border-gray-200')} />
+              <input type="text" placeholder="Key name" value={adminFormData.name || ''} onChange={(e) => setAdminFormData({ ...adminFormData, name: e.target.value })} className={cn('w-full px-4 py-3 rounded-lg border-[1.5px] text-[14px] max-sm:text-base', isDark ? 'bg-white/[0.02] border-white/10' : 'bg-gray-50 border-gray-200')} />
               <select value={adminFormData.tier || 'free'} onChange={(e) => setAdminFormData({ ...adminFormData, tier: e.target.value })} className={cn('w-full px-4 py-3 rounded-lg border-[1.5px] text-[14px]', isDark ? 'bg-[#0a0a0a] border-white/10 text-white' : 'bg-gray-50 border-gray-200 text-gray-900')}>
                 <option value="free" className={isDark ? 'bg-[#0a0a0a] text-white' : 'bg-white text-gray-900'}>Free</option>
                 <option value="developer" className={isDark ? 'bg-[#0a0a0a] text-white' : 'bg-white text-gray-900'}>Developer</option>
@@ -1769,7 +1769,7 @@ const DashboardPage = () => {
                 <option value="professional" className={isDark ? 'bg-[#0a0a0a] text-white' : 'bg-white text-gray-900'}>Professional</option>
                 <option value="god" className={isDark ? 'bg-[#0a0a0a] text-white' : 'bg-white text-gray-900'}>God</option>
               </select>
-              <input type="number" placeholder="Credits (optional, e.g., 10000000)" value={adminFormData.credits || ''} onChange={(e) => setAdminFormData({ ...adminFormData, credits: e.target.value })} className={cn('w-full px-4 py-3 rounded-lg border-[1.5px] text-[14px]', isDark ? 'bg-white/[0.02] border-white/10' : 'bg-gray-50 border-gray-200')} />
+              <input type="number" placeholder="Credits (optional, e.g., 10000000)" value={adminFormData.credits || ''} onChange={(e) => setAdminFormData({ ...adminFormData, credits: e.target.value })} className={cn('w-full px-4 py-3 rounded-lg border-[1.5px] text-[14px] max-sm:text-base', isDark ? 'bg-white/[0.02] border-white/10' : 'bg-gray-50 border-gray-200')} />
             </div>
             <div className="flex gap-3 mt-4">
               <button onClick={() => { setShowAdminCreateKey(false); setAdminFormData({}); }} className={cn('flex-1 py-2.5 rounded-lg text-[13px] font-medium border-[1.5px]', isDark ? 'border-white/10 hover:bg-white/5' : 'border-gray-200 hover:bg-gray-50')}>Cancel</button>
@@ -1786,9 +1786,9 @@ const DashboardPage = () => {
           <div className={cn('w-full max-w-md sm:mx-4 p-5 pb-20 sm:pb-5 md:p-6 rounded-t-2xl sm:rounded-xl border-[1.5px]', isDark ? 'bg-black border-white/10' : 'bg-white border-gray-200')}>
             <h3 className={cn('text-lg font-medium mb-4', isDark ? 'text-white' : 'text-gray-900')}>Add Credits to Wallet</h3>
             <div className="space-y-3">
-              <input type="text" placeholder="Wallet address (rXXX...)" value={adminFormData.wallet || ''} onChange={(e) => setAdminFormData({ ...adminFormData, wallet: e.target.value })} className={cn('w-full px-4 py-3 rounded-lg border-[1.5px] text-[14px] font-mono', isDark ? 'bg-white/[0.02] border-white/10' : 'bg-gray-50 border-gray-200')} />
-              <input type="number" placeholder="Credits amount (-1 for unlimited)" value={adminFormData.credits || ''} onChange={(e) => setAdminFormData({ ...adminFormData, credits: e.target.value })} className={cn('w-full px-4 py-3 rounded-lg border-[1.5px] text-[14px]', isDark ? 'bg-white/[0.02] border-white/10' : 'bg-gray-50 border-gray-200')} />
-              <input type="text" placeholder="Reason (optional, e.g., promo)" value={adminFormData.reason || ''} onChange={(e) => setAdminFormData({ ...adminFormData, reason: e.target.value })} className={cn('w-full px-4 py-3 rounded-lg border-[1.5px] text-[14px]', isDark ? 'bg-white/[0.02] border-white/10' : 'bg-gray-50 border-gray-200')} />
+              <input type="text" placeholder="Wallet address (rXXX...)" value={adminFormData.wallet || ''} onChange={(e) => setAdminFormData({ ...adminFormData, wallet: e.target.value })} className={cn('w-full px-4 py-3 rounded-lg border-[1.5px] text-[14px] max-sm:text-base font-mono', isDark ? 'bg-white/[0.02] border-white/10' : 'bg-gray-50 border-gray-200')} />
+              <input type="number" placeholder="Credits amount (-1 for unlimited)" value={adminFormData.credits || ''} onChange={(e) => setAdminFormData({ ...adminFormData, credits: e.target.value })} className={cn('w-full px-4 py-3 rounded-lg border-[1.5px] text-[14px] max-sm:text-base', isDark ? 'bg-white/[0.02] border-white/10' : 'bg-gray-50 border-gray-200')} />
+              <input type="text" placeholder="Reason (optional, e.g., promo)" value={adminFormData.reason || ''} onChange={(e) => setAdminFormData({ ...adminFormData, reason: e.target.value })} className={cn('w-full px-4 py-3 rounded-lg border-[1.5px] text-[14px] max-sm:text-base', isDark ? 'bg-white/[0.02] border-white/10' : 'bg-gray-50 border-gray-200')} />
               <p className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-gray-500')}>Use -1 for unlimited credits</p>
             </div>
             <div className="flex gap-3 mt-4">
@@ -1806,8 +1806,8 @@ const DashboardPage = () => {
           <div className={cn('w-full max-w-md sm:mx-4 p-5 pb-20 sm:pb-5 md:p-6 rounded-t-2xl sm:rounded-xl border-[1.5px]', isDark ? 'bg-black border-white/10' : 'bg-white border-gray-200')}>
             <h3 className={cn('text-lg font-medium mb-4', isDark ? 'text-white' : 'text-gray-900')}>Manage Chat Access</h3>
             <div className="space-y-3">
-              <input type="text" placeholder="Wallet address (rXXX...)" value={adminFormData.wallet || ''} onChange={(e) => setAdminFormData({ ...adminFormData, wallet: e.target.value })} className={cn('w-full px-4 py-3 rounded-lg border-[1.5px] text-[14px] font-mono', isDark ? 'bg-white/[0.02] border-white/10' : 'bg-gray-50 border-gray-200')} />
-              <input type="text" placeholder="Platform (optional)" value={adminFormData.platform || ''} onChange={(e) => setAdminFormData({ ...adminFormData, platform: e.target.value })} className={cn('w-full px-4 py-3 rounded-lg border-[1.5px] text-[14px]', isDark ? 'bg-white/[0.02] border-white/10' : 'bg-gray-50 border-gray-200')} />
+              <input type="text" placeholder="Wallet address (rXXX...)" value={adminFormData.wallet || ''} onChange={(e) => setAdminFormData({ ...adminFormData, wallet: e.target.value })} className={cn('w-full px-4 py-3 rounded-lg border-[1.5px] text-[14px] max-sm:text-base font-mono', isDark ? 'bg-white/[0.02] border-white/10' : 'bg-gray-50 border-gray-200')} />
+              <input type="text" placeholder="Platform (optional)" value={adminFormData.platform || ''} onChange={(e) => setAdminFormData({ ...adminFormData, platform: e.target.value })} className={cn('w-full px-4 py-3 rounded-lg border-[1.5px] text-[14px] max-sm:text-base', isDark ? 'bg-white/[0.02] border-white/10' : 'bg-gray-50 border-gray-200')} />
               <div className="flex items-center gap-3">
                 <label className="flex items-center gap-2 cursor-pointer"><input type="radio" name="chatAccess" checked={adminFormData.chatAccess !== false} onChange={() => setAdminFormData({ ...adminFormData, chatAccess: true })} className="accent-primary" /><span className={cn('text-[13px]', isDark ? 'text-white' : 'text-gray-900')}>Grant Access</span></label>
                 <label className="flex items-center gap-2 cursor-pointer"><input type="radio" name="chatAccess" checked={adminFormData.chatAccess === false} onChange={() => setAdminFormData({ ...adminFormData, chatAccess: false })} className="accent-red-500" /><span className={cn('text-[13px]', isDark ? 'text-white' : 'text-gray-900')}>Revoke Access</span></label>
@@ -1828,16 +1828,16 @@ const DashboardPage = () => {
           <div className={cn('w-full max-w-md sm:mx-4 p-5 pb-20 sm:pb-5 md:p-6 rounded-t-2xl sm:rounded-xl border-[1.5px]', isDark ? 'bg-black border-white/10' : 'bg-white border-gray-200')}>
             <h3 className={cn('text-lg font-medium mb-4', isDark ? 'text-white' : 'text-gray-900')}>Create Platform API Key</h3>
             <div className="space-y-3">
-              <input type="text" placeholder="Wallet address (rXXX...)" value={adminFormData.wallet || ''} onChange={(e) => setAdminFormData({ ...adminFormData, wallet: e.target.value })} className={cn('w-full px-4 py-3 rounded-lg border-[1.5px] text-[14px] font-mono', isDark ? 'bg-white/[0.02] border-white/10' : 'bg-gray-50 border-gray-200')} />
-              <input type="text" placeholder="Platform identifier (e.g., partner_app)" value={adminFormData.platform || ''} onChange={(e) => setAdminFormData({ ...adminFormData, platform: e.target.value })} className={cn('w-full px-4 py-3 rounded-lg border-[1.5px] text-[14px]', isDark ? 'bg-white/[0.02] border-white/10' : 'bg-gray-50 border-gray-200')} />
-              <input type="text" placeholder="Key name (optional)" value={adminFormData.name || ''} onChange={(e) => setAdminFormData({ ...adminFormData, name: e.target.value })} className={cn('w-full px-4 py-3 rounded-lg border-[1.5px] text-[14px]', isDark ? 'bg-white/[0.02] border-white/10' : 'bg-gray-50 border-gray-200')} />
+              <input type="text" placeholder="Wallet address (rXXX...)" value={adminFormData.wallet || ''} onChange={(e) => setAdminFormData({ ...adminFormData, wallet: e.target.value })} className={cn('w-full px-4 py-3 rounded-lg border-[1.5px] text-[14px] max-sm:text-base font-mono', isDark ? 'bg-white/[0.02] border-white/10' : 'bg-gray-50 border-gray-200')} />
+              <input type="text" placeholder="Platform identifier (e.g., partner_app)" value={adminFormData.platform || ''} onChange={(e) => setAdminFormData({ ...adminFormData, platform: e.target.value })} className={cn('w-full px-4 py-3 rounded-lg border-[1.5px] text-[14px] max-sm:text-base', isDark ? 'bg-white/[0.02] border-white/10' : 'bg-gray-50 border-gray-200')} />
+              <input type="text" placeholder="Key name (optional)" value={adminFormData.name || ''} onChange={(e) => setAdminFormData({ ...adminFormData, name: e.target.value })} className={cn('w-full px-4 py-3 rounded-lg border-[1.5px] text-[14px] max-sm:text-base', isDark ? 'bg-white/[0.02] border-white/10' : 'bg-gray-50 border-gray-200')} />
               <select value={adminFormData.tier || 'partner'} onChange={(e) => setAdminFormData({ ...adminFormData, tier: e.target.value })} className={cn('w-full px-4 py-3 rounded-lg border-[1.5px] text-[14px]', isDark ? 'bg-[#0a0a0a] border-white/10 text-white' : 'bg-gray-50 border-gray-200 text-gray-900')}>
                 <option value="developer" className={isDark ? 'bg-[#0a0a0a] text-white' : 'bg-white text-gray-900'}>Developer</option>
                 <option value="partner" className={isDark ? 'bg-[#0a0a0a] text-white' : 'bg-white text-gray-900'}>Partner</option>
                 <option value="business" className={isDark ? 'bg-[#0a0a0a] text-white' : 'bg-white text-gray-900'}>Business</option>
                 <option value="professional" className={isDark ? 'bg-[#0a0a0a] text-white' : 'bg-white text-gray-900'}>Professional</option>
               </select>
-              <input type="number" placeholder="Credits (e.g., 50000000)" value={adminFormData.credits || ''} onChange={(e) => setAdminFormData({ ...adminFormData, credits: e.target.value })} className={cn('w-full px-4 py-3 rounded-lg border-[1.5px] text-[14px]', isDark ? 'bg-white/[0.02] border-white/10' : 'bg-gray-50 border-gray-200')} />
+              <input type="number" placeholder="Credits (e.g., 50000000)" value={adminFormData.credits || ''} onChange={(e) => setAdminFormData({ ...adminFormData, credits: e.target.value })} className={cn('w-full px-4 py-3 rounded-lg border-[1.5px] text-[14px] max-sm:text-base', isDark ? 'bg-white/[0.02] border-white/10' : 'bg-gray-50 border-gray-200')} />
               <p className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-gray-500')}>Platform keys have chat access enabled automatically</p>
             </div>
             <div className="flex gap-3 mt-4">

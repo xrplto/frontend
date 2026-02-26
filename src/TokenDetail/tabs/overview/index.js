@@ -59,6 +59,10 @@ const TrendingTokens = dynamic(() => import('./TrendingTokens'), {
   loading: () => <div className="h-[400px] animate-pulse bg-white/5 rounded-xl" />,
   ssr: false
 });
+const MobileTrendingTokens = dynamic(() => import('./MobileTrendingTokens'), {
+  loading: () => <div className="h-[400px] animate-pulse bg-white/5 rounded-xl" />,
+  ssr: false
+});
 // Lightweight - keep static
 import TokenSummary from '../../components/TokenSummary';
 
@@ -234,7 +238,7 @@ const Overview = memo(
             onClearCandleFilter={() => setCandleTimeFilter(null)}
             onTrackAddress={setChartTrackAddress}
           />
-          <TrendingTokens token={token} />
+          <MobileTrendingTokens token={token} />
         </div>
       );
     }

@@ -168,7 +168,7 @@ const EmotePicker = ({ onSelect, inputRef, input, setInput }) => {
               onChange={(e) => setGridSearch(e.target.value)}
               placeholder="SEARCH EMOTES..."
               aria-label="Search emotes"
-              className={`w-full px-3 py-2 rounded-sm text-sm font-mono outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] ${isDark ? 'bg-white/5 text-white placeholder-white/25 border border-white/[0.06]' : 'bg-black/5 text-black placeholder-black/25 border border-black/10'}`}
+              className={`w-full px-3 py-2 rounded-sm text-sm max-sm:text-base font-mono outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] ${isDark ? 'bg-white/5 text-white placeholder-white/25 border border-white/[0.06]' : 'bg-black/5 text-black placeholder-black/25 border border-black/10'}`}
             />
           </div>
           <div className="grid grid-cols-7 max-sm:grid-cols-8 gap-0.5 p-2 pt-0 max-h-60 overflow-y-auto overscroll-contain scrollbar-hide">
@@ -1109,6 +1109,7 @@ const Chat = () => {
   }, [authUser?.wallet]);
   const [showInbox, setShowInbox] = useState(false);
   const [inboxSearch, setInboxSearch] = useState('');
+  const [inboxSearchOpen, setInboxSearchOpen] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [modLevel, setModLevel] = useState(null); // 'admin' | 'verified' | null
@@ -1634,7 +1635,7 @@ const Chat = () => {
   }, [activeTab]);
 
   useEffect(() => {
-    if (!showInbox) setInboxSearch('');
+    if (!showInbox) { setInboxSearch(''); setInboxSearchOpen(false); }
   }, [showInbox]);
 
   // Listen for badge changes from wallet settings
@@ -1816,6 +1817,7 @@ const Chat = () => {
                 setShowInbox(opening);
                 setShowSupport(false);
                 setInboxSearch('');
+                setInboxSearchOpen(false);
                 if (opening && wsRef.current?.readyState === WebSocket.OPEN) {
                   conversations.forEach(([user]) => wsRef.current.send(JSON.stringify({ type: 'status', wallet: user })));
                 }
@@ -1860,26 +1862,36 @@ const Chat = () => {
             />
           ) : showInbox ? (
             <div className="h-[400px] max-sm:h-full max-sm:flex-1 flex flex-col">
-              <div className="px-3 py-2 border-b border-inherit shrink-0 flex items-center gap-2">
-                <button aria-label="Go back" onClick={() => setShowInbox(false)} className={`p-1.5 rounded-sm shrink-0 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] ${isDark ? 'hover:bg-white/10' : 'hover:bg-black/10'}`}>
-                  <ChevronLeft size={16} />
-                </button>
-                <div className={`flex-1 flex items-center gap-2 px-2.5 rounded-sm ${isDark ? 'bg-white/5 border border-white/[0.06]' : 'bg-black/5 border border-black/10'}`}>
-                  <Search size={14} className="opacity-30 shrink-0" />
-                  <input
-                    autoFocus
-                    value={inboxSearch}
-                    onChange={(e) => setInboxSearch(e.target.value)}
-                    placeholder="SEARCH..."
-                    aria-label="Search conversations"
-                    className={`w-full py-2 text-sm font-mono bg-transparent outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] ${isDark ? 'text-white placeholder-white/25' : 'text-black placeholder-black/25'}`}
-                  />
-                  {inboxSearch && (
-                    <button aria-label="Clear search" onClick={() => setInboxSearch('')} className="opacity-40 hover:opacity-80 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]">
-                      <X size={14} />
+              <div className="px-3 py-2 border-b border-inherit shrink-0 flex flex-col gap-2">
+                <div className="flex items-center gap-2">
+                  <button aria-label="Go back" onClick={() => setShowInbox(false)} className={`p-1.5 rounded-sm shrink-0 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] ${isDark ? 'hover:bg-white/10' : 'hover:bg-black/10'}`}>
+                    <ChevronLeft size={16} />
+                  </button>
+                  <span className="flex-1 text-sm font-semibold font-mono tracking-wide">INBOX</span>
+                  {conversations.length > 0 && (
+                    <button aria-label="Search conversations" onClick={() => { setInboxSearchOpen(s => !s); if (inboxSearchOpen) setInboxSearch(''); }} className={`p-1.5 rounded-sm shrink-0 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] ${inboxSearchOpen ? (isDark ? 'bg-white/20' : 'bg-black/15') : isDark ? 'hover:bg-white/10' : 'hover:bg-black/10'}`}>
+                      <Search size={14} />
                     </button>
                   )}
                 </div>
+                {inboxSearchOpen && (
+                  <div className={`flex items-center gap-2 px-2.5 rounded-sm ${isDark ? 'bg-white/5 border border-white/[0.06]' : 'bg-black/5 border border-black/10'}`}>
+                    <Search size={14} className="opacity-30 shrink-0" />
+                    <input
+                      autoFocus
+                      value={inboxSearch}
+                      onChange={(e) => setInboxSearch(e.target.value)}
+                      placeholder="Search..."
+                      aria-label="Search conversations"
+                      className={`w-full py-2 text-base font-mono bg-transparent outline-none ${isDark ? 'text-white placeholder-white/25' : 'text-black placeholder-black/25'}`}
+                    />
+                    {inboxSearch && (
+                      <button aria-label="Clear search" onClick={() => { setInboxSearch(''); setInboxSearchOpen(false); }} className="opacity-40 hover:opacity-80 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]">
+                        <X size={14} />
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
               <div className="flex-1 overflow-y-auto overscroll-contain scrollbar-hide">
                 {(() => {
@@ -2128,7 +2140,7 @@ const Chat = () => {
                   </div>
                 );
               })()}
-              <div className="px-2 py-2 max-sm:px-3 max-sm:py-3 max-sm:pb-[calc(12px+env(safe-area-inset-bottom))] border-t border-inherit shrink-0">
+              <div className="px-2 py-2 max-sm:px-3 max-sm:py-3 max-sm:pb-[calc(24px+env(safe-area-inset-bottom))] border-t border-inherit shrink-0">
                 {!authUser?.wallet ? (
                   <div className={`flex items-center justify-center gap-2 py-3 text-xs font-mono uppercase tracking-wider rounded-sm ${isDark ? 'text-white/40 bg-white/[0.02] border border-white/[0.06]' : 'text-black/40 bg-black/[0.02] border border-black/10'}`}>
                     <Send size={14} />
@@ -2210,13 +2222,13 @@ const Chat = () => {
                             sendMessage();
                           }
                         }}
-                        className={`flex-1 px-3 py-2.5 max-sm:py-3 rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] text-sm max-sm:text-base transition-all ${isDark ? 'bg-white/5 text-white placeholder-white/25 font-mono placeholder:font-mono focus:bg-white/[0.07] focus:ring-1 focus:ring-white/10 border border-transparent focus:border-white/[0.06]' : 'bg-black/5 text-black placeholder-black/25 font-mono placeholder:font-mono focus:bg-black/[0.07] focus:ring-1 focus:ring-black/10 border border-transparent focus:border-black/[0.06]'}`}
+                        className={`flex-1 px-3 py-2.5 max-sm:py-3.5 rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] text-sm max-sm:text-base transition-all ${isDark ? 'bg-white/5 text-white placeholder-white/25 font-mono placeholder:font-mono focus:bg-white/[0.07] focus:ring-1 focus:ring-white/10 border border-transparent focus:border-white/[0.06]' : 'bg-black/5 text-black placeholder-black/25 font-mono placeholder:font-mono focus:bg-black/[0.07] focus:ring-1 focus:ring-black/10 border border-transparent focus:border-black/[0.06]'}`}
                       />
                       <button
                         aria-label="Send message"
                         onClick={sendMessage}
                         disabled={!input && !attachedNft && !attachedToken}
-                        className={`px-3 py-2.5 max-sm:px-3.5 max-sm:py-3 rounded-sm transition-all duration-200 shrink-0 flex items-center justify-center outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] ${(input || attachedNft || attachedToken) ? (isDark ? 'bg-white/15 text-white hover:bg-white/20 active:scale-90' : 'bg-black/10 text-black hover:bg-black/15 active:scale-90') : isDark ? 'bg-white/5 text-white/20 cursor-not-allowed' : 'bg-black/5 text-black/20 cursor-not-allowed'}`}
+                        className={`px-3 py-2.5 max-sm:px-3.5 max-sm:py-3.5 rounded-sm transition-all duration-200 shrink-0 flex items-center justify-center outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] ${(input || attachedNft || attachedToken) ? (isDark ? 'bg-white/15 text-white hover:bg-white/20 active:scale-90' : 'bg-black/10 text-black hover:bg-black/15 active:scale-90') : isDark ? 'bg-white/5 text-white/20 cursor-not-allowed' : 'bg-black/5 text-black/20 cursor-not-allowed'}`}
                       >
                         <Send size={16} className={`max-sm:w-5 max-sm:h-5 transition-transform duration-200 ${(input || attachedNft || attachedToken) ? '-rotate-45 translate-x-[1px] -translate-y-[1px]' : ''}`} />
                       </button>

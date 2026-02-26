@@ -23,8 +23,7 @@ const TokenCard = ({ isDark, isWatched, className, children, ...props }) => (
   <a
     className={cn(
       'grid items-center no-underline text-inherit transition-[background-color] duration-150 relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#137DFE]',
-      'grid-cols-[32px_1fr_auto] gap-2 py-[7px] px-2.5',
-      'sm:grid-cols-[20px_28px_1fr_70px_54px] sm:gap-2.5 sm:py-2.5 sm:px-4',
+      'grid-cols-[20px_28px_1fr_70px_54px] gap-2.5 py-2.5 px-4',
       isDark
         ? 'border-b border-white/[0.04] hover:bg-white/[0.03]'
         : 'border-b border-black/[0.04] hover:bg-black/[0.02]',
@@ -66,6 +65,7 @@ const formatPrice = (price, currency, rate) => {
 
 const TrendingTokens = ({ token = null }) => {
   const { darkMode } = useContext(ThemeContext);
+  const isDark = darkMode;
   const { accountProfile, setOpenWalletModal } = useContext(WalletContext);
   const { activeFiatCurrency } = useContext(AppContext);
   const metrics = useSelector(selectMetrics);
@@ -153,18 +153,15 @@ const TrendingTokens = ({ token = null }) => {
       <Container isDark={darkMode}>
         <div className="p-3">
           {[...Array(10)].map((_, i) => (
-            <div key={i} className="grid items-center grid-cols-[32px_1fr_auto] gap-2 py-[7px] px-2.5 sm:grid-cols-[20px_28px_1fr_70px_54px] sm:gap-2.5 sm:py-2.5 sm:px-4">
-              <div className={cn('w-7 h-7 rounded-md sm:hidden', darkMode ? 'bg-white/[0.06]' : 'bg-black/[0.06]')} />
-              <div className={cn('hidden sm:block w-3 h-3 rounded-sm', darkMode ? 'bg-white/[0.06]' : 'bg-black/[0.06]')} />
-              <div className={cn('hidden sm:block w-7 h-7 rounded-md', darkMode ? 'bg-white/[0.06]' : 'bg-black/[0.06]')} />
-              <div className="flex flex-col gap-1">
-                <div className={cn('h-3 rounded w-[70%]', darkMode ? 'bg-white/[0.06]' : 'bg-black/[0.06]')} />
-                <div className={cn('h-2 rounded w-[45%] sm:hidden', darkMode ? 'bg-white/[0.04]' : 'bg-black/[0.04]')} />
+            <div key={i} className="flex items-center gap-2 py-[6px] px-2">
+              <div className={cn('w-6 h-6 rounded-md flex-shrink-0', darkMode ? 'bg-white/[0.06]' : 'bg-black/[0.06]')} />
+              <div className="flex flex-col gap-1 w-[72px] flex-shrink-0">
+                <div className={cn('h-2.5 rounded w-[80%]', darkMode ? 'bg-white/[0.06]' : 'bg-black/[0.06]')} />
+                <div className={cn('h-2 rounded w-[50%]', darkMode ? 'bg-white/[0.04]' : 'bg-black/[0.04]')} />
               </div>
-              <div className="flex items-center gap-2 sm:contents">
-                <div className={cn('h-3 rounded w-14', darkMode ? 'bg-white/[0.06]' : 'bg-black/[0.06]')} />
-                <div className={cn('h-3 rounded w-10', darkMode ? 'bg-white/[0.06]' : 'bg-black/[0.06]')} />
-              </div>
+              <div className={cn('h-2.5 rounded w-12 ml-auto', darkMode ? 'bg-white/[0.06]' : 'bg-black/[0.06]')} />
+              <div className={cn('h-2.5 rounded w-8 flex-shrink-0', darkMode ? 'bg-white/[0.06]' : 'bg-black/[0.06]')} />
+              <div className={cn('h-2.5 rounded w-10 flex-shrink-0', darkMode ? 'bg-white/[0.06]' : 'bg-black/[0.06]')} />
             </div>
           ))}
         </div>
@@ -217,6 +214,71 @@ const TrendingTokens = ({ token = null }) => {
           const vol = t.vol24hxrp || 0;
           const volStr = vol >= 1e6 ? `${(vol / 1e6).toFixed(1)}M` : vol >= 1e3 ? `${(vol / 1e3).toFixed(1)}K` : vol.toFixed(0);
 
+          if (isMobile) {
+            return (
+              <a
+                key={t.md5 || i}
+                href={`/token/${t.slug}`}
+                className={cn(
+                  'flex items-center gap-2 py-[6px] px-2 no-underline text-inherit border-b relative',
+                  isDark
+                    ? 'border-white/[0.04] hover:bg-white/[0.03]'
+                    : 'border-black/[0.04] hover:bg-black/[0.02]',
+                  'last:border-b-0',
+                  isWatched && (isDark ? 'bg-[rgba(246,184,126,0.04)]' : 'bg-[rgba(246,184,126,0.06)]')
+                )}
+              >
+                {isWatched && <span className="absolute left-0 top-[15%] bottom-[15%] w-0.5 bg-[#F6B87E] rounded-r" />}
+                <div className="relative w-6 h-6 flex-shrink-0">
+                  <div className={cn('w-6 h-6 rounded-md overflow-hidden flex items-center justify-center', isDark ? 'bg-white/5' : 'bg-black/5')}>
+                    {t.md5 ? (
+                      <img src={`https://s1.xrpl.to/thumb/${t.md5}_32`} alt="" className="w-full h-full object-cover" loading="lazy" onError={(e) => { e.target.style.display = 'none'; }} />
+                    ) : (
+                      <span className="text-[8px] font-bold opacity-50">{t.currency?.[0]}</span>
+                    )}
+                  </div>
+                  <Bookmark
+                    size={8}
+                    onClick={(e) => toggleWatch(e, t.md5)}
+                    fill={isWatched ? '#F59E0B' : 'none'}
+                    strokeWidth={2}
+                    className="absolute -top-0.5 -right-0.5 cursor-pointer"
+                    style={{ color: isWatched ? '#F59E0B' : isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.2)' }}
+                  />
+                </div>
+                <div className="min-w-0 flex-1 flex flex-col overflow-hidden">
+                  <div className={cn('overflow-hidden text-ellipsis whitespace-nowrap text-[11px] font-semibold leading-tight flex items-center gap-0.5', isDark ? 'text-white' : 'text-[#1a1f2e]')}>
+                    <span className={cn('truncate', t.trendingBoost >= 500 && t.trendingBoostExpires > Date.now() && 'text-[#FFD700]')}>{t.name}</span>
+                    {t.trendingBoost > 0 && t.trendingBoostExpires > Date.now() && (
+                      <Flame size={8} fill="#F6AF01" className="flex-shrink-0 text-[#F6AF01]" />
+                    )}
+                  </div>
+                  <div className="text-[8px] font-medium opacity-40 overflow-hidden text-ellipsis whitespace-nowrap leading-tight" suppressHydrationWarning>
+                    {activeTab === 'new' && t.dateon
+                      ? (() => { const s = Math.floor((Date.now() - t.dateon) / 1000); if (s < 60) return `${s}s ago`; const m = Math.floor(s / 60); if (m < 60) return `${m}m ago`; const h = Math.floor(m / 60); if (h < 24) return `${h}h ago`; const d = Math.floor(h / 24); return `${d}d ago`; })()
+                      : t.user || t.name}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <div className="text-right flex flex-col">
+                    <div className={cn('text-[10px] font-semibold font-mono tabular-nums leading-tight', isDark ? 'text-white/90' : 'text-[#1a1f2e]')}>
+                      {formatPrice(t.exch, activeFiatCurrency, rate)}
+                    </div>
+                    <div className="text-[8px] font-medium tabular-nums opacity-40 leading-tight">
+                      {volStr}
+                    </div>
+                  </div>
+                  <div className={cn(
+                    'text-[9px] font-bold tabular-nums py-0.5 px-1.5 rounded leading-tight min-w-[40px] text-center',
+                    isUp ? 'text-[#2ecc71] bg-[rgba(46,204,113,0.08)]' : 'text-[#ff4d4f] bg-[rgba(255,77,79,0.08)]'
+                  )}>
+                    {isUp ? '+' : ''}{change.toFixed(1)}%
+                  </div>
+                </div>
+              </a>
+            );
+          }
+
           return (
             <TokenCard
               key={t.md5 || i}
@@ -224,48 +286,25 @@ const TrendingTokens = ({ token = null }) => {
               isDark={darkMode}
               isWatched={isWatched}
             >
-              {/* Mobile: avatar with bookmark overlay */}
-              <div className="relative w-8 h-8 sm:hidden">
-                <div className={cn('w-8 h-8 rounded-lg overflow-hidden flex items-center justify-center', darkMode ? 'bg-white/5' : 'bg-black/5')}>
-                  {t.md5 ? (
-                    <img src={`https://s1.xrpl.to/thumb/${t.md5}_32`} alt="" className="w-full h-full object-cover" loading="lazy" onError={(e) => { e.target.style.display = 'none'; }} />
-                  ) : (
-                    <span className="text-[10px] font-bold opacity-50">{t.currency?.[0]}</span>
-                  )}
-                </div>
-                <Bookmark
-                  size={10}
-                  onClick={(e) => toggleWatch(e, t.md5)}
-                  fill={isWatched ? '#F59E0B' : 'none'}
-                  strokeWidth={2}
-                  className="absolute -top-0.5 -right-0.5 cursor-pointer"
-                  style={{ color: isWatched ? '#F59E0B' : darkMode ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.2)' }}
-                />
-              </div>
-
-              {/* Desktop: separate bookmark column */}
-              <div className="hidden sm:flex items-center">
+              <div className="flex items-center">
                 <Bookmark
                   size={14}
                   onClick={(e) => toggleWatch(e, t.md5)}
                   fill={isWatched ? '#F59E0B' : 'none'}
                   strokeWidth={2}
                   className="cursor-pointer transition-transform duration-200 hover:scale-[1.2]"
-                  style={{ color: isWatched ? '#F59E0B' : darkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)' }}
+                  style={{ color: isWatched ? '#F59E0B' : isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)' }}
                 />
               </div>
-              {/* Desktop: avatar column */}
-              <div className={cn('hidden sm:flex w-7 h-7 rounded-lg overflow-hidden items-center justify-center', darkMode ? 'bg-white/5' : 'bg-black/5')}>
+              <div className={cn('flex w-7 h-7 rounded-lg overflow-hidden items-center justify-center', isDark ? 'bg-white/5' : 'bg-black/5')}>
                 {t.md5 ? (
                   <img src={`https://s1.xrpl.to/thumb/${t.md5}_32`} alt="" className="w-full h-full object-cover" loading="lazy" onError={(e) => { e.target.style.display = 'none'; }} />
                 ) : (
                   <span className="text-[10px] font-bold opacity-50">{t.currency?.[0]}</span>
                 )}
               </div>
-
-              {/* Name + subtitle */}
-              <div className="min-w-0 flex flex-col">
-                <div className={cn('overflow-hidden text-ellipsis whitespace-nowrap text-[11px] sm:text-xs font-semibold leading-tight flex items-center gap-1', darkMode ? 'text-white' : 'text-[#1a1f2e]')}>
+              <div className="min-w-0 flex flex-col overflow-hidden">
+                <div className={cn('overflow-hidden text-ellipsis whitespace-nowrap text-xs font-semibold leading-tight flex items-center gap-1', isDark ? 'text-white' : 'text-[#1a1f2e]')}>
                   <span className={cn('truncate', t.trendingBoost >= 500 && t.trendingBoostExpires > Date.now() && 'text-[#FFD700]')}>{t.name}</span>
                   {t.trendingBoost > 0 && t.trendingBoostExpires > Date.now() && (
                     <span className="inline-flex items-center gap-0.5 flex-shrink-0 text-[#F6AF01]">
@@ -280,37 +319,16 @@ const TrendingTokens = ({ token = null }) => {
                     : t.user || t.name}
                 </div>
               </div>
-
-              {/* Mobile: price + change inline */}
-              <div className="flex items-center gap-1.5 sm:hidden">
-                <div className="text-right flex flex-col">
-                  <div className={cn('text-[10px] font-semibold font-mono tabular-nums leading-tight', darkMode ? 'text-white/90' : 'text-[#1a1f2e]')}>
-                    {formatPrice(t.exch, activeFiatCurrency, rate)}
-                  </div>
-                  <div className="opacity-35 text-[8px] font-medium tabular-nums leading-tight mt-px">
-                    {volStr}
-                  </div>
-                </div>
-                <div className={cn(
-                  'text-[10px] font-bold tabular-nums py-0.5 px-1 rounded leading-tight',
-                  isUp ? 'text-[#2ecc71] bg-[rgba(46,204,113,0.08)]' : 'text-[#ff4d4f] bg-[rgba(255,77,79,0.08)]'
-                )}>
-                  {isUp ? '+' : ''}{change.toFixed(1)}%
-                </div>
-              </div>
-
-              {/* Desktop: price column */}
-              <div className="hidden sm:flex text-right flex-col gap-px">
-                <div className={cn('text-[11px] font-semibold font-mono tabular-nums', darkMode ? 'text-white/90' : 'text-[#1a1f2e]')}>
+              <div className="flex text-right flex-col gap-px">
+                <div className={cn('text-[11px] font-semibold font-mono tabular-nums', isDark ? 'text-white/90' : 'text-[#1a1f2e]')}>
                   {formatPrice(t.exch, activeFiatCurrency, rate)}
                 </div>
                 <div className="opacity-40 text-[9px] font-medium tabular-nums">
                   Vol {volStr}
                 </div>
               </div>
-              {/* Desktop: change column */}
               <div className={cn(
-                'hidden sm:block text-right text-[11px] font-bold tabular-nums py-0.5 px-1.5 rounded justify-self-end',
+                'text-right text-[11px] font-bold tabular-nums py-0.5 px-1.5 rounded justify-self-end',
                 isUp ? 'text-[#2ecc71] bg-[rgba(46,204,113,0.1)]' : 'text-[#ff4d4f] bg-[rgba(255,77,79,0.1)]'
               )}>
                 {isUp ? '+' : ''}{change.toFixed(1)}%

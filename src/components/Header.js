@@ -808,7 +808,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
     <>
       <header
         className={cn(
-          'z-[1100] flex h-[52px] items-center',
+          'relative z-[1100] flex h-[52px] items-center overflow-visible',
           isDark
             ? 'bg-transparent backdrop-blur-md border-b border-white/10'
             : 'bg-white/95 backdrop-blur-md border-b border-gray-200'
@@ -1052,7 +1052,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
         {/* Center: Search */}
           <div
             ref={searchRef}
-            className="hidden lg:block absolute left-1/2 -translate-x-1/2 w-full max-w-[360px] 2xl:max-w-[580px] px-4"
+            className="hidden lg:block absolute left-1/2 -translate-x-1/2 w-full max-w-[360px] 2xl:max-w-[580px] px-4 z-[9999]"
           >
             <div
               className={cn(
@@ -1082,7 +1082,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search assets, NFTs, accounts..."
                   className={cn(
-                    'flex-1 bg-transparent text-[14px] outline-none font-medium',
+                    'flex-1 bg-transparent text-[14px] max-sm:text-base outline-none font-medium',
                     isDark
                       ? 'text-white placeholder:text-white/60'
                       : 'text-gray-900 placeholder:text-gray-400'
@@ -1684,7 +1684,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search assets, NFTs, accounts..."
                   className={cn(
-                    'flex-1 bg-transparent text-[15px] font-medium outline-none',
+                    'flex-1 bg-transparent text-[15px] max-sm:text-base font-medium outline-none',
                     isDark
                       ? 'text-white placeholder:text-white/60'
                       : 'text-gray-900 placeholder:text-gray-400'
@@ -3064,7 +3064,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                             onChange={(e) => setMobileEmail(e.target.value)}
                             placeholder="Enter email"
                             className={cn(
-                              'flex-1 rounded-lg border px-3 py-2 text-[12px] outline-none',
+                              'flex-1 rounded-lg border px-3 py-2 text-[12px] max-sm:text-base outline-none',
                               isDark
                                 ? 'border-white/10 bg-white/5 placeholder:text-white/60'
                                 : 'border-gray-200 bg-white placeholder:text-gray-400'
@@ -3225,7 +3225,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                 onChange={(e) => setCommandQuery(e.target.value)}
                 placeholder="Go to page..."
                 className={cn(
-                  'flex-1 bg-transparent text-[14px] outline-none',
+                  'flex-1 bg-transparent text-[14px] max-sm:text-base outline-none',
                   isDark
                     ? 'text-white placeholder:text-white/60'
                     : 'text-gray-900 placeholder:text-gray-400'

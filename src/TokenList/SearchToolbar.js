@@ -259,7 +259,7 @@ const SearchIconWrapper = ({ isDark, className, children, ...p }) => (
 const SearchInput = ({ isDark, className, ...p }) => (
   <input
     className={cn(
-      'flex-1 bg-transparent border-none outline-none text-sm font-[inherit] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
+      'flex-1 bg-transparent border-none outline-none text-sm max-sm:text-base font-[inherit] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
       isDark ? 'text-white placeholder:text-white/50' : 'text-[#212B36] placeholder:text-[#212B36]/40',
       className
     )}

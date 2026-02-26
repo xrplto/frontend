@@ -47,7 +47,7 @@ const InputField = ({
         placeholder={placeholder}
         rows={rows || 2}
         className={cn(
-          'w-full px-2.5 py-2 rounded-lg border text-[13px] bg-transparent resize-none transition-colors',
+          'w-full px-2.5 py-2 rounded-lg border text-[13px] max-sm:text-base bg-transparent resize-none transition-colors',
           error
             ? 'border-red-500/40'
             : isDark
@@ -66,7 +66,7 @@ const InputField = ({
         min={min}
         max={max}
         className={cn(
-          'w-full px-2.5 py-2 rounded-lg border text-[13px] bg-transparent transition-colors',
+          'w-full px-2.5 py-2 rounded-lg border text-[13px] max-sm:text-base bg-transparent transition-colors',
           error
             ? 'border-red-500/40'
             : isDark
@@ -1306,7 +1306,7 @@ function CreatePage() {
                       value={formData.platformRetentionPercent}
                       onChange={handleInputChange('platformRetentionPercent')}
                       className={cn(
-                        'w-12 text-center text-[12px] font-medium py-0.5 rounded border outline-none',
+                        'w-12 text-center text-[12px] max-sm:text-base font-medium py-0.5 rounded border outline-none',
                         isDark
                           ? 'bg-white/10 border-white/20 text-white'
                           : 'bg-white border-gray-200 text-gray-900'
@@ -1413,7 +1413,7 @@ function CreatePage() {
                                   setFormData((prev) => ({ ...prev, bundleRecipients: updated }));
                                 }}
                                 className={cn(
-                                  'flex-1 px-2.5 py-2 rounded-lg border text-[12px] bg-transparent transition-colors font-mono',
+                                  'flex-1 px-2.5 py-2 rounded-lg border text-[12px] max-sm:text-base bg-transparent transition-colors font-mono',
                                   dupeAddr
                                     ? 'border-red-500/40'
                                     : r.address && /^r[1-9A-HJ-NP-Za-km-z]{24,34}$/.test(r.address)
@@ -1491,7 +1491,7 @@ function CreatePage() {
                                   setFormData((prev) => ({ ...prev, bundleRecipients: updated }));
                                 }}
                                 className={cn(
-                                  'w-full px-2 py-2 rounded-lg border text-[12px] bg-transparent text-center transition-colors',
+                                  'w-full px-2 py-2 rounded-lg border text-[12px] max-sm:text-base bg-transparent text-center transition-colors',
                                   r.percent <= 0 || r.percent > 50
                                     ? 'border-red-500/40'
                                     : isDark
@@ -2184,7 +2184,7 @@ function CreatePage() {
                     onChange={(e) => setUserWallet(e.target.value)}
                     disabled={!!accountProfile}
                     className={cn(
-                      'flex-1 px-3 py-2 rounded-lg border text-[13px] bg-transparent font-mono',
+                      'flex-1 px-3 py-2 rounded-lg border text-[13px] max-sm:text-base bg-transparent font-mono',
                       isDark ? 'border-white/10' : 'border-gray-200'
                     )}
                   />
@@ -2484,7 +2484,7 @@ function CreatePage() {
                         onChange={(e) => setUserWallet(e.target.value)}
                         disabled={!!accountProfile}
                         className={cn(
-                          'flex-1 px-3 py-2 rounded-lg border text-[13px] bg-transparent font-mono',
+                          'flex-1 px-3 py-2 rounded-lg border text-[13px] max-sm:text-base bg-transparent font-mono',
                           isDark ? 'border-white/10' : 'border-gray-200'
                         )}
                       />

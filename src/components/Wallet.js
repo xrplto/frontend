@@ -595,7 +595,7 @@ const WalletContent = ({
                         placeholder="Search..."
                         autoFocus
                         className={cn(
-                          'w-full px-2 py-1.5 rounded text-[12px] outline-none',
+                          'w-full px-2 py-1.5 rounded text-[12px] max-sm:text-base outline-none',
                           isDark
                             ? 'bg-white/5 text-white placeholder:text-white/30'
                             : 'bg-gray-50 text-gray-900 placeholder:text-gray-400'
@@ -684,7 +684,7 @@ const WalletContent = ({
                     onChange={(e) => setDestAddress(e.target.value)}
                     placeholder={`Your ${selectedCurrency?.ticker?.toUpperCase() || ''} address`}
                     className={cn(
-                      'w-full mt-2 bg-transparent text-[14px] outline-none',
+                      'w-full mt-2 bg-transparent text-[14px] max-sm:text-base outline-none',
                       isDark
                         ? 'text-white placeholder:text-white/20'
                         : 'text-gray-900 placeholder:text-gray-300'
@@ -3580,7 +3580,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                                     placeholder="Search..."
                                     autoFocus
                                     className={cn(
-                                      'w-full px-2 py-1.5 rounded text-[12px] outline-none',
+                                      'w-full px-2 py-1.5 rounded text-[12px] max-sm:text-base outline-none',
                                       isDark
                                         ? 'bg-white/5 text-white placeholder:text-white/30'
                                         : 'bg-gray-50 text-gray-900 placeholder:text-gray-400'
@@ -3985,7 +3985,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                                   value={newAccountSeed}
                                   onChange={(e) => setNewAccountSeed(e.target.value)}
                                   className={cn(
-                                    'w-full px-4 py-3 rounded-xl text-sm font-mono outline-none transition-all',
+                                    'w-full px-4 py-3 rounded-xl text-sm max-sm:text-base font-mono outline-none transition-all',
                                     hasInput && !validation.valid
                                       ? 'border-red-500/50 focus:border-red-500'
                                       : hasInput && validation.valid

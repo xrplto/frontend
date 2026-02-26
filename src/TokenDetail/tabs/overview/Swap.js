@@ -209,6 +209,7 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
   const [focusTop, setFocusTop] = useState(false);
   const [focusBottom, setFocusBottom] = useState(false);
 
+
   const [hasTrustline1, setHasTrustline1] = useState(token1?.currency === 'XRP');
   const [hasTrustline2, setHasTrustline2] = useState(token2?.currency === 'XRP');
 
@@ -2387,7 +2388,7 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
                           }
                         }}
                         className={cn(
-                          'w-5 bg-transparent border-none outline-none text-[12px] font-medium text-center',
+                          'w-5 bg-transparent border-none outline-none text-[12px] max-sm:text-base font-medium text-center',
                           isDark ? 'text-white/80' : 'text-gray-700'
                         )}
                       />
@@ -2451,7 +2452,7 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
                           setTxFee(val);
                         }}
                         className={cn(
-                          'w-8 bg-transparent border-none outline-none text-[12px] font-medium text-center',
+                          'w-8 bg-transparent border-none outline-none text-[12px] max-sm:text-base font-medium text-center',
                           isDark ? 'text-white/80' : 'text-gray-700'
                         )}
                       />
@@ -2667,8 +2668,8 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
                 <div className="relative">
                   <input
                     placeholder="0.00"
-                    className={cn('outline-none w-full max-sm:text-sm max-sm:p-2 font-mono', isDark ? 'text-white placeholder:text-white/55' : 'text-[#212B36] placeholder:text-black/40')}
-                    style={{ padding: '10px 12px', border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`, fontSize: '14px', fontWeight: 600, background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)', borderRadius: '10px' }}
+                    className={cn('outline-none w-full max-sm:p-2 font-mono', isDark ? 'text-white placeholder:text-white/55' : 'text-[#212B36] placeholder:text-black/40')}
+                    style={{ padding: '10px 12px', border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`, fontSize: '16px', fontWeight: 600, background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)', borderRadius: '10px' }}
                     value={limitPrice}
                     onChange={(e) => {
                       const val = e.target.value;
