@@ -605,7 +605,7 @@ export default async function handler(req, res) {
         const g = data.global || {};
         const h = data.H24 || {};
         if (data.count) stats.push({ label: 'Tokens', value: formatCompact(data.count) });
-        if (g.gDexVolume) stats.push({ label: '24h Vol', value: `${formatCompact(Math.round(g.gDexVolume))} XRP` });
+        if (g.gDexVolume) stats.push({ label: '24h Volume', value: `${formatCompact(Math.round(g.gDexVolume))} XRP` });
         if (g.gMarketcap) stats.push({ label: 'MCap', value: `${formatCompact(Math.round(g.gMarketcap))} XRP` });
         if (h.activeAddresses24H) stats.push({ label: '24h Active', value: formatCompact(h.activeAddresses24H) });
         // Use top token's logo as image
@@ -686,8 +686,8 @@ export default async function handler(req, res) {
         const data = await r.json();
         const s = data.summary || {};
         if (s.totalLiquidity) stats.push({ label: 'Liquidity', value: `${formatCompact(Math.round(s.totalLiquidity))} XRP` });
-        if (s.totalVolume24h) stats.push({ label: '24h Vol', value: `${formatCompact(Math.round(s.totalVolume24h))} XRP` });
-        if (s.totalVolume7d) stats.push({ label: '7d Vol', value: `${formatCompact(Math.round(s.totalVolume7d))} XRP` });
+        if (s.totalVolume24h) stats.push({ label: '24h Volume', value: `${formatCompact(Math.round(s.totalVolume24h))} XRP` });
+        if (s.totalVolume7d) stats.push({ label: '7d Volume', value: `${formatCompact(Math.round(s.totalVolume7d))} XRP` });
         if (s.totalFees7d) stats.push({ label: '7d Fees', value: `${formatCompact(Math.round(s.totalFees7d))} XRP` });
       } catch {}
       config = { ...PAGES['amm-pools'], stats: stats.length ? stats : undefined, isToken: true };
@@ -716,12 +716,12 @@ export default async function handler(req, res) {
         const h24 = data.aggregates?.['24h'] || {};
         const pct = data.percentChanges || {};
         const bal = data.traderBalances || {};
-        if (h24.volume) stats.push({ label: '24h Vol', value: `${formatCompact(Math.round(h24.volume))} XRP` });
+        if (h24.volume) stats.push({ label: '24h Volume', value: `${formatCompact(Math.round(h24.volume))} XRP` });
         if (h24.trades) stats.push({ label: '24h Trades', value: formatCompact(h24.trades) });
         if (bal.tradersAll) stats.push({ label: 'Traders', value: formatCompact(bal.tradersAll) });
         if (pct.volume24hPct !== undefined) {
           const v = pct.volume24hPct;
-          stats.push({ label: 'Vol Change', value: `${v >= 0 ? '+' : ''}${v.toFixed(1)}%`, positive: v >= 0 });
+          stats.push({ label: 'Volume Change', value: `${v >= 0 ? '+' : ''}${v.toFixed(1)}%`, positive: v >= 0 });
         }
       } catch {}
       config = { ...PAGES['token-market'], stats: stats.length ? stats : undefined, isToken: true };
@@ -732,12 +732,12 @@ export default async function handler(req, res) {
         const data = await r.json();
         const s = data.summary || {};
         const p = data.percentChanges || {};
-        if (s.total24hVolume) stats.push({ label: '24h Vol', value: `${formatCompact(Math.round(s.total24hVolume))} XRP` });
+        if (s.total24hVolume) stats.push({ label: '24h Volume', value: `${formatCompact(Math.round(s.total24hVolume))} XRP` });
         if (s.total24hSales) stats.push({ label: '24h Sales', value: formatCompact(s.total24hSales) });
         if (s.activeTraders24h) stats.push({ label: 'Traders', value: formatCompact(s.activeTraders24h) });
         if (p.volume24hPct !== undefined) {
           const pct = p.volume24hPct;
-          stats.push({ label: 'Vol Change', value: `${pct >= 0 ? '+' : ''}${pct.toFixed(1)}%`, positive: pct >= 0 });
+          stats.push({ label: 'Volume Change', value: `${pct >= 0 ? '+' : ''}${pct.toFixed(1)}%`, positive: pct >= 0 });
         }
       } catch {}
       config = { ...PAGES['nft-market'], stats: stats.length ? stats : undefined, isToken: true };
@@ -800,7 +800,7 @@ export default async function handler(req, res) {
         const data = await res.json();
         const gm = data.globalMetrics || {};
         if (gm.totalCollections) stats.push({ label: 'Collections', value: formatCompact(gm.totalCollections) });
-        if (gm.total24hVolume) stats.push({ label: '24h Vol', value: `${formatCompact(Math.round(gm.total24hVolume))} XRP` });
+        if (gm.total24hVolume) stats.push({ label: '24h Volume', value: `${formatCompact(Math.round(gm.total24hVolume))} XRP` });
         if (gm.totalMarketCap) stats.push({ label: 'NFT MCap', value: `${formatCompact(Math.round(gm.totalMarketCap))} XRP` });
         if (gm.activeTraders24h) stats.push({ label: '24h Traders', value: formatCompact(gm.activeTraders24h) });
         // Use top collection's logo as image
@@ -896,7 +896,7 @@ export default async function handler(req, res) {
         const data = await r.json();
         if (data.count) stats.push({ label: 'Tokens', value: formatCompact(data.count) });
         const top = (data.tokens || [])[0];
-        if (top?.vol24h) stats.push({ label: '24h Vol', value: `${formatCompact(Math.round(top.vol24h))} XRP` });
+        if (top?.vol24h) stats.push({ label: '24h Volume', value: `${formatCompact(Math.round(top.vol24h))} XRP` });
         if (data.H24?.tradedTokens24H) stats.push({ label: 'Traded 24h', value: formatCompact(data.H24.tradedTokens24H) });
         if (data.H24?.uniqueTraders24H) stats.push({ label: 'Traders 24h', value: formatCompact(data.H24.uniqueTraders24H) });
         if (top?.md5) {

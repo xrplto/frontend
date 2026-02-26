@@ -17,7 +17,7 @@ export default function SignupPage() {
 
     // If already logged in, go to wallet referral tab
     if (accountProfile?.account) {
-      router.replace('/wallet?tab=referral');
+      router.replace('/wallet?tab=profile');
       return;
     }
 

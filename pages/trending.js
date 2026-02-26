@@ -98,8 +98,14 @@ function TrendingPage({ data, summaryTokens }) {
 
 export default TrendingPage;
 
-export async function getServerSideProps({ res }) {
-  res.setHeader('Cache-Control', 'public, s-maxage=30, stale-while-revalidate=120');
+export async function getServerSideProps({ req, res }) {
+  const isDataReq = req.url?.includes('/_next/data/');
+  res.setHeader(
+    'Cache-Control',
+    isDataReq
+      ? 'private, no-cache, no-store, must-revalidate'
+      : 'public, s-maxage=30, stale-while-revalidate=120'
+  );
 
   const [data, summaryTokens] = await Promise.all([
     getTokens('trendingScore', 'desc'),

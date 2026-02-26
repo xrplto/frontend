@@ -979,9 +979,9 @@ const OverView = ({ account }) => {
                         <p className={cn('text-[10px] mt-1.5 font-medium', isDark ? 'text-white/50' : 'text-gray-400')}>{accountInfo?.rank ? `#${accountInfo.rank.toLocaleString()} Rank` : 'XRP'}</p>
                       </div>
                       <div className={cn('p-4 rounded-xl border text-center', isDark ? 'bg-white/[0.02] border-white/[0.06]' : 'bg-gray-50/50 border-gray-100')}>
-                        <p className={cn('text-[9px] uppercase font-bold tracking-widest mb-1.5', isDark ? 'text-white/50' : 'text-gray-400')}>Total P&L</p>
+                        <p className={cn('text-[9px] uppercase font-bold tracking-widest mb-1.5', isDark ? 'text-white/50' : 'text-gray-400')}>Total Profit / Loss</p>
                         <p className={cn('text-[20px] font-black tabular-nums tracking-tight leading-none', totalPnL + (nftStats?.combinedProfit || 0) >= 0 ? 'text-emerald-500' : 'text-red-500')}>{totalPnL + (nftStats?.combinedProfit || 0) >= 0 ? '+' : ''}{fCurrency5(totalPnL + (nftStats?.combinedProfit || 0))}</p>
-                        <p className={cn('text-[10px] mt-1.5 font-medium', isDark ? 'text-white/50' : 'text-gray-400')}>{data?.totalRoi != null ? `${data.totalRoi >= 0 ? '+' : ''}${data.totalRoi.toFixed(1)}% ROI` : 'XRP'}</p>
+                        <p className={cn('text-[10px] mt-1.5 font-medium', isDark ? 'text-white/50' : 'text-gray-400')}>{data?.totalRoi != null ? `${data.totalRoi >= 0 ? '+' : ''}${data.totalRoi.toFixed(1)}% Return` : 'XRP'}</p>
                       </div>
                       <div className={cn('p-4 rounded-xl border text-center', isDark ? 'bg-white/[0.02] border-white/[0.06]' : 'bg-gray-50/50 border-gray-100')}>
                         <p className={cn('text-[9px] uppercase font-bold tracking-widest mb-1.5', isDark ? 'text-white/50' : 'text-gray-400')}>Trades</p>
@@ -1004,7 +1004,7 @@ const OverView = ({ account }) => {
                       <p className={cn('text-[14px] font-black tabular-nums tracking-tight leading-none', isDark ? 'text-white' : 'text-gray-900')}>{fCurrency5(holdings?.accountData?.total || holdings?.xrp?.value || 0)}</p>
                     </div>
                     <div className={cn('p-2.5 rounded-lg border text-center', isDark ? 'bg-white/[0.02] border-white/[0.06]' : 'bg-gray-50/50 border-gray-100')}>
-                      <p className={cn('text-[8px] uppercase font-bold tracking-widest mb-0.5', isDark ? 'text-white/50' : 'text-gray-400')}>P&L</p>
+                      <p className={cn('text-[8px] uppercase font-bold tracking-widest mb-0.5', isDark ? 'text-white/50' : 'text-gray-400')}>Profit / Loss</p>
                       <p className={cn('text-[14px] font-black tabular-nums tracking-tight leading-none', totalPnL + (nftStats?.combinedProfit || 0) >= 0 ? 'text-emerald-500' : 'text-red-500')}>{totalPnL + (nftStats?.combinedProfit || 0) >= 0 ? '+' : ''}{fCurrency5(totalPnL + (nftStats?.combinedProfit || 0))}</p>
                     </div>
                     <div className={cn('p-2.5 rounded-lg border text-center', isDark ? 'bg-white/[0.02] border-white/[0.06]' : 'bg-gray-50/50 border-gray-100')}>
@@ -1347,11 +1347,11 @@ const OverView = ({ account }) => {
                           )}
                         >
                           <span className="text-emerald-500">
-                            {fCurrency5(data.buyCount || 0)}B
+                            {fCurrency5(data.buyCount || 0)} Buys
                           </span>
                           <span className="opacity-20">/</span>
                           <span className="text-red-500">
-                            {fCurrency5(data.sellCount || 0)}S
+                            {fCurrency5(data.sellCount || 0)} Sells
                           </span>
                         </div>
                       </div>
@@ -1360,7 +1360,7 @@ const OverView = ({ account }) => {
                         <div className={cn('w-px h-7', isDark ? 'bg-white/10' : 'bg-gray-100')} />
                         <TradingStat label="Unrealized" value={`${unrealizedPnL >= 0 ? '+' : ''}${fCurrency5(unrealizedPnL)}`} color={unrealizedPnL >= 0 ? 'text-emerald-500' : 'text-red-500'} isDark={isDark} />
                         <div className={cn('w-px h-7', isDark ? 'bg-white/10' : 'bg-gray-100')} />
-                        <TradingStat label="ROI" value={`${((data.totalRoi ?? data.roi) || 0).toFixed(1)}%`} color={((data.totalRoi ?? data.roi) || 0) >= 0 ? 'text-emerald-500' : 'text-red-500'} isDark={isDark} />
+                        <TradingStat label="Return" value={`${((data.totalRoi ?? data.roi) || 0).toFixed(1)}%`} color={((data.totalRoi ?? data.roi) || 0) >= 0 ? 'text-emerald-500' : 'text-red-500'} isDark={isDark} />
                       </div>
                       {/* Token Win Rate bar */}
                       {totalTokensTraded > 0 && (
@@ -1368,7 +1368,7 @@ const OverView = ({ account }) => {
                           <div className="flex items-center justify-between mb-1.5">
                             <span className={cn('text-[9px] font-bold uppercase tracking-widest opacity-60', isDark ? 'text-white' : 'text-black')}>Token Win Rate</span>
                             <span className={cn('text-[10px] font-bold tabular-nums', isDark ? 'text-white/70' : 'text-gray-600')}>
-                              {winningTokens}W / {losingTokens}L{totalTokensTraded - winningTokens - losingTokens > 0 ? ` / ${totalTokensTraded - winningTokens - losingTokens}BE` : ''}
+                              {winningTokens} Won / {losingTokens} Lost{totalTokensTraded - winningTokens - losingTokens > 0 ? ` / ${totalTokensTraded - winningTokens - losingTokens} Even` : ''}
                             </span>
                           </div>
                           <div className={cn('h-1.5 rounded-full overflow-hidden flex', isDark ? 'bg-white/[0.06]' : 'bg-gray-100')}>
@@ -1415,9 +1415,9 @@ const OverView = ({ account }) => {
                         </div>
                         <div className="flex items-center gap-3">
                           {[
-                            { label: '24H', value: data.profit24h || 0 },
-                            { label: '7D', value: data.profit7d || 0 },
-                            { label: '30D', value: data.profit30d || 0 },
+                            { label: '24h', value: data.profit24h || 0 },
+                            { label: '7d', value: data.profit7d || 0 },
+                            { label: '30d', value: data.profit30d || 0 },
                           ].map((p) => (
                             <span key={p.label} className="flex items-baseline gap-1">
                               <span className="opacity-50">{p.label}:</span>
@@ -1475,7 +1475,7 @@ const OverView = ({ account }) => {
                             </span>
                             <div className="flex items-center gap-1.5">
                               <p className={cn('text-[9px] font-medium opacity-50 block', isDark ? 'text-white' : 'text-gray-500')}>
-                                {fCurrency5(nftStats.totalVolume || 0)} XRP vol
+                                {fCurrency5(nftStats.totalVolume || 0)} XRP volume
                               </p>
                               {nftStats.holdingsCount > 0 && (
                                 <span className={cn('px-1 py-px rounded text-[8px] font-bold uppercase tracking-wider', isDark ? 'bg-indigo-500/20 text-indigo-400' : 'bg-indigo-100 text-indigo-700')}>
@@ -1492,20 +1492,20 @@ const OverView = ({ account }) => {
                           )}
                         >
                           <span className="text-emerald-500">
-                            {nftStats.buyCount || 0}B
+                            {nftStats.buyCount || 0} Buys
                           </span>
                           <span className="opacity-20">/</span>
                           <span className="text-red-500">
-                            {nftStats.sellCount || 0}S
+                            {nftStats.sellCount || 0} Sells
                           </span>
                         </div>
                       </div>
                       <div className="flex items-center justify-around mb-2.5 py-1.5">
-                        <TradingStat label="Realized P&L" value={`${(nftStats.profit || 0) >= 0 ? '+' : ''}${fCurrency5(nftStats.profit || 0)}`} color={(nftStats.profit || 0) >= 0 ? 'text-emerald-500' : 'text-red-500'} isDark={isDark} />
+                        <TradingStat label="Realized" value={`${(nftStats.profit || 0) >= 0 ? '+' : ''}${fCurrency5(nftStats.profit || 0)}`} color={(nftStats.profit || 0) >= 0 ? 'text-emerald-500' : 'text-red-500'} isDark={isDark} />
                         <div className={cn('w-px h-7', isDark ? 'bg-white/10' : 'bg-gray-100')} />
                         <TradingStat label="Unrealized" value={`${(nftStats.unrealizedProfit || 0) >= 0 ? '+' : ''}${fCurrency5(nftStats.unrealizedProfit || 0)}`} color={(nftStats.unrealizedProfit || 0) >= 0 ? 'text-emerald-500' : 'text-amber-500'} isDark={isDark} />
                         <div className={cn('w-px h-7', isDark ? 'bg-white/10' : 'bg-gray-100')} />
-                        <TradingStat label="ROI" value={`${(nftStats.roi || 0) >= 0 ? '+' : ''}${(nftStats.roi || 0).toFixed(1)}%`} color={(nftStats.roi || 0) >= 0 ? 'text-emerald-500' : 'text-red-500'} isDark={isDark} />
+                        <TradingStat label="Return" value={`${(nftStats.roi || 0) >= 0 ? '+' : ''}${(nftStats.roi || 0).toFixed(1)}%`} color={(nftStats.roi || 0) >= 0 ? 'text-emerald-500' : 'text-red-500'} isDark={isDark} />
                       </div>
                       <div
                         className={cn(
@@ -1515,29 +1515,29 @@ const OverView = ({ account }) => {
                       >
                         <div className="flex items-center gap-4">
                           <span className="flex items-baseline gap-1.5">
-                            <span className="opacity-60">FLIPS:</span>
+                            <span className="opacity-60">Flips:</span>
                             <span className={cn('tabular-nums', isDark ? 'text-white/80' : 'text-gray-900')}>
                               {nftStats.flips || 0}
                             </span>
                           </span>
                           <span className="flex items-baseline gap-1.5">
-                            <span className="opacity-60">AVG HOLD:</span>
+                            <span className="opacity-60">Avg Hold:</span>
                             <span className={cn('tabular-nums', isDark ? 'text-white/80' : 'text-gray-900')}>
                               {(() => {
-                                if (nftStats.avgHoldingDays > 0) return `${nftStats.avgHoldingDays.toFixed(0)}d`;
+                                if (nftStats.avgHoldingDays > 0) return `${nftStats.avgHoldingDays.toFixed(0)} days`;
                                 if (nftStats.holdingsCount > 0 && nftStats.firstTrade) {
                                   const days = Math.max(1, Math.floor((Date.now() - nftStats.firstTrade) / 86400000));
-                                  return `~${days}d`;
+                                  return `~${days} days`;
                                 }
-                                return '0d';
+                                return '0 days';
                               })()}
                             </span>
                           </span>
                         </div>
                         <div className="flex items-center gap-3">
                           {[
-                            { label: '24H', value: nftStats.profit24h || 0 },
-                            { label: '7D', value: nftStats.profit7d || 0 },
+                            { label: '24h', value: nftStats.profit24h || 0 },
+                            { label: '7d', value: nftStats.profit7d || 0 },
                           ].map((p) => (
                             <span key={p.label} className="flex items-baseline gap-1">
                               <span className="opacity-50">{p.label}:</span>
@@ -2011,8 +2011,8 @@ const OverView = ({ account }) => {
                             )}
                           >
                             <option value="volume">Volume</option>
-                            <option value="profit">PNL</option>
-                            <option value="roi">ROI</option>
+                            <option value="profit">Profit / Loss</option>
+                            <option value="roi">Return</option>
                             <option value="trades">Trades</option>
                             <option value="lastTradeDate">Recent</option>
                           </select>
@@ -2049,8 +2049,8 @@ const OverView = ({ account }) => {
                               <th className="px-2 py-2 text-right text-emerald-300">Bought</th>
                               <th className="px-2 py-2 text-right text-red-300">Sold</th>
                               <th className="px-2 py-2 text-right text-blue-300">Held</th>
-                              <th className="px-2 py-2 text-right">ROI</th>
-                              <th className="px-2 py-2 text-right">PNL</th>
+                              <th className="px-2 py-2 text-right">Return</th>
+                              <th className="px-2 py-2 text-right">Profit / Loss</th>
                               <th className="px-2 py-2 text-right pr-4">Period</th>
                             </tr>
                           </thead>
@@ -2676,8 +2676,8 @@ const OverView = ({ account }) => {
                         <tr className={cn('text-[10px] font-black uppercase tracking-widest opacity-60', isDark ? 'text-white' : 'text-gray-500')}>
                           <th className="px-5 py-4 text-left">Collection</th>
                           <th className="px-5 py-4 text-right">Volume</th>
-                          <th className="px-5 py-4 text-right">P/L</th>
-                          <th className="px-5 py-4 text-right">ROI</th>
+                          <th className="px-5 py-4 text-right">Profit / Loss</th>
+                          <th className="px-5 py-4 text-right">Return</th>
                           <th className="px-5 py-4 text-right">Trades</th>
                         </tr>
                       </thead>

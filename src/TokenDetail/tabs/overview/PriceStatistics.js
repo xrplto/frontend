@@ -1935,7 +1935,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                               <span className="text-[9px] font-bold text-[#ef4444] uppercase tracking-[0.05em] text-right">Sold</span>
                             </>
                           )}
-                          <span className={cn('text-[9px] font-bold uppercase tracking-[0.05em] text-right', isDark ? 'text-white/60' : 'text-black/40')}>Realized PnL</span>
+                          <span className={cn('text-[9px] font-bold uppercase tracking-[0.05em] text-right', isDark ? 'text-white/60' : 'text-black/40')}>Realized Profit / Loss</span>
                         </div>
                         {/* Enhanced Table Rows */}
                         {(() => {

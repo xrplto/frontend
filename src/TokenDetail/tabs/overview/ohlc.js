@@ -1002,12 +1002,12 @@ const PriceChartAdvanced = memo(({ token, onCandleClick, trackAddress }) => {
             row('L', sym + fp(candle.low)) +
             row('C', sym + fp(candle.close), col) +
             sep +
-            row('Vol', candle.volume.toLocaleString()) +
+            row('Volume', candle.volume.toLocaleString()) +
             row('Chg', chg + '%', col);
         } else if (ct === 'line') {
           html +=
             row('Price', sym + fp(candle.close || candle.value)) +
-            row('Vol', (candle.volume || 0).toLocaleString());
+            row('Volume', (candle.volume || 0).toLocaleString());
         } else if (ct === 'holders') {
           html += row('Trustlines', (candle.trustlines || candle.value).toLocaleString(), '#a855f7');
           if (candle.holders != null)
@@ -1363,12 +1363,7 @@ const PriceChartAdvanced = memo(({ token, onCandleClick, trackAddress }) => {
     };
   }, [isFullscreen]);
 
-  const chartIcons = {
-    candles: <CandlestickChart />,
-    line: <TrendingUp />,
-    holders: <Users />,
-    liquidity: <Droplets />
-  };
+  const isPrice = chartType === 'candles' || chartType === 'line';
 
   return (
     <div className="flex flex-col h-full gap-3">
@@ -1423,30 +1418,67 @@ const PriceChartAdvanced = memo(({ token, onCandleClick, trackAddress }) => {
 
           <HeaderSection>
             <ToolGroup isDark={isDark}>
-              {Object.entries(chartIcons).map(([type, icon]) => (
-                <ToolBtn
-                  key={type}
-                  aria-label={{ holders: 'Holders', liquidity: 'Liquidity', candles: 'Price', line: 'Area' }[type]}
-                  onClick={() => {
-                    const wasPrice = chartType === 'candles' || chartType === 'line';
-                    const isPrice = type === 'candles' || type === 'line';
-                    if (wasPrice && !isPrice) {
-                      priceTimeRangeRef.current = timeRange;
-                      setTimeRange('all');
-                      if (onCandleClick) onCandleClick(null);
-                    } else if (!wasPrice && isPrice) {
-                      setTimeRange(priceTimeRangeRef.current);
-                    }
-                    setChartType(type);
-                  }}
-                  isActive={chartType === type}
-                  isMobile={isMobile}
-                  isDark={isDark}
+              <ToolBtn
+                aria-label="Price"
+                onClick={() => {
+                  if (!isPrice) {
+                    setTimeRange(priceTimeRangeRef.current);
+                    setChartType('candles');
+                  }
+                }}
+                isActive={isPrice}
+                isMobile={isMobile}
+                isDark={isDark}
+              >
+                {chartType === 'line' ? <TrendingUp /> : <CandlestickChart />}
+                {!isMobile && 'Price'}
+              </ToolBtn>
+              {isPrice && (
+                <button
+                  aria-label={chartType === 'candles' ? 'Switch to line' : 'Switch to candles'}
+                  onClick={() => setChartType(chartType === 'candles' ? 'line' : 'candles')}
+                  className={cn(
+                    'flex items-center justify-center w-6 h-6 rounded-md border-none cursor-pointer transition-all duration-200 [&_svg]:w-[12px] [&_svg]:h-[12px] [&_svg]:stroke-[2.5]',
+                    isDark ? 'bg-white/[0.08] text-white/60 hover:text-white hover:bg-white/[0.12]' : 'bg-black/[0.05] text-black/60 hover:text-black hover:bg-black/[0.08]'
+                  )}
                 >
-                  {icon}
-                  {!isMobile && { holders: 'Holders', liquidity: 'Liquidity', candles: 'Price', line: 'Area' }[type]}
-                </ToolBtn>
-              ))}
+                  {chartType === 'candles' ? <TrendingUp /> : <CandlestickChart />}
+                </button>
+              )}
+              <ToolBtn
+                aria-label="Holders"
+                onClick={() => {
+                  if (isPrice) {
+                    priceTimeRangeRef.current = timeRange;
+                    setTimeRange('all');
+                    if (onCandleClick) onCandleClick(null);
+                  }
+                  setChartType('holders');
+                }}
+                isActive={chartType === 'holders'}
+                isMobile={isMobile}
+                isDark={isDark}
+              >
+                <Users />
+                {!isMobile && 'Holders'}
+              </ToolBtn>
+              <ToolBtn
+                aria-label="Liquidity"
+                onClick={() => {
+                  if (isPrice) {
+                    priceTimeRangeRef.current = timeRange;
+                    setTimeRange('all');
+                    if (onCandleClick) onCandleClick(null);
+                  }
+                  setChartType('liquidity');
+                }}
+                isActive={chartType === 'liquidity'}
+                isMobile={isMobile}
+                isDark={isDark}
+              >
+                <Droplets />
+                {!isMobile && 'Liquidity'}
+              </ToolBtn>
             </ToolGroup>
 
             <ToolGroup isDark={isDark}>
@@ -1499,7 +1531,7 @@ const PriceChartAdvanced = memo(({ token, onCandleClick, trackAddress }) => {
                 >
                   {markersLoading ? <Loader2 size={14} className="animate-spin" /> : trackedAddress ? <X size={14} /> : <Search size={14} />}
                   {!isMobile && trackedAddress && tradeMarkers.length > 0 && (
-                    <span className="text-[10px] font-bold">{tradeMarkers.filter((m) => m.shape === 'arrowUp').length}B {tradeMarkers.filter((m) => m.shape === 'arrowDown').length}S</span>
+                    <span className="text-[10px] font-bold">{tradeMarkers.filter((m) => m.shape === 'arrowUp').length} Buys {tradeMarkers.filter((m) => m.shape === 'arrowDown').length} Sells</span>
                   )}
                 </ToolBtn>
                 {showTrackInput && !trackedAddress && (

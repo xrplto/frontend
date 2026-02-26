@@ -704,10 +704,10 @@ function NewsPage({
                 isDark ? 'border-white/5' : 'border-black/[0.03]'
               )}>
                 {[
-                  { period: '24H', stats: sentimentStats.last24h },
-                  { period: '7D', stats: sentimentStats.last7d },
-                  { period: '30D', stats: sentimentStats.last30d },
-                  { period: 'ALL', stats: sentimentStats.all }
+                  { period: '24h', stats: sentimentStats.last24h },
+                  { period: '7d', stats: sentimentStats.last7d },
+                  { period: '30d', stats: sentimentStats.last30d },
+                  { period: 'All', stats: sentimentStats.all }
                 ].map((item) => (
                   <div key={item.period} className={cn(
                     "p-4 sm:p-6 flex flex-col gap-2 sm:gap-3 group transition-[background-color]",

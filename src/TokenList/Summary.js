@@ -26,7 +26,7 @@ const BoostModal = dynamic(() => import('src/components/BoostModal'), { ssr: fal
 const Container = ({ className, children, isDark, ...p }) => (
   <div
     className={cn(
-      'summary-root flex flex-col gap-0 relative mb-1 box-border overflow-visible',
+      'summary-root flex flex-col gap-0 relative mb-1 box-border w-full min-w-0',
       'max-[600px]:gap-0 max-[600px]:mb-1',
       className
     )}
@@ -36,7 +36,7 @@ const Container = ({ className, children, isDark, ...p }) => (
     <style>{`
       .summary-container > * { position: relative; z-index: 1; }
       @media (max-width: 1024px) {
-        .summary-root { padding: 4px 5px; gap: 0; margin-bottom: 4px; }
+        .summary-root { padding: 0; gap: 0; margin-bottom: 4px; }
         .summary-metric { height: 64px; padding: 8px 8px; overflow: hidden; }
         .summary-title { font-size: 0.6rem; }
         .summary-value { font-size: 0.9rem; }
@@ -100,7 +100,7 @@ const Grid = ({ className, children, ...p }) => (
         .summary-market-row div > div > span { font-size: 0.46rem !important; line-height: 1 !important; }
       }
     `}</style>
-    <div className={cn('summary-grid relative z-[1]', className)} role="status" aria-live="polite" {...p}>
+    <div className={cn('summary-grid relative z-[1] w-full min-w-0', className)} role="status" aria-live="polite" {...p}>
       {children}
     </div>
   </>
@@ -111,7 +111,7 @@ const MetricBox = ({ className, children, isDark, ...p }) => (
     className={cn(
       'summary-metric flex flex-col justify-between rounded-xl transition-[background-color,border-color,opacity,transform] duration-200',
       'max-[600px]:rounded-[10px]',
-      'py-[6px] px-[10px] gap-0 backdrop-blur-[4px] border-[1.5px]',
+      'py-[6px] px-[10px] gap-0 backdrop-blur-[4px] border-[1.5px] min-w-0 overflow-hidden',
       'max-[600px]:h-auto max-[600px]:py-[8px] max-[600px]:px-[7px] max-[600px]:gap-0',
       isDark ? 'bg-white/[0.02] border-white/[0.08]' : 'bg-black/[0.01] border-black/[0.06]',
       className
@@ -283,12 +283,12 @@ const OriginIcon = ({ origin, isDark }) => {
 };
 
 // Both rows: rank | avatar | name | vol24h | origin icon (desktop) | %change | boost
-const DiscoverRow = ({ token, idx, isDark, onBoost }) => (
+const DiscoverRow = ({ token, idx, isDark, onBoost, currencySymbol, volConvert }) => (
   <RowShell token={token} isDark={isDark}>
     <RankNum idx={idx} isDark={isDark} />
     <TokenAvatar token={token} isDark={isDark} />
     <span className={cn('text-[11px] max-[600px]:text-[10px] font-semibold truncate leading-none flex-1 min-w-0', isDark ? 'text-white' : 'text-[#1a1f2e]')}>{token.name}</span>
-    <span className={cn('text-[9px] tabular-nums font-medium flex-shrink-0 ml-[4px] max-[600px]:ml-[1px] w-[40px] max-[600px]:w-[32px] text-right', isDark ? 'text-white/30' : 'text-black/30')}>${fmtVol(token.vol24hxrp || 0)}</span>
+    <span className={cn('text-[9px] tabular-nums font-medium flex-shrink-0 ml-[4px] max-[600px]:ml-[1px] w-[40px] max-[600px]:w-[32px] text-right', isDark ? 'text-white/30' : 'text-black/30')}>{currencySymbol}{fmtVol((token.vol24hxrp || 0) * volConvert)}</span>
     <span className="flex-shrink-0 ml-[6px] w-[12px] flex items-center justify-center max-[600px]:hidden" title={token.origin || 'XRPL'}><OriginIcon origin={token.origin} isDark={isDark} /></span>
     <span className={cn('text-[9px] tabular-nums font-medium flex-shrink-0 ml-[6px] max-[600px]:hidden w-[34px] text-right', isDark ? 'text-white/25' : 'text-black/25')}>{timeAgo(token.dateon)}</span>
     <span className="ml-[4px] max-[600px]:ml-[1px] w-[50px] max-[600px]:w-[40px] flex justify-end"><ChangePill change={token.pro24h || 0} /></span>
@@ -362,6 +362,9 @@ export default function Summary({ tokens = [], trendingTokens: trendingProp = []
 
   const fiatRate =
     metrics[activeFiatCurrency] || (activeFiatCurrency === 'CNH' ? metrics.CNY : null) || 1;
+
+  const currencySymbol = currencySymbols[activeFiatCurrency] || '';
+  const volConvert = 1 / fiatRate;
 
   // Use dedicated SSR props; fallback to deriving from page tokens if not provided
   const { trendingTokens, newTokens } = useMemo(() => {
@@ -440,7 +443,7 @@ export default function Summary({ tokens = [], trendingTokens: trendingProp = []
 
               {/* 24h Volume */}
               <MetricBox isDark={darkMode}>
-                <MetricTitle isDark={darkMode}>{isMobile ? '24h Vol' : '24h Volume'}</MetricTitle>
+                <MetricTitle isDark={darkMode}>{isMobile ? '24h Volume' : '24h Volume'}</MetricTitle>
                 <div className="flex-1 flex items-center">
                   <MetricValue isDark={darkMode} style={!isMobile ? { fontSize: '1.5rem' } : undefined}>
                     {currencySymbols[activeFiatCurrency]}
@@ -591,7 +594,7 @@ export default function Summary({ tokens = [], trendingTokens: trendingProp = []
                   </div>
                   <div className="flex-1 flex flex-col justify-evenly py-0">
                     {trendingTokens.map((t, i) => (
-                      <DiscoverRow key={t.md5} token={t} idx={i} isDark={darkMode} onBoost={setBoostToken} />
+                      <DiscoverRow key={t.md5} token={t} idx={i} isDark={darkMode} onBoost={setBoostToken} currencySymbol={currencySymbol} volConvert={volConvert} />
                     ))}
                   </div>
                 </div>
@@ -619,7 +622,7 @@ export default function Summary({ tokens = [], trendingTokens: trendingProp = []
                   </div>
                   <div className="flex-1 flex flex-col justify-evenly py-0">
                     {newTokens.map((t, i) => (
-                      <DiscoverRow key={t.md5} token={t} idx={i} isDark={darkMode} onBoost={setBoostToken} />
+                      <DiscoverRow key={t.md5} token={t} idx={i} isDark={darkMode} onBoost={setBoostToken} currencySymbol={currencySymbol} volConvert={volConvert} />
                     ))}
                   </div>
                 </div>

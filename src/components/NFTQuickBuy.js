@@ -700,7 +700,7 @@ function NFTQuickBuy() {
           'flex items-center justify-center gap-4 sm:gap-5 mb-3 flex-wrap',
         )}>
           {[
-            { label: '24h Vol', value: `${fmtStat(nftGlobalStats.total24hVolume)} XRP` },
+            { label: '24h Volume', value: `${fmtStat(nftGlobalStats.total24hVolume)} XRP` },
             { label: 'Sales', value: fmtStat(nftGlobalStats.total24hSales) },
             { label: 'Traders', value: fmtStat(nftGlobalStats.activeTraders24h) },
             { label: 'Mints', value: fmtStat(nftGlobalStats.total24hMints) },

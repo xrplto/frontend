@@ -776,7 +776,7 @@ const TraderTooltip = memo(({ address, tokenId, isDark, currency, children }) =>
                   {fv(stats.tokensSold)} <span className={isDark ? 'text-white/60' : 'text-black/60'}>{sym}</span>
                   <span className={cn('ml-1 text-[9px] font-normal', isDark ? 'text-white/25' : 'text-black/25')}>{fv(stats.xrpSold)} XRP</span>
                 </span>
-                <span className={isDark ? 'text-white/60' : 'text-black/60'}>PnL</span>
+                <span className={isDark ? 'text-white/60' : 'text-black/60'}>Profit / Loss</span>
                 <span className={cn('text-right font-mono font-semibold', (stats.totalPnl || 0) >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]')}>
                   {(stats.totalPnl || 0) >= 0 ? '+' : ''}{fv(stats.totalPnl)} <span className={isDark ? 'text-white/60' : 'text-black/60'}>XRP</span>
                 </span>
@@ -1703,7 +1703,7 @@ const MyActivityTabInner = ({ token, isDark, isMobile, onTransactionClick, ammPo
                 </StatItem>
                 
                 <StatItem isDark={isDark}>
-                  <Label isDark={isDark}>Unrealized P&L</Label>
+                  <Label isDark={isDark}>Unrealized Profit / Loss</Label>
                   {tokenAssets.pnl != null ? (
                     <div className="flex flex-col">
                       <span className={cn('text-[16px] font-bold', tokenAssets.pnl >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]')}>
@@ -1719,7 +1719,7 @@ const MyActivityTabInner = ({ token, isDark, isMobile, onTransactionClick, ammPo
                 </StatItem>
 
                 <StatItem isDark={isDark}>
-                  <Label isDark={isDark}>Realized P&L</Label>
+                  <Label isDark={isDark}>Realized Profit / Loss</Label>
                   {tokenAssets.tradeCount > 0 ? (
                     <span className={cn('text-[16px] font-bold', tokenAssets.realizedPnl >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]')}>
                       {tokenAssets.realizedPnl >= 0 ? '+' : ''}{tokenAssets.realizedPnl.toFixed(2)} <span className="text-[11px] font-semibold">XRP</span>
@@ -1730,7 +1730,7 @@ const MyActivityTabInner = ({ token, isDark, isMobile, onTransactionClick, ammPo
                 </StatItem>
 
                 <StatItem isDark={isDark}>
-                  <Label isDark={isDark}>Avg Buy Price</Label>
+                  <Label isDark={isDark}>Average Buy Price</Label>
                   {tokenAssets.avgBuyPrice != null ? (
                     <Value isDark={isDark} className="font-mono !text-[14px]">
                       {formatPrice(tokenAssets.avgBuyPrice)} <span className="text-[10px] opacity-60">XRP</span>
@@ -1741,7 +1741,7 @@ const MyActivityTabInner = ({ token, isDark, isMobile, onTransactionClick, ammPo
                 </StatItem>
 
                 <StatItem isDark={isDark}>
-                  <Label isDark={isDark}>Total ROI</Label>
+                  <Label isDark={isDark}>Total Return</Label>
                   {tokenAssets.tradeCount > 0 ? (
                     <span className={cn('text-[16px] font-bold', tokenAssets.totalRoi >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]')}>
                       {tokenAssets.totalRoi >= 0 ? '+' : ''}{tokenAssets.totalRoi.toFixed(2)}%

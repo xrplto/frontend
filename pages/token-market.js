@@ -86,8 +86,8 @@ const VolumeBar = ({ darkMode, className, children, ...p }) => <div className={c
 const VolumeFill = ({ className, ...p }) => <div className={cn('h-full bg-[#3b82f6] rounded-[3px]', className)} {...p} />;
 
 const TIME_RANGES = [
-  { key: '7d', label: '7D', days: 7 },
-  { key: '30d', label: '30D', days: 30 },
+  { key: '7d', label: '7d', days: 7 },
+  { key: '30d', label: '30d', days: 30 },
   { key: 'all', label: 'All', days: 9999 }
 ];
 
@@ -461,7 +461,7 @@ export default function TokenMarketPage({ stats }) {
               <span
                 className={cn('text-[10px]', darkMode ? 'text-white/60' : 'text-black/40')}
               >
-                Avg: <XrpValue value={stats.avgTradeSize || 0} size="small" />
+                Average: <XrpValue value={stats.avgTradeSize || 0} size="small" />
               </span>
             </div>
           </StatCard>
@@ -992,9 +992,9 @@ export default function TokenMarketPage({ stats }) {
               <div className="flex gap-[8px] flex-wrap">
                 <ButtonGroup>
                   {[
-                    { key: '24h', label: '24H' },
-                    { key: '7d', label: '7D' },
-                    { key: '30d', label: '30D' },
+                    { key: '24h', label: '24h' },
+                    { key: '7d', label: '7d' },
+                    { key: '30d', label: '30d' },
                     { key: 'all', label: 'All' }
                   ].map((r) => (
                     <ToggleBtn
@@ -1283,9 +1283,9 @@ export default function TokenMarketPage({ stats }) {
               </span>
               <ButtonGroup>
                 {[
-                  { key: '24h', label: '24H' },
-                  { key: '7d', label: '7D' },
-                  { key: '30d', label: '30D' },
+                  { key: '24h', label: '24h' },
+                  { key: '7d', label: '7d' },
+                  { key: '30d', label: '30d' },
                   { key: 'all', label: 'All Time' }
                 ].map((r) => (
                   <ToggleBtn
@@ -1324,7 +1324,7 @@ export default function TokenMarketPage({ stats }) {
                 className={cn('py-[14px] px-[16px] border-r border-b', darkMode ? 'border-white/[0.04]' : 'border-black/[0.04]')}
               >
                 <div className={cn('text-[10px] uppercase tracking-[0.06em] font-semibold mb-[4px]', darkMode ? 'text-white/60' : 'text-[#919EAB]')}>
-                  Avg Trade Size
+                  Average Trade Size
                 </div>
                 <div className={cn('text-[18px] font-bold tracking-[-0.01em]', darkMode ? 'text-white/95' : 'text-[#1a1a2e]')}>
                   <XrpValue value={summaryStats.avgTrade} format={(v) => (v || 0).toFixed(0)} />
@@ -1398,9 +1398,9 @@ export default function TokenMarketPage({ stats }) {
               </span>
               <ButtonGroup>
                 {[
-                  { key: '24h', label: '24H' },
-                  { key: '7d', label: '7D' },
-                  { key: '30d', label: '30D' },
+                  { key: '24h', label: '24h' },
+                  { key: '7d', label: '7d' },
+                  { key: '30d', label: '30d' },
                   { key: 'all', label: 'All' }
                 ].map((r) => (
                   <ToggleBtn
@@ -1635,7 +1635,7 @@ export async function getServerSideProps({ res }) {
       volume24h: agg24h.volume || lastDay.volume || 0,
       trades24h: agg24h.trades || lastDay.trades || 0,
       totalMarketcap: lastDay.marketcap || 0,
-      avgTradeSize: lastDay.avgTradeSize || 0,
+      avgTradeSize: lastDay.avgTradeSize || (lastDay.trades > 0 ? (lastDay.volume || 0) / lastDay.trades : 0),
 
       // Percentage changes from API
       volumePct: percentChanges.volume24hPct || 0,
@@ -1657,11 +1657,11 @@ export async function getServerSideProps({ res }) {
       // Token count
       tokenCount: lastDay.tokenCount || 0,
 
-      // AMM vs DEX (24h)
-      volumeAMM: agg24h.volumeAMM || lastDay.volumeAMM || 0,
-      volumeNonAMM: agg24h.volumeNonAMM || lastDay.volumeNonAMM || 0,
-      tradesAMM: agg24h.tradesAMM || lastDay.tradesAMM || 0,
-      tradesNonAMM: agg24h.tradesNonAMM || lastDay.tradesNonAMM || 0,
+      // AMM vs DEX (24h) - use same source as volume24h/trades24h for consistency
+      volumeAMM: agg24h.volume != null ? (agg24h.volumeAMM || 0) : (lastDay.volumeAMM || 0),
+      volumeNonAMM: agg24h.volume != null ? (agg24h.volumeNonAMM || 0) : (lastDay.volumeNonAMM || 0),
+      tradesAMM: agg24h.volume != null ? (agg24h.tradesAMM || 0) : (lastDay.tradesAMM || 0),
+      tradesNonAMM: agg24h.volume != null ? (agg24h.tradesNonAMM || 0) : (lastDay.tradesNonAMM || 0),
       uniqueTradersAMM: lastDay.uniqueTradersAMM || 0,
       uniqueTradersNonAMM: lastDay.uniqueTradersNonAMM || 0,
       uniqueTraderCount: data.uniqueTraderCount || 0,
@@ -1670,8 +1670,8 @@ export async function getServerSideProps({ res }) {
       ammDeposit: lastDay.ammDeposit || 0,
       ammWithdraw: lastDay.ammWithdraw || 0,
       ammCreate: lastDay.ammCreate || 0,
-      ammDepositVolume: agg24h.ammDeposits || lastDay.ammDepositVolume || 0,
-      ammWithdrawVolume: agg24h.ammWithdraws || lastDay.ammWithdrawVolume || 0,
+      ammDepositVolume: agg24h.volume != null ? (agg24h.ammDeposits || 0) : (lastDay.ammDepositVolume || 0),
+      ammWithdrawVolume: agg24h.volume != null ? (agg24h.ammWithdraws || 0) : (lastDay.ammWithdrawVolume || 0),
       ammNetFlow: lastDay.ammNetFlow || 0,
 
       // Platform stats (all-time from API)

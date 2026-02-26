@@ -2,6 +2,7 @@ import api from 'src/utils/api';
 import {
   useState,
   useEffect,
+  useLayoutEffect,
   useCallback,
   useRef,
   useMemo,
@@ -179,7 +180,9 @@ function TokenListComponent({
   const [isMobile, setIsMobile] = useState(false);
   const [hasMounted, setHasMounted] = useState(false);
 
-  useEffect(() => {
+  // useLayoutEffect fires before browser paint — prevents flash of desktop layout on mobile
+  const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
+  useIsomorphicLayoutEffect(() => {
     setHasMounted(true);
     const checkMobile = () => setIsMobile(window.innerWidth < 960);
     checkMobile();
@@ -962,11 +965,11 @@ function TokenListComponent({
                     supply: 'SUPPLY',
                     created: 'AGE',
                     origin: 'SRC',
-                    pro5m: '5M',
-                    pro1h: '1H',
-                    pro24h: '24H',
-                    pro7d: '7D',
-                    pro30d: '30D'
+                    pro5m: '5m',
+                    pro1h: '1h',
+                    pro24h: '24h',
+                    pro7d: '7d',
+                    pro30d: '30d'
                   };
                   return labels[col] || 'DATA';
                 })()}
@@ -1016,11 +1019,11 @@ function TokenListComponent({
                     supply: 'SUPPLY',
                     created: 'AGE',
                     origin: 'SRC',
-                    pro5m: '5M',
-                    pro1h: '1H',
-                    pro24h: '24H',
-                    pro7d: '7D',
-                    pro30d: '30D'
+                    pro5m: '5m',
+                    pro1h: '1h',
+                    pro24h: '24h',
+                    pro7d: '7d',
+                    pro30d: '30d'
                   };
                   return labels[col] || 'VALUE';
                 })()}
@@ -1070,11 +1073,11 @@ function TokenListComponent({
                     supply: 'SUPPLY',
                     created: 'AGE',
                     origin: 'SRC',
-                    pro5m: '5M',
-                    pro1h: '1H',
-                    pro24h: '24H',
-                    pro7d: '7D',
-                    pro30d: '30D'
+                    pro5m: '5m',
+                    pro1h: '1h',
+                    pro24h: '24h',
+                    pro7d: '7d',
+                    pro30d: '30d'
                   };
                   return labels[col] || 'VOL';
                 })()}

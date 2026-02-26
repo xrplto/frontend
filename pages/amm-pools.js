@@ -357,7 +357,7 @@ function AMMPoolsPage({ data, initialQuery }) {
               </SummaryValue>
             </SummaryCard>
             <SummaryCard darkMode={darkMode}>
-              <SummaryLabel darkMode={darkMode}>Avg Trade Fee</SummaryLabel>
+              <SummaryLabel darkMode={darkMode}>Average Trade Fee</SummaryLabel>
               <SummaryValue darkMode={darkMode}>{(summary.avgFee / 10).toFixed(4)}%</SummaryValue>
             </SummaryCard>
           </SummaryGrid>
@@ -579,7 +579,7 @@ function AMMPoolsPage({ data, initialQuery }) {
                       </div>
                     </div>
                     <div>
-                      <div className={cn('text-[9px] uppercase tracking-[0.06em] font-semibold', darkMode ? 'text-white/50' : 'text-black/30')}>Vol 7d</div>
+                      <div className={cn('text-[9px] uppercase tracking-[0.06em] font-semibold', darkMode ? 'text-white/50' : 'text-black/30')}>Volume 7d</div>
                       <div className={cn('text-[12px] font-medium', darkMode ? 'text-white/85' : 'text-[#1a1a2e]')}>{formatCurrency(pool.apy7d?.volume || 0)}</div>
                     </div>
                     <div>

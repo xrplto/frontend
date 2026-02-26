@@ -133,8 +133,14 @@ function Overview({ data, summaryTokens }) {
 
 export default Overview;
 
-export async function getServerSideProps({ res }) {
-  res.setHeader('Cache-Control', 'public, s-maxage=30, stale-while-revalidate=120');
+export async function getServerSideProps({ req, res }) {
+  const isDataReq = req.url?.includes('/_next/data/');
+  res.setHeader(
+    'Cache-Control',
+    isDataReq
+      ? 'private, no-cache, no-store, must-revalidate'
+      : 'public, s-maxage=30, stale-while-revalidate=120'
+  );
 
   // Fetch only 50 tokens initially to reduce page data size
   const [data, summaryTokens] = await Promise.all([

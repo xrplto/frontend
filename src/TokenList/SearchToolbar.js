@@ -637,12 +637,12 @@ const SearchToolbar = memo(function SearchToolbar({
               noMargin
               aria-label="Sort by"
             >
-              <option value="vol24hxrp">{isMobile ? 'Vol 24H' : 'Volume 24H'}</option>
+              <option value="vol24hxrp">{isMobile ? 'Volume 24h' : 'Volume 24h'}</option>
               <option value="marketcap">{isMobile ? 'MCap' : 'Market Cap'}</option>
-              <option value="pro5m">{isMobile ? 'Chg 5M' : 'Change 5M'}</option>
-              <option value="pro1h">{isMobile ? 'Chg 1H' : 'Change 1H'}</option>
-              <option value="pro24h">{isMobile ? 'Chg 24H' : 'Change 24H'}</option>
-              <option value="pro7d">{isMobile ? 'Chg 7D' : 'Change 7D'}</option>
+              <option value="pro5m">{isMobile ? 'Change 5m' : 'Change 5m'}</option>
+              <option value="pro1h">{isMobile ? 'Change 1h' : 'Change 1h'}</option>
+              <option value="pro24h">{isMobile ? 'Change 24h' : 'Change 24h'}</option>
+              <option value="pro7d">{isMobile ? 'Change 7d' : 'Change 7d'}</option>
               <option value="tvl">{isMobile ? 'Liq.' : 'Liquidity'}</option>
               <option value="holders">Holders</option>
               <option value="vol24htx">Trades</option>

@@ -1689,7 +1689,7 @@ const PriceChart = React.memo(({ slug }) => {
               isDark ? 'bg-white/5' : 'bg-gray-100'
             )}
           >
-            Vol <span className="font-medium">{(legend.v || 0).toFixed(0)} XRP</span>
+            Volume <span className="font-medium">{(legend.v || 0).toFixed(0)} XRP</span>
           </span>
           <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-500">
             Sales <span className="font-medium">{legend.s || 0}</span>
@@ -2677,16 +2677,16 @@ const HoldersTab = React.memo(({ slug }) => {
 
 // Traders Tab Component
 const INTERVAL_OPTIONS = [
-  { key: '24h', label: '24H' },
-  { key: '7d', label: '7D' },
-  { key: '30d', label: '30D' },
+  { key: '24h', label: '24h' },
+  { key: '7d', label: '7d' },
+  { key: '30d', label: '30d' },
   { key: 'all', label: 'All' }
 ];
 const SORT_OPTIONS_TRADERS = [
   { key: 'volume', label: 'Volume' },
   { key: 'profit', label: 'Profit' },
   { key: 'trades', label: 'Trades' },
-  { key: 'roi', label: 'ROI' },
+  { key: 'roi', label: 'Return' },
   { key: 'winRate', label: 'Win%' }
 ];
 
@@ -2844,8 +2844,8 @@ const TradersTab = React.memo(({ slug }) => {
                 { label: 'Trades', align: 'right' },
                 { label: 'Bought', align: 'right', color: 'text-green-500/70' },
                 { label: 'Sold', align: 'right', color: 'text-red-500/70' },
-                { label: 'PNL', align: 'right' },
-                { label: 'ROI', align: 'right' },
+                { label: 'Profit / Loss', align: 'right' },
+                { label: 'Return', align: 'right' },
                 { label: 'Win%', align: 'right' },
                 { label: 'Flips', align: 'right', color: 'text-amber-500/70' },
                 { label: 'Last Active', align: 'right' }
@@ -3145,14 +3145,14 @@ export default function CollectionView({ collection }) {
       color: 'text-yellow-500'
     },
     totalVol24h > 0 && {
-      label: '24h Vol',
+      label: '24h Volume',
       value: fVolume(totalVol24h),
       prefix: '✕',
       color: 'text-red-500'
     },
     sales24h > 0 && { label: '24h Sales', value: fIntNumber(sales24h), color: 'text-pink-500' },
     totalVol > 0 && {
-      label: 'Total Vol',
+      label: 'Total Volume',
       value: fVolume(totalVol),
       prefix: '✕',
       color: 'text-blue-500'
@@ -3767,7 +3767,7 @@ export default function CollectionView({ collection }) {
                 isDark ? 'text-white/60' : 'text-gray-500'
               )}
             >
-              24h Vol
+              24h Volume
             </div>
             <div className="flex items-baseline gap-1">
               <span
@@ -3810,7 +3810,7 @@ export default function CollectionView({ collection }) {
                 isDark ? 'text-white/60' : 'text-gray-500'
               )}
             >
-              Total Vol
+              Total Volume
             </div>
             <div className="flex items-baseline gap-1">
               <span

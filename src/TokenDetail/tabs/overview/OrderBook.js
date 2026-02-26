@@ -227,7 +227,7 @@ const OrderTooltip = ({ isDark, type, cumSum, avgPrice, cumXrp, pctFromBest, tok
       <span className={cn(isDark ? 'text-white/55' : 'text-black/40')}>{'\u03A3'}</span>
       <span className={cn('font-semibold', type === 'ask' ? 'text-[#ef4444]' : 'text-[#22c55e]')}>{fNumber(cumSum)} {tokenName}</span>
       <span className={cn(isDark ? 'text-white/20' : 'text-black/20')}>{'\u00B7'}</span>
-      <span className={cn(isDark ? 'text-white/55' : 'text-black/40')}>Avg</span>
+      <span className={cn(isDark ? 'text-white/55' : 'text-black/40')}>Average</span>
       <span className={cn('font-medium', isDark ? 'text-white/80' : 'text-black/80')}>{renderInlinePrice(avgPrice)}</span>
     </div>
     <div className="flex items-center gap-[6px]">

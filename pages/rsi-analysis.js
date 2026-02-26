@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext, useRef, useCallback } from 'react';
+import { useState, useEffect, useContext, useRef, useCallback, useMemo } from 'react';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import ScrollToTop from 'src/components/ScrollToTop';
@@ -9,6 +9,7 @@ import { useSelector } from 'react-redux';
 import { selectMetrics } from 'src/redux/statusSlice';
 import { cn } from 'src/utils/cn';
 // Constants
+const BASE_URL = 'https://api.xrpl.to/v1';
 const currencySymbols = {
   USD: '$ ',
   EUR: '€ ',
@@ -22,8 +23,6 @@ import Decimal from 'decimal.js-light';
 const Controls = ({ darkMode, className, children, ...p }) => <div className={cn('flex flex-col gap-[14px] mb-4 py-4 px-5 rounded-xl border w-full transition-[border-color] duration-200', darkMode ? 'bg-white/[0.02] border-white/[0.08] hover:border-white/[0.15]' : 'bg-black/[0.02] border-black/[0.08] hover:border-black/[0.15]', className)} {...p}>{children}</div>;
 
 const ControlRow = ({ darkMode, className, children, ...p }) => <div className={cn('flex gap-3 items-center flex-wrap w-full max-md:flex-col max-md:items-stretch max-md:gap-3', className)} {...p}>{children}</div>;
-
-const MobileSection = ({ className, children, ...p }) => <div className={cn('max-md:w-full max-md:flex max-md:flex-col max-md:gap-2', className)} {...p}>{children}</div>;
 
 const MobileButtonGrid = ({ className, children, ...p }) => <div className={cn('contents max-md:!grid max-md:grid-cols-[repeat(auto-fit,minmax(80px,1fr))] max-md:gap-2 max-md:w-full', className)} {...p}>{children}</div>;
 
@@ -55,10 +54,13 @@ const SearchInput = ({ darkMode, className, ...p }) => (
   />
 );
 
-const Button = ({ selected, darkMode, className, children, ...p }) => (
+const Button = ({ selected, darkMode, className, children, disabled, ...p }) => (
   <button
     className={cn(
-      'py-2 px-[14px] border-[1.5px] rounded-lg cursor-pointer text-[13px] font-normal transition-[border-color,background-color] duration-150',
+      'py-2 px-[14px] border-[1.5px] rounded-lg text-[13px] font-normal transition-[border-color,background-color] duration-150',
+      disabled
+        ? 'opacity-40 cursor-not-allowed'
+        : 'cursor-pointer',
       selected
         ? 'border-[rgba(59,130,246,0.25)] bg-[rgba(59,130,246,0.08)] text-[#3b82f6] hover:border-[rgba(59,130,246,0.35)] hover:bg-[rgba(59,130,246,0.12)]'
         : darkMode
@@ -66,11 +68,14 @@ const Button = ({ selected, darkMode, className, children, ...p }) => (
           : 'border-black/10 bg-transparent text-black/70 hover:border-black/20 hover:bg-black/[0.03]',
       className
     )}
+    disabled={disabled}
     {...p}
   >
     {children}
   </button>
 );
+
+const optionStyle = { dark: { background: '#111', color: '#f5f5f5' }, light: { background: '#fff', color: '#1a1a2e' } };
 
 const Select = ({ selected, darkMode, className, children, ...p }) => (
   <select
@@ -86,7 +91,9 @@ const Select = ({ selected, darkMode, className, children, ...p }) => (
     style={{ backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e")` }}
     {...p}
   >
-    {children}
+    {Array.isArray(children) ? children.map((child, i) =>
+      child?.type === 'option' ? { ...child, props: { ...child.props, key: child.props.value ?? i, style: { ...child.props.style, ...optionStyle[darkMode ? 'dark' : 'light'] } } } : child
+    ) : children}
   </select>
 );
 
@@ -101,24 +108,22 @@ const FilterInput = ({ darkMode, className, ...p }) => (
   />
 );
 
-const Label = ({ darkMode, className, children, ...p }) => <span className={cn('text-[11px] font-semibold uppercase tracking-[0.06em] whitespace-nowrap', darkMode ? 'text-white/60' : 'text-[#919EAB]', className)} {...p}>{children}</span>;
-
 const HeatMap = ({ darkMode, className, children, ...p }) => <div className={cn('w-full h-[320px] rounded-xl border mb-5 relative overflow-hidden transition-[border-color] duration-200', darkMode ? 'bg-white/[0.02] border-white/[0.08] hover:border-white/[0.15]' : 'bg-black/[0.02] border-black/[0.08] hover:border-black/[0.15]', className)} {...p}>{children}</div>;
 
 const Canvas = ({ className, ...p }) => <canvas className={cn('w-full h-full cursor-crosshair', className)} {...p} />;
 
-const CustomTooltip = ({ darkMode, className, children, ...p }) => <div className={cn('fixed rounded-lg py-[10px] px-[14px] text-xs pointer-events-none z-[1000] backdrop-blur-[8px] whitespace-nowrap translate-x-[12px] -translate-y-1/2', darkMode ? 'bg-black/90 border border-white/[0.15] text-white' : 'bg-white/95 border border-black/10 text-[#333]', className)} {...p}>{children}</div>;
+const CustomTooltip = ({ darkMode, className, children, ...p }) => <div className={cn('fixed rounded-lg py-[10px] px-[14px] text-xs pointer-events-none z-[1000] backdrop-blur-[8px] whitespace-nowrap', darkMode ? 'bg-black/90 border border-white/[0.15] text-white' : 'bg-white/95 border border-black/10 text-[#333]', className)} {...p}>{children}</div>;
 
-const TableWrapper = ({ darkMode, className, children, ...p }) => <div className={cn('overflow-x-auto rounded-xl border w-full', darkMode ? 'border-white/[0.08] bg-white/[0.02]' : 'border-black/[0.08] bg-black/[0.02]', className)} {...p}>{children}</div>;
+const TableWrapper = ({ darkMode, className, children, ...p }) => <div className={cn('overflow-auto rounded-xl border w-full max-h-[70vh]', darkMode ? 'border-white/[0.08] bg-white/[0.02]' : 'border-black/[0.08] bg-black/[0.02]', className)} {...p}>{children}</div>;
 
 const Table = ({ className, children, ...p }) => <table className={cn('w-full border-collapse min-w-full table-auto hidden md:table', className)} {...p}>{children}</table>;
 
 const Th = ({ darkMode, align, sortable, className, children, ...p }) => (
   <th
     className={cn(
-      'py-[14px] px-4 font-semibold text-[10px] uppercase tracking-[0.06em] whitespace-nowrap',
-      darkMode ? 'text-white/60 bg-white/[0.02] border-b border-white/[0.06]' : 'text-[#919EAB] bg-black/[0.02] border-b border-black/[0.06]',
-      sortable ? 'cursor-pointer' : 'cursor-default',
+      'py-[14px] px-4 font-semibold text-[10px] uppercase tracking-[0.06em] whitespace-nowrap sticky top-0 z-10',
+      darkMode ? 'text-white/60 bg-[#111] border-b border-white/[0.06]' : 'text-[#919EAB] bg-[#f8fafd] border-b border-black/[0.06]',
+      sortable ? 'cursor-pointer select-none' : 'cursor-default',
       sortable && (darkMode ? 'hover:text-white/80' : 'hover:text-black/80'),
       className
     )}
@@ -182,8 +187,10 @@ function RSIAnalysisPage({ data }) {
   const exchRate = metrics[activeFiatCurrency] || 1;
   const canvasRef = useRef(null);
   const router = useRouter();
+  const debounceRef = useRef(null);
 
   const [tokens, setTokens] = useState(data?.tokens || []);
+  const [totalTokens, setTotalTokens] = useState(data?.total || 0);
   const [loading, setLoading] = useState(false);
   const [tooltip, setTooltip] = useState({ visible: false, x: 0, y: 0, data: null });
 
@@ -203,20 +210,18 @@ function RSIAnalysisPage({ data }) {
     maxMarketCap: '',
     minVolume24h: '',
     maxVolume24h: '',
-    minRsi24h: '',
-    maxRsi24h: ''
+    minRsi: '',
+    maxRsi: ''
   });
 
-  const BASE_URL = 'https://api.xrpl.to/v1';
-
   const timeframes = [
-    { value: '15m', label: '15M' },
-    { value: '1h', label: '1H' },
-    { value: '4h', label: '4H' },
-    { value: '24h', label: '24H' },
-    { value: '7d', label: '7D' },
-    { value: '30d', label: '30D' },
-    { value: '90d', label: '90D' }
+    { value: '15m', label: '15m' },
+    { value: '1h', label: '1h' },
+    { value: '4h', label: '4h' },
+    { value: '24h', label: '24h' },
+    { value: '7d', label: '7d' },
+    { value: '30d', label: '30d' },
+    { value: '90d', label: '90d' }
   ];
 
   const presets = [
@@ -244,7 +249,18 @@ function RSIAnalysisPage({ data }) {
   const loadTokens = useCallback(async () => {
     setLoading(true);
     try {
-      const cleanParams = Object.entries(params).reduce((acc, [key, val]) => {
+      // Map unified minRsi/maxRsi to timeframe-specific API params
+      const { _debouncing, ...apiParams } = params;
+      if (apiParams.minRsi) {
+        apiParams[`minRsi${apiParams.timeframe}`] = apiParams.minRsi;
+      }
+      if (apiParams.maxRsi) {
+        apiParams[`maxRsi${apiParams.timeframe}`] = apiParams.maxRsi;
+      }
+      delete apiParams.minRsi;
+      delete apiParams.maxRsi;
+
+      const cleanParams = Object.entries(apiParams).reduce((acc, [key, val]) => {
         if (val !== '' && val !== null && val !== undefined && val !== false) {
           acc[key] = val;
         }
@@ -255,49 +271,61 @@ function RSIAnalysisPage({ data }) {
 
       if (response.data?.tokens) {
         setTokens(response.data.tokens);
+        setTotalTokens(response.data.total || response.data.tokens.length);
       }
     } catch (error) {
       console.error('Error loading RSI data:', error);
       setTokens([]);
+      setTotalTokens(0);
     } finally {
       setLoading(false);
     }
-  }, [params, BASE_URL]);
-
-  useEffect(() => {
-    loadTokens();
   }, [params]);
 
+  useEffect(() => {
+    if (params._debouncing) return;
+    loadTokens();
+  }, [loadTokens, params._debouncing]);
+
+  const TEXT_FIELDS = new Set(['filter', 'minMarketCap', 'maxMarketCap', 'minVolume24h', 'maxVolume24h', 'minRsi', 'maxRsi']);
+
   const updateParam = (key, value) => {
-    setParams((prev) => ({ ...prev, [key]: value }));
+    if (TEXT_FIELDS.has(key)) {
+      // Debounce text inputs to avoid API call per keystroke
+      setParams((prev) => ({ ...prev, [key]: value, _debouncing: true }));
+      clearTimeout(debounceRef.current);
+      debounceRef.current = setTimeout(() => {
+        setParams((prev) => { const { _debouncing, ...rest } = prev; return rest; });
+      }, 500);
+      return;
+    }
+    setParams((prev) => {
+      const { _debouncing, ...rest } = prev;
+      return { ...rest, [key]: value };
+    });
   };
 
   const setTimeframe = (tf) => {
     if (tf === params.timeframe) return;
-    setTokens([]); // Clear stale data to prevent flash during API fetch
+    setTokens([]);
+    setTotalTokens(0);
     setParams((prev) => ({
       ...prev,
       timeframe: tf,
       sortBy: `rsi${tf}`,
-      [`minRsi${tf}`]: prev[`minRsi${prev.timeframe}`] || '',
-      [`maxRsi${tf}`]: prev[`maxRsi${prev.timeframe}`] || '',
-      [`minRsi${prev.timeframe}`]: '',
-      [`maxRsi${prev.timeframe}`]: ''
+      start: 0
     }));
   };
 
   const applyPreset = (preset) => {
-    const rsiField = `minRsi${params.timeframe}`;
-    const maxRsiField = `maxRsi${params.timeframe}`;
-
-    // Map generic RSI filters to current timeframe
     const mappedFilter = { ...preset.filter };
-    if ('minRsi24h' in preset.filter) {
-      mappedFilter[rsiField] = preset.filter.minRsi24h;
+    // Map generic preset keys to unified keys
+    if ('minRsi24h' in mappedFilter) {
+      mappedFilter.minRsi = mappedFilter.minRsi24h;
       delete mappedFilter.minRsi24h;
     }
-    if ('maxRsi24h' in preset.filter) {
-      mappedFilter[maxRsiField] = preset.filter.maxRsi24h;
+    if ('maxRsi24h' in mappedFilter) {
+      mappedFilter.maxRsi = mappedFilter.maxRsi24h;
       delete mappedFilter.maxRsi24h;
     }
 
@@ -316,55 +344,27 @@ function RSIAnalysisPage({ data }) {
     }));
   };
 
-  const getActiveFilters = () => {
+  const activeFilters = useMemo(() => {
     const filters = [];
-    const rsiField = `minRsi${params.timeframe}`;
-    const maxRsiField = `maxRsi${params.timeframe}`;
-
     if (params.origin)
-      filters.push({ key: 'origin', label: `Origin: ${params.origin}`, value: params.origin });
-    if (params.tag) filters.push({ key: 'tag', label: `Tag: ${params.tag}`, value: params.tag });
+      filters.push({ key: 'origin', label: `Origin: ${params.origin}` });
+    if (params.tag) filters.push({ key: 'tag', label: `Tag: ${params.tag}` });
     if (params.filter)
-      filters.push({ key: 'filter', label: `Search: ${params.filter}`, value: params.filter });
+      filters.push({ key: 'filter', label: `Search: ${params.filter}` });
     if (params.minMarketCap)
-      filters.push({
-        key: 'minMarketCap',
-        label: `Min MC: $${params.minMarketCap}`,
-        value: params.minMarketCap
-      });
+      filters.push({ key: 'minMarketCap', label: `Min MC: $${params.minMarketCap}` });
     if (params.maxMarketCap)
-      filters.push({
-        key: 'maxMarketCap',
-        label: `Max MC: $${params.maxMarketCap}`,
-        value: params.maxMarketCap
-      });
+      filters.push({ key: 'maxMarketCap', label: `Max MC: $${params.maxMarketCap}` });
     if (params.minVolume24h)
-      filters.push({
-        key: 'minVolume24h',
-        label: `Min Vol: $${params.minVolume24h}`,
-        value: params.minVolume24h
-      });
+      filters.push({ key: 'minVolume24h', label: `Min Vol: $${params.minVolume24h}` });
     if (params.maxVolume24h)
-      filters.push({
-        key: 'maxVolume24h',
-        label: `Max Vol: $${params.maxVolume24h}`,
-        value: params.maxVolume24h
-      });
-    if (params[rsiField])
-      filters.push({
-        key: rsiField,
-        label: `Min RSI: ${params[rsiField]}`,
-        value: params[rsiField]
-      });
-    if (params[maxRsiField])
-      filters.push({
-        key: maxRsiField,
-        label: `Max RSI: ${params[maxRsiField]}`,
-        value: params[maxRsiField]
-      });
-
+      filters.push({ key: 'maxVolume24h', label: `Max Vol: $${params.maxVolume24h}` });
+    if (params.minRsi)
+      filters.push({ key: 'minRsi', label: `Min RSI: ${params.minRsi}` });
+    if (params.maxRsi)
+      filters.push({ key: 'maxRsi', label: `Max RSI: ${params.maxRsi}` });
     return filters;
-  };
+  }, [params]);
 
   const handleSort = (field) => {
     setParams((prev) => ({
@@ -380,10 +380,8 @@ function RSIAnalysisPage({ data }) {
     return params.sortType === 'desc' ? ' ↓' : ' ↑';
   };
 
-  const getRSIValue = (token) => {
-    const field = `rsi${params.timeframe}`;
-    return token[field];
-  };
+  const rsiField = `rsi${params.timeframe}`;
+  const getRSIValue = useCallback((token) => token[rsiField], [rsiField]);
 
   const getMarketCapColor = (mcap) => {
     if (!mcap || isNaN(mcap)) return darkMode ? '#FFFFFF' : '#000000';
@@ -436,6 +434,15 @@ function RSIAnalysisPage({ data }) {
       color: darkMode ? '#fff' : '#000',
       border: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'
     };
+  };
+
+  const getRSISignal = (rsi) => {
+    if (!rsi || isNaN(rsi)) return '';
+    if (rsi >= 80) return 'Extreme OB';
+    if (rsi >= 70) return 'Overbought';
+    if (rsi <= 20) return 'Extreme OS';
+    if (rsi <= 30) return 'Oversold';
+    return 'Neutral';
   };
 
   const handleCanvasMouseMove = useCallback(
@@ -491,12 +498,11 @@ function RSIAnalysisPage({ data }) {
       }
 
       if (hoveredToken) {
-        setTooltip({
-          visible: true,
-          x: e.clientX,
-          y: e.clientY,
-          data: hoveredToken
-        });
+        // Clamp tooltip within viewport
+        const tooltipW = 180, tooltipH = 80;
+        const tx = e.clientX + tooltipW + 16 > window.innerWidth ? e.clientX - tooltipW - 12 : e.clientX + 12;
+        const ty = Math.max(8, Math.min(e.clientY - tooltipH / 2, window.innerHeight - tooltipH - 8));
+        setTooltip({ visible: true, x: tx, y: ty, data: hoveredToken });
       } else {
         setTooltip({ visible: false, x: 0, y: 0, data: null });
       }
@@ -623,19 +629,10 @@ function RSIAnalysisPage({ data }) {
 
   useEffect(() => {
     const timer = setTimeout(drawHeatMap, 100);
-    return () => clearTimeout(timer);
+    const handleResize = () => { clearTimeout(timer); drawHeatMap(); };
+    window.addEventListener('resize', handleResize);
+    return () => { clearTimeout(timer); window.removeEventListener('resize', handleResize); };
   }, [drawHeatMap]);
-
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth <= 600);
-    };
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
 
   return (
     <div className="min-h-screen overflow-hidden m-0 p-0">
@@ -662,16 +659,17 @@ function RSIAnalysisPage({ data }) {
                 </Button>
               ))}
             </MobileButtonGrid>
-            <div className="flex gap-2 ml-auto items-center">
+            <div className="flex gap-2 ml-auto items-center flex-wrap max-md:ml-0 max-md:w-full max-md:justify-start">
+              <span className={cn('hidden md:block w-px h-5 mx-1', darkMode ? 'bg-white/10' : 'bg-black/10')} />
               {presets.map((preset) => (
-                <Button key={preset.label} darkMode={darkMode} onClick={() => applyPreset(preset)}>
+                <Button key={preset.label} darkMode={darkMode} onClick={() => applyPreset(preset)} className="max-md:text-[12px] max-md:py-1.5 max-md:px-2.5">
                   {preset.label}
                 </Button>
               ))}
               <Select
                 darkMode={darkMode}
                 value={params.limit}
-                onChange={(e) => updateParam('limit', e.target.value)}
+                onChange={(e) => updateParam('limit', Number(e.target.value))}
                 aria-label="Results per page"
               >
                 <option value="25">25</option>
@@ -722,21 +720,21 @@ function RSIAnalysisPage({ data }) {
               />
               <FilterInput
                 darkMode={darkMode}
-                placeholder="Min Vol"
+                placeholder="Min Volume"
                 value={params.minVolume24h}
                 onChange={(e) => updateParam('minVolume24h', e.target.value)}
               />
               <FilterInput
                 darkMode={darkMode}
                 placeholder="Min RSI"
-                value={params[`minRsi${params.timeframe}`] || ''}
-                onChange={(e) => updateParam(`minRsi${params.timeframe}`, e.target.value)}
+                value={params.minRsi}
+                onChange={(e) => updateParam('minRsi', e.target.value)}
               />
               <FilterInput
                 darkMode={darkMode}
                 placeholder="Max RSI"
-                value={params[`maxRsi${params.timeframe}`] || ''}
-                onChange={(e) => updateParam(`maxRsi${params.timeframe}`, e.target.value)}
+                value={params.maxRsi}
+                onChange={(e) => updateParam('maxRsi', e.target.value)}
               />
               <Button
                 darkMode={darkMode}
@@ -757,9 +755,9 @@ function RSIAnalysisPage({ data }) {
             </MobileFilterGrid>
           </ControlRow>
 
-          {getActiveFilters().length > 0 && (
+          {activeFilters.length > 0 && (
             <ActiveFilters>
-              {getActiveFilters().map((filter) => (
+              {activeFilters.map((filter) => (
                 <FilterChip
                   key={filter.key}
                   darkMode={darkMode}
@@ -780,13 +778,13 @@ function RSIAnalysisPage({ data }) {
             onMouseLeave={handleCanvasMouseLeave}
             style={{ opacity: loading ? 0.3 : 1, transition: 'opacity 0.2s' }}
           />
-          <div className="absolute top-3 left-5 right-5 flex justify-between items-center">
+          <div className="absolute top-3 left-5 right-5 flex justify-between items-center flex-wrap gap-2">
             <span
               className={cn('text-sm font-semibold tracking-[-0.01em]', darkMode ? 'text-white/60' : 'text-black/60')}
             >
               RSI Heatmap · {params.timeframe.toUpperCase()}
             </span>
-            <div className="flex gap-3 text-[11px]">
+            <div className="flex gap-3 text-[11px] flex-wrap">
               <span className="flex items-center gap-1">
                 <span className="w-2 h-2 rounded-full bg-[#ff4444]" />
                 <span className={darkMode ? 'text-white/50' : 'text-black/50'}>≥80</span>
@@ -811,25 +809,39 @@ function RSIAnalysisPage({ data }) {
           </div>
           {loading && (
             <div
-              className={cn('absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[13px]', darkMode ? 'text-white/60' : 'text-black/50')}
+              className={cn('absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[13px] animate-pulse', darkMode ? 'text-white/60' : 'text-black/50')}
             >
               Loading...
             </div>
           )}
-          {tooltip.visible && tooltip.data && (
-            <CustomTooltip darkMode={darkMode} style={{ left: tooltip.x, top: tooltip.y }}>
-              <div className="font-semibold mb-1">{tooltip.data.name}</div>
-              <div>RSI: {getRSIValue(tooltip.data)?.toFixed(1) || 'N/A'}</div>
-              <div>MC: ${(tooltip.data.marketcap / 1000000).toFixed(2)}M</div>
-              <div>
-                24h: {tooltip.data.pro24h >= 0 ? '+' : ''}
-                {tooltip.data.pro24h?.toFixed(2) || '0.00'}%
-              </div>
-            </CustomTooltip>
-          )}
+          {tooltip.visible && tooltip.data && (() => {
+            const tRsi = getRSIValue(tooltip.data);
+            const tSignal = getRSISignal(tRsi);
+            const tColors = getRSIColor(tRsi);
+            return (
+              <CustomTooltip darkMode={darkMode} style={{ left: tooltip.x, top: tooltip.y }}>
+                <div className="font-semibold mb-1">{tooltip.data.name} {tooltip.data.user && <span className={cn('font-normal', darkMode ? 'text-white/50' : 'text-black/40')}>{tooltip.data.user}</span>}</div>
+                <div className="flex items-center gap-2">
+                  <span>RSI: <span style={{ color: tColors.color, fontWeight: 600 }}>{tRsi?.toFixed(1) || 'N/A'}</span></span>
+                  {tSignal && tSignal !== 'Neutral' && <span className="text-[10px] font-medium py-px px-1.5 rounded" style={{ background: tColors.bg, color: tColors.color }}>{tSignal}</span>}
+                </div>
+                <div>MC: ${(tooltip.data.marketcap / 1000000).toFixed(2)}M</div>
+                <div style={{ color: tooltip.data.pro24h >= 0 ? '#22c55e' : '#ef4444' }}>
+                  24h: {tooltip.data.pro24h >= 0 ? '+' : ''}{tooltip.data.pro24h?.toFixed(2) || '0.00'}%
+                </div>
+              </CustomTooltip>
+            );
+          })()}
         </HeatMap>
 
-        <TableWrapper darkMode={darkMode}>
+        <TableWrapper darkMode={darkMode} style={{ position: 'relative' }}>
+          {loading && tokens.length > 0 && (
+            <div className="absolute inset-0 z-20 flex items-center justify-center backdrop-blur-[1px]">
+              <div className={cn('text-[13px] animate-pulse py-2 px-4 rounded-lg', darkMode ? 'text-white/60 bg-black/60' : 'text-black/50 bg-white/80')}>
+                Updating...
+              </div>
+            </div>
+          )}
           <Table>
             <thead>
               <tr>
@@ -889,7 +901,7 @@ function RSIAnalysisPage({ data }) {
                     darkMode={darkMode}
                     onClick={() => router.push(`/token/${token.slug}`)}
                   >
-                    <Td darkMode={darkMode}>{params.start + idx + 1}</Td>
+                    <Td darkMode={darkMode} className="w-[52px]">{params.start + idx + 1}</Td>
                     <Td darkMode={darkMode}>
                       <TokenInfo>
                         <TokenImage
@@ -900,7 +912,7 @@ function RSIAnalysisPage({ data }) {
                         />
                         <TokenDetails>
                           <TokenName darkMode={darkMode}>{token.name}</TokenName>
-                          <TokenSymbol darkMode={darkMode}>{token.user}</TokenSymbol>
+                          <TokenSymbol darkMode={darkMode}>{token.user || token.slug?.split('-')[0]?.slice(0, 8) || '—'}</TokenSymbol>
                         </TokenDetails>
                       </TokenInfo>
                     </Td>
@@ -944,7 +956,12 @@ function RSIAnalysisPage({ data }) {
                       </span>
                     </Td>
                     <Td darkMode={darkMode} align="center">
-                      <RSIBadge {...rsiColors}>{rsi ? rsi.toFixed(1) : '-'}</RSIBadge>
+                      <div className="flex flex-col items-center gap-0.5">
+                        <RSIBadge {...rsiColors}>{rsi ? rsi.toFixed(1) : '-'}</RSIBadge>
+                        {rsi && getRSISignal(rsi) !== 'Neutral' && (
+                          <span className="text-[9px] font-medium uppercase tracking-wider" style={{ color: rsiColors.color }}>{getRSISignal(rsi)}</span>
+                        )}
+                      </div>
                     </Td>
                   </Tr>
                 );
@@ -953,7 +970,7 @@ function RSIAnalysisPage({ data }) {
           </Table>
 
           {/* Mobile card layout */}
-          <div className="md:hidden divide-y divide-white/10">
+          <div className={cn('md:hidden', darkMode ? 'divide-y divide-white/10' : 'divide-y divide-black/10')}>
             {tokens.map((token, idx) => {
               const rsi = getRSIValue(token);
               const rsiColors = getRSIColor(rsi);
@@ -980,12 +997,17 @@ function RSIAnalysisPage({ data }) {
                       />
                       <div className="min-w-0">
                         <div className={cn('text-[13px] font-semibold tracking-[-0.01em] truncate', darkMode ? 'text-white/95' : 'text-[#1a1a2e]')}>{token.name}</div>
-                        <div className={cn('text-[10px] uppercase font-medium tracking-[0.02em]', darkMode ? 'text-white/60' : 'text-black/40')}>{token.user}</div>
+                        <div className={cn('text-[10px] uppercase font-medium tracking-[0.02em]', darkMode ? 'text-white/60' : 'text-black/40')}>{token.user || token.slug?.split('-')[0]?.slice(0, 8) || '—'}</div>
                       </div>
                     </div>
-                    <RSIBadge {...rsiColors} className="shrink-0 ml-2 text-[11px] py-1 px-2 min-w-0">
-                      {rsi ? rsi.toFixed(1) : '-'}
-                    </RSIBadge>
+                    <div className="flex items-center gap-1.5 shrink-0 ml-2">
+                      <RSIBadge {...rsiColors} className="text-[11px] py-1 px-2 min-w-0">
+                        {rsi ? rsi.toFixed(1) : '-'}
+                      </RSIBadge>
+                      {rsi && getRSISignal(rsi) !== 'Neutral' && (
+                        <span className="text-[9px] font-medium" style={{ color: rsiColors.color }}>{getRSISignal(rsi)}</span>
+                      )}
+                    </div>
                   </div>
 
                   {/* Row 2: Key stats grid */}
@@ -1009,7 +1031,7 @@ function RSIAnalysisPage({ data }) {
                       </div>
                     </div>
                     <div>
-                      <div className={cn('text-[9px] uppercase tracking-[0.06em] font-semibold', darkMode ? 'text-white/50' : 'text-black/30')}>Vol</div>
+                      <div className={cn('text-[9px] uppercase tracking-[0.06em] font-semibold', darkMode ? 'text-white/50' : 'text-black/30')}>Volume</div>
                       <div className={cn('text-[12px] font-medium', darkMode ? 'text-white/85' : 'text-[#1a1a2e]')}>
                         {volumeFiat >= 1e6 ? `${(volumeFiat / 1e6).toFixed(1)}M` : volumeFiat >= 1e3 ? `${(volumeFiat / 1e3).toFixed(1)}K` : fNumber(volumeFiat)}
                       </div>
@@ -1021,27 +1043,12 @@ function RSIAnalysisPage({ data }) {
           </div>
         </TableWrapper>
 
-        {tokens.length > 0 && (
-          <div className="mt-5 flex gap-[10px] justify-center">
-            <Button
-              darkMode={darkMode}
-              onClick={() => updateParam('start', Math.max(0, params.start - params.limit))}
-              disabled={params.start === 0}
-            >
-              Previous
-            </Button>
-            <span className={cn('p-[10px]', darkMode ? 'text-white' : 'text-[#333]')}>
-              Page {Math.floor(params.start / params.limit) + 1}
-            </span>
-            <Button
-              darkMode={darkMode}
-              onClick={() => updateParam('start', params.start + params.limit)}
-              disabled={tokens.length < params.limit}
-            >
-              Next
-            </Button>
+        {!loading && tokens.length === 0 && (
+          <div className={cn('text-center py-16 text-sm', darkMode ? 'text-white/40' : 'text-black/40')}>
+            No tokens found matching your filters.
           </div>
         )}
+
       </div>
 
       <ScrollToTop />
@@ -1052,8 +1059,14 @@ function RSIAnalysisPage({ data }) {
 
 export default RSIAnalysisPage;
 
-export async function getServerSideProps({ res }) {
-  res.setHeader('Cache-Control', 'public, s-maxage=30, stale-while-revalidate=120');
+export async function getServerSideProps({ req, res }) {
+  const isDataReq = req.url?.includes('/_next/data/');
+  res.setHeader(
+    'Cache-Control',
+    isDataReq
+      ? 'private, no-cache, no-store, must-revalidate'
+      : 'public, s-maxage=30, stale-while-revalidate=120'
+  );
 
   const BASE_URL = 'https://api.xrpl.to/v1';
 
@@ -1073,7 +1086,8 @@ export async function getServerSideProps({ res }) {
     return {
       props: {
         data: {
-          tokens: rsiRes.data?.tokens || []
+          tokens: rsiRes.data?.tokens || [],
+          total: rsiRes.data?.total || 0
         },
         ogp: {
           canonical: 'https://xrpl.to/rsi-analysis',

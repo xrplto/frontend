@@ -324,7 +324,7 @@ const TrendingTokens = ({ token = null }) => {
                   {formatPrice(t.exch, activeFiatCurrency, rate)}
                 </div>
                 <div className="opacity-40 text-[9px] font-medium tabular-nums">
-                  Vol {volStr}
+                  Volume {volStr}
                 </div>
               </div>
               <div className={cn(

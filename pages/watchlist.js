@@ -30,7 +30,7 @@ function Overview({ data }) {
 
   const { themeName } = useContext(ThemeContext);
   const { accountProfile } = useContext(WalletContext);
-  const { watchList, setWatchList } = useContext(AppContext);
+  const { watchList, updateWatchList } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
   const account = accountProfile?.account;
 
@@ -41,20 +41,6 @@ function Overview({ data }) {
       .then((res) => setPopularTokens(res.data?.tokens?.slice(0, 6) || []))
       .catch(() => { });
   }, []);
-
-  // Auto-populate watchlist with user's held tokens when account loads and watchlist is empty
-  useEffect(() => {
-    if (!account || !setWatchList || (watchList && watchList.length > 0)) return;
-    api
-      .get(`${BASE_URL}/account/${account}/assets`)
-      .then((res) => {
-        const heldTokens = res.data?.tokens || [];
-        if (heldTokens.length > 0) {
-          setWatchList(heldTokens.map((t) => ({ md5: t.md5, slug: t.slug })));
-        }
-      })
-      .catch(() => { });
-  }, [account, watchList, setWatchList]);
 
   // Search effect
   useEffect(() => {
@@ -105,20 +91,20 @@ function Overview({ data }) {
 
   const addToWatchlist = useCallback(
     (token) => {
-      if (!watchList || !setWatchList) return;
-      const exists = watchList.some((w) => w.md5 === token.md5);
+      if (!updateWatchList) return;
+      const exists = watchList?.includes(token.md5);
       if (!exists) {
-        setWatchList([...watchList, { md5: token.md5, slug: token.slug }]);
+        updateWatchList(token.md5);
       }
       setSearchOpen(false);
       setSearchQuery('');
     },
-    [watchList, setWatchList]
+    [watchList, updateWatchList]
   );
 
   const isInWatchlist = useCallback(
     (md5) => {
-      return watchList?.some((w) => w.md5 === md5) || false;
+      return watchList?.includes(md5) || false;
     },
     [watchList]
   );
@@ -262,104 +248,21 @@ function Overview({ data }) {
         ) : (
           <>
             {activeTab === 'tokens' && (
-              <>
-                {/* Empty state with Add Assets */}
-                {!watchList || watchList.length === 0 ? (
-                  <div
-                    className={cn(
-                      'relative overflow-hidden rounded-3xl border-[1.5px] py-20 px-6 text-center group',
-                      isDark
-                        ? 'border-white/10 bg-gradient-to-b from-white/[0.04] to-transparent'
-                        : 'border-black/[0.08] bg-gradient-to-b from-black/[0.02] to-transparent'
-                    )}
-                  >
-                    {/* Decorative elements */}
-                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[300px] h-[300px] bg-primary/20 blur-[100px] -z-10 group-hover:bg-primary/30 transition-all duration-700" />
-
-                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 mb-6 group-hover:scale-110 transition-transform duration-500">
-                      <Bookmark size={32} className="text-primary" fill="currentColor" fillOpacity={0.2} />
-                    </div>
-                    <h2
-                      className={cn(
-                        'text-2xl font-bold mb-3 tracking-tight',
-                        isDark ? 'text-white' : 'text-gray-900'
-                      )}
-                    >
-                      Build Your Watchlist
-                    </h2>
-                    <p
-                      className={cn('text-[15px] mb-8 max-w-sm mx-auto leading-relaxed', isDark ? 'text-white/50' : 'text-gray-500')}
-                    >
-                      Keep track of your favorite XRPL assets in one place. Add tokens and NFTs to monitor their latest updates.
-                    </p>
-                    <button
-                      onClick={openSearch}
-                      className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl bg-primary text-white text-[15px] font-bold hover:bg-primary/90 shadow-[0_8px_20px_rgba(0,0,0,0.2)] hover:shadow-[0_12px_24px_rgba(0,0,0,0.3)] transition-all active:scale-95"
-                    >
-                      <Plus size={18} strokeWidth={2.5} />
-                      Add Assets
-                    </button>
-
-                    {/* Popular Assets */}
-                    {popularTokens.length > 0 && (
-                      <div className="mt-16">
-                        <div className="flex items-center justify-center gap-3 mb-6">
-                          <div className={cn('h-[1px] w-8', isDark ? 'bg-white/10' : 'bg-black/10')} />
-                          <p className={cn('text-[11px] font-bold uppercase tracking-[0.2em]', isDark ? 'text-white/30' : 'text-gray-400')}>
-                            Suggested Assets
-                          </p>
-                          <div className={cn('h-[1px] w-8', isDark ? 'bg-white/10' : 'bg-black/10')} />
-                        </div>
-                        <div className="flex flex-wrap justify-center gap-3">
-                          {popularTokens.map((token) => (
-                            <button
-                              key={token.md5}
-                              onClick={() => addToWatchlist(token)}
-                              disabled={isInWatchlist(token.md5)}
-                              className={cn(
-                                'group/btn inline-flex items-center gap-3 px-4 py-2 rounded-xl border-[1.5px] text-[14px] font-semibold transition-all duration-300',
-                                isInWatchlist(token.md5)
-                                  ? isDark
-                                    ? 'border-white/5 bg-white/5 text-white/30 cursor-not-allowed'
-                                    : 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed'
-                                  : isDark
-                                    ? 'border-white/10 bg-white/[0.02] hover:border-primary/50 hover:bg-primary/5 text-white/70 hover:text-primary'
-                                    : 'border-black/[0.05] bg-black/[0.01] hover:border-primary/50 hover:bg-primary/5 text-gray-700 hover:text-primary'
-                              )}
-                            >
-                              <img
-                                src={`https://s1.xrpl.to/token/${token.md5}`}
-                                className="w-6 h-6 rounded-full ring-2 ring-transparent group-hover/btn:ring-primary/20 transition-all"
-                                alt=""
-                              />
-                              <span>{token.user || token.name}</span>
-                              {!isInWatchlist(token.md5) && (
-                                <Plus size={14} className="opacity-40 group-hover/btn:opacity-100 transition-opacity" />
-                              )}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <div className="space-y-6">
-                    <div className={cn(
-                      'rounded-3xl border overflow-hidden',
-                      isDark ? 'border-white/10 bg-black/20' : 'border-black/[0.05] bg-white shadow-xl shadow-black/[0.02]'
-                    )}>
-                      <TokenList
-                        showWatchList={true}
-                        hideFilters={true}
-                        tags={data?.tags}
-                        tokens={tokens}
-                        tMap={tMap}
-                        setTokens={setTokens}
-                      />
-                    </div>
-                  </div>
-                )}
-              </>
+              <div className="space-y-6">
+                <div className={cn(
+                  'rounded-3xl border overflow-hidden',
+                  isDark ? 'border-white/10 bg-black/20' : 'border-black/[0.05] bg-white shadow-xl shadow-black/[0.02]'
+                )}>
+                  <TokenList
+                    showWatchList={true}
+                    hideFilters={true}
+                    tags={data?.tags}
+                    tokens={tokens}
+                    tMap={tMap}
+                    setTokens={setTokens}
+                  />
+                </div>
+              </div>
             )}
             {activeTab === 'nfts' && (
               <div className="space-y-6">

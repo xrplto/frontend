@@ -17,9 +17,9 @@ function formatCompactNumber(num) {
 
 // Time period options - maps to API interval param
 const TIME_PERIODS = [
-  { key: '24h', label: '24H' },
-  { key: '7d', label: '7D' },
-  { key: '30d', label: '30D' },
+  { key: '24h', label: '24h' },
+  { key: '7d', label: '7d' },
+  { key: '30d', label: '30d' },
   { key: 'all', label: 'All' }
 ];
 
@@ -27,8 +27,8 @@ const TIME_PERIODS = [
 const SORT_OPTIONS = [
   { key: 'volume', label: 'Volume' },
   { key: 'trades', label: 'Trades' },
-  { key: 'pnl', label: 'PNL' },
-  { key: 'roi', label: 'ROI' },
+  { key: 'pnl', label: 'Profit / Loss' },
+  { key: 'roi', label: 'Return' },
   { key: 'lastActive', label: 'Last Active' }
 ];
 
@@ -209,10 +209,10 @@ export default function TopTraders({ token, walletLabels: walletLabelsProp = {},
     return traders.map((trader) => ({
       ...trader,
       address: trader.address || 'Unknown',
-      profit: trader.profit || 0,
+      profit: trader.totalPnl ?? trader.profit ?? 0,
       volume: trader.volume || 0,
       trades: trader.trades || 0,
-      roi: trader.roi || 0,
+      roi: trader.totalRoi ?? trader.roi ?? 0,
       xrpBought: trader.xrpBought || 0,
       xrpSold: trader.xrpSold || 0,
       avgBuyPrice: trader.avgBuyPrice || 0,
@@ -428,7 +428,7 @@ export default function TopTraders({ token, walletLabels: walletLabelsProp = {},
                       isDark ? 'text-white/40' : 'text-gray-400'
                     )}
                   >
-                    PNL
+                    Profit / Loss
                   </th>
                   <th
                     className={cn(
@@ -436,7 +436,7 @@ export default function TopTraders({ token, walletLabels: walletLabelsProp = {},
                       isDark ? 'text-white/40' : 'text-gray-400'
                     )}
                   >
-                    ROI
+                    Return
                   </th>
                   {!isMobile && (
                     <>

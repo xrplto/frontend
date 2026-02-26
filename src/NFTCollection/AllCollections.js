@@ -236,7 +236,7 @@ const VolumeChart = ({ data, isDark }) => {
           <span className="font-medium">{tooltip.data.sales || 0}</span>
         </div>
         <div className="flex justify-between my-[3px]">
-          <span className="opacity-60">Avg Price</span>
+          <span className="opacity-60">Average Price</span>
           <span className="font-medium">✕{(tooltip.data.avgPrice || 0).toFixed(2)}</span>
         </div>
         {tooltip.data.uniqueBuyers && (
@@ -1323,13 +1323,13 @@ function Collections({
                   }}
                   aria-label="Sort by"
                 >
-                  <option value="totalVol24h">{isMobile ? 'Vol 24H' : 'Volume 24H'}</option>
-                  <option value="totalVolume">{isMobile ? 'Vol All' : 'Volume All'}</option>
+                  <option value="totalVol24h">{isMobile ? 'Volume 24h' : 'Volume 24h'}</option>
+                  <option value="totalVolume">{isMobile ? 'Volume All' : 'Volume All'}</option>
                   <option value="trendingScore">Trending</option>
                   <option value="floor">Floor</option>
-                  <option value="floor1dPercent">{isMobile ? 'Chg 24H' : 'Change 24H'}</option>
+                  <option value="floor1dPercent">{isMobile ? 'Change 24h' : 'Change 24h'}</option>
                   <option value="marketcap.amount">{isMobile ? 'MCap' : 'Market Cap'}</option>
-                  <option value="sales24h">{isMobile ? 'Sales 24H' : 'Sales 24H'}</option>
+                  <option value="sales24h">{isMobile ? 'Sales 24h' : 'Sales 24h'}</option>
                   <option value="owners">Owners</option>
                   <option value="items">Supply</option>
                   <option value="created">Newest</option>

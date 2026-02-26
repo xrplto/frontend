@@ -131,8 +131,8 @@ const TABLE_HEAD = [
   { id: 'flips', label: 'FLIPS', align: 'right', width: '50px', sortable: true },
   { id: 'buyVolume', label: 'BOUGHT', align: 'right', width: '80px', sortable: true },
   { id: 'sellVolume', label: 'SOLD', align: 'right', width: '80px', sortable: true },
-  { id: 'combinedProfit', label: 'P/L (XRP)', align: 'right', width: '90px', sortable: true },
-  { id: 'roi', label: 'ROI', align: 'right', width: '55px', sortable: true },
+  { id: 'combinedProfit', label: 'Profit / Loss (XRP)', align: 'right', width: '90px', sortable: true },
+  { id: 'roi', label: 'Return', align: 'right', width: '55px', sortable: true },
   { id: 'winRate', label: 'WIN', align: 'right', width: '50px', sortable: true },
   { id: 'holdingsCount', label: 'NFTs', align: 'right', width: '55px', sortable: true },
   { id: 'marketplace', label: 'SOURCE', align: 'center', width: '80px' },
@@ -501,7 +501,7 @@ export default function NFTTradersPage({ traders = [], pagination = {}, traderBa
                       {/* Row 2: Key stats grid */}
                       <div className="grid grid-cols-4 gap-x-3 gap-y-1.5 ml-7">
                         <div>
-                          <div className={cn('text-[9px] uppercase tracking-[0.06em] font-semibold', darkMode ? 'text-white/25' : 'text-black/30')}>Vol</div>
+                          <div className={cn('text-[9px] uppercase tracking-[0.06em] font-semibold', darkMode ? 'text-white/25' : 'text-black/30')}>Volume</div>
                           <div className={cn('text-[12px] font-medium', darkMode ? 'text-white/85' : 'text-[#1a1a2e]')}>{fVolume(trader.totalVolume || 0)}</div>
                           {trader.vol24h > 0 && (
                             <div className={cn('text-[10px]', darkMode ? 'text-white/35' : 'text-black/30')}>24h: {fVolume(trader.vol24h)}</div>
@@ -512,7 +512,7 @@ export default function NFTTradersPage({ traders = [], pagination = {}, traderBa
                           <div className={cn('text-[12px] font-medium', darkMode ? 'text-white/85' : 'text-[#1a1a2e]')}>{fNumber(trader.totalTrades || 0)}</div>
                         </div>
                         <div>
-                          <div className={cn('text-[9px] uppercase tracking-[0.06em] font-semibold', darkMode ? 'text-white/25' : 'text-black/30')}>ROI</div>
+                          <div className={cn('text-[9px] uppercase tracking-[0.06em] font-semibold', darkMode ? 'text-white/25' : 'text-black/30')}>Return</div>
                           <div className="text-[12px]" style={{ color: roi >= 0 ? '#10b981' : '#ef4444' }}>
                             {roi >= 0 ? '+' : ''}{roi.toFixed(1)}%
                           </div>
@@ -596,8 +596,17 @@ export default function NFTTradersPage({ traders = [], pagination = {}, traderBa
   );
 }
 
-export async function getServerSideProps({ query, res }) {
-  res.setHeader('Cache-Control', 'public, s-maxage=30, stale-while-revalidate=120');
+export async function getServerSideProps({ query, req, res }) {
+  // Only cache full page loads (s-maxage for CDN). Client-side data fetches
+  // (/_next/data/) must not be cached — stale empty responses cause blank pages
+  // when navigating between pages via router.push.
+  const isDataReq = req.url?.includes('/_next/data/');
+  res.setHeader(
+    'Cache-Control',
+    isDataReq
+      ? 'private, no-cache, no-store, must-revalidate'
+      : 'public, s-maxage=30, stale-while-revalidate=120'
+  );
 
   const page = parseInt(query.page) || 1;
   const sortBy = query.sortBy || 'combinedProfit';

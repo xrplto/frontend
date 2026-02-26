@@ -2817,9 +2817,9 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
                 )}>
                   {[
                     { value: 'never', label: 'GTC', title: 'Good Til Cancelled' },
-                    { value: '1h', label: '1H', title: '1 Hour' },
-                    { value: '24h', label: '24H', title: '24 Hours' },
-                    { value: '7d', label: '7D', title: '7 Days' }
+                    { value: '1h', label: '1h', title: '1 Hour' },
+                    { value: '24h', label: '24h', title: '24 Hours' },
+                    { value: '7d', label: '7d', title: '7 Days' }
                   ].map((exp) => (
                     <button
                       key={exp.value}

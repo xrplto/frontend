@@ -88,10 +88,10 @@ const PlatformBar = ({ darkMode, className, children, ...p }) => <div className=
 const PlatformFill = ({ className, ...p }) => <div className={cn('h-full bg-[#3b82f6] rounded-[3px]', className)} {...p} />;
 
 const TIME_RANGES = [
-  { key: '7d', label: '7D', days: 7 },
-  { key: '30d', label: '30D', days: 30 },
-  { key: '90d', label: '90D', days: 90 },
-  { key: '1y', label: '1Y', days: 365 },
+  { key: '7d', label: '7d', days: 7 },
+  { key: '30d', label: '30d', days: 30 },
+  { key: '90d', label: '90d', days: 90 },
+  { key: '1y', label: '1y', days: 365 },
   { key: 'all', label: 'All', days: 9999 }
 ];
 
@@ -102,7 +102,7 @@ const METRIC_GROUPS = [
     metrics: [
       { key: 'volume', label: 'Volume', format: fVolume },
       { key: 'sales', label: 'Sales', format: fNumber },
-      { key: 'avgPrice', label: 'Avg Price', format: (v) => (v || 0).toFixed(2) + ' XRP' }
+      { key: 'avgPrice', label: 'Average Price', format: (v) => (v || 0).toFixed(2) + ' XRP' }
     ]
   },
   {
@@ -726,9 +726,9 @@ export default function NFTMarketPage({ stats }) {
               <div className="flex gap-2 flex-wrap">
                 <ButtonGroup>
                   {[
-                    { key: '24h', label: '24H' },
-                    { key: '7d', label: '7D' },
-                    { key: '30d', label: '30D' },
+                    { key: '24h', label: '24h' },
+                    { key: '7d', label: '7d' },
+                    { key: '30d', label: '30d' },
                     { key: 'all', label: 'All' }
                   ].map((r) => (
                     <ToggleBtn
@@ -771,7 +771,7 @@ export default function NFTMarketPage({ stats }) {
                       Sales
                     </Th>
                     <Th darkMode={darkMode} align="right">
-                      Avg Price
+                      Average Price
                     </Th>
                     <Th darkMode={darkMode} align="right">
                       Royalties

@@ -326,7 +326,7 @@ export const TokenListHead = memo(function TokenListHead({
           { id: 'exch', label: 'PRICE', align: 'right', width: '10%', order: true },
           {
             id: 'pro5m',
-            label: '5M',
+            label: '5m',
             align: 'right',
             width: '7%',
             order: true,
@@ -334,7 +334,7 @@ export const TokenListHead = memo(function TokenListHead({
           },
           {
             id: 'pro1h',
-            label: '1H',
+            label: '1h',
             align: 'right',
             width: '7%',
             order: true,
@@ -342,7 +342,7 @@ export const TokenListHead = memo(function TokenListHead({
           },
           {
             id: 'pro24h',
-            label: '24H',
+            label: '24h',
             align: 'right',
             width: '7%',
             order: true,
@@ -350,7 +350,7 @@ export const TokenListHead = memo(function TokenListHead({
           },
           {
             id: 'pro7d',
-            label: '7D',
+            label: '7d',
             align: 'right',
             width: '7%',
             order: true,
@@ -358,7 +358,7 @@ export const TokenListHead = memo(function TokenListHead({
           },
           {
             id: 'pro30d',
-            label: '30D',
+            label: '30d',
             align: 'right',
             width: '7%',
             order: true,
@@ -366,7 +366,7 @@ export const TokenListHead = memo(function TokenListHead({
           },
           {
             id: 'vol24hxrp',
-            label: 'VOL',
+            label: 'Volume',
             align: 'right',
             width: '10%',
             order: true,
@@ -389,7 +389,7 @@ export const TokenListHead = memo(function TokenListHead({
           },
           {
             id: 'vol24hxrp',
-            label: 'VOL',
+            label: 'Volume',
             align: 'right',
             width: '10%',
             order: true,
@@ -436,7 +436,7 @@ export const TokenListHead = memo(function TokenListHead({
           { id: 'exch', label: 'PRICE', align: 'right', width: '10%', order: true },
           {
             id: 'pro5m',
-            label: '5M',
+            label: '5m',
             align: 'right',
             width: '7%',
             order: true,
@@ -444,7 +444,7 @@ export const TokenListHead = memo(function TokenListHead({
           },
           {
             id: 'pro1h',
-            label: '1H',
+            label: '1h',
             align: 'right',
             width: '7%',
             order: true,
@@ -452,7 +452,7 @@ export const TokenListHead = memo(function TokenListHead({
           },
           {
             id: 'pro24h',
-            label: '24H',
+            label: '24h',
             align: 'right',
             width: '7%',
             order: true,
@@ -460,7 +460,7 @@ export const TokenListHead = memo(function TokenListHead({
           },
           {
             id: 'pro7d',
-            label: '7D',
+            label: '7d',
             align: 'right',
             width: '7%',
             order: true,
@@ -468,7 +468,7 @@ export const TokenListHead = memo(function TokenListHead({
           },
           {
             id: 'vol24hxrp',
-            label: 'VOL',
+            label: 'Volume',
             align: 'right',
             width: '10%',
             order: true,
@@ -491,7 +491,7 @@ export const TokenListHead = memo(function TokenListHead({
           { id: 'exch', label: 'PRICE', align: 'right', width: '10%', order: true },
           {
             id: 'pro5m',
-            label: '5M',
+            label: '5m',
             align: 'right',
             width: '8%',
             order: true,
@@ -499,7 +499,7 @@ export const TokenListHead = memo(function TokenListHead({
           },
           {
             id: 'pro1h',
-            label: '1H',
+            label: '1h',
             align: 'right',
             width: '8%',
             order: true,
@@ -507,7 +507,7 @@ export const TokenListHead = memo(function TokenListHead({
           },
           {
             id: 'pro24h',
-            label: '24H',
+            label: '24h',
             align: 'right',
             width: '8%',
             order: true,
@@ -515,7 +515,7 @@ export const TokenListHead = memo(function TokenListHead({
           },
           {
             id: 'vol24hxrp',
-            label: 'VOL',
+            label: 'Volume',
             align: 'right',
             width: '10%',
             order: true,
@@ -597,7 +597,7 @@ export const TokenListHead = memo(function TokenListHead({
             case 'pro5m':
               customHeaders.push({
                 id: 'pro5m',
-                label: '5M',
+                label: '5m',
                 align: 'right',
                 width: '90px',
                 order: true,
@@ -608,7 +608,7 @@ export const TokenListHead = memo(function TokenListHead({
             case 'pro1h':
               customHeaders.push({
                 id: 'pro1h',
-                label: '1H',
+                label: '1h',
                 align: 'right',
                 width: '90px',
                 order: true,
@@ -619,7 +619,7 @@ export const TokenListHead = memo(function TokenListHead({
             case 'pro24h':
               customHeaders.push({
                 id: 'pro24h',
-                label: '24H',
+                label: '24h',
                 align: 'right',
                 width: '90px',
                 order: true,
@@ -630,7 +630,7 @@ export const TokenListHead = memo(function TokenListHead({
             case 'pro7d':
               customHeaders.push({
                 id: 'pro7d',
-                label: '7D',
+                label: '7d',
                 align: 'right',
                 width: '90px',
                 order: true,
@@ -641,7 +641,7 @@ export const TokenListHead = memo(function TokenListHead({
             case 'pro30d':
               customHeaders.push({
                 id: 'pro30d',
-                label: '30D',
+                label: '30d',
                 align: 'right',
                 width: '90px',
                 order: true,
@@ -652,7 +652,7 @@ export const TokenListHead = memo(function TokenListHead({
             case 'volume24h':
               customHeaders.push({
                 id: 'vol24hxrp',
-                label: 'VOL',
+                label: 'Volume',
                 align: 'right',
                 width: '130px',
                 order: true,

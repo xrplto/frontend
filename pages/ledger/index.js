@@ -658,7 +658,7 @@ const StatsBar = ({ latestLedger, networkStats, isDark }) => {
             ? 'text-yellow-500'
             : 'text-red-500'
     },
-    { label: 'Avg Fee', value: networkStats.avgFee ? `${networkStats.avgFee} drops` : '-' },
+    { label: 'Average Fee', value: networkStats.avgFee ? `${networkStats.avgFee} drops` : '-' },
     { label: 'Base Reserve', value: `${reserveBase} XRP` },
     { label: 'Owner Reserve', value: `${reserveInc} XRP` }
   ];

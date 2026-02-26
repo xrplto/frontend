@@ -3951,9 +3951,9 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                     >
                       {[
                         { value: 'never', label: 'GTC', title: 'Good Til Cancelled' },
-                        { value: '1h', label: '1H', title: '1 Hour' },
-                        { value: '24h', label: '24H', title: '24 Hours' },
-                        { value: '7d', label: '7D', title: '7 Days' }
+                        { value: '1h', label: '1h', title: '1 Hour' },
+                        { value: '24h', label: '24h', title: '24 Hours' },
+                        { value: '7d', label: '7d', title: '7 Days' }
                       ].map((exp, idx) => (
                         <button
                           key={exp.value}
@@ -4280,7 +4280,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
 
                       {/* Volume */}
                       <span className={cn('text-[11px] font-mono text-right tabular-nums', darkMode ? 'text-white/50' : 'text-black/50')}>
-                        {fmtStat(t.vol24h)} <span className={cn('text-[9px]', darkMode ? 'text-white/30' : 'text-black/30')}>vol</span>
+                        {fmtStat(t.vol24h)} <span className={cn('text-[9px]', darkMode ? 'text-white/30' : 'text-black/30')}>volume</span>
                       </span>
 
                       {/* Sparkline */}
