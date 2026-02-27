@@ -10,7 +10,11 @@ import {
   Droplets,
   Sparkles,
   Search,
-  X
+  X,
+  AlertTriangle,
+  ShieldCheck,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 // lightweight-charts is dynamically imported in the chart useEffect to reduce initial bundle size
 import api from 'src/utils/api';
@@ -48,20 +52,17 @@ const formatMcap = (v) => {
   return v < 1 ? v.toFixed(2) : Math.round(v).toString();
 };
 
-const Card = ({ className, children, isDark, isMobile, isFullscreen, ...p }) => (
+const Card = ({ className, children, isMobile, isFullscreen, ...p }) => (
   <div
     className={cn(
       'w-full relative overflow-hidden flex flex-col',
-      !isFullscreen && 'rounded-xl',
+      !isFullscreen && 'rounded-xl border border-black/[0.08] dark:border-white/[0.06]',
+      isFullscreen ? 'bg-white dark:bg-black' : 'bg-white dark:bg-white/[0.01]',
       className
     )}
     style={{
       padding: isFullscreen ? '16px 20px' : isMobile ? '12px' : '16px',
-      background: isFullscreen
-        ? (isDark ? '#06090e' : '#fff')
-        : (isDark ? 'rgba(255,255,255,0.01)' : '#fff'),
-      border: isFullscreen ? 'none' : `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.08)'}`,
-      ...(isFullscreen && { position: 'fixed', inset: 0, zIndex: 99999, borderRadius: 0 }),
+      ...(isFullscreen && { position: 'fixed', inset: 0, zIndex: 99999, borderRadius: 0, border: 'none' }),
       ...p.style
     }}
     {...(({ style, ...rest }) => rest)(p)}
@@ -89,11 +90,11 @@ const HeaderSection = ({ className, children, ...p }) => (
   </div>
 );
 
-const ToolGroup = ({ className, children, isDark, ...p }) => (
+const ToolGroup = ({ className, children, ...p }) => (
   <div
     className={cn(
       'flex p-[3px] rounded-[10px] gap-[2px] border',
-      isDark ? 'bg-white/[0.04] border-white/[0.06]' : 'bg-black/[0.03] border-black/[0.06]',
+      'bg-black/[0.03] border-black/[0.06] dark:bg-white/[0.04] dark:border-white/[0.06]',
       className
     )}
     {...p}
@@ -102,7 +103,7 @@ const ToolGroup = ({ className, children, isDark, ...p }) => (
   </div>
 );
 
-const ToolBtn = ({ className, children, isActive, isMobile, isDark, ...p }) => (
+const ToolBtn = ({ className, children, isActive, isMobile, ...p }) => (
   <button
     className={cn(
       'flex items-center gap-[6px] font-semibold rounded-md border-none cursor-pointer transition-[opacity,transform,background-color,border-color] duration-200',
@@ -111,7 +112,7 @@ const ToolBtn = ({ className, children, isActive, isMobile, isDark, ...p }) => (
         ? 'bg-[#2563eb] text-white hover:bg-[#1d4ed8]'
         : cn(
             'bg-transparent',
-            isDark ? 'text-white/70 hover:text-white hover:bg-white/[0.08]' : 'text-black/70 hover:text-black hover:bg-black/[0.05]'
+            'text-black/70 hover:text-black hover:bg-black/[0.05] dark:text-white/70 dark:hover:text-white dark:hover:bg-white/[0.08]'
           ),
       '[&_svg]:w-[14px] [&_svg]:h-[14px] [&_svg]:stroke-[2.5]',
       isActive ? '[&_svg]:opacity-100' : '[&_svg]:opacity-70',
@@ -127,40 +128,40 @@ const Spinner = ({ className, ...p }) => (
   <Loader2 className={cn('animate-spin', className)} {...p} />
 );
 
-const BearEmptyState = ({ isDark, message = 'No chart data' }) => (
+const BearEmptyState = ({ message = 'No chart data' }) => (
   <div className={cn(
     'flex flex-col items-center justify-center py-12 px-6 w-full h-full gap-4 rounded-2xl border-[1.5px] border-dashed',
-    isDark ? 'bg-white/[0.01] border-white/[0.06]' : 'bg-black/[0.01] border-black/[0.06]'
+    'bg-white border-black/[0.06] dark:bg-white/[0.02] dark:border-white/[0.06]'
   )}>
     <div className="relative w-14 h-14 opacity-60">
-      <div className={cn('absolute -top-1 left-0 w-[18px] h-[18px] rounded-full', isDark ? 'bg-white/15' : 'bg-[#d1d5db]')}>
-        <div className={cn('absolute top-[3.5px] left-[3.5px] w-[11px] h-[11px] rounded-full', isDark ? 'bg-white/10' : 'bg-[#e5e7eb]')} />
+      <div className={cn('absolute -top-1 left-0 w-[18px] h-[18px] rounded-full', 'bg-gray-300 dark:bg-white/15')}>
+        <div className={cn('absolute top-[3.5px] left-[3.5px] w-[11px] h-[11px] rounded-full', 'bg-gray-200 dark:bg-white/10')} />
       </div>
-      <div className={cn('absolute -top-1 right-0 w-[18px] h-[18px] rounded-full', isDark ? 'bg-white/15' : 'bg-[#d1d5db]')}>
-        <div className={cn('absolute top-[3.5px] right-[3.5px] w-[11px] h-[11px] rounded-full', isDark ? 'bg-white/10' : 'bg-[#e5e7eb]')} />
+      <div className={cn('absolute -top-1 right-0 w-[18px] h-[18px] rounded-full', 'bg-gray-300 dark:bg-white/15')}>
+        <div className={cn('absolute top-[3.5px] right-[3.5px] w-[11px] h-[11px] rounded-full', 'bg-gray-200 dark:bg-white/10')} />
       </div>
-      <div className={cn('absolute top-[7px] left-1/2 -translate-x-1/2 w-11 h-10 rounded-full overflow-hidden', isDark ? 'bg-white/15' : 'bg-[#d1d5db]')}>
+      <div className={cn('absolute top-[7px] left-1/2 -translate-x-1/2 w-11 h-10 rounded-full overflow-hidden', 'bg-gray-300 dark:bg-white/15')}>
         {[0, 1, 2, 3, 4].map(i => (
-          <div key={i} className={cn('h-[2px] w-full', isDark ? 'bg-white/15' : 'bg-[#e5e7eb]')} style={{ marginTop: i * 3 + 2 }} />
+          <div key={i} className='h-[2px] w-full bg-gray-200 dark:bg-white/15' style={{ marginTop: i * 3 + 2 }} />
         ))}
         <div className="absolute top-[11px] left-2 w-3 h-3">
-          <div className={cn('absolute w-[10px] h-[2px] rotate-45 top-[5px]', isDark ? 'bg-white/40' : 'bg-[#6b7280]')} />
-          <div className={cn('absolute w-[10px] h-[2px] -rotate-45 top-[5px]', isDark ? 'bg-white/40' : 'bg-[#6b7280]')} />
+          <div className={cn('absolute w-[10px] h-[2px] rotate-45 top-[5px]', 'bg-gray-500 dark:bg-white/40')} />
+          <div className={cn('absolute w-[10px] h-[2px] -rotate-45 top-[5px]', 'bg-gray-500 dark:bg-white/40')} />
         </div>
         <div className="absolute top-[11px] right-2 w-3 h-3">
-          <div className={cn('absolute w-[10px] h-[2px] rotate-45 top-[5px]', isDark ? 'bg-white/40' : 'bg-[#6b7280]')} />
-          <div className={cn('absolute w-[10px] h-[2px] -rotate-45 top-[5px]', isDark ? 'bg-white/40' : 'bg-[#6b7280]')} />
+          <div className={cn('absolute w-[10px] h-[2px] rotate-45 top-[5px]', 'bg-gray-500 dark:bg-white/40')} />
+          <div className={cn('absolute w-[10px] h-[2px] -rotate-45 top-[5px]', 'bg-gray-500 dark:bg-white/40')} />
         </div>
-        <div className={cn('absolute bottom-[6px] left-1/2 -translate-x-1/2 w-5 h-[14px] rounded-full', isDark ? 'bg-white/10' : 'bg-[#e5e7eb]')}>
-          <div className={cn('absolute top-[2px] left-1/2 -translate-x-1/2 w-[9px] h-[7px] rounded-full', isDark ? 'bg-white/25' : 'bg-[#9ca3af]')} />
+        <div className={cn('absolute bottom-[6px] left-1/2 -translate-x-1/2 w-5 h-[14px] rounded-full', 'bg-gray-200 dark:bg-white/10')}>
+          <div className={cn('absolute top-[2px] left-1/2 -translate-x-1/2 w-[9px] h-[7px] rounded-full', 'bg-gray-400 dark:bg-white/25')} />
         </div>
       </div>
     </div>
     <div className="text-center">
-      <div className={cn('text-[13px] font-semibold mb-1', isDark ? 'text-white' : 'text-[#1a1a1a]')}>
+      <div className={cn('text-[13px] font-semibold mb-1', 'text-black dark:text-white')}>
         No chart data available
       </div>
-      <div className={cn('text-[11px]', isDark ? 'text-white/60' : 'text-black/60')}>
+      <div className={cn('text-[11px]', 'text-black/60 dark:text-white/60')}>
         {message}
       </div>
     </div>
@@ -255,27 +256,88 @@ const PriceChartAdvanced = memo(({ token, onCandleClick, trackAddress }) => {
 
   // Creator events - HTTP for initial load, WebSocket for live updates
   const [creatorEvents, setCreatorEvents] = useState([]);
+  const [creatorSignals, setCreatorSignals] = useState([]);
+  const [receiverPopover, setReceiverPopover] = useState(null); // { address, stats, behavior, x, y }
+  const [creatorPage, setCreatorPage] = useState(0);
+  const creatorScrollRef = useRef(null);
+  const receiverCacheRef = useRef({});
+  const [creatorStats, setCreatorStats] = useState(null);
   const creatorWsRef = useRef(null);
   const creatorColorsRef = useRef({ sell: '#ef4444', buy: '#22c55e', withdraw: '#f59e0b', deposit: '#8b5cf6', transfer_out: '#f97316', other_send: '#f97316', check_create: '#ec4899', check_cash: '#ec4899', check_receive: '#ec4899', receive: '#06b6d4', other_receive: '#06b6d4' });
   const mapCreatorEvent = useCallback((e) => ({
-    time: e.t,
-    type: (e.s || '').toUpperCase().replace('_', ' ').replace('OTHER ', ''),
-    tokenAmount: e.a || 0,
-    xrpAmount: e.x || 0,
-    hash: e.h,
-    color: creatorColorsRef.current[e.s] || '#9ca3af',
-    currency: e.n || e.c || ''
+    time: e.time || e.t,
+    type: ((e.side || e.s || '')).toUpperCase().replace('_', ' ').replace('OTHER ', ''),
+    tokenAmount: e.tokenAmount ?? e.a ?? 0,
+    xrpAmount: e.xrpAmount ?? e.x ?? 0,
+    hash: e.hash || e.h,
+    color: creatorColorsRef.current[e.side || e.s] || '#9ca3af',
+    currency: e.name || e.n || e.c || '',
+    destination: e.destination || e.d || null
   }), []);
 
-  // Fetch initial creator events via REST (not affected by WS rate limits)
+  // Detect suspicious creator patterns (client-side, supplements server signals)
+  const creatorAlerts = useMemo(() => {
+    const alerts = [];
+    const flaggedHashes = new Set();
+
+    // Server-side signals from the API (stats-based, covers full history)
+    if (creatorSignals.length) {
+      creatorSignals.forEach((s) => {
+        alerts.push({ type: `server-${s.level}`, label: s.msg, level: s.level });
+      });
+    }
+
+    if (creatorEvents.length >= 2) {
+      // Pattern: Single-sided sell — DEPOSITs token only (no XRP) = selling pressure on pool
+      const singleSidedDeposits = creatorEvents.filter((e) => e.type === 'DEPOSIT' && e.tokenAmount > 0 && e.xrpAmount < 0.01);
+      if (singleSidedDeposits.length) {
+        singleSidedDeposits.forEach((e) => flaggedHashes.add(e.hash));
+        alerts.push({ type: 'single-sided-sell', label: `Single-sided sell (${singleSidedDeposits.length})`, level: 'high' });
+      }
+    }
+
+    // Flag sell/transfer/withdraw events in the visible list
+    creatorEvents.forEach((e) => {
+      if (['SELL', 'TRANSFER OUT', 'SEND', 'WITHDRAW'].includes(e.type)) flaggedHashes.add(e.hash);
+    });
+
+    return alerts.length || flaggedHashes.size ? { alerts, flaggedHashes } : null;
+  }, [creatorEvents, creatorSignals]);
+
+  const fetchReceiverInfo = useCallback(async (address, rect) => {
+    if (!token?.md5 || !address) return;
+    const cacheKey = `${token.md5}:${address}`;
+    if (receiverCacheRef.current[cacheKey]) {
+      setReceiverPopover({ ...receiverCacheRef.current[cacheKey], x: rect.left, y: rect.bottom + 4 });
+      return;
+    }
+    try {
+      const res = await api.get(`${BASE_URL}/creator-activity/${token.md5}/receiver/${address}`);
+      if (res?.data) {
+        receiverCacheRef.current[cacheKey] = res.data;
+        setReceiverPopover({ ...res.data, x: rect.left, y: rect.bottom + 4 });
+      }
+    } catch { /* ignore */ }
+  }, [token?.md5]);
+
+  const isVerifiedToken = !!token?.kyc;
+
+  // Fetch creator events + stats + signals via REST
   useEffect(() => {
     if (!token?.md5) return;
     let mounted = true;
-    api.get(`${BASE_URL}/creator-activity/${token.md5}?stream=true&limit=10`)
+    api.get(`${BASE_URL}/creator-activity/${token.md5}?limit=50`)
       .then((res) => {
-        if (mounted && res.data?.length) {
-          setCreatorEvents(res.data.map(mapCreatorEvent));
+        if (!mounted) return;
+        const d = res.data;
+        if (d?.events?.length) {
+          setCreatorEvents(d.events.map(mapCreatorEvent));
+        } else if (Array.isArray(d) && d.length) {
+          // Fallback: stream mode response
+          setCreatorEvents(d.map(mapCreatorEvent));
         }
+        if (d?.signals?.length) setCreatorSignals(d.signals);
+        if (d?.stats) setCreatorStats(d.stats);
       })
       .catch(err => { console.warn('[OHLC] Creator events fetch failed:', err.message); });
     return () => { mounted = false; };
@@ -686,7 +748,8 @@ const PriceChartAdvanced = memo(({ token, onCandleClick, trackAddress }) => {
   // Create chart
   useEffect(() => {
     if (!chartContainerRef.current || !hasData) return;
-    if (lastChartTypeRef.current === chartType && chartRef.current) return;
+    const chartKey = `${chartType}-${isDark}`;
+    if (lastChartTypeRef.current === chartKey && chartRef.current) return;
 
     let cancelled = false;
     (async () => {
@@ -710,7 +773,7 @@ const PriceChartAdvanced = memo(({ token, onCandleClick, trackAddress }) => {
       };
     }
 
-    lastChartTypeRef.current = chartType;
+    lastChartTypeRef.current = chartKey;
     lastKeyRef.current = null;
 
     const containerHeight = chartContainerRef.current.clientHeight || (isMobile ? 420 : 650);
@@ -1217,22 +1280,23 @@ const PriceChartAdvanced = memo(({ token, onCandleClick, trackAddress }) => {
       seriesRefs.current = { candle: null, line: null, volume: null, xrpLine: null, tokenLine: null };
       if (markersPluginRef.current) { try { markersPluginRef.current.detach(); } catch {} markersPluginRef.current = null; }
     };
-  }, [chartType, isDark, isMobile, hasData, loadMoreData]);
+  }, [chartType, isMobile, hasData, loadMoreData, isDark]);
 
   // Handle fullscreen resize
   useEffect(() => {
     if (!chartContainerRef.current || !chartRef.current) return;
 
-    const container = chartContainerRef.current;
-    const newHeight = isFullscreen ? window.innerHeight - 100 : isMobile ? 400 : 620;
-    const newWidth = container.clientWidth;
-
-    // Use only applyOptions (resize is redundant)
+    // Read dimensions inside timeout so the browser has reflowed after
+    // the Card's position:fixed is removed (otherwise we capture fullscreen width)
     const timeoutId = setTimeout(() => {
-      if (chartRef.current && newWidth > 0) {
+      const container = chartContainerRef.current;
+      if (!container || !chartRef.current) return;
+      const newWidth = container.clientWidth;
+      const newHeight = isFullscreen ? window.innerHeight - 100 : isMobile ? 400 : 620;
+      if (newWidth > 0) {
         chartRef.current.applyOptions({ width: newWidth, height: newHeight });
       }
-    }, 50);
+    }, 100);
 
     return () => clearTimeout(timeoutId);
   }, [isFullscreen, isMobile]);
@@ -1367,10 +1431,10 @@ const PriceChartAdvanced = memo(({ token, onCandleClick, trackAddress }) => {
 
   return (
     <div className="flex flex-col h-full gap-3">
-      <Card isDark={isDark} isMobile={isMobile} isFullscreen={isFullscreen} className="flex-1">
+      <Card isMobile={isMobile} isFullscreen={isFullscreen} className="flex-1">
         <ChartHeader>
           <HeaderSection>
-            <span className={cn('text-[13px] font-semibold', isDark ? 'text-white' : 'text-[#1a1a1a]')}>
+            <span className={cn('text-[13px] font-semibold', 'text-black dark:text-white')}>
               {token.name} <span className="opacity-50 font-normal">{chartType === 'holders' ? 'Trustlines & Holders' : chartType === 'liquidity' ? 'TVL' : activeFiatCurrency}</span>
             </span>
 
@@ -1389,9 +1453,9 @@ const PriceChartAdvanced = memo(({ token, onCandleClick, trackAddress }) => {
                 const pct = Math.max(0, Math.min(100, 100 + parseFloat(athData.percentDown)));
                 const col = pct > 80 ? '#22c55e' : pct < 20 ? '#ef4444' : '#f59e0b';
                 return (
-                  <div className={cn('flex items-center gap-2 py-1 px-[10px] rounded-lg h-6 border', isDark ? 'bg-white/[0.03] border-white/[0.08]' : 'bg-black/[0.03] border-black/[0.08]')}>
-                    <span className={cn('text-[9px] font-extrabold', isDark ? 'text-white/60' : 'text-black/60')}>ATH</span>
-                    <div className={cn('relative h-1 rounded-sm overflow-hidden', isMobile ? 'w-[30px]' : 'w-10', isDark ? 'bg-white/[0.06]' : 'bg-black/10')}>
+                  <div className={cn('flex items-center gap-2 py-1 px-[10px] rounded-lg h-6 border', 'bg-black/[0.03] border-black/[0.08] dark:bg-white/[0.03] dark:border-white/[0.08]')}>
+                    <span className={cn('text-[9px] font-extrabold', 'text-black/60 dark:text-white/60')}>ATH</span>
+                    <div className={cn('relative h-1 rounded-sm overflow-hidden', isMobile ? 'w-[30px]' : 'w-10', 'bg-black/10 dark:bg-white/[0.06]')}>
                       <div className="absolute left-0 top-0 h-full rounded-sm" style={{ width: `${pct}%`, background: col }} />
                     </div>
                     <span className="text-[10px] font-bold font-mono" style={{ color: col }}>{athData.percentDown}%</span>
@@ -1400,16 +1464,16 @@ const PriceChartAdvanced = memo(({ token, onCandleClick, trackAddress }) => {
               })()}
 
               {chartType === 'liquidity' && (
-                <div className={cn('flex items-center gap-[6px] text-[9px] py-[2px] px-[6px] rounded-md', isDark ? 'bg-white/[0.03]' : 'bg-black/[0.03]')}>
-                  <span className={cn('flex items-center gap-[3px]', isDark ? 'text-white/60' : 'text-black/60')}><span className="w-[6px] h-[2px] rounded-sm bg-[#06b6d4]" />XRP</span>
-                  <span className={cn('flex items-center gap-[3px]', isDark ? 'text-white/60' : 'text-black/60')}><span className="w-[6px] h-[2px] rounded-sm bg-[#f59e0b]" />Token</span>
+                <div className={cn('flex items-center gap-[6px] text-[9px] py-[2px] px-[6px] rounded-md', 'bg-black/[0.03] dark:bg-white/[0.03]')}>
+                  <span className={cn('flex items-center gap-[3px]', 'text-black/60 dark:text-white/60')}><span className="w-[6px] h-[2px] rounded-sm bg-[#06b6d4]" />XRP</span>
+                  <span className={cn('flex items-center gap-[3px]', 'text-black/60 dark:text-white/60')}><span className="w-[6px] h-[2px] rounded-sm bg-[#f59e0b]" />Token</span>
                 </div>
               )}
 
               {chartType === 'holders' && (
-                <div className={cn('flex items-center gap-[6px] text-[9px] py-[2px] px-[6px] rounded-md', isDark ? 'bg-white/[0.03]' : 'bg-black/[0.03]')}>
-                  <span className={cn('flex items-center gap-[3px]', isDark ? 'text-white/60' : 'text-black/60')}><span className="w-[6px] h-[2px] rounded-sm bg-[#a855f7]" />Trustlines</span>
-                  <span className={cn('flex items-center gap-[3px]', isDark ? 'text-white/60' : 'text-black/60')}><span className="w-[6px] h-[2px] rounded-sm bg-[#22c55e]" />Holders</span>
+                <div className={cn('flex items-center gap-[6px] text-[9px] py-[2px] px-[6px] rounded-md', 'bg-black/[0.03] dark:bg-white/[0.03]')}>
+                  <span className={cn('flex items-center gap-[3px]', 'text-black/60 dark:text-white/60')}><span className="w-[6px] h-[2px] rounded-sm bg-[#a855f7]" />Trustlines</span>
+                  <span className={cn('flex items-center gap-[3px]', 'text-black/60 dark:text-white/60')}><span className="w-[6px] h-[2px] rounded-sm bg-[#22c55e]" />Holders</span>
                 </div>
               )}
 
@@ -1417,7 +1481,7 @@ const PriceChartAdvanced = memo(({ token, onCandleClick, trackAddress }) => {
           </HeaderSection>
 
           <HeaderSection>
-            <ToolGroup isDark={isDark}>
+            <ToolGroup>
               <ToolBtn
                 aria-label="Price"
                 onClick={() => {
@@ -1428,7 +1492,7 @@ const PriceChartAdvanced = memo(({ token, onCandleClick, trackAddress }) => {
                 }}
                 isActive={isPrice}
                 isMobile={isMobile}
-                isDark={isDark}
+
               >
                 {chartType === 'line' ? <TrendingUp /> : <CandlestickChart />}
                 {!isMobile && 'Price'}
@@ -1439,7 +1503,7 @@ const PriceChartAdvanced = memo(({ token, onCandleClick, trackAddress }) => {
                   onClick={() => setChartType(chartType === 'candles' ? 'line' : 'candles')}
                   className={cn(
                     'flex items-center justify-center w-6 h-6 rounded-md border-none cursor-pointer transition-all duration-200 [&_svg]:w-[12px] [&_svg]:h-[12px] [&_svg]:stroke-[2.5]',
-                    isDark ? 'bg-white/[0.08] text-white/60 hover:text-white hover:bg-white/[0.12]' : 'bg-black/[0.05] text-black/60 hover:text-black hover:bg-black/[0.08]'
+                    'bg-black/[0.05] text-black/60 hover:text-black hover:bg-black/[0.08] dark:bg-white/[0.08] dark:text-white/60 dark:hover:text-white dark:hover:bg-white/[0.12]'
                   )}
                 >
                   {chartType === 'candles' ? <TrendingUp /> : <CandlestickChart />}
@@ -1457,7 +1521,7 @@ const PriceChartAdvanced = memo(({ token, onCandleClick, trackAddress }) => {
                 }}
                 isActive={chartType === 'holders'}
                 isMobile={isMobile}
-                isDark={isDark}
+
               >
                 <Users />
                 {!isMobile && 'Holders'}
@@ -1474,14 +1538,14 @@ const PriceChartAdvanced = memo(({ token, onCandleClick, trackAddress }) => {
                 }}
                 isActive={chartType === 'liquidity'}
                 isMobile={isMobile}
-                isDark={isDark}
+
               >
                 <Droplets />
                 {!isMobile && 'Liquidity'}
               </ToolBtn>
             </ToolGroup>
 
-            <ToolGroup isDark={isDark}>
+            <ToolGroup>
               {(isMobile
                 ? ['1d', '5d', '1m', '1y', 'all']
                 : ['1d', '5d', '1m', '3m', '1y', '5y', 'all']
@@ -1498,7 +1562,7 @@ const PriceChartAdvanced = memo(({ token, onCandleClick, trackAddress }) => {
                   }}
                   isActive={timeRange === r}
                   isMobile={isMobile}
-                  isDark={isDark}
+
                 >
                   {r.toUpperCase()}
                 </ToolBtn>
@@ -1508,7 +1572,6 @@ const PriceChartAdvanced = memo(({ token, onCandleClick, trackAddress }) => {
             <ToolBtn
               aria-label={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
               onClick={handleFullscreen}
-              isDark={isDark}
               isMobile={isMobile}
               style={isFullscreen ? { background: '#ef4444', color: '#fff' } : {}}
             >
@@ -1524,7 +1587,6 @@ const PriceChartAdvanced = memo(({ token, onCandleClick, trackAddress }) => {
                     if (trackedAddress) { setTrackedAddress(''); setAddressInput(''); setTradeMarkers([]); setShowTrackInput(false); }
                     else { setShowTrackInput((p) => !p); setTimeout(() => trackInputRef.current?.focus(), 50); }
                   }}
-                  isDark={isDark}
                   isMobile={isMobile}
                   isActive={!!trackedAddress}
                   style={trackedAddress ? { background: '#3b82f6', color: '#fff' } : {}}
@@ -1538,7 +1600,7 @@ const PriceChartAdvanced = memo(({ token, onCandleClick, trackAddress }) => {
                   <div
                     className={cn(
                       'absolute top-full right-0 mt-1 z-50 flex items-center rounded-lg border p-[3px] shadow-lg',
-                      isDark ? 'bg-[#0d1117] border-white/10' : 'bg-white border-black/10'
+                      'bg-white border-black/10 dark:bg-white/[0.04] dark:border-white/10'
                     )}
                   >
                     <input
@@ -1554,7 +1616,7 @@ const PriceChartAdvanced = memo(({ token, onCandleClick, trackAddress }) => {
                       placeholder="r-address..."
                       className={cn(
                         'bg-transparent border-none outline-none font-mono text-[11px] w-[200px] px-2 py-[5px] placeholder:opacity-30',
-                        isDark ? 'text-white' : 'text-black'
+                        'text-black dark:text-white'
                       )}
                     />
                   </div>
@@ -1565,13 +1627,13 @@ const PriceChartAdvanced = memo(({ token, onCandleClick, trackAddress }) => {
         </ChartHeader>
 
         <div
-          className={cn('relative flex-1 rounded-xl overflow-hidden', isMobile ? 'min-h-[400px]' : 'min-h-[450px]', isDark ? 'bg-black/10' : 'bg-transparent')}
+          className={cn('relative flex-1 rounded-xl overflow-hidden', isMobile ? 'min-h-[400px]' : 'min-h-[450px]', 'bg-transparent dark:bg-black/10')}
         >
           <div ref={chartContainerRef} className="w-full h-full" />
 
           {loading && !chartRef.current && (
             <div
-              className={cn('absolute inset-0 flex flex-col items-center justify-center gap-3 backdrop-blur-[4px]', isDark ? 'bg-[rgba(6,9,14,0.4)]' : 'bg-white/40')}
+              className={cn('absolute inset-0 flex flex-col items-center justify-center gap-3 backdrop-blur-[4px]', 'bg-white/40 dark:bg-black/40')}
             >
               <Spinner size={24} color="#3b82f6" />
               <span className="text-[11px] font-medium opacity-60">Loading chart data...</span>
@@ -1580,7 +1642,7 @@ const PriceChartAdvanced = memo(({ token, onCandleClick, trackAddress }) => {
 
           {isLoadingMore && (
             <div
-              className={cn('absolute top-3 left-3 flex items-center gap-2 py-[6px] px-3 rounded-lg border z-10 shadow-[0_4px_12px_rgba(0,0,0,0.1)]', isDark ? 'bg-[rgba(20,25,35,0.95)] border-white/[0.08]' : 'bg-[rgba(255,255,255,0.95)] border-black/[0.08]')}
+              className={cn('absolute top-3 left-3 flex items-center gap-2 py-[6px] px-3 rounded-lg border z-10 shadow-[0_4px_12px_rgba(0,0,0,0.1)]', 'bg-white/95 border-black/[0.08] dark:bg-black/95 dark:border-white/[0.08]')}
             >
               <Spinner size={12} />
               <span className="text-[10px] font-semibold opacity-80 tracking-[0.02em]">Fetching history...</span>
@@ -1594,7 +1656,7 @@ const PriceChartAdvanced = memo(({ token, onCandleClick, trackAddress }) => {
                 ? liquidityData?.length
                 : data?.length) && (
               <div className="absolute inset-0 flex items-center justify-center p-5">
-                <BearEmptyState isDark={isDark} />
+                <BearEmptyState />
               </div>
             )}
         </div>
@@ -1613,41 +1675,144 @@ const PriceChartAdvanced = memo(({ token, onCandleClick, trackAddress }) => {
           )}
       </Card>
 
-      {creatorEvents.length > 0 && chartType !== 'holders' && chartType !== 'liquidity' && (
-        <div
-          className={cn('flex items-center gap-2 py-[5px] px-3 rounded-lg min-h-[30px] border', isDark ? 'bg-black/20 border-white/[0.05]' : 'bg-black/[0.02] border-black/[0.05]')}
-        >
-          <div className={cn('flex items-center gap-[5px] pr-2 shrink-0', isDark ? 'border-r border-white/10' : 'border-r border-black/10')}>
-            <Sparkles size={11} color="#f59e0b" fill="#f59e0b" className="opacity-80" />
-            <span className={cn('font-bold text-[9px] uppercase tracking-[0.08em]', isDark ? 'text-white/60' : 'text-black/60')}>Creator</span>
-          </div>
-          <div className="flex gap-[5px] overflow-x-auto py-px" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-            {creatorEvents.slice(0, 10).map((e, i) => {
-              const f = (n) => n >= 9.995e5 ? (n / 1e6).toFixed(1) + 'M' : n >= 1e3 ? (n / 1e3).toFixed(0) + 'K' : n < 1 ? n.toFixed(2) : Math.round(n);
-              const t = e.time > 1e12 ? e.time : e.time * 1000;
-              const d = Math.floor((Date.now() - t) / 1000);
-              const ago = d < 60 ? d + 's' : d < 3600 ? Math.floor(d / 60) + 'm' : d < 86400 ? Math.floor(d / 3600) + 'h' : Math.floor(d / 86400) + 'd';
-              const isXrp = ['SELL', 'BUY', 'WITHDRAW', 'DEPOSIT', 'SEND', 'RECEIVE'].includes(e.type);
-              const amt = isXrp && e.xrpAmount > 0.001 ? f(e.xrpAmount) + ' XRP' : e.tokenAmount > 0 ? f(e.tokenAmount) + (e.currency ? ' ' + e.currency : '') : '';
-              const short = { SELL: 'Sell', BUY: 'Buy', SEND: 'Send', RECEIVE: 'Recv', 'TRANSFER OUT': 'Send', WITHDRAW: 'Withdraw', DEPOSIT: 'Deposit' }[e.type] || e.type;
-              return (
-                <a
-                  key={e.hash || i}
-                  href={`https://xrpl.to/tx/${e.hash}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={cn(
-                    'inline-flex items-center gap-1 py-[3px] px-[7px] rounded-md border no-underline shrink-0 transition-[opacity,transform,background-color,border-color] duration-200',
-                    isDark ? 'bg-white/[0.04] border-white/[0.08] text-white hover:-translate-y-px hover:bg-white/[0.08] hover:border-[#3b82f6]' : 'bg-white border-black/[0.08] text-[#1a1a1a] hover:-translate-y-px hover:bg-[#f8fafc] hover:border-[#3b82f6]'
-                  )}
-                >
-                  <span className="font-extrabold text-[9px] uppercase" style={{ color: e.color }}>{short}</span>
-                  {amt && <span className="font-mono text-[9px] font-semibold opacity-90">{amt}</span>}
-                  <span className="opacity-60 text-[8px] font-semibold" suppressHydrationWarning>{ago}</span>
-                </a>
-              );
-            })}
-          </div>
+      {(creatorEvents.length > 0 || creatorAlerts) && chartType !== 'holders' && chartType !== 'liquidity' && (
+        <div className="flex flex-col gap-[5px]">
+          {/* Risk signals bar */}
+          {!isVerifiedToken && creatorAlerts?.alerts.length > 0 && (
+            <div className={cn(
+              'flex items-center gap-[6px] py-[5px] px-3 rounded-lg min-h-[28px] border overflow-x-auto',
+              creatorAlerts.alerts.every((a) => a.level === 'positive')
+                ? 'bg-[#22c55e]/[0.04] border-[#22c55e]/15 dark:bg-[#22c55e]/[0.06] dark:border-[#22c55e]/20'
+                : creatorAlerts.alerts.some((a) => a.level === 'high')
+                  ? 'bg-[#ef4444]/[0.04] border-[#ef4444]/15 dark:bg-[#ef4444]/[0.06] dark:border-[#ef4444]/20'
+                  : 'bg-[#f59e0b]/[0.04] border-[#f59e0b]/15 dark:bg-[#f59e0b]/[0.06] dark:border-[#f59e0b]/20'
+            )}>
+              <div className={cn('flex items-center gap-[5px] pr-2 shrink-0', 'border-r border-black/10 dark:border-white/10')}>
+                {creatorAlerts.alerts.every((a) => a.level === 'positive')
+                  ? <ShieldCheck size={11} color="#22c55e" className="shrink-0" />
+                  : <AlertTriangle size={11} color={creatorAlerts.alerts.some((a) => a.level === 'high') ? '#ef4444' : '#f59e0b'} className="shrink-0" />
+                }
+                <span className={cn('font-bold text-[9px] uppercase tracking-[0.08em]', 'text-black/60 dark:text-white/60')}>
+                  {creatorAlerts.alerts.every((a) => a.level === 'positive') ? 'Safe' : 'Risk'}
+                </span>
+              </div>
+              {creatorAlerts.alerts.map((alert) => {
+                const col = alert.level === 'high' ? '#ef4444' : alert.level === 'positive' ? '#22c55e' : '#f59e0b';
+                return (
+                  <div key={alert.type} className={cn(
+                    'flex items-center gap-[4px] py-[3px] px-[7px] rounded-md border shrink-0',
+                    alert.level === 'high'
+                      ? 'bg-[#ef4444]/[0.08] border-[#ef4444]/20 dark:bg-[#ef4444]/[0.12] dark:border-[#ef4444]/25'
+                      : alert.level === 'positive'
+                        ? 'bg-[#22c55e]/[0.08] border-[#22c55e]/20 dark:bg-[#22c55e]/[0.12] dark:border-[#22c55e]/25'
+                        : 'bg-[#f59e0b]/[0.08] border-[#f59e0b]/20 dark:bg-[#f59e0b]/[0.12] dark:border-[#f59e0b]/25'
+                  )}>
+                    <span className="text-[9px] font-bold whitespace-nowrap" style={{ color: col }}>
+                      {alert.label}
+                    </span>
+                  </div>
+                );
+              })}
+              {/* Net XRP flow from stats */}
+              {creatorStats && creatorStats.netXrp !== 0 && (
+                <div className={cn(
+                  'flex items-center gap-[4px] py-[3px] px-[7px] rounded-md border shrink-0 ml-auto',
+                  creatorStats.netXrp > 0
+                    ? 'bg-[#ef4444]/[0.08] border-[#ef4444]/20 dark:bg-[#ef4444]/[0.12] dark:border-[#ef4444]/25'
+                    : 'bg-[#22c55e]/[0.08] border-[#22c55e]/20 dark:bg-[#22c55e]/[0.12] dark:border-[#22c55e]/25'
+                )}>
+                  <span className="text-[9px] font-bold whitespace-nowrap" style={{ color: creatorStats.netXrp > 0 ? '#ef4444' : '#22c55e' }}>
+                    Net: {creatorStats.netXrp > 0 ? '+' : ''}{formatMcap(Math.abs(creatorStats.netXrp))} XRP {creatorStats.netXrp > 0 ? 'extracted' : 'invested'}
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Creator events bar */}
+          {creatorEvents.length > 0 && (
+            <div
+              className={cn('flex items-center gap-2 py-[5px] px-3 rounded-lg min-h-[30px] border', 'bg-black/[0.02] border-black/[0.05] dark:bg-black/20 dark:border-white/[0.05]')}
+            >
+              <div className={cn('flex items-center gap-[5px] pr-2 shrink-0', 'border-r border-black/10 dark:border-white/10')}>
+                <Sparkles size={11} color="#f59e0b" fill="#f59e0b" className="opacity-80" />
+                <span className={cn('font-bold text-[9px] uppercase tracking-[0.08em]', 'text-black/60 dark:text-white/60')}>Creator</span>
+              </div>
+              <div ref={creatorScrollRef} className="flex gap-[5px] overflow-x-auto py-px" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                {creatorEvents.slice(creatorPage * 10, creatorPage * 10 + 10).map((e, i) => {
+                  const f = (n) => n >= 9.995e5 ? (n / 1e6).toFixed(1) + 'M' : n >= 1e3 ? (n / 1e3).toFixed(0) + 'K' : n < 1 ? n.toFixed(2) : Math.round(n);
+                  const t = e.time > 1e12 ? e.time : e.time * 1000;
+                  const d = Math.floor((Date.now() - t) / 1000);
+                  const ago = d < 60 ? d + 's' : d < 3600 ? Math.floor(d / 60) + 'm' : d < 86400 ? Math.floor(d / 3600) + 'h' : Math.floor(d / 86400) + 'd';
+                  const isXrp = ['SELL', 'BUY', 'WITHDRAW', 'DEPOSIT', 'SEND', 'RECEIVE'].includes(e.type);
+                  const amt = isXrp && e.xrpAmount > 0.001 ? f(e.xrpAmount) + ' XRP' : e.tokenAmount > 0 ? f(e.tokenAmount) + (e.currency ? ' ' + e.currency : '') : '';
+                  const short = { SELL: 'Sell', BUY: 'Buy', SEND: 'Send', RECEIVE: 'Recv', 'TRANSFER OUT': 'Send', WITHDRAW: 'Withdraw', DEPOSIT: 'Deposit' }[e.type] || e.type;
+                  const isFlagged = creatorAlerts?.flaggedHashes.has(e.hash);
+                  const destTrunc = e.destination ? e.destination.slice(0, 4) + '..' + e.destination.slice(-3) : null;
+                  return (
+                    <a
+                      key={e.hash || i}
+                      href={`https://xrpl.to/tx/${e.hash}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={cn(
+                        'inline-flex items-center gap-1 py-[3px] px-[7px] rounded-md border no-underline shrink-0 transition-[opacity,transform,background-color,border-color] duration-200',
+                        isFlagged
+                          ? 'bg-[#ef4444]/[0.06] border-[#ef4444]/30 text-black hover:-translate-y-px hover:bg-[#ef4444]/[0.12] hover:border-[#ef4444]/50 dark:bg-[#ef4444]/[0.1] dark:border-[#ef4444]/30 dark:text-white dark:hover:bg-[#ef4444]/[0.18] dark:hover:border-[#ef4444]/50'
+                          : 'bg-white border-black/[0.08] text-black hover:-translate-y-px hover:bg-gray-50 hover:border-[#3b82f6] dark:bg-white/[0.04] dark:border-white/[0.08] dark:text-white dark:hover:bg-white/[0.08] dark:hover:border-[#3b82f6]'
+                      )}
+                      onMouseEnter={destTrunc ? (ev) => { ev.preventDefault(); fetchReceiverInfo(e.destination, ev.currentTarget.getBoundingClientRect()); } : undefined}
+                      onMouseLeave={destTrunc ? () => setReceiverPopover(null) : undefined}
+                    >
+                      <span className="font-extrabold text-[9px] uppercase" style={{ color: isFlagged ? '#ef4444' : e.color }}>{short}</span>
+                      {amt && <span className="font-mono text-[9px] font-semibold opacity-90">{amt}</span>}
+                      {destTrunc && <span className="font-mono text-[8px] opacity-50">{'\u2192'}{destTrunc}</span>}
+                      <span className="opacity-60 text-[8px] font-semibold" suppressHydrationWarning>{ago}</span>
+                    </a>
+                  );
+                })}
+                {creatorPage > 0 && (
+                  <button
+                    onClick={() => { setCreatorPage(p => p - 1); creatorScrollRef.current?.scrollTo({ left: 0, behavior: 'smooth' }); }}
+                    className={cn('shrink-0 w-[22px] h-[22px] flex items-center justify-center rounded-md border transition-all duration-200',
+                      'border-[#137DFE]/30 bg-[#137DFE]/[0.06] text-[#137DFE] hover:bg-[#137DFE]/[0.15] hover:border-[#137DFE]/60 hover:shadow-[0_0_6px_rgba(19,125,254,0.3)]',
+                      'dark:border-[#137DFE]/40 dark:bg-[#137DFE]/[0.08] dark:hover:bg-[#137DFE]/[0.2] dark:hover:shadow-[0_0_8px_rgba(19,125,254,0.4)]')}
+                  ><ChevronLeft size={12} strokeWidth={2.5} /></button>
+                )}
+                {(creatorPage + 1) * 10 < creatorEvents.length && (
+                  <button
+                    onClick={() => { setCreatorPage(p => p + 1); creatorScrollRef.current?.scrollTo({ left: 0, behavior: 'smooth' }); }}
+                    className={cn('shrink-0 w-[22px] h-[22px] flex items-center justify-center rounded-md border transition-all duration-200',
+                      'border-[#137DFE]/30 bg-[#137DFE]/[0.06] text-[#137DFE] hover:bg-[#137DFE]/[0.15] hover:border-[#137DFE]/60 hover:shadow-[0_0_6px_rgba(19,125,254,0.3)]',
+                      'dark:border-[#137DFE]/40 dark:bg-[#137DFE]/[0.08] dark:hover:bg-[#137DFE]/[0.2] dark:hover:shadow-[0_0_8px_rgba(19,125,254,0.4)]')}
+                  ><ChevronRight size={12} strokeWidth={2.5} /></button>
+                )}
+              </div>
+            </div>
+          )}
+          {receiverPopover && createPortal(
+            <div
+              className="fixed z-[9999] bg-white dark:bg-gray-900 border border-black/10 dark:border-white/10 rounded-lg shadow-lg p-2.5 min-w-[180px] text-[10px]"
+              style={{ left: Math.min(receiverPopover.x, window.innerWidth - 200), top: receiverPopover.y }}
+              onMouseEnter={() => {}}
+              onMouseLeave={() => setReceiverPopover(null)}
+            >
+              <div className="font-bold text-[9px] uppercase tracking-wider opacity-60 mb-1">Receiver Activity</div>
+              <a href={`/address/${receiverPopover.address}`} className="font-mono text-[9px] text-[#137DFE] hover:underline block mb-1.5">{receiverPopover.address}</a>
+              <div className="space-y-0.5">
+                {receiverPopover.stats?.received?.count > 0 && <div className="flex justify-between"><span className="opacity-60">Received</span><span className="font-semibold">{receiverPopover.stats.received.count}x ({Math.round(receiverPopover.stats.received.tokens).toLocaleString()} tokens)</span></div>}
+                {receiverPopover.stats?.sell?.count > 0 && <div className="flex justify-between"><span className="opacity-60">Sold</span><span className="font-semibold text-[#ef4444]">{receiverPopover.stats.sell.count}x ({Math.round(receiverPopover.stats.sell.xrp).toLocaleString()} XRP)</span></div>}
+                {receiverPopover.stats?.transfer_out?.count > 0 && <div className="flex justify-between"><span className="opacity-60">Transferred</span><span className="font-semibold text-[#f97316]">{receiverPopover.stats.transfer_out.count}x</span></div>}
+                {receiverPopover.stats?.deposit?.count > 0 && <div className="flex justify-between"><span className="opacity-60">LP Deposit</span><span className="font-semibold text-[#8b5cf6]">{receiverPopover.stats.deposit.count}x</span></div>}
+              </div>
+              <div className={cn('mt-1.5 pt-1 border-t border-black/5 dark:border-white/5 font-bold text-[9px] uppercase',
+                receiverPopover.behavior === 'sold' || receiverPopover.behavior === 'transferred' ? 'text-[#ef4444]' : 'text-[#08AA09]'
+              )}>
+                {receiverPopover.behavior === 'sold' ? 'Dumped' : receiverPopover.behavior === 'transferred' ? 'Forwarded' : receiverPopover.behavior === 'deposited_lp' ? 'Added LP' : 'Holding'}
+              </div>
+            </div>,
+            document.body
+          )}
         </div>
       )}
     </div>

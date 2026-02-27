@@ -211,7 +211,7 @@ export default function PaymentModal({
     <div
       className={cn(
         'fixed inset-0 z-[9999] flex items-center justify-center p-4 backdrop-blur-md max-sm:h-dvh',
-        isDark ? 'bg-black/70' : 'bg-white/60'
+        'bg-white/60 dark:bg-black/70'
       )}
       onClick={onClose}
       role="dialog"
@@ -221,22 +221,20 @@ export default function PaymentModal({
       <div
         className={cn(
           'w-full max-w-xl rounded-2xl border-[1.5px] overflow-hidden',
-          isDark
-            ? 'bg-black/95 backdrop-blur-2xl border-white/[0.08] shadow-2xl shadow-black/50'
-            : 'bg-white backdrop-blur-2xl border-gray-200 shadow-2xl shadow-gray-300/30'
+          'bg-white backdrop-blur-2xl border-gray-200 shadow-2xl shadow-gray-300/30 dark:bg-black/95 dark:backdrop-blur-2xl dark:border-white/[0.08] dark:shadow-2xl dark:shadow-black/50'
         )}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className={cn(
           'flex items-center justify-between px-5 py-4 border-b',
-          isDark ? 'border-white/[0.06]' : 'border-gray-100'
+          'border-gray-100 dark:border-white/[0.06]'
         )}>
           <div>
-            <div className={cn('font-semibold text-[15px]', isDark ? 'text-white' : 'text-gray-900')}>
+            <div className={cn('font-semibold text-[15px]', 'text-gray-900 dark:text-white')}>
               Complete Purchase
             </div>
-            <div className={cn('text-[12px] mt-0.5', isDark ? 'text-white/50' : 'text-gray-500')}>
+            <div className={cn('text-[12px] mt-0.5', 'text-gray-500 dark:text-white/50')}>
               {purchaseType === 'credits' ? 'Credit Package' : 'Subscription Plan'}
             </div>
           </div>
@@ -245,7 +243,7 @@ export default function PaymentModal({
             aria-label="Close"
             className={cn(
               'p-2 rounded-lg transition-colors outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
-              isDark ? 'hover:bg-white/10 text-white/50' : 'hover:bg-gray-100 text-gray-400'
+              'hover:bg-gray-100 text-gray-400 dark:hover:bg-white/10 dark:text-white/50'
             )}
           >
             <X size={18} />
@@ -257,26 +255,26 @@ export default function PaymentModal({
           {/* Purchase summary */}
           <div className={cn(
             'p-4 rounded-xl border-[1.5px]',
-            isDark ? 'bg-white/[0.02] border-white/10' : 'bg-gray-50 border-gray-200'
+            'bg-gray-50 border-gray-200 dark:bg-white/[0.02] dark:border-white/10'
           )}>
             <div className="flex items-center justify-between mb-2">
-              <span className={cn('font-semibold', isDark ? 'text-white' : 'text-gray-900')}>{item?.name}</span>
+              <span className={cn('font-semibold', 'text-gray-900 dark:text-white')}>{item?.name}</span>
               <div className="text-right">
-                <span className={cn('text-xl font-bold', isDark ? 'text-white' : 'text-gray-900')}>${price}</span>
+                <span className={cn('text-xl font-bold', 'text-gray-900 dark:text-white')}>${price}</span>
                 {xrpAmount && (
-                  <div className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-gray-400')}>
+                  <div className={cn('text-[11px]', 'text-gray-400 dark:text-white/40')}>
                     ~{xrpAmount} XRP
                   </div>
                 )}
               </div>
             </div>
             {item?.credits && (
-              <div className={cn('text-[12px]', isDark ? 'text-white/50' : 'text-gray-500')}>
+              <div className={cn('text-[12px]', 'text-gray-500 dark:text-white/50')}>
                 {item.credits} credits {purchaseType === 'tier' ? '/ month' : ''}
               </div>
             )}
             {purchaseType === 'tier' && billingPeriod && (
-              <div className={cn('text-[12px]', isDark ? 'text-white/50' : 'text-gray-500')}>
+              <div className={cn('text-[12px]', 'text-gray-500 dark:text-white/50')}>
                 Billed {billingPeriod}
               </div>
             )}
@@ -284,7 +282,7 @@ export default function PaymentModal({
 
           {/* Payment method toggle */}
           <div>
-            <div className={cn('text-[12px] font-medium mb-2', isDark ? 'text-white/60' : 'text-gray-600')}>
+            <div className={cn('text-[12px] font-medium mb-2', 'text-gray-600 dark:text-white/60')}>
               Payment Method
             </div>
             <div className="flex gap-2">
@@ -295,7 +293,7 @@ export default function PaymentModal({
                   'flex-1 py-3 px-4 rounded-xl border-[1.5px] flex items-center justify-center gap-2 text-[13px] font-medium transition-all',
                   paymentMethod === 'stripe'
                     ? 'border-primary bg-primary/10 text-primary'
-                    : isDark ? 'border-white/10 text-white/60 hover:bg-white/5' : 'border-gray-200 text-gray-500 hover:bg-gray-50',
+                    : 'border-gray-200 text-gray-500 hover:bg-gray-50 dark:border-white/10 dark:text-white/60 dark:hover:bg-white/5',
                   paymentStatus && 'opacity-50 cursor-not-allowed'
                 )}
               >
@@ -309,7 +307,7 @@ export default function PaymentModal({
                   'flex-1 py-3 px-4 rounded-xl border-[1.5px] flex items-center justify-center gap-2 text-[13px] font-medium transition-all',
                   paymentMethod === 'xrp'
                     ? 'border-primary bg-primary/10 text-primary'
-                    : isDark ? 'border-white/10 text-white/60 hover:bg-white/5' : 'border-gray-200 text-gray-500 hover:bg-gray-50',
+                    : 'border-gray-200 text-gray-500 hover:bg-gray-50 dark:border-white/10 dark:text-white/60 dark:hover:bg-white/5',
                   paymentStatus && 'opacity-50 cursor-not-allowed'
                 )}
               >
@@ -323,16 +321,16 @@ export default function PaymentModal({
           {paymentMethod === 'xrp' && paymentInfo && (
             <div className={cn(
               'p-4 rounded-xl border-[1.5px] space-y-3',
-              isDark ? 'bg-white/[0.02] border-white/10' : 'bg-gray-50 border-gray-200'
+              'bg-gray-50 border-gray-200 dark:bg-white/[0.02] dark:border-white/10'
             )}>
               <div className="flex items-center justify-between">
-                <span className={cn('text-[12px]', isDark ? 'text-white/50' : 'text-gray-500')}>Amount</span>
-                <span className={cn('font-bold', isDark ? 'text-white' : 'text-gray-900')}>{xrpAmount} XRP</span>
+                <span className={cn('text-[12px]', 'text-gray-500 dark:text-white/50')}>Amount</span>
+                <span className={cn('font-bold', 'text-gray-900 dark:text-white')}>{xrpAmount} XRP</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className={cn('text-[12px]', isDark ? 'text-white/50' : 'text-gray-500')}>Destination</span>
+                <span className={cn('text-[12px]', 'text-gray-500 dark:text-white/50')}>Destination</span>
                 <div className="flex items-center gap-1">
-                  <span className={cn('text-[11px] font-mono', isDark ? 'text-white/70' : 'text-gray-600')}>
+                  <span className={cn('text-[11px] font-mono', 'text-gray-600 dark:text-white/70')}>
                     {paymentInfo.destination?.slice(0, 8)}...{paymentInfo.destination?.slice(-6)}
                   </span>
                   <button onClick={() => copyToClipboard(paymentInfo.destination, 'dest')} aria-label="Copy destination address" className="p-1 rounded hover:bg-white/10 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]">
@@ -341,7 +339,7 @@ export default function PaymentModal({
                 </div>
               </div>
               <div className="flex items-center justify-between">
-                <span className={cn('text-[12px]', isDark ? 'text-white/50' : 'text-gray-500')}>Destination Tag</span>
+                <span className={cn('text-[12px]', 'text-gray-500 dark:text-white/50')}>Destination Tag</span>
                 <div className="flex items-center gap-1">
                   <span className={cn('font-mono font-semibold text-primary')}>{paymentInfo.destinationTag}</span>
                   <button onClick={() => copyToClipboard(String(paymentInfo.destinationTag), 'tag')} aria-label="Copy destination tag" className="p-1 rounded hover:bg-white/10 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]">
@@ -349,7 +347,7 @@ export default function PaymentModal({
                   </button>
                 </div>
               </div>
-              <div className={cn('text-[10px] p-2 rounded-lg', isDark ? 'bg-amber-500/10 text-amber-400' : 'bg-amber-50 text-amber-600')}>
+              <div className={cn('text-[10px] p-2 rounded-lg', 'bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400')}>
                 Important: Include the Destination Tag or payment may be lost
               </div>
             </div>
@@ -357,7 +355,7 @@ export default function PaymentModal({
 
           {/* Loading XRP info */}
           {paymentMethod === 'xrp' && loading && !paymentInfo && (
-            <div className={cn('p-6 text-center', isDark ? 'text-white/50' : 'text-gray-500')}>
+            <div className={cn('p-6 text-center', 'text-gray-500 dark:text-white/50')}>
               <Loader2 size={24} className="mx-auto animate-spin mb-2" />
               <div className="text-[12px]">Fetching payment details...</div>
             </div>
@@ -393,7 +391,7 @@ export default function PaymentModal({
           </button>
 
           {/* Footer */}
-          <div className={cn('text-[10px] text-center', isDark ? 'text-white/30' : 'text-gray-400')}>
+          <div className={cn('text-[10px] text-center', 'text-gray-400 dark:text-white/30')}>
             {paymentMethod === 'xrp' ? 'Payment processed on XRPL Mainnet' : 'Card, Cash App, Link, Crypto - powered by Stripe'}
           </div>
         </div>

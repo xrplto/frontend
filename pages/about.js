@@ -1,12 +1,8 @@
-import React, { useContext, memo, useState, useCallback, useMemo } from 'react';
-import api from 'src/utils/api';
-import { ThemeContext } from 'src/context/AppContext';
+import React, { memo, useState, useCallback, useMemo } from 'react';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import { LineChart, ArrowLeftRight, Palette, TrendingUp, Code, Zap, Twitter, Send } from 'lucide-react';
 import { cn } from 'src/utils/cn';
-// Constants
-const BASE_URL = 'https://api.xrpl.to/v1';
 
 // Tailwind components
 const PageWrapper = ({ className, children, ...p }) => <div className={cn('min-h-screen flex flex-col', className)} {...p}>{children}</div>;
@@ -15,63 +11,63 @@ const Container = ({ className, children, ...p }) => <div className={cn('max-w-[
 
 const HeroSection = ({ className, children, ...p }) => <div className={cn('text-center pt-10 pb-8 relative', className)} {...p}>{children}</div>;
 
-const HeroTitle = ({ isDark, className, children, ...p }) => <h1 className={cn('text-[2.5rem] font-semibold mb-3 hidden max-md:text-[2rem]', isDark ? 'text-white' : 'text-black', className)} {...p}>{children}</h1>;
+const HeroTitle = ({ className, children, ...p }) => <h1 className={cn('text-[2.5rem] font-semibold mb-3 hidden max-md:text-[2rem]', 'text-black dark:text-white', className)} {...p}>{children}</h1>;
 
-const HeroSubtitle = ({ isDark, className, children, ...p }) => <p className={cn('text-sm max-w-[500px] mx-auto mb-8', isDark ? 'text-white/50' : 'text-black/50', className)} {...p}>{children}</p>;
+const HeroSubtitle = ({ className, children, ...p }) => <p className={cn('text-sm max-w-[500px] mx-auto mb-8', 'text-black/50 dark:text-white/50', className)} {...p}>{children}</p>;
 
 const StatsRow = ({ className, children, ...p }) => <div className={cn('grid grid-cols-4 gap-4 max-sm:grid-cols-2', className)} {...p}>{children}</div>;
 
-const StatCard = ({ isDark, className, children, ...p }) => <div className={cn('text-center py-5 px-4 bg-transparent rounded-lg border', isDark ? 'border-white/[0.08]' : 'border-black/[0.08]', className)} {...p}>{children}</div>;
+const StatCard = ({ className, children, ...p }) => <div className={cn('text-center py-5 px-4 bg-transparent rounded-lg border', 'border-black/[0.08] dark:border-white/[0.08]', className)} {...p}>{children}</div>;
 
 const StatNumber = ({ className, children, ...p }) => <h2 className={cn('text-2xl font-medium text-[#3b82f6] mb-1', className)} {...p}>{children}</h2>;
 
-const StatLabel = ({ isDark, className, children, ...p }) => <p className={cn('text-[10px] uppercase tracking-[0.5px]', isDark ? 'text-white/50' : 'text-black/50', className)} {...p}>{children}</p>;
+const StatLabel = ({ className, children, ...p }) => <p className={cn('text-[10px] uppercase tracking-[0.5px]', 'text-black/50 dark:text-white/50', className)} {...p}>{children}</p>;
 
 const FeaturesSection = ({ className, children, ...p }) => <div className={cn('py-8', className)} {...p}>{children}</div>;
 
-const SectionTitle = ({ isDark, className, children, ...p }) => <h2 className={cn('text-center text-sm font-medium mb-6 tracking-[0.5px]', isDark ? 'text-white/90' : 'text-black', className)} {...p}>{children}</h2>;
+const SectionTitle = ({ className, children, ...p }) => <h2 className={cn('text-center text-sm font-medium mb-6 tracking-[0.5px]', 'text-black dark:text-white/90', className)} {...p}>{children}</h2>;
 
 const FeatureGrid = ({ className, children, ...p }) => <div className={cn('grid grid-cols-3 gap-4 max-[600px]:grid-cols-2 max-[400px]:grid-cols-1', className)} {...p}>{children}</div>;
 
-const FeatureCard = ({ isDark, className, children, ...p }) => <div className={cn('relative p-4 bg-transparent rounded-lg border', isDark ? 'border-white/[0.08] hover:border-white/[0.15]' : 'border-black/[0.08] hover:border-black/[0.15]', className)} {...p}>{children}</div>;
+const FeatureCard = ({ className, children, ...p }) => <div className={cn('relative p-4 bg-transparent rounded-lg border', 'border-black/[0.08] hover:border-black/[0.15] dark:border-white/[0.08] dark:hover:border-white/[0.15]', className)} {...p}>{children}</div>;
 
-const FeatureIcon = ({ isDark, className, children, ...p }) => <div className={cn('w-7 h-7 mb-2 flex items-center justify-center bg-transparent rounded-md border text-[#3b82f6] [&_svg]:w-3.5 [&_svg]:h-3.5', isDark ? 'border-white/[0.12]' : 'border-black/[0.12]', className)} {...p}>{children}</div>;
+const FeatureIcon = ({ className, children, ...p }) => <div className={cn('w-7 h-7 mb-2 flex items-center justify-center bg-transparent rounded-md border text-[#3b82f6] [&_svg]:w-3.5 [&_svg]:h-3.5', 'border-black/[0.12] dark:border-white/[0.12]', className)} {...p}>{children}</div>;
 
-const FeatureTitle = ({ isDark, className, children, ...p }) => <h3 className={cn('text-xs font-medium mb-1', isDark ? 'text-white/90' : 'text-black', className)} {...p}>{children}</h3>;
+const FeatureTitle = ({ className, children, ...p }) => <h3 className={cn('text-xs font-medium mb-1', 'text-black dark:text-white/90', className)} {...p}>{children}</h3>;
 
-const FeatureText = ({ isDark, className, children, ...p }) => <p className={cn('text-[11px] leading-[1.5]', isDark ? 'text-white/50' : 'text-black/50', className)} {...p}>{children}</p>;
+const FeatureText = ({ className, children, ...p }) => <p className={cn('text-[11px] leading-[1.5]', 'text-black/50 dark:text-white/50', className)} {...p}>{children}</p>;
 
 const FeesSection = ({ className, children, ...p }) => <div className={cn('py-8', className)} {...p}>{children}</div>;
 
 const FeesGrid = ({ className, children, ...p }) => <div className={cn('grid grid-cols-2 gap-4 max-[500px]:grid-cols-1', className)} {...p}>{children}</div>;
 
-const FeeCard = ({ isDark, className, children, ...p }) => <div className={cn('text-center py-6 px-4 bg-transparent rounded-lg border', isDark ? 'border-white/[0.08]' : 'border-black/[0.08]', className)} {...p}>{children}</div>;
+const FeeCard = ({ className, children, ...p }) => <div className={cn('text-center py-6 px-4 bg-transparent rounded-lg border', 'border-black/[0.08] dark:border-white/[0.08]', className)} {...p}>{children}</div>;
 
 const FeeAmount = ({ className, children, ...p }) => <div className={cn('text-2xl font-medium text-[#3b82f6] mb-1', className)} {...p}>{children}</div>;
 
-const FeeLabel = ({ isDark, className, children, ...p }) => <div className={cn('text-[11px]', isDark ? 'text-white/50' : 'text-black/50', className)} {...p}>{children}</div>;
+const FeeLabel = ({ className, children, ...p }) => <div className={cn('text-[11px]', 'text-black/50 dark:text-white/50', className)} {...p}>{children}</div>;
 
 const TimelineSection = ({ className, children, ...p }) => <div className={cn('py-8', className)} {...p}>{children}</div>;
 
 const Timeline = ({ className, children, ...p }) => <div className={cn('grid grid-cols-3 gap-4 max-[600px]:grid-cols-2', className)} {...p}>{children}</div>;
 
-const TimelineItem = ({ isDark, className, children, ...p }) => <div className={cn('flex flex-col items-center justify-center py-[14px] px-3 bg-transparent rounded-lg border', isDark ? 'border-white/[0.08]' : 'border-black/[0.08]', className)} {...p}>{children}</div>;
+const TimelineItem = ({ className, children, ...p }) => <div className={cn('flex flex-col items-center justify-center py-[14px] px-3 bg-transparent rounded-lg border', 'border-black/[0.08] dark:border-white/[0.08]', className)} {...p}>{children}</div>;
 
 const TimelineContent = ({ className, children, ...p }) => <div className={cn('text-center', className)} {...p}>{children}</div>;
 
 const TimelineDate = ({ className, children, ...p }) => <div className={cn('text-[10px] font-medium text-[#3b82f6] mb-[2px]', className)} {...p}>{children}</div>;
 
-const TimelineText = ({ isDark, className, children, ...p }) => <div className={cn('text-[11px]', isDark ? 'text-white/60' : 'text-black/60', className)} {...p}>{children}</div>;
+const TimelineText = ({ className, children, ...p }) => <div className={cn('text-[11px]', 'text-black/60 dark:text-white/60', className)} {...p}>{children}</div>;
 
 const SocialSection = ({ className, children, ...p }) => <div className={cn('py-8', className)} {...p}>{children}</div>;
 
 const SocialGrid = ({ className, children, ...p }) => <div className={cn('grid grid-cols-4 gap-4 max-[500px]:grid-cols-2', className)} {...p}>{children}</div>;
 
-const SocialCard = ({ isDark, className, children, ...p }) => (
+const SocialCard = ({ className, children, ...p }) => (
   <a
     className={cn(
       'flex flex-col items-center gap-2 py-5 px-4 bg-transparent rounded-lg border no-underline transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] focus-visible:ring-offset-1',
-      isDark ? 'border-white/[0.08] hover:border-white/[0.15] text-white/70 hover:text-[#3b82f6]' : 'border-black/[0.08] hover:border-black/[0.15] text-black/70 hover:text-[#3b82f6]',
+      'border-black/[0.08] hover:border-black/[0.15] text-black/70 hover:text-[#3b82f6] dark:border-white/[0.08] dark:hover:border-white/[0.15] dark:text-white/70 dark:hover:text-[#3b82f6]',
       className
     )}
     target="_blank"
@@ -82,7 +78,7 @@ const SocialCard = ({ isDark, className, children, ...p }) => (
   </a>
 );
 
-const SocialLabel = ({ isDark, className, children, ...p }) => <span className={cn('text-xs font-medium', className)} {...p}>{children}</span>;
+const SocialLabel = ({ className, children, ...p }) => <span className={cn('text-xs font-medium', className)} {...p}>{children}</span>;
 
 const RedditIcon = ({ size = 20 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
@@ -103,43 +99,42 @@ const SOCIALS = [
   { href: 'https://xrpl.to/discord/', label: 'Discord', Icon: DiscordIcon }
 ];
 
-const FaqSection = ({ isDark, className, children, ...p }) => <div className={cn('py-8 mt-4 border-t', isDark ? 'border-white/[0.08]' : 'border-black/[0.08]', className)} {...p}>{children}</div>;
+const FaqSection = ({ className, children, ...p }) => <div className={cn('py-8 mt-4 border-t', 'border-black/[0.08] dark:border-white/[0.08]', className)} {...p}>{children}</div>;
 
 const FaqHeader = ({ className, children, ...p }) => <div className={cn('text-center mb-5', className)} {...p}>{children}</div>;
 
-const FaqTitle = ({ isDark, className, children, ...p }) => <h2 className={cn('text-sm font-medium mb-2 hidden', isDark ? 'text-white/90' : 'text-black', className)} {...p}>{children}</h2>;
+const FaqTitle = ({ className, children, ...p }) => <h2 className={cn('text-sm font-medium mb-2 hidden', 'text-black dark:text-white/90', className)} {...p}>{children}</h2>;
 
-const FaqSubtitle = ({ isDark, className, children, ...p }) => <h3 className={cn('text-xs mx-auto font-normal', isDark ? 'text-white/50' : 'text-black/50', className)} {...p}>{children}</h3>;
+const FaqSubtitle = ({ className, children, ...p }) => <h3 className={cn('text-xs mx-auto font-normal', 'text-black/50 dark:text-white/50', className)} {...p}>{children}</h3>;
 
 const FaqList = ({ className, children, ...p }) => <div className={cn('flex flex-col gap-3', className)} {...p}>{children}</div>;
 
-const AccordionItem = ({ isDark, className, children, ...p }) => <div className={cn('bg-transparent rounded-lg border overflow-hidden', isDark ? 'border-white/[0.08]' : 'border-black/[0.08]', className)} {...p}>{children}</div>;
+const AccordionItem = ({ className, children, ...p }) => <div className={cn('bg-transparent rounded-lg border overflow-hidden', 'border-black/[0.08] dark:border-white/[0.08]', className)} {...p}>{children}</div>;
 
-const AccordionHeader = ({ isDark, className, children, ...p }) => (
-  <button className={cn('w-full py-[14px] px-4 bg-transparent border-none text-left cursor-pointer flex justify-between items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] focus-visible:ring-offset-1', isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-black/[0.02]', className)} {...p}>{children}</button>
+const AccordionHeader = ({ className, children, ...p }) => (
+  <button className={cn('w-full py-[14px] px-4 bg-transparent border-none text-left cursor-pointer flex justify-between items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] focus-visible:ring-offset-1', 'hover:bg-black/[0.02] dark:hover:bg-white/[0.02]', className)} {...p}>{children}</button>
 );
 
-const QuestionText = ({ isDark, className, children, ...p }) => <span className={cn('text-xs font-medium pr-3 flex-1', isDark ? 'text-white/90' : 'text-[#212B36]', className)} {...p}>{children}</span>;
+const QuestionText = ({ className, children, ...p }) => <span className={cn('text-xs font-medium pr-3 flex-1', 'text-[#212B36] dark:text-white/90', className)} {...p}>{children}</span>;
 
-const ExpandIcon = ({ expanded, isDark, className, ...p }) => (
+const ExpandIcon = ({ expanded, className, ...p }) => (
   <svg className={cn('text-[#3b82f6] shrink-0 transition-transform duration-200', expanded && 'rotate-180', className)} {...p} />
 );
 
 const AccordionContent = ({ expanded, id, className, children, ...p }) => <div role="region" id={id} className={cn('overflow-hidden transition-[max-height] duration-200', className)} style={{ maxHeight: expanded ? '500px' : '0' }} {...p}>{children}</div>;
 
-const AnswerText = ({ isDark, className, children, ...p }) => <p className={cn('px-4 pb-[14px] m-0 leading-[1.6] text-[11px]', isDark ? 'text-white/60' : 'text-black/60', className)} {...p}>{children}</p>;
+const AnswerText = ({ className, children, ...p }) => <p className={cn('px-4 pb-[14px] m-0 leading-[1.6] text-[11px]', 'text-black/60 dark:text-white/60', className)} {...p}>{children}</p>;
 
 // Memoized FAQ Item Component
-const FAQItem = memo(({ faq, index, isExpanded, onToggle, isDark }) => {
+const FAQItem = memo(({ faq, index, isExpanded, onToggle }) => {
   const headerId = `faq-header-${index}`;
   const panelId = `faq-panel-${index}`;
   return (
-    <AccordionItem isDark={isDark}>
-      <AccordionHeader id={headerId} onClick={onToggle} aria-expanded={isExpanded} aria-controls={panelId} isDark={isDark}>
-        <QuestionText isDark={isDark}>{faq.question}</QuestionText>
+    <AccordionItem>
+      <AccordionHeader id={headerId} onClick={onToggle} aria-expanded={isExpanded} aria-controls={panelId}>
+        <QuestionText>{faq.question}</QuestionText>
         <ExpandIcon
           expanded={isExpanded}
-          isDark={isDark}
           width="24"
           height="24"
           viewBox="0 0 24 24"
@@ -156,15 +151,13 @@ const FAQItem = memo(({ faq, index, isExpanded, onToggle, isDark }) => {
         </ExpandIcon>
       </AccordionHeader>
       <AccordionContent expanded={isExpanded} id={panelId} aria-labelledby={headerId}>
-        <AnswerText isDark={isDark}>{faq.answer}</AnswerText>
+        <AnswerText>{faq.answer}</AnswerText>
       </AccordionContent>
     </AccordionItem>
   );
 });
 
 function AboutPage() {
-  const { themeName } = useContext(ThemeContext);
-  const isDark = themeName === 'XrplToDarkTheme';
   const [expandedIndex, setExpandedIndex] = useState(null);
 
   const toggleAccordion = useCallback((index) => {
@@ -207,7 +200,7 @@ function AboutPage() {
       {
         question: 'What are the fees for trading on xrpl.to?',
         answer:
-          "Xrpl.to charges a 0.8% trading fee for token trades. NFT trading is completely free with 0% fees. Additionally, you will encounter standard XRP Ledger network fees (typically a few drops of XRP) for each transaction, which go directly to the blockchain network. Some wallets may also charge their own fees, so we recommend checking your wallet's fee structure."
+          "Xrpl.to charges a 0.4% trading fee for token trades (launch special). NFT trading is completely free with 0% fees. Additionally, you will encounter standard XRP Ledger network fees (typically a few drops of XRP) for each transaction, which go directly to the blockchain network. Some wallets may also charge their own fees, so we recommend checking your wallet's fee structure."
       },
       {
         question: 'How do I list my token on xrpl.to?',
@@ -311,26 +304,26 @@ function AboutPage() {
         <section aria-label="Platform overview">
         <HeroSection>
           <HeroTitle>XRPL.to</HeroTitle>
-          <HeroSubtitle isDark={isDark}>
+          <HeroSubtitle>
             A high-performance SocialFi trading platform built entirely on the XRP Ledger
           </HeroSubtitle>
 
           <StatsRow>
-            <StatCard isDark={isDark}>
+            <StatCard>
               <StatNumber>19,000+</StatNumber>
-              <StatLabel isDark={isDark}>Tokens Tracked</StatLabel>
+              <StatLabel>Tokens Tracked</StatLabel>
             </StatCard>
-            <StatCard isDark={isDark}>
+            <StatCard>
               <StatNumber>40,000+</StatNumber>
-              <StatLabel isDark={isDark}>Monthly Users</StatLabel>
+              <StatLabel>Monthly Users</StatLabel>
             </StatCard>
-            <StatCard isDark={isDark}>
+            <StatCard>
               <StatNumber>8M+</StatNumber>
-              <StatLabel isDark={isDark}>API Queries</StatLabel>
+              <StatLabel>API Queries</StatLabel>
             </StatCard>
-            <StatCard isDark={isDark}>
+            <StatCard>
               <StatNumber>Live</StatNumber>
-              <StatLabel isDark={isDark}>Data</StatLabel>
+              <StatLabel>Data</StatLabel>
             </StatCard>
           </StatsRow>
         </HeroSection>
@@ -339,17 +332,17 @@ function AboutPage() {
         {/* Features Section */}
         <section aria-label="Platform features">
         <FeaturesSection>
-          <SectionTitle isDark={isDark}>Platform Features</SectionTitle>
+          <SectionTitle>Platform Features</SectionTitle>
           <FeatureGrid>
             {features.map((feature, index) => {
               const IconComponent = feature.icon;
               return (
-                <FeatureCard key={index} isDark={isDark}>
-                  <FeatureIcon isDark={isDark}>
+                <FeatureCard key={index}>
+                  <FeatureIcon>
                     <IconComponent />
                   </FeatureIcon>
-                  <FeatureTitle isDark={isDark}>{feature.title}</FeatureTitle>
-                  <FeatureText isDark={isDark}>{feature.text}</FeatureText>
+                  <FeatureTitle>{feature.title}</FeatureTitle>
+                  <FeatureText>{feature.text}</FeatureText>
                 </FeatureCard>
               );
             })}
@@ -360,15 +353,15 @@ function AboutPage() {
         {/* Fees Section */}
         <section aria-label="Trading fees">
         <FeesSection>
-          <SectionTitle isDark={isDark}>Trading Fees</SectionTitle>
+          <SectionTitle>Trading Fees</SectionTitle>
           <FeesGrid>
-            <FeeCard isDark={isDark}>
-              <FeeAmount>0.8%</FeeAmount>
-              <FeeLabel isDark={isDark}>Token Trading (currently FREE)</FeeLabel>
+            <FeeCard>
+              <FeeAmount>0.4%</FeeAmount>
+              <FeeLabel>Token Trading (launch special)</FeeLabel>
             </FeeCard>
-            <FeeCard isDark={isDark}>
+            <FeeCard>
               <FeeAmount>0%</FeeAmount>
-              <FeeLabel isDark={isDark}>Free NFT Trading</FeeLabel>
+              <FeeLabel>Free NFT Trading</FeeLabel>
             </FeeCard>
           </FeesGrid>
         </FeesSection>
@@ -377,13 +370,13 @@ function AboutPage() {
         {/* Timeline Section */}
         <section aria-label="Our journey">
         <TimelineSection>
-          <SectionTitle isDark={isDark}>Our Journey</SectionTitle>
+          <SectionTitle>Our Journey</SectionTitle>
           <Timeline>
             {timelineData.map((item, index) => (
-              <TimelineItem key={index} isDark={isDark}>
+              <TimelineItem key={index}>
                 <TimelineContent>
                   <TimelineDate>{item.date}</TimelineDate>
-                  <TimelineText isDark={isDark}>{item.event}</TimelineText>
+                  <TimelineText>{item.event}</TimelineText>
                 </TimelineContent>
               </TimelineItem>
             ))}
@@ -394,12 +387,12 @@ function AboutPage() {
         {/* Social / Community Section */}
         <section aria-label="Community links">
         <SocialSection>
-          <SectionTitle isDark={isDark}>Community</SectionTitle>
+          <SectionTitle>Community</SectionTitle>
           <SocialGrid>
             {SOCIALS.map((social) => (
-              <SocialCard key={social.label} href={social.href} isDark={isDark}>
+              <SocialCard key={social.label} href={social.href}>
                 <social.Icon size={20} />
-                <SocialLabel isDark={isDark}>{social.label}</SocialLabel>
+                <SocialLabel>{social.label}</SocialLabel>
               </SocialCard>
             ))}
           </SocialGrid>
@@ -408,10 +401,10 @@ function AboutPage() {
 
         {/* FAQ Section */}
         <section aria-label="Frequently asked questions">
-        <FaqSection isDark={isDark}>
+        <FaqSection>
           <FaqHeader>
             <FaqTitle>Frequently Asked Questions</FaqTitle>
-            <FaqSubtitle isDark={isDark}>
+            <FaqSubtitle>
               Find answers to common questions about xrpl.to
             </FaqSubtitle>
           </FaqHeader>
@@ -424,7 +417,6 @@ function AboutPage() {
                 index={index}
                 isExpanded={expandedIndex === index}
                 onToggle={() => toggleAccordion(index)}
-                isDark={isDark}
               />
             ))}
           </FaqList>
@@ -474,7 +466,7 @@ export async function getStaticProps() {
           name: 'What are the fees for trading on xrpl.to?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'Xrpl.to charges a 0.8% trading fee for token trades. NFT trading is completely free with 0% fees. Additionally, you will encounter standard XRP Ledger network fees (typically a few drops of XRP) for each transaction.'
+            text: 'Xrpl.to charges a 0.4% trading fee for token trades (launch special). NFT trading is completely free with 0% fees. Additionally, you will encounter standard XRP Ledger network fees (typically a few drops of XRP) for each transaction.'
           }
         },
         {

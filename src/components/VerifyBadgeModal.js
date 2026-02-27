@@ -278,8 +278,8 @@ export default function VerifyBadgeModal({ token, onClose, onSuccess, itemType =
   // Render tier selection cards
   const renderTierSelection = () => (
     <div className="space-y-2">
-      <div className={cn('text-center mb-3', isDark ? 'text-white/60' : 'text-gray-500')}>
-        <p className="text-xs">Select verification for <span className={cn('font-semibold', isDark ? 'text-white' : 'text-gray-900')}>{resolvedName}</span></p>
+      <div className={cn('text-center mb-3', 'text-gray-500 dark:text-white/60')}>
+        <p className="text-xs">Select verification for <span className={cn('font-semibold', 'text-gray-900 dark:text-white')}>{resolvedName}</span></p>
         {currentVerified > 0 && currentVerified <= 4 && (
           <p className="text-[10px] mt-1 text-amber-500">
             Current: Tier {currentVerified} ({TIER_CONFIG[currentVerified]?.label || 'Unknown'})
@@ -318,13 +318,13 @@ export default function VerifyBadgeModal({ token, onClose, onSuccess, itemType =
                   alt={resolvedName}
                   className={cn(
                     'w-10 h-10 rounded-lg object-cover border',
-                    isDark ? 'border-white/10' : 'border-gray-200'
+                    'border-gray-200 dark:border-white/10'
                   )}
                 />
                 {/* Badge preview */}
                 <div className={cn(
                   'absolute -bottom-1 -right-1 p-[3px] rounded-full ring-2',
-                  isDark ? 'ring-[#0a0a0a]' : 'ring-white',
+                  'ring-white dark:ring-[#0a0a0a]',
                   `bg-gradient-to-br ${config.gradient} ${config.badgeGlow}`
                 )}>
                   <Icon size={8} strokeWidth={3} className="text-white" />
@@ -334,7 +334,7 @@ export default function VerifyBadgeModal({ token, onClose, onSuccess, itemType =
               {/* Info */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className={cn('font-bold text-sm', isDark ? 'text-white' : 'text-gray-900')}>
+                  <span className={cn('font-bold text-sm', 'text-gray-900 dark:text-white')}>
                     {config.name}
                   </span>
                   {isDisabled && (
@@ -343,7 +343,7 @@ export default function VerifyBadgeModal({ token, onClose, onSuccess, itemType =
                     </span>
                   )}
                 </div>
-                <div className={cn('text-[10px] truncate', isDark ? 'text-white/40' : 'text-gray-400')}>
+                <div className={cn('text-[10px] truncate', 'text-gray-400 dark:text-white/40')}>
                   {config.features[0]}
                 </div>
               </div>
@@ -353,21 +353,21 @@ export default function VerifyBadgeModal({ token, onClose, onSuccess, itemType =
                 <div className={cn('text-sm font-black', config.text)}>
                   ${dynamicUsd}
                 </div>
-                <div className={cn('text-[9px]', isDark ? 'text-white/40' : 'text-gray-400')}>
+                <div className={cn('text-[9px]', 'text-gray-400 dark:text-white/40')}>
                   ~{xrpPrice || '...'} XRP
                 </div>
               </div>
 
               {/* Arrow */}
               {!isDisabled && (
-                <ChevronRight size={16} className={cn('opacity-40 group-hover:opacity-100 transition-opacity flex-shrink-0', isDark ? 'text-white' : 'text-gray-600')} />
+                <ChevronRight size={16} className={cn('opacity-40 group-hover:opacity-100 transition-opacity flex-shrink-0', 'text-gray-600 dark:text-white')} />
               )}
             </div>
           </button>
         );
       })}
 
-      <p className={cn('text-[9px] text-center mt-3', isDark ? 'text-white/30' : 'text-gray-400')}>
+      <p className={cn('text-[9px] text-center mt-3', 'text-gray-400 dark:text-white/30')}>
         Prices update with XRP rate
       </p>
     </div>
@@ -392,17 +392,17 @@ export default function VerifyBadgeModal({ token, onClose, onSuccess, itemType =
             <Icon size={22} className="text-white" />
           </div>
           <div className="flex-1 min-w-0">
-            <div className={cn('font-bold text-sm', isDark ? 'text-white' : 'text-gray-900')}>
+            <div className={cn('font-bold text-sm', 'text-gray-900 dark:text-white')}>
               {config.name} Verification
             </div>
-            <div className={cn('text-xs truncate', isDark ? 'text-white/50' : 'text-gray-500')}>
+            <div className={cn('text-xs truncate', 'text-gray-500 dark:text-white/50')}>
               for {resolvedName}
             </div>
           </div>
           <div className="text-right">
             <div className={cn('font-bold text-sm', config.text)}>${pricing?.tiers?.[selectedTier]?.priceUsd ?? config.priceUsd}</div>
             {pricing?.tiers?.[selectedTier]?.priceXrp && (
-              <div className={cn('text-[9px]', isDark ? 'text-white/40' : 'text-gray-400')}>
+              <div className={cn('text-[9px]', 'text-gray-400 dark:text-white/40')}>
                 ~{pricing.tiers[selectedTier].priceXrp} XRP
               </div>
             )}
@@ -416,8 +416,8 @@ export default function VerifyBadgeModal({ token, onClose, onSuccess, itemType =
             className={cn(
               'flex-1 py-2 px-3 rounded-xl border-[1.5px] flex items-center justify-center gap-2 text-xs font-medium transition-all',
               paymentMethod === 'stripe'
-                ? isDark ? 'border-white/30 bg-white/10 text-white' : 'border-gray-400 bg-gray-100 text-gray-900'
-                : isDark ? 'border-white/10 text-white/50 hover:bg-white/5' : 'border-gray-200 text-gray-500 hover:bg-gray-50'
+                ? 'border-gray-400 bg-gray-100 text-gray-900 dark:border-white/30 dark:bg-white/10 dark:text-white'
+                : 'border-gray-200 text-gray-500 hover:bg-gray-50 dark:border-white/10 dark:text-white/50 dark:hover:bg-white/5'
             )}
           >
             <CreditCard size={14} />
@@ -428,8 +428,8 @@ export default function VerifyBadgeModal({ token, onClose, onSuccess, itemType =
             className={cn(
               'flex-1 py-2 px-3 rounded-xl border-[1.5px] flex items-center justify-center gap-2 text-xs font-medium transition-all',
               paymentMethod === 'xrp'
-                ? isDark ? 'border-white/30 bg-white/10 text-white' : 'border-gray-400 bg-gray-100 text-gray-900'
-                : isDark ? 'border-white/10 text-white/50 hover:bg-white/5' : 'border-gray-200 text-gray-500 hover:bg-gray-50'
+                ? 'border-gray-400 bg-gray-100 text-gray-900 dark:border-white/30 dark:bg-white/10 dark:text-white'
+                : 'border-gray-200 text-gray-500 hover:bg-gray-50 dark:border-white/10 dark:text-white/50 dark:hover:bg-white/5'
             )}
           >
             <Wallet size={14} />
@@ -441,16 +441,16 @@ export default function VerifyBadgeModal({ token, onClose, onSuccess, itemType =
         {paymentMethod === 'xrp' && (
           <div className={cn(
             'p-3 rounded-xl border-[1.5px] space-y-2',
-            isDark ? 'bg-white/[0.02] border-white/10' : 'bg-gray-50 border-gray-200'
+            'bg-gray-50 border-gray-200 dark:bg-white/[0.02] dark:border-white/10'
           )}>
             <div className="flex justify-between items-center">
-              <span className={cn('text-xs', isDark ? 'text-white/50' : 'text-gray-500')}>Amount</span>
-              <span className={cn('font-bold text-sm', isDark ? 'text-white' : 'text-gray-900')}>{paymentInfo?.priceXrp || '...'} XRP</span>
+              <span className={cn('text-xs', 'text-gray-500 dark:text-white/50')}>Amount</span>
+              <span className={cn('font-bold text-sm', 'text-gray-900 dark:text-white')}>{paymentInfo?.priceXrp || '...'} XRP</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className={cn('text-xs', isDark ? 'text-white/50' : 'text-gray-500')}>Destination</span>
+              <span className={cn('text-xs', 'text-gray-500 dark:text-white/50')}>Destination</span>
               <div className="flex items-center gap-1">
-                <span className={cn('text-[10px] font-mono', isDark ? 'text-white/70' : 'text-gray-700')}>
+                <span className={cn('text-[10px] font-mono', 'text-gray-700 dark:text-white/70')}>
                   {paymentInfo?.destination?.slice(0, 8)}...{paymentInfo?.destination?.slice(-6)}
                 </span>
                 <button onClick={() => copyToClipboard(paymentInfo?.destination, 'dest')} aria-label="Copy" className="p-1 rounded hover:bg-white/10 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]">
@@ -459,7 +459,7 @@ export default function VerifyBadgeModal({ token, onClose, onSuccess, itemType =
               </div>
             </div>
             <div className="flex justify-between items-center">
-              <span className={cn('text-xs', isDark ? 'text-white/50' : 'text-gray-500')}>Destination Tag</span>
+              <span className={cn('text-xs', 'text-gray-500 dark:text-white/50')}>Destination Tag</span>
               <div className="flex items-center gap-1">
                 <span className={cn('font-mono font-semibold text-primary')}>{paymentInfo?.destinationTag}</span>
                 <button onClick={() => copyToClipboard(String(paymentInfo?.destinationTag), 'tag')} aria-label="Copy" className="p-1 rounded hover:bg-white/10 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]">
@@ -467,7 +467,7 @@ export default function VerifyBadgeModal({ token, onClose, onSuccess, itemType =
                 </button>
               </div>
             </div>
-            <div className={cn('text-[9px] p-2 rounded-lg', isDark ? 'bg-amber-500/10 text-amber-400' : 'bg-amber-50 text-amber-600')}>
+            <div className={cn('text-[9px] p-2 rounded-lg', 'bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400')}>
               Important: Include the Destination Tag or payment may be lost
             </div>
           </div>
@@ -486,7 +486,7 @@ export default function VerifyBadgeModal({ token, onClose, onSuccess, itemType =
             onClick={() => { setStep(0); setSelectedTier(null); setError(null); setPaymentMethod('stripe'); }}
             className={cn(
               'flex-1 py-2.5 rounded-xl border-[1.5px] text-sm font-medium transition-all',
-              isDark ? 'border-white/10 text-white/70 hover:bg-white/5' : 'border-gray-200 text-gray-600 hover:bg-gray-100'
+              'border-gray-200 text-gray-600 hover:bg-gray-100 dark:border-white/10 dark:text-white/70 dark:hover:bg-white/5'
             )}
           >
             Back
@@ -532,13 +532,13 @@ export default function VerifyBadgeModal({ token, onClose, onSuccess, itemType =
         )}>
           <Loader2 size={28} className="text-white animate-spin" />
         </div>
-        <div className={cn('font-bold text-sm mb-1', isDark ? 'text-white' : 'text-gray-900')}>
+        <div className={cn('font-bold text-sm mb-1', 'text-gray-900 dark:text-white')}>
           Processing Payment
         </div>
-        <div className={cn('text-xs', isDark ? 'text-white/50' : 'text-gray-500')}>
+        <div className={cn('text-xs', 'text-gray-500 dark:text-white/50')}>
           Submitting to XRPL...
         </div>
-        <div className={cn('text-[10px] mt-2', isDark ? 'text-white/30' : 'text-gray-400')}>
+        <div className={cn('text-[10px] mt-2', 'text-gray-400 dark:text-white/30')}>
           This may take a few seconds
         </div>
       </div>
@@ -559,16 +559,16 @@ export default function VerifyBadgeModal({ token, onClose, onSuccess, itemType =
           <Icon size={28} className="text-white" />
           <div className={cn(
             'absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center ring-2',
-            isDark ? 'ring-black' : 'ring-white'
+            'ring-white dark:ring-black'
           )}>
             <Check size={14} className="text-white" strokeWidth={3} />
           </div>
         </div>
 
-        <div className={cn('font-bold text-sm mb-1', isDark ? 'text-white' : 'text-gray-900')}>
+        <div className={cn('font-bold text-sm mb-1', 'text-gray-900 dark:text-white')}>
           Verification Complete!
         </div>
-        <div className={cn('text-xs mb-3', isDark ? 'text-white/50' : 'text-gray-500')}>
+        <div className={cn('text-xs mb-3', 'text-gray-500 dark:text-white/50')}>
           {resolvedName} is now {config.name} Verified
         </div>
 
@@ -579,7 +579,7 @@ export default function VerifyBadgeModal({ token, onClose, onSuccess, itemType =
             rel="noopener noreferrer"
             className={cn(
               'inline-flex items-center gap-1.5 text-[10px] font-mono px-2 py-1.5 rounded-lg mb-3',
-              isDark ? 'bg-white/5 text-white/60 hover:text-white' : 'bg-gray-100 text-gray-600 hover:text-gray-900'
+              'bg-gray-100 text-gray-600 hover:text-gray-900 dark:bg-white/5 dark:text-white/60 dark:hover:text-white'
             )}
           >
             <span className="truncate max-w-[180px]">{txHash}</span>
@@ -610,36 +610,34 @@ export default function VerifyBadgeModal({ token, onClose, onSuccess, itemType =
       aria-label="Verify badge"
       className={cn(
         'fixed inset-0 z-[9999] flex items-center justify-center p-4 backdrop-blur-md max-sm:h-dvh',
-        isDark ? 'bg-black/70' : 'bg-white/60'
+        'bg-white/60 dark:bg-black/70'
       )}
       onClick={onClose}
     >
       <div
         className={cn(
           'w-full max-w-xl rounded-2xl border-[1.5px] overflow-hidden',
-          isDark
-            ? 'bg-black/95 backdrop-blur-2xl border-white/[0.08] shadow-2xl shadow-black/50'
-            : 'bg-white backdrop-blur-2xl border-gray-200 shadow-2xl shadow-gray-300/30'
+          'bg-white backdrop-blur-2xl border-gray-200 shadow-2xl shadow-gray-300/30 dark:bg-black/95 dark:backdrop-blur-2xl dark:border-white/[0.08] dark:shadow-2xl dark:shadow-black/50'
         )}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className={cn(
           'flex items-center justify-between px-4 py-3 border-b',
-          isDark ? 'border-white/[0.06]' : 'border-gray-100'
+          'border-gray-100 dark:border-white/[0.06]'
         )}>
           <div className="flex items-center gap-2">
             <div className={cn(
               'w-7 h-7 rounded-lg flex items-center justify-center',
-              isDark ? 'bg-white/10' : 'bg-gray-100'
+              'bg-gray-100 dark:bg-white/10'
             )}>
-              <Shield size={14} className={isDark ? 'text-white/70' : 'text-gray-600'} />
+              <Shield size={14} className={'text-gray-600 dark:text-white/70'} />
             </div>
             <div>
-              <div className={cn('font-bold text-[13px]', isDark ? 'text-white' : 'text-gray-900')}>
+              <div className={cn('font-bold text-[13px]', 'text-gray-900 dark:text-white')}>
                 Get Verified
               </div>
-              <div className={cn('text-[9px]', isDark ? 'text-white/40' : 'text-gray-400')}>
+              <div className={cn('text-[9px]', 'text-gray-400 dark:text-white/40')}>
                 XRPL
               </div>
             </div>
@@ -649,7 +647,7 @@ export default function VerifyBadgeModal({ token, onClose, onSuccess, itemType =
             aria-label="Close"
             className={cn(
               'p-1.5 rounded-lg transition-colors outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
-              isDark ? 'hover:bg-white/10 text-white/50' : 'hover:bg-gray-100 text-gray-400'
+              'hover:bg-gray-100 text-gray-400 dark:hover:bg-white/10 dark:text-white/50'
             )}
           >
             <X size={16} />
@@ -657,7 +655,7 @@ export default function VerifyBadgeModal({ token, onClose, onSuccess, itemType =
         </div>
 
         {/* Step indicator */}
-        <div className={cn('px-4 py-2 border-b', isDark ? 'border-white/[0.04]' : 'border-gray-50')}>
+        <div className={cn('px-4 py-2 border-b', 'border-gray-50 dark:border-white/[0.04]')}>
           <div className="flex items-center justify-between">
             {STEPS.map((s, i) => (
               <div key={s} className="flex items-center">
@@ -665,14 +663,14 @@ export default function VerifyBadgeModal({ token, onClose, onSuccess, itemType =
                   'w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold transition-all',
                   i < step ? 'bg-green-500 text-white' :
                   i === step ? (selectedTier ? `bg-gradient-to-r ${TIERS[selectedTier]?.gradient || 'from-blue-500 to-blue-600'} text-white` : 'bg-blue-500 text-white') :
-                  isDark ? 'bg-white/10 text-white/30' : 'bg-gray-100 text-gray-400'
+                  'bg-gray-100 text-gray-400 dark:bg-white/10 dark:text-white/30'
                 )}>
                   {i < step ? <Check size={10} /> : i + 1}
                 </div>
                 {i < STEPS.length - 1 && (
                   <div className={cn(
                     'w-6 h-0.5 mx-0.5',
-                    i < step ? 'bg-green-500' : isDark ? 'bg-white/10' : 'bg-gray-200'
+                    i < step ? 'bg-green-500' : 'bg-gray-200 dark:bg-white/10'
                   )} />
                 )}
               </div>

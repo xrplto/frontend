@@ -1,26 +1,30 @@
 import React, { useState, useMemo, memo, useRef, useEffect, Fragment } from 'react';
 import { useRouter } from 'next/router';
-import { useContext } from 'react';
-import { ThemeContext } from 'src/context/AppContext';
 import Link from 'next/link';
-import { Search, X, Newspaper, Flame, TrendingUp, Sparkles } from 'lucide-react';
+import { Search, X, Newspaper, Flame, TrendingUp, Sparkles, Coins } from 'lucide-react';
 import { ApiButton } from 'src/components/ApiEndpointsModal';
 import { normalizeTag } from 'src/utils/formatters';
 import { cn } from 'src/utils/cn';
 
 // Styled Components
-const Container = ({ darkMode, className, children, ...p }) => (
+const Container = ({ className, children, ...p }) => (
   <div
     className={cn(
       'st-container flex flex-col gap-2 rounded-xl border-[1.5px] backdrop-blur-[12px] py-[10px] px-[14px] relative box-border overflow-hidden',
       '[&>*]:relative [&>*]:z-[1]',
       'max-sm:py-[6px] max-sm:px-2 max-sm:gap-[6px]',
-      darkMode ? 'border-white/[0.08] bg-[rgba(10,10,10,0.5)]' : 'border-black/[0.06] bg-white/50',
+      'border-black/[0.06] bg-white dark:border-white/[0.08] dark:bg-[rgba(10,10,10,0.5)]',
       className
     )}
     {...p}
   >
     <style>{`
+      .st-rows-selector {
+        background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='rgba(0,0,0,0.5)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+      }
+      .dark .st-rows-selector {
+        background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.6)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+      }
       @media (max-width: 1024px) {
         .st-container { padding: 7px 10px; gap: 5px; }
         .st-tags-row { gap: 4px; }
@@ -83,58 +87,53 @@ const RowContent = ({ className, children, ...p }) => (
   >{children}</div>
 );
 
-const RowsSelector = ({ darkMode, noMargin, className, children, ...p }) => {
-  const bgImage = darkMode
-    ? `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.6)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e")`
-    : `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='rgba(0,0,0,0.5)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e")`;
-  return (
-    <select
-      className={cn(
-        'st-select rounded-lg border-[1.5px] text-xs font-medium cursor-pointer h-8 min-w-[70px] appearance-none transition-[background-color,border-color,opacity] duration-150',
-        'hover:border-blue-500/50 focus:outline-none focus:border-blue-500',
-        'max-sm:text-[0.62rem] max-sm:h-[26px] max-sm:min-w-[48px] max-sm:pl-[6px] max-sm:pr-5',
-        darkMode ? 'border-white/10 bg-black/40 text-white/85 [&_option]:bg-[#0a0a0a] [&_option]:text-[#e5e5e5]' : 'border-black/[0.08] bg-white/90 text-black/70 [&_option]:bg-white [&_option]:text-[#1a1a1a]',
-        darkMode ? 'hover:bg-blue-500/10' : 'hover:bg-blue-500/[0.05]',
-        noMargin ? 'ml-0' : 'ml-auto',
-        className
-      )}
-      style={{
-        padding: '0 28px 0 12px',
-        backgroundImage: bgImage,
-        backgroundRepeat: 'no-repeat',
-        backgroundPosition: 'right 10px center',
-        backgroundSize: '12px'
-      }}
-      {...p}
-    >{children}</select>
-  );
-};
+const RowsSelector = ({ noMargin, className, children, ...p }) => (
+  <select
+    className={cn(
+      'st-select rounded-lg border-[1.5px] text-xs font-medium cursor-pointer h-8 min-w-[70px] appearance-none transition-[background-color,border-color,opacity] duration-150',
+      'hover:border-blue-500/50 focus:outline-none focus:border-blue-500',
+      'max-sm:text-[0.6rem] max-sm:h-[22px] max-sm:min-w-[42px] max-sm:pl-[5px] max-sm:pr-4',
+      'border-black/[0.08] bg-white/90 text-black/70 [&_option]:bg-white [&_option]:text-[#1a1a1a] dark:border-white/10 dark:bg-black/40 dark:text-white/85 dark:[&_option]:bg-[#0a0a0a] dark:[&_option]:text-[#e5e5e5]',
+      'hover:bg-blue-500/[0.05] dark:hover:bg-blue-500/10',
+      noMargin ? 'ml-0' : 'ml-auto',
+      'st-rows-selector',
+      className
+    )}
+    style={{
+      padding: '0 28px 0 12px',
+      backgroundRepeat: 'no-repeat',
+      backgroundPosition: 'right 10px center',
+      backgroundSize: '12px'
+    }}
+    {...p}
+  >{children}</select>
+);
 
 const Stack = ({ className, children, ...p }) => (
   <div className={cn('st-stack flex flex-row gap-[6px] items-center shrink-0 relative z-[1] max-sm:gap-[3px] max-sm:touch-manipulation', className)} {...p}>{children}</div>
 );
 
-const StyledIconButton = ({ darkMode, className, children, ...p }) => (
+const StyledIconButton = ({ className, children, ...p }) => (
   <button
     className={cn(
       'inline-flex items-center justify-center w-[30px] h-[30px] p-0 border-none rounded-lg bg-transparent cursor-pointer transition-[background-color,border-color,opacity] duration-150 shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
       'hover:bg-blue-500/10 hover:text-blue-500',
       'max-sm:w-[26px] max-sm:h-[26px]',
-      darkMode ? 'text-white/50' : 'text-black/40',
+      'text-black/40 dark:text-white/50',
       className
     )}
     {...p}
   >{children}</button>
 );
 
-const ButtonGroup = ({ darkMode, hideOnMobile, className, children, ...p }) => (
+const ButtonGroup = ({ hideOnMobile, className, children, ...p }) => (
   <div
     className={cn(
       'flex gap-[2px] shrink-0 p-[3px] rounded-lg border-none',
-      darkMode ? 'bg-white/[0.04]' : 'bg-black/[0.03]',
+      'bg-black/[0.03] dark:bg-white/[0.04]',
       '[&>button]:rounded-[6px] [&>button]:border-none [&>button]:min-w-[36px] [&>button]:h-6 [&>button]:px-[10px] [&>button]:text-[0.72rem] [&>button]:font-normal [&>button]:bg-transparent [&>button]:cursor-pointer [&>button]:inline-flex [&>button]:items-center [&>button]:justify-center [&>button]:gap-1 [&>button]:touch-manipulation [&>button]:transition-[background-color,border-color,opacity] [&>button]:duration-150',
-      darkMode ? '[&>button]:text-white/60 [&>button:hover]:text-white/90 [&>button:hover]:bg-white/[0.06]' : '[&>button]:text-black/50 [&>button:hover]:text-black/80 [&>button:hover]:bg-black/[0.04]',
-      darkMode ? '[&>button.selected]:bg-white/95 [&>button.selected]:text-[#111] [&>button.selected]:font-medium [&>button.selected]:shadow-[0_1px_2px_rgba(0,0,0,0.08)] [&>button.selected:hover]:bg-white' : '[&>button.selected]:bg-white [&>button.selected]:text-[#333] [&>button.selected]:font-medium [&>button.selected]:shadow-[0_1px_2px_rgba(0,0,0,0.08)] [&>button.selected:hover]:bg-white',
+      '[&>button]:text-black/50 [&>button:hover]:text-black/80 [&>button:hover]:bg-black/[0.04] dark:[&>button]:text-white/60 dark:[&>button:hover]:text-white/90 dark:[&>button:hover]:bg-white/[0.06]',
+      '[&>button.selected]:bg-white [&>button.selected]:text-[#333] [&>button.selected]:font-medium [&>button.selected]:shadow-[0_1px_2px_rgba(0,0,0,0.08)] [&>button.selected:hover]:bg-white dark:[&>button.selected]:bg-white/95 dark:[&>button.selected]:text-[#111] dark:[&>button.selected]:font-medium dark:[&>button.selected]:shadow-[0_1px_2px_rgba(0,0,0,0.08)] dark:[&>button.selected:hover]:bg-white',
       hideOnMobile && 'max-sm:hidden',
       !hideOnMobile && 'max-sm:p-[2px] max-sm:[&>button]:min-w-[28px] max-sm:[&>button]:h-[22px] max-sm:[&>button]:px-[7px] max-sm:[&>button]:text-[0.65rem] max-sm:[&>button]:gap-[2px]',
       className
@@ -143,53 +142,51 @@ const ButtonGroup = ({ darkMode, hideOnMobile, className, children, ...p }) => (
   >{children}</div>
 );
 
-const LaunchpadGroup = ({ darkMode, className, children, ...p }) => (
+const LaunchpadGroup = ({ className, children, ...p }) => (
   <div
-    className={cn('st-lp-group inline-flex items-center gap-[2px] py-[3px] pl-2 pr-[6px] rounded-[6px] border ml-2', darkMode ? 'bg-white/[0.06] border-white/[0.12]' : 'bg-black/[0.04] border-black/[0.1]', className)}
+    className={cn('st-lp-group inline-flex items-center gap-[2px] py-[3px] pl-2 pr-[6px] rounded-[6px] border ml-2', 'bg-black/[0.04] border-black/[0.1] dark:bg-white/[0.06] dark:border-white/[0.12]', className)}
     {...p}
   >{children}</div>
 );
 
-const LaunchpadLabel = ({ darkMode, className, children, ...p }) => (
+const LaunchpadLabel = ({ className, children, ...p }) => (
   <span
-    className={cn('st-lp-label text-[0.6rem] font-semibold uppercase tracking-[0.05em] mr-1', darkMode ? 'text-white/60' : 'text-black/60', className)}
+    className={cn('st-lp-label text-[0.6rem] font-semibold uppercase tracking-[0.05em] mr-1', 'text-black/60 dark:text-white/60', className)}
     {...p}
   >{children}</span>
 );
 
-const LaunchpadChip = ({ selected, darkMode, className, children, ...p }) => (
+const LaunchpadChip = ({ selected, className, children, ...p }) => (
   <button
     className={cn(
       'st-lp-chip inline-flex items-center px-[6px] border-none rounded text-[0.65rem] cursor-pointer whitespace-nowrap h-5 shrink-0 transition-[background-color,border-color,opacity] duration-150',
       'hover:bg-blue-500/10 hover:text-blue-500',
-      selected ? 'bg-blue-500/[0.15] text-blue-500 font-medium' : cn('bg-transparent', darkMode ? 'text-white/60 font-normal' : 'text-[#212B36]/60 font-normal'),
+      selected ? 'bg-blue-500/[0.15] text-blue-500 font-medium' : 'bg-transparent text-[#212B36]/60 font-normal dark:text-white/60',
       className
     )}
     {...p}
   >{children}</button>
 );
 
-const TagChip = ({ selected, darkMode, className, children, ...p }) => (
+const TagChip = ({ selected, className, children, ...p }) => (
   <button
     className={cn(
-      'st-tag inline-flex items-center gap-[3px] px-2 rounded-[6px] border text-[0.68rem] cursor-pointer whitespace-nowrap h-6 shrink-0 transition-[background-color,border-color,opacity] duration-150',
+      'st-tag inline-flex items-center gap-[3px] px-2 rounded-[6px] border text-[0.68rem] cursor-pointer whitespace-nowrap h-6 shrink-0 transition-[background-color,border-color,opacity] duration-150 max-sm:text-[0.6rem] max-sm:h-[22px] max-sm:px-[6px] max-sm:gap-[2px]',
       selected
         ? 'border-blue-500/30 bg-blue-500/10 text-blue-500 font-medium hover:bg-blue-500/[0.15]'
-        : cn(
-            darkMode ? 'border-white/[0.08] bg-white/[0.04] text-white/70 font-normal hover:bg-white/[0.08] hover:text-white/90' : 'border-black/[0.08] bg-black/[0.02] text-[#212B36]/70 font-normal hover:bg-black/[0.05] hover:text-[#212B36]/90'
-          ),
+        : 'border-black/[0.08] bg-black/[0.02] text-[#212B36]/70 font-normal hover:bg-black/[0.05] hover:text-[#212B36]/90 dark:border-white/[0.08] dark:bg-white/[0.04] dark:text-white/70 dark:hover:bg-white/[0.08] dark:hover:text-white/90',
       className
     )}
     {...p}
   >{children}</button>
 );
 
-const AllTagsButton = ({ darkMode, className, children, ...p }) => (
+const AllTagsButton = ({ className, children, ...p }) => (
   <button
     className={cn(
       'st-all-btn inline-flex items-center gap-1 px-2 border-[1.5px] rounded-[6px] text-blue-500 text-[0.68rem] font-medium cursor-pointer whitespace-nowrap h-6 shrink-0 ml-auto transition-[background-color,border-color,opacity] duration-150 hover:bg-blue-500/[0.15]',
       'max-sm:text-[0.62rem] max-sm:h-[22px] max-sm:px-[6px] max-sm:gap-[2px]',
-      darkMode ? 'bg-blue-500/[0.08] border-blue-500/20' : 'bg-blue-500/[0.05] border-blue-500/15',
+      'bg-blue-500/[0.05] border-blue-500/15 dark:bg-blue-500/[0.08] dark:border-blue-500/20',
       className
     )}
     {...p}
@@ -201,34 +198,42 @@ const Drawer = ({ open, className, children, ...p }) => (
 );
 
 const DrawerBackdrop = ({ className, children, ...p }) => (
-  <div className={cn('fixed inset-0 bg-black/60 backdrop-blur-[4px]', className)} {...p}>{children}</div>
+  <div className={cn('fixed inset-0 bg-black/60 backdrop-blur-[4px] animate-[fadeIn_0.2s_ease-out]', className)} {...p}>
+    <style>{`@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }`}</style>
+    {children}
+  </div>
 );
 
-const DrawerPaper = ({ isDark, className, children, ...p }) => (
+const DrawerPaper = ({ className, children, ...p }) => (
   <div
     className={cn(
       'fixed bottom-0 left-0 right-0 max-h-[70dvh] pb-[env(safe-area-inset-bottom)] backdrop-blur-[24px] rounded-t-xl border-t overflow-hidden flex flex-col z-[1301]',
-      isDark ? 'bg-black/85 border-blue-500/20 shadow-[0_-25px_50px_-12px_rgba(59,130,246,0.1)]' : 'bg-white/[0.98] border-blue-200 shadow-[0_-25px_50px_-12px_rgba(191,219,254,0.5)]',
+      'bg-white/[0.98] border-blue-200 shadow-[0_-25px_50px_-12px_rgba(191,219,254,0.5)] dark:bg-black/85 dark:border-blue-500/20 dark:shadow-[0_-25px_50px_-12px_rgba(59,130,246,0.1)]',
+      'animate-[slideUp_0.25s_ease-out]',
       className
     )}
+    style={{ '--tw-enter-translate-y': '100%' }}
     {...p}
-  >{children}</div>
+  >
+    <style>{`@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }`}</style>
+    {children}
+  </div>
 );
 
 const DrawerHeader = ({ className, children, ...p }) => (
   <div className={cn('flex items-center justify-between p-4', className)} {...p}>{children}</div>
 );
 
-const DrawerTitle = ({ isDark, className, children, ...p }) => (
-  <h2 className={cn('font-medium text-[15px] m-0', isDark ? 'text-white' : 'text-[#212B36]', className)} {...p}>{children}</h2>
+const DrawerTitle = ({ className, children, ...p }) => (
+  <h2 className={cn('font-medium text-[15px] m-0', 'text-[#212B36] dark:text-white', className)} {...p}>{children}</h2>
 );
 
-const DrawerClose = ({ isDark, className, children, ...p }) => (
+const DrawerClose = ({ className, children, ...p }) => (
   <button
     className={cn(
       'w-8 h-8 border-[1.5px] rounded-lg bg-transparent cursor-pointer flex items-center justify-center transition-[background-color,border-color,opacity] duration-150 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
       'hover:border-blue-400/50 hover:text-[#4285f4]',
-      isDark ? 'border-white/10 text-white/40' : 'border-black/10 text-black/40',
+      'border-black/10 text-black/40 dark:border-white/10 dark:text-white/40',
       className
     )}
     {...p}
@@ -239,33 +244,32 @@ const SearchBox = ({ className, children, ...p }) => (
   <div className={cn('py-3 px-4', className)} {...p}>{children}</div>
 );
 
-const SearchInputWrapper = ({ isDark, className, children, ...p }) => (
+const SearchInputWrapper = ({ className, children, ...p }) => (
   <div
     className={cn(
       'flex items-center gap-3 h-10 px-4 rounded-xl border-[1.5px] transition-[border-color] duration-200',
-      isDark
-        ? 'border-blue-500/[0.08] bg-white/[0.02] hover:border-blue-500/20 focus-within:border-blue-500/40'
-        : 'border-black/[0.08] bg-white hover:border-blue-500/30 focus-within:border-blue-500/50',
+      'border-black/[0.08] bg-white hover:border-blue-500/30 focus-within:border-blue-500/50 dark:border-blue-500/[0.08] dark:bg-white/[0.02] dark:hover:border-blue-500/20 dark:focus-within:border-blue-500/40',
       className
     )}
     {...p}
   >{children}</div>
 );
 
-const SearchIconWrapper = ({ isDark, className, children, ...p }) => (
-  <div className={cn('flex items-center justify-center shrink-0', isDark ? 'text-white/40' : 'text-black/40', className)} {...p}>{children}</div>
+const SearchIconWrapper = ({ className, children, ...p }) => (
+  <div className={cn('flex items-center justify-center shrink-0', 'text-black/40 dark:text-white/40', className)} {...p}>{children}</div>
 );
 
-const SearchInput = ({ isDark, className, ...p }) => (
+const SearchInput = React.forwardRef(({ className, ...p }, ref) => (
   <input
+    ref={ref}
     className={cn(
       'flex-1 bg-transparent border-none outline-none text-sm max-sm:text-base font-[inherit] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
-      isDark ? 'text-white placeholder:text-white/50' : 'text-[#212B36] placeholder:text-[#212B36]/40',
+      'text-[#212B36] placeholder:text-[#212B36]/40 dark:text-white dark:placeholder:text-white/50',
       className
     )}
     {...p}
   />
-);
+));
 
 const TagsGrid = ({ className, children, ...p }) => (
   <div
@@ -279,29 +283,30 @@ const TagsGrid = ({ className, children, ...p }) => (
   >{children}</div>
 );
 
-const TagButton = ({ isDark, className, children, ...p }) => (
+const TagButton = ({ className, children, ...p }) => (
   <button
     className={cn(
       'inline-flex items-center justify-center py-1 px-3 border rounded-lg bg-transparent text-xs font-normal cursor-pointer font-[inherit] whitespace-nowrap h-7 shrink-0 transition-[background-color,border-color,opacity] duration-200',
       'hover:bg-blue-500/[0.08] hover:border-blue-500/30 hover:text-blue-500',
       'max-sm:h-8 max-sm:py-1 max-sm:px-[14px] max-sm:text-[0.8rem]',
-      isDark ? 'border-white/[0.08] text-white/70' : 'border-black/[0.08] text-[#212B36]/70',
+      'border-black/[0.08] text-[#212B36]/70 dark:border-white/[0.08] dark:text-white/70',
       className
     )}
     {...p}
   >{children}</button>
 );
 
-const EmptyState = ({ isDark, className, children, ...p }) => (
+const EmptyState = ({ className, children, ...p }) => (
   <div
-    className={cn('w-full text-center py-8 text-sm', isDark ? 'text-white/50' : 'text-[#212B36]/50', className)}
+    className={cn('w-full text-center py-8 text-sm', 'text-[#212B36]/50 dark:text-white/50', className)}
     {...p}
   >{children}</div>
 );
 
 // Categories Drawer Content Component
-const CategoriesDrawerContent = memo(function CategoriesDrawerContent({ tags, darkMode }) {
+const CategoriesDrawerContent = memo(function CategoriesDrawerContent({ tags, tagName }) {
   const [searchTerm, setSearchTerm] = useState('');
+  const searchRef = useRef(null);
 
   const filteredTags = useMemo(() => {
     if (!tags) return [];
@@ -310,37 +315,58 @@ const CategoriesDrawerContent = memo(function CategoriesDrawerContent({ tags, da
     return tags.filter((tag) => tag.toLowerCase().includes(term));
   }, [tags, searchTerm]);
 
+  useEffect(() => {
+    // Auto-focus search on open
+    const t = setTimeout(() => searchRef.current?.focus(), 100);
+    return () => clearTimeout(t);
+  }, []);
+
   return (
     <>
       {tags && tags.length > 0 && (
-        <SearchBox isDark={darkMode}>
-          <SearchInputWrapper isDark={darkMode}>
-            <SearchIconWrapper isDark={darkMode}>
+        <SearchBox>
+          <SearchInputWrapper>
+            <SearchIconWrapper>
               <Search size={16} />
             </SearchIconWrapper>
             <SearchInput
+              ref={searchRef}
               type="search"
               placeholder="Search categories..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               autoComplete="off"
-              isDark={darkMode}
             />
+            {searchTerm && (
+              <button
+                onClick={() => { setSearchTerm(''); searchRef.current?.focus(); }}
+                className="flex items-center justify-center w-6 h-6 rounded-md bg-transparent border-none cursor-pointer shrink-0 text-black/30 hover:text-black/60 dark:text-white/30 dark:hover:text-white/60 transition-colors"
+                aria-label="Clear search"
+              >
+                <X size={14} />
+              </button>
+            )}
           </SearchInputWrapper>
         </SearchBox>
       )}
 
-      <TagsGrid isDark={darkMode}>
+      <TagsGrid>
         {filteredTags.length > 0 ? (
-          filteredTags.map((tag) => (
-            <Link key={tag} href={`/view/${normalizeTag(tag)}`} className="no-underline">
-              <TagButton isDark={darkMode} onClick={() => {}}>
-                {tag}
-              </TagButton>
-            </Link>
-          ))
+          filteredTags.map((tag) => {
+            const isActive = tagName === tag;
+            return (
+              <Link key={tag} href={`/view/${normalizeTag(tag)}`} className="no-underline">
+                <TagButton
+                  className={isActive ? '!border-blue-500/30 !bg-blue-500/10 !text-blue-500 font-medium' : ''}
+                  onClick={() => {}}
+                >
+                  {tag}
+                </TagButton>
+              </Link>
+            );
+          })
         ) : (
-          <EmptyState isDark={darkMode}>
+          <EmptyState>
             {searchTerm ? 'No matching categories' : 'No categories available'}
           </EmptyState>
         )}
@@ -378,7 +404,6 @@ const SearchToolbar = memo(function SearchToolbar({
   skipSortPersist
 }) {
   const router = useRouter();
-  const { darkMode } = useContext(ThemeContext);
 
   const [categoriesOpen, setCategoriesOpen] = useState(false);
   const containerRef = useRef(null);
@@ -456,7 +481,7 @@ const SearchToolbar = memo(function SearchToolbar({
 
   return (
     <Fragment>
-      <Container darkMode={darkMode} ref={containerRef}>
+      <Container ref={containerRef}>
         {/* Top Categories - first row */}
         {tags && tags.length > 0 && (
           <TagsRow>
@@ -477,7 +502,6 @@ const SearchToolbar = memo(function SearchToolbar({
                     data-tag="true"
                     onClick={() => (window.location.href = `/view/${normalizedTag}`)}
                     selected={isSelected}
-                    darkMode={darkMode}
                   >
                     <span>{tag}</span>
                   </TagChip>
@@ -487,7 +511,7 @@ const SearchToolbar = memo(function SearchToolbar({
 
             {/* All Tags Button - always visible, never hidden by scroll */}
             <AllButtonWrapper>
-              <AllTagsButton onClick={() => setCategoriesOpen(true)} darkMode={darkMode}>
+              <AllTagsButton onClick={() => setCategoriesOpen(true)}>
                 <span>All {tags.length > visibleTagCount ? `(${tags.length})` : ''}</span>
               </AllTagsButton>
             </AllButtonWrapper>
@@ -501,16 +525,17 @@ const SearchToolbar = memo(function SearchToolbar({
             <TagChip
               onClick={() => (window.location.href = '/')}
               selected={currentView === 'tokens'}
-              darkMode={darkMode}
+              className={currentView !== 'tokens' ? 'max-sm:[&>span]:hidden' : ''}
             >
-              Tokens
+              <Coins size={13} />
+              <span>Tokens</span>
             </TagChip>
 
             {/* Discovery items */}
             <TagChip
               onClick={() => (window.location.href = '/new')}
               selected={currentView === 'new'}
-              darkMode={darkMode}
+              className={currentView !== 'new' ? 'max-sm:[&>span]:hidden' : ''}
             >
               <Newspaper size={13} />
               <span>New</span>
@@ -518,7 +543,7 @@ const SearchToolbar = memo(function SearchToolbar({
             <TagChip
               onClick={() => (window.location.href = '/trending')}
               selected={currentView === 'trending'}
-              darkMode={darkMode}
+              className={currentView !== 'trending' ? 'max-sm:[&>span]:hidden' : ''}
             >
               <Flame size={13} />
               <span>Trending</span>
@@ -526,7 +551,7 @@ const SearchToolbar = memo(function SearchToolbar({
             <TagChip
               onClick={() => (window.location.href = '/gainers/24h')}
               selected={currentView === 'gainers'}
-              darkMode={darkMode}
+              className={currentView !== 'gainers' ? 'max-sm:[&>span]:hidden' : ''}
             >
               <TrendingUp size={13} />
               <span>Gainers</span>
@@ -534,15 +559,15 @@ const SearchToolbar = memo(function SearchToolbar({
             <TagChip
               onClick={() => (window.location.href = '/spotlight')}
               selected={currentView === 'spotlight'}
-              darkMode={darkMode}
+              className={currentView !== 'spotlight' ? 'max-sm:[&>span]:hidden' : ''}
             >
               <Sparkles size={13} />
               <span>Spotlight</span>
             </TagChip>
 
             {/* Launchpads group */}
-            <LaunchpadGroup darkMode={darkMode}>
-              <LaunchpadLabel darkMode={darkMode}>Launchpads</LaunchpadLabel>
+            <LaunchpadGroup>
+              <LaunchpadLabel>Launchpads</LaunchpadLabel>
               {[
                 { slug: 'firstledger', name: 'FirstLedger' },
                 { slug: 'magnetic-x', name: 'Magnetic X' },
@@ -556,7 +581,6 @@ const SearchToolbar = memo(function SearchToolbar({
                   key={lp.slug}
                   onClick={() => (window.location.href = `/view/${lp.slug}`)}
                   selected={router.query.tag === lp.slug}
-                  darkMode={darkMode}
                 >
                   {lp.name}
                 </LaunchpadChip>
@@ -566,7 +590,7 @@ const SearchToolbar = memo(function SearchToolbar({
             {/* Period selector for gainers or price change sorting */}
             {(currentView === 'gainers' ||
               ['pro5m', 'pro1h', 'pro24h', 'pro7d'].includes(currentOrderBy)) && (
-              <ButtonGroup darkMode={darkMode}>
+              <ButtonGroup>
                 <button
                   className={currentPeriod === '5m' ? 'selected' : ''}
                   onClick={() => {
@@ -624,10 +648,9 @@ const SearchToolbar = memo(function SearchToolbar({
           </RowContent>
 
           {/* Sort and rows selectors on the right */}
-          <Stack className="ml-auto gap-[6px]">
+          <Stack className="ml-auto gap-[6px] max-sm:gap-1">
             {/* Sort By Selector */}
             <RowsSelector
-              darkMode={darkMode}
               value={currentOrderBy}
               onChange={(e) => {
                 setOrderBy(e.target.value);
@@ -637,16 +660,16 @@ const SearchToolbar = memo(function SearchToolbar({
               noMargin
               aria-label="Sort by"
             >
-              <option value="vol24hxrp">{isMobile ? 'Volume 24h' : 'Volume 24h'}</option>
+              <option value="vol24hxrp">{isMobile ? 'Vol 24h' : 'Volume 24h'}</option>
               <option value="marketcap">{isMobile ? 'MCap' : 'Market Cap'}</option>
-              <option value="pro5m">{isMobile ? 'Change 5m' : 'Change 5m'}</option>
-              <option value="pro1h">{isMobile ? 'Change 1h' : 'Change 1h'}</option>
-              <option value="pro24h">{isMobile ? 'Change 24h' : 'Change 24h'}</option>
-              <option value="pro7d">{isMobile ? 'Change 7d' : 'Change 7d'}</option>
+              <option value="pro5m">{isMobile ? '5m' : 'Change 5m'}</option>
+              <option value="pro1h">{isMobile ? '1h' : 'Change 1h'}</option>
+              <option value="pro24h">{isMobile ? '24h' : 'Change 24h'}</option>
+              <option value="pro7d">{isMobile ? '7d' : 'Change 7d'}</option>
               <option value="tvl">{isMobile ? 'Liq.' : 'Liquidity'}</option>
-              <option value="holders">Holders</option>
+              <option value="holders">{isMobile ? 'Hold.' : 'Holders'}</option>
               <option value="vol24htx">Trades</option>
-              <option value="dateon">Newest</option>
+              <option value="dateon">{isMobile ? 'New' : 'Newest'}</option>
             </RowsSelector>
 
             {/* Rows selector */}
@@ -656,7 +679,6 @@ const SearchToolbar = memo(function SearchToolbar({
               </label>
               <RowsSelector
                 id="rows-per-page-select"
-                darkMode={darkMode}
                 value={rows}
                 onChange={(e) => setRows(parseInt(e.target.value))}
                 noMargin
@@ -678,30 +700,27 @@ const SearchToolbar = memo(function SearchToolbar({
       {categoriesOpen && (
         <Drawer open={categoriesOpen}>
           <DrawerBackdrop onClick={() => setCategoriesOpen(false)} />
-          <DrawerPaper isDark={darkMode}>
-            <DrawerHeader isDark={darkMode}>
-              <div className="flex items-center gap-4 flex-1">
+          <DrawerPaper>
+            <DrawerHeader>
+              <div className="flex items-center gap-3 flex-1 min-w-0">
                 <span className="text-[11px] font-semibold uppercase tracking-[0.1em] text-blue-500 whitespace-nowrap">
-                  Categories {tags?.length ? `(${tags.length})` : ''}
+                  Categories
                 </span>
-                <div
-                  className="flex-1 h-[14px] bg-[length:8px_5px]"
-                  style={{
-                    backgroundImage: darkMode
-                      ? 'radial-gradient(circle, rgba(96,165,250,0.4) 1px, transparent 1px)'
-                      : 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)'
-                  }}
-                />
+                {tags?.length > 0 && (
+                  <span className="text-[10px] font-medium tabular-nums px-[6px] py-[1px] rounded-full bg-blue-500/10 text-blue-500/70 dark:bg-blue-500/15 dark:text-blue-400/80">
+                    {tags.length}
+                  </span>
+                )}
+                <div className="flex-1 h-px bg-black/[0.06] dark:bg-white/[0.08]" />
               </div>
               <DrawerClose
-                isDark={darkMode}
                 onClick={() => setCategoriesOpen(false)}
                 aria-label="Close"
               >
                 <X size={18} />
               </DrawerClose>
             </DrawerHeader>
-            <CategoriesDrawerContent tags={tags} darkMode={darkMode} />
+            <CategoriesDrawerContent tags={tags} tagName={tagName} />
           </DrawerPaper>
         </Drawer>
       )}

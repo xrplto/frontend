@@ -51,7 +51,7 @@ import { ConnectWallet } from 'src/components/Wallet';
 
 // Constants
 const PLATFORM_FEE_ADDRESS = 'rxrpLTomVR5DpqHbro9J36jUAw8Pzsku8';
-const PLATFORM_FEE_RATE = 0.0008; // 0.08%
+const PLATFORM_FEE_RATE = 0.004; // 0.4% (launch special)
 
 const currencySymbols = {
   USD: '$ ',
@@ -86,16 +86,14 @@ const fmtStat = (n) => {
   return Math.round(n).toLocaleString();
 };
 
-const ExchangeButton = memo(({ onClick, disabled, children, isDark, className, ...props }) => (
+const ExchangeButton = memo(({ onClick, disabled, children, className, ...props }) => (
   <button
     onClick={onClick}
     disabled={disabled}
     className={cn(
       'w-full rounded-xl border-[1.5px] px-4 py-3 text-[14px] font-normal tracking-wide transition-colors',
       disabled
-        ? isDark
-          ? 'cursor-not-allowed border-gray-700 bg-gray-800 text-gray-500'
-          : 'cursor-not-allowed border-gray-300 bg-gray-100 text-gray-400'
+        ? 'cursor-not-allowed border-gray-300 bg-gray-100 text-gray-400 dark:cursor-not-allowed dark:border-gray-700 dark:bg-gray-800 dark:text-gray-500'
         : 'border-primary bg-primary text-white hover:bg-primary/90',
       'sm:py-2.5 sm:text-[13px]',
       className
@@ -106,7 +104,7 @@ const ExchangeButton = memo(({ onClick, disabled, children, isDark, className, .
   </button>
 ));
 
-const AllowButton = memo(({ onClick, children, isDark, className, ...props }) => (
+const AllowButton = memo(({ onClick, children, className, ...props }) => (
   <button
     onClick={onClick}
     className={cn(
@@ -120,12 +118,12 @@ const AllowButton = memo(({ onClick, children, isDark, className, ...props }) =>
   </button>
 ));
 
-const ToggleButton = memo(({ onClick, isDark, isSwitching, children, ...props }) => (
+const ToggleButton = memo(({ onClick, isSwitching, children, ...props }) => (
   <button
     onClick={onClick}
     className={cn(
       'absolute left-1/2 top-1/2 z-[2] h-7 w-7 -translate-x-1/2 -translate-y-1/2 rounded-lg border-[1.5px] transition-all',
-      isDark ? 'border-white/[0.08] bg-black' : 'border-gray-200 bg-white',
+      'border-gray-200 bg-white dark:border-white/[0.08] dark:bg-black',
       'hover:border-primary hover:bg-primary hover:text-white',
       isSwitching && 'rotate-180'
     )}
@@ -147,7 +145,7 @@ const getPriceImpactSeverity = (impact) => {
   return 'High';
 };
 
-const WalletDisplay = memo(({ isDark, children, ...props }) => (
+const WalletDisplay = memo(({ children, ...props }) => (
   <div
     className={cn(
       'mb-2 flex items-center justify-between rounded-lg border-[1.5px] px-2.5 py-2 transition-colors',
@@ -181,11 +179,11 @@ const WalletDetails = ({ children, ...props }) => (
   </div>
 );
 
-const WalletAddress = ({ isDark, children, ...props }) => (
+const WalletAddress = ({ children, ...props }) => (
   <span
     className={cn(
       'text-[12px] font-medium leading-tight sm:text-[11px]',
-      isDark ? 'text-white' : 'text-black'
+      'text-black dark:text-white'
     )}
     {...props}
   >
@@ -2504,9 +2502,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
       onClick={() => handleSelectToken(token, isToken1)}
       className={cn(
         'flex items-center gap-3 px-3 py-3 rounded-xl cursor-pointer transition-all duration-150',
-        darkMode
-          ? 'hover:bg-white/[0.06] hover:border-white/[0.08] border border-transparent'
-          : 'hover:bg-gray-100/80 hover:border-gray-200/60 border border-transparent'
+        'hover:bg-gray-100/80 hover:border-gray-200/60 border border-transparent dark:hover:bg-white/[0.06] dark:hover:border-white/[0.08] dark:border dark:border-transparent'
       )}
     >
       <img
@@ -2520,21 +2516,21 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-1.5">
           <span
-            className={cn('text-[14px] font-medium', darkMode ? 'text-white' : 'text-gray-900')}
+            className={cn('text-[14px] font-medium', 'text-gray-900 dark:text-white')}
           >
             {token.user || token.name || token.currency}
           </span>
           {(token.kyc || token.isOMCF === 'yes') && (
             <CheckCircle size={14} className="text-primary flex-shrink-0" />
           )}
-          <span className={cn('text-[12px]', darkMode ? 'text-white/40' : 'text-gray-500')}>
+          <span className={cn('text-[12px]', 'text-gray-500 dark:text-white/40')}>
             {token.name || token.currency}
           </span>
         </div>
         <p
           className={cn(
             'text-[11px] font-mono truncate mt-0.5',
-            darkMode ? 'text-white/25' : 'text-gray-400'
+            'text-gray-400 dark:text-white/25'
           )}
         >
           {token.issuer || 'XRPL'}
@@ -2545,20 +2541,20 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
           <span
             className={cn(
               'text-[13px] font-medium tabular-nums',
-              token.pro24h > 0 ? 'text-green-500' : token.pro24h < 0 ? 'text-red-500' : darkMode ? 'text-white/70' : 'text-gray-600'
+              token.pro24h > 0 ? 'text-green-500' : token.pro24h < 0 ? 'text-red-500' : 'text-gray-600 dark:text-white/70'
             )}
           >
             {token.pro24h > 0 ? '+' : ''}{token.pro24h.toFixed(1)}%
           </span>
         ) : (
-          <span className={cn('text-[13px] font-medium tabular-nums', darkMode ? 'text-white/70' : 'text-gray-600')}>
+          <span className={cn('text-[13px] font-medium tabular-nums', 'text-gray-600 dark:text-white/70')}>
             {token.holders?.toLocaleString() || '-'}
           </span>
         )}
         <p
           className={cn(
             'text-[9px] uppercase tracking-wide',
-            darkMode ? 'text-white/30' : 'text-gray-400'
+            'text-gray-400 dark:text-white/30'
           )}
         >
           {token.pro24h !== undefined && token.pro24h !== null ? '24h' : 'Holders'}
@@ -2579,9 +2575,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
         className={cn(
           'flex items-center gap-2 rounded-xl px-3 py-2 transition-all',
           'border-[1.5px] bg-transparent cursor-pointer',
-          darkMode
-            ? 'border-white/[0.08] hover:border-primary/30 hover:bg-white/[0.02]'
-            : 'border-gray-200 hover:border-primary/30 hover:bg-gray-50'
+          'border-gray-200 hover:border-primary/30 hover:bg-gray-50 dark:border-white/[0.08] dark:hover:border-primary/30 dark:hover:bg-white/[0.02]'
         )}
       >
         <div className="relative flex-shrink-0">
@@ -2599,7 +2593,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
             </div>
           )}
         </div>
-        <span className={cn('text-[14px] font-normal', darkMode ? 'text-white' : 'text-gray-900')}>
+        <span className={cn('text-[14px] font-normal', 'text-gray-900 dark:text-white')}>
           {name || 'Select'}
         </span>
         <ChevronDown size={16} className="text-primary ml-auto" />
@@ -2614,7 +2608,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
         onClick={onClose}
         className={cn(
           'fixed inset-0 z-[1200]',
-          darkMode ? 'bg-black/70 backdrop-blur-md' : 'bg-white/60 backdrop-blur-md'
+          'bg-white/60 backdrop-blur-md dark:bg-black/70 dark:backdrop-blur-md'
         )}
       />
 
@@ -2622,19 +2616,17 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
       <div
         className={cn(
           'fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[800px] max-sm:max-w-[calc(100vw-32px)] rounded-[2rem] overflow-hidden max-h-[85dvh] flex flex-col z-[1201]',
-          darkMode
-            ? 'bg-black/90 backdrop-blur-3xl border-[1.5px] border-white/[0.08] shadow-2xl shadow-black/80'
-            : 'bg-white/95 backdrop-blur-3xl border-[1.5px] border-gray-200/60 shadow-2xl shadow-gray-400/20'
+          'bg-white/95 backdrop-blur-3xl border-[1.5px] border-gray-200/60 shadow-2xl shadow-gray-400/20 dark:bg-black/90 dark:backdrop-blur-3xl dark:border-[1.5px] dark:border-white/[0.08] dark:shadow-2xl dark:shadow-black/80'
         )}
       >
         {/* Search Header */}
         <div
           className={cn(
             'flex items-center gap-4 px-6 h-[70px] border-b',
-            darkMode ? 'border-white/[0.06]' : 'border-gray-200/60'
+            'border-gray-200/60 dark:border-white/[0.06]'
           )}
         >
-          <Search size={20} className={darkMode ? 'text-primary/60' : 'text-primary/60'} />
+          <Search size={20} className={'text-primary/60 dark:text-primary/60'} />
           <input
             ref={searchInputRef}
             value={searchQuery}
@@ -2643,9 +2635,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
             aria-label="Search tokens"
             className={cn(
               'flex-1 bg-transparent text-[16px] font-medium outline-none',
-              darkMode
-                ? 'text-white placeholder:text-white/20'
-                : 'text-gray-900 placeholder:text-gray-300'
+              'text-gray-900 placeholder:text-gray-300 dark:text-white dark:placeholder:text-white/20'
             )}
           />
           <button
@@ -2653,7 +2643,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
             aria-label="Close token selector"
             className={cn(
               'p-2 rounded-xl transition-all outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
-              darkMode ? 'hover:bg-white/5 text-white/40' : 'hover:bg-gray-100 text-gray-400'
+              'hover:bg-gray-100 text-gray-400 dark:hover:bg-white/5 dark:text-white/40'
             )}
           >
             <X size={20} />
@@ -2665,7 +2655,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
         <div
           className={cn(
             'flex flex-wrap gap-1.5 px-4 py-2 border-b',
-            darkMode ? 'border-white/[0.06]' : 'border-gray-200/60'
+            'border-gray-200/60 dark:border-white/[0.06]'
           )}
         >
           {categories.slice(0, 6).map((cat) => (
@@ -2676,9 +2666,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                 'px-3 py-1.5 text-[11px] font-medium rounded-lg transition-colors',
                 selectedCategory === cat.value
                   ? 'bg-primary text-white'
-                  : darkMode
-                    ? 'text-white/50 hover:text-white hover:bg-white/[0.05]'
-                    : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'
+                  : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100 dark:text-white/50 dark:hover:text-white dark:hover:bg-white/[0.05]'
               )}
             >
               {cat.label}
@@ -2690,7 +2678,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
         <div
           className={cn(
             'flex-1 overflow-y-auto overflow-x-hidden',
-            darkMode ? 'bg-black/20' : 'bg-gray-50/50'
+            'bg-gray-50/50 dark:bg-black/20'
           )}
           style={{ scrollbarWidth: 'none' }}
         >
@@ -2704,9 +2692,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                 <div
                   className="flex-1 h-[14px]"
                   style={{
-                    backgroundImage: darkMode
-                      ? 'radial-gradient(circle, rgba(96,165,250,0.4) 1px, transparent 1px)'
-                      : 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)',
+                    backgroundImage: isDark ? 'radial-gradient(circle, rgba(96,165,250,0.4) 1px, transparent 1px)' : 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)',
                     backgroundSize: '8px 5px',
                     WebkitMaskImage: 'linear-gradient(90deg, black 0%, transparent 100%)',
                     maskImage: 'linear-gradient(90deg, black 0%, transparent 100%)'
@@ -2736,9 +2722,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
               <div
                 className="flex-1 h-[14px]"
                 style={{
-                  backgroundImage: darkMode
-                    ? 'radial-gradient(circle, rgba(96,165,250,0.4) 1px, transparent 1px)'
-                    : 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)',
+                  backgroundImage: isDark ? 'radial-gradient(circle, rgba(96,165,250,0.4) 1px, transparent 1px)' : 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)',
                   backgroundSize: '8px 5px',
                   WebkitMaskImage: 'linear-gradient(90deg, black 0%, transparent 100%)',
                   maskImage: 'linear-gradient(90deg, black 0%, transparent 100%)'
@@ -2756,25 +2740,25 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                     <div
                       className={cn(
                         'w-9 h-9 rounded-full',
-                        darkMode ? 'bg-white/10' : 'bg-gray-200'
+                        'bg-gray-200 dark:bg-white/10'
                       )}
                     />
                     <div className="flex-1">
                       <div
                         className={cn(
                           'h-3 w-[40%] rounded mb-1.5',
-                          darkMode ? 'bg-white/10' : 'bg-gray-200'
+                          'bg-gray-200 dark:bg-white/10'
                         )}
                       />
                       <div
                         className={cn(
                           'h-2 w-[60%] rounded',
-                          darkMode ? 'bg-white/5' : 'bg-gray-100'
+                          'bg-gray-100 dark:bg-white/5'
                         )}
                       />
                     </div>
                     <div
-                      className={cn('h-6 w-12 rounded', darkMode ? 'bg-white/10' : 'bg-gray-200')}
+                      className={cn('h-6 w-12 rounded', 'bg-gray-200 dark:bg-white/10')}
                     />
                   </div>
                 ))}
@@ -2783,7 +2767,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
               filteredTokens.slice(0, 100).map((token) => renderTokenItem(token, isToken1))
             ) : (
               <div className="py-6 text-center">
-                <p className={cn('text-[13px]', darkMode ? 'text-white/40' : 'text-gray-400')}>
+                <p className={cn('text-[13px]', 'text-gray-400 dark:text-white/40')}>
                   {searchQuery ? `No results for "${searchQuery}"` : 'No tokens available'}
                 </p>
               </div>
@@ -2819,9 +2803,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
             onClick={(e) => e.stopPropagation()}
             className={cn(
               'rounded-[20px] p-5 max-w-[360px] w-[92%] shadow-[0_24px_80px_rgba(0,0,0,0.6)]',
-              darkMode
-                ? 'bg-[#0d0d0f] border border-white/[0.08]'
-                : 'bg-white border border-black/[0.08]'
+              'bg-white border border-black/[0.08] dark:bg-[#0d0d0f] dark:border dark:border-white/[0.08]'
             )}
           >
             {/* Header */}
@@ -2842,7 +2824,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                     <CheckCircle size={20} className="text-[#22c55e]" />
                   </div>
                 )}
-                <span className={cn('text-[16px] font-semibold', isDark ? 'text-white' : 'text-black')}>
+                <span className={cn('text-[16px] font-semibold', 'text-black dark:text-white')}>
                   {txPreview.status === 'error' ? 'Swap Will Fail' : txPreview.status === 'warning' ? 'Review Swap' : 'Confirm Swap'}
                 </span>
               </div>
@@ -2851,7 +2833,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                 aria-label="Close preview"
                 className={cn(
                   'border-none rounded-lg cursor-pointer p-1.5 flex items-center justify-center outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
-                  isDark ? 'bg-white/5 text-white/40' : 'bg-black/5 text-black/40'
+                  'bg-black/5 text-black/40 dark:bg-white/5 dark:text-white/40'
                 )}
               >
                 <X size={16} />
@@ -2874,19 +2856,19 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
             {(txPreview.maxAvailable || txPreview.workingAmount) && (
               <div className={cn(
                 'p-3 rounded-[10px] mb-3 border',
-                isDark ? 'bg-white/[0.03] border-white/[0.06]' : 'bg-black/[0.02] border-black/[0.06]'
+                'bg-black/[0.02] border-black/[0.06] dark:bg-white/[0.03] dark:border-white/[0.06]'
               )}>
                 {txPreview.maxAvailable && txPreview.actualSlippage && (
                   <div className={cn(
                     txPreview.workingAmount && 'mb-3 pb-3 border-b',
-                    txPreview.workingAmount && (isDark ? 'border-white/[0.06]' : 'border-black/[0.06]')
+                    txPreview.workingAmount && ('border-black/[0.06] dark:border-white/[0.06]')
                   )}>
                     <div className="flex items-center justify-between mb-1.5">
-                      <span className={cn('text-[10px] uppercase tracking-[0.5px]', isDark ? 'text-white/40' : 'text-black/40')}>Option 1: Higher slippage</span>
+                      <span className={cn('text-[10px] uppercase tracking-[0.5px]', 'text-black/40 dark:text-white/40')}>Option 1: Higher slippage</span>
                       <span className="text-[10px] px-[5px] py-0.5 rounded bg-amber-500/[0.12] text-[#f59e0b]">{txPreview.actualSlippage}% impact</span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className={cn('text-[14px] font-semibold', isDark ? 'text-white' : 'text-black')}>~{fNumber(txPreview.maxAvailable)} {txPreview.receiving?.name}</span>
+                      <span className={cn('text-[14px] font-semibold', 'text-black dark:text-white')}>~{fNumber(txPreview.maxAvailable)} {txPreview.receiving?.name}</span>
                       {parseFloat(txPreview.actualSlippage) <= 50 && (
                         <button
                           onClick={() => {
@@ -2898,7 +2880,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                           }}
                           className={cn(
                             'px-2.5 py-1.5 rounded-md bg-transparent font-medium cursor-pointer text-[10px] border',
-                            isDark ? 'border-white/10 text-white' : 'border-black/10 text-black'
+                            'border-black/10 text-black dark:border-white/10 dark:text-white'
                           )}
                         >
                           Set {Math.ceil(parseFloat(txPreview.actualSlippage) + 1)}%
@@ -2910,13 +2892,13 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                 {txPreview.workingAmount && (
                   <div>
                     <div className="flex items-center justify-between mb-1.5">
-                      <span className={cn('text-[10px] uppercase tracking-[0.5px]', isDark ? 'text-white/40' : 'text-black/40')}>Option 2: Keep {slippage}% slippage</span>
+                      <span className={cn('text-[10px] uppercase tracking-[0.5px]', 'text-black/40 dark:text-white/40')}>Option 2: Keep {slippage}% slippage</span>
                       <span className="text-[10px] px-[5px] py-0.5 rounded bg-green-500/[0.12] text-[#22c55e]">Guaranteed</span>
                     </div>
                     <div className="flex items-center justify-between">
                       <div>
                         <div className="text-[14px] font-semibold text-[#22c55e]">~{fNumber(txPreview.workingOutput || 0)} {txPreview.receiving?.name}</div>
-                        <div className={cn('text-[10px]', isDark ? 'text-white/40' : 'text-black/40')}>for {fNumber(txPreview.workingAmount)} {txPreview.sending?.name}</div>
+                        <div className={cn('text-[10px]', 'text-black/40 dark:text-white/40')}>for {fNumber(txPreview.workingAmount)} {txPreview.sending?.name}</div>
                       </div>
                       <button
                         onClick={() => {
@@ -2946,36 +2928,36 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
             )}
 
             {/* Transaction Details */}
-            <div className={cn('rounded-[10px] p-3 mb-3', isDark ? 'bg-white/[0.03]' : 'bg-black/[0.02]')}>
+            <div className={cn('rounded-[10px] p-3 mb-3', 'bg-black/[0.02] dark:bg-white/[0.03]')}>
               <div className="flex justify-between items-center mb-2">
-                <span className={cn('text-[11px] uppercase tracking-[0.5px]', isDark ? 'text-white/40' : 'text-black/40')}>Send</span>
-                <span className={cn('font-medium text-[13px]', isDark ? 'text-white' : 'text-black')}>{fNumber(txPreview.sending?.amount)} {txPreview.sending?.name}</span>
+                <span className={cn('text-[11px] uppercase tracking-[0.5px]', 'text-black/40 dark:text-white/40')}>Send</span>
+                <span className={cn('font-medium text-[13px]', 'text-black dark:text-white')}>{fNumber(txPreview.sending?.amount)} {txPreview.sending?.name}</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className={cn('text-[11px] uppercase tracking-[0.5px]', isDark ? 'text-white/40' : 'text-black/40')}>Receive</span>
+                <span className={cn('text-[11px] uppercase tracking-[0.5px]', 'text-black/40 dark:text-white/40')}>Receive</span>
                 <div className="text-right">
                   {txPreview.receiving?.actual > 0 ? (
                     <span className="text-[#22c55e] font-semibold text-[13px]">{fNumber(txPreview.receiving.actual)} {txPreview.receiving?.name}</span>
                   ) : (
                     <div>
                       <span className="text-[#ef4444] font-medium text-[12px] italic">Failed</span>
-                      <div className={cn('text-[9px] mt-0.5', isDark ? 'text-white/30' : 'text-black/30')}>Would lose tx fee</div>
+                      <div className={cn('text-[9px] mt-0.5', 'text-black/30 dark:text-white/30')}>Would lose tx fee</div>
                     </div>
                   )}
                 </div>
               </div>
               {(txPreview.priceImpact !== null && txPreview.priceImpact > 0.01) || txPreview.receiving?.actual > 0 ? (
-                <div className={cn('mt-2.5 pt-2.5 border-t', isDark ? 'border-white/[0.06]' : 'border-black/[0.06]')}>
+                <div className={cn('mt-2.5 pt-2.5 border-t', 'border-black/[0.06] dark:border-white/[0.06]')}>
                   {txPreview.priceImpact !== null && txPreview.priceImpact > 0.01 && (
                     <div className="flex justify-between mb-1">
-                      <span className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-black/40')}>Impact</span>
+                      <span className={cn('text-[11px]', 'text-black/40 dark:text-white/40')}>Impact</span>
                       <span className={cn('font-medium text-[11px]', txPreview.priceImpact > 5 ? 'text-[#ef4444]' : txPreview.priceImpact > 2 ? 'text-[#f59e0b]' : 'text-[#22c55e]')}>-{txPreview.priceImpact.toFixed(2)}%</span>
                     </div>
                   )}
                   {txPreview.receiving?.actual > 0 && txPreview.sending?.amount > 0 && (
                     <div className="flex justify-between">
-                      <span className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-black/40')}>Rate</span>
-                      <span className={cn('text-[11px]', isDark ? 'text-white/60' : 'text-black/60')}>1 {txPreview.receiving?.name} = {fNumber(txPreview.sending.amount / txPreview.receiving.actual)} {txPreview.sending?.name}</span>
+                      <span className={cn('text-[11px]', 'text-black/40 dark:text-white/40')}>Rate</span>
+                      <span className={cn('text-[11px]', 'text-black/60 dark:text-white/60')}>1 {txPreview.receiving?.name} = {fNumber(txPreview.sending.amount / txPreview.receiving.actual)} {txPreview.sending?.name}</span>
                     </div>
                   )}
                 </div>
@@ -2983,8 +2965,8 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
             </div>
 
             {/* Preview Badge */}
-            <div className={cn('text-center mb-3 p-1.5 rounded-md', isDark ? 'bg-white/[0.03]' : 'bg-black/[0.02]')}>
-              <span className={cn('text-[10px]', isDark ? 'text-white/40' : 'text-black/40')}>Preview · No funds sent yet</span>
+            <div className={cn('text-center mb-3 p-1.5 rounded-md', 'bg-black/[0.02] dark:bg-white/[0.03]')}>
+              <span className={cn('text-[10px]', 'text-black/40 dark:text-white/40')}>Preview · No funds sent yet</span>
             </div>
 
             {/* Buttons */}
@@ -2993,7 +2975,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                 onClick={handleCancelPreview}
                 className={cn(
                   'flex-1 p-3 rounded-[10px] bg-transparent font-medium cursor-pointer text-[13px] border',
-                  isDark ? 'border-white/10 text-white' : 'border-black/10 text-black'
+                  'border-black/10 text-black dark:border-white/10 dark:text-white'
                 )}
               >
                 Cancel
@@ -3028,13 +3010,13 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
           <div className="flex items-center justify-between w-full px-1 sm:px-2 mb-1">
             <h1 className={cn(
               'text-[18px] sm:text-[22px] font-bold tracking-tight m-0',
-              darkMode ? 'text-white' : 'text-[#0F172A]'
+              'text-[#0F172A] dark:text-white'
             )}>
               {tradeMode === 'tokens' ? 'Swap Tokens' : 'Buy NFTs'}
             </h1>
             <div role="tablist" aria-label="Trade mode" className={cn(
               'flex p-0.5 sm:p-1 rounded-xl backdrop-blur-md border-[1.5px]',
-              darkMode ? 'bg-white/5 border-white/[0.06]' : 'bg-gray-100 border-gray-200'
+              'bg-gray-100 border-gray-200 dark:bg-white/5 dark:border-white/[0.06]'
             )}>
               <button
                 role="tab"
@@ -3044,9 +3026,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                   'px-5 sm:px-8 py-1.5 sm:py-2 rounded-lg text-[12px] sm:text-[13px] font-bold transition-all duration-300 outline-none focus-visible:ring-2 focus-visible:ring-primary',
                   tradeMode === 'tokens'
                     ? 'bg-primary text-white shadow-lg shadow-primary/20'
-                    : darkMode
-                      ? 'text-white/40 hover:text-white/70'
-                      : 'text-gray-500 hover:text-gray-700'
+                    : 'text-gray-500 hover:text-gray-700 dark:text-white/40 dark:hover:text-white/70'
                 )}
               >
                 Tokens
@@ -3059,9 +3039,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                   'px-5 sm:px-8 py-1.5 sm:py-2 rounded-lg text-[12px] sm:text-[13px] font-bold transition-all duration-300 outline-none focus-visible:ring-2 focus-visible:ring-[#650CD4]',
                   tradeMode === 'nfts'
                     ? 'bg-[#650CD4] text-white shadow-lg shadow-[#650CD4]/20'
-                    : darkMode
-                      ? 'text-white/40 hover:text-white/70'
-                      : 'text-gray-500 hover:text-gray-700'
+                    : 'text-gray-500 hover:text-gray-700 dark:text-white/40 dark:hover:text-white/70'
                 )}
               >
                 NFTs
@@ -3078,7 +3056,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
           <div className="flex flex-wrap items-center justify-between w-full px-1 sm:px-2 gap-2">
             <div role="tablist" aria-label="Order type" className={cn(
               'flex p-0.5 sm:p-1 rounded-xl backdrop-blur-md border-[1.5px]',
-              darkMode ? 'bg-white/5 border-white/[0.06]' : 'bg-gray-100 border-gray-200'
+              'bg-gray-100 border-gray-200 dark:bg-white/5 dark:border-white/[0.06]'
             )}>
               <button
                 role="tab"
@@ -3092,9 +3070,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                   'px-3 sm:px-6 py-1.5 sm:py-2 rounded-lg text-[12px] sm:text-[13px] font-bold transition-all duration-300 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                   orderType === 'market'
                     ? 'bg-primary text-white shadow-lg shadow-primary/20'
-                    : darkMode
-                      ? 'text-white/40 hover:text-white/70'
-                      : 'text-gray-500 hover:text-gray-900'
+                    : 'text-gray-500 hover:text-gray-900 dark:text-white/40 dark:hover:text-white/70'
                 )}
               >
                 Market
@@ -3110,9 +3086,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                   'px-3 sm:px-6 py-1.5 sm:py-2 rounded-lg text-[12px] sm:text-[13px] font-bold transition-all duration-300 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                   orderType === 'limit'
                     ? 'bg-primary text-white shadow-lg shadow-primary/20'
-                    : darkMode
-                      ? 'text-white/40 hover:text-white/70'
-                      : 'text-gray-500 hover:text-gray-900'
+                    : 'text-gray-500 hover:text-gray-900 dark:text-white/40 dark:hover:text-white/70'
                 )}
               >
                 Limit
@@ -3120,16 +3094,14 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
             </div>
             <div className={cn(
               'flex items-center p-0.5 sm:p-1 rounded-xl backdrop-blur-md border-[1.5px] gap-0',
-              darkMode ? 'bg-white/5 border-white/[0.06]' : 'bg-gray-100 border-gray-200'
+              'bg-gray-100 border-gray-200 dark:bg-white/5 dark:border-white/[0.06]'
             )}>
               <button
                 onClick={() => setShowSettingsModal(true)}
                 aria-label="Swap settings"
                 className={cn(
                   'flex items-center gap-1 px-1.5 sm:px-3 py-1.5 sm:py-2 rounded-lg text-[11px] sm:text-[13px] font-bold transition-all duration-300 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
-                  darkMode
-                    ? 'text-white/40 hover:text-white/70'
-                    : 'text-gray-500 hover:text-gray-900'
+                  'text-gray-500 hover:text-gray-900 dark:text-white/40 dark:hover:text-white/70'
                 )}
               >
                 <Settings size={13} className="sm:w-[14px] sm:h-[14px]" />
@@ -3140,9 +3112,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                 aria-label="Share swap URL"
                 className={cn(
                   'flex items-center px-1.5 sm:px-3 py-1.5 sm:py-2 rounded-lg transition-all duration-300 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
-                  darkMode
-                    ? 'text-white/40 hover:text-white/70'
-                    : 'text-gray-500 hover:text-gray-900'
+                  'text-gray-500 hover:text-gray-900 dark:text-white/40 dark:hover:text-white/70'
                 )}
               >
                 <Share2 size={13} className="sm:w-[14px] sm:h-[14px]" />
@@ -3155,9 +3125,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
           {/* Unified Swap Card */}
           <div className={cn(
             'w-full rounded-[1.5rem] sm:rounded-[2rem] p-4 sm:p-6 md:p-8 transition-all duration-500 relative overflow-hidden backdrop-blur-3xl border-[1.5px]',
-            darkMode
-              ? 'border-white/[0.06] bg-white/[0.01] shadow-2xl shadow-black/40'
-              : 'border-gray-200/80 bg-white/40 shadow-xl shadow-gray-200/20'
+            'border-gray-200/80 bg-white/40 shadow-xl shadow-gray-200/20 dark:border-white/[0.06] dark:bg-white/[0.01] dark:shadow-2xl dark:shadow-black/40'
           )}>
             {/* Background Mesh */}
             <div className="absolute -top-[20%] -left-[20%] w-[60%] h-[60%] bg-primary/5 rounded-full blur-[100px] pointer-events-none" aria-hidden="true" />
@@ -3172,10 +3140,10 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                   { label: 'Traders', value: fmtStat(platformStats.uniqueTraders24H) },
                 ].map(({ label, value }) => (
                   <div key={label} className="flex items-center gap-1.5">
-                    <span className={cn('text-[10px] font-mono', darkMode ? 'text-white/25' : 'text-black/25')}>
+                    <span className={cn('text-[10px] font-mono', 'text-black/25 dark:text-white/25')}>
                       {label}
                     </span>
-                    <span className={cn('text-[10px] font-mono font-semibold', darkMode ? 'text-white/50' : 'text-black/50')}>
+                    <span className={cn('text-[10px] font-mono font-semibold', 'text-black/50 dark:text-white/50')}>
                       {value}
                     </span>
                   </div>
@@ -3192,7 +3160,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
               <div className="flex flex-col items-start mb-4 sm:mb-6 relative z-10">
                 <span className={cn(
                   'text-[10px] uppercase tracking-[0.2em] font-bold mb-3 sm:mb-4 px-1',
-                  darkMode ? 'text-[#5ba3fe]' : 'text-primary'
+                  'text-primary dark:text-[#5ba3fe]'
                 )}>
                   You Pay
                 </span>
@@ -3218,14 +3186,14 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                     <div className="flex items-center gap-2 min-w-0 max-w-full">
                       <span className={cn(
                         'text-xl sm:text-2xl md:text-3xl font-bold tracking-tight truncate',
-                        darkMode ? 'text-white' : 'text-gray-900'
+                        'text-gray-900 dark:text-white'
                       )}>
                         {token1?.name || token1?.currency || 'Select'}
                       </span>
                       <ChevronDown size={18} className="text-primary group-hover:translate-y-0.5 transition-transform flex-shrink-0" />
                     </div>
                     {token1?.issuer && (
-                      <span className={cn("text-[10px] font-mono truncate max-w-[100px] sm:max-w-[120px]", darkMode ? "text-white/60" : "text-gray-500")}>
+                      <span className={cn("text-[10px] font-mono truncate max-w-[100px] sm:max-w-[120px]", 'text-gray-500 dark:text-white/60')}>
                         {token1.issuer}
                       </span>
                     )}
@@ -3240,9 +3208,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                   'rounded-2xl px-3 py-3 sm:px-5 sm:py-5 transition-all duration-300 relative z-10 border-[1.5px]',
                   focusTop
                     ? 'bg-primary/5 border-primary/30'
-                    : darkMode
-                      ? 'bg-black/40 border-white/[0.06]'
-                      : 'bg-white/60 border-gray-200/60'
+                    : 'bg-white/60 border-gray-200/60 dark:bg-black/40 dark:border-white/[0.06]'
                 )}
               >
                 <div className="flex flex-col gap-1">
@@ -3259,15 +3225,13 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                       onBlur={() => setFocusTop(false)}
                       className={cn(
                         'flex-1 min-w-0 text-left text-xl sm:text-2xl md:text-4xl font-bold bg-transparent border-none outline-none font-mono tracking-tight focus-visible:ring-2 focus-visible:ring-[#137DFE] rounded',
-                        darkMode
-                          ? 'text-white placeholder:text-white/10'
-                          : 'text-gray-900 placeholder:text-gray-200'
+                        'text-gray-900 placeholder:text-gray-200 dark:text-white dark:placeholder:text-white/10'
                       )}
                     />
                     <div className="flex flex-col items-end gap-1">
                       <span className={cn(
                         'text-[12px] font-medium',
-                        darkMode ? 'text-white/70' : 'text-gray-500'
+                        'text-gray-500 dark:text-white/70'
                       )}>
                         {token1?.name || token1?.currency}
                       </span>
@@ -3282,7 +3246,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                 {isLoggedIn && accountPairBalance ? (
                   <div className="flex items-center gap-2">
                     <span
-                      className={cn('text-[12px]', darkMode ? 'text-white/40' : 'text-gray-500')}
+                      className={cn('text-[12px]', 'text-gray-500 dark:text-white/40')}
                     >
                       Bal:{' '}
                       {fNumber(
@@ -3298,16 +3262,14 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                       }}
                       className={cn(
                         'px-2.5 py-1 rounded text-[11px] font-medium transition-colors border',
-                        darkMode
-                          ? 'text-white/60 border-white/10 hover:bg-white/5'
-                          : 'text-gray-600 border-gray-300 hover:bg-gray-100'
+                        'text-gray-600 border-gray-300 hover:bg-gray-100 dark:text-white/60 dark:border-white/10 dark:hover:bg-white/5'
                       )}
                     >
                       MAX
                     </button>
                   </div>
                 ) : (
-                  <span className={cn('text-[12px]', darkMode ? 'text-white/30' : 'text-gray-400')}>
+                  <span className={cn('text-[12px]', 'text-gray-400 dark:text-white/30')}>
                     &nbsp;
                   </span>
                 )}
@@ -3326,9 +3288,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                 className={cn(
                   'w-11 h-11 md:w-14 md:h-14 rounded-2xl flex items-center justify-center transition-all duration-500 border-[1.5px]',
                   'backdrop-blur-xl shadow-lg outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
-                  darkMode
-                    ? 'bg-black/60 border-white/[0.08] hover:border-primary hover:shadow-primary/20 text-white/70 hover:text-white'
-                    : 'bg-white/80 border-gray-200/60 hover:border-primary hover:shadow-primary/10 text-gray-400 hover:text-primary',
+                  'bg-white/80 border-gray-200/60 hover:border-primary hover:shadow-primary/10 text-gray-400 hover:text-primary dark:bg-black/60 dark:border-white/[0.08] dark:hover:border-primary dark:hover:shadow-primary/20 dark:text-white/70 dark:hover:text-white',
                   isSwitching && 'rotate-180 scale-90'
                 )}
               >
@@ -3347,7 +3307,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
               <div className="flex flex-col items-start mb-4 sm:mb-6 relative z-10">
                 <span className={cn(
                   'text-[10px] uppercase tracking-[0.2em] font-bold mb-3 sm:mb-4 px-1',
-                  darkMode ? 'text-[#5ba3fe]' : 'text-primary'
+                  'text-primary dark:text-[#5ba3fe]'
                 )}>
                   You Receive
                 </span>
@@ -3373,14 +3333,14 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                     <div className="flex items-center gap-2 min-w-0 max-w-full">
                       <span className={cn(
                         'text-xl sm:text-2xl md:text-3xl font-bold tracking-tight truncate',
-                        darkMode ? 'text-white' : 'text-gray-900'
+                        'text-gray-900 dark:text-white'
                       )}>
                         {token2?.name || token2?.currency || 'Select'}
                       </span>
                       <ChevronDown size={18} className="text-primary group-hover:translate-y-0.5 transition-transform flex-shrink-0" />
                     </div>
                     {token2?.issuer && (
-                      <span className={cn("text-[10px] font-mono truncate max-w-[100px] sm:max-w-[120px]", darkMode ? "text-white/60" : "text-gray-500")}>
+                      <span className={cn("text-[10px] font-mono truncate max-w-[100px] sm:max-w-[120px]", 'text-gray-500 dark:text-white/60')}>
                         {token2.issuer}
                       </span>
                     )}
@@ -3395,9 +3355,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                   'rounded-2xl px-3 py-3 sm:px-5 sm:py-5 transition-all duration-300 relative z-10 border-[1.5px]',
                   focusBottom
                     ? 'bg-primary/5 border-primary/30'
-                    : darkMode
-                      ? 'bg-black/40 border-white/[0.06]'
-                      : 'bg-white/60 border-gray-200/60'
+                    : 'bg-white/60 border-gray-200/60 dark:bg-black/40 dark:border-white/[0.06]'
                 )}
               >
                 <div className="flex flex-col gap-1">
@@ -3413,15 +3371,13 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                       onBlur={() => setFocusBottom(false)}
                       className={cn(
                         'flex-1 min-w-0 text-left text-xl sm:text-2xl md:text-4xl font-bold bg-transparent border-none outline-none font-mono tracking-tight focus-visible:ring-2 focus-visible:ring-[#137DFE] rounded',
-                        darkMode
-                          ? 'text-white placeholder:text-white/10'
-                          : 'text-gray-900 placeholder:text-gray-200'
+                        'text-gray-900 placeholder:text-gray-200 dark:text-white dark:placeholder:text-white/10'
                       )}
                     />
                     <div className="flex flex-col items-end gap-1">
                       <span className={cn(
                         'text-[12px] font-medium',
-                        darkMode ? 'text-white/70' : 'text-gray-500'
+                        'text-gray-500 dark:text-white/70'
                       )}>
                         {token2?.name || token2?.currency}
                       </span>
@@ -3434,14 +3390,14 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
               {/* Balance info */}
               <div className="flex items-center justify-end mt-3 relative z-10">
                 {isLoggedIn && accountPairBalance ? (
-                  <span className={cn('text-[12px]', darkMode ? 'text-white/40' : 'text-gray-500')}>
+                  <span className={cn('text-[12px]', 'text-gray-500 dark:text-white/40')}>
                     Bal:{' '}
                     {fNumber(
                       revert ? accountPairBalance?.curr1.value : accountPairBalance?.curr2.value
                     )}
                   </span>
                 ) : (
-                  <span className={cn('text-[12px]', darkMode ? 'text-white/30' : 'text-gray-400')}>
+                  <span className={cn('text-[12px]', 'text-gray-400 dark:text-white/30')}>
                     &nbsp;
                   </span>
                 )}
@@ -3456,7 +3412,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                   <div
                     className={cn(
                       'fixed inset-0 z-[1200] flex items-center justify-center max-sm:h-dvh',
-                      darkMode ? 'bg-black/70 backdrop-blur-md' : 'bg-white/60 backdrop-blur-md'
+                      'bg-white/60 backdrop-blur-md dark:bg-black/70 dark:backdrop-blur-md'
                     )}
                     onClick={() => setShowSettingsModal(false)}
                   >
@@ -3464,14 +3420,12 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                       onClick={(e) => e.stopPropagation()}
                       className={cn(
                         'w-[320px] rounded-2xl border-[1.5px] p-5',
-                        darkMode
-                          ? 'bg-black/80 backdrop-blur-2xl border-white/[0.08] shadow-2xl shadow-black/50'
-                          : 'bg-white/80 backdrop-blur-2xl border-gray-200/60 shadow-2xl shadow-gray-300/30'
+                        'bg-white/80 backdrop-blur-2xl border-gray-200/60 shadow-2xl shadow-gray-300/30 dark:bg-black/80 dark:backdrop-blur-2xl dark:border-white/[0.08] dark:shadow-2xl dark:shadow-black/50'
                       )}
                     >
                       <div className="flex items-center justify-between mb-4">
                         <span
-                          className={`text-[15px] font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}
+                          className={`text-[15px] font-medium ${'text-gray-900 dark:text-white'}`}
                         >
                           Settings
                         </span>
@@ -3480,7 +3434,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                           aria-label="Close settings"
                           className="p-1.5 rounded-lg hover:bg-white/10 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]"
                         >
-                          <X size={16} className={darkMode ? 'text-white/40' : 'text-gray-400'} />
+                          <X size={16} className={'text-gray-400 dark:text-white/40'} />
                         </button>
                       </div>
 
@@ -3488,14 +3442,14 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                       <div className="mb-4">
                         <div className="flex items-center gap-3 mb-3">
                           <span
-                            className={`text-[11px] font-medium uppercase tracking-wide ${darkMode ? 'text-white/40' : 'text-gray-500'}`}
+                            className={`text-[11px] font-medium uppercase tracking-wide ${'text-gray-500 dark:text-white/40'}`}
                           >
                             Max Slippage
                           </span>
                           <div
                             className="flex-1 h-px"
                             style={{
-                              backgroundImage: `radial-gradient(circle, ${darkMode ? 'rgba(66,133,244,0.5)' : 'rgba(66,133,244,0.3)'} 1px, transparent 1px)`,
+                              backgroundImage: isDark ? 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)' : 'radial-gradient(circle, rgba(66,133,244,0.3) 1px, transparent 1px)',
                               backgroundSize: '6px 1px'
                             }}
                           />
@@ -3507,16 +3461,14 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                               onClick={() => setSlippage(val)}
                               className={`flex-1 h-9 text-[13px] font-normal rounded-lg border-[1.5px] transition-colors ${slippage === val
                                 ? 'bg-primary text-white border-primary'
-                                : darkMode
-                                  ? 'border-white/10 text-white/60 hover:border-primary/50'
-                                  : 'border-gray-200 text-gray-600 hover:border-primary/50'
+                                : 'border-gray-200 text-gray-600 hover:border-primary/50 dark:border-white/10 dark:text-white/60 dark:hover:border-primary/50'
                                 }`}
                             >
                               {val}%
                             </button>
                           ))}
                           <div
-                            className={`flex items-center justify-center h-9 px-3 min-w-[56px] rounded-lg border-[1.5px] ${darkMode ? 'border-white/10' : 'border-gray-200'}`}
+                            className={`flex items-center justify-center h-9 px-3 min-w-[56px] rounded-lg border-[1.5px] ${'border-gray-200 dark:border-white/10'}`}
                           >
                             <input
                               type="text"
@@ -3534,10 +3486,10 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                                   setSlippage(val === '' ? '' : parseFloat(val) || val);
                                 }
                               }}
-                              className={`w-5 bg-transparent border-none outline-none text-[13px] max-sm:text-base font-medium text-center ${darkMode ? 'text-white' : 'text-gray-900'}`}
+                              className={`w-5 bg-transparent border-none outline-none text-[13px] max-sm:text-base font-medium text-center ${'text-gray-900 dark:text-white'}`}
                             />
                             <span
-                              className={`text-[12px] ${darkMode ? 'text-white/40' : 'text-gray-400'}`}
+                              className={`text-[12px] ${'text-gray-400 dark:text-white/40'}`}
                             >
                               %
                             </span>
@@ -3557,19 +3509,19 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                       <div className="mb-4">
                         <div className="flex items-center gap-3 mb-3">
                           <span
-                            className={`text-[11px] font-medium uppercase tracking-wide ${darkMode ? 'text-white/40' : 'text-gray-500'}`}
+                            className={`text-[11px] font-medium uppercase tracking-wide ${'text-gray-500 dark:text-white/40'}`}
                           >
                             Network Fee
                           </span>
                           <span
-                            className={`text-[10px] ${darkMode ? 'text-white/25' : 'text-gray-400'}`}
+                            className={`text-[10px] ${'text-gray-400 dark:text-white/25'}`}
                           >
                             (drops)
                           </span>
                           <div
                             className="flex-1 h-px"
                             style={{
-                              backgroundImage: `radial-gradient(circle, ${darkMode ? 'rgba(66,133,244,0.5)' : 'rgba(66,133,244,0.3)'} 1px, transparent 1px)`,
+                              backgroundImage: isDark ? 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)' : 'radial-gradient(circle, rgba(66,133,244,0.3) 1px, transparent 1px)',
                               backgroundSize: '6px 1px'
                             }}
                           />
@@ -3581,16 +3533,14 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                               onClick={() => setTxFee(String(val))}
                               className={`flex-1 h-9 text-[13px] font-normal rounded-lg border-[1.5px] transition-colors ${txFee === String(val)
                                 ? 'bg-primary text-white border-primary'
-                                : darkMode
-                                  ? 'border-white/10 text-white/60 hover:border-primary/50'
-                                  : 'border-gray-200 text-gray-600 hover:border-primary/50'
+                                : 'border-gray-200 text-gray-600 hover:border-primary/50 dark:border-white/10 dark:text-white/60 dark:hover:border-primary/50'
                                 }`}
                             >
                               {val}
                             </button>
                           ))}
                           <div
-                            className={`flex items-center h-9 px-3 min-w-[60px] rounded-lg border-[1.5px] ${darkMode ? 'border-white/10' : 'border-gray-200'}`}
+                            className={`flex items-center h-9 px-3 min-w-[60px] rounded-lg border-[1.5px] ${'border-gray-200 dark:border-white/10'}`}
                           >
                             <input
                               type="text"
@@ -3600,12 +3550,12 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                                 const val = e.target.value.replace(/[^0-9]/g, '');
                                 setTxFee(val);
                               }}
-                              className={`w-8 bg-transparent border-none outline-none text-[13px] max-sm:text-base font-medium text-center ${darkMode ? 'text-white' : 'text-gray-900'}`}
+                              className={`w-8 bg-transparent border-none outline-none text-[13px] max-sm:text-base font-medium text-center ${'text-gray-900 dark:text-white'}`}
                             />
                           </div>
                         </div>
                         <p
-                          className={`text-[10px] mt-2 ${darkMode ? 'text-white/30' : 'text-gray-400'}`}
+                          className={`text-[10px] mt-2 ${'text-gray-400 dark:text-white/30'}`}
                         >
                           Higher fees = priority during congestion
                         </p>
@@ -3637,9 +3587,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                       <div
                         className={cn(
                           'mb-4 rounded-lg p-2.5 space-y-1 relative',
-                          darkMode
-                            ? 'bg-white/[0.02] border border-white/[0.06]'
-                            : 'bg-gray-50 border border-gray-200'
+                          'bg-gray-50 border border-gray-200 dark:bg-white/[0.02] dark:border dark:border-white/[0.06]'
                         )}
                       >
                         {/* Rate - show when we have both amounts */}
@@ -3648,7 +3596,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                             <span
                               className={cn(
                                 'text-[10px]',
-                                darkMode ? 'text-white/50' : 'text-gray-500'
+                                'text-gray-500 dark:text-white/50'
                               )}
                             >
                               Rate {quoteLoading && <span className="opacity-50">•••</span>}
@@ -3656,7 +3604,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                             <span
                               className={cn(
                                 'text-[10px] font-mono',
-                                darkMode ? 'text-white/80' : 'text-gray-700'
+                                'text-gray-700 dark:text-white/80'
                               )}
                             >
                               1 {token1?.name || token1?.currency} ={' '}
@@ -3683,7 +3631,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                             <span
                               className={cn(
                                 'text-[10px]',
-                                darkMode ? 'text-white/50' : 'text-gray-500'
+                                'text-gray-500 dark:text-white/50'
                               )}
                             >
                               Min received
@@ -3691,7 +3639,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                             <span
                               className={cn(
                                 'text-[10px] font-mono',
-                                darkMode ? 'text-white/80' : 'text-gray-700'
+                                'text-gray-700 dark:text-white/80'
                               )}
                             >
                               {fNumber(swapQuoteCalc.minimum_received)}{' '}
@@ -3706,7 +3654,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                             <span
                               className={cn(
                                 'text-[10px]',
-                                darkMode ? 'text-white/50' : 'text-gray-500'
+                                'text-gray-500 dark:text-white/50'
                               )}
                             >
                               AMM fee{' '}
@@ -3725,7 +3673,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                           <span
                             className={cn(
                               'text-[10px]',
-                              darkMode ? 'text-white/50' : 'text-gray-500'
+                              'text-gray-500 dark:text-white/50'
                             )}
                           >
                             Network Fee
@@ -3733,7 +3681,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                           <span
                             className={cn(
                               'text-[10px] font-mono',
-                              darkMode ? 'text-white/80' : 'text-gray-700'
+                              'text-gray-700 dark:text-white/80'
                             )}
                           >
                             ~0.000012 XRP
@@ -3750,10 +3698,10 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                           const xrp = drops / 1000000;
                           return (
                             <div className="flex items-center justify-between">
-                              <span className={cn('text-[10px]', darkMode ? 'text-white/50' : 'text-gray-500')}>
+                              <span className={cn('text-[10px]', 'text-gray-500 dark:text-white/50')}>
                                 Platform fee (0.08%)
                               </span>
-                              <span className={cn('text-[10px] font-mono', darkMode ? 'text-white/80' : 'text-gray-700')}>
+                              <span className={cn('text-[10px] font-mono', 'text-gray-700 dark:text-white/80')}>
                                 {xrp < 0.01 ? xrp.toFixed(6) : fNumber(xrp)} XRP
                               </span>
                             </div>
@@ -3765,7 +3713,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                           <div
                             className={cn(
                               'text-[9px] text-right',
-                              darkMode ? 'text-white/40' : 'text-gray-400'
+                              'text-gray-400 dark:text-white/40'
                             )}
                           >
                             via {swapQuoteCalc.paths_count} paths
@@ -3796,14 +3744,14 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                     <div
                       className={cn(
                         'rounded-xl p-3 border',
-                        darkMode ? 'bg-white/[0.03] border-white/[0.08]' : 'bg-gray-50 border-black/[0.08]'
+                        'bg-gray-50 border-black/[0.08] dark:bg-white/[0.03] dark:border-white/[0.08]'
                       )}
                     >
                       <div className="flex items-center justify-between mb-2">
                         <span
                           className={cn(
                             'text-[11px] uppercase tracking-wide',
-                            darkMode ? 'text-white/40' : 'text-gray-500'
+                            'text-gray-500 dark:text-white/40'
                           )}
                         >
                           Your Price ({token2?.name || token2?.currency} per{' '}
@@ -3833,9 +3781,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                                 'px-2 py-0.5 rounded text-[10px] transition-colors',
                                 !bids[0]?.price || !asks[0]?.price
                                   ? 'opacity-30 cursor-not-allowed'
-                                  : darkMode
-                                    ? 'text-primary/60 hover:text-primary hover:bg-primary/10'
-                                    : 'text-primary/70 hover:text-primary hover:bg-primary/10'
+                                  : 'text-primary/70 hover:text-primary hover:bg-primary/10 dark:text-primary/60 dark:hover:text-primary dark:hover:bg-primary/10'
                               )}
                             >
                               {adj.label}
@@ -3859,9 +3805,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                         }}
                         className={cn(
                           'w-full px-3 py-2.5 rounded-lg text-[18px] font-mono bg-transparent outline-none transition-colors text-center border',
-                          darkMode
-                            ? 'text-white placeholder:text-white/20 border-white/10'
-                            : 'text-gray-900 placeholder:text-gray-400 border-black/10'
+                          'text-gray-900 placeholder:text-gray-400 border-black/10 dark:text-white dark:placeholder:text-white/20 dark:border-white/10'
                         )}
                       />
 
@@ -3879,7 +3823,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                                   : 'opacity-40 cursor-default'
                               )}
                             >
-                              <span className={cn('text-[9px] uppercase tracking-wide', darkMode ? 'text-white/40' : 'text-gray-500')}>
+                              <span className={cn('text-[9px] uppercase tracking-wide', 'text-gray-500 dark:text-white/40')}>
                                 Best Buy
                               </span>
                               <span className="text-green-500 font-medium">
@@ -3887,7 +3831,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                               </span>
                             </button>
 
-                            <span className={cn('text-[10px] flex items-center gap-1', darkMode ? 'text-white/30' : 'text-gray-400')}>
+                            <span className={cn('text-[10px] flex items-center gap-1', 'text-gray-400 dark:text-white/30')}>
                               <span className="text-[8px] uppercase tracking-wide">spread</span>
                               {bids[0] && asks[0]
                                 ? `${(((asks[0].price - bids[0].price) / asks[0].price) * 100).toFixed(2)}%`
@@ -3905,12 +3849,12 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                               )}
                             >
                               <span className="text-red-500 font-medium">{asks[0]?.price.toFixed(4) || '-'}</span>
-                              <span className={cn('text-[9px] uppercase tracking-wide', darkMode ? 'text-white/40' : 'text-gray-500')}>
+                              <span className={cn('text-[9px] uppercase tracking-wide', 'text-gray-500 dark:text-white/40')}>
                                 Best Sell
                               </span>
                             </button>
                           </div>
-                          <p className={cn('text-[9px] text-center', darkMode ? 'text-white/20' : 'text-black/20')}>
+                          <p className={cn('text-[9px] text-center', 'text-black/20 dark:text-white/20')}>
                             Click a price to set your limit
                           </p>
                         </div>
@@ -3946,7 +3890,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                     <div
                       className={cn(
                         'flex rounded-lg overflow-hidden border',
-                        darkMode ? 'bg-white/[0.03] border-white/[0.08]' : 'bg-gray-100 border-black/[0.08]'
+                        'bg-gray-100 border-black/[0.08] dark:bg-white/[0.03] dark:border-white/[0.08]'
                       )}
                     >
                       {[
@@ -3963,9 +3907,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                             'flex-1 py-2 text-[11px] font-medium transition-all relative',
                             orderExpiry === exp.value
                               ? 'text-primary'
-                              : darkMode
-                                ? 'text-white/40 hover:text-white/70'
-                                : 'text-gray-400 hover:text-gray-600'
+                              : 'text-gray-400 hover:text-gray-600 dark:text-white/40 dark:hover:text-white/70'
                           )}
                         >
                           {exp.label}
@@ -3991,11 +3933,11 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                       return (
                         <div className={cn(
                           'mt-3 rounded-xl border overflow-hidden',
-                          darkMode ? 'border-white/[0.08] bg-white/[0.02]' : 'border-black/[0.08] bg-gray-50/50'
+                          'border-black/[0.08] bg-gray-50/50 dark:border-white/[0.08] dark:bg-white/[0.02]'
                         )}>
                           <div className={cn(
                             'px-3 py-1.5 flex items-center justify-between text-[10px] uppercase tracking-wide',
-                            darkMode ? 'text-white/30' : 'text-gray-400'
+                            'text-gray-400 dark:text-white/30'
                           )}>
                             <span>Price</span>
                             <span>Amount</span>
@@ -4013,13 +3955,13 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                                 style={{ width: `${(a.amount / maxAmount) * 100}%` }}
                               />
                               <span className="relative text-[11px] font-mono text-red-400">{a.price < 0.01 ? a.price.toExponential(2) : a.price < 1 ? a.price.toFixed(6) : fNumber(a.price)}</span>
-                              <span className={cn('relative text-[11px] font-mono', darkMode ? 'text-white/50' : 'text-gray-500')}>{fNumber(a.amount)}</span>
+                              <span className={cn('relative text-[11px] font-mono', 'text-gray-500 dark:text-white/50')}>{fNumber(a.amount)}</span>
                             </button>
                           ))}
                           {/* Spread divider */}
                           <div className={cn(
                             'flex items-center justify-center py-1 text-[10px] font-mono border-y',
-                            darkMode ? 'border-white/[0.06] text-white/40' : 'border-black/[0.06] text-gray-500'
+                            'border-black/[0.06] text-gray-500 dark:border-white/[0.06] dark:text-white/40'
                           )}>
                             {spread !== null ? `Spread ${spread}%` : '—'}
                           </div>
@@ -4036,7 +3978,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                                 style={{ width: `${(b.amount / maxAmount) * 100}%` }}
                               />
                               <span className="relative text-[11px] font-mono text-green-400">{b.price < 0.01 ? b.price.toExponential(2) : b.price < 1 ? b.price.toFixed(6) : fNumber(b.price)}</span>
-                              <span className={cn('relative text-[11px] font-mono', darkMode ? 'text-white/50' : 'text-gray-500')}>{fNumber(b.amount)}</span>
+                              <span className={cn('relative text-[11px] font-mono', 'text-gray-500 dark:text-white/50')}>{fNumber(b.amount)}</span>
                             </button>
                           ))}
                         </div>
@@ -4047,11 +3989,11 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                     {userOffers.length > 0 && (
                       <div className={cn(
                         'mt-3 rounded-xl border overflow-hidden',
-                        darkMode ? 'border-white/[0.08] bg-white/[0.02]' : 'border-black/[0.08] bg-gray-50/50'
+                        'border-black/[0.08] bg-gray-50/50 dark:border-white/[0.08] dark:bg-white/[0.02]'
                       )}>
                         <div className={cn(
                           'px-3 py-1.5 flex items-center justify-between text-[10px] uppercase tracking-wide',
-                          darkMode ? 'text-white/30' : 'text-gray-400'
+                          'text-gray-400 dark:text-white/30'
                         )}>
                           <span className="w-8">Side</span>
                           <span className="flex-1 text-center">Price</span>
@@ -4063,12 +4005,12 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                             key={o.seq}
                             className={cn(
                               'flex items-center justify-between px-3 py-1.5 text-[11px] font-mono',
-                              darkMode ? 'hover:bg-white/[0.03]' : 'hover:bg-gray-100'
+                              'hover:bg-gray-100 dark:hover:bg-white/[0.03]'
                             )}
                           >
                             <span className={cn('w-8', o.side === 'Buy' ? 'text-green-400' : 'text-red-400')}>{o.side}</span>
-                            <span className={cn('flex-1 text-center', darkMode ? 'text-white/60' : 'text-gray-600')}>{o.price < 0.01 ? o.price.toExponential(2) : o.price < 1 ? o.price.toFixed(6) : fNumber(o.price)}</span>
-                            <span className={cn('flex-1 text-right', darkMode ? 'text-white/50' : 'text-gray-500')}>{fNumber(o.amount)}</span>
+                            <span className={cn('flex-1 text-center', 'text-gray-600 dark:text-white/60')}>{o.price < 0.01 ? o.price.toExponential(2) : o.price < 1 ? o.price.toFixed(6) : fNumber(o.price)}</span>
+                            <span className={cn('flex-1 text-right', 'text-gray-500 dark:text-white/50')}>{fNumber(o.amount)}</span>
                             <button
                               onClick={() => onCancelOffer(o.seq)}
                               disabled={cancellingOffer === o.seq}
@@ -4094,13 +4036,13 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                   <div
                     className={cn(
                       'flex items-center justify-between mb-4 px-3 py-2 rounded-lg border',
-                      darkMode ? 'bg-white/5 border-[rgba(66,133,244,0.15)]' : 'bg-gray-100 border-[rgba(66,133,244,0.1)]'
+                      'bg-gray-100 border-[rgba(66,133,244,0.1)] dark:bg-white/5 dark:border-[rgba(66,133,244,0.15)]'
                     )}
                   >
                     <span
                       className={cn(
                         'text-[11px] font-mono',
-                        darkMode ? 'text-primary/50' : 'text-primary/50'
+                        'text-primary/50 dark:text-primary/50'
                       )}
                     >
                       Price Impact
@@ -4129,9 +4071,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                       isProcessing === 1 ||
                         !isLoggedIn ||
                         (canPlaceOrder === false && hasTrustline1 && hasTrustline2)
-                        ? darkMode
-                          ? 'bg-white/5 text-white/20 cursor-not-allowed border border-white/5'
-                          : 'bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200'
+                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200 dark:bg-white/5 dark:text-white/20 dark:cursor-not-allowed dark:border dark:border-white/5'
                         : 'bg-[#0a5cc5] text-white shadow-[0_0_30px_-5px_rgba(59,130,246,0.5)] hover:shadow-[0_0_40px_-5px_rgba(59,130,246,0.6)] hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]'
                     )}
                   >
@@ -4160,21 +4100,19 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
           {tradeMode === 'tokens' && (<>
           <div className={cn(
             'w-full rounded-xl border-[1.5px] p-4 sm:p-5 relative overflow-hidden',
-            darkMode
-              ? 'border-white/[0.06] bg-white/[0.01]'
-              : 'border-[#E2E8F0] bg-white/40'
+            'border-[#E2E8F0] bg-white/40 dark:border-white/[0.06] dark:bg-white/[0.01]'
           )}>
             <div className="flex items-center justify-between mb-3 sm:mb-4">
               <div className="flex items-center gap-2">
                 <div className={cn(
                   'w-6 h-6 rounded-lg flex items-center justify-center',
-                  darkMode ? 'bg-white/[0.06]' : 'bg-[#137DFE]/10'
+                  'bg-[#137DFE]/10 dark:bg-white/[0.06]'
                 )}>
-                  <TrendingUp size={12} className={darkMode ? 'text-white/60' : 'text-[#137DFE]'} />
+                  <TrendingUp size={12} className={'text-[#137DFE] dark:text-white/60'} />
                 </div>
                 <span className={cn(
                   'text-[12px] sm:text-[13px] font-bold uppercase tracking-[1.5px] font-mono',
-                  darkMode ? 'text-[#F5F5F5]' : 'text-[#0F172A]'
+                  'text-[#0F172A] dark:text-[#F5F5F5]'
                 )}>
                   Trending
                 </span>
@@ -4183,7 +4121,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                 href="/trending"
                 className={cn(
                   'text-[11px] sm:text-[12px] font-semibold no-underline transition-colors tracking-wide',
-                  darkMode ? 'text-white/40 hover:text-white/70' : 'text-[#137DFE]/60 hover:text-[#137DFE]'
+                  'text-[#137DFE]/60 hover:text-[#137DFE] dark:text-white/40 dark:hover:text-white/70'
                 )}
               >
                 View All
@@ -4195,7 +4133,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                 [...Array(5)].map((_, i) => (
                   <div key={i} className={cn(
                     'h-12 rounded-lg animate-pulse',
-                    darkMode ? 'bg-white/[0.03]' : 'bg-gray-100'
+                    'bg-gray-100 dark:bg-white/[0.03]'
                   )} />
                 ))
               ) : (
@@ -4228,14 +4166,14 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                       href={`/token/${t.slug}`}
                       className={cn(
                         'grid items-center gap-2 w-full px-2 py-1.5 rounded-lg transition-all duration-200 no-underline',
-                        darkMode ? 'hover:bg-white/[0.04]' : 'hover:bg-gray-50'
+                        'hover:bg-gray-50 dark:hover:bg-white/[0.04]'
                       )}
                       style={{ gridTemplateColumns: '20px 28px 1fr 72px 56px 64px 48px 80px 52px' }}
                     >
                       {/* Rank */}
                       <span className={cn(
                         'text-[11px] font-mono font-bold text-center',
-                        i < 3 ? rankColors[i] : darkMode ? 'text-white/20' : 'text-gray-300'
+                        i < 3 ? rankColors[i] : 'text-gray-300 dark:text-white/20'
                       )}>
                         {i + 1}
                       </span>
@@ -4243,12 +4181,12 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                       {/* Token image */}
                       <div className={cn(
                         'w-7 h-7 rounded-lg overflow-hidden border-[1.5px]',
-                        darkMode ? 'border-white/[0.06] bg-white/[0.03]' : 'border-[#E2E8F0] bg-white'
+                        'border-[#E2E8F0] bg-white dark:border-white/[0.06] dark:bg-white/[0.03]'
                       )}>
                         {t.md5 ? (
                           <img src={`https://s1.xrpl.to/thumb/${t.md5}_32`} alt="" className="w-full h-full object-cover" loading="lazy" onError={(e) => { e.target.style.display = 'none'; }} />
                         ) : (
-                          <div className={cn('w-full h-full flex items-center justify-center text-[10px] font-bold', darkMode ? 'text-white/20' : 'text-[#64748B]/30')}>{t.currency?.[0]}</div>
+                          <div className={cn('w-full h-full flex items-center justify-center text-[10px] font-bold', 'text-[#64748B]/30 dark:text-white/20')}>{t.currency?.[0]}</div>
                         )}
                       </div>
 
@@ -4256,7 +4194,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                       <div className="flex items-center gap-1.5 min-w-0 overflow-hidden">
                         <span className={cn(
                           'text-[12px] font-semibold truncate',
-                          isBoosted && t.trendingBoost >= 500 ? 'text-[#FFD700]' : darkMode ? 'text-[#F5F5F5]' : 'text-[#0F172A]'
+                          isBoosted && t.trendingBoost >= 500 ? 'text-[#FFD700]' : 'text-[#0F172A] dark:text-[#F5F5F5]'
                         )}>
                           {t.name}
                         </span>
@@ -4269,25 +4207,25 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                       </div>
 
                       {/* Traders */}
-                      <span className={cn('text-[11px] font-mono text-right tabular-nums', darkMode ? 'text-white/50' : 'text-black/50')}>
-                        {fmtStat(t.uniqueTraders24h)} <span className={cn('text-[9px]', darkMode ? 'text-white/30' : 'text-black/30')}>traders</span>
+                      <span className={cn('text-[11px] font-mono text-right tabular-nums', 'text-black/50 dark:text-white/50')}>
+                        {fmtStat(t.uniqueTraders24h)} <span className={cn('text-[9px]', 'text-black/30 dark:text-white/30')}>traders</span>
                       </span>
 
                       {/* Buyer pressure */}
                       <span className={cn('text-[11px] font-mono font-bold text-right tabular-nums', pressure >= 0.5 ? 'text-[#22c55e]' : 'text-[#ef4444]')}>
-                        {pressure > 0 ? `${Math.round(pressure * 100)}%` : '-'} <span className={cn('text-[9px] font-normal', darkMode ? 'text-white/30' : 'text-black/30')}>buy</span>
+                        {pressure > 0 ? `${Math.round(pressure * 100)}%` : '-'} <span className={cn('text-[9px] font-normal', 'text-black/30 dark:text-white/30')}>buy</span>
                       </span>
 
                       {/* Volume */}
-                      <span className={cn('text-[11px] font-mono text-right tabular-nums', darkMode ? 'text-white/50' : 'text-black/50')}>
-                        {fmtStat(t.vol24h)} <span className={cn('text-[9px]', darkMode ? 'text-white/30' : 'text-black/30')}>volume</span>
+                      <span className={cn('text-[11px] font-mono text-right tabular-nums', 'text-black/50 dark:text-white/50')}>
+                        {fmtStat(t.vol24h)} <span className={cn('text-[9px]', 'text-black/30 dark:text-white/30')}>volume</span>
                       </span>
 
                       {/* Sparkline */}
                       <MiniSparkline data={sparklines[t.md5]} color={isUp ? '#08AA09' : '#ef4444'} width={48} height={16} />
 
                       {/* Price */}
-                      <span className={cn('text-[11px] font-mono font-medium text-right tabular-nums', darkMode ? 'text-white/70' : 'text-[#0F172A]/70')}>
+                      <span className={cn('text-[11px] font-mono font-medium text-right tabular-nums', 'text-[#0F172A]/70 dark:text-white/70')}>
                         {fmtPrice(price)}
                       </span>
                       {/* 24h change */}
@@ -4304,11 +4242,11 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
             {!trendingLoading && trendingTokens.length > 0 && (
               <div className={cn(
                 'flex items-center justify-between mt-2 pt-3 border-t',
-                darkMode ? 'border-white/[0.06]' : 'border-black/[0.06]'
+                'border-black/[0.06] dark:border-white/[0.06]'
               )}>
                 <div className="flex items-center gap-2">
                   <Flame size={12} className="text-[#F6AF01]" fill="#F6AF01" />
-                  <span className={cn('text-[11px]', darkMode ? 'text-white/40' : 'text-black/40')}>
+                  <span className={cn('text-[11px]', 'text-black/40 dark:text-white/40')}>
                     Want your token here?
                   </span>
                 </div>
@@ -4330,20 +4268,18 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
           {recentTrades.length > 0 && (
           <div className={cn(
             'w-full mt-4 rounded-xl border-[1.5px] p-4 sm:p-5 relative overflow-hidden',
-            darkMode
-              ? 'border-white/[0.06] bg-white/[0.01]'
-              : 'border-[#E2E8F0] bg-white/40'
+            'border-[#E2E8F0] bg-white/40 dark:border-white/[0.06] dark:bg-white/[0.01]'
           )}>
             <div className="flex items-center gap-2 mb-3 sm:mb-4">
               <div className={cn(
                 'w-6 h-6 rounded-lg flex items-center justify-center',
-                darkMode ? 'bg-white/[0.06]' : 'bg-[#137DFE]/10'
+                'bg-[#137DFE]/10 dark:bg-white/[0.06]'
               )}>
-                <Zap size={12} className={darkMode ? 'text-white/60' : 'text-[#137DFE]'} />
+                <Zap size={12} className={'text-[#137DFE] dark:text-white/60'} />
               </div>
               <span className={cn(
                 'text-[12px] sm:text-[13px] font-bold uppercase tracking-[1.5px] font-mono',
-                darkMode ? 'text-[#F5F5F5]' : 'text-[#0F172A]'
+                'text-[#0F172A] dark:text-[#F5F5F5]'
               )}>
                 Recent Large Trades
               </span>
@@ -4363,9 +4299,9 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                 }));
                 const barPct = maxXrp > 0 ? Math.max(8, Math.min(100, Math.sqrt(xrpAmt / maxXrp) * 100)) : 8;
                 const barBg = isBuy
-                  ? (darkMode ? 'linear-gradient(90deg, rgba(34,197,94,0.18) 0%, rgba(34,197,94,0.05) 100%)' : 'linear-gradient(90deg, rgba(34,197,94,0.12) 0%, rgba(34,197,94,0.03) 100%)')
-                  : (darkMode ? 'linear-gradient(90deg, rgba(239,68,68,0.18) 0%, rgba(239,68,68,0.05) 100%)' : 'linear-gradient(90deg, rgba(239,68,68,0.12) 0%, rgba(239,68,68,0.03) 100%)');
-                const barBorder = isBuy ? (darkMode ? '#22c55e' : '#16a34a') : (darkMode ? '#ef4444' : '#dc2626');
+                  ? (isDark ? 'linear-gradient(90deg, rgba(34,197,94,0.18) 0%, rgba(34,197,94,0.05) 100%)' : 'linear-gradient(90deg, rgba(34,197,94,0.12) 0%, rgba(34,197,94,0.03) 100%)')
+                  : (isDark ? 'linear-gradient(90deg, rgba(239,68,68,0.18) 0%, rgba(239,68,68,0.05) 100%)' : 'linear-gradient(90deg, rgba(239,68,68,0.12) 0%, rgba(239,68,68,0.03) 100%)');
+                const barBorder = isBuy ? (isDark ? '#22c55e' : '#16a34a') : (isDark ? '#ef4444' : '#dc2626');
                 const elapsed = trade.time ? (() => {
                   const s = Math.floor((Date.now() - trade.time) / 1000);
                   if (s < 60) return `${s}s ago`;
@@ -4379,12 +4315,12 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                     href={`/token/${t?.slug}`}
                     className={cn(
                       'grid items-center gap-2 w-full px-2 py-1.5 rounded-lg transition-all duration-200 no-underline',
-                      darkMode ? 'hover:bg-white/[0.04]' : 'hover:bg-gray-50'
+                      'hover:bg-gray-50 dark:hover:bg-white/[0.04]'
                     )}
                     style={{ gridTemplateColumns: '52px 36px 1fr 1fr 72px' }}
                   >
                     {/* Time */}
-                    <span suppressHydrationWarning className={cn('text-[11px] font-semibold tabular-nums', darkMode ? 'text-white/60' : 'text-black/60')}>
+                    <span suppressHydrationWarning className={cn('text-[11px] font-semibold tabular-nums', 'text-black/60 dark:text-white/60')}>
                       {elapsed}
                     </span>
                     {/* Buy/Sell */}
@@ -4394,7 +4330,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                     {/* Token amount with bar */}
                     <div className="relative flex items-center h-7 px-[10px] rounded-[6px] overflow-hidden">
                       <div className="absolute left-0 top-1/2 -translate-y-1/2 h-[80%] rounded-sm" style={{ width: `${barPct}%`, background: barBg, borderLeft: `3px solid ${barBorder}`, transition: 'width 0.4s cubic-bezier(0.4,0,0.2,1)' }} />
-                      <span className={cn('relative z-[1] text-[11px] font-mono font-medium truncate', darkMode ? 'text-white' : 'text-[#1a1a1a]')}>
+                      <span className={cn('relative z-[1] text-[11px] font-mono font-medium truncate', 'text-[#1a1a1a] dark:text-white')}>
                         {fmtStat(tokenAmt)}{' '}
                         <span className="opacity-60 text-[9px] font-normal">{t?.name}</span>
                       </span>
@@ -4402,7 +4338,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                     {/* XRP amount with bar */}
                     <div className="relative flex items-center h-7 px-[10px] rounded-[6px] overflow-hidden">
                       <div className="absolute left-0 top-1/2 -translate-y-1/2 h-[80%] rounded-sm" style={{ width: `${barPct}%`, background: barBg, borderLeft: `3px solid ${barBorder}`, transition: 'width 0.4s cubic-bezier(0.4,0,0.2,1)' }} />
-                      <span className={cn('relative z-[1] text-[11px] font-mono font-medium', darkMode ? 'text-white' : 'text-[#1a1a1a]')}>
+                      <span className={cn('relative z-[1] text-[11px] font-mono font-medium', 'text-[#1a1a1a] dark:text-white')}>
                         {fmtStat(xrpAmt)}{' '}
                         <span className="opacity-60 text-[9px] font-normal">XRP</span>
                       </span>
@@ -4413,9 +4349,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                       onClick={(e) => e.stopPropagation()}
                       className={cn(
                         'inline-flex items-center px-1.5 py-0.5 rounded-md border text-[10px] font-mono no-underline truncate',
-                        darkMode
-                          ? 'bg-white/[0.03] border-white/[0.06] text-white/50 hover:text-white/80'
-                          : 'bg-black/[0.02] border-black/[0.04] text-gray-500 hover:text-gray-900'
+                        'bg-black/[0.02] border-black/[0.04] text-gray-500 hover:text-gray-900 dark:bg-white/[0.03] dark:border-white/[0.06] dark:text-white/50 dark:hover:text-white/80'
                       )}
                       title={trader}
                     >

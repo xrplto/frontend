@@ -39,7 +39,7 @@ const getNftImageUrl = (nft) => {
   return null;
 };
 
-function NFTCard({ nft, onRemove, isDark }) {
+function NFTCard({ nft, onRemove }) {
   const [loadingImg, setLoadingImg] = useState(true);
   const [imageError, setImageError] = useState(false);
   const [removing, setRemoving] = useState(false);
@@ -61,15 +61,13 @@ function NFTCard({ nft, onRemove, isDark }) {
       <div
         className={cn(
           'relative rounded-2xl overflow-hidden transition-all duration-300 border-[1.5px]',
-          isDark
-            ? 'bg-white/[0.03] hover:bg-white/[0.06] border-white/5 hover:border-white/10'
-            : 'bg-white border-black/[0.03] shadow-sm hover:shadow-md'
+          'bg-white border-black/[0.03] shadow-sm hover:shadow-md dark:bg-white/[0.03] dark:hover:bg-white/[0.06] dark:border-white/5 dark:hover:border-white/10'
         )}
       >
         <div className="relative aspect-square overflow-hidden">
           {loadingImg && !imageError && (
-            <div className={cn('absolute inset-0 flex items-center justify-center', isDark ? 'bg-[#111]' : 'bg-[#F1F5F9]')}>
-              <Loader2 size={16} strokeWidth={1.5} className={cn('animate-spin', isDark ? 'text-[#4B5563]' : 'text-[#94A3B8]')} />
+            <div className={cn('absolute inset-0 flex items-center justify-center', 'bg-[#F1F5F9] dark:bg-[#111]')}>
+              <Loader2 size={16} strokeWidth={1.5} className={cn('animate-spin', 'text-[#94A3B8] dark:text-[#4B5563]')} />
             </div>
           )}
           {!imageError ? (
@@ -88,7 +86,7 @@ function NFTCard({ nft, onRemove, isDark }) {
               )}
             />
           ) : (
-            <div className={cn('w-full h-full flex flex-col items-center justify-center gap-1.5', isDark ? 'bg-[#111] text-[#4B5563]' : 'bg-[#F1F5F9] text-[#94A3B8]')}>
+            <div className={cn('w-full h-full flex flex-col items-center justify-center gap-1.5', 'bg-[#F1F5F9] text-[#94A3B8] dark:bg-[#111] dark:text-[#4B5563]')}>
               <ImageOff size={20} strokeWidth={1.2} />
               <span className="text-[10px]">Unavailable</span>
             </div>
@@ -99,7 +97,7 @@ function NFTCard({ nft, onRemove, isDark }) {
             {nft.rarityRank && (
               <div className={cn(
                 'px-2 py-0.5 rounded-lg text-[9px] font-bold backdrop-blur-md border pointer-events-auto',
-                isDark ? 'bg-black/40 border-white/10 text-white' : 'bg-white/70 border-black/5 text-gray-900'
+                'bg-white/70 border-black/5 text-gray-900 dark:bg-black/40 dark:border-white/10 dark:text-white'
               )}>
                 #{nft.rarityRank}
               </div>
@@ -111,9 +109,7 @@ function NFTCard({ nft, onRemove, isDark }) {
               aria-label="Remove from watchlist"
               className={cn(
                 'p-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-auto backdrop-blur-md border outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] focus-visible:opacity-100',
-                isDark
-                  ? 'bg-black/40 border-white/10 hover:bg-red-500/80 text-white/70 hover:text-white'
-                  : 'bg-white/70 border-black/5 hover:bg-red-500 hover:text-white text-gray-400'
+                'bg-white/70 border-black/5 hover:bg-red-500 hover:text-white text-gray-400 dark:bg-black/40 dark:border-white/10 dark:hover:bg-red-500/80 dark:text-white/70 dark:hover:text-white'
               )}
             >
               {removing ? <Loader2 size={12} className="animate-spin" /> : <X size={12} strokeWidth={3} />}
@@ -125,7 +121,7 @@ function NFTCard({ nft, onRemove, isDark }) {
             <div className="absolute bottom-2 left-2 right-2">
               <div className={cn(
                 'px-2.5 py-1 rounded-xl text-[10px] font-bold backdrop-blur-md border inline-flex items-center gap-1',
-                isDark ? 'bg-black/40 border-white/10 text-primary' : 'bg-white/80 border-black/5 text-primary shadow-sm'
+                'bg-white/80 border-black/5 text-primary shadow-sm dark:bg-black/40 dark:border-white/10 dark:text-primary'
               )}>
                 {price} XRP
               </div>
@@ -136,14 +132,14 @@ function NFTCard({ nft, onRemove, isDark }) {
           <p
             className={cn(
               'text-[12px] font-bold truncate tracking-tight',
-              isDark ? 'text-gray-200' : 'text-gray-900'
+              'text-gray-900 dark:text-gray-200'
             )}
           >
             {nft.name || 'Unnamed NFT'}
           </p>
           <div className="flex items-center gap-1 mt-0.5">
             <div className={cn('w-1.5 h-1.5 rounded-full bg-primary/40')} />
-            <p className={cn('text-[10px] font-medium truncate', isDark ? 'text-white/30' : 'text-gray-400')}>
+            <p className={cn('text-[10px] font-medium truncate', 'text-gray-400 dark:text-white/30')}>
               {nft.collectionName || 'XRPL Collection'}
             </p>
           </div>
@@ -153,32 +149,32 @@ function NFTCard({ nft, onRemove, isDark }) {
   );
 }
 
-function CollectionGroup({ slug, data, onRemove, isDark, defaultOpen = false }) {
+function CollectionGroup({ slug, data, onRemove, defaultOpen = false }) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
   const items = data.items || [];
 
   return (
     <div className={cn(
       'rounded-3xl border overflow-hidden transition-all duration-300 mb-4',
-      isDark ? 'bg-white/[0.02] border-white/5 shadow-2xl shadow-black/20' : 'bg-white border-black/5 shadow-sm'
+      'bg-white border-black/5 shadow-sm dark:bg-white/[0.02] dark:border-white/5 dark:shadow-2xl dark:shadow-black/20'
     )}>
       <button
         onClick={() => setIsOpen(!isOpen)}
         aria-expanded={isOpen}
         className={cn(
           'w-full flex items-center justify-between px-6 py-5 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] focus-visible:ring-inset',
-          isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-black/[0.02]'
+          'hover:bg-black/[0.02] dark:hover:bg-white/[0.02]'
         )}
       >
         <div className="flex items-center gap-4">
-          <div className={cn('w-10 h-10 rounded-2xl flex items-center justify-center font-bold text-[14px]', isDark ? 'bg-white/10 text-white' : 'bg-black/5 text-gray-900')}>
+          <div className={cn('w-10 h-10 rounded-2xl flex items-center justify-center font-bold text-[14px]', 'bg-black/5 text-gray-900 dark:bg-white/10 dark:text-white')}>
             {items.length}
           </div>
           <div className="text-left">
-            <span className={cn('block text-[15px] font-bold tracking-tight leading-none mb-1', isDark ? 'text-white' : 'text-gray-900')}>
+            <span className={cn('block text-[15px] font-bold tracking-tight leading-none mb-1', 'text-gray-900 dark:text-white')}>
               {data.collectionName || slug}
             </span>
-            <span className={cn('text-[11px] font-medium uppercase tracking-[0.1em]', isDark ? 'text-white/30' : 'text-gray-400')}>
+            <span className={cn('text-[11px] font-medium uppercase tracking-[0.1em]', 'text-gray-400 dark:text-white/30')}>
               Collection
             </span>
           </div>
@@ -190,20 +186,20 @@ function CollectionGroup({ slug, data, onRemove, isDark, defaultOpen = false }) 
               onClick={(e) => e.stopPropagation()}
               className={cn(
                 'flex items-center gap-2 px-3 py-1.5 rounded-xl transition-all border outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
-                isDark ? 'border-white/10 hover:bg-white/10 text-white/50 hover:text-white' : 'border-black/5 hover:bg-black/5 text-gray-500'
+                'border-black/5 hover:bg-black/5 text-gray-500 dark:border-white/10 dark:hover:bg-white/10 dark:text-white/50 dark:hover:text-white'
               )}
             >
               <span className="text-[11px] font-bold">View</span>
               <ExternalLink size={12} className="text-primary" />
             </Link>
           )}
-          <div className={cn('w-[1px] h-6 mx-1', isDark ? 'bg-white/10' : 'bg-black/10')} />
+          <div className={cn('w-[1px] h-6 mx-1', 'bg-black/10 dark:bg-white/10')} />
           <ChevronDown
             size={18}
             className={cn(
               'transition-transform duration-300',
               isOpen && 'rotate-180',
-              isDark ? 'text-white/40' : 'text-gray-400'
+              'text-gray-400 dark:text-white/40'
             )}
           />
         </div>
@@ -213,7 +209,7 @@ function CollectionGroup({ slug, data, onRemove, isDark, defaultOpen = false }) 
           <div className="h-[1px] w-full mb-6 opacity-10 bg-gradient-to-r from-transparent via-current to-transparent" />
           <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-3">
             {items.map((nft) => (
-              <NFTCard key={nft.nftokenId} nft={nft} onRemove={onRemove} isDark={isDark} />
+              <NFTCard key={nft.nftokenId} nft={nft} onRemove={onRemove} />
             ))}
           </div>
         </div>
@@ -285,7 +281,7 @@ export default function NFTWatchList({ account }) {
           <div className="w-12 h-12 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
           <div className="absolute inset-0 bg-primary/5 blur-xl rounded-full" />
         </div>
-        <p className={cn('text-[13px] font-bold mt-6 tracking-widest uppercase opacity-40', isDark ? 'text-white' : 'text-gray-900')}>
+        <p className={cn('text-[13px] font-bold mt-6 tracking-widest uppercase opacity-40', 'text-gray-900 dark:text-white')}>
           Loading Collections
         </p>
       </div>
@@ -299,9 +295,7 @@ export default function NFTWatchList({ account }) {
       <div
         className={cn(
           'relative overflow-hidden rounded-3xl border-[1.5px] py-20 px-6 text-center group',
-          isDark
-            ? 'border-white/10 bg-gradient-to-b from-white/[0.04] to-transparent'
-            : 'border-black/[0.08] bg-gradient-to-b from-black/[0.02] to-transparent'
+          'border-black/[0.08] bg-gradient-to-b from-black/[0.02] to-transparent dark:border-white/10 dark:bg-gradient-to-b dark:from-white/[0.04] dark:to-transparent'
         )}
       >
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[300px] h-[300px] bg-primary/20 blur-[100px] -z-10 group-hover:bg-primary/30 transition-all duration-700" />
@@ -312,13 +306,13 @@ export default function NFTWatchList({ account }) {
         <h2
           className={cn(
             'text-2xl font-bold mb-3 tracking-tight',
-            isDark ? 'text-white' : 'text-gray-900'
+            'text-gray-900 dark:text-white'
           )}
         >
           Build Your NFT Gallery
         </h2>
         <p
-          className={cn('text-[15px] mb-8 max-w-sm mx-auto leading-relaxed', isDark ? 'text-white/50' : 'text-gray-500')}
+          className={cn('text-[15px] mb-8 max-w-sm mx-auto leading-relaxed', 'text-gray-500 dark:text-white/50')}
         >
           Keep track of your favorite NFT collections in one place. Start exploring the marketplace to add items to your watchlist.
         </p>
@@ -341,7 +335,6 @@ export default function NFTWatchList({ account }) {
           slug={slug}
           data={watchlist[slug]}
           onRemove={handleRemove}
-          isDark={isDark}
           defaultOpen={true}
         />
       ))}

@@ -254,9 +254,7 @@ function AttributeFilter({ attrs, setFilterAttrs, activeFilters = [] }) {
                   ? 'bg-primary text-white'
                   : selectedCount > 0
                     ? 'bg-primary/15 text-primary border border-primary/30'
-                    : isDark
-                      ? 'bg-white/5 text-white/70 hover:bg-white/10'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-white/5 dark:text-white/70 dark:hover:bg-white/10'
               )}
             >
               {title}
@@ -280,7 +278,7 @@ function AttributeFilter({ attrs, setFilterAttrs, activeFilters = [] }) {
         <div
           className={cn(
             'p-2 rounded-lg border-[1.5px]',
-            isDark ? 'border-white/[0.08] bg-white/[0.02]' : 'border-gray-200 bg-gray-50'
+            'border-gray-200 bg-gray-50 dark:border-white/[0.08] dark:bg-white/[0.02]'
           )}
         >
           <div className="flex flex-wrap gap-1">
@@ -307,16 +305,14 @@ function AttributeFilter({ attrs, setFilterAttrs, activeFilters = [] }) {
                       'inline-flex items-center gap-1 px-2 py-1 rounded-md text-[10px] transition-[background-color,border-color]',
                       isChecked
                         ? 'bg-primary text-white'
-                        : isDark
-                          ? 'bg-white/5 text-white/70 hover:bg-white/10'
-                          : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
+                        : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200 dark:bg-white/5 dark:text-white/70 dark:hover:bg-white/10'
                     )}
                   >
                     {key}
                     <span
                       className={cn(
                         'text-[9px]',
-                        isChecked ? 'text-white/70' : isDark ? 'text-white/40' : 'text-gray-400'
+                        isChecked ? 'text-white/70' : 'text-gray-400 dark:text-white/40'
                       )}
                     >
                       {fIntNumber(itemCount)}
@@ -334,14 +330,14 @@ function AttributeFilter({ attrs, setFilterAttrs, activeFilters = [] }) {
 
 // NFT Skeleton Component for loading state
 const NFTSkeleton = React.memo(({ isDark }) => (
-  <div className={cn('rounded-lg overflow-hidden', isDark ? 'bg-white/[0.03]' : 'bg-gray-50')}>
-    <div className={cn('aspect-square animate-pulse', isDark ? 'bg-white/5' : 'bg-gray-200')} />
+  <div className={cn('rounded-lg overflow-hidden', 'bg-gray-50 dark:bg-white/[0.03]')}>
+    <div className={cn('aspect-square animate-pulse', 'bg-gray-200 dark:bg-white/5')} />
     <div className="px-2 py-1.5 space-y-1.5">
       <div
-        className={cn('h-3 rounded animate-pulse w-[70%]', isDark ? 'bg-white/5' : 'bg-gray-200')}
+        className={cn('h-3 rounded animate-pulse w-[70%]', 'bg-gray-200 dark:bg-white/5')}
       />
       <div
-        className={cn('h-2.5 rounded animate-pulse w-[40%]', isDark ? 'bg-white/5' : 'bg-gray-200')}
+        className={cn('h-2.5 rounded animate-pulse w-[40%]', 'bg-gray-200 dark:bg-white/5')}
       />
     </div>
   </div>
@@ -349,7 +345,7 @@ const NFTSkeleton = React.memo(({ isDark }) => (
 
 // Ultra-light NFT Card - hover effects
 const NFTCard = React.memo(
-  ({ nft, isDark, priority }) => {
+  ({ nft, priority }) => {
     const { cost, meta, NFTokenID, rarity_rank, is_burned } = nft;
     const imgUrl = getNftCoverUrl(nft, 'large');
     const name = meta?.name || meta?.Name || 'No Name';
@@ -364,13 +360,11 @@ const NFTCard = React.memo(
         <div
           className={cn(
             'rounded-xl overflow-hidden border-[1.5px] transition-[border-color,box-shadow] duration-200',
-            isDark
-              ? 'border-white/[0.06] group-hover:border-primary/40 group-hover:shadow-[0_0_20px_rgba(66,133,244,0.15)]'
-              : 'border-gray-200 group-hover:border-primary/40 group-hover:shadow-[0_4px_20px_rgba(66,133,244,0.12)]'
+            'border-gray-200 group-hover:border-primary/40 group-hover:shadow-[0_4px_20px_rgba(66,133,244,0.12)] dark:border-white/[0.06] dark:group-hover:border-primary/40 dark:group-hover:shadow-[0_0_20px_rgba(66,133,244,0.15)]'
           )}
         >
           <div
-            className={cn('relative aspect-square overflow-hidden', isDark ? 'bg-[#111]' : 'bg-[#F1F5F9]')}
+            className={cn('relative aspect-square overflow-hidden', 'bg-gray-100 dark:bg-white/[0.04]')}
           >
             {imgUrl && !imgError ? (
               <Image
@@ -387,7 +381,7 @@ const NFTCard = React.memo(
               />
             ) : (
               <span
-                className={cn('absolute inset-0 flex flex-col items-center justify-center gap-1.5', isDark ? 'text-[#4B5563]' : 'text-[#94A3B8]')}
+                className={cn('absolute inset-0 flex flex-col items-center justify-center gap-1.5', 'text-[#94A3B8] dark:text-[#4B5563]')}
               >
                 <ImageOff size={20} strokeWidth={1.2} />
                 <span className="text-[10px]">Unavailable</span>
@@ -418,19 +412,19 @@ const NFTCard = React.memo(
           </div>
 
           {/* Card footer */}
-          <div className={cn('px-2 py-2', isDark ? 'bg-white/[0.02]' : 'bg-gray-50/50')}>
+          <div className={cn('px-2 py-2', 'bg-gray-50/50 dark:bg-white/[0.02]')}>
             <div className="flex justify-between items-center">
               <p
                 className={cn(
                   'text-[11px] font-medium truncate flex-1',
-                  isDark ? 'text-white/80' : 'text-gray-700'
+                  'text-gray-700 dark:text-white/80'
                 )}
               >
                 {name}
               </p>
               {rarity_rank && (
                 <span
-                  className={cn('text-[10px] ml-1', isDark ? 'text-white/40' : 'text-gray-400')}
+                  className={cn('text-[10px] ml-1', 'text-gray-400 dark:text-white/40')}
                 >
                   #{rarity_rank}
                 </span>
@@ -442,7 +436,7 @@ const NFTCard = React.memo(
                   {fNumber(listPrice)} XRP
                 </span>
               ) : (
-                <span className={cn('text-[10px]', isDark ? 'text-white/60' : 'text-gray-500')}>
+                <span className={cn('text-[10px]', 'text-gray-500 dark:text-white/60')}>
                   Not listed
                 </span>
               )}
@@ -456,7 +450,7 @@ const NFTCard = React.memo(
 );
 
 // Virtualized Grid - only renders visible items
-const VirtualGrid = React.memo(({ nfts, loading, hasMore, onLoadMore, gridCols, isDark }) => {
+const VirtualGrid = React.memo(({ nfts, loading, hasMore, onLoadMore, gridCols }) => {
   const containerRef = useRef(null);
   const sentinelRef = useRef(null);
   const [visibleRange, setVisibleRange] = useState({ start: 0, end: 24 });
@@ -502,7 +496,7 @@ const VirtualGrid = React.memo(({ nfts, loading, hasMore, onLoadMore, gridCols, 
     return (
       <div className={cn('grid gap-3', gridClass)} style={{ minHeight: ITEM_HEIGHT * 3 }}>
         {Array.from({ length: gridCols * 3 }).map((_, i) => (
-          <NFTSkeleton key={i} isDark={isDark} />
+          <NFTSkeleton key={i} />
         ))}
       </div>
     );
@@ -519,7 +513,6 @@ const VirtualGrid = React.memo(({ nfts, loading, hasMore, onLoadMore, gridCols, 
             <NFTCard
               key={nft.NFTokenID}
               nft={nft}
-              isDark={isDark}
               priority={visibleRange.start + i < 12}
             />
           ))}
@@ -533,7 +526,7 @@ const VirtualGrid = React.memo(({ nfts, loading, hasMore, onLoadMore, gridCols, 
       )}
       {!hasMore && nfts.length > 0 && (
         <p
-          className={cn('text-center py-6 text-[11px]', isDark ? 'text-white/30' : 'text-gray-400')}
+          className={cn('text-center py-6 text-[11px]', 'text-gray-400 dark:text-white/30')}
         >
           End of collection
         </p>
@@ -544,7 +537,7 @@ const VirtualGrid = React.memo(({ nfts, loading, hasMore, onLoadMore, gridCols, 
 
 // NFT Grid Component
 const NFTGrid = React.memo(
-  ({ collection, isDark }) => {
+  ({ collection }) => {
     const BASE_URL = 'https://api.xrpl.to/v1';
     const router = useRouter();
     const dropdownRef = useRef(null);
@@ -748,20 +741,18 @@ const NFTGrid = React.memo(
       <div className="bg-transparent">
         {/* Filter Header */}
         <div className="mb-4">
-          <div className="flex gap-2 items-center justify-end">
+          <div className="flex flex-wrap gap-1.5 sm:gap-2 items-center justify-end">
             {/* Filter Button */}
             {traits.length > 0 && (
               <button
                 onClick={() => setShowFilter(!showFilter)}
                 aria-label="Filter NFTs"
                 className={cn(
-                  'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border-[1.5px] text-[11px] font-medium transition-[background-color,border-color]',
+                  'flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-lg border-[1.5px] text-[10px] sm:text-[11px] font-medium transition-[background-color,border-color]',
                   'outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                   showFilter
                     ? 'border-primary bg-primary/10 text-primary'
-                    : isDark
-                      ? 'border-white/[0.08] text-white/50 hover:border-primary/30'
-                      : 'border-gray-200 text-gray-500 hover:border-primary/30'
+                    : 'border-gray-200 text-gray-500 hover:border-primary/30 dark:border-white/[0.08] dark:text-white/50 dark:hover:border-primary/30'
                 )}
               >
                 <Filter size={12} />
@@ -778,24 +769,20 @@ const NFTGrid = React.memo(
               <button
                 onClick={() => setShowSortDropdown(!showSortDropdown)}
                 className={cn(
-                  'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border-[1.5px] text-[11px] font-medium transition-[background-color,border-color]',
+                  'flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-lg border-[1.5px] text-[10px] sm:text-[11px] font-medium transition-[background-color,border-color]',
                   'outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
-                  isDark
-                    ? 'border-white/[0.08] text-white/50 hover:border-primary/30'
-                    : 'border-gray-200 text-gray-500 hover:border-primary/30'
+                  'border-gray-200 text-gray-500 hover:border-primary/30 dark:border-white/[0.08] dark:text-white/50 dark:hover:border-primary/30'
                 )}
               >
-                {currentSort.label}
-                <ChevronDown size={12} />
+                <span className="max-w-[100px] sm:max-w-none truncate">{currentSort.label}</span>
+                <ChevronDown size={12} className="flex-shrink-0" />
               </button>
 
               {showSortDropdown && (
                 <div
                   className={cn(
                     'absolute top-full right-0 mt-1 min-w-[160px] rounded-2xl border p-1 z-50',
-                    isDark
-                      ? 'bg-black/90 backdrop-blur-2xl border-[#3f96fe]/10 shadow-[0_8px_40px_rgba(0,0,0,0.6)]'
-                      : 'bg-white/98 backdrop-blur-2xl border-gray-200 shadow-[0_8px_32px_rgba(0,0,0,0.08)]'
+                    'bg-white/98 backdrop-blur-2xl border-gray-200 shadow-[0_8px_32px_rgba(0,0,0,0.08)] dark:bg-black/90 dark:backdrop-blur-2xl dark:border-[#3f96fe]/10 dark:shadow-[0_8px_40px_rgba(0,0,0,0.6)]'
                   )}
                 >
                   {SORT_OPTIONS.map((option) => (
@@ -809,9 +796,7 @@ const NFTGrid = React.memo(
                         'px-2 py-1.5 rounded-md cursor-pointer text-[11px] transition-[background-color]',
                         sortBy === option.value
                           ? 'bg-primary/10 text-primary font-medium'
-                          : isDark
-                            ? 'text-white/70 hover:bg-white/5'
-                            : 'text-gray-700 hover:bg-gray-50'
+                          : 'text-gray-700 hover:bg-gray-50 dark:text-white/70 dark:hover:bg-white/5'
                       )}
                     >
                       {option.label}
@@ -826,26 +811,22 @@ const NFTGrid = React.memo(
               <button
                 onClick={() => setShowListedDropdown(!showListedDropdown)}
                 className={cn(
-                  'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border-[1.5px] text-[11px] font-medium transition-[background-color,border-color]',
+                  'flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-lg border-[1.5px] text-[10px] sm:text-[11px] font-medium transition-[background-color,border-color]',
                   'outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                   listed
                     ? 'border-primary bg-primary/10 text-primary'
-                    : isDark
-                      ? 'border-white/[0.08] text-white/50 hover:border-primary/30'
-                      : 'border-gray-200 text-gray-500 hover:border-primary/30'
+                    : 'border-gray-200 text-gray-500 hover:border-primary/30 dark:border-white/[0.08] dark:text-white/50 dark:hover:border-primary/30'
                 )}
               >
                 {LISTING_OPTIONS.find((o) => o.value === listed)?.label || 'All'}
-                <ChevronDown size={12} />
+                <ChevronDown size={12} className="flex-shrink-0" />
               </button>
 
               {showListedDropdown && (
                 <div
                   className={cn(
                     'absolute top-full right-0 mt-1 min-w-[140px] rounded-2xl border p-1 z-50',
-                    isDark
-                      ? 'bg-black/90 backdrop-blur-2xl border-[#3f96fe]/10 shadow-[0_8px_40px_rgba(0,0,0,0.6)]'
-                      : 'bg-white/98 backdrop-blur-2xl border-gray-200 shadow-[0_8px_32px_rgba(0,0,0,0.08)]'
+                    'bg-white/98 backdrop-blur-2xl border-gray-200 shadow-[0_8px_32px_rgba(0,0,0,0.08)] dark:bg-black/90 dark:backdrop-blur-2xl dark:border-[#3f96fe]/10 dark:shadow-[0_8px_40px_rgba(0,0,0,0.6)]'
                   )}
                 >
                   {LISTING_OPTIONS.map((option) => (
@@ -859,9 +840,7 @@ const NFTGrid = React.memo(
                         'px-2 py-1.5 rounded-md cursor-pointer text-[11px] transition-[background-color]',
                         listed === option.value
                           ? 'bg-primary/10 text-primary font-medium'
-                          : isDark
-                            ? 'text-white/70 hover:bg-white/5'
-                            : 'text-gray-700 hover:bg-gray-50'
+                          : 'text-gray-700 hover:bg-gray-50 dark:text-white/70 dark:hover:bg-white/5'
                       )}
                     >
                       {option.label}
@@ -871,8 +850,8 @@ const NFTGrid = React.memo(
               )}
             </div>
 
-            {/* Grid Size Selector */}
-            <div className="flex items-center gap-0.5 ml-1">
+            {/* Grid Size Selector - hidden on mobile */}
+            <div className="hidden sm:flex items-center gap-0.5 ml-1">
               {GRID_OPTIONS.map((opt) => (
                 <button
                   key={opt.value}
@@ -883,9 +862,7 @@ const NFTGrid = React.memo(
                     'outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                     gridCols === opt.value
                       ? 'bg-primary/10 text-primary border border-primary/30'
-                      : isDark
-                        ? 'text-white/40 hover:bg-white/5 border border-transparent'
-                        : 'text-gray-400 hover:bg-gray-100 border border-transparent'
+                      : 'text-gray-400 hover:bg-gray-100 border border-transparent dark:text-white/40 dark:hover:bg-white/5 dark:border dark:border-transparent'
                   )}
                   title={`${opt.value} per row`}
                 >
@@ -901,7 +878,7 @@ const NFTGrid = React.memo(
             {/* Results Count */}
             {totalCount > 0 && (
               <span
-                className={cn('text-[10px] ml-auto', isDark ? 'text-white/60' : 'text-gray-500')}
+                className={cn('text-[10px] ml-auto', 'text-gray-500 dark:text-white/60')}
               >
                 {nfts.length} of {fIntNumber(totalCount)}
               </span>
@@ -913,7 +890,7 @@ const NFTGrid = React.memo(
             <div
               className={cn(
                 'mt-3 p-3 rounded-lg border-[1.5px]',
-                isDark ? 'border-white/[0.08] bg-white/[0.02]' : 'border-gray-200 bg-gray-50'
+                'border-gray-200 bg-gray-50 dark:border-white/[0.08] dark:bg-white/[0.02]'
               )}
             >
               <AttributeFilter
@@ -973,7 +950,6 @@ const NFTGrid = React.memo(
           hasMore={hasMore}
           onLoadMore={() => !loading && setPage((prev) => prev + 1)}
           gridCols={gridCols}
-          isDark={isDark}
         />
       </div>
     );
@@ -1017,9 +993,7 @@ function CollectionCard({ collectionData, type, account, handleRemove }) {
       <div
         className={cn(
           'rounded-lg border-[1.5px] overflow-hidden cursor-pointer transition-[border-color] w-full aspect-[1/1.3]',
-          isDark
-            ? 'border-white/[0.08] hover:border-primary/30'
-            : 'border-gray-200 hover:border-primary/30'
+          'border-gray-200 hover:border-primary/30 dark:border-white/[0.08] dark:hover:border-primary/30'
         )}
       >
         <div className="relative h-[70%]">
@@ -1029,9 +1003,7 @@ function CollectionCard({ collectionData, type, account, handleRemove }) {
               aria-label="Remove collection"
               className={cn(
                 'absolute top-1 right-1 z-10 w-5 h-5 rounded flex items-center justify-center outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
-                isDark
-                  ? 'bg-black/60 text-white/70 hover:text-red-500'
-                  : 'bg-white/80 text-gray-500 hover:text-red-500'
+                'bg-white/80 text-gray-500 hover:text-red-500 dark:bg-black/60 dark:text-white/70 dark:hover:text-red-500'
               )}
             >
               <X size={12} />
@@ -1039,7 +1011,7 @@ function CollectionCard({ collectionData, type, account, handleRemove }) {
           )}
           {loadingImg && (
             <div
-              className={cn('w-full h-full animate-pulse', isDark ? 'bg-white/5' : 'bg-gray-100')}
+              className={cn('w-full h-full animate-pulse', 'bg-gray-100 dark:bg-white/5')}
             />
           )}
           <img
@@ -1049,21 +1021,21 @@ function CollectionCard({ collectionData, type, account, handleRemove }) {
             className={cn('w-full h-full object-cover', loadingImg && 'hidden')}
           />
         </div>
-        <div className={cn('p-2 h-[30%] border-t', isDark ? 'border-white/5' : 'border-gray-100')}>
+        <div className={cn('p-2 h-[30%] border-t', 'border-gray-100 dark:border-white/5')}>
           <h3
             className={cn(
               'text-[11px] font-medium truncate',
-              isDark ? 'text-white' : 'text-gray-900'
+              'text-gray-900 dark:text-white'
             )}
           >
             {name}
           </h3>
           <div className="flex items-center justify-between mt-1">
-            <span className={cn('text-[9px]', isDark ? 'text-white/40' : 'text-gray-500')}>
+            <span className={cn('text-[9px]', 'text-gray-500 dark:text-white/40')}>
               {collectionData.nftCount} items
             </span>
             {collectionData.nftsForSale > 0 && (
-              <span className={cn('text-[9px]', isDark ? 'text-green-400' : 'text-green-600')}>
+              <span className={cn('text-[9px]', 'text-green-600 dark:text-green-400')}>
                 {collectionData.nftsForSale} listed
               </span>
             )}
@@ -1075,21 +1047,19 @@ function CollectionCard({ collectionData, type, account, handleRemove }) {
 }
 
 // Wallet tier SVG icons (consistent with TradingHistory)
-const TierIconBox = ({ children, isDark }) => (
+const TierIconBox = ({ children }) => (
   <span
     className={cn(
       'inline-flex items-center justify-center px-1 py-0.5 rounded border',
-      isDark
-        ? 'border-white/15 bg-white/[0.03]'
-        : 'border-black/10 bg-black/[0.02]'
+      'border-black/10 bg-black/[0.02] dark:border-white/15 dark:bg-white/[0.03]'
     )}
   >
     {children}
   </span>
 );
 
-const ShrimpIcon = ({ size = 18, isDark }) => (
-  <TierIconBox isDark={isDark}>
+const ShrimpIcon = ({ size = 18 }) => (
+  <TierIconBox>
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 823.528 795.746"
@@ -1154,8 +1124,8 @@ const ShrimpIcon = ({ size = 18, isDark }) => (
   </TierIconBox>
 );
 
-const FishIcon2 = ({ size = 18, isDark }) => (
-  <TierIconBox isDark={isDark}>
+const FishIcon2 = ({ size = 18 }) => (
+  <TierIconBox>
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 999.334 735.299"
@@ -1228,8 +1198,8 @@ const FishIcon2 = ({ size = 18, isDark }) => (
   </TierIconBox>
 );
 
-const DolphinIcon = ({ size = 18, isDark }) => (
-  <TierIconBox isDark={isDark}>
+const DolphinIcon = ({ size = 18 }) => (
+  <TierIconBox>
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 1322.431 487.538"
@@ -1291,8 +1261,8 @@ const DolphinIcon = ({ size = 18, isDark }) => (
   </TierIconBox>
 );
 
-const OrcaIcon = ({ size = 18, isDark }) => (
-  <TierIconBox isDark={isDark}>
+const OrcaIcon = ({ size = 18 }) => (
+  <TierIconBox>
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 1185.935 605.365"
@@ -1362,8 +1332,8 @@ const OrcaIcon = ({ size = 18, isDark }) => (
   </TierIconBox>
 );
 
-const WhaleIcon = ({ size = 18, isDark }) => (
-  <TierIconBox isDark={isDark}>
+const WhaleIcon = ({ size = 18 }) => (
+  <TierIconBox>
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 1329.594 627.908"
@@ -1533,22 +1503,32 @@ const PriceChart = React.memo(({ slug }) => {
         // Set initial legend to latest data
         if (rawData.length > 0) setLegend(rawData[rawData.length - 1]);
 
+        const isMobileChart = window.innerWidth < 640;
+        const chartHeight = isMobileChart ? 240 : 350;
         chart = createChart(chartContainerRef.current, {
           width: chartContainerRef.current.clientWidth,
-          height: 350,
+          height: chartHeight,
           layout: {
             background: { type: 'solid', color: 'transparent' },
-            textColor: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)'
+            textColor: 'rgba(0,0,0,0.6) dark:rgba(255,255,255,0.6)',
+            fontSize: isMobileChart ? 9 : 12
           },
           grid: {
-            vertLines: { color: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' },
-            horzLines: { color: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }
+            vertLines: { color: 'rgba(0,0,0,0.05) dark:rgba(255,255,255,0.05)' },
+            horzLines: { color: 'rgba(0,0,0,0.05) dark:rgba(255,255,255,0.05)' }
           },
           crosshair: { mode: 1 },
-          rightPriceScale: { borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' },
+          rightPriceScale: {
+            borderColor: 'rgba(0,0,0,0.1) dark:rgba(255,255,255,0.1)',
+            entireTextOnly: true,
+            ticksVisible: false,
+            minimumWidth: isMobileChart ? 40 : 60
+          },
           timeScale: {
-            borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
-            timeVisible: true
+            borderColor: 'rgba(0,0,0,0.1) dark:rgba(255,255,255,0.1)',
+            timeVisible: true,
+            fixLeftEdge: isMobileChart,
+            fixRightEdge: isMobileChart
           }
         });
 
@@ -1624,8 +1604,11 @@ const PriceChart = React.memo(({ slug }) => {
         chart.timeScale().fitContent();
         chartRef.current = chart;
 
-        const handleResize = () =>
-          chart?.applyOptions({ width: chartContainerRef.current?.clientWidth || 0 });
+        const handleResize = () => {
+          const w = chartContainerRef.current?.clientWidth || 0;
+          const h = window.innerWidth < 640 ? 240 : 350;
+          chart?.applyOptions({ width: w, height: h });
+        };
         window.addEventListener('resize', handleResize);
         chartRef.current.resizeHandler = handleResize;
       } catch (err) {
@@ -1643,72 +1626,45 @@ const PriceChart = React.memo(({ slug }) => {
       chartRef.current?.remove();
       chartRef.current = null;
     };
-  }, [slug, isDark, handleChartClick]);
+  }, [slug, handleChartClick]);
 
   return (
     <div className="w-full">
-      <div
-        className={cn(
-          'flex flex-wrap gap-x-3 gap-y-1.5 px-3 py-2 min-h-[36px]',
-          isDark ? 'text-white/80' : 'text-gray-700'
-        )}
-      >
       {legend && (
-        <>
-          <span
-            className={cn('text-[11px] font-medium', isDark ? 'text-white/50' : 'text-gray-500')}
-          >
+        <div
+          className={cn(
+            'flex items-center flex-wrap gap-x-1 sm:gap-x-3 gap-y-0.5 sm:gap-y-1 px-1.5 sm:px-3 py-1 sm:py-2',
+            'text-gray-700 dark:text-white/80'
+          )}
+        >
+          <span className={cn('text-[9px] sm:text-[11px] font-medium mr-0.5', 'text-gray-500 dark:text-white/50')}>
             {legend.t}
           </span>
-          <div className="flex items-center gap-1.5">
-            <span className="text-[10px] text-green-500">▲ High</span>
-            <span className="text-[12px] font-medium text-green-500">
-              {legend.h?.toFixed(2)} XRP
-            </span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <span className="text-[10px] text-red-500">▼ Low</span>
-            <span className="text-[12px] font-medium text-red-500">{legend.l?.toFixed(2)} XRP</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <span className={cn('text-[10px]', isDark ? 'text-white/60' : 'text-gray-500')}>
-              Close
-            </span>
-            <span
-              className={cn(
-                'text-[12px] font-medium',
-                legend.c >= legend.o ? 'text-green-500' : 'text-red-500'
-              )}
-            >
-              {legend.c?.toFixed(2)}
-            </span>
-          </div>
-          <span
-            className={cn(
-              'text-[10px] px-1.5 py-0.5 rounded',
-              isDark ? 'bg-white/5' : 'bg-gray-100'
-            )}
-          >
-            Volume <span className="font-medium">{(legend.v || 0).toFixed(0)} XRP</span>
+          <span className="text-[9px] sm:text-[12px] font-medium text-green-500">High {legend.h?.toFixed(2)}</span>
+          <span className="text-[9px] sm:text-[12px] font-medium text-red-500">Low {legend.l?.toFixed(2)}</span>
+          <span className={cn('text-[9px] sm:text-[12px] font-medium', legend.c >= legend.o ? 'text-green-500' : 'text-red-500')}>
+            Close {legend.c?.toFixed(2)}
           </span>
-          <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-500">
+          <span className={cn('text-[8px] sm:text-[10px] px-1 sm:px-1.5 py-px sm:py-0.5 rounded', 'bg-gray-100 dark:bg-white/5')}>
+            Vol <span className="font-medium">{(legend.v || 0).toFixed(0)}</span>
+          </span>
+          <span className="text-[8px] sm:text-[10px] px-1 sm:px-1.5 py-px sm:py-0.5 rounded bg-blue-500/10 text-blue-500">
             Sales <span className="font-medium">{legend.s || 0}</span>
           </span>
-          <span className="text-[10px] px-1.5 py-0.5 rounded bg-yellow-500/10 text-yellow-500">
-            Listings <span className="font-medium">{legend.lo || 0}</span>
+          <span className="text-[8px] sm:text-[10px] px-1 sm:px-1.5 py-px sm:py-0.5 rounded bg-yellow-500/10 text-yellow-500">
+            List <span className="font-medium">{legend.lo || 0}</span>
           </span>
-          <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-500">
+          <span className="text-[8px] sm:text-[10px] px-1 sm:px-1.5 py-px sm:py-0.5 rounded bg-purple-500/10 text-purple-500">
             Bids <span className="font-medium">{legend.bo || 0}</span>
           </span>
           {legend.ho > 0 && (
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-orange-500/10 text-orange-500">
+            <span className="text-[8px] sm:text-[10px] px-1 sm:px-1.5 py-px sm:py-0.5 rounded bg-orange-500/10 text-orange-500">
               Holders <span className="font-medium">{legend.ho}</span>
             </span>
           )}
-        </>
+        </div>
       )}
-      </div>
-      <div className="relative w-full h-[350px]">
+      <div className="relative w-full h-[240px] sm:h-[350px]">
         <div ref={chartContainerRef} className="w-full h-full cursor-pointer" />
         {loading && (
           <div className="absolute inset-0 flex justify-center items-center">
@@ -1719,7 +1675,7 @@ const PriceChart = React.memo(({ slug }) => {
           <div
             className={cn(
               'absolute inset-0 flex justify-center items-center text-sm',
-              isDark ? 'text-white/40' : 'text-gray-400'
+              'text-gray-400 dark:text-white/40'
             )}
           >
             {error}
@@ -1729,23 +1685,23 @@ const PriceChart = React.memo(({ slug }) => {
 
       {/* Sales Panel */}
       {salesOpen && (
-        <div className={cn('mt-2 border-t pt-2', isDark ? 'border-white/5' : 'border-gray-100')}>
+        <div className={cn('mt-2 border-t pt-2', 'border-gray-100 dark:border-white/5')}>
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-3">
               <span
                 className={cn(
                   'text-[11px] font-medium',
-                  isDark ? 'text-white/70' : 'text-gray-600'
+                  'text-gray-600 dark:text-white/70'
                 )}
               >
                 {selectedDate}
               </span>
-              <span className={cn('text-[10px]', isDark ? 'text-white/60' : 'text-gray-500')}>
+              <span className={cn('text-[10px]', 'text-gray-500 dark:text-white/60')}>
                 {salesData?.total || 0} sales
               </span>
               {salesData?.sales?.length > 0 && (
                 <span
-                  className={cn('text-[10px]', isDark ? 'text-emerald-400/80' : 'text-emerald-600')}
+                  className={cn('text-[10px]', 'text-emerald-600 dark:text-emerald-400/80')}
                 >
                   {salesData.sales.reduce((sum, s) => sum + (s.costXRP || 0), 0).toFixed(1)} XRP
                   total
@@ -1761,7 +1717,7 @@ const PriceChart = React.memo(({ slug }) => {
                 }}
                 className={cn(
                   'text-[10px] px-1.5 py-0.5 rounded border-0 outline-none',
-                  isDark ? 'bg-white/5 text-white/60' : 'bg-gray-100 text-gray-500'
+                  'bg-gray-100 text-gray-500 dark:bg-white/5 dark:text-white/60'
                 )}
               >
                 <option value="time">Recent</option>
@@ -1775,7 +1731,7 @@ const PriceChart = React.memo(({ slug }) => {
                 aria-label="Close sales panel"
                 className={cn(
                   'outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
-                  isDark ? 'text-white/30 hover:text-white/50' : 'text-gray-300 hover:text-gray-500'
+                  'text-gray-300 hover:text-gray-500 dark:text-white/30 dark:hover:text-white/50'
                 )}
               >
                 <X size={14} />
@@ -1801,14 +1757,14 @@ const PriceChart = React.memo(({ slug }) => {
                       key={sale.NFTokenID || idx}
                       className={cn(
                         'flex items-center gap-2 p-1.5 rounded-lg transition-[background-color]',
-                        isDark ? 'hover:bg-white/5' : 'hover:bg-gray-50'
+                        'hover:bg-gray-50 dark:hover:bg-white/5'
                       )}
                     >
                       <a
                         href={`/nft/${sale.NFTokenID}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className={cn('relative w-10 h-10 rounded overflow-hidden flex-shrink-0', isDark ? 'bg-[#222]' : 'bg-[#eee]')}
+                        className={cn('relative w-10 h-10 rounded overflow-hidden flex-shrink-0', 'bg-gray-100 dark:bg-white/[0.06]')}
                       >
                         {imgUrl && (
                           <Image
@@ -1830,7 +1786,7 @@ const PriceChart = React.memo(({ slug }) => {
                         <div
                           className={cn(
                             'text-[10px] font-medium truncate',
-                            isDark ? 'text-white/80' : 'text-gray-700'
+                            'text-gray-700 dark:text-white/80'
                           )}
                         >
                           {sale.name || `#${sale.serial || '?'}`}
@@ -1840,7 +1796,7 @@ const PriceChart = React.memo(({ slug }) => {
                             {sale.costXRP} XRP
                           </span>
                           <span
-                            className={cn('text-[9px]', isDark ? 'text-white/30' : 'text-gray-400')}
+                            className={cn('text-[9px]', 'text-gray-400 dark:text-white/30')}
                           >
                             {new Date(sale.time).toLocaleTimeString([], {
                               hour: '2-digit',
@@ -1855,9 +1811,7 @@ const PriceChart = React.memo(({ slug }) => {
                         rel="noopener noreferrer"
                         className={cn(
                           'text-[8px] text-right flex-shrink-0 hover:underline',
-                          isDark
-                            ? 'text-white/25 hover:text-white/50'
-                            : 'text-gray-300 hover:text-gray-500'
+                          'text-gray-300 hover:text-gray-500 dark:text-white/25 dark:hover:text-white/50'
                         )}
                       >
                         <div className="truncate max-w-[60px]">
@@ -1872,7 +1826,7 @@ const PriceChart = React.memo(({ slug }) => {
                 <div
                   className={cn(
                     'flex items-center justify-center gap-2 mt-2 pt-2 border-t',
-                    isDark ? 'border-white/5' : 'border-black/5'
+                    'border-black/5 dark:border-white/5'
                   )}
                 >
                   <button
@@ -1881,12 +1835,12 @@ const PriceChart = React.memo(({ slug }) => {
                     aria-label="Previous sales page"
                     className={cn(
                       'p-0.5 disabled:opacity-30 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
-                      isDark ? 'text-white/40' : 'text-gray-400'
+                      'text-gray-400 dark:text-white/40'
                     )}
                   >
                     <ChevronLeft size={14} />
                   </button>
-                  <span className={cn('text-[10px]', isDark ? 'text-white/60' : 'text-gray-500')}>
+                  <span className={cn('text-[10px]', 'text-gray-500 dark:text-white/60')}>
                     {Math.floor(salesOffset / SALES_LIMIT) + 1}/
                     {Math.ceil(salesData.total / SALES_LIMIT)}
                   </span>
@@ -1896,7 +1850,7 @@ const PriceChart = React.memo(({ slug }) => {
                     aria-label="Next sales page"
                     className={cn(
                       'p-0.5 disabled:opacity-30 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
-                      isDark ? 'text-white/40' : 'text-gray-400'
+                      'text-gray-400 dark:text-white/40'
                     )}
                   >
                     <ChevronRight size={14} />
@@ -1905,7 +1859,7 @@ const PriceChart = React.memo(({ slug }) => {
               )}
             </>
           ) : (
-            <span className={cn('text-[10px]', isDark ? 'text-white/60' : 'text-gray-500')}>
+            <span className={cn('text-[10px]', 'text-gray-500 dark:text-white/60')}>
               No sales
             </span>
           )}
@@ -1997,7 +1951,7 @@ const HoldersTab = React.memo(({ slug }) => {
   if (!holdersData) {
     return (
       <div
-        className={cn('text-center py-8 text-[12px]', isDark ? 'text-white/40' : 'text-gray-500')}
+        className={cn('text-center py-8 text-[12px]', 'text-gray-500 dark:text-white/40')}
       >
         No holder data available
       </div>
@@ -2040,50 +1994,50 @@ const HoldersTab = React.memo(({ slug }) => {
             : 'grid-cols-2 sm:grid-cols-4'
         )}
       >
-        <div className={cn('rounded-lg p-3', isDark ? 'bg-white/[0.03]' : 'bg-gray-50')}>
+        <div className={cn('rounded-lg p-3', 'bg-gray-50 dark:bg-white/[0.03]')}>
           <div
             className={cn(
               'text-[10px] uppercase tracking-wide',
-              isDark ? 'text-white/40' : 'text-gray-500'
+              'text-gray-500 dark:text-white/40'
             )}
           >
             Supply
           </div>
-          <div className={cn('text-[18px] font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+          <div className={cn('text-[18px] font-medium', 'text-gray-900 dark:text-white')}>
             {fIntNumber(total)}
           </div>
         </div>
-        <div className={cn('rounded-lg p-3', isDark ? 'bg-white/[0.03]' : 'bg-gray-50')}>
+        <div className={cn('rounded-lg p-3', 'bg-gray-50 dark:bg-white/[0.03]')}>
           <div
             className={cn(
               'text-[10px] uppercase tracking-wide',
-              isDark ? 'text-white/40' : 'text-gray-500'
+              'text-gray-500 dark:text-white/40'
             )}
           >
             Owners
           </div>
-          <div className={cn('text-[18px] font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+          <div className={cn('text-[18px] font-medium', 'text-gray-900 dark:text-white')}>
             {fIntNumber(stats?.totalOwners || 0)}
           </div>
         </div>
-        <div className={cn('rounded-lg p-3', isDark ? 'bg-white/[0.03]' : 'bg-gray-50')}>
+        <div className={cn('rounded-lg p-3', 'bg-gray-50 dark:bg-white/[0.03]')}>
           <div
             className={cn(
               'text-[10px] uppercase tracking-wide',
-              isDark ? 'text-white/40' : 'text-gray-500'
+              'text-gray-500 dark:text-white/40'
             )}
           >
             Unique %
           </div>
-          <div className={cn('text-[18px] font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+          <div className={cn('text-[18px] font-medium', 'text-gray-900 dark:text-white')}>
             {total > 0 ? (((stats?.totalOwners || 0) / total) * 100).toFixed(1) : 0}%
           </div>
         </div>
-        <div className={cn('rounded-lg p-3', isDark ? 'bg-white/[0.03]' : 'bg-gray-50')}>
+        <div className={cn('rounded-lg p-3', 'bg-gray-50 dark:bg-white/[0.03]')}>
           <div
             className={cn(
               'text-[10px] uppercase tracking-wide',
-              isDark ? 'text-white/40' : 'text-gray-500'
+              'text-gray-500 dark:text-white/40'
             )}
           >
             Top 10 Hold
@@ -2093,20 +2047,18 @@ const HoldersTab = React.memo(({ slug }) => {
               'text-[18px] font-medium',
               parseFloat(top10Pct) > 50
                 ? 'text-orange-500'
-                : isDark
-                  ? 'text-white'
-                  : 'text-gray-900'
+                : 'text-gray-900 dark:text-white'
             )}
           >
             {top10Pct}%
           </div>
         </div>
         {changes?.ownersChange !== undefined && (
-          <div className={cn('rounded-lg p-3', isDark ? 'bg-white/[0.03]' : 'bg-gray-50')}>
+          <div className={cn('rounded-lg p-3', 'bg-gray-50 dark:bg-white/[0.03]')}>
             <div
               className={cn(
                 'text-[10px] uppercase tracking-wide',
-                isDark ? 'text-white/40' : 'text-gray-500'
+                'text-gray-500 dark:text-white/40'
               )}
             >
               Owner Δ
@@ -2118,9 +2070,7 @@ const HoldersTab = React.memo(({ slug }) => {
                   ? 'text-green-500'
                   : changes.ownersChange < 0
                     ? 'text-red-500'
-                    : isDark
-                      ? 'text-white/50'
-                      : 'text-gray-500'
+                    : 'text-gray-500 dark:text-white/50'
               )}
             >
               {changes.ownersChange > 0 ? '+' : ''}
@@ -2141,16 +2091,14 @@ const HoldersTab = React.memo(({ slug }) => {
               <div
                 className={cn(
                   'rounded-lg p-3',
-                  isDark
-                    ? 'bg-green-500/5 border border-green-500/10'
-                    : 'bg-green-50 border border-green-100'
+                  'bg-green-50 border border-green-100 dark:bg-green-500/5 dark:border dark:border-green-500/10'
                 )}
               >
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-green-500 text-[10px] font-medium uppercase tracking-wide">
                     Gainers
                   </span>
-                  <span className={cn('text-[9px]', isDark ? 'text-white/30' : 'text-gray-400')}>
+                  <span className={cn('text-[9px]', 'text-gray-400 dark:text-white/30')}>
                     {changes.summary?.gainers || changes.gainers.length}
                   </span>
                 </div>
@@ -2164,16 +2112,14 @@ const HoldersTab = React.memo(({ slug }) => {
                       <span
                         className={cn(
                           'flex-1 text-[10px] font-mono truncate',
-                          isDark
-                            ? 'text-white/60 group-hover:text-white'
-                            : 'text-gray-600 group-hover:text-gray-900'
+                          'text-gray-600 group-hover:text-gray-900 dark:text-white/60 dark:group-hover:text-white'
                         )}
                       >
                         {g.address.slice(0, 6)}...{g.address.slice(-4)}
                       </span>
                       <span className="text-[10px] font-medium text-green-500">{g.change}</span>
                       <span
-                        className={cn('text-[9px]', isDark ? 'text-white/30' : 'text-gray-400')}
+                        className={cn('text-[9px]', 'text-gray-400 dark:text-white/30')}
                       >
                         →{g.now}
                       </span>
@@ -2187,16 +2133,14 @@ const HoldersTab = React.memo(({ slug }) => {
               <div
                 className={cn(
                   'rounded-lg p-3',
-                  isDark
-                    ? 'bg-red-500/5 border border-red-500/10'
-                    : 'bg-red-50 border border-red-100'
+                  'bg-red-50 border border-red-100 dark:bg-red-500/5 dark:border dark:border-red-500/10'
                 )}
               >
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-red-500 text-[10px] font-medium uppercase tracking-wide">
                     Losers
                   </span>
-                  <span className={cn('text-[9px]', isDark ? 'text-white/30' : 'text-gray-400')}>
+                  <span className={cn('text-[9px]', 'text-gray-400 dark:text-white/30')}>
                     {changes.summary?.losers || changes.losers.length}
                   </span>
                 </div>
@@ -2210,16 +2154,14 @@ const HoldersTab = React.memo(({ slug }) => {
                       <span
                         className={cn(
                           'flex-1 text-[10px] font-mono truncate',
-                          isDark
-                            ? 'text-white/60 group-hover:text-white'
-                            : 'text-gray-600 group-hover:text-gray-900'
+                          'text-gray-600 group-hover:text-gray-900 dark:text-white/60 dark:group-hover:text-white'
                         )}
                       >
                         {l.address.slice(0, 6)}...{l.address.slice(-4)}
                       </span>
                       <span className="text-[10px] font-medium text-red-500">{l.change}</span>
                       <span
-                        className={cn('text-[9px]', isDark ? 'text-white/30' : 'text-gray-400')}
+                        className={cn('text-[9px]', 'text-gray-400 dark:text-white/30')}
                       >
                         →{l.now}
                       </span>
@@ -2233,16 +2175,14 @@ const HoldersTab = React.memo(({ slug }) => {
               <div
                 className={cn(
                   'rounded-lg p-3',
-                  isDark
-                    ? 'bg-blue-500/5 border border-blue-500/10'
-                    : 'bg-blue-50 border border-blue-100'
+                  'bg-blue-50 border border-blue-100 dark:bg-blue-500/5 dark:border dark:border-blue-500/10'
                 )}
               >
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-blue-500 text-[10px] font-medium uppercase tracking-wide">
                     New Owners
                   </span>
-                  <span className={cn('text-[9px]', isDark ? 'text-white/30' : 'text-gray-400')}>
+                  <span className={cn('text-[9px]', 'text-gray-400 dark:text-white/30')}>
                     {changes.summary?.newOwners || changes.newOwners.length}
                   </span>
                 </div>
@@ -2256,9 +2196,7 @@ const HoldersTab = React.memo(({ slug }) => {
                       <span
                         className={cn(
                           'flex-1 text-[10px] font-mono truncate',
-                          isDark
-                            ? 'text-white/60 group-hover:text-white'
-                            : 'text-gray-600 group-hover:text-gray-900'
+                          'text-gray-600 group-hover:text-gray-900 dark:text-white/60 dark:group-hover:text-white'
                         )}
                       >
                         {n.address.slice(0, 6)}...{n.address.slice(-4)}
@@ -2274,16 +2212,14 @@ const HoldersTab = React.memo(({ slug }) => {
               <div
                 className={cn(
                   'rounded-lg p-3',
-                  isDark
-                    ? 'bg-orange-500/5 border border-orange-500/10'
-                    : 'bg-orange-50 border border-orange-100'
+                  'bg-orange-50 border border-orange-100 dark:bg-orange-500/5 dark:border dark:border-orange-500/10'
                 )}
               >
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-orange-500 text-[10px] font-medium uppercase tracking-wide">
                     Exited
                   </span>
-                  <span className={cn('text-[9px]', isDark ? 'text-white/30' : 'text-gray-400')}>
+                  <span className={cn('text-[9px]', 'text-gray-400 dark:text-white/30')}>
                     {changes.summary?.exitedOwners || changes.exitedOwners.length}
                   </span>
                 </div>
@@ -2297,9 +2233,7 @@ const HoldersTab = React.memo(({ slug }) => {
                       <span
                         className={cn(
                           'flex-1 text-[10px] font-mono truncate',
-                          isDark
-                            ? 'text-white/60 group-hover:text-white'
-                            : 'text-gray-600 group-hover:text-gray-900'
+                          'text-gray-600 group-hover:text-gray-900 dark:text-white/60 dark:group-hover:text-white'
                         )}
                       >
                         {e.address.slice(0, 6)}...{e.address.slice(-4)}
@@ -2313,7 +2247,7 @@ const HoldersTab = React.memo(({ slug }) => {
           </div>
         )}
       {changes?.since && (
-        <div className={cn('text-[9px] text-right', isDark ? 'text-white/20' : 'text-gray-400')}>
+        <div className={cn('text-[9px] text-right', 'text-gray-400 dark:text-white/20')}>
           Changes since {new Date(changes.since).toLocaleDateString()}
         </div>
       )}
@@ -2323,16 +2257,14 @@ const HoldersTab = React.memo(({ slug }) => {
         <div
           className={cn(
             'lg:col-span-4 rounded-lg p-4',
-            isDark
-              ? 'bg-white/[0.02] border border-white/[0.06]'
-              : 'bg-gray-50 border border-gray-100'
+            'bg-gray-50 border border-gray-100 dark:bg-white/[0.02] dark:border dark:border-white/[0.06]'
           )}
         >
           {/* Concentration */}
           <h3
             className={cn(
               'text-[10px] font-medium uppercase tracking-wide mb-3',
-              isDark ? 'text-white/40' : 'text-gray-500'
+              'text-gray-500 dark:text-white/40'
             )}
           >
             Concentration
@@ -2346,14 +2278,14 @@ const HoldersTab = React.memo(({ slug }) => {
             ].map((row) => (
               <div key={row.label} className="flex items-center gap-2">
                 <span
-                  className={cn('text-[11px] w-11', isDark ? 'text-white/50' : 'text-gray-500')}
+                  className={cn('text-[11px] w-11', 'text-gray-500 dark:text-white/50')}
                 >
                   {row.label}
                 </span>
                 <div
                   className={cn(
                     'flex-1 h-1.5 rounded-full overflow-hidden',
-                    isDark ? 'bg-white/10' : 'bg-gray-200'
+                    'bg-gray-200 dark:bg-white/10'
                   )}
                 >
                   <div
@@ -2367,7 +2299,7 @@ const HoldersTab = React.memo(({ slug }) => {
                 <span
                   className={cn(
                     'text-[11px] w-11 text-right font-medium',
-                    isDark ? 'text-white' : 'text-gray-900'
+                    'text-gray-900 dark:text-white'
                   )}
                 >
                   {row.pct}%
@@ -2381,13 +2313,13 @@ const HoldersTab = React.memo(({ slug }) => {
             <div
               className={cn(
                 'mt-4 pt-4 border-t',
-                isDark ? 'border-white/[0.06]' : 'border-gray-200'
+                'border-gray-200 dark:border-white/[0.06]'
               )}
             >
               <h4
                 className={cn(
                   'text-[10px] font-medium uppercase tracking-wide mb-3',
-                  isDark ? 'text-white/40' : 'text-gray-500'
+                  'text-gray-500 dark:text-white/40'
                 )}
               >
                 NFTs by Holder Size
@@ -2398,18 +2330,18 @@ const HoldersTab = React.memo(({ slug }) => {
                   const nftPct = data.nftsPct || '0';
                   return (
                     <div key={tier} className="flex items-center gap-2">
-                      <TierIcon size={18} isDark={isDark} />
+                      <TierIcon size={18} />
                       <div className="w-20">
                         <span
                           className={cn(
                             'text-[10px] capitalize block',
-                            isDark ? 'text-white/70' : 'text-gray-700'
+                            'text-gray-700 dark:text-white/70'
                           )}
                         >
                           {tier}
                         </span>
                         <span
-                          className={cn('text-[9px]', isDark ? 'text-white/30' : 'text-gray-400')}
+                          className={cn('text-[9px]', 'text-gray-400 dark:text-white/30')}
                         >
                           {data.threshold}
                         </span>
@@ -2417,7 +2349,7 @@ const HoldersTab = React.memo(({ slug }) => {
                       <div
                         className={cn(
                           'flex-1 h-1.5 rounded-full overflow-hidden',
-                          isDark ? 'bg-white/10' : 'bg-gray-200'
+                          'bg-gray-200 dark:bg-white/10'
                         )}
                       >
                         <div
@@ -2428,7 +2360,7 @@ const HoldersTab = React.memo(({ slug }) => {
                       <span
                         className={cn(
                           'text-[10px] w-11 text-right font-medium',
-                          isDark ? 'text-white' : 'text-gray-900'
+                          'text-gray-900 dark:text-white'
                         )}
                       >
                         {nftPct}%
@@ -2453,9 +2385,7 @@ const HoldersTab = React.memo(({ slug }) => {
               placeholder="Search address..."
               className={cn(
                 'flex-1 px-3 py-1.5 rounded-lg border-[1.5px] text-[11px] font-mono outline-none',
-                isDark
-                  ? 'bg-white/[0.03] border-white/10 text-white placeholder:text-white/30 focus:border-primary/50'
-                  : 'bg-white border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-primary/50'
+                'bg-white border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-primary/50 dark:bg-white/[0.03] dark:border-white/10 dark:text-white dark:placeholder:text-white/30 dark:focus:border-primary/50'
               )}
             />
             <button
@@ -2468,7 +2398,7 @@ const HoldersTab = React.memo(({ slug }) => {
                 searching || !searchAddress.trim()
                   ? 'opacity-50 cursor-not-allowed'
                   : 'hover:bg-primary/10 hover:border-primary/50',
-                isDark ? 'border-white/15 text-white/70' : 'border-gray-300 text-gray-600'
+                'border-gray-300 text-gray-600 dark:border-white/15 dark:text-white/70'
               )}
             >
               {searching ? <Loader2 size={12} className="animate-spin" /> : <Search size={12} />}
@@ -2481,12 +2411,8 @@ const HoldersTab = React.memo(({ slug }) => {
               className={cn(
                 'rounded-lg border-[1.5px] p-3',
                 searchResult.error
-                  ? isDark
-                    ? 'bg-red-500/5 border-red-500/20'
-                    : 'bg-red-50 border-red-200'
-                  : isDark
-                    ? 'bg-primary/5 border-primary/20'
-                    : 'bg-blue-50 border-blue-200'
+                  ? 'bg-red-50 border-red-200 dark:bg-red-500/5 dark:border-red-500/20'
+                  : 'bg-blue-50 border-blue-200 dark:bg-primary/5 dark:border-primary/20'
               )}
             >
               {searchResult.error ? (
@@ -2497,7 +2423,7 @@ const HoldersTab = React.memo(({ slug }) => {
                       <span
                         className={cn(
                           'text-[10px] ml-2',
-                          isDark ? 'text-white/30' : 'text-gray-400'
+                          'text-gray-400 dark:text-white/30'
                         )}
                       >
                         (holds NFTs in {searchResult.totalCollections} other collection
@@ -2520,7 +2446,7 @@ const HoldersTab = React.memo(({ slug }) => {
                       href={`/address/${searchResult.address}`}
                       className={cn(
                         'text-[11px] font-mono hover:text-primary',
-                        isDark ? 'text-white/70' : 'text-gray-600'
+                        'text-gray-600 dark:text-white/70'
                       )}
                     >
                       <span className="hidden sm:inline">{searchResult.address}</span>
@@ -2531,19 +2457,19 @@ const HoldersTab = React.memo(({ slug }) => {
                     <span
                       className={cn(
                         'text-[11px] font-medium',
-                        isDark ? 'text-white' : 'text-gray-900'
+                        'text-gray-900 dark:text-white'
                       )}
                     >
                       {fIntNumber(searchResult.count)} NFTs
                     </span>
-                    <span className={cn('text-[10px]', isDark ? 'text-white/40' : 'text-gray-500')}>
+                    <span className={cn('text-[10px]', 'text-gray-500 dark:text-white/40')}>
                       Rank #{searchResult.rank} • {searchResult.percentage}%
                     </span>
                   </div>
                   <button
                     onClick={() => setSearchResult(null)}
                     aria-label="Dismiss search result"
-                    className={cn('hover:text-primary outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]', isDark ? 'text-white/40' : 'text-gray-400')}
+                    className={cn('hover:text-primary outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]', 'text-gray-400 dark:text-white/40')}
                   >
                     <X size={14} />
                   </button>
@@ -2556,7 +2482,7 @@ const HoldersTab = React.memo(({ slug }) => {
           <div
             className={cn(
               'overflow-x-auto rounded-xl border-[1.5px] backdrop-blur-[4px]',
-              isDark ? 'border-white/[0.08] bg-white/[0.02]' : 'border-black/[0.06] bg-black/[0.01]'
+              'border-black/[0.06] bg-white dark:border-white/[0.08] dark:bg-white/[0.02]'
             )}
           >
             <table className="w-full min-w-[360px] sm:min-w-[500px] border-collapse" style={{ tableLayout: 'fixed', contain: 'layout style' }}>
@@ -2569,7 +2495,7 @@ const HoldersTab = React.memo(({ slug }) => {
               <thead
                 className={cn(
                   'relative z-[100] backdrop-blur-[12px]',
-                  isDark ? 'bg-black/90' : 'bg-white'
+                  'bg-white dark:bg-black/90'
                 )}
               >
                 <tr>
@@ -2583,7 +2509,7 @@ const HoldersTab = React.memo(({ slug }) => {
                       key={col.label}
                       className={cn(
                         'font-medium text-[11px] tracking-[0.04em] uppercase whitespace-nowrap box-border first-of-type:pl-3 last-of-type:pr-3',
-                        isDark ? 'text-white/60 border-b border-white/[0.08]' : 'text-black/60 border-b border-black/[0.06]'
+                        'text-black/60 border-b border-black/[0.06] dark:text-white/60 dark:border-b dark:border-white/[0.08]'
                       )}
                       style={{ padding: '14px 4px', textAlign: col.align }}
                     >
@@ -2599,7 +2525,7 @@ const HoldersTab = React.memo(({ slug }) => {
                       colSpan={4}
                       className={cn(
                         'px-4 py-8 text-center text-[11px]',
-                        isDark ? 'text-white/40' : 'text-gray-500'
+                        'text-gray-500 dark:text-white/40'
                       )}
                     >
                       No holders found
@@ -2613,10 +2539,10 @@ const HoldersTab = React.memo(({ slug }) => {
                         key={holder.address}
                         className={cn(
                           'tr-row cursor-pointer',
-                          isDark ? 'border-b-[1.5px] border-white/10' : 'border-b-[1.5px] border-black/[0.06]'
+                          'border-b-[1.5px] border-black/[0.06] dark:border-b-[1.5px] dark:border-white/10'
                         )}
                       >
-                        <td className={cn('py-[7px] pl-4 pr-2 text-[14px] align-middle font-mono tabular-nums', isDark ? 'text-white/35' : 'text-black/40')}>
+                        <td className={cn('py-[7px] pl-4 pr-2 text-[14px] align-middle font-mono tabular-nums', 'text-black/40 dark:text-white/35')}>
                           <span className="font-medium text-[14px]">{rank}</span>
                         </td>
                         <td className="py-[7px] px-2 text-[14px] align-middle">
@@ -2624,7 +2550,7 @@ const HoldersTab = React.memo(({ slug }) => {
                             href={`/address/${holder.address}`}
                             className={cn(
                               'text-[13px] font-mono hover:text-primary overflow-hidden text-ellipsis whitespace-nowrap block',
-                              isDark ? 'text-white/70' : 'text-gray-600'
+                              'text-gray-600 dark:text-white/70'
                             )}
                           >
                             <span className="hidden sm:inline">{holder.address}</span>
@@ -2636,7 +2562,7 @@ const HoldersTab = React.memo(({ slug }) => {
                         <td
                           className={cn(
                             'py-[7px] px-2 text-right text-[14px] font-mono tabular-nums align-middle',
-                            isDark ? 'text-white/85' : 'text-[#1a1a2e]'
+                            'text-[#1a1a2e] dark:text-white/85'
                           )}
                         >
                           {fIntNumber(holder.count)}
@@ -2644,7 +2570,7 @@ const HoldersTab = React.memo(({ slug }) => {
                         <td
                           className={cn(
                             'py-[7px] pl-2 pr-4 text-right text-[14px] font-mono tabular-nums align-middle',
-                            isDark ? 'text-white/40' : 'text-gray-500'
+                            'text-gray-500 dark:text-white/40'
                           )}
                         >
                           {holder.percentage}%
@@ -2732,7 +2658,7 @@ const TradersTab = React.memo(({ slug }) => {
   if (!traders.length) {
     return (
       <div
-        className={cn('text-center py-8 text-[12px]', isDark ? 'text-white/40' : 'text-gray-500')}
+        className={cn('text-center py-8 text-[12px]', 'text-gray-500 dark:text-white/40')}
       >
         No trader data available
       </div>
@@ -2753,9 +2679,7 @@ const TradersTab = React.memo(({ slug }) => {
                 'px-2.5 py-1 text-[11px] font-medium rounded-md transition-[background-color]',
                 chartInterval === i.key
                   ? 'bg-primary text-white'
-                  : isDark
-                    ? 'text-white/60 hover:text-white hover:bg-white/5'
-                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:text-white/60 dark:hover:text-white dark:hover:bg-white/5'
               )}
             >
               {i.label}
@@ -2771,12 +2695,8 @@ const TradersTab = React.memo(({ slug }) => {
               className={cn(
                 'px-2 py-1 text-[11px] font-medium rounded-md transition-[background-color]',
                 sortBy === s.key
-                  ? isDark
-                    ? 'bg-white/10 text-white'
-                    : 'bg-gray-100 text-gray-800'
-                  : isDark
-                    ? 'text-white/50 hover:text-white/80 hover:bg-white/5'
-                    : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
+                  ? 'bg-gray-100 text-gray-800 dark:bg-white/10 dark:text-white'
+                  : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50 dark:text-white/50 dark:hover:text-white/80 dark:hover:bg-white/5'
               )}
             >
               {s.label}
@@ -2789,7 +2709,7 @@ const TradersTab = React.memo(({ slug }) => {
             size={14}
             className={cn(
               'absolute left-2.5 top-1/2 -translate-y-1/2',
-              isDark ? 'text-white/40' : 'text-gray-400'
+              'text-gray-400 dark:text-white/40'
             )}
           />
           <input
@@ -2799,9 +2719,7 @@ const TradersTab = React.memo(({ slug }) => {
             onChange={(e) => setSearch(e.target.value)}
             className={cn(
               'h-7 w-40 rounded-md border pl-8 pr-7 text-[12px] outline-none transition-[background-color]',
-              isDark
-                ? 'border-white/10 bg-white/5 text-white placeholder-white/40 focus:border-primary'
-                : 'border-gray-200 bg-white text-gray-900 placeholder-gray-400 focus:border-primary'
+              'border-gray-200 bg-white text-gray-900 placeholder-gray-400 focus:border-primary dark:border-white/10 dark:bg-white/5 dark:text-white dark:placeholder-white/40 dark:focus:border-primary'
             )}
           />
           {search && (
@@ -2810,7 +2728,7 @@ const TradersTab = React.memo(({ slug }) => {
               aria-label="Clear search"
               className={cn(
                 'absolute right-2 top-1/2 -translate-y-1/2 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
-                isDark ? 'text-white/40 hover:text-white' : 'text-gray-400 hover:text-gray-600'
+                'text-gray-400 hover:text-gray-600 dark:text-white/40 dark:hover:text-white'
               )}
             >
               <X size={12} />
@@ -2835,7 +2753,7 @@ const TradersTab = React.memo(({ slug }) => {
             <col style={{ width: '6%' }} />
             <col style={{ width: '10%' }} />
           </colgroup>
-          <thead className={cn('relative z-[100] backdrop-blur-[12px]', isDark ? 'bg-black/90' : 'bg-white')}>
+          <thead className={cn('relative z-[100] backdrop-blur-[12px]', 'bg-white dark:bg-black/90')}>
             <tr>
               {[
                 { label: '#', align: 'left' },
@@ -2855,8 +2773,8 @@ const TradersTab = React.memo(({ slug }) => {
                   className={cn(
                     'font-medium text-[11px] tracking-[0.04em] uppercase whitespace-nowrap box-border first-of-type:pl-3 last-of-type:pr-3',
                     col.color
-                      ? cn(col.color, isDark ? 'border-b border-white/[0.08]' : 'border-b border-black/[0.06]')
-                      : (isDark ? 'text-white/60 border-b border-white/[0.08]' : 'text-black/60 border-b border-black/[0.06]')
+                      ? cn(col.color, 'border-b border-black/[0.06] dark:border-b dark:border-white/[0.08]')
+                      : ('text-black/60 border-b border-black/[0.06] dark:text-white/60 dark:border-b dark:border-white/[0.08]')
                   )}
                   style={{ padding: '14px 4px', textAlign: col.align }}
                 >
@@ -2880,10 +2798,10 @@ const TradersTab = React.memo(({ slug }) => {
                   key={addr}
                   className={cn(
                     'tr-row cursor-pointer',
-                    isDark ? 'border-b-[1.5px] border-white/10' : 'border-b-[1.5px] border-black/[0.06]'
+                    'border-b-[1.5px] border-black/[0.06] dark:border-b-[1.5px] dark:border-white/10'
                   )}
                 >
-                  <td className={cn('py-[7px] pl-4 pr-2 text-[14px] align-middle font-mono tabular-nums', isDark ? 'text-white/35' : 'text-black/40')}>
+                  <td className={cn('py-[7px] pl-4 pr-2 text-[14px] align-middle font-mono tabular-nums', 'text-black/40 dark:text-white/35')}>
                     <span className="font-medium text-[14px]">{idx + 1}</span>
                   </td>
                   <td className="py-[7px] px-2 text-[14px] align-middle whitespace-nowrap overflow-hidden text-ellipsis">
@@ -2892,23 +2810,23 @@ const TradersTab = React.memo(({ slug }) => {
                       target="_blank"
                       className={cn(
                         'text-[13px] font-mono hover:text-primary',
-                        isDark ? 'text-white/80' : 'text-gray-700'
+                        'text-gray-700 dark:text-white/80'
                       )}
                     >
                       {addr.slice(0, 6)}...{addr.slice(-6)}
                     </Link>
                   </td>
-                  <td className={cn('py-[7px] px-2 text-right text-[14px] font-mono tabular-nums align-middle whitespace-nowrap', isDark ? 'text-white/85' : 'text-[#1a1a2e]')}>
+                  <td className={cn('py-[7px] px-2 text-right text-[14px] font-mono tabular-nums align-middle whitespace-nowrap', 'text-[#1a1a2e] dark:text-white/85')}>
                     {fVolume(vol)}
                   </td>
-                  <td className={cn('py-[7px] px-2 text-right text-[14px] font-mono tabular-nums align-middle whitespace-nowrap', isDark ? 'text-white/85' : 'text-[#1a1a2e]')}>
+                  <td className={cn('py-[7px] px-2 text-right text-[14px] font-mono tabular-nums align-middle whitespace-nowrap', 'text-[#1a1a2e] dark:text-white/85')}>
                     {trades}
                   </td>
                   <td className="py-[7px] px-2 text-right align-middle whitespace-nowrap">
                     <div className="text-[14px] font-mono tabular-nums text-green-500">
                       {fVolume(t.buyVolume || 0)}
                     </div>
-                    <div className={cn('text-[9px] tabular-nums', isDark ? 'text-white/30' : 'text-gray-400')}>
+                    <div className={cn('text-[9px] tabular-nums', 'text-gray-400 dark:text-white/30')}>
                       {t.buys || 0} NFTs
                     </div>
                   </td>
@@ -2916,7 +2834,7 @@ const TradersTab = React.memo(({ slug }) => {
                     <div className="text-[14px] font-mono tabular-nums text-red-500">
                       {fVolume(t.sellVolume || 0)}
                     </div>
-                    <div className={cn('text-[9px] tabular-nums', isDark ? 'text-white/30' : 'text-gray-400')}>
+                    <div className={cn('text-[9px] tabular-nums', 'text-gray-400 dark:text-white/30')}>
                       {t.sells || 0} NFTs
                     </div>
                   </td>
@@ -2933,10 +2851,10 @@ const TradersTab = React.memo(({ slug }) => {
                   <td className={cn('py-[7px] px-2 text-right text-[14px] font-mono tabular-nums align-middle whitespace-nowrap', winRate >= 50 ? 'text-green-500' : 'text-red-500')}>
                     {winRate.toFixed(0)}%
                   </td>
-                  <td className={cn('py-[7px] px-2 text-right text-[14px] font-mono tabular-nums align-middle whitespace-nowrap', t.flips > 0 ? 'text-amber-500' : isDark ? 'text-white/30' : 'text-gray-300')}>
+                  <td className={cn('py-[7px] px-2 text-right text-[14px] font-mono tabular-nums align-middle whitespace-nowrap', t.flips > 0 ? 'text-amber-500' : 'text-gray-300 dark:text-white/30')}>
                     {t.flips > 0 ? t.flips : '-'}
                   </td>
-                  <td className={cn('py-[7px] pl-2 pr-4 text-right text-[13px] font-mono tabular-nums align-middle whitespace-nowrap', isDark ? 'text-white/50' : 'text-gray-500')}>
+                  <td className={cn('py-[7px] pl-2 pr-4 text-right text-[13px] font-mono tabular-nums align-middle whitespace-nowrap', 'text-gray-500 dark:text-white/50')}>
                     {t.lastTrade ? new Date(t.lastTrade).toLocaleDateString() : '-'}
                   </td>
                 </tr>
@@ -3195,55 +3113,138 @@ export default function CollectionView({ collection }) {
 
       {/* Collection Header - OpenSea Style */}
       <div
-        className={cn('rounded-[10px] px-4 py-3 mb-4 mt-3 border', isDark ? 'border-white/[0.08]' : 'border-black/[0.08]')}
+        className={cn('rounded-[10px] px-4 py-3 mb-4 mt-3 border', 'border-black/[0.08] dark:border-white/[0.08]')}
       >
         {/* Top Row: Logo + Name + Actions */}
-        <div className="flex items-center gap-3 mb-3">
-          <div className="relative">
-            <Image
-              src={`https://s1.xrpl.to/nft-collection/${logoImage}`}
-              alt={name}
-              width={40}
-              height={40}
-              sizes="40px"
-              className="rounded-lg"
-            />
-            <VerificationBadge verified={displayVerified} size="sm" isDark={isDark} />
-          </div>
-          <div className="flex items-center gap-2 flex-wrap">
-            <span
-              className={cn(
-                'text-base font-semibold',
-                trendingBoost >= 500 && trendingBoostExpires > Date.now()
-                  ? 'text-[#FFD700]'
-                  : isDark ? 'text-white' : 'text-gray-900'
-              )}
-            >
-              {name}
-            </span>
-            {trendingBoost > 0 && trendingBoostExpires > Date.now() && (
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-3">
+          {/* Logo + Name + Badges */}
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="relative flex-shrink-0">
+              <Image
+                src={`https://s1.xrpl.to/nft-collection/${logoImage}`}
+                alt={name}
+                width={40}
+                height={40}
+                sizes="40px"
+                className="rounded-lg"
+              />
+              <VerificationBadge verified={displayVerified} size="sm" />
+            </div>
+            <div className="flex items-center gap-1.5 flex-wrap min-w-0">
               <span
-                className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-[10px] font-bold tracking-wider bg-[#F6AF01]/10 text-[#F6AF01]"
-                title={`${trendingBoost} active boosts`}
-              >
-                <Flame size={10} fill="#F6AF01" />
-                {trendingBoost}
-              </span>
-            )}
-            {tweetCount > 0 && (
-              <button
-                onClick={() => setShowPromoteModal(true)}
                 className={cn(
-                  'inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-bold tracking-wider cursor-pointer transition-[background-color]',
-                  isDark ? 'bg-white/[0.06] text-white/60 hover:bg-white/[0.1]' : 'bg-black/[0.04] text-gray-500 hover:bg-black/[0.08]'
+                  'text-base font-semibold truncate',
+                  trendingBoost >= 500 && trendingBoostExpires > Date.now()
+                    ? 'text-[#FFD700]'
+                    : 'text-gray-900 dark:text-white'
                 )}
-                title={`${tweetCount} verified tweets`}
               >
-                <svg width={10} height={10} viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>
-                {tweetCount}
-              </button>
-            )}
-            <VerificationLabel verified={displayVerified} isDark={isDark} />
+                {name}
+              </span>
+              {trendingBoost > 0 && trendingBoostExpires > Date.now() && (
+                <span
+                  className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-[10px] font-bold tracking-wider bg-[#F6AF01]/10 text-[#F6AF01]"
+                  title={`${trendingBoost} active boosts`}
+                >
+                  <Flame size={10} fill="#F6AF01" />
+                  {trendingBoost}
+                </span>
+              )}
+              {tweetCount > 0 && (
+                <button
+                  onClick={() => setShowPromoteModal(true)}
+                  className={cn(
+                    'inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-bold tracking-wider cursor-pointer transition-[background-color]',
+                    'bg-black/[0.04] text-gray-500 hover:bg-black/[0.08] dark:bg-white/[0.06] dark:text-white/60 dark:hover:bg-white/[0.1]'
+                  )}
+                  title={`${tweetCount} verified tweets`}
+                >
+                  <svg width={10} height={10} viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>
+                  {tweetCount}
+                </button>
+              )}
+              <VerificationLabel verified={displayVerified} />
+              {twitter && (
+                <a
+                  href={`https://x.com/${twitter}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="X (Twitter)"
+                  className={cn(
+                    'p-1 rounded transition-[background-color]',
+                    'text-gray-500 hover:text-primary dark:text-white/60 dark:hover:text-primary'
+                  )}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                  </svg>
+                </a>
+              )}
+              {website && (
+                <a
+                  href={website.startsWith('http') ? website : `https://${website}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Website"
+                  className={cn(
+                    'p-1 rounded transition-[background-color]',
+                    'text-gray-500 hover:text-primary dark:text-white/60 dark:hover:text-primary'
+                  )}
+                >
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+                  </svg>
+                </a>
+              )}
+            </div>
+          </div>
+
+          {/* Tags + Related Token - own row on mobile */}
+          {(tags?.length > 0 || linkedToken) && (
+            <div className="flex items-center gap-1.5 flex-wrap sm:hidden">
+              {tags?.length > 0 &&
+                tags.slice(0, 4).map((tag, i) => (
+                  <Link
+                    key={i}
+                    href={`/nfts?tag=${encodeURIComponent(tag)}`}
+                    className={cn(
+                      'px-2 py-0.5 text-[10px] rounded transition-[background-color]',
+                      'bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700 dark:bg-white/5 dark:text-white/50 dark:hover:bg-white/10 dark:hover:text-white/70'
+                    )}
+                  >
+                    {tag}
+                  </Link>
+                ))}
+              {linkedToken && (
+                <Link
+                  href={`/token/${linkedToken}`}
+                  className={cn(
+                    'flex items-center gap-1.5 px-2 py-0.5 rounded-lg text-[10px] font-medium transition-[background-color]',
+                    'bg-blue-50 text-blue-600 border border-blue-200 hover:bg-blue-100 dark:bg-primary/10 dark:text-primary dark:border dark:border-primary/20 dark:hover:bg-primary/20'
+                  )}
+                >
+                  <img
+                    src={`https://s1.xrpl.to/token/${linkedToken}`}
+                    alt=""
+                    className="w-3.5 h-3.5 rounded-full"
+                    onError={(e) => { e.target.style.display = 'none'; }}
+                  />
+                  <span>Related Token</span>
+                </Link>
+              )}
+            </div>
+          )}
+
+          {/* Desktop-only tags (inline with name row) */}
+          <div className="hidden sm:flex items-center gap-2 flex-wrap">
             {tags?.length > 0 &&
               tags.slice(0, 4).map((tag, i) => (
                 <Link
@@ -3251,102 +3252,53 @@ export default function CollectionView({ collection }) {
                   href={`/nfts?tag=${encodeURIComponent(tag)}`}
                   className={cn(
                     'px-2 py-0.5 text-[10px] rounded transition-[background-color]',
-                    isDark
-                      ? 'bg-white/5 text-white/50 hover:bg-white/10 hover:text-white/70'
-                      : 'bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700'
+                    'bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700 dark:bg-white/5 dark:text-white/50 dark:hover:bg-white/10 dark:hover:text-white/70'
                   )}
                 >
                   {tag}
                 </Link>
               ))}
-            {twitter && (
-              <a
-                href={`https://x.com/${twitter}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="X (Twitter)"
-                className={cn(
-                  'p-1 rounded transition-[background-color]',
-                  isDark ? 'text-white/60 hover:text-primary' : 'text-gray-500 hover:text-primary'
-                )}
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-                </svg>
-              </a>
-            )}
-            {website && (
-              <a
-                href={website.startsWith('http') ? website : `https://${website}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Website"
-                className={cn(
-                  'p-1 rounded transition-[background-color]',
-                  isDark ? 'text-white/60 hover:text-primary' : 'text-gray-500 hover:text-primary'
-                )}
-              >
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <circle cx="12" cy="12" r="10" />
-                  <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-                </svg>
-              </a>
-            )}
-            {/* Related Token - Prominent Display */}
             {linkedToken && (
               <Link
                 href={`/token/${linkedToken}`}
                 className={cn(
                   'flex items-center gap-1.5 px-2 py-1 rounded-lg text-[11px] font-medium transition-[background-color] ml-2',
-                  isDark
-                    ? 'bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20'
-                    : 'bg-blue-50 text-blue-600 border border-blue-200 hover:bg-blue-100'
+                  'bg-blue-50 text-blue-600 border border-blue-200 hover:bg-blue-100 dark:bg-primary/10 dark:text-primary dark:border dark:border-primary/20 dark:hover:bg-primary/20'
                 )}
               >
                 <img
                   src={`https://s1.xrpl.to/token/${linkedToken}`}
                   alt=""
                   className="w-4 h-4 rounded-full"
-                  onError={(e) => {
-                    e.target.style.display = 'none';
-                  }}
+                  onError={(e) => { e.target.style.display = 'none'; }}
                 />
                 <span>Related Token</span>
               </Link>
             )}
           </div>
-          <div className="flex items-center gap-2 ml-auto">
+
+          {/* Action buttons - scrollable row on mobile, right-aligned on desktop */}
+          <div className="flex items-center gap-1.5 sm:gap-2 sm:ml-auto overflow-x-auto scrollbar-hide -mx-1 px-1">
             {displayVerified !== 1 && (
               <button
                 onClick={() => setShowVerifyModal(true)}
                 className={cn(
-                  'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium transition-[background-color]',
-                  isDark
-                    ? 'bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20'
-                    : 'bg-blue-50 text-blue-600 border border-blue-200 hover:bg-blue-100'
+                  'flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 rounded-lg text-[11px] sm:text-[12px] font-medium transition-[background-color] whitespace-nowrap flex-shrink-0',
+                  'bg-blue-50 text-blue-600 border border-blue-200 hover:bg-blue-100 dark:bg-primary/10 dark:text-primary dark:border dark:border-primary/20 dark:hover:bg-primary/20'
                 )}
               >
                 <Shield size={13} />
-                Get Verified
+                <span className="hidden sm:inline">Get </span>Verify
               </button>
             )}
             <ApiButton />
             {/* Info */}
-            <div className="relative" ref={infoDropdownRef}>
+            <div className="relative flex-shrink-0" ref={infoDropdownRef}>
               <button
                 onClick={() => setOpenInfo(!openInfo)}
                 className={cn(
-                  'px-3 py-1.5 rounded-lg text-[12px] font-medium transition-[background-color]',
-                  isDark
-                    ? 'bg-white/5 text-white/70 hover:bg-white/10'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  'px-2 sm:px-3 py-1.5 rounded-lg text-[11px] sm:text-[12px] font-medium transition-[background-color] whitespace-nowrap',
+                  'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-white/5 dark:text-white/70 dark:hover:bg-white/10'
                 )}
               >
                 Info
@@ -3355,14 +3307,12 @@ export default function CollectionView({ collection }) {
                 <div
                   className={cn(
                     'absolute top-full right-0 mt-2 p-3 rounded-2xl border z-50 w-[280px]',
-                    isDark
-                      ? 'bg-black/90 backdrop-blur-2xl border-[#3f96fe]/10 shadow-[0_8px_40px_rgba(0,0,0,0.6)]'
-                      : 'bg-white/98 backdrop-blur-2xl border-gray-200 shadow-[0_8px_32px_rgba(0,0,0,0.08)]'
+                    'bg-white/98 backdrop-blur-2xl border-gray-200 shadow-[0_8px_32px_rgba(0,0,0,0.08)] dark:bg-black/90 dark:backdrop-blur-2xl dark:border-[#3f96fe]/10 dark:shadow-[0_8px_40px_rgba(0,0,0,0.6)]'
                   )}
                 >
                   {descriptionText && (
                     <p
-                      className={cn('text-[11px] mb-2', isDark ? 'text-white/70' : 'text-gray-600')}
+                      className={cn('text-[11px] mb-2', 'text-gray-600 dark:text-white/70')}
                     >
                       {descriptionText}
                     </p>
@@ -3370,23 +3320,23 @@ export default function CollectionView({ collection }) {
                   <div className="space-y-1 text-[10px]">
                     {category && (
                       <div className="flex justify-between">
-                        <span className={isDark ? 'text-white/40' : 'text-gray-500'}>Category</span>
+                        <span className={'text-gray-500 dark:text-white/40'}>Category</span>
                         <span>{category}</span>
                       </div>
                     )}
                     {taxon !== undefined && (
                       <div className="flex justify-between">
-                        <span className={isDark ? 'text-white/40' : 'text-gray-500'}>Taxon</span>
+                        <span className={'text-gray-500 dark:text-white/40'}>Taxon</span>
                         <span className="font-mono">{taxon}</span>
                       </div>
                     )}
                     <div className="flex justify-between items-center">
-                      <span className={isDark ? 'text-white/40' : 'text-gray-500'}>Issuer</span>
+                      <span className={'text-gray-500 dark:text-white/40'}>Issuer</span>
                       <div className="flex items-center gap-1.5">
                         <span className="font-mono truncate max-w-[120px]">{account}</span>
                         <button
                           onClick={() => window.dispatchEvent(new CustomEvent('openDm', { detail: { user: account } }))}
-                          className={`p-1 rounded hover:bg-white/10 transition-[background-color] outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] ${isDark ? 'text-white/50 hover:text-white' : 'text-gray-400 hover:text-gray-600'}`}
+                          className={`p-1 rounded hover:bg-white/10 transition-[background-color] outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] ${'text-gray-400 hover:text-gray-600 dark:text-white/50 dark:hover:text-white'}`}
                           title="Message issuer"
                           aria-label="Message issuer"
                         >
@@ -3395,12 +3345,12 @@ export default function CollectionView({ collection }) {
                       </div>
                     </div>
                     <div className="flex justify-between">
-                      <span className={isDark ? 'text-white/40' : 'text-gray-500'}>Created</span>
+                      <span className={'text-gray-500 dark:text-white/40'}>Created</span>
                       <span>{formatMonthYear(created)}</span>
                     </div>
                     {linkedToken && (
                       <div className="flex justify-between items-center">
-                        <span className={isDark ? 'text-white/40' : 'text-gray-500'}>Token</span>
+                        <span className={'text-gray-500 dark:text-white/40'}>Token</span>
                         <div className="flex items-center gap-1.5">
                           <Link
                             href={`/token/${linkedToken}`}
@@ -3417,14 +3367,12 @@ export default function CollectionView({ collection }) {
               )}
             </div>
             {/* Fees */}
-            <div className="relative" ref={feesDropdownRef}>
+            <div className="relative flex-shrink-0" ref={feesDropdownRef}>
               <button
                 onClick={() => setOpenFees(!openFees)}
                 className={cn(
-                  'px-3 py-1.5 rounded-lg text-[12px] font-medium transition-[background-color]',
-                  isDark
-                    ? 'bg-white/5 text-white/70 hover:bg-white/10'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  'px-2 sm:px-3 py-1.5 rounded-lg text-[11px] sm:text-[12px] font-medium transition-[background-color] whitespace-nowrap',
+                  'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-white/5 dark:text-white/70 dark:hover:bg-white/10'
                 )}
               >
                 Fees
@@ -3433,14 +3381,12 @@ export default function CollectionView({ collection }) {
                 <div
                   className={cn(
                     'absolute top-full right-0 mt-2 p-3 rounded-2xl border z-50 w-[220px]',
-                    isDark
-                      ? 'bg-black/90 backdrop-blur-2xl border-[#3f96fe]/10 shadow-[0_8px_40px_rgba(0,0,0,0.6)]'
-                      : 'bg-white/98 backdrop-blur-2xl border-gray-200 shadow-[0_8px_32px_rgba(0,0,0,0.08)]'
+                    'bg-white/98 backdrop-blur-2xl border-gray-200 shadow-[0_8px_32px_rgba(0,0,0,0.08)] dark:bg-black/90 dark:backdrop-blur-2xl dark:border-[#3f96fe]/10 dark:shadow-[0_8px_40px_rgba(0,0,0,0.6)]'
                   )}
                 >
                   <div className="space-y-1.5 text-[11px]">
                     <div className="flex justify-between items-center">
-                      <span className={isDark ? 'text-white/50' : 'text-gray-500'}>
+                      <span className={'text-gray-500 dark:text-white/50'}>
                         Royalty Rate
                       </span>
                       <span className="text-primary font-semibold">
@@ -3449,7 +3395,7 @@ export default function CollectionView({ collection }) {
                     </div>
                     {totalRoyalties > 0 && (
                       <div className="flex justify-between items-center">
-                        <span className={isDark ? 'text-white/50' : 'text-gray-500'}>
+                        <span className={'text-gray-500 dark:text-white/50'}>
                           Royalties Paid
                         </span>
                         <span className="text-orange-400 font-semibold">
@@ -3459,7 +3405,7 @@ export default function CollectionView({ collection }) {
                     )}
                     {totalBrokerFees > 0 && (
                       <div className="flex justify-between items-center">
-                        <span className={isDark ? 'text-white/50' : 'text-gray-500'}>
+                        <span className={'text-gray-500 dark:text-white/50'}>
                           Broker Fees
                         </span>
                         <span className="text-purple-400 font-semibold">
@@ -3471,13 +3417,13 @@ export default function CollectionView({ collection }) {
                       <div
                         className={cn(
                           'flex justify-between items-center pt-1.5 mt-1.5 border-t',
-                          isDark ? 'border-white/10' : 'border-gray-100'
+                          'border-gray-100 dark:border-white/10'
                         )}
                       >
-                        <span className={isDark ? 'text-white/70' : 'text-gray-600'}>
+                        <span className={'text-gray-600 dark:text-white/70'}>
                           Total Fees
                         </span>
-                        <span className={cn('font-bold', isDark ? 'text-white' : 'text-gray-900')}>
+                        <span className={cn('font-bold', 'text-gray-900 dark:text-white')}>
                           ✕{totalFees.toLocaleString(undefined, { maximumFractionDigits: 0 })}
                         </span>
                       </div>
@@ -3495,10 +3441,8 @@ export default function CollectionView({ collection }) {
               open={showPromoteModal}
               onOpenChange={setShowPromoteModal}
               className={cn(
-                'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium transition-[background-color]',
-                isDark
-                  ? 'bg-white/5 text-white/70 hover:bg-white/10'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                'flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 rounded-lg text-[11px] sm:text-[12px] font-medium transition-[background-color] whitespace-nowrap flex-shrink-0',
+                'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-white/5 dark:text-white/70 dark:hover:bg-white/10'
               )}
             />
             {/* Boost */}
@@ -3506,10 +3450,8 @@ export default function CollectionView({ collection }) {
               onClick={() => setShowBoostModal(true)}
               title="Boost trending position"
               className={cn(
-                'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium transition-[background-color]',
-                isDark
-                  ? 'bg-white/5 text-white/70 hover:bg-white/10'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                'flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 rounded-lg text-[11px] sm:text-[12px] font-medium transition-[background-color] whitespace-nowrap flex-shrink-0',
+                'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-white/5 dark:text-white/70 dark:hover:bg-white/10'
               )}
             >
               <Zap size={13} />
@@ -3519,10 +3461,8 @@ export default function CollectionView({ collection }) {
               <Link
                 href={`/nfts/${slug}/edit`}
                 className={cn(
-                  'px-3 py-1.5 rounded-lg text-[12px] font-medium transition-[background-color]',
-                  isDark
-                    ? 'bg-white/5 text-white/70 hover:bg-white/10'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  'px-2 sm:px-3 py-1.5 rounded-lg text-[11px] sm:text-[12px] font-medium transition-[background-color] whitespace-nowrap flex-shrink-0',
+                  'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-white/5 dark:text-white/70 dark:hover:bg-white/10'
                 )}
               >
                 Edit
@@ -3531,48 +3471,44 @@ export default function CollectionView({ collection }) {
           </div>
         </div>
 
-        {/* Stats Row */}
-        <div className="flex items-center gap-6 overflow-x-auto pb-1 scrollbar-hide">
-          {/* Floor Price - Primary Stat */}
+        {/* Stats — wrapping grid on mobile, horizontal row on desktop */}
+        <div className="grid grid-cols-3 gap-2 sm:flex sm:items-center sm:gap-6 sm:overflow-x-auto pb-1 sm:scrollbar-hide">
+          {/* Floor Price - Primary Stat (spans full width on mobile) */}
           <div
             className={cn(
-              'flex-shrink-0 px-3 py-2 rounded-lg',
-              isDark ? 'bg-green-500/10' : 'bg-green-50'
+              'col-span-3 sm:col-span-1 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg sm:flex-shrink-0',
+              'bg-green-50 dark:bg-green-500/10'
             )}
           >
             <div
               className={cn(
                 'text-[10px] uppercase tracking-wide mb-0.5',
-                isDark ? 'text-green-400/70' : 'text-green-600'
+                'text-green-600 dark:text-green-400/70'
               )}
             >
               Floor
             </div>
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1 sm:gap-1.5 flex-wrap">
               <span
                 className={cn(
-                  'text-[17px] font-semibold',
-                  isDark ? 'text-green-400' : 'text-green-600'
+                  'text-[15px] sm:text-[17px] font-semibold',
+                  'text-green-600 dark:text-green-400'
                 )}
               >
                 {fNumber(typeof floor === 'number' ? floor : floor?.amount || 0)}
               </span>
               <span
-                className={cn('text-[13px]', isDark ? 'text-green-400/70' : 'text-green-600/70')}
+                className={cn('text-[11px] sm:text-[13px]', 'text-green-600/70 dark:text-green-400/70')}
               >
                 XRP
               </span>
               {floor1dPercent !== undefined && floor1dPercent !== 0 && (
                 <span
                   className={cn(
-                    'text-[10px] px-1.5 py-0.5 rounded-full font-medium',
+                    'text-[9px] sm:text-[10px] px-1 sm:px-1.5 py-0.5 rounded-full font-medium',
                     floor1dPercent >= 0
-                      ? isDark
-                        ? 'bg-green-500/20 text-green-400'
-                        : 'bg-green-100 text-green-600'
-                      : isDark
-                        ? 'bg-red-500/20 text-red-400'
-                        : 'bg-red-100 text-red-600'
+                      ? 'bg-green-100 text-green-600 dark:bg-green-500/20 dark:text-green-400'
+                      : 'bg-red-100 text-red-600 dark:bg-red-500/20 dark:text-red-400'
                   )}
                 >
                   1d {floor1dPercent > 0 ? '+' : ''}
@@ -3582,14 +3518,10 @@ export default function CollectionView({ collection }) {
               {floor7dPercent !== undefined && floor7dPercent !== 0 && (
                 <span
                   className={cn(
-                    'text-[10px] px-1.5 py-0.5 rounded-full font-medium',
+                    'text-[9px] sm:text-[10px] px-1 sm:px-1.5 py-0.5 rounded-full font-medium',
                     floor7dPercent >= 0
-                      ? isDark
-                        ? 'bg-blue-500/20 text-blue-400'
-                        : 'bg-blue-100 text-blue-600'
-                      : isDark
-                        ? 'bg-red-500/20 text-red-400'
-                        : 'bg-red-100 text-red-600'
+                      ? 'bg-blue-100 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400'
+                      : 'bg-red-100 text-red-600 dark:bg-red-500/20 dark:text-red-400'
                   )}
                 >
                   7d {floor7dPercent > 0 ? '+' : ''}
@@ -3599,14 +3531,10 @@ export default function CollectionView({ collection }) {
               {floor30dPercent !== undefined && floor30dPercent !== 0 && (
                 <span
                   className={cn(
-                    'text-[10px] px-1.5 py-0.5 rounded-full font-medium',
+                    'text-[9px] sm:text-[10px] px-1 sm:px-1.5 py-0.5 rounded-full font-medium',
                     floor30dPercent >= 0
-                      ? isDark
-                        ? 'bg-purple-500/20 text-purple-400'
-                        : 'bg-purple-100 text-purple-600'
-                      : isDark
-                        ? 'bg-red-500/20 text-red-400'
-                        : 'bg-red-100 text-red-600'
+                      ? 'bg-purple-100 text-purple-600 dark:bg-purple-500/20 dark:text-purple-400'
+                      : 'bg-red-100 text-red-600 dark:bg-red-500/20 dark:text-red-400'
                   )}
                 >
                   30d {floor30dPercent > 0 ? '+' : ''}
@@ -3616,302 +3544,192 @@ export default function CollectionView({ collection }) {
             </div>
           </div>
 
+          {/* Divider - desktop only */}
+          {topOfferAmount > 0 && (
+            <div className={cn('hidden sm:block w-px h-8 flex-shrink-0', 'bg-gray-200 dark:bg-white/10')} />
+          )}
+
           {/* Top Offer */}
           {topOfferAmount > 0 && (
-            <>
-            <div
-              className={cn('w-px h-8 flex-shrink-0', isDark ? 'bg-white/10' : 'bg-gray-200')}
-            />
-            <div className="flex-shrink-0">
-              <div
-                className={cn(
-                  'text-[10px] uppercase tracking-wide mb-0.5',
-                  isDark ? 'text-white/60' : 'text-gray-500'
-                )}
-              >
+            <div className="sm:flex-shrink-0">
+              <div className={cn('text-[10px] uppercase tracking-wide mb-0.5', 'text-gray-500 dark:text-white/60')}>
                 Top Offer
               </div>
               <div className="flex items-baseline gap-1">
-                <span
-                  className={cn('text-[15px] font-medium', isDark ? 'text-white' : 'text-gray-900')}
-                >
+                <span className={cn('text-[13px] sm:text-[15px] font-medium', 'text-gray-900 dark:text-white')}>
                   {fNumber(topOfferAmount)}
                 </span>
-                <span className={cn('text-[11px]', isDark ? 'text-white/60' : 'text-gray-500')}>
-                  XRP
-                </span>
+                <span className={cn('text-[10px] sm:text-[11px]', 'text-gray-500 dark:text-white/60')}>XRP</span>
               </div>
             </div>
-            </>
+          )}
+
+          {/* Divider - desktop only */}
+          {listedCount > 0 && (
+            <div className={cn('hidden sm:block w-px h-8 flex-shrink-0', 'bg-gray-200 dark:bg-white/10')} />
           )}
 
           {/* Listed */}
           {listedCount > 0 && (
-            <>
-            <div
-              className={cn('w-px h-8 flex-shrink-0', isDark ? 'bg-white/10' : 'bg-gray-200')}
-            />
-            <div className="flex-shrink-0">
-              <div
-                className={cn(
-                  'text-[10px] uppercase tracking-wide mb-0.5',
-                  isDark ? 'text-white/60' : 'text-gray-500'
-                )}
-              >
+            <div className="sm:flex-shrink-0">
+              <div className={cn('text-[10px] uppercase tracking-wide mb-0.5', 'text-gray-500 dark:text-white/60')}>
                 Listed
               </div>
               <div className="flex items-baseline gap-1">
-                <span
-                  className={cn(
-                    'text-[15px] font-medium',
-                    isDark ? 'text-cyan-400' : 'text-cyan-600'
-                  )}
-                >
+                <span className={cn('text-[13px] sm:text-[15px] font-medium', 'text-cyan-600 dark:text-cyan-400')}>
                   {fIntNumber(listedCount)}
                 </span>
                 {items > 0 && (
-                  <span className={cn('text-[10px]', isDark ? 'text-white/60' : 'text-gray-500')}>
+                  <span className={cn('text-[10px]', 'text-gray-500 dark:text-white/60')}>
                     {((listedCount / items) * 100).toFixed(0)}%
                   </span>
                 )}
               </div>
             </div>
-            </>
           )}
 
-          {/* Bids (Buy Offers) */}
+          {/* Divider - desktop only */}
           {offers > 0 && (
-            <>
-            <div
-              className={cn('w-px h-8 flex-shrink-0', isDark ? 'bg-white/10' : 'bg-gray-200')}
-            />
-            <div className="flex-shrink-0">
-              <div
-                className={cn(
-                  'text-[10px] uppercase tracking-wide mb-0.5',
-                  isDark ? 'text-white/60' : 'text-gray-500'
-                )}
-              >
+            <div className={cn('hidden sm:block w-px h-8 flex-shrink-0', 'bg-gray-200 dark:bg-white/10')} />
+          )}
+
+          {/* Bids */}
+          {offers > 0 && (
+            <div className="sm:flex-shrink-0">
+              <div className={cn('text-[10px] uppercase tracking-wide mb-0.5', 'text-gray-500 dark:text-white/60')}>
                 Bids
               </div>
-              <span
-                className={cn(
-                  'text-[15px] font-medium',
-                  isDark ? 'text-purple-400' : 'text-purple-600'
-                )}
-              >
+              <span className={cn('text-[13px] sm:text-[15px] font-medium', 'text-purple-600 dark:text-purple-400')}>
                 {fIntNumber(offers)}
               </span>
             </div>
-            </>
+          )}
+
+          {/* Divider - desktop only */}
+          {(daily_txs > 0 || daily_users > 0) && (
+            <div className={cn('hidden sm:block w-px h-8 flex-shrink-0', 'bg-gray-200 dark:bg-white/10')} />
           )}
 
           {/* Daily Activity */}
           {(daily_txs > 0 || daily_users > 0) && (
-            <>
-              <div
-                className={cn('w-px h-8 flex-shrink-0', isDark ? 'bg-white/10' : 'bg-gray-200')}
-              />
-              <div className="flex-shrink-0">
-                <div
-                  className={cn(
-                    'text-[10px] uppercase tracking-wide mb-0.5',
-                    isDark ? 'text-white/60' : 'text-gray-500'
-                  )}
-                >
-                  24h Activity
-                </div>
-                <div className="flex items-baseline gap-2">
-                  {daily_txs > 0 && (
-                    <span
-                      className={cn(
-                        'text-[15px] font-medium',
-                        isDark ? 'text-orange-400' : 'text-orange-600'
-                      )}
-                    >
-                      {fIntNumber(daily_txs)}{' '}
-                      <span
-                        className={cn('text-[10px]', isDark ? 'text-white/60' : 'text-gray-500')}
-                      >
-                        txs
-                      </span>
-                    </span>
-                  )}
-                  {daily_users > 0 && (
-                    <span
-                      className={cn(
-                        'text-[15px] font-medium',
-                        isDark ? 'text-pink-400' : 'text-pink-600'
-                      )}
-                    >
-                      {fIntNumber(daily_users)}{' '}
-                      <span
-                        className={cn('text-[10px]', isDark ? 'text-white/60' : 'text-gray-500')}
-                      >
-                        users
-                      </span>
-                    </span>
-                  )}
-                </div>
+            <div className="sm:flex-shrink-0">
+              <div className={cn('text-[10px] uppercase tracking-wide mb-0.5', 'text-gray-500 dark:text-white/60')}>
+                24h Activity
               </div>
-            </>
+              <div className="flex items-baseline gap-1.5">
+                {daily_txs > 0 && (
+                  <span className={cn('text-[13px] sm:text-[15px] font-medium', 'text-orange-600 dark:text-orange-400')}>
+                    {fIntNumber(daily_txs)}
+                    <span className={cn('text-[10px] ml-0.5', 'text-gray-500 dark:text-white/60')}>txs</span>
+                  </span>
+                )}
+                {daily_users > 0 && (
+                  <span className={cn('text-[13px] sm:text-[15px] font-medium', 'text-pink-600 dark:text-pink-400')}>
+                    {fIntNumber(daily_users)}
+                    <span className={cn('text-[10px] ml-0.5', 'text-gray-500 dark:text-white/60')}>users</span>
+                  </span>
+                )}
+              </div>
+            </div>
           )}
 
-          <div className={cn('w-px h-8 flex-shrink-0', isDark ? 'bg-white/10' : 'bg-gray-200')} />
+          {/* Divider - desktop only */}
+          <div className={cn('hidden sm:block w-px h-8 flex-shrink-0', 'bg-gray-200 dark:bg-white/10')} />
 
           {/* 24h Vol */}
-          <div className="flex-shrink-0">
-            <div
-              className={cn(
-                'text-[10px] uppercase tracking-wide mb-0.5',
-                isDark ? 'text-white/60' : 'text-gray-500'
-              )}
-            >
-              24h Volume
+          <div className="sm:flex-shrink-0">
+            <div className={cn('text-[10px] uppercase tracking-wide mb-0.5', 'text-gray-500 dark:text-white/60')}>
+              24h Vol
             </div>
             <div className="flex items-baseline gap-1">
-              <span
-                className={cn('text-[15px] font-medium', isDark ? 'text-white' : 'text-gray-900')}
-              >
+              <span className={cn('text-[13px] sm:text-[15px] font-medium', 'text-gray-900 dark:text-white')}>
                 {fVolume(totalVol24h)}
               </span>
-              <span className={cn('text-[11px]', isDark ? 'text-white/60' : 'text-gray-500')}>
-                XRP
-              </span>
+              <span className={cn('text-[10px] sm:text-[11px]', 'text-gray-500 dark:text-white/60')}>XRP</span>
             </div>
           </div>
 
           {/* 24h Sales */}
           {sales24h > 0 && (
-            <div className="flex-shrink-0">
-              <div
-                className={cn(
-                  'text-[10px] uppercase tracking-wide mb-0.5',
-                  isDark ? 'text-white/60' : 'text-gray-500'
-                )}
-              >
+            <div className="sm:flex-shrink-0">
+              <div className={cn('text-[10px] uppercase tracking-wide mb-0.5', 'text-gray-500 dark:text-white/60')}>
                 24h Sales
               </div>
-              <span
-                className={cn('text-[15px] font-medium', isDark ? 'text-white' : 'text-gray-900')}
-              >
+              <span className={cn('text-[13px] sm:text-[15px] font-medium', 'text-gray-900 dark:text-white')}>
                 {fIntNumber(sales24h)}
               </span>
             </div>
           )}
 
-          <div className={cn('w-px h-8 flex-shrink-0', isDark ? 'bg-white/10' : 'bg-gray-200')} />
+          {/* Divider - desktop only */}
+          <div className={cn('hidden sm:block w-px h-8 flex-shrink-0', 'bg-gray-200 dark:bg-white/10')} />
 
-          {/* All Vol */}
-          <div className="flex-shrink-0">
-            <div
-              className={cn(
-                'text-[10px] uppercase tracking-wide mb-0.5',
-                isDark ? 'text-white/60' : 'text-gray-500'
-              )}
-            >
-              Total Volume
+          {/* Total Vol */}
+          <div className="sm:flex-shrink-0">
+            <div className={cn('text-[10px] uppercase tracking-wide mb-0.5', 'text-gray-500 dark:text-white/60')}>
+              Total Vol
             </div>
             <div className="flex items-baseline gap-1">
-              <span
-                className={cn('text-[15px] font-medium', isDark ? 'text-white' : 'text-gray-900')}
-              >
+              <span className={cn('text-[13px] sm:text-[15px] font-medium', 'text-gray-900 dark:text-white')}>
                 {fVolume(totalVol)}
               </span>
-              <span className={cn('text-[11px]', isDark ? 'text-white/60' : 'text-gray-500')}>
-                XRP
-              </span>
+              <span className={cn('text-[10px] sm:text-[11px]', 'text-gray-500 dark:text-white/60')}>XRP</span>
             </div>
           </div>
 
           {/* Total Sales */}
           {totalSales > 0 && (
-            <div className="flex-shrink-0">
-              <div
-                className={cn(
-                  'text-[10px] uppercase tracking-wide mb-0.5',
-                  isDark ? 'text-white/60' : 'text-gray-500'
-                )}
-              >
+            <div className="sm:flex-shrink-0">
+              <div className={cn('text-[10px] uppercase tracking-wide mb-0.5', 'text-gray-500 dark:text-white/60')}>
                 All Sales
               </div>
-              <span
-                className={cn('text-[15px] font-medium', isDark ? 'text-white' : 'text-gray-900')}
-              >
+              <span className={cn('text-[13px] sm:text-[15px] font-medium', 'text-gray-900 dark:text-white')}>
                 {fIntNumber(totalSales)}
               </span>
             </div>
           )}
 
-          {/* Market Cap */}
+          {/* Divider - desktop only */}
           {marketcap > 0 && (
-            <>
-              <div
-                className={cn('w-px h-8 flex-shrink-0', isDark ? 'bg-white/10' : 'bg-gray-200')}
-              />
-              <div className="flex-shrink-0">
-                <div
-                  className={cn(
-                    'text-[10px] uppercase tracking-wide mb-0.5',
-                    isDark ? 'text-white/60' : 'text-gray-500'
-                  )}
-                >
-                  Mkt Cap
-                </div>
-                <span
-                  className={cn(
-                    'text-[15px] font-medium',
-                    isDark ? 'text-yellow-400' : 'text-yellow-600'
-                  )}
-                >
-                  ${fVolume(marketcap)}
-                </span>
-              </div>
-            </>
+            <div className={cn('hidden sm:block w-px h-8 flex-shrink-0', 'bg-gray-200 dark:bg-white/10')} />
           )}
 
-          <div className={cn('w-px h-8 flex-shrink-0', isDark ? 'bg-white/10' : 'bg-gray-200')} />
+          {/* Market Cap */}
+          {marketcap > 0 && (
+            <div className="sm:flex-shrink-0">
+              <div className={cn('text-[10px] uppercase tracking-wide mb-0.5', 'text-gray-500 dark:text-white/60')}>
+                Mkt Cap
+              </div>
+              <span className={cn('text-[13px] sm:text-[15px] font-medium', 'text-yellow-600 dark:text-yellow-400')}>
+                ${fVolume(marketcap)}
+              </span>
+            </div>
+          )}
+
+          {/* Divider - desktop only */}
+          <div className={cn('hidden sm:block w-px h-8 flex-shrink-0', 'bg-gray-200 dark:bg-white/10')} />
 
           {/* Supply */}
-          <div className="flex-shrink-0">
-            <div
-              className={cn(
-                'text-[10px] uppercase tracking-wide mb-0.5',
-                isDark ? 'text-white/60' : 'text-gray-500'
-              )}
-            >
+          <div className="sm:flex-shrink-0">
+            <div className={cn('text-[10px] uppercase tracking-wide mb-0.5', 'text-gray-500 dark:text-white/60')}>
               Supply
             </div>
-            <span
-              className={cn('text-[15px] font-medium', isDark ? 'text-white' : 'text-gray-900')}
-            >
+            <span className={cn('text-[13px] sm:text-[15px] font-medium', 'text-gray-900 dark:text-white')}>
               {fIntNumber(items || 0)}
             </span>
           </div>
 
           {/* Owners */}
-          <div className="flex-shrink-0">
-            <div
-              className={cn(
-                'text-[10px] uppercase tracking-wide mb-0.5',
-                isDark ? 'text-white/60' : 'text-gray-500'
-              )}
-            >
+          <div className="sm:flex-shrink-0">
+            <div className={cn('text-[10px] uppercase tracking-wide mb-0.5', 'text-gray-500 dark:text-white/60')}>
               Owners
             </div>
             <div className="flex items-baseline gap-1">
-              <span
-                className={cn('text-[15px] font-medium', isDark ? 'text-white' : 'text-gray-900')}
-              >
+              <span className={cn('text-[13px] sm:text-[15px] font-medium', 'text-gray-900 dark:text-white')}>
                 {fIntNumber(owners || 0)}
               </span>
               {items > 0 && owners > 0 && (
-                <span
-                  className={cn(
-                    'text-[10px] px-1 py-0.5 rounded',
-                    isDark ? 'bg-white/5 text-white/50' : 'bg-gray-100 text-gray-500'
-                  )}
-                >
+                <span className={cn('text-[10px] px-1 py-0.5 rounded', 'bg-gray-100 text-gray-500 dark:bg-white/5 dark:text-white/50')}>
                   {((owners / items) * 100).toFixed(0)}%
                 </span>
               )}
@@ -3926,9 +3744,7 @@ export default function CollectionView({ collection }) {
           onClick={() => setShowChart(!showChart)}
           className={cn(
             'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium mb-2 transition-[background-color]',
-            isDark
-              ? 'bg-white/5 hover:bg-white/10 text-white/70'
-              : 'bg-gray-100 hover:bg-gray-200 text-gray-600'
+            'bg-gray-100 hover:bg-gray-200 text-gray-600 dark:bg-white/5 dark:hover:bg-white/10 dark:text-white/70'
           )}
         >
           <BarChart3 size={14} />
@@ -3936,8 +3752,8 @@ export default function CollectionView({ collection }) {
         </button>
         {showChart && (
           <div
-            className={cn('rounded-[10px] overflow-hidden border', isDark ? 'border-white/[0.08]' : 'border-black/[0.08]')}
-            style={{ minHeight: 390 }}
+            className={cn('rounded-[10px] overflow-hidden border', 'border-black/[0.08] dark:border-white/[0.08]')}
+            style={{ minHeight: typeof window !== 'undefined' && window.innerWidth < 640 ? 280 : 390 }}
           >
             <PriceChart slug={slug} />
           </div>
@@ -3946,7 +3762,7 @@ export default function CollectionView({ collection }) {
 
       {/* NFTs and Activity Tabs */}
       <div
-        className={cn('rounded-[10px] overflow-hidden border', isDark ? 'border-white/[0.08]' : 'border-black/[0.08]')}
+        className={cn('rounded-[10px] overflow-hidden border', 'border-black/[0.08] dark:border-white/[0.08]')}
       >
         <TabContext value={value}>
           <div className="flex justify-between items-center px-2.5 pt-2 pb-1">
@@ -3961,14 +3777,12 @@ export default function CollectionView({ collection }) {
                   key={tab.id}
                   onClick={() => setValue(tab.id)}
                   className={cn(
-                    'flex items-center gap-2 px-4 py-2.5 text-[12px] font-medium tracking-wider rounded-md border transition-[background-color,border-color]',
+                    'inline-flex items-center justify-center gap-2 px-4 py-2.5 text-[12px] font-medium tracking-wider rounded-md border transition-[background-color,border-color]',
+                    'max-sm:flex-1 max-sm:py-2 max-sm:px-1 max-sm:text-[10px] max-sm:gap-[3px] max-sm:[&_svg]:w-[14px] max-sm:[&_svg]:h-[14px]',
                     value === tab.id
-                      ? isDark
-                        ? 'border-white/20 text-white'
-                        : 'border-gray-300 text-gray-900'
-                      : isDark
-                        ? 'border-white/10 text-white/60 hover:text-white/80 hover:border-white/15'
-                        : 'border-gray-200 text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      ? 'border-gray-300 text-gray-900 dark:border-white/20 dark:text-white'
+                      : 'border-gray-200 text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:border-white/10 dark:text-white/60 dark:hover:text-white/80 dark:hover:border-white/15',
+                    value !== tab.id && 'max-sm:[&>span]:hidden'
                   )}
                 >
                   {tab.icon}
@@ -3994,7 +3808,7 @@ export default function CollectionView({ collection }) {
           </div>
 
           <TabPanel value="tab-nfts" className="px-2.5 pb-2.5">
-            <NFTGrid collection={collection} isDark={isDark} />
+            <NFTGrid collection={collection} />
           </TabPanel>
           <TabPanel value="tab-holders" className="px-2.5 pb-2.5">
             <HoldersTab slug={slug} />

@@ -147,6 +147,7 @@ const ApiDocsPage = ({ apiDocs, ogp }) => {
         { id: 'trending-guide', title: 'Trending', icon: TrendingUp },
         { id: 'boost-guide', title: 'Boost', icon: Flame },
         { id: 'security', title: 'Security', icon: Key },
+        { id: 'chat', title: 'Chat', icon: MessageCircle },
         { id: 'terms', title: 'Terms of Service', icon: FileText }
       ]
     },
@@ -248,6 +249,14 @@ const ApiDocsPage = ({ apiDocs, ogp }) => {
       { id: 'verify-domain', label: 'Verify Domain' },
       { id: 'backup', label: 'Backup' },
       { id: 'user-responsibility', label: 'Your Responsibility' }
+    ],
+    chat: [
+      { id: 'chat-overview', label: 'Overview' },
+      { id: 'chat-commands', label: 'Commands' },
+      { id: 'chat-emotes', label: 'Emotes' },
+      { id: 'chat-dm', label: 'Direct Messages' },
+      { id: 'chat-attachments', label: 'Attachments' },
+      { id: 'chat-support', label: 'Support Tickets' }
     ],
     'api-keys': [
       { id: 'create-key', label: 'Create API Key' },
@@ -616,9 +625,7 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
         'flex items-center gap-1.5 px-2 py-1.5 rounded-md text-[11px] font-medium',
         copiedBlock === id
           ? 'bg-emerald-500/10 text-emerald-500'
-          : isDark
-            ? 'bg-white/5 hover:bg-white/10 text-white/60'
-            : 'bg-gray-100 hover:bg-gray-200 text-gray-600'
+          : 'bg-gray-100 hover:bg-gray-200 text-gray-600 dark:bg-white/5 dark:hover:bg-white/10 dark:text-white/60'
       )}
     >
       {copiedBlock === id ? (
@@ -670,7 +677,7 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-2xl font-normal text-primary mb-2">All Endpoints</h2>
-                <p className={cn('text-[14px]', isDark ? 'text-white/60' : 'text-gray-600')}>
+                <p className={cn('text-[14px]', 'text-gray-600 dark:text-white/60')}>
                   Complete reference of all {getTotalEndpointCount()} API endpoints organized by
                   category.
                 </p>
@@ -684,13 +691,13 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
                 id={`ref-${key}`}
                 className={cn(
                   'rounded-xl border-[1.5px] p-5',
-                  isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+                  'border-[rgba(59,130,246,0.15)] dark:border-[rgba(59,130,246,0.1)]'
                 )}
               >
                 <div
                   className={cn(
                     'text-[11px] font-medium uppercase tracking-wide mb-4',
-                    isDark ? 'text-white/40' : 'text-gray-500'
+                    'text-gray-500 dark:text-white/40'
                   )}
                 >
                   {category.label} ({category.endpoints.length})
@@ -699,7 +706,7 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
                   {category.endpoints.map((ep) => (
                     <div key={ep.path} className={cn(
                       'rounded-lg p-3',
-                      isDark ? 'bg-white/[0.02]' : 'bg-gray-50/50'
+                      'bg-gray-50/50 dark:bg-white/[0.02]'
                     )}>
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex items-start gap-3 flex-1 min-w-0">
@@ -717,12 +724,12 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
                             <code
                               className={cn(
                                 'font-mono text-[12px] break-all',
-                                isDark ? 'text-[#3f96fe]' : 'text-cyan-600'
+                                'text-cyan-600 dark:text-[#3f96fe]'
                               )}
                             >
                               /v1{ep.path}
                             </code>
-                            <p className={cn('text-[11px] mt-1', isDark ? 'text-white/50' : 'text-gray-500')}>
+                            <p className={cn('text-[11px] mt-1', 'text-gray-500 dark:text-white/50')}>
                               {ep.desc}
                             </p>
                           </div>
@@ -733,9 +740,7 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
                             disabled={tryingEndpoint === ep.path}
                             className={cn(
                               'flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-medium shrink-0 transition-colors',
-                              isDark
-                                ? 'bg-primary/10 text-primary hover:bg-primary/20'
-                                : 'bg-primary/10 text-primary hover:bg-primary/15'
+                              'bg-primary/10 text-primary hover:bg-primary/15 dark:bg-primary/10 dark:text-primary dark:hover:bg-primary/20'
                             )}
                           >
                             {tryingEndpoint === ep.path ? (
@@ -750,15 +755,15 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
                       {endpointResponse?.path === ep.path && (
                         <div className={cn(
                           'mt-3 rounded-lg border overflow-hidden',
-                          isDark ? 'border-white/10' : 'border-gray-200'
+                          'border-gray-200 dark:border-white/10'
                         )}>
                           <div className={cn(
                             'flex items-center justify-between px-3 py-2 text-[10px]',
-                            isDark ? 'bg-white/5' : 'bg-gray-100'
+                            'bg-gray-100 dark:bg-white/5'
                           )}>
                             <code className={cn(
                               'font-mono truncate',
-                              isDark ? 'text-white/60' : 'text-gray-600'
+                              'text-gray-600 dark:text-white/60'
                             )}>
                               {endpointResponse.url}
                             </code>
@@ -771,7 +776,7 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
                                 }}
                                 className={cn(
                                   'flex items-center gap-1 px-2 py-0.5 rounded text-[10px]',
-                                  isDark ? 'hover:bg-white/10' : 'hover:bg-gray-200'
+                                  'hover:bg-gray-200 dark:hover:bg-white/10'
                                 )}
                               >
                                 {copiedBlock === `resp-${ep.path}` ? <CheckCircle size={10} /> : <Copy size={10} />}
@@ -781,7 +786,7 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
                                 onClick={() => setEndpointResponse(null)}
                                 className={cn(
                                   'p-1 rounded',
-                                  isDark ? 'hover:bg-white/10' : 'hover:bg-gray-200'
+                                  'hover:bg-gray-200 dark:hover:bg-white/10'
                                 )}
                               >
                                 <X size={12} />
@@ -821,7 +826,7 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
               <p
                 className={cn(
                   'text-[15px] leading-relaxed',
-                  isDark ? 'text-white/60' : 'text-gray-600'
+                  'text-gray-600 dark:text-white/60'
                 )}
               >
                 The comprehensive XRP Ledger API for builders who demand excellence. Fast, reliable
@@ -834,7 +839,7 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
               id="base-url"
               className={cn(
                 'rounded-xl border-[1.5px] p-5',
-                isDark ? 'border-primary/30 bg-primary/5' : 'border-primary/20 bg-primary/5'
+                'border-primary/20 bg-primary/5 dark:border-primary/30 dark:bg-primary/5'
               )}
             >
               <div className="flex items-center gap-2 mb-3">
@@ -844,9 +849,7 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
               <div
                 className={cn(
                   'p-3 rounded-lg font-mono text-[13px]',
-                  isDark
-                    ? 'bg-[rgba(59,130,246,0.02)]'
-                    : 'bg-[rgba(59,130,246,0.02)] border border-[rgba(59,130,246,0.15)]'
+                  'bg-[rgba(59,130,246,0.02)] border border-[rgba(59,130,246,0.15)] dark:bg-[rgba(59,130,246,0.02)]'
                 )}
               >
                 {docs.baseUrl}
@@ -856,7 +859,7 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
             {/* Feature Cards */}
             <div id="start-building">
               <h2 className="text-xl font-normal mb-4">Start Building</h2>
-              <p className={cn('text-[14px] mb-5', isDark ? 'text-white/60' : 'text-gray-600')}>
+              <p className={cn('text-[14px] mb-5', 'text-gray-600 dark:text-white/60')}>
                 Everything you need to build world-class applications on XRP Ledger.
               </p>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -884,15 +887,13 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
                     key={card.title}
                     className={cn(
                       'rounded-xl border-[1.5px] p-5 cursor-pointer transition-colors',
-                      isDark
-                        ? 'border-[rgba(59,130,246,0.1)] hover:border-[rgba(59,130,246,0.2)] bg-[rgba(59,130,246,0.02)]'
-                        : 'border-[rgba(59,130,246,0.15)] hover:border-[rgba(59,130,246,0.25)] bg-[rgba(59,130,246,0.02)]'
+                      'border-[rgba(59,130,246,0.15)] hover:border-[rgba(59,130,246,0.25)] bg-[rgba(59,130,246,0.02)] dark:border-[rgba(59,130,246,0.1)] dark:hover:border-[rgba(59,130,246,0.2)] dark:bg-[rgba(59,130,246,0.02)]'
                     )}
                     onClick={() => card.action && setCurrentSection(card.action)}
                   >
                     <card.icon size={20} className="text-primary mb-3" />
                     <h3 className="text-[14px] font-medium mb-1">{card.title}</h3>
-                    <p className={cn('text-[13px]', isDark ? 'text-white/50' : 'text-gray-500')}>
+                    <p className={cn('text-[13px]', 'text-gray-500 dark:text-white/50')}>
                       {card.desc}
                     </p>
                   </div>
@@ -905,19 +906,17 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
               id="quick-start"
               className={cn(
                 'rounded-xl border-[1.5px] p-5',
-                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+                'border-[rgba(59,130,246,0.15)] dark:border-[rgba(59,130,246,0.1)]'
               )}
             >
               <h3 className="text-[15px] font-medium mb-3">Quick Start Example</h3>
-              <p className={cn('text-[13px] mb-3', isDark ? 'text-white/60' : 'text-gray-600')}>
+              <p className={cn('text-[13px] mb-3', 'text-gray-600 dark:text-white/60')}>
                 Get top tokens by 24h volume:
               </p>
               <div
                 className={cn(
                   'p-3 rounded-lg font-mono text-[13px] overflow-x-auto',
-                  isDark
-                    ? 'bg-[rgba(59,130,246,0.02)]'
-                    : 'bg-[rgba(59,130,246,0.02)] border border-[rgba(59,130,246,0.15)]'
+                  'bg-[rgba(59,130,246,0.02)] border border-[rgba(59,130,246,0.15)] dark:bg-[rgba(59,130,246,0.02)]'
                 )}
               >
                 <span className="text-primary">curl</span> -X GET
@@ -927,9 +926,7 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
                 onClick={() => handleTryApi('/v1/tokens?limit=5&sort=volume')}
                 className={cn(
                   'mt-3 flex items-center gap-2 rounded-lg border-[1.5px] px-3 py-1.5 text-[12px] font-medium text-primary',
-                  isDark
-                    ? 'border-primary/30 bg-primary/5 hover:bg-primary/10'
-                    : 'border-primary/30 bg-primary/5 hover:bg-primary/10'
+                  'border-primary/30 bg-primary/5 hover:bg-primary/10 dark:border-primary/30 dark:bg-primary/5 dark:hover:bg-primary/10'
                 )}
               >
                 <Code size={12} /> Try It
@@ -950,13 +947,11 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
             <div
               className={cn(
                 'rounded-lg p-3 text-[12px]',
-                isDark
-                  ? 'bg-primary/5 border border-primary/20'
-                  : 'bg-primary/5 border border-primary/20'
+                'bg-primary/5 border border-primary/20 dark:bg-primary/5 dark:border dark:border-primary/20'
               )}
             >
               <span className="text-primary font-medium">Identifier:</span>{' '}
-              <span className={isDark ? 'text-white/70' : 'text-gray-600'}>
+              <span className={'text-gray-600 dark:text-white/70'}>
                 Use <code className="text-primary">md5</code> (32-char hex) to identify tokens.
                 <button
                   onClick={() => setCurrentSection('reference')}
@@ -972,7 +967,7 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
               id="get-tokens"
               className={cn(
                 'rounded-xl border-[1.5px] p-5',
-                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+                'border-[rgba(59,130,246,0.15)] dark:border-[rgba(59,130,246,0.1)]'
               )}
             >
               <div className="flex items-center gap-3 mb-3">
@@ -981,22 +976,22 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
                 </span>
                 <code className="text-[15px] font-mono">/v1/tokens</code>
               </div>
-              <p className={cn('text-[13px] mb-4', isDark ? 'text-white/60' : 'text-gray-600')}>
+              <p className={cn('text-[13px] mb-4', 'text-gray-600 dark:text-white/60')}>
                 List all tokens with filtering and sorting
               </p>
               <div
                 className={cn(
                   'rounded-lg overflow-hidden border-[1.5px] mb-4',
-                  isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+                  'border-[rgba(59,130,246,0.15)] dark:border-[rgba(59,130,246,0.1)]'
                 )}
               >
                 <table className="w-full text-[12px]">
-                  <thead className={isDark ? 'bg-white/5' : 'bg-gray-50'}>
+                  <thead className={'bg-gray-50 dark:bg-white/5'}>
                     <tr>
                       <th
                         className={cn(
                           'text-left px-3 py-2 font-medium',
-                          isDark ? 'text-white/60' : 'text-gray-600'
+                          'text-gray-600 dark:text-white/60'
                         )}
                       >
                         Param
@@ -1004,7 +999,7 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
                       <th
                         className={cn(
                           'text-left px-3 py-2 font-medium',
-                          isDark ? 'text-white/60' : 'text-gray-600'
+                          'text-gray-600 dark:text-white/60'
                         )}
                       >
                         Description
@@ -1028,15 +1023,13 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
                       <tr
                         key={param}
                         className={
-                          isDark
-                            ? 'border-t border-[rgba(59,130,246,0.1)]'
-                            : 'border-t border-[rgba(59,130,246,0.15)]'
+                          'border-t border-[rgba(59,130,246,0.15)] dark:border-t dark:border-[rgba(59,130,246,0.1)]'
                         }
                       >
                         <td className="px-3 py-2">
                           <code className="text-primary">{param}</code>
                         </td>
-                        <td className={cn('px-3 py-2', isDark ? 'text-white/60' : 'text-gray-600')}>
+                        <td className={cn('px-3 py-2', 'text-gray-600 dark:text-white/60')}>
                           {desc}
                         </td>
                       </tr>
@@ -1047,9 +1040,7 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
               <div
                 className={cn(
                   'relative group rounded-lg overflow-hidden',
-                  isDark
-                    ? 'bg-[rgba(59,130,246,0.02)]'
-                    : 'bg-[rgba(59,130,246,0.02)] border border-[rgba(59,130,246,0.15)]'
+                  'bg-[rgba(59,130,246,0.02)] border border-[rgba(59,130,246,0.15)] dark:bg-[rgba(59,130,246,0.02)]'
                 )}
               >
                 <pre className="p-3 font-mono text-[12px] overflow-x-auto m-0">
@@ -1061,9 +1052,7 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
                 onClick={() => handleTryApi('/v1/tokens?limit=10&sort=volume')}
                 className={cn(
                   'mt-3 flex items-center gap-2 rounded-lg border-[1.5px] px-3 py-1.5 text-[12px] font-medium text-primary',
-                  isDark
-                    ? 'border-primary/30 bg-primary/5 hover:bg-primary/10'
-                    : 'border-primary/30 bg-primary/5 hover:bg-primary/10'
+                  'border-primary/30 bg-primary/5 hover:bg-primary/10 dark:border-primary/30 dark:bg-primary/5 dark:hover:bg-primary/10'
                 )}
               >
                 <Code size={12} /> Try It
@@ -1075,7 +1064,7 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
               id="get-token"
               className={cn(
                 'rounded-xl border-[1.5px] p-5',
-                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+                'border-[rgba(59,130,246,0.15)] dark:border-[rgba(59,130,246,0.1)]'
               )}
             >
               <div className="flex items-center gap-3 mb-3">
@@ -1084,7 +1073,7 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
                 </span>
                 <code className="text-[15px] font-mono">/v1/token/{'{id}'}</code>
               </div>
-              <p className={cn('text-[13px] mb-3', isDark ? 'text-white/60' : 'text-gray-600')}>
+              <p className={cn('text-[13px] mb-3', 'text-gray-600 dark:text-white/60')}>
                 Get single token by <span className="text-primary font-medium">md5</span>{' '}
                 (recommended), slug, or issuer_currency format.
                 <button
@@ -1097,16 +1086,16 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
               <div
                 className={cn(
                   'rounded-lg overflow-hidden border-[1.5px] mb-3',
-                  isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+                  'border-[rgba(59,130,246,0.15)] dark:border-[rgba(59,130,246,0.1)]'
                 )}
               >
                 <table className="w-full text-[12px]">
-                  <thead className={isDark ? 'bg-white/5' : 'bg-gray-50'}>
+                  <thead className={'bg-gray-50 dark:bg-white/5'}>
                     <tr>
                       <th
                         className={cn(
                           'text-left px-3 py-2 font-medium',
-                          isDark ? 'text-white/60' : 'text-gray-600'
+                          'text-gray-600 dark:text-white/60'
                         )}
                       >
                         Format
@@ -1114,7 +1103,7 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
                       <th
                         className={cn(
                           'text-left px-3 py-2 font-medium',
-                          isDark ? 'text-white/60' : 'text-gray-600'
+                          'text-gray-600 dark:text-white/60'
                         )}
                       >
                         Example
@@ -1130,9 +1119,7 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
                       <tr
                         key={format}
                         className={
-                          isDark
-                            ? 'border-t border-[rgba(59,130,246,0.1)]'
-                            : 'border-t border-[rgba(59,130,246,0.15)]'
+                          'border-t border-[rgba(59,130,246,0.15)] dark:border-t dark:border-[rgba(59,130,246,0.1)]'
                         }
                       >
                         <td className="px-3 py-2">
@@ -1143,7 +1130,7 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
                         <td
                           className={cn(
                             'px-3 py-2 font-mono text-[11px]',
-                            isDark ? 'text-white/60' : 'text-gray-600'
+                            'text-gray-600 dark:text-white/60'
                           )}
                         >
                           {example}
@@ -1156,9 +1143,7 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
               <div
                 className={cn(
                   'relative group rounded-lg overflow-hidden',
-                  isDark
-                    ? 'bg-[rgba(59,130,246,0.02)]'
-                    : 'bg-[rgba(59,130,246,0.02)] border border-[rgba(59,130,246,0.15)]'
+                  'bg-[rgba(59,130,246,0.02)] border border-[rgba(59,130,246,0.15)] dark:bg-[rgba(59,130,246,0.02)]'
                 )}
               >
                 <pre className="p-3 font-mono text-[12px] overflow-x-auto m-0">
@@ -1170,9 +1155,7 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
                 onClick={() => handleTryApi('/v1/token/0413ca7cfc258dfaf698c02fe304e607')}
                 className={cn(
                   'mt-3 flex items-center gap-2 rounded-lg border-[1.5px] px-3 py-1.5 text-[12px] font-medium text-primary',
-                  isDark
-                    ? 'border-primary/30 bg-primary/5 hover:bg-primary/10'
-                    : 'border-primary/30 bg-primary/5 hover:bg-primary/10'
+                  'border-primary/30 bg-primary/5 hover:bg-primary/10 dark:border-primary/30 dark:bg-primary/5 dark:hover:bg-primary/10'
                 )}
               >
                 <Code size={12} /> Try It
@@ -1184,7 +1167,7 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
               id="post-search"
               className={cn(
                 'rounded-xl border-[1.5px] p-5',
-                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+                'border-[rgba(59,130,246,0.15)] dark:border-[rgba(59,130,246,0.1)]'
               )}
             >
               <div className="flex items-center gap-3 mb-3">
@@ -1193,15 +1176,13 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
                 </span>
                 <code className="text-[15px] font-mono">/v1/search</code>
               </div>
-              <p className={cn('text-[13px] mb-3', isDark ? 'text-white/60' : 'text-gray-600')}>
+              <p className={cn('text-[13px] mb-3', 'text-gray-600 dark:text-white/60')}>
                 Search tokens by name/symbol/issuer
               </p>
               <div
                 className={cn(
                   'relative group rounded-lg overflow-hidden',
-                  isDark
-                    ? 'bg-[rgba(59,130,246,0.02)]'
-                    : 'bg-[rgba(59,130,246,0.02)] border border-[rgba(59,130,246,0.15)]'
+                  'bg-[rgba(59,130,246,0.02)] border border-[rgba(59,130,246,0.15)] dark:bg-[rgba(59,130,246,0.02)]'
                 )}
               >
                 <pre className="p-3 font-mono text-[12px] overflow-x-auto m-0">
@@ -1215,13 +1196,13 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
               id="other-endpoints"
               className={cn(
                 'rounded-xl border-[1.5px] p-5',
-                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+                'border-[rgba(59,130,246,0.15)] dark:border-[rgba(59,130,246,0.1)]'
               )}
             >
               <div
                 className={cn(
                   'text-[11px] font-medium uppercase tracking-wide mb-3',
-                  isDark ? 'text-white/40' : 'text-gray-500'
+                  'text-gray-500 dark:text-white/40'
                 )}
               >
                 Other Endpoints
@@ -1249,7 +1230,7 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
                       {method}
                     </span>
                     <code className="font-mono text-[12px]">{path}</code>
-                    <span className={isDark ? 'text-white/40' : 'text-gray-500'}>- {desc}</span>
+                    <span className={'text-gray-500 dark:text-white/40'}>- {desc}</span>
                   </div>
                 ))}
               </div>
@@ -1268,13 +1249,11 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
             <div
               className={cn(
                 'rounded-lg p-3 text-[12px]',
-                isDark
-                  ? 'bg-primary/5 border border-primary/20'
-                  : 'bg-primary/5 border border-primary/20'
+                'bg-primary/5 border border-primary/20 dark:bg-primary/5 dark:border dark:border-primary/20'
               )}
             >
               <span className="text-primary font-medium">Identifier:</span>{' '}
-              <span className={isDark ? 'text-white/70' : 'text-gray-600'}>
+              <span className={'text-gray-600 dark:text-white/70'}>
                 Use <code className="text-primary">md5</code> (32-char hex) to identify tokens in
                 chart/holder endpoints.
               </span>
@@ -1285,7 +1264,7 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
               id="ohlc"
               className={cn(
                 'rounded-xl border-[1.5px] p-5',
-                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+                'border-[rgba(59,130,246,0.15)] dark:border-[rgba(59,130,246,0.1)]'
               )}
             >
               <div className="flex items-center gap-3 mb-3">
@@ -1294,22 +1273,22 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
                 </span>
                 <code className="text-[15px] font-mono">/v1/ohlc/{'{md5}'}</code>
               </div>
-              <p className={cn('text-[13px] mb-3', isDark ? 'text-white/60' : 'text-gray-600')}>
+              <p className={cn('text-[13px] mb-3', 'text-gray-600 dark:text-white/60')}>
                 Get OHLC candlestick chart data
               </p>
               <div
                 className={cn(
                   'rounded-lg overflow-hidden border-[1.5px] mb-4',
-                  isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+                  'border-[rgba(59,130,246,0.15)] dark:border-[rgba(59,130,246,0.1)]'
                 )}
               >
                 <table className="w-full text-[12px]">
-                  <thead className={isDark ? 'bg-white/5' : 'bg-gray-50'}>
+                  <thead className={'bg-gray-50 dark:bg-white/5'}>
                     <tr>
                       <th
                         className={cn(
                           'text-left px-3 py-2 font-medium',
-                          isDark ? 'text-white/60' : 'text-gray-600'
+                          'text-gray-600 dark:text-white/60'
                         )}
                       >
                         Param
@@ -1317,7 +1296,7 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
                       <th
                         className={cn(
                           'text-left px-3 py-2 font-medium',
-                          isDark ? 'text-white/60' : 'text-gray-600'
+                          'text-gray-600 dark:text-white/60'
                         )}
                       >
                         Description
@@ -1334,15 +1313,13 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
                       <tr
                         key={param}
                         className={
-                          isDark
-                            ? 'border-t border-[rgba(59,130,246,0.1)]'
-                            : 'border-t border-[rgba(59,130,246,0.15)]'
+                          'border-t border-[rgba(59,130,246,0.15)] dark:border-t dark:border-[rgba(59,130,246,0.1)]'
                         }
                       >
                         <td className="px-3 py-2">
                           <code className="text-primary">{param}</code>
                         </td>
-                        <td className={cn('px-3 py-2', isDark ? 'text-white/60' : 'text-gray-600')}>
+                        <td className={cn('px-3 py-2', 'text-gray-600 dark:text-white/60')}>
                           {desc}
                         </td>
                       </tr>
@@ -1353,9 +1330,7 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
               <div
                 className={cn(
                   'relative group rounded-lg overflow-hidden',
-                  isDark
-                    ? 'bg-[rgba(59,130,246,0.02)]'
-                    : 'bg-[rgba(59,130,246,0.02)] border border-[rgba(59,130,246,0.15)]'
+                  'bg-[rgba(59,130,246,0.02)] border border-[rgba(59,130,246,0.15)] dark:bg-[rgba(59,130,246,0.02)]'
                 )}
               >
                 <pre className="p-3 font-mono text-[12px] overflow-x-auto m-0">
@@ -1370,13 +1345,13 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
               id="other-market"
               className={cn(
                 'rounded-xl border-[1.5px] p-5',
-                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+                'border-[rgba(59,130,246,0.15)] dark:border-[rgba(59,130,246,0.1)]'
               )}
             >
               <div
                 className={cn(
                   'text-[11px] font-medium uppercase tracking-wide mb-3',
-                  isDark ? 'text-white/40' : 'text-gray-500'
+                  'text-gray-500 dark:text-white/40'
                 )}
               >
                 Other Endpoints
@@ -1414,7 +1389,7 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
                       {method}
                     </span>
                     <code className="font-mono text-[12px]">{path}</code>
-                    <span className={isDark ? 'text-white/40' : 'text-gray-500'}>- {desc}</span>
+                    <span className={'text-gray-500 dark:text-white/40'}>- {desc}</span>
                   </div>
                 ))}
               </div>
@@ -1433,13 +1408,11 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
             <div
               className={cn(
                 'rounded-lg p-3 text-[12px]',
-                isDark
-                  ? 'bg-primary/5 border border-primary/20'
-                  : 'bg-primary/5 border border-primary/20'
+                'bg-primary/5 border border-primary/20 dark:bg-primary/5 dark:border dark:border-primary/20'
               )}
             >
               <span className="text-primary font-medium">Identifier:</span>{' '}
-              <span className={isDark ? 'text-white/70' : 'text-gray-600'}>
+              <span className={'text-gray-600 dark:text-white/70'}>
                 Use <code className="text-primary">md5</code> for tokens,{' '}
                 <code className="text-primary">account</code> (r-address) for wallets.
               </span>
@@ -1450,7 +1423,7 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
               id="history"
               className={cn(
                 'rounded-xl border-[1.5px] p-5',
-                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+                'border-[rgba(59,130,246,0.15)] dark:border-[rgba(59,130,246,0.1)]'
               )}
             >
               <div className="flex items-center gap-3 mb-3">
@@ -1459,22 +1432,22 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
                 </span>
                 <code className="text-[15px] font-mono">/v1/history</code>
               </div>
-              <p className={cn('text-[13px] mb-3', isDark ? 'text-white/60' : 'text-gray-600')}>
+              <p className={cn('text-[13px] mb-3', 'text-gray-600 dark:text-white/60')}>
                 Get trade history for a token
               </p>
               <div
                 className={cn(
                   'rounded-lg overflow-hidden border-[1.5px] mb-4',
-                  isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+                  'border-[rgba(59,130,246,0.15)] dark:border-[rgba(59,130,246,0.1)]'
                 )}
               >
                 <table className="w-full text-[12px]">
-                  <thead className={isDark ? 'bg-white/5' : 'bg-gray-50'}>
+                  <thead className={'bg-gray-50 dark:bg-white/5'}>
                     <tr>
                       <th
                         className={cn(
                           'text-left px-3 py-2 font-medium',
-                          isDark ? 'text-white/60' : 'text-gray-600'
+                          'text-gray-600 dark:text-white/60'
                         )}
                       >
                         Param
@@ -1482,7 +1455,7 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
                       <th
                         className={cn(
                           'text-left px-3 py-2 font-medium',
-                          isDark ? 'text-white/60' : 'text-gray-600'
+                          'text-gray-600 dark:text-white/60'
                         )}
                       >
                         Description
@@ -1504,15 +1477,13 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
                       <tr
                         key={param}
                         className={
-                          isDark
-                            ? 'border-t border-[rgba(59,130,246,0.1)]'
-                            : 'border-t border-[rgba(59,130,246,0.15)]'
+                          'border-t border-[rgba(59,130,246,0.15)] dark:border-t dark:border-[rgba(59,130,246,0.1)]'
                         }
                       >
                         <td className="px-3 py-2">
                           <code className="text-primary">{param}</code>
                         </td>
-                        <td className={cn('px-3 py-2', isDark ? 'text-white/60' : 'text-gray-600')}>
+                        <td className={cn('px-3 py-2', 'text-gray-600 dark:text-white/60')}>
                           {desc}
                         </td>
                       </tr>
@@ -1523,9 +1494,7 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
               <div
                 className={cn(
                   'relative group rounded-lg overflow-hidden',
-                  isDark
-                    ? 'bg-[rgba(59,130,246,0.02)]'
-                    : 'bg-[rgba(59,130,246,0.02)] border border-[rgba(59,130,246,0.15)]'
+                  'bg-[rgba(59,130,246,0.02)] border border-[rgba(59,130,246,0.15)] dark:bg-[rgba(59,130,246,0.02)]'
                 )}
               >
                 <pre className="p-3 font-mono text-[12px] overflow-x-auto m-0">
@@ -1540,13 +1509,13 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
               id="amm-endpoints"
               className={cn(
                 'rounded-xl border-[1.5px] p-5',
-                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+                'border-[rgba(59,130,246,0.15)] dark:border-[rgba(59,130,246,0.1)]'
               )}
             >
               <div
                 className={cn(
                   'text-[11px] font-medium uppercase tracking-wide mb-3',
-                  isDark ? 'text-white/40' : 'text-gray-500'
+                  'text-gray-500 dark:text-white/40'
                 )}
               >
                 AMM Pools
@@ -1574,16 +1543,14 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
                       {method}
                     </span>
                     <code className="font-mono text-[12px]">{path}</code>
-                    <span className={isDark ? 'text-white/40' : 'text-gray-500'}>- {desc}</span>
+                    <span className={'text-gray-500 dark:text-white/40'}>- {desc}</span>
                   </div>
                 ))}
               </div>
               <div
                 className={cn(
                   'relative group rounded-lg overflow-hidden mt-3',
-                  isDark
-                    ? 'bg-[rgba(59,130,246,0.02)]'
-                    : 'bg-[rgba(59,130,246,0.02)] border border-[rgba(59,130,246,0.15)]'
+                  'bg-[rgba(59,130,246,0.02)] border border-[rgba(59,130,246,0.15)] dark:bg-[rgba(59,130,246,0.02)]'
                 )}
               >
                 <pre className="p-3 font-mono text-[11px] overflow-x-auto m-0">
@@ -1600,7 +1567,7 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
               id="dex-quote"
               className={cn(
                 'rounded-xl border-[1.5px] p-5',
-                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+                'border-[rgba(59,130,246,0.15)] dark:border-[rgba(59,130,246,0.1)]'
               )}
             >
               <div className="flex items-center gap-3 mb-3">
@@ -1609,22 +1576,22 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
                 </span>
                 <code className="text-[15px] font-mono">/v1/dex/quote</code>
               </div>
-              <p className={cn('text-[13px] mb-3', isDark ? 'text-white/60' : 'text-gray-600')}>
+              <p className={cn('text-[13px] mb-3', 'text-gray-600 dark:text-white/60')}>
                 Get swap quote for token exchange. Supports md5/slug/issuer_currency for tokens.
               </p>
               <div
                 className={cn(
                   'rounded-lg overflow-hidden border-[1.5px] mb-3',
-                  isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+                  'border-[rgba(59,130,246,0.15)] dark:border-[rgba(59,130,246,0.1)]'
                 )}
               >
                 <table className="w-full text-[12px]">
-                  <thead className={isDark ? 'bg-white/5' : 'bg-gray-50'}>
+                  <thead className={'bg-gray-50 dark:bg-white/5'}>
                     <tr>
                       <th
                         className={cn(
                           'text-left px-3 py-2 font-medium',
-                          isDark ? 'text-white/60' : 'text-gray-600'
+                          'text-gray-600 dark:text-white/60'
                         )}
                       >
                         Body Param
@@ -1632,7 +1599,7 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
                       <th
                         className={cn(
                           'text-left px-3 py-2 font-medium',
-                          isDark ? 'text-white/60' : 'text-gray-600'
+                          'text-gray-600 dark:text-white/60'
                         )}
                       >
                         Description
@@ -1649,15 +1616,13 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
                       <tr
                         key={param}
                         className={
-                          isDark
-                            ? 'border-t border-[rgba(59,130,246,0.1)]'
-                            : 'border-t border-[rgba(59,130,246,0.15)]'
+                          'border-t border-[rgba(59,130,246,0.15)] dark:border-t dark:border-[rgba(59,130,246,0.1)]'
                         }
                       >
                         <td className="px-3 py-2">
                           <code className="text-primary">{param}</code>
                         </td>
-                        <td className={cn('px-3 py-2', isDark ? 'text-white/60' : 'text-gray-600')}>
+                        <td className={cn('px-3 py-2', 'text-gray-600 dark:text-white/60')}>
                           {desc}
                         </td>
                       </tr>
@@ -1672,13 +1637,13 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
               id="other-trading"
               className={cn(
                 'rounded-xl border-[1.5px] p-5',
-                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+                'border-[rgba(59,130,246,0.15)] dark:border-[rgba(59,130,246,0.1)]'
               )}
             >
               <div
                 className={cn(
                   'text-[11px] font-medium uppercase tracking-wide mb-3',
-                  isDark ? 'text-white/40' : 'text-gray-500'
+                  'text-gray-500 dark:text-white/40'
                 )}
               >
                 Other Endpoints
@@ -1697,7 +1662,7 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
                       {method}
                     </span>
                     <code className="font-mono text-[12px]">{path}</code>
-                    <span className={isDark ? 'text-white/40' : 'text-gray-500'}>- {desc}</span>
+                    <span className={'text-gray-500 dark:text-white/40'}>- {desc}</span>
                   </div>
                 ))}
               </div>
@@ -1716,13 +1681,11 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
             <div
               className={cn(
                 'rounded-lg p-3 text-[12px]',
-                isDark
-                  ? 'bg-primary/5 border border-primary/20'
-                  : 'bg-primary/5 border border-primary/20'
+                'bg-primary/5 border border-primary/20 dark:bg-primary/5 dark:border dark:border-primary/20'
               )}
             >
               <span className="text-primary font-medium">Identifier:</span>{' '}
-              <span className={isDark ? 'text-white/70' : 'text-gray-600'}>
+              <span className={'text-gray-600 dark:text-white/70'}>
                 Use <code className="text-primary">account</code> or{' '}
                 <code className="text-primary">address</code> (r-address format, e.g.,
                 rN7n3473SaZBCG4dFL83w7a1RXtXtbk2D9).
@@ -1734,7 +1697,7 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
               id="account-endpoints"
               className={cn(
                 'rounded-xl border-[1.5px] p-5',
-                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+                'border-[rgba(59,130,246,0.15)] dark:border-[rgba(59,130,246,0.1)]'
               )}
             >
               <div className="space-y-2 text-[13px]">
@@ -1772,7 +1735,7 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
                       {method}
                     </span>
                     <code className="font-mono text-[12px]">{path}</code>
-                    <span className={isDark ? 'text-white/40' : 'text-gray-500'}>- {desc}</span>
+                    <span className={'text-gray-500 dark:text-white/40'}>- {desc}</span>
                   </div>
                 ))}
               </div>
@@ -1783,7 +1746,7 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
               id="account-tx"
               className={cn(
                 'rounded-xl border-[1.5px] p-5',
-                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+                'border-[rgba(59,130,246,0.15)] dark:border-[rgba(59,130,246,0.1)]'
               )}
             >
               <div className="flex items-center gap-3 mb-3">
@@ -1792,22 +1755,22 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
                 </span>
                 <code className="text-[15px] font-mono">/v1/tx/{'{account}'}</code>
               </div>
-              <p className={cn('text-[13px] mb-3', isDark ? 'text-white/60' : 'text-gray-600')}>
+              <p className={cn('text-[13px] mb-3', 'text-gray-600 dark:text-white/60')}>
                 Full transaction history with pagination
               </p>
               <div
                 className={cn(
                   'rounded-lg overflow-hidden border-[1.5px]',
-                  isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+                  'border-[rgba(59,130,246,0.15)] dark:border-[rgba(59,130,246,0.1)]'
                 )}
               >
                 <table className="w-full text-[12px]">
-                  <thead className={isDark ? 'bg-white/5' : 'bg-gray-50'}>
+                  <thead className={'bg-gray-50 dark:bg-white/5'}>
                     <tr>
                       <th
                         className={cn(
                           'text-left px-3 py-2 font-medium',
-                          isDark ? 'text-white/60' : 'text-gray-600'
+                          'text-gray-600 dark:text-white/60'
                         )}
                       >
                         Param
@@ -1815,7 +1778,7 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
                       <th
                         className={cn(
                           'text-left px-3 py-2 font-medium',
-                          isDark ? 'text-white/60' : 'text-gray-600'
+                          'text-gray-600 dark:text-white/60'
                         )}
                       >
                         Description
@@ -1834,15 +1797,13 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
                       <tr
                         key={param}
                         className={
-                          isDark
-                            ? 'border-t border-[rgba(59,130,246,0.1)]'
-                            : 'border-t border-[rgba(59,130,246,0.15)]'
+                          'border-t border-[rgba(59,130,246,0.15)] dark:border-t dark:border-[rgba(59,130,246,0.1)]'
                         }
                       >
                         <td className="px-3 py-2">
                           <code className="text-primary">{param}</code>
                         </td>
-                        <td className={cn('px-3 py-2', isDark ? 'text-white/60' : 'text-gray-600')}>
+                        <td className={cn('px-3 py-2', 'text-gray-600 dark:text-white/60')}>
                           {desc}
                         </td>
                       </tr>
@@ -1865,13 +1826,11 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
             <div
               className={cn(
                 'rounded-lg p-3 text-[12px]',
-                isDark
-                  ? 'bg-primary/5 border border-primary/20'
-                  : 'bg-primary/5 border border-primary/20'
+                'bg-primary/5 border border-primary/20 dark:bg-primary/5 dark:border dark:border-primary/20'
               )}
             >
               <span className="text-primary font-medium">Identifiers:</span>{' '}
-              <span className={isDark ? 'text-white/70' : 'text-gray-600'}>
+              <span className={'text-gray-600 dark:text-white/70'}>
                 <code className="text-primary">NFTokenID</code> (64-char hex) for NFTs,{' '}
                 <code className="text-primary">slug</code> for collections.
               </span>
@@ -1882,13 +1841,13 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
               id="single-nft"
               className={cn(
                 'rounded-xl border-[1.5px] p-5',
-                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+                'border-[rgba(59,130,246,0.15)] dark:border-[rgba(59,130,246,0.1)]'
               )}
             >
               <div
                 className={cn(
                   'text-[11px] font-medium uppercase tracking-wide mb-3',
-                  isDark ? 'text-white/40' : 'text-gray-500'
+                  'text-gray-500 dark:text-white/40'
                 )}
               >
                 Single NFT
@@ -1904,7 +1863,7 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
                       {method}
                     </span>
                     <code className="font-mono text-[12px]">{path}</code>
-                    <span className={isDark ? 'text-white/40' : 'text-gray-500'}>- {desc}</span>
+                    <span className={'text-gray-500 dark:text-white/40'}>- {desc}</span>
                   </div>
                 ))}
               </div>
@@ -1914,13 +1873,13 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
               id="collections"
               className={cn(
                 'rounded-xl border-[1.5px] p-5',
-                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+                'border-[rgba(59,130,246,0.15)] dark:border-[rgba(59,130,246,0.1)]'
               )}
             >
               <div
                 className={cn(
                   'text-[11px] font-medium uppercase tracking-wide mb-3',
-                  isDark ? 'text-white/40' : 'text-gray-500'
+                  'text-gray-500 dark:text-white/40'
                 )}
               >
                 Collections
@@ -1942,7 +1901,7 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
                       {method}
                     </span>
                     <code className="font-mono text-[12px]">{path}</code>
-                    <span className={isDark ? 'text-white/40' : 'text-gray-500'}>- {desc}</span>
+                    <span className={'text-gray-500 dark:text-white/40'}>- {desc}</span>
                   </div>
                 ))}
               </div>
@@ -1952,13 +1911,13 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
               id="activity"
               className={cn(
                 'rounded-xl border-[1.5px] p-5',
-                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+                'border-[rgba(59,130,246,0.15)] dark:border-[rgba(59,130,246,0.1)]'
               )}
             >
               <div
                 className={cn(
                   'text-[11px] font-medium uppercase tracking-wide mb-3',
-                  isDark ? 'text-white/40' : 'text-gray-500'
+                  'text-gray-500 dark:text-white/40'
                 )}
               >
                 Activity & Traders
@@ -1984,7 +1943,7 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
                       {method}
                     </span>
                     <code className="font-mono text-[12px]">{path}</code>
-                    <span className={isDark ? 'text-white/40' : 'text-gray-500'}>- {desc}</span>
+                    <span className={'text-gray-500 dark:text-white/40'}>- {desc}</span>
                   </div>
                 ))}
               </div>
@@ -2003,13 +1962,11 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
             <div
               className={cn(
                 'rounded-lg p-3 text-[12px]',
-                isDark
-                  ? 'bg-primary/5 border border-primary/20'
-                  : 'bg-primary/5 border border-primary/20'
+                'bg-primary/5 border border-primary/20 dark:bg-primary/5 dark:border dark:border-primary/20'
               )}
             >
               <span className="text-primary font-medium">Identifiers:</span>{' '}
-              <span className={isDark ? 'text-white/70' : 'text-gray-600'}>
+              <span className={'text-gray-600 dark:text-white/70'}>
                 <code className="text-primary">currency</code> (3-char or 40-char hex),{' '}
                 <code className="text-primary">issuer</code> (r-address),{' '}
                 <code className="text-primary">hash</code> (64-char tx hash).
@@ -2021,7 +1978,7 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
               id="orderbook"
               className={cn(
                 'rounded-xl border-[1.5px] p-5',
-                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+                'border-[rgba(59,130,246,0.15)] dark:border-[rgba(59,130,246,0.1)]'
               )}
             >
               <div className="flex items-center gap-3 mb-3">
@@ -2030,23 +1987,23 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
                 </span>
                 <code className="text-[15px] font-mono">/v1/orderbook</code>
               </div>
-              <p className={cn('text-[13px] mb-3', isDark ? 'text-white/60' : 'text-gray-600')}>
+              <p className={cn('text-[13px] mb-3', 'text-gray-600 dark:text-white/60')}>
                 Live DEX orderbook. Supports{' '}
                 <span className="text-primary">md5/slug/issuer_currency</span> for tokens.
               </p>
               <div
                 className={cn(
                   'rounded-lg overflow-hidden border-[1.5px] mb-4',
-                  isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+                  'border-[rgba(59,130,246,0.15)] dark:border-[rgba(59,130,246,0.1)]'
                 )}
               >
                 <table className="w-full text-[12px]">
-                  <thead className={isDark ? 'bg-white/5' : 'bg-gray-50'}>
+                  <thead className={'bg-gray-50 dark:bg-white/5'}>
                     <tr>
                       <th
                         className={cn(
                           'text-left px-3 py-2 font-medium',
-                          isDark ? 'text-white/60' : 'text-gray-600'
+                          'text-gray-600 dark:text-white/60'
                         )}
                       >
                         Param
@@ -2054,7 +2011,7 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
                       <th
                         className={cn(
                           'text-left px-3 py-2 font-medium',
-                          isDark ? 'text-white/60' : 'text-gray-600'
+                          'text-gray-600 dark:text-white/60'
                         )}
                       >
                         Description
@@ -2074,9 +2031,7 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
                       <tr
                         key={param}
                         className={
-                          isDark
-                            ? 'border-t border-[rgba(59,130,246,0.1)]'
-                            : 'border-t border-[rgba(59,130,246,0.15)]'
+                          'border-t border-[rgba(59,130,246,0.15)] dark:border-t dark:border-[rgba(59,130,246,0.1)]'
                         }
                       >
                         <td className="px-3 py-2">
@@ -2086,7 +2041,7 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
                             {param}
                           </code>
                         </td>
-                        <td className={cn('px-3 py-2', isDark ? 'text-white/60' : 'text-gray-600')}>
+                        <td className={cn('px-3 py-2', 'text-gray-600 dark:text-white/60')}>
                           {desc}
                         </td>
                       </tr>
@@ -2097,19 +2052,17 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
               <div
                 className={cn(
                   'relative group rounded-lg overflow-hidden',
-                  isDark
-                    ? 'bg-[rgba(59,130,246,0.02)]'
-                    : 'bg-[rgba(59,130,246,0.02)] border border-[rgba(59,130,246,0.15)]'
+                  'bg-[rgba(59,130,246,0.02)] border border-[rgba(59,130,246,0.15)] dark:bg-[rgba(59,130,246,0.02)]'
                 )}
               >
                 <pre className="p-3 font-mono text-[11px] overflow-x-auto m-0">
-                  <span className={isDark ? 'text-white/40' : 'text-gray-500'}>
+                  <span className={'text-gray-500 dark:text-white/40'}>
                     # Using md5 (recommended)
                   </span>
                   {'\n'}
                   <span className="text-emerald-500">GET</span>{' '}
                   /v1/orderbook?base=XRP&quote=0413ca7cfc258dfaf698c02fe304e607{'\n'}
-                  <span className={isDark ? 'text-white/40' : 'text-gray-500'}>
+                  <span className={'text-gray-500 dark:text-white/40'}>
                     # Legacy format still works
                   </span>
                   {'\n'}
@@ -2124,13 +2077,13 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
               id="other-xrpl"
               className={cn(
                 'rounded-xl border-[1.5px] p-5',
-                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+                'border-[rgba(59,130,246,0.15)] dark:border-[rgba(59,130,246,0.1)]'
               )}
             >
               <div
                 className={cn(
                   'text-[11px] font-medium uppercase tracking-wide mb-3',
-                  isDark ? 'text-white/40' : 'text-gray-500'
+                  'text-gray-500 dark:text-white/40'
                 )}
               >
                 Other Endpoints
@@ -2152,7 +2105,7 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
                       {method}
                     </span>
                     <code className="font-mono text-[12px]">{path}</code>
-                    <span className={isDark ? 'text-white/40' : 'text-gray-500'}>- {desc}</span>
+                    <span className={'text-gray-500 dark:text-white/40'}>- {desc}</span>
                   </div>
                 ))}
               </div>
@@ -2171,13 +2124,11 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
             <div
               className={cn(
                 'rounded-lg p-3 text-[12px]',
-                isDark
-                  ? 'bg-primary/5 border border-primary/20'
-                  : 'bg-primary/5 border border-primary/20'
+                'bg-primary/5 border border-primary/20 dark:bg-primary/5 dark:border dark:border-primary/20'
               )}
             >
               <span className="text-primary font-medium">Identifiers:</span>{' '}
-              <span className={isDark ? 'text-white/70' : 'text-gray-600'}>
+              <span className={'text-gray-600 dark:text-white/70'}>
                 Use <code className="text-primary">md5</code> for tokens,{' '}
                 <code className="text-primary">address</code> (r-address) for traders.
               </span>
@@ -2187,7 +2138,7 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
               id="analytics-endpoints"
               className={cn(
                 'rounded-xl border-[1.5px] p-5',
-                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+                'border-[rgba(59,130,246,0.15)] dark:border-[rgba(59,130,246,0.1)]'
               )}
             >
               <div className="space-y-2 text-[13px]">
@@ -2207,7 +2158,7 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
                       {method}
                     </span>
                     <code className="font-mono text-[12px]">{path}</code>
-                    <span className={isDark ? 'text-white/40' : 'text-gray-500'}>- {desc}</span>
+                    <span className={'text-gray-500 dark:text-white/40'}>- {desc}</span>
                   </div>
                 ))}
               </div>
@@ -2228,7 +2179,7 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
               id="launch-token"
               className={cn(
                 'rounded-xl border-[1.5px] p-5',
-                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+                'border-[rgba(59,130,246,0.15)] dark:border-[rgba(59,130,246,0.1)]'
               )}
             >
               <div className="flex items-center gap-3 mb-3">
@@ -2237,22 +2188,22 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
                 </span>
                 <code className="text-[15px] font-mono">/v1/launch-token</code>
               </div>
-              <p className={cn('text-[13px] mb-3', isDark ? 'text-white/60' : 'text-gray-600')}>
+              <p className={cn('text-[13px] mb-3', 'text-gray-600 dark:text-white/60')}>
                 Initialize token launch with optional anti-snipe mode
               </p>
               <div
                 className={cn(
                   'rounded-lg overflow-hidden border-[1.5px] mb-4',
-                  isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+                  'border-[rgba(59,130,246,0.15)] dark:border-[rgba(59,130,246,0.1)]'
                 )}
               >
                 <table className="w-full text-[12px]">
-                  <thead className={isDark ? 'bg-white/5' : 'bg-gray-50'}>
+                  <thead className={'bg-gray-50 dark:bg-white/5'}>
                     <tr>
                       <th
                         className={cn(
                           'text-left px-3 py-2 font-medium',
-                          isDark ? 'text-white/60' : 'text-gray-600'
+                          'text-gray-600 dark:text-white/60'
                         )}
                       >
                         Body Param
@@ -2260,7 +2211,7 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
                       <th
                         className={cn(
                           'text-left px-3 py-2 font-medium',
-                          isDark ? 'text-white/60' : 'text-gray-600'
+                          'text-gray-600 dark:text-white/60'
                         )}
                       >
                         Description
@@ -2289,15 +2240,13 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
                       <tr
                         key={param}
                         className={
-                          isDark
-                            ? 'border-t border-[rgba(59,130,246,0.1)]'
-                            : 'border-t border-[rgba(59,130,246,0.15)]'
+                          'border-t border-[rgba(59,130,246,0.15)] dark:border-t dark:border-[rgba(59,130,246,0.1)]'
                         }
                       >
                         <td className="px-3 py-2">
                           <code className="text-primary">{param}</code>
                         </td>
-                        <td className={cn('px-3 py-2', isDark ? 'text-white/60' : 'text-gray-600')}>
+                        <td className={cn('px-3 py-2', 'text-gray-600 dark:text-white/60')}>
                           {desc}
                         </td>
                       </tr>
@@ -2308,11 +2257,11 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
               <div
                 className={cn(
                   'mt-4 p-3 rounded-lg text-[12px]',
-                  isDark ? 'bg-white/5' : 'bg-gray-50'
+                  'bg-gray-50 dark:bg-white/5'
                 )}
               >
                 <div className="font-medium mb-2">Costs</div>
-                <div className={cn('space-y-1', isDark ? 'text-white/60' : 'text-gray-600')}>
+                <div className={cn('space-y-1', 'text-gray-600 dark:text-white/60')}>
                   <div>AMM liquidity: <span className="text-primary">min 10 XRP</span> (you choose)</div>
                   <div>Platform fee: <span className="text-primary">2-12 XRP</span> (scales with dev allocation %)</div>
                   <div>Reserves + fees: <span className="text-primary">~3 XRP</span> (XRPL accounts + tx fees)</div>
@@ -2322,7 +2271,7 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
                   <div className="mt-2">
                     Typical total: <span className="text-primary font-medium">15-25 XRP</span>
                   </div>
-                  <div className={cn('text-[11px] mt-1', isDark ? 'text-white/40' : 'text-gray-400')}>
+                  <div className={cn('text-[11px] mt-1', 'text-gray-400 dark:text-white/40')}>
                     Use <code>/calculate-funding</code> for exact cost breakdown
                   </div>
                 </div>
@@ -2330,14 +2279,14 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
               <div
                 className={cn(
                   'mt-3 p-3 rounded-lg text-[12px]',
-                  isDark ? 'bg-white/5' : 'bg-gray-50'
+                  'bg-gray-50 dark:bg-white/5'
                 )}
               >
                 <div className="font-medium mb-2">Status Flow</div>
                 <div
                   className={cn(
                     'font-mono text-[10px] leading-relaxed',
-                    isDark ? 'text-white/60' : 'text-gray-600'
+                    'text-gray-600 dark:text-white/60'
                   )}
                 >
                   initializing → awaiting_funding → funded → configuring → creating_amm → success/completed
@@ -2346,11 +2295,11 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
               <div
                 className={cn(
                   'mt-3 p-3 rounded-lg text-[12px]',
-                  isDark ? 'bg-white/5' : 'bg-gray-50'
+                  'bg-gray-50 dark:bg-white/5'
                 )}
               >
                 <div className="font-medium mb-2">Anti-Snipe Mode</div>
-                <div className={cn('space-y-1', isDark ? 'text-white/60' : 'text-gray-600')}>
+                <div className={cn('space-y-1', 'text-gray-600 dark:text-white/60')}>
                   <div>Prevents unauthorized trustlines during launch</div>
                   <div>Controlled authorization window after AMM pool is created</div>
                   <div>Issuer account is permanently locked after launch completes</div>
@@ -2359,22 +2308,22 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
               <div
                 className={cn(
                   'mt-3 p-3 rounded-lg text-[12px]',
-                  isDark ? 'bg-white/5' : 'bg-gray-50'
+                  'bg-gray-50 dark:bg-white/5'
                 )}
               >
                 <div className="font-medium mb-2">Final State</div>
-                <div className={isDark ? 'text-white/60' : 'text-gray-600'}>
+                <div className={'text-gray-600 dark:text-white/60'}>
                   Issuer account is permanently locked after launch, ensuring token supply cannot be modified.
                 </div>
               </div>
               <div
                 className={cn(
                   'mt-3 p-3 rounded-lg text-[12px]',
-                  isDark ? 'bg-white/5' : 'bg-gray-50'
+                  'bg-gray-50 dark:bg-white/5'
                 )}
               >
                 <div className="font-medium mb-2">Platform Token Share (Social Rewards)</div>
-                <div className={cn('space-y-1', isDark ? 'text-white/60' : 'text-gray-600')}>
+                <div className={cn('space-y-1', 'text-gray-600 dark:text-white/60')}>
                   <div>Optional 0-10% of total supply allocated via <code className="text-primary">platformRetentionPercent</code></div>
                   <div>Distributed to up to <strong>100 users</strong> who tweet about your token</div>
                   <div>Each user receives a small equal share of the allocated supply</div>
@@ -2389,13 +2338,13 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
               id="other-launch"
               className={cn(
                 'rounded-xl border-[1.5px] p-5',
-                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+                'border-[rgba(59,130,246,0.15)] dark:border-[rgba(59,130,246,0.1)]'
               )}
             >
               <div
                 className={cn(
                   'text-[11px] font-medium uppercase tracking-wide mb-3',
-                  isDark ? 'text-white/40' : 'text-gray-500'
+                  'text-gray-500 dark:text-white/40'
                 )}
               >
                 Other Endpoints
@@ -2449,7 +2398,7 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
                       {method}
                     </span>
                     <code className="font-mono text-[12px]">{path}</code>
-                    <span className={isDark ? 'text-white/40' : 'text-gray-500'}>- {desc}</span>
+                    <span className={'text-gray-500 dark:text-white/40'}>- {desc}</span>
                   </div>
                 ))}
               </div>
@@ -2459,30 +2408,30 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
             <div
               className={cn(
                 'rounded-xl border-[1.5px] p-5',
-                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+                'border-[rgba(59,130,246,0.15)] dark:border-[rgba(59,130,246,0.1)]'
               )}
             >
               <div
                 className={cn(
                   'text-[11px] font-medium uppercase tracking-wide mb-3',
-                  isDark ? 'text-white/40' : 'text-gray-500'
+                  'text-gray-500 dark:text-white/40'
                 )}
               >
                 Revenue Sharing
               </div>
-              <p className={cn('text-[13px] leading-relaxed mb-3', isDark ? 'text-white/60' : 'text-gray-600')}>
+              <p className={cn('text-[13px] leading-relaxed mb-3', 'text-gray-600 dark:text-white/60')}>
                 Integrate the Token Launch API into your platform and earn <span className="text-primary font-medium">50% of launch fees</span> for every token launched through your API key.
               </p>
               <div className="space-y-2 text-[13px]">
-                <div className={cn('flex items-start gap-2', isDark ? 'text-white/50' : 'text-gray-500')}>
+                <div className={cn('flex items-start gap-2', 'text-gray-500 dark:text-white/50')}>
                   <span className="text-primary mt-0.5">1.</span>
-                  <span>Apply for a <span className={isDark ? 'text-white/80' : 'text-gray-800'}>Partner API key</span> with your platform name</span>
+                  <span>Apply for a <span className={'text-gray-800 dark:text-white/80'}>Partner API key</span> with your platform name</span>
                 </div>
-                <div className={cn('flex items-start gap-2', isDark ? 'text-white/50' : 'text-gray-500')}>
+                <div className={cn('flex items-start gap-2', 'text-gray-500 dark:text-white/50')}>
                   <span className="text-primary mt-0.5">2.</span>
                   <span>Use your API key when calling <code className="font-mono text-[12px]">/v1/launch-token</code></span>
                 </div>
-                <div className={cn('flex items-start gap-2', isDark ? 'text-white/50' : 'text-gray-500')}>
+                <div className={cn('flex items-start gap-2', 'text-gray-500 dark:text-white/50')}>
                   <span className="text-primary mt-0.5">3.</span>
                   <span>Every successful launch is tracked with your platform identity and revenue is split automatically</span>
                 </div>
@@ -2490,7 +2439,7 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
               <div
                 className={cn(
                   'mt-4 rounded-lg p-3 text-[12px]',
-                  isDark ? 'bg-white/5 text-white/40' : 'bg-gray-50 text-gray-500'
+                  'bg-gray-50 text-gray-500 dark:bg-white/5 dark:text-white/40'
                 )}
               >
                 Revenue share applies to platform fees and bundle fees. Contact us to set up a partner key.
@@ -2511,7 +2460,7 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
               id="tools-endpoints"
               className={cn(
                 'rounded-xl border-[1.5px] p-5',
-                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+                'border-[rgba(59,130,246,0.15)] dark:border-[rgba(59,130,246,0.1)]'
               )}
             >
               <div className="space-y-2 text-[13px]">
@@ -2525,7 +2474,7 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
                       {method}
                     </span>
                     <code className="font-mono text-[12px]">{path}</code>
-                    <span className={isDark ? 'text-white/40' : 'text-gray-500'}>- {desc}</span>
+                    <span className={'text-gray-500 dark:text-white/40'}>- {desc}</span>
                   </div>
                 ))}
               </div>
@@ -2537,7 +2486,7 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
         return (
           <div className="space-y-6">
             <h2 className="text-2xl font-normal text-primary">Testnet Faucet</h2>
-            <p className={cn('text-[14px]', isDark ? 'text-white/60' : 'text-gray-600')}>
+            <p className={cn('text-[14px]', 'text-gray-600 dark:text-white/60')}>
               Get free XRP for development and testing on XRPL Testnet.
             </p>
 
@@ -2545,20 +2494,20 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
             <div
               className={cn(
                 'rounded-xl border-[1.5px] p-5',
-                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+                'border-[rgba(59,130,246,0.15)] dark:border-[rgba(59,130,246,0.1)]'
               )}
             >
-              <h3 className={cn('text-[14px] font-medium mb-3', isDark ? 'text-white' : 'text-gray-900')}>Endpoints</h3>
+              <h3 className={cn('text-[14px] font-medium mb-3', 'text-gray-900 dark:text-white')}>Endpoints</h3>
               <div className="space-y-2 text-[13px]">
                 <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
                   <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-emerald-500/10 text-emerald-500">GET</span>
                   <code className="font-mono text-[12px]">/v1/faucet</code>
-                  <span className={isDark ? 'text-white/40' : 'text-gray-500'}>- Get faucet status & balance</span>
+                  <span className={'text-gray-500 dark:text-white/40'}>- Get faucet status & balance</span>
                 </div>
                 <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
                   <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-amber-500/10 text-amber-500">POST</span>
                   <code className="font-mono text-[12px]">/v1/faucet</code>
-                  <span className={isDark ? 'text-white/40' : 'text-gray-500'}>- Request testnet XRP</span>
+                  <span className={'text-gray-500 dark:text-white/40'}>- Request testnet XRP</span>
                 </div>
               </div>
             </div>
@@ -2567,12 +2516,12 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
             <div
               className={cn(
                 'rounded-xl border-[1.5px] p-5',
-                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+                'border-[rgba(59,130,246,0.15)] dark:border-[rgba(59,130,246,0.1)]'
               )}
             >
-              <h3 className={cn('text-[14px] font-medium mb-3', isDark ? 'text-white' : 'text-gray-900')}>GET /v1/faucet</h3>
-              <p className={cn('text-[13px] mb-3', isDark ? 'text-white/60' : 'text-gray-600')}>Returns faucet wallet status.</p>
-              <pre className={cn('text-[12px] p-3 rounded-lg overflow-x-auto', isDark ? 'bg-black/30' : 'bg-gray-100')}>
+              <h3 className={cn('text-[14px] font-medium mb-3', 'text-gray-900 dark:text-white')}>GET /v1/faucet</h3>
+              <p className={cn('text-[13px] mb-3', 'text-gray-600 dark:text-white/60')}>Returns faucet wallet status.</p>
+              <pre className={cn('text-[12px] p-3 rounded-lg overflow-x-auto', 'bg-gray-100 dark:bg-black/30')}>
 {`// Response
 {
   "address": "rLvm2sMyvqHbnBG21m5YXx3VSmZqfE2Do5",
@@ -2587,12 +2536,12 @@ Rate Limits: Anonymous (100 req/sec, 1 tx/sec, unlimited credits), Free (10 req/
             <div
               className={cn(
                 'rounded-xl border-[1.5px] p-5',
-                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+                'border-[rgba(59,130,246,0.15)] dark:border-[rgba(59,130,246,0.1)]'
               )}
             >
-              <h3 className={cn('text-[14px] font-medium mb-3', isDark ? 'text-white' : 'text-gray-900')}>POST /v1/faucet</h3>
-              <p className={cn('text-[13px] mb-3', isDark ? 'text-white/60' : 'text-gray-600')}>Request testnet XRP to your wallet.</p>
-              <pre className={cn('text-[12px] p-3 rounded-lg overflow-x-auto mb-4', isDark ? 'bg-black/30' : 'bg-gray-100')}>
+              <h3 className={cn('text-[14px] font-medium mb-3', 'text-gray-900 dark:text-white')}>POST /v1/faucet</h3>
+              <p className={cn('text-[13px] mb-3', 'text-gray-600 dark:text-white/60')}>Request testnet XRP to your wallet.</p>
+              <pre className={cn('text-[12px] p-3 rounded-lg overflow-x-auto mb-4', 'bg-gray-100 dark:bg-black/30')}>
 {`// Request
 curl -X POST https://api.xrpl.to/v1/faucet \\
   -H "Content-Type: application/json" \\
@@ -2613,28 +2562,28 @@ curl -X POST https://api.xrpl.to/v1/faucet \\
             <div
               className={cn(
                 'rounded-xl border-[1.5px] p-5',
-                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+                'border-[rgba(59,130,246,0.15)] dark:border-[rgba(59,130,246,0.1)]'
               )}
             >
-              <h3 className={cn('text-[14px] font-medium mb-3', isDark ? 'text-white' : 'text-gray-900')}>Error Responses</h3>
+              <h3 className={cn('text-[14px] font-medium mb-3', 'text-gray-900 dark:text-white')}>Error Responses</h3>
               <div className="space-y-3 text-[13px]">
                 <div>
-                  <code className={cn('text-[12px] px-1.5 py-0.5 rounded', isDark ? 'bg-red-500/10 text-red-400' : 'bg-red-100 text-red-600')}>400</code>
-                  <span className={cn('ml-2', isDark ? 'text-white/60' : 'text-gray-600')}>"destination address required" or "invalid XRP address"</span>
+                  <code className={cn('text-[12px] px-1.5 py-0.5 rounded', 'bg-red-100 text-red-600 dark:bg-red-500/10 dark:text-red-400')}>400</code>
+                  <span className={cn('ml-2', 'text-gray-600 dark:text-white/60')}>"destination address required" or "invalid XRP address"</span>
                 </div>
                 <div>
-                  <code className={cn('text-[12px] px-1.5 py-0.5 rounded', isDark ? 'bg-amber-500/10 text-amber-400' : 'bg-amber-100 text-amber-600')}>429</code>
-                  <span className={cn('ml-2', isDark ? 'text-white/60' : 'text-gray-600')}>"cooldown active" - includes <code>retryAfterSeconds</code></span>
+                  <code className={cn('text-[12px] px-1.5 py-0.5 rounded', 'bg-amber-100 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400')}>429</code>
+                  <span className={cn('ml-2', 'text-gray-600 dark:text-white/60')}>"cooldown active" - includes <code>retryAfterSeconds</code></span>
                 </div>
                 <div>
-                  <code className={cn('text-[12px] px-1.5 py-0.5 rounded', isDark ? 'bg-red-500/10 text-red-400' : 'bg-red-100 text-red-600')}>503</code>
-                  <span className={cn('ml-2', isDark ? 'text-white/60' : 'text-gray-600')}>"faucet depleted" - insufficient balance</span>
+                  <code className={cn('text-[12px] px-1.5 py-0.5 rounded', 'bg-red-100 text-red-600 dark:bg-red-500/10 dark:text-red-400')}>503</code>
+                  <span className={cn('ml-2', 'text-gray-600 dark:text-white/60')}>"faucet depleted" - insufficient balance</span>
                 </div>
               </div>
             </div>
 
             {/* Info */}
-            <div className={cn('text-[13px] space-y-2 p-4 rounded-lg', isDark ? 'bg-primary/5' : 'bg-primary/5')}>
+            <div className={cn('text-[13px] space-y-2 p-4 rounded-lg', 'bg-primary/5 dark:bg-primary/5')}>
               <p><strong>Network:</strong> <code className="text-[12px]">wss://s.altnet.rippletest.net:51233</code></p>
               <p><strong>Amount:</strong> 200 XRP per request</p>
               <p><strong>Rate Limit:</strong> 1 request per address every 24 hours</p>
@@ -2654,13 +2603,13 @@ curl -X POST https://api.xrpl.to/v1/faucet \\
         return (
           <div className="space-y-6">
             <h2 className="text-2xl font-normal text-primary">Bridge</h2>
-            <p className={cn('text-[14px]', isDark ? 'text-white/60' : 'text-gray-600')}>
+            <p className={cn('text-[14px]', 'text-gray-600 dark:text-white/60')}>
               Cross-chain currency exchange endpoints for converting between XRP and other currencies.
             </p>
             <div
               className={cn(
                 'rounded-xl border-[1.5px] p-5',
-                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+                'border-[rgba(59,130,246,0.15)] dark:border-[rgba(59,130,246,0.1)]'
               )}
             >
               <div className="space-y-2 text-[13px]">
@@ -2675,7 +2624,7 @@ curl -X POST https://api.xrpl.to/v1/faucet \\
                       {ep.method}
                     </span>
                     <code className="font-mono text-[12px]">/v1{ep.path}</code>
-                    <span className={isDark ? 'text-white/40' : 'text-gray-500'}>- {ep.desc}</span>
+                    <span className={'text-gray-500 dark:text-white/40'}>- {ep.desc}</span>
                   </div>
                 ))}
               </div>
@@ -2687,13 +2636,13 @@ curl -X POST https://api.xrpl.to/v1/faucet \\
         return (
           <div className="space-y-6">
             <h2 className="text-2xl font-normal text-primary">Verification</h2>
-            <p className={cn('text-[14px]', isDark ? 'text-white/60' : 'text-gray-600')}>
+            <p className={cn('text-[14px]', 'text-gray-600 dark:text-white/60')}>
               Request and manage verification badges for tokens and NFT collections.
             </p>
             <div
               className={cn(
                 'rounded-xl border-[1.5px] p-5',
-                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+                'border-[rgba(59,130,246,0.15)] dark:border-[rgba(59,130,246,0.1)]'
               )}
             >
               <div className="space-y-2 text-[13px]">
@@ -2708,7 +2657,7 @@ curl -X POST https://api.xrpl.to/v1/faucet \\
                       {ep.method}
                     </span>
                     <code className="font-mono text-[12px]">/v1{ep.path}</code>
-                    <span className={isDark ? 'text-white/40' : 'text-gray-500'}>- {ep.desc}</span>
+                    <span className={'text-gray-500 dark:text-white/40'}>- {ep.desc}</span>
                   </div>
                 ))}
               </div>
@@ -2720,13 +2669,13 @@ curl -X POST https://api.xrpl.to/v1/faucet \\
         return (
           <div className="space-y-6">
             <h2 className="text-2xl font-normal text-primary">Boost</h2>
-            <p className={cn('text-[14px]', isDark ? 'text-white/60' : 'text-gray-600')}>
+            <p className={cn('text-[14px]', 'text-gray-600 dark:text-white/60')}>
               Boost token visibility and ranking with promotional placements.
             </p>
             <div
               className={cn(
                 'rounded-xl border-[1.5px] p-5',
-                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+                'border-[rgba(59,130,246,0.15)] dark:border-[rgba(59,130,246,0.1)]'
               )}
             >
               <div className="space-y-2 text-[13px]">
@@ -2741,7 +2690,7 @@ curl -X POST https://api.xrpl.to/v1/faucet \\
                       {ep.method}
                     </span>
                     <code className="font-mono text-[12px]">/v1{ep.path}</code>
-                    <span className={isDark ? 'text-white/40' : 'text-gray-500'}>- {ep.desc}</span>
+                    <span className={'text-gray-500 dark:text-white/40'}>- {ep.desc}</span>
                   </div>
                 ))}
               </div>
@@ -2753,13 +2702,13 @@ curl -X POST https://api.xrpl.to/v1/faucet \\
         return (
           <div className="space-y-6">
             <h2 className="text-2xl font-normal text-primary">Tweet Verify</h2>
-            <p className={cn('text-[14px]', isDark ? 'text-white/60' : 'text-gray-600')}>
+            <p className={cn('text-[14px]', 'text-gray-600 dark:text-white/60')}>
               Social verification for tokens. Submit tweet URLs to verify promotions and earn rewards.
             </p>
             <div
               className={cn(
                 'rounded-xl border-[1.5px] p-5',
-                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+                'border-[rgba(59,130,246,0.15)] dark:border-[rgba(59,130,246,0.1)]'
               )}
             >
               <div className="space-y-3 text-[13px]">
@@ -2767,8 +2716,8 @@ curl -X POST https://api.xrpl.to/v1/faucet \\
                   <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-amber-500/10 text-amber-500 shrink-0 mt-0.5">POST</span>
                   <div>
                     <code className="font-mono text-[12px]">/v1/tweet/verify</code>
-                    <span className={cn('ml-2', isDark ? 'text-white/40' : 'text-gray-500')}>- Submit tweet for token verification</span>
-                    <div className={cn('mt-1 text-[11px]', isDark ? 'text-white/30' : 'text-gray-400')}>
+                    <span className={cn('ml-2', 'text-gray-500 dark:text-white/40')}>- Submit tweet for token verification</span>
+                    <div className={cn('mt-1 text-[11px]', 'text-gray-400 dark:text-white/30')}>
                       Body: {'{ account, md5, tweetUrl }'} &middot; Rate limit: 5/hour per account, 3 tokens/day per Twitter account
                     </div>
                   </div>
@@ -2777,14 +2726,14 @@ curl -X POST https://api.xrpl.to/v1/faucet \\
                   <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-emerald-500/10 text-emerald-500 shrink-0 mt-0.5">GET</span>
                   <div>
                     <code className="font-mono text-[12px]">/v1/tweet/token/{'{id}'}</code>
-                    <span className={cn('ml-2', isDark ? 'text-white/40' : 'text-gray-500')}>- Get tweet verifications for a token</span>
+                    <span className={cn('ml-2', 'text-gray-500 dark:text-white/40')}>- Get tweet verifications for a token</span>
                   </div>
                 </div>
                 <div className="flex flex-wrap items-start gap-x-2 gap-y-0.5">
                   <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-emerald-500/10 text-emerald-500 shrink-0 mt-0.5">GET</span>
                   <div>
                     <code className="font-mono text-[12px]">/v1/tweet/account/{'{account}'}</code>
-                    <span className={cn('ml-2', isDark ? 'text-white/40' : 'text-gray-500')}>- Get tweet verifications by account</span>
+                    <span className={cn('ml-2', 'text-gray-500 dark:text-white/40')}>- Get tweet verifications by account</span>
                   </div>
                 </div>
               </div>
@@ -2805,13 +2754,13 @@ curl -X POST https://api.xrpl.to/v1/faucet \\
               id="token-ids"
               className={cn(
                 'rounded-xl border-[1.5px] p-5',
-                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+                'border-[rgba(59,130,246,0.15)] dark:border-[rgba(59,130,246,0.1)]'
               )}
             >
               <div
                 className={cn(
                   'text-[11px] font-medium uppercase tracking-wide mb-3',
-                  isDark ? 'text-white/40' : 'text-gray-500'
+                  'text-gray-500 dark:text-white/40'
                 )}
               >
                 Token Identifiers
@@ -2819,19 +2768,19 @@ curl -X POST https://api.xrpl.to/v1/faucet \\
               <div className="space-y-2 text-[13px] break-all">
                 <div>
                   <code className="text-primary">md5</code>{' '}
-                  <span className={isDark ? 'text-white/60' : 'text-gray-600'}>
+                  <span className={'text-gray-600 dark:text-white/60'}>
                     - 32-char hex, e.g., 0413ca7cfc258dfaf698c02fe304e607
                   </span>
                 </div>
                 <div>
                   <code className="text-primary">slug</code>{' '}
-                  <span className={isDark ? 'text-white/60' : 'text-gray-600'}>
+                  <span className={'text-gray-600 dark:text-white/60'}>
                     - issuer-currencyHex, e.g., rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz-534F4C4F00...
                   </span>
                 </div>
                 <div>
                   <code className="text-primary">issuer_currency</code>{' '}
-                  <span className={isDark ? 'text-white/60' : 'text-gray-600'}>
+                  <span className={'text-gray-600 dark:text-white/60'}>
                     - issuer_currencyHex, e.g., rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz_534F4C4F00...
                   </span>
                 </div>
@@ -2843,13 +2792,13 @@ curl -X POST https://api.xrpl.to/v1/faucet \\
               id="md5-gen"
               className={cn(
                 'rounded-xl border-[1.5px] p-5',
-                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+                'border-[rgba(59,130,246,0.15)] dark:border-[rgba(59,130,246,0.1)]'
               )}
             >
               <div
                 className={cn(
                   'text-[11px] font-medium uppercase tracking-wide mb-3',
-                  isDark ? 'text-white/40' : 'text-gray-500'
+                  'text-gray-500 dark:text-white/40'
                 )}
               >
                 MD5 Generation
@@ -2857,14 +2806,14 @@ curl -X POST https://api.xrpl.to/v1/faucet \\
               <div
                 className={cn(
                   'rounded-lg p-3 font-mono text-[12px] break-all',
-                  isDark ? 'bg-black/40' : 'bg-gray-50'
+                  'bg-gray-50 dark:bg-black/40'
                 )}
               >
-                <div className={isDark ? 'text-white/60' : 'text-gray-600'}>// Input</div>
+                <div className={'text-gray-600 dark:text-white/60'}>// Input</div>
                 <div>
                   rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz_534F4C4F00000000000000000000000000000000
                 </div>
-                <div className={cn('mt-2', isDark ? 'text-white/60' : 'text-gray-600')}>
+                <div className={cn('mt-2', 'text-gray-600 dark:text-white/60')}>
                   // Output
                 </div>
                 <div className="text-primary">0413ca7cfc258dfaf698c02fe304e607</div>
@@ -2876,13 +2825,13 @@ curl -X POST https://api.xrpl.to/v1/faucet \\
               id="currency-hex"
               className={cn(
                 'rounded-xl border-[1.5px] p-5',
-                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+                'border-[rgba(59,130,246,0.15)] dark:border-[rgba(59,130,246,0.1)]'
               )}
             >
               <div
                 className={cn(
                   'text-[11px] font-medium uppercase tracking-wide mb-3',
-                  isDark ? 'text-white/40' : 'text-gray-500'
+                  'text-gray-500 dark:text-white/40'
                 )}
               >
                 Currency Hex (codes {'>'}3 chars)
@@ -2890,14 +2839,14 @@ curl -X POST https://api.xrpl.to/v1/faucet \\
               <div
                 className={cn(
                   'rounded-lg p-3 font-mono text-[12px] break-all',
-                  isDark ? 'bg-black/40' : 'bg-gray-50'
+                  'bg-gray-50 dark:bg-black/40'
                 )}
               >
                 <div>
                   SOLO ={' '}
                   <span className="text-primary">534F4C4F00000000000000000000000000000000</span>
                 </div>
-                <div className={cn('mt-2 text-[11px]', isDark ? 'text-white/40' : 'text-gray-500')}>
+                <div className={cn('mt-2 text-[11px]', 'text-gray-500 dark:text-white/40')}>
                   Buffer.from('SOLO').toString('hex').toUpperCase().padEnd(40, '0')
                 </div>
               </div>
@@ -2908,13 +2857,13 @@ curl -X POST https://api.xrpl.to/v1/faucet \\
               id="patterns"
               className={cn(
                 'rounded-xl border-[1.5px] p-5',
-                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+                'border-[rgba(59,130,246,0.15)] dark:border-[rgba(59,130,246,0.1)]'
               )}
             >
               <div
                 className={cn(
                   'text-[11px] font-medium uppercase tracking-wide mb-3',
-                  isDark ? 'text-white/40' : 'text-gray-500'
+                  'text-gray-500 dark:text-white/40'
                 )}
               >
                 Regex Patterns
@@ -2923,7 +2872,7 @@ curl -X POST https://api.xrpl.to/v1/faucet \\
                 {Object.entries(docs.patterns).map(([key, pattern]) => (
                   <div key={key}>
                     <span className="text-primary">{key}:</span>{' '}
-                    <span className={isDark ? 'text-white/60' : 'text-gray-600'}>{pattern}</span>
+                    <span className={'text-gray-600 dark:text-white/60'}>{pattern}</span>
                   </div>
                 ))}
               </div>
@@ -2934,13 +2883,13 @@ curl -X POST https://api.xrpl.to/v1/faucet \\
               id="caching"
               className={cn(
                 'rounded-xl border-[1.5px] p-5',
-                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+                'border-[rgba(59,130,246,0.15)] dark:border-[rgba(59,130,246,0.1)]'
               )}
             >
               <div
                 className={cn(
                   'text-[11px] font-medium uppercase tracking-wide mb-3',
-                  isDark ? 'text-white/40' : 'text-gray-500'
+                  'text-gray-500 dark:text-white/40'
                 )}
               >
                 Caching
@@ -2949,7 +2898,7 @@ curl -X POST https://api.xrpl.to/v1/faucet \\
                 {Object.entries(docs.caching).map(([key, value]) => (
                   <div key={key}>
                     <span className="text-primary font-medium">{key}:</span>{' '}
-                    <span className={isDark ? 'text-white/60' : 'text-gray-600'}>{value}</span>
+                    <span className={'text-gray-600 dark:text-white/60'}>{value}</span>
                   </div>
                 ))}
               </div>
@@ -2962,29 +2911,29 @@ curl -X POST https://api.xrpl.to/v1/faucet \\
           <div className="space-y-8">
             <div>
               <h2 className="text-2xl font-normal text-primary mb-2">What is xrpl.to</h2>
-              <p className={cn('text-[14px] mb-4', isDark ? 'text-white/60' : 'text-gray-600')}>
+              <p className={cn('text-[14px] mb-4', 'text-gray-600 dark:text-white/60')}>
                 A high-performance SocialFi trading platform built entirely on the XRP Ledger.
               </p>
             </div>
 
             <div id="info-platform" className="space-y-4">
-              <h3 className={cn('text-lg font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+              <h3 className={cn('text-lg font-medium', 'text-gray-900 dark:text-white')}>
                 The Platform
               </h3>
               <div
                 className={cn(
                   'p-4 rounded-xl border-[1.5px]',
-                  isDark ? 'border-primary/20 bg-primary/5' : 'border-primary/20 bg-blue-50/50'
+                  'border-primary/20 bg-blue-50/50 dark:border-primary/20 dark:bg-primary/5'
                 )}
               >
-                <p className={cn('text-[13px] leading-relaxed', isDark ? 'text-white/70' : 'text-gray-700')}>
+                <p className={cn('text-[13px] leading-relaxed', 'text-gray-700 dark:text-white/70')}>
                   xrpl.to is a high-speed decentralized exchange (DEX) on the XRP Ledger with APIs optimized for performance. It is a fully standalone SocialFi platform where users can trade tokens and NFTs, communicate through a built-in social layer, and interact with a comprehensive API. All data is sourced directly from the xrpl.to API and the XRP Ledger itself. There are no third-party dependencies. The platform also hosts and serves all token and NFT images directly, optimized for speed.
                 </p>
               </div>
             </div>
 
             <div id="info-api" className="space-y-4">
-              <h3 className={cn('text-lg font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+              <h3 className={cn('text-lg font-medium', 'text-gray-900 dark:text-white')}>
                 API & Data
               </h3>
               <div className="space-y-3">
@@ -2998,22 +2947,22 @@ curl -X POST https://api.xrpl.to/v1/faucet \\
                     key={i}
                     className={cn(
                       'flex gap-3 p-3 rounded-xl border-[1.5px]',
-                      isDark ? 'border-white/5 bg-white/[0.02]' : 'border-gray-100 bg-gray-50/50'
+                      'border-gray-100 bg-gray-50/50 dark:border-white/5 dark:bg-white/[0.02]'
                     )}
                   >
                     <div
                       className={cn(
                         'flex items-center justify-center w-6 h-6 rounded-full flex-shrink-0 mt-0.5',
-                        isDark ? 'bg-primary/10' : 'bg-blue-50'
+                        'bg-blue-50 dark:bg-primary/10'
                       )}
                     >
                       <Zap size={12} className="text-primary" />
                     </div>
                     <div>
-                      <div className={cn('text-[13px] font-medium', isDark ? 'text-white/90' : 'text-gray-900')}>
+                      <div className={cn('text-[13px] font-medium', 'text-gray-900 dark:text-white/90')}>
                         {item.title}
                       </div>
-                      <div className={cn('text-[12px] mt-0.5', isDark ? 'text-white/50' : 'text-gray-500')}>
+                      <div className={cn('text-[12px] mt-0.5', 'text-gray-500 dark:text-white/50')}>
                         {item.desc}
                       </div>
                     </div>
@@ -3023,16 +2972,16 @@ curl -X POST https://api.xrpl.to/v1/faucet \\
             </div>
 
             <div id="info-build" className="space-y-4">
-              <h3 className={cn('text-lg font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+              <h3 className={cn('text-lg font-medium', 'text-gray-900 dark:text-white')}>
                 Build with xrpl.to
               </h3>
               <div
                 className={cn(
                   'p-4 rounded-xl border-[1.5px]',
-                  isDark ? 'border-primary/20 bg-primary/5' : 'border-primary/20 bg-blue-50/50'
+                  'border-primary/20 bg-blue-50/50 dark:border-primary/20 dark:bg-primary/5'
                 )}
               >
-                <p className={cn('text-[13px] leading-relaxed', isDark ? 'text-white/70' : 'text-gray-700')}>
+                <p className={cn('text-[13px] leading-relaxed', 'text-gray-700 dark:text-white/70')}>
                   xrpl.to is a complete toolkit for building decentralized applications on the XRP Ledger. Developers can build full applications such as NFT marketplaces or trading platforms using xrpl.to entirely on its own. The platform takes the complexity out of building on the ledger so you can focus on managing your business. From real-time market data to transaction submission, everything you need is available through a single, unified API.
                 </p>
               </div>
@@ -3045,46 +2994,46 @@ curl -X POST https://api.xrpl.to/v1/faucet \\
           <div className="space-y-8">
             <div>
               <h2 className="text-2xl font-normal text-primary mb-2">Handshake</h2>
-              <p className={cn('text-[14px] mb-4', isDark ? 'text-white/60' : 'text-gray-600')}>
+              <p className={cn('text-[14px] mb-4', 'text-gray-600 dark:text-white/60')}>
                 Anti-phishing protection that verifies you are on the real xrpl.to before you enter your password.
               </p>
             </div>
 
             <div id="what-is-handshake" className="space-y-4">
-              <h3 className={cn('text-lg font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+              <h3 className={cn('text-lg font-medium', 'text-gray-900 dark:text-white')}>
                 What is Handshake?
               </h3>
-              <p className={cn('text-[13px] leading-relaxed', isDark ? 'text-white/60' : 'text-gray-600')}>
+              <p className={cn('text-[13px] leading-relaxed', 'text-gray-600 dark:text-white/60')}>
                 Handshake is a unique 4-emoji security code assigned to your wallet when you create it. Every time you open the login screen, your Handshake is displayed <strong>before</strong> you type your password. If the emojis match what you remember, you know you are on the real site.
               </p>
               <div
                 className={cn(
                   'flex items-center gap-3 py-3 px-4 rounded-xl border-[1.5px]',
-                  isDark ? 'border-emerald-500/20 bg-emerald-500/5' : 'border-emerald-500/20 bg-emerald-50'
+                  'border-emerald-500/20 bg-emerald-50 dark:border-emerald-500/20 dark:bg-emerald-500/5'
                 )}
               >
                 <div
                   className={cn(
                     'flex items-center justify-center w-8 h-8 rounded-lg flex-shrink-0',
-                    isDark ? 'bg-emerald-500/10' : 'bg-emerald-100'
+                    'bg-emerald-100 dark:bg-emerald-500/10'
                   )}
                 >
                   <Shield size={16} className="text-emerald-500" />
                 </div>
                 <div className="flex flex-col">
                   <span className="text-[20px] leading-tight tracking-[0.15em]">{'🐶🌈💎🚀'}</span>
-                  <span className={cn('text-[9px] font-medium uppercase tracking-wider mt-0.5', isDark ? 'text-white/25' : 'text-gray-400')}>
+                  <span className={cn('text-[9px] font-medium uppercase tracking-wider mt-0.5', 'text-gray-400 dark:text-white/25')}>
                     Handshake
                   </span>
                 </div>
               </div>
-              <p className={cn('text-[12px]', isDark ? 'text-white/40' : 'text-gray-500')}>
+              <p className={cn('text-[12px]', 'text-gray-500 dark:text-white/40')}>
                 Example only. Your actual Handshake will be different.
               </p>
             </div>
 
             <div id="how-it-works" className="space-y-4">
-              <h3 className={cn('text-lg font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+              <h3 className={cn('text-lg font-medium', 'text-gray-900 dark:text-white')}>
                 How It Works
               </h3>
               <div className="space-y-3">
@@ -3098,22 +3047,22 @@ curl -X POST https://api.xrpl.to/v1/faucet \\
                     key={item.step}
                     className={cn(
                       'flex gap-3 p-3 rounded-xl border-[1.5px]',
-                      isDark ? 'border-white/5 bg-white/[0.02]' : 'border-gray-100 bg-gray-50/50'
+                      'border-gray-100 bg-gray-50/50 dark:border-white/5 dark:bg-white/[0.02]'
                     )}
                   >
                     <div
                       className={cn(
                         'flex items-center justify-center w-6 h-6 rounded-full text-[11px] font-bold flex-shrink-0 mt-0.5',
-                        isDark ? 'bg-primary/10 text-primary' : 'bg-primary/10 text-primary'
+                        'bg-primary/10 text-primary dark:bg-primary/10 dark:text-primary'
                       )}
                     >
                       {item.step}
                     </div>
                     <div>
-                      <div className={cn('text-[13px] font-medium', isDark ? 'text-white/90' : 'text-gray-900')}>
+                      <div className={cn('text-[13px] font-medium', 'text-gray-900 dark:text-white/90')}>
                         {item.title}
                       </div>
-                      <div className={cn('text-[12px] mt-0.5', isDark ? 'text-white/50' : 'text-gray-500')}>
+                      <div className={cn('text-[12px] mt-0.5', 'text-gray-500 dark:text-white/50')}>
                         {item.desc}
                       </div>
                     </div>
@@ -3123,7 +3072,7 @@ curl -X POST https://api.xrpl.to/v1/faucet \\
             </div>
 
             <div id="handshake-faq" className="space-y-4">
-              <h3 className={cn('text-lg font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+              <h3 className={cn('text-lg font-medium', 'text-gray-900 dark:text-white')}>
                 FAQ
               </h3>
               <div className="space-y-4">
@@ -3134,10 +3083,10 @@ curl -X POST https://api.xrpl.to/v1/faucet \\
                   { q: 'Does Handshake work across devices?', a: 'Each device has its own Handshake since the encryption key is device-specific. When you sync via QR code, the Handshake transfers to the new device.' }
                 ].map((item, i) => (
                   <div key={i} className="space-y-1">
-                    <div className={cn('text-[13px] font-medium', isDark ? 'text-white/90' : 'text-gray-900')}>
+                    <div className={cn('text-[13px] font-medium', 'text-gray-900 dark:text-white/90')}>
                       {item.q}
                     </div>
-                    <div className={cn('text-[12px]', isDark ? 'text-white/50' : 'text-gray-500')}>
+                    <div className={cn('text-[12px]', 'text-gray-500 dark:text-white/50')}>
                       {item.a}
                     </div>
                   </div>
@@ -3152,62 +3101,62 @@ curl -X POST https://api.xrpl.to/v1/faucet \\
           <div className="space-y-8">
             <div>
               <h2 className="text-2xl font-normal text-primary mb-2">Platform Fees</h2>
-              <p className={cn('text-[14px]', isDark ? 'text-white/60' : 'text-gray-600')}>
+              <p className={cn('text-[14px]', 'text-gray-600 dark:text-white/60')}>
                 Transparent fee structure for trading and launching tokens on xrpl.to.
               </p>
             </div>
 
             <div id="pf-trading" className="space-y-4">
-              <h3 className={cn('text-lg font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+              <h3 className={cn('text-lg font-medium', 'text-gray-900 dark:text-white')}>
                 Trading Fee
               </h3>
               <div
                 className={cn(
                   'rounded-xl border-[1.5px] p-4',
-                  isDark ? 'border-primary/20 bg-primary/5' : 'border-primary/20 bg-blue-50/50'
+                  'border-primary/20 bg-blue-50/50 dark:border-primary/20 dark:bg-primary/5'
                 )}
               >
                 <div className="flex items-center justify-between">
-                  <span className={cn('text-[14px] font-medium', isDark ? 'text-white/80' : 'text-gray-800')}>Swap Fee</span>
+                  <span className={cn('text-[14px] font-medium', 'text-gray-800 dark:text-white/80')}>Swap Fee</span>
                   <span className="text-2xl font-medium text-primary">0.08%</span>
                 </div>
               </div>
-              <p className={cn('text-[13px] leading-relaxed', isDark ? 'text-white/60' : 'text-gray-600')}>
+              <p className={cn('text-[13px] leading-relaxed', 'text-gray-600 dark:text-white/60')}>
                 A 0.08% fee is applied to all trades executed through the xrpl.to swap interface. This fee helps maintain and improve the platform.
               </p>
-              <div className={cn('rounded-xl p-3', isDark ? 'bg-white/5' : 'bg-gray-50')}>
-                <div className={cn('text-[12px] font-medium mb-1.5', isDark ? 'text-white/70' : 'text-gray-700')}>Example</div>
-                <div className={cn('text-[13px]', isDark ? 'text-white/60' : 'text-gray-600')}>
+              <div className={cn('rounded-xl p-3', 'bg-gray-50 dark:bg-white/5')}>
+                <div className={cn('text-[12px] font-medium mb-1.5', 'text-gray-700 dark:text-white/70')}>Example</div>
+                <div className={cn('text-[13px]', 'text-gray-600 dark:text-white/60')}>
                   Swapping 1,000 XRP worth of tokens:
                 </div>
-                <div className={cn('text-[13px] mt-1', isDark ? 'text-white/60' : 'text-gray-600')}>
+                <div className={cn('text-[13px] mt-1', 'text-gray-600 dark:text-white/60')}>
                   Fee: <span className="text-primary font-medium">0.8 XRP</span> (0.08% of 1,000)
                 </div>
               </div>
-              <p className={cn('text-[12px]', isDark ? 'text-white/40' : 'text-gray-500')}>
+              <p className={cn('text-[12px]', 'text-gray-500 dark:text-white/40')}>
                 This fee is separate from any AMM pool fees or network transaction costs on the XRP Ledger.
               </p>
             </div>
 
             <div id="pf-launch" className="space-y-4">
-              <h3 className={cn('text-lg font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+              <h3 className={cn('text-lg font-medium', 'text-gray-900 dark:text-white')}>
                 Token Launch
               </h3>
-              <p className={cn('text-[13px] leading-relaxed', isDark ? 'text-white/60' : 'text-gray-600')}>
+              <p className={cn('text-[13px] leading-relaxed', 'text-gray-600 dark:text-white/60')}>
                 Launch your own token on the XRP Ledger. The total cost depends on your configuration.
               </p>
               <div
                 className={cn(
                   'rounded-xl border-[1.5px] overflow-hidden',
-                  isDark ? 'border-white/5' : 'border-gray-100'
+                  'border-gray-100 dark:border-white/5'
                 )}
               >
                 <table className="w-full text-[13px]">
-                  <thead className={isDark ? 'bg-white/5' : 'bg-gray-50'}>
+                  <thead className={'bg-gray-50 dark:bg-white/5'}>
                     <tr>
-                      <th className={cn('text-left px-4 py-2.5 font-medium', isDark ? 'text-white/60' : 'text-gray-600')}>Fee</th>
-                      <th className={cn('text-left px-4 py-2.5 font-medium', isDark ? 'text-white/60' : 'text-gray-600')}>Amount</th>
-                      <th className={cn('text-left px-4 py-2.5 font-medium', isDark ? 'text-white/60' : 'text-gray-600')}>Details</th>
+                      <th className={cn('text-left px-4 py-2.5 font-medium', 'text-gray-600 dark:text-white/60')}>Fee</th>
+                      <th className={cn('text-left px-4 py-2.5 font-medium', 'text-gray-600 dark:text-white/60')}>Amount</th>
+                      <th className={cn('text-left px-4 py-2.5 font-medium', 'text-gray-600 dark:text-white/60')}>Details</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -3219,10 +3168,10 @@ curl -X POST https://api.xrpl.to/v1/faucet \\
                       ['Bundle Distribution', '1 XRP per recipient', 'Optional. Distributes tokens to additional wallets at launch.'],
                       ['Platform Token Share', '0 XRP', 'Optional 0-10% of token supply for social rewards. No XRP cost.']
                     ].map(([fee, amount, details]) => (
-                      <tr key={fee} className={isDark ? 'border-t border-white/5' : 'border-t border-gray-100'}>
-                        <td className={cn('px-4 py-2.5 font-medium', isDark ? 'text-white/80' : 'text-gray-800')}>{fee}</td>
+                      <tr key={fee} className={'border-t border-gray-100 dark:border-t dark:border-white/5'}>
+                        <td className={cn('px-4 py-2.5 font-medium', 'text-gray-800 dark:text-white/80')}>{fee}</td>
                         <td className="px-4 py-2.5 text-primary whitespace-nowrap">{amount}</td>
-                        <td className={cn('px-4 py-2.5', isDark ? 'text-white/50' : 'text-gray-500')}>{details}</td>
+                        <td className={cn('px-4 py-2.5', 'text-gray-500 dark:text-white/50')}>{details}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -3231,19 +3180,19 @@ curl -X POST https://api.xrpl.to/v1/faucet \\
               <div
                 className={cn(
                   'flex items-center gap-3 rounded-xl p-4 border-[1.5px]',
-                  isDark ? 'border-emerald-500/20 bg-emerald-500/5' : 'border-emerald-500/20 bg-emerald-50'
+                  'border-emerald-500/20 bg-emerald-50 dark:border-emerald-500/20 dark:bg-emerald-500/5'
                 )}
               >
                 <div>
-                  <div className={cn('text-[12px] font-medium mb-0.5', isDark ? 'text-white/70' : 'text-gray-700')}>Typical Total Cost</div>
+                  <div className={cn('text-[12px] font-medium mb-0.5', 'text-gray-700 dark:text-white/70')}>Typical Total Cost</div>
                   <div className="flex items-center gap-2">
                     <span className="text-xl font-medium text-primary">6 - 20 XRP</span>
-                    <span className={cn('text-[12px]', isDark ? 'text-white/40' : 'text-gray-500')}>depending on configuration</span>
+                    <span className={cn('text-[12px]', 'text-gray-500 dark:text-white/40')}>depending on configuration</span>
                   </div>
                 </div>
               </div>
-              <div className={cn('text-[13px] leading-relaxed', isDark ? 'text-white/60' : 'text-gray-600')}>
-                <div className={cn('font-medium mb-2', isDark ? 'text-white/80' : 'text-gray-800')}>Included with every launch:</div>
+              <div className={cn('text-[13px] leading-relaxed', 'text-gray-600 dark:text-white/60')}>
+                <div className={cn('font-medium mb-2', 'text-gray-800 dark:text-white/80')}>Included with every launch:</div>
                 <ul className="list-disc list-inside space-y-1 ml-1">
                   <li>Token creation and configuration</li>
                   <li>Issuer account setup</li>
@@ -3263,7 +3212,7 @@ curl -X POST https://api.xrpl.to/v1/faucet \\
           <div className="space-y-8">
             <div>
               <h2 className="text-2xl font-normal text-primary mb-2">Trending</h2>
-              <p className={cn('text-[14px] leading-relaxed', isDark ? 'text-white/60' : 'text-gray-600')}>
+              <p className={cn('text-[14px] leading-relaxed', 'text-gray-600 dark:text-white/60')}>
                 Every token and NFT collection on xrpl.to is assigned a Trending Score based on recent market activity and community engagement. This score determines ranking on the trending page and homepage.
               </p>
             </div>
@@ -3280,16 +3229,16 @@ curl -X POST https://api.xrpl.to/v1/faucet \\
                   key={item.title}
                   className={cn(
                     'p-4 rounded-xl border-[1.5px]',
-                    isDark ? 'border-white/5 bg-white/[0.02]' : 'border-gray-100 bg-gray-50/50'
+                    'border-gray-100 bg-gray-50/50 dark:border-white/5 dark:bg-white/[0.02]'
                   )}
                 >
-                  <div className={cn('text-[13px] font-medium mb-1', isDark ? 'text-white/80' : 'text-gray-800')}>{item.title}</div>
-                  <div className={cn('text-[12px] leading-relaxed', isDark ? 'text-white/50' : 'text-gray-500')}>{item.desc}</div>
+                  <div className={cn('text-[13px] font-medium mb-1', 'text-gray-800 dark:text-white/80')}>{item.title}</div>
+                  <div className={cn('text-[12px] leading-relaxed', 'text-gray-500 dark:text-white/50')}>{item.desc}</div>
                 </div>
               ))}
             </div>
 
-            <p className={cn('text-[12px]', isDark ? 'text-white/40' : 'text-gray-500')}>
+            <p className={cn('text-[12px]', 'text-gray-500 dark:text-white/40')}>
               Scores are recalculated continuously. A token with zero activity will naturally fall off the trending page.
             </p>
           </div>
@@ -3300,7 +3249,7 @@ curl -X POST https://api.xrpl.to/v1/faucet \\
           <div className="space-y-8">
             <div>
               <h2 className="text-2xl font-normal text-primary mb-2">Boost</h2>
-              <p className={cn('text-[14px] leading-relaxed', isDark ? 'text-white/60' : 'text-gray-600')}>
+              <p className={cn('text-[14px] leading-relaxed', 'text-gray-600 dark:text-white/60')}>
                 Boosts are a powerful way to amplify a token or NFT collection's presence on xrpl.to. By purchasing a Boost pack you temporarily increase a token's Trending Score, helping it gain more visibility. The number of active Boosts is displayed next to the token across the platform. The more Boosts, the higher the score.
               </p>
             </div>
@@ -3308,23 +3257,23 @@ curl -X POST https://api.xrpl.to/v1/faucet \\
             <div
               className={cn(
                 'flex items-center gap-3 rounded-xl p-4 border-[1.5px]',
-                isDark ? 'border-[#FFD700]/20 bg-[#FFD700]/5' : 'border-amber-300/40 bg-amber-50'
+                'border-amber-300/40 bg-amber-50 dark:border-[#FFD700]/20 dark:bg-[#FFD700]/5'
               )}
             >
               <Flame size={18} className="text-[#FFD700] shrink-0" />
               <div>
-                <div className={cn('text-[13px] font-medium mb-0.5', isDark ? 'text-[#FFD700]' : 'text-amber-700')}>Golden Ticker</div>
-                <div className={cn('text-[12px] leading-relaxed', isDark ? 'text-white/50' : 'text-gray-600')}>
+                <div className={cn('text-[13px] font-medium mb-0.5', 'text-amber-700 dark:text-[#FFD700]')}>Golden Ticker</div>
+                <div className={cn('text-[12px] leading-relaxed', 'text-gray-600 dark:text-white/50')}>
                   The ultimate flex for any token. Unlocked when 500+ Boosts are active, it changes the token's symbol to a striking golden color on the screener and token pages. Lasts as long as there are 500+ active Boosts.
                 </div>
               </div>
             </div>
 
             <div className="space-y-4">
-              <h3 className={cn('text-lg font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+              <h3 className={cn('text-lg font-medium', 'text-gray-900 dark:text-white')}>
                 How to Boost
               </h3>
-              <ol className={cn('text-[13px] leading-relaxed space-y-2 list-decimal list-inside ml-1', isDark ? 'text-white/60' : 'text-gray-600')}>
+              <ol className={cn('text-[13px] leading-relaxed space-y-2 list-decimal list-inside ml-1', 'text-gray-600 dark:text-white/60')}>
                 <li>Click the <span className="inline-flex items-center align-middle"><Flame size={12} className="text-orange-500 mx-0.5" /></span> icon next to any token or collection in the Trending or New panels.</li>
                 <li>Select a boost pack with a multiplier and duration (12-24h).</li>
                 <li>Pay with XRP from your wallet or by card/crypto via Stripe.</li>
@@ -3333,16 +3282,16 @@ curl -X POST https://api.xrpl.to/v1/faucet \\
             </div>
 
             <div className="space-y-4">
-              <h3 className={cn('text-lg font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+              <h3 className={cn('text-lg font-medium', 'text-gray-900 dark:text-white')}>
                 Boost Packs
               </h3>
-              <div className={cn('rounded-xl border-[1.5px] overflow-hidden', isDark ? 'border-white/5' : 'border-gray-100')}>
+              <div className={cn('rounded-xl border-[1.5px] overflow-hidden', 'border-gray-100 dark:border-white/5')}>
                 <table className="w-full text-[13px]">
-                  <thead className={isDark ? 'bg-white/5' : 'bg-gray-50'}>
+                  <thead className={'bg-gray-50 dark:bg-white/5'}>
                     <tr>
-                      <th className={cn('text-left px-4 py-2.5 font-medium', isDark ? 'text-white/60' : 'text-gray-600')}>Tier</th>
-                      <th className={cn('text-left px-4 py-2.5 font-medium', isDark ? 'text-white/60' : 'text-gray-600')}>Multiplier</th>
-                      <th className={cn('text-left px-4 py-2.5 font-medium', isDark ? 'text-white/60' : 'text-gray-600')}>Effect</th>
+                      <th className={cn('text-left px-4 py-2.5 font-medium', 'text-gray-600 dark:text-white/60')}>Tier</th>
+                      <th className={cn('text-left px-4 py-2.5 font-medium', 'text-gray-600 dark:text-white/60')}>Multiplier</th>
+                      <th className={cn('text-left px-4 py-2.5 font-medium', 'text-gray-600 dark:text-white/60')}>Effect</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -3353,10 +3302,10 @@ curl -X POST https://api.xrpl.to/v1/faucet \\
                       ['Ultra', '100x', 'Dominant trending position'],
                       ['Legendary', '500x', 'Activates Golden Ticker']
                     ].map(([tier, mult, effect]) => (
-                      <tr key={tier} className={isDark ? 'border-t border-white/5' : 'border-t border-gray-100'}>
-                        <td className={cn('px-4 py-2.5 font-medium', isDark ? 'text-white/80' : 'text-gray-800')}>{tier}</td>
+                      <tr key={tier} className={'border-t border-gray-100 dark:border-t dark:border-white/5'}>
+                        <td className={cn('px-4 py-2.5 font-medium', 'text-gray-800 dark:text-white/80')}>{tier}</td>
                         <td className="px-4 py-2.5 text-primary">{mult}</td>
-                        <td className={cn('px-4 py-2.5', isDark ? 'text-white/50' : 'text-gray-500')}>{effect}</td>
+                        <td className={cn('px-4 py-2.5', 'text-gray-500 dark:text-white/50')}>{effect}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -3365,7 +3314,7 @@ curl -X POST https://api.xrpl.to/v1/faucet \\
             </div>
 
             <div className="space-y-4">
-              <h3 className={cn('text-lg font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+              <h3 className={cn('text-lg font-medium', 'text-gray-900 dark:text-white')}>
                 FAQ
               </h3>
               <div className="space-y-4">
@@ -3375,9 +3324,9 @@ curl -X POST https://api.xrpl.to/v1/faucet \\
                   ['Are Boosts refundable?', 'No, Boosts are non-refundable. Boosts may be removed from a token if it is flagged as malicious by our moderators.'],
                   ['What payment methods are accepted?', 'XRP (direct from your wallet) or card/crypto via Stripe.']
                 ].map(([q, a]) => (
-                  <div key={q} className={cn('rounded-xl p-4', isDark ? 'bg-white/[0.03]' : 'bg-gray-50')}>
-                    <div className={cn('text-[13px] font-medium mb-1.5', isDark ? 'text-white/80' : 'text-gray-800')}>{q}</div>
-                    <div className={cn('text-[12px] leading-relaxed', isDark ? 'text-white/50' : 'text-gray-500')}>{a}</div>
+                  <div key={q} className={cn('rounded-xl p-4', 'bg-gray-50 dark:bg-white/[0.03]')}>
+                    <div className={cn('text-[13px] font-medium mb-1.5', 'text-gray-800 dark:text-white/80')}>{q}</div>
+                    <div className={cn('text-[12px] leading-relaxed', 'text-gray-500 dark:text-white/50')}>{a}</div>
                   </div>
                 ))}
               </div>
@@ -3390,45 +3339,45 @@ curl -X POST https://api.xrpl.to/v1/faucet \\
           <div className="space-y-8">
             <div>
               <h2 className="text-2xl font-normal text-primary mb-2">Security</h2>
-              <p className={cn('text-[14px] mb-4', isDark ? 'text-white/60' : 'text-gray-600')}>
+              <p className={cn('text-[14px] mb-4', 'text-gray-600 dark:text-white/60')}>
                 Your wallet, your responsibility. xrpl.to is a fully self-custody platform where only you control your funds.
               </p>
             </div>
 
             <div id="self-custody" className="space-y-4">
-              <h3 className={cn('text-lg font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+              <h3 className={cn('text-lg font-medium', 'text-gray-900 dark:text-white')}>
                 Self Custody
               </h3>
               <div
                 className={cn(
                   'p-4 rounded-xl border-[1.5px]',
-                  isDark ? 'border-primary/20 bg-primary/5' : 'border-primary/20 bg-blue-50/50'
+                  'border-primary/20 bg-blue-50/50 dark:border-primary/20 dark:bg-primary/5'
                 )}
               >
-                <p className={cn('text-[13px] leading-relaxed', isDark ? 'text-white/70' : 'text-gray-700')}>
+                <p className={cn('text-[13px] leading-relaxed', 'text-gray-700 dark:text-white/70')}>
                   xrpl.to is a decentralized platform. Its architecture is designed for full self-custody and user control. There are no custodial accounts, no recovery mechanisms, and no way for anyone, including the xrpl.to team, to access your funds. It is up to you to be your own bank and keep your private key safe, since it gives full access to your funds.
                 </p>
               </div>
             </div>
 
             <div id="device-binding" className="space-y-4">
-              <h3 className={cn('text-lg font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+              <h3 className={cn('text-lg font-medium', 'text-gray-900 dark:text-white')}>
                 Device Binding & Encryption
               </h3>
               <div
                 className={cn(
                   'p-4 rounded-xl border-[1.5px]',
-                  isDark ? 'border-primary/20 bg-primary/5' : 'border-primary/20 bg-blue-50/50'
+                  'border-primary/20 bg-blue-50/50 dark:border-primary/20 dark:bg-primary/5'
                 )}
               >
-                <p className={cn('text-[13px] leading-relaxed', isDark ? 'text-white/70' : 'text-gray-700')}>
+                <p className={cn('text-[13px] leading-relaxed', 'text-gray-700 dark:text-white/70')}>
                   xrpl.to uses device binding and password protection to secure your wallet. All encryption and decryption happens entirely client-side using industry-standard encryption methods. Your private keys are encrypted with AES-GCM and stored in IndexedDB, bound to your device. They never leave your browser and are never transmitted to any server.
                 </p>
               </div>
             </div>
 
             <div id="seed-safety" className="space-y-4">
-              <h3 className={cn('text-lg font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+              <h3 className={cn('text-lg font-medium', 'text-gray-900 dark:text-white')}>
                 Seed Safety
               </h3>
               <div className="space-y-3">
@@ -3441,22 +3390,22 @@ curl -X POST https://api.xrpl.to/v1/faucet \\
                     key={i}
                     className={cn(
                       'flex gap-3 p-3 rounded-xl border-[1.5px]',
-                      isDark ? 'border-white/5 bg-white/[0.02]' : 'border-gray-100 bg-gray-50/50'
+                      'border-gray-100 bg-gray-50/50 dark:border-white/5 dark:bg-white/[0.02]'
                     )}
                   >
                     <div
                       className={cn(
                         'flex items-center justify-center w-6 h-6 rounded-full flex-shrink-0 mt-0.5',
-                        isDark ? 'bg-red-500/10' : 'bg-red-50'
+                        'bg-red-50 dark:bg-red-500/10'
                       )}
                     >
                       <AlertTriangle size={12} className="text-red-500" />
                     </div>
                     <div>
-                      <div className={cn('text-[13px] font-medium', isDark ? 'text-white/90' : 'text-gray-900')}>
+                      <div className={cn('text-[13px] font-medium', 'text-gray-900 dark:text-white/90')}>
                         {item.title}
                       </div>
-                      <div className={cn('text-[12px] mt-0.5', isDark ? 'text-white/50' : 'text-gray-500')}>
+                      <div className={cn('text-[12px] mt-0.5', 'text-gray-500 dark:text-white/50')}>
                         {item.desc}
                       </div>
                     </div>
@@ -3466,26 +3415,26 @@ curl -X POST https://api.xrpl.to/v1/faucet \\
             </div>
 
             <div id="cross-contamination" className="space-y-4">
-              <h3 className={cn('text-lg font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+              <h3 className={cn('text-lg font-medium', 'text-gray-900 dark:text-white')}>
                 Cross Contamination
               </h3>
               <div
                 className={cn(
                   'p-4 rounded-xl border-[1.5px]',
-                  isDark ? 'border-amber-500/20 bg-amber-500/5' : 'border-amber-500/20 bg-amber-50/50'
+                  'border-amber-500/20 bg-amber-50/50 dark:border-amber-500/20 dark:bg-amber-500/5'
                 )}
               >
-                <p className={cn('text-[13px] leading-relaxed', isDark ? 'text-white/70' : 'text-gray-700')}>
+                <p className={cn('text-[13px] leading-relaxed', 'text-gray-700 dark:text-white/70')}>
                   <strong>Not recommended:</strong> importing wallet private keys generated on xrpl.to into other platforms, or vice versa. Each platform has its own security model, storage methods, and potential vulnerabilities. Reusing the same seed across multiple platforms increases the attack surface. If any one platform is compromised, all platforms sharing that seed are compromised. Generate a separate wallet for each platform you use.
                 </p>
               </div>
             </div>
 
             <div id="verify-domain" className="space-y-4">
-              <h3 className={cn('text-lg font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+              <h3 className={cn('text-lg font-medium', 'text-gray-900 dark:text-white')}>
                 Verify Domain
               </h3>
-              <p className={cn('text-[13px] leading-relaxed', isDark ? 'text-white/60' : 'text-gray-600')}>
+              <p className={cn('text-[13px] leading-relaxed', 'text-gray-600 dark:text-white/60')}>
                 Always verify you are on the correct domain before entering your password or interacting with your wallet.
               </p>
               <div className="space-y-2">
@@ -3498,87 +3447,249 @@ curl -X POST https://api.xrpl.to/v1/faucet \\
                     className={cn(
                       'flex items-center gap-3 px-4 py-2.5 rounded-xl border-[1.5px]',
                       item.ok
-                        ? isDark ? 'border-emerald-500/20 bg-emerald-500/5' : 'border-emerald-500/20 bg-emerald-50'
-                        : isDark ? 'border-red-500/20 bg-red-500/5' : 'border-red-500/20 bg-red-50'
+                        ? 'border-emerald-500/20 bg-emerald-50 dark:border-emerald-500/20 dark:bg-emerald-500/5'
+                        : 'border-red-500/20 bg-red-50 dark:border-red-500/20 dark:bg-red-500/5'
                     )}
                   >
                     <span className={cn('text-[11px] font-medium uppercase tracking-wider w-20', item.ok ? 'text-emerald-500' : 'text-red-500')}>
                       {item.label}
                     </span>
-                    <code className={cn('text-[13px] font-mono', isDark ? 'text-white/80' : 'text-gray-800')}>
+                    <code className={cn('text-[13px] font-mono', 'text-gray-800 dark:text-white/80')}>
                       {item.value}
                     </code>
                   </div>
                 ))}
               </div>
-              <p className={cn('text-[13px] leading-relaxed mt-3', isDark ? 'text-white/60' : 'text-gray-600')}>
+              <p className={cn('text-[13px] leading-relaxed mt-3', 'text-gray-600 dark:text-white/60')}>
                 Use your <a href="/docs?section=handshake" className="text-primary hover:underline">Handshake</a> emoji code as an additional verification. If it does not appear or looks wrong, do not enter any information. Never enter your seed anywhere if you have already set up your account. If you have any questions, reach out to <a href="https://x.com/xrplto" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">@xrplto on X</a>, but never provide your private seed to anyone under any circumstances.
               </p>
             </div>
 
             <div id="backup" className="space-y-4">
-              <h3 className={cn('text-lg font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+              <h3 className={cn('text-lg font-medium', 'text-gray-900 dark:text-white')}>
                 Backup
               </h3>
               <div
                 className={cn(
                   'p-4 rounded-xl border-[1.5px]',
-                  isDark ? 'border-primary/20 bg-primary/5' : 'border-primary/20 bg-blue-50/50'
+                  'border-primary/20 bg-blue-50/50 dark:border-primary/20 dark:bg-primary/5'
                 )}
               >
-                <p className={cn('text-[13px] leading-relaxed', isDark ? 'text-white/70' : 'text-gray-700')}>
+                <p className={cn('text-[13px] leading-relaxed', 'text-gray-700 dark:text-white/70')}>
                   Backup was added for your own control and ownership of your XRP Ledger account. You are your own bank. xrpl.to provides a way to back up your seed natively on the XRP Ledger, not through some platform-specific method that could be exploited. It is your responsibility to back up your seed. If you ever have issues logging in, you can use your seed to recreate your account. xrpl.to does not use keystores, mnemonics, or any other backup method, only your seed.
                 </p>
               </div>
               <div className="space-y-3">
-                <p className={cn('text-[13px] font-medium', isDark ? 'text-white/80' : 'text-gray-800')}>
+                <p className={cn('text-[13px] font-medium', 'text-gray-800 dark:text-white/80')}>
                   Your seed is a short string that looks like this:
                 </p>
                 <div
                   className={cn(
                     'px-4 py-3 rounded-xl border-[1.5px] font-mono text-[13px]',
-                    isDark ? 'border-white/10 bg-white/[0.02] text-white/70' : 'border-gray-200 bg-gray-50 text-gray-700'
+                    'border-gray-200 bg-gray-50 text-gray-700 dark:border-white/10 dark:bg-white/[0.02] dark:text-white/70'
                   )}
                 >
                   sEdxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
                 </div>
-                <p className={cn('text-[12px]', isDark ? 'text-white/40' : 'text-gray-400')}>
+                <p className={cn('text-[12px]', 'text-gray-400 dark:text-white/40')}>
                   Example format only. This is not a real seed.
                 </p>
               </div>
               <div
                 className={cn(
                   'flex gap-3 p-3 rounded-xl border-[1.5px]',
-                  isDark ? 'border-red-500/20 bg-red-500/5' : 'border-red-100 bg-red-50/50'
+                  'border-red-100 bg-red-50/50 dark:border-red-500/20 dark:bg-red-500/5'
                 )}
               >
                 <div
                   className={cn(
                     'flex items-center justify-center w-6 h-6 rounded-full flex-shrink-0 mt-0.5',
-                    isDark ? 'bg-red-500/10' : 'bg-red-50'
+                    'bg-red-50 dark:bg-red-500/10'
                   )}
                 >
                   <AlertTriangle size={12} className="text-red-500" />
                 </div>
-                <p className={cn('text-[13px] leading-relaxed', isDark ? 'text-white/70' : 'text-gray-700')}>
+                <p className={cn('text-[13px] leading-relaxed', 'text-gray-700 dark:text-white/70')}>
                   Keep your seed safe. Anyone with access to it has full control of your funds. Store it offline, never share it, and never enter it on any site other than xrpl.to.
                 </p>
               </div>
             </div>
 
             <div id="user-responsibility" className="space-y-4">
-              <h3 className={cn('text-lg font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+              <h3 className={cn('text-lg font-medium', 'text-gray-900 dark:text-white')}>
                 Your Responsibility
               </h3>
               <div
                 className={cn(
                   'p-4 rounded-xl border-[1.5px]',
-                  isDark ? 'border-primary/20 bg-primary/5' : 'border-primary/20 bg-blue-50/50'
+                  'border-primary/20 bg-blue-50/50 dark:border-primary/20 dark:bg-primary/5'
                 )}
               >
-                <p className={cn('text-[13px] leading-relaxed', isDark ? 'text-white/70' : 'text-gray-700')}>
+                <p className={cn('text-[13px] leading-relaxed', 'text-gray-700 dark:text-white/70')}>
                   xrpl.to has taken extensive measures to create a secure platform. However, the security of the platform is often irrelevant if a user is deceived into providing their private keys. It is important to understand your responsibility in guarding your key. Use the proper security measures described above: store your seed offline, never share it with anyone, verify you are on the correct domain, and check your Handshake code before entering any information. Never enter your seed anywhere if you have already set up your account. If you need help, contact <a href="https://x.com/xrplto" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">@xrplto on X</a>.
                 </p>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'chat':
+        return (
+          <div className="space-y-8">
+            <div>
+              <h2 className="text-2xl font-normal text-primary mb-2">Chat</h2>
+              <p className={cn('text-[14px] leading-relaxed', 'text-gray-600 dark:text-white/60')}>
+                xrpl.to has a built-in live chat where you can talk with other traders, send direct messages, share tokens and NFTs, and use emotes.
+              </p>
+            </div>
+
+            <div id="chat-overview" className="space-y-4">
+              <h3 className={cn('text-lg font-medium', 'text-gray-900 dark:text-white')}>Overview</h3>
+              <div className="space-y-3">
+                {[
+                  'Click the chat icon in the bottom-right corner to open the chat panel.',
+                  'Connect your wallet to send messages. Your wallet address is your identity.',
+                  'The chat shows a live online user count and typing indicators.',
+                  'Your tier badge is displayed next to your name.'
+                ].map((item, i) => (
+                  <div
+                    key={i}
+                    className={cn(
+                      'flex items-start gap-2.5 px-4 py-2.5 rounded-xl border-[1.5px]',
+                      'border-gray-100 bg-gray-50/50 dark:border-white/5 dark:bg-white/[0.02]'
+                    )}
+                  >
+                    <span className={cn('text-[13px] leading-relaxed', 'text-gray-600 dark:text-white/60')}>{item}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div id="chat-commands" className="space-y-4">
+              <h3 className={cn('text-lg font-medium', 'text-gray-900 dark:text-white')}>Commands</h3>
+              <p className={cn('text-[13px] leading-relaxed mb-3', 'text-gray-600 dark:text-white/60')}>
+                Type these commands directly in the chat input and press Enter.
+              </p>
+              <div className="space-y-2">
+                {[
+                  { cmd: '/whisper rAddress message', desc: 'Open a DM conversation with the specified wallet and optionally send a message.' },
+                  { cmd: '/mute rAddress [minutes]', desc: 'Mute a user. Requires moderator privileges. If abused, this privilege will be removed.' }
+                ].map((item, i) => (
+                  <div
+                    key={i}
+                    className={cn(
+                      'p-3 rounded-xl border-[1.5px]',
+                      'border-gray-100 bg-gray-50/50 dark:border-white/5 dark:bg-white/[0.02]'
+                    )}
+                  >
+                    <code className="text-[12px] font-mono text-primary">{item.cmd}</code>
+                    <p className={cn('text-[12px] leading-relaxed mt-1', 'text-gray-500 dark:text-white/50')}>{item.desc}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div id="chat-emotes" className="space-y-4">
+              <h3 className={cn('text-lg font-medium', 'text-gray-900 dark:text-white')}>Emotes</h3>
+              <div className="space-y-3">
+                {[
+                  { label: 'Emote picker', text: 'Click the smiley face icon next to the input to open the emote grid. Search emotes by name.' },
+                  { label: 'Inline autocomplete', text: 'Type : followed by at least 2 characters (e.g. :pepe) to get autocomplete suggestions. Use arrow keys to navigate and Tab or Enter to select.' }
+                ].map((item, i) => (
+                  <div
+                    key={i}
+                    className={cn(
+                      'p-3 rounded-xl border-[1.5px]',
+                      'border-gray-100 bg-gray-50/50 dark:border-white/5 dark:bg-white/[0.02]'
+                    )}
+                  >
+                    <span className={cn('text-[13px] font-medium', 'text-gray-900 dark:text-white')}>{item.label}</span>
+                    <p className={cn('text-[12px] leading-relaxed mt-1', 'text-gray-500 dark:text-white/50')}>{item.text}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div id="chat-dm" className="space-y-4">
+              <h3 className={cn('text-lg font-medium', 'text-gray-900 dark:text-white')}>Direct Messages</h3>
+              <div className="space-y-3">
+                {[
+                  'Click on any username in chat to open a DM tab with that user.',
+                  'Use /whisper rAddress to start a DM from the command line.',
+                  'DM tabs appear in the tab bar next to the General tab. Unread DMs are highlighted.',
+                  'Close a DM tab by clicking the X on the tab. You can reopen it from the inbox.',
+                  'The inbox icon shows all your conversations. Use the search bar to filter by address.',
+                  'Online status is shown with a green dot next to DM usernames.'
+                ].map((item, i) => (
+                  <div
+                    key={i}
+                    className={cn(
+                      'flex items-start gap-2.5 px-4 py-2.5 rounded-xl border-[1.5px]',
+                      'border-gray-100 bg-gray-50/50 dark:border-white/5 dark:bg-white/[0.02]'
+                    )}
+                  >
+                    <span className={cn('text-[13px] leading-relaxed', 'text-gray-600 dark:text-white/60')}>{item}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div id="chat-attachments" className="space-y-4">
+              <h3 className={cn('text-lg font-medium', 'text-gray-900 dark:text-white')}>Attachments</h3>
+              <p className={cn('text-[13px] leading-relaxed', 'text-gray-600 dark:text-white/60')}>
+                You can attach tokens and NFTs to your chat messages. Attachments appear as rich previews inline with your message.
+              </p>
+              <div className="space-y-3">
+                {[
+                  'Token attachments show a preview card with the token name and price.',
+                  'NFT attachments show a preview of the NFT image.',
+                  'Remove an attachment by clicking the X on the attachment preview before sending.',
+                  'Attachments can be combined with text in the same message.'
+                ].map((item, i) => (
+                  <div
+                    key={i}
+                    className={cn(
+                      'flex items-start gap-2.5 px-4 py-2.5 rounded-xl border-[1.5px]',
+                      'border-gray-100 bg-gray-50/50 dark:border-white/5 dark:bg-white/[0.02]'
+                    )}
+                  >
+                    <span className={cn('text-[13px] leading-relaxed', 'text-gray-600 dark:text-white/60')}>{item}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div id="chat-support" className="space-y-4">
+              <h3 className={cn('text-lg font-medium', 'text-gray-900 dark:text-white')}>Support Tickets</h3>
+              <div
+                className={cn(
+                  'p-4 rounded-xl border-[1.5px]',
+                  'border-primary/20 bg-blue-50/50 dark:border-primary/20 dark:bg-primary/5'
+                )}
+              >
+                <p className={cn('text-[13px] leading-relaxed', 'text-gray-700 dark:text-white/70')}>
+                  Support tickets are available for VIP, Nova, Diamond, and Verified tier users. Click the shield icon in the chat header to open the support panel where you can create and track tickets.
+                </p>
+              </div>
+            </div>
+
+            <div id="chat-moderation" className="space-y-4">
+              <h3 className={cn('text-lg font-medium', 'text-gray-900 dark:text-white')}>Moderation</h3>
+              <div className="space-y-3">
+                {[
+                  'The chat is actively moderated. Users who violate the rules may be muted or banned.',
+                  'You can delete your own messages by clicking on them and confirming the delete action.'
+                ].map((item, i) => (
+                  <div
+                    key={i}
+                    className={cn(
+                      'flex items-start gap-2.5 px-4 py-2.5 rounded-xl border-[1.5px]',
+                      'border-gray-100 bg-gray-50/50 dark:border-white/5 dark:bg-white/[0.02]'
+                    )}
+                  >
+                    <span className={cn('text-[13px] leading-relaxed', 'text-gray-600 dark:text-white/60')}>{item}</span>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
@@ -3589,54 +3700,54 @@ curl -X POST https://api.xrpl.to/v1/faucet \\
           <div className="space-y-8">
             <div>
               <h2 className="text-2xl font-normal text-primary mb-2">Terms of Service</h2>
-              <p className={cn('text-[14px] leading-relaxed', isDark ? 'text-white/60' : 'text-gray-600')}>
+              <p className={cn('text-[14px] leading-relaxed', 'text-gray-600 dark:text-white/60')}>
                 By using xrpl.to you agree to the following terms.
               </p>
             </div>
 
             <div className="space-y-4">
-              <h3 className={cn('text-lg font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+              <h3 className={cn('text-lg font-medium', 'text-gray-900 dark:text-white')}>
                 Non-Refundable Services
               </h3>
               <div
                 className={cn(
                   'p-4 rounded-xl border-[1.5px]',
-                  isDark ? 'border-primary/20 bg-primary/5' : 'border-primary/20 bg-blue-50/50'
+                  'border-primary/20 bg-blue-50/50 dark:border-primary/20 dark:bg-primary/5'
                 )}
               >
-                <p className={cn('text-[13px] leading-relaxed', isDark ? 'text-white/70' : 'text-gray-700')}>
+                <p className={cn('text-[13px] leading-relaxed', 'text-gray-700 dark:text-white/70')}>
                   All services sold by xrpl.to are non-refundable. This includes Boosts, API key subscriptions, token launches, and any other paid features on the platform.
                 </p>
               </div>
             </div>
 
             <div className="space-y-4">
-              <h3 className={cn('text-lg font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+              <h3 className={cn('text-lg font-medium', 'text-gray-900 dark:text-white')}>
                 Irreversible Trades
               </h3>
               <div
                 className={cn(
                   'p-4 rounded-xl border-[1.5px]',
-                  isDark ? 'border-amber-500/20 bg-amber-500/5' : 'border-amber-500/20 bg-amber-50/50'
+                  'border-amber-500/20 bg-amber-50/50 dark:border-amber-500/20 dark:bg-amber-500/5'
                 )}
               >
-                <p className={cn('text-[13px] leading-relaxed', isDark ? 'text-white/70' : 'text-gray-700')}>
+                <p className={cn('text-[13px] leading-relaxed', 'text-gray-700 dark:text-white/70')}>
                   Trades on the XRP Ledger DEX are irreversible. Once a trade is executed it cannot be undone due to the fully decentralized nature of the XRP Ledger. There is no central authority that can reverse, cancel, or modify any transaction.
                 </p>
               </div>
             </div>
 
             <div className="space-y-4">
-              <h3 className={cn('text-lg font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+              <h3 className={cn('text-lg font-medium', 'text-gray-900 dark:text-white')}>
                 What xrpl.to Is
               </h3>
-              <p className={cn('text-[13px] leading-relaxed', isDark ? 'text-white/60' : 'text-gray-600')}>
+              <p className={cn('text-[13px] leading-relaxed', 'text-gray-600 dark:text-white/60')}>
                 xrpl.to is a trading interface and data aggregator for the XRP Ledger. It does not custody funds, execute trades on your behalf, or control the underlying ledger. All trades happen directly on the decentralized XRP Ledger DEX. xrpl.to simply provides the UI to interact with it.
               </p>
             </div>
 
             <div className="space-y-4">
-              <h3 className={cn('text-lg font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+              <h3 className={cn('text-lg font-medium', 'text-gray-900 dark:text-white')}>
                 User Responsibility
               </h3>
               <div className="space-y-3">
@@ -3650,10 +3761,10 @@ curl -X POST https://api.xrpl.to/v1/faucet \\
                     key={i}
                     className={cn(
                       'flex items-start gap-2.5 px-4 py-2.5 rounded-xl border-[1.5px]',
-                      isDark ? 'border-white/5 bg-white/[0.02]' : 'border-gray-100 bg-gray-50/50'
+                      'border-gray-100 bg-gray-50/50 dark:border-white/5 dark:bg-white/[0.02]'
                     )}
                   >
-                    <span className={cn('text-[13px] leading-relaxed', isDark ? 'text-white/60' : 'text-gray-600')}>{item}</span>
+                    <span className={cn('text-[13px] leading-relaxed', 'text-gray-600 dark:text-white/60')}>{item}</span>
                   </div>
                 ))}
               </div>
@@ -3666,16 +3777,14 @@ curl -X POST https://api.xrpl.to/v1/faucet \\
           <div className="space-y-8">
             <div>
               <h2 className="text-2xl font-normal text-primary mb-2">API Keys</h2>
-              <p className={cn('text-[14px] mb-4', isDark ? 'text-white/60' : 'text-gray-600')}>
+              <p className={cn('text-[14px] mb-4', 'text-gray-600 dark:text-white/60')}>
                 Authenticate your requests with API keys for higher rate limits and usage tracking.
               </p>
               <a
                 href="/dashboard"
                 className={cn(
                   'inline-flex items-center gap-2 rounded-lg border-[1.5px] px-4 py-2 text-[13px] font-medium transition-colors',
-                  isDark
-                    ? 'border-primary/50 bg-primary/10 text-primary hover:bg-primary/20'
-                    : 'border-primary/30 bg-primary/5 text-primary hover:bg-primary/10'
+                  'border-primary/30 bg-primary/5 text-primary hover:bg-primary/10 dark:border-primary/50 dark:bg-primary/10 dark:text-primary dark:hover:bg-primary/20'
                 )}
               >
                 <Key size={14} />
@@ -3685,32 +3794,28 @@ curl -X POST https://api.xrpl.to/v1/faucet \\
             </div>
 
             <div id="create-key" className="space-y-4">
-              <h3 className={cn('text-lg font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+              <h3 className={cn('text-lg font-medium', 'text-gray-900 dark:text-white')}>
                 Create API Key
               </h3>
-              <p className={cn('text-[13px]', isDark ? 'text-white/60' : 'text-gray-600')}>
+              <p className={cn('text-[13px]', 'text-gray-600 dark:text-white/60')}>
                 Create a free API key to get started. Requires XRPL wallet signature.
               </p>
               <div
                 className={cn(
                   'rounded-xl border-[1.5px] overflow-hidden',
-                  isDark
-                    ? 'border-[rgba(59,130,246,0.1)] bg-[rgba(59,130,246,0.02)]'
-                    : 'border-[rgba(59,130,246,0.15)] bg-[rgba(59,130,246,0.02)]'
+                  'border-[rgba(59,130,246,0.15)] bg-[rgba(59,130,246,0.02)] dark:border-[rgba(59,130,246,0.1)] dark:bg-[rgba(59,130,246,0.02)]'
                 )}
               >
                 <div
                   className={cn(
                     'flex items-center justify-between px-4 py-2 border-b',
-                    isDark
-                      ? 'border-[rgba(59,130,246,0.1)] bg-[rgba(59,130,246,0.05)]'
-                      : 'border-[rgba(59,130,246,0.15)] bg-[rgba(59,130,246,0.04)]'
+                    'border-[rgba(59,130,246,0.15)] bg-[rgba(59,130,246,0.04)] dark:border-[rgba(59,130,246,0.1)] dark:bg-[rgba(59,130,246,0.05)]'
                   )}
                 >
                   <span
                     className={cn(
                       'text-[11px] font-medium uppercase tracking-wide',
-                      isDark ? 'text-white/40' : 'text-gray-500'
+                      'text-gray-500 dark:text-white/40'
                     )}
                   >
                     POST /v1/keys
@@ -3750,7 +3855,7 @@ const { apiKey, keyPrefix } = await response.json();
                 <pre
                   className={cn(
                     'p-4 text-[12px] font-mono overflow-x-auto',
-                    isDark ? 'text-white/80' : 'text-gray-800'
+                    'text-gray-800 dark:text-white/80'
                   )}
                 >
                   {`const timestamp = Date.now().toString();
@@ -3775,22 +3880,20 @@ const { apiKey, keyPrefix } = await response.json();
             </div>
 
             <div id="use-key" className="space-y-4">
-              <h3 className={cn('text-lg font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+              <h3 className={cn('text-lg font-medium', 'text-gray-900 dark:text-white')}>
                 Using API Keys
               </h3>
               <div className="grid gap-4">
                 <div
                   className={cn(
                     'rounded-xl border-[1.5px] p-4',
-                    isDark
-                      ? 'border-[rgba(59,130,246,0.1)] bg-[rgba(59,130,246,0.02)]'
-                      : 'border-[rgba(59,130,246,0.15)] bg-[rgba(59,130,246,0.02)]'
+                    'border-[rgba(59,130,246,0.15)] bg-[rgba(59,130,246,0.02)] dark:border-[rgba(59,130,246,0.1)] dark:bg-[rgba(59,130,246,0.02)]'
                   )}
                 >
                   <div
                     className={cn(
                       'text-[11px] font-medium uppercase tracking-wide mb-3',
-                      isDark ? 'text-white/40' : 'text-gray-500'
+                      'text-gray-500 dark:text-white/40'
                     )}
                   >
                     Header (Recommended)
@@ -3798,7 +3901,7 @@ const { apiKey, keyPrefix } = await response.json();
                   <code
                     className={cn(
                       'text-[13px] font-mono',
-                      isDark ? 'text-white/80' : 'text-gray-800'
+                      'text-gray-800 dark:text-white/80'
                     )}
                   >
                     X-Api-Key: xrpl_abc123...
@@ -3807,15 +3910,13 @@ const { apiKey, keyPrefix } = await response.json();
                 <div
                   className={cn(
                     'rounded-xl border-[1.5px] p-4',
-                    isDark
-                      ? 'border-[rgba(59,130,246,0.1)] bg-[rgba(59,130,246,0.02)]'
-                      : 'border-[rgba(59,130,246,0.15)] bg-[rgba(59,130,246,0.02)]'
+                    'border-[rgba(59,130,246,0.15)] bg-[rgba(59,130,246,0.02)] dark:border-[rgba(59,130,246,0.1)] dark:bg-[rgba(59,130,246,0.02)]'
                   )}
                 >
                   <div
                     className={cn(
                       'text-[11px] font-medium uppercase tracking-wide mb-3',
-                      isDark ? 'text-white/40' : 'text-gray-500'
+                      'text-gray-500 dark:text-white/40'
                     )}
                   >
                     Query Parameter
@@ -3823,7 +3924,7 @@ const { apiKey, keyPrefix } = await response.json();
                   <code
                     className={cn(
                       'text-[13px] font-mono',
-                      isDark ? 'text-white/80' : 'text-gray-800'
+                      'text-gray-800 dark:text-white/80'
                     )}
                   >
                     ?apiKey=xrpl_abc123...
@@ -3832,15 +3933,13 @@ const { apiKey, keyPrefix } = await response.json();
                 <div
                   className={cn(
                     'rounded-xl border-[1.5px] p-4',
-                    isDark
-                      ? 'border-[rgba(59,130,246,0.1)] bg-[rgba(59,130,246,0.02)]'
-                      : 'border-[rgba(59,130,246,0.15)] bg-[rgba(59,130,246,0.02)]'
+                    'border-[rgba(59,130,246,0.15)] bg-[rgba(59,130,246,0.02)] dark:border-[rgba(59,130,246,0.1)] dark:bg-[rgba(59,130,246,0.02)]'
                   )}
                 >
                   <div
                     className={cn(
                       'text-[11px] font-medium uppercase tracking-wide mb-3',
-                      isDark ? 'text-white/40' : 'text-gray-500'
+                      'text-gray-500 dark:text-white/40'
                     )}
                   >
                     WebSocket
@@ -3848,7 +3947,7 @@ const { apiKey, keyPrefix } = await response.json();
                   <code
                     className={cn(
                       'text-[13px] font-mono',
-                      isDark ? 'text-white/80' : 'text-gray-800'
+                      'text-gray-800 dark:text-white/80'
                     )}
                   >
                     wss://api.xrpl.to/ws/sync?apiKey=xrpl_abc123...
@@ -3865,16 +3964,14 @@ const { apiKey, keyPrefix } = await response.json();
           <div className="space-y-8">
             <div>
               <h2 className="text-2xl font-normal text-primary mb-2">Subscriptions & Credits</h2>
-              <p className={cn('text-[14px] mb-4', isDark ? 'text-white/60' : 'text-gray-600')}>
+              <p className={cn('text-[14px] mb-4', 'text-gray-600 dark:text-white/60')}>
                 Pay with XRP or credit card. Yearly billing saves 2 months (16.7% off).
               </p>
               <a
                 href="/dashboard"
                 className={cn(
                   'inline-flex items-center gap-2 rounded-lg border-[1.5px] px-4 py-2 text-[13px] font-medium transition-colors',
-                  isDark
-                    ? 'border-primary/50 bg-primary/10 text-primary hover:bg-primary/20'
-                    : 'border-primary/30 bg-primary/5 text-primary hover:bg-primary/10'
+                  'border-primary/30 bg-primary/5 text-primary hover:bg-primary/10 dark:border-primary/50 dark:bg-primary/10 dark:text-primary dark:hover:bg-primary/20'
                 )}
               >
                 <CreditCard size={14} />
@@ -3884,34 +3981,34 @@ const { apiKey, keyPrefix } = await response.json();
             </div>
 
             <div id="pricing" className="space-y-4">
-              <h3 className={cn('text-lg font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+              <h3 className={cn('text-lg font-medium', 'text-gray-900 dark:text-white')}>
                 Subscription Tiers
               </h3>
               <div
                 className={cn(
                   'rounded-xl border-[1.5px] overflow-hidden',
-                  isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+                  'border-[rgba(59,130,246,0.15)] dark:border-[rgba(59,130,246,0.1)]'
                 )}
               >
                 <table className="w-full text-[13px]">
-                  <thead className={isDark ? 'bg-white/5' : 'bg-gray-50'}>
+                  <thead className={'bg-gray-50 dark:bg-white/5'}>
                     <tr>
-                      <th className={cn('text-left px-4 py-3 font-medium', isDark ? 'text-white/60' : 'text-gray-600')}>
+                      <th className={cn('text-left px-4 py-3 font-medium', 'text-gray-600 dark:text-white/60')}>
                         Tier
                       </th>
-                      <th className={cn('text-left px-4 py-3 font-medium', isDark ? 'text-white/60' : 'text-gray-600')}>
+                      <th className={cn('text-left px-4 py-3 font-medium', 'text-gray-600 dark:text-white/60')}>
                         Price
                       </th>
-                      <th className={cn('text-left px-4 py-3 font-medium', isDark ? 'text-white/60' : 'text-gray-600')}>
+                      <th className={cn('text-left px-4 py-3 font-medium', 'text-gray-600 dark:text-white/60')}>
                         Credits
                       </th>
-                      <th className={cn('text-left px-4 py-3 font-medium', isDark ? 'text-white/60' : 'text-gray-600')}>
+                      <th className={cn('text-left px-4 py-3 font-medium', 'text-gray-600 dark:text-white/60')}>
                         Requests
                       </th>
-                      <th className={cn('text-left px-4 py-3 font-medium', isDark ? 'text-white/60' : 'text-gray-600')}>
+                      <th className={cn('text-left px-4 py-3 font-medium', 'text-gray-600 dark:text-white/60')}>
                         Submit TX
                       </th>
-                      <th className={cn('text-left px-4 py-3 font-medium', isDark ? 'text-white/60' : 'text-gray-600')}>
+                      <th className={cn('text-left px-4 py-3 font-medium', 'text-gray-600 dark:text-white/60')}>
                         Support
                       </th>
                     </tr>
@@ -3920,24 +4017,24 @@ const { apiKey, keyPrefix } = await response.json();
                     {docs.tiers.map((row) => (
                       <tr
                         key={row.name}
-                        className={isDark ? 'border-t border-[rgba(59,130,246,0.1)]' : 'border-t border-[rgba(59,130,246,0.15)]'}
+                        className={'border-t border-[rgba(59,130,246,0.15)] dark:border-t dark:border-[rgba(59,130,246,0.1)]'}
                       >
-                        <td className={cn('px-4 py-3 font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+                        <td className={cn('px-4 py-3 font-medium', 'text-gray-900 dark:text-white')}>
                           {row.name}
                         </td>
-                        <td className={cn('px-4 py-3', isDark ? 'text-white/60' : 'text-gray-600')}>
+                        <td className={cn('px-4 py-3', 'text-gray-600 dark:text-white/60')}>
                           {row.price}
                         </td>
-                        <td className={cn('px-4 py-3', isDark ? 'text-white/60' : 'text-gray-600')}>
+                        <td className={cn('px-4 py-3', 'text-gray-600 dark:text-white/60')}>
                           {row.credits}
                         </td>
-                        <td className={cn('px-4 py-3', isDark ? 'text-white/60' : 'text-gray-600')}>
+                        <td className={cn('px-4 py-3', 'text-gray-600 dark:text-white/60')}>
                           {row.rate}
                         </td>
-                        <td className={cn('px-4 py-3', isDark ? 'text-white/60' : 'text-gray-600')}>
+                        <td className={cn('px-4 py-3', 'text-gray-600 dark:text-white/60')}>
                           {row.submit || '-'}
                         </td>
-                        <td className={cn('px-4 py-3', isDark ? 'text-white/60' : 'text-gray-600')}>
+                        <td className={cn('px-4 py-3', 'text-gray-600 dark:text-white/60')}>
                           {row.support || '-'}
                         </td>
                       </tr>
@@ -3948,22 +4045,22 @@ const { apiKey, keyPrefix } = await response.json();
             </div>
 
             <div id="credits" className="space-y-4">
-              <h3 className={cn('text-lg font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+              <h3 className={cn('text-lg font-medium', 'text-gray-900 dark:text-white')}>
                 Credit Packs (One-time, Never Expire)
               </h3>
               <div
                 className={cn(
                   'rounded-xl border-[1.5px] overflow-hidden',
-                  isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+                  'border-[rgba(59,130,246,0.15)] dark:border-[rgba(59,130,246,0.1)]'
                 )}
               >
                 <table className="w-full text-[13px]">
-                  <thead className={isDark ? 'bg-white/5' : 'bg-gray-50'}>
+                  <thead className={'bg-gray-50 dark:bg-white/5'}>
                     <tr>
                       <th
                         className={cn(
                           'text-left px-4 py-3 font-medium',
-                          isDark ? 'text-white/60' : 'text-gray-600'
+                          'text-gray-600 dark:text-white/60'
                         )}
                       >
                         Pack
@@ -3971,7 +4068,7 @@ const { apiKey, keyPrefix } = await response.json();
                       <th
                         className={cn(
                           'text-left px-4 py-3 font-medium',
-                          isDark ? 'text-white/60' : 'text-gray-600'
+                          'text-gray-600 dark:text-white/60'
                         )}
                       >
                         Price
@@ -3979,7 +4076,7 @@ const { apiKey, keyPrefix } = await response.json();
                       <th
                         className={cn(
                           'text-left px-4 py-3 font-medium',
-                          isDark ? 'text-white/60' : 'text-gray-600'
+                          'text-gray-600 dark:text-white/60'
                         )}
                       >
                         Credits
@@ -3991,23 +4088,21 @@ const { apiKey, keyPrefix } = await response.json();
                       <tr
                         key={row.pack}
                         className={
-                          isDark
-                            ? 'border-t border-[rgba(59,130,246,0.1)]'
-                            : 'border-t border-[rgba(59,130,246,0.15)]'
+                          'border-t border-[rgba(59,130,246,0.15)] dark:border-t dark:border-[rgba(59,130,246,0.1)]'
                         }
                       >
                         <td
                           className={cn(
                             'px-4 py-3 font-medium',
-                            isDark ? 'text-white' : 'text-gray-900'
+                            'text-gray-900 dark:text-white'
                           )}
                         >
                           {row.pack}
                         </td>
-                        <td className={cn('px-4 py-3', isDark ? 'text-white/60' : 'text-gray-600')}>
+                        <td className={cn('px-4 py-3', 'text-gray-600 dark:text-white/60')}>
                           {row.price}
                         </td>
-                        <td className={cn('px-4 py-3', isDark ? 'text-white/60' : 'text-gray-600')}>
+                        <td className={cn('px-4 py-3', 'text-gray-600 dark:text-white/60')}>
                           {row.credits}
                         </td>
                       </tr>
@@ -4018,29 +4113,25 @@ const { apiKey, keyPrefix } = await response.json();
             </div>
 
             <div id="xrp-payment" className="space-y-4">
-              <h3 className={cn('text-lg font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+              <h3 className={cn('text-lg font-medium', 'text-gray-900 dark:text-white')}>
                 Pay with XRP
               </h3>
               <div
                 className={cn(
                   'rounded-xl border-[1.5px] overflow-hidden',
-                  isDark
-                    ? 'border-[rgba(59,130,246,0.1)] bg-[rgba(59,130,246,0.02)]'
-                    : 'border-[rgba(59,130,246,0.15)] bg-[rgba(59,130,246,0.02)]'
+                  'border-[rgba(59,130,246,0.15)] bg-[rgba(59,130,246,0.02)] dark:border-[rgba(59,130,246,0.1)] dark:bg-[rgba(59,130,246,0.02)]'
                 )}
               >
                 <div
                   className={cn(
                     'flex items-center justify-between px-4 py-2 border-b',
-                    isDark
-                      ? 'border-[rgba(59,130,246,0.1)] bg-[rgba(59,130,246,0.05)]'
-                      : 'border-[rgba(59,130,246,0.15)] bg-[rgba(59,130,246,0.04)]'
+                    'border-[rgba(59,130,246,0.15)] bg-[rgba(59,130,246,0.04)] dark:border-[rgba(59,130,246,0.1)] dark:bg-[rgba(59,130,246,0.05)]'
                   )}
                 >
                   <span
                     className={cn(
                       'text-[11px] font-medium uppercase tracking-wide',
-                      isDark ? 'text-white/40' : 'text-gray-500'
+                      'text-gray-500 dark:text-white/40'
                     )}
                   >
                     XRP Payment Flow
@@ -4091,7 +4182,7 @@ await fetch('https://api.xrpl.to/v1/keys/verify-payment', {
                 <pre
                   className={cn(
                     'p-4 text-[12px] font-mono overflow-x-auto',
-                    isDark ? 'text-white/80' : 'text-gray-800'
+                    'text-gray-800 dark:text-white/80'
                   )}
                 >
                   {`// 1. Get payment details
@@ -4127,29 +4218,25 @@ await fetch('https://api.xrpl.to/v1/keys/verify-payment', {
             </div>
 
             <div id="stripe-payment" className="space-y-4">
-              <h3 className={cn('text-lg font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+              <h3 className={cn('text-lg font-medium', 'text-gray-900 dark:text-white')}>
                 Pay with Card (Stripe)
               </h3>
               <div
                 className={cn(
                   'rounded-xl border-[1.5px] overflow-hidden',
-                  isDark
-                    ? 'border-[rgba(59,130,246,0.1)] bg-[rgba(59,130,246,0.02)]'
-                    : 'border-[rgba(59,130,246,0.15)] bg-[rgba(59,130,246,0.02)]'
+                  'border-[rgba(59,130,246,0.15)] bg-[rgba(59,130,246,0.02)] dark:border-[rgba(59,130,246,0.1)] dark:bg-[rgba(59,130,246,0.02)]'
                 )}
               >
                 <div
                   className={cn(
                     'flex items-center justify-between px-4 py-2 border-b',
-                    isDark
-                      ? 'border-[rgba(59,130,246,0.1)] bg-[rgba(59,130,246,0.05)]'
-                      : 'border-[rgba(59,130,246,0.15)] bg-[rgba(59,130,246,0.04)]'
+                    'border-[rgba(59,130,246,0.15)] bg-[rgba(59,130,246,0.04)] dark:border-[rgba(59,130,246,0.1)] dark:bg-[rgba(59,130,246,0.05)]'
                   )}
                 >
                   <span
                     className={cn(
                       'text-[11px] font-medium uppercase tracking-wide',
-                      isDark ? 'text-white/40' : 'text-gray-500'
+                      'text-gray-500 dark:text-white/40'
                     )}
                   >
                     Stripe Checkout
@@ -4192,7 +4279,7 @@ const status = await fetch(
                 <pre
                   className={cn(
                     'p-4 text-[12px] font-mono overflow-x-auto',
-                    isDark ? 'text-white/80' : 'text-gray-800'
+                    'text-gray-800 dark:text-white/80'
                   )}
                 >
                   {`// 1. Create checkout session
@@ -4220,29 +4307,25 @@ const status = await fetch(
             </div>
 
             <div id="billing-cycle" className="space-y-4">
-              <h3 className={cn('text-lg font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+              <h3 className={cn('text-lg font-medium', 'text-gray-900 dark:text-white')}>
                 Billing Cycle
               </h3>
               <div
                 className={cn(
                   'rounded-xl border-[1.5px] overflow-hidden',
-                  isDark
-                    ? 'border-[rgba(59,130,246,0.1)] bg-[rgba(59,130,246,0.02)]'
-                    : 'border-[rgba(59,130,246,0.15)] bg-[rgba(59,130,246,0.02)]'
+                  'border-[rgba(59,130,246,0.15)] bg-[rgba(59,130,246,0.02)] dark:border-[rgba(59,130,246,0.1)] dark:bg-[rgba(59,130,246,0.02)]'
                 )}
               >
                 <div
                   className={cn(
                     'flex items-center justify-between px-4 py-2 border-b',
-                    isDark
-                      ? 'border-[rgba(59,130,246,0.1)] bg-[rgba(59,130,246,0.05)]'
-                      : 'border-[rgba(59,130,246,0.15)] bg-[rgba(59,130,246,0.04)]'
+                    'border-[rgba(59,130,246,0.15)] bg-[rgba(59,130,246,0.04)] dark:border-[rgba(59,130,246,0.1)] dark:bg-[rgba(59,130,246,0.05)]'
                   )}
                 >
                   <span
                     className={cn(
                       'text-[11px] font-medium uppercase tracking-wide',
-                      isDark ? 'text-white/40' : 'text-gray-500'
+                      'text-gray-500 dark:text-white/40'
                     )}
                   >
                     GET /:wallet/credits & /:wallet/subscription
@@ -4292,7 +4375,7 @@ GET /v1/keys/:wallet/subscription
                 <pre
                   className={cn(
                     'p-4 text-[12px] font-mono overflow-x-auto',
-                    isDark ? 'text-white/80' : 'text-gray-800'
+                    'text-gray-800 dark:text-white/80'
                   )}
                 >
                   {`// Get credits with billing cycle
@@ -4332,7 +4415,7 @@ GET /v1/keys/:wallet/subscription
         return (
           <div className="space-y-6">
             <h2 className="text-2xl font-normal text-primary">WebSocket</h2>
-            <p className={cn('text-[14px]', isDark ? 'text-white/60' : 'text-gray-600')}>
+            <p className={cn('text-[14px]', 'text-gray-600 dark:text-white/60')}>
               Real-time streaming endpoints for live market data, account updates, and more.
             </p>
 
@@ -4341,11 +4424,11 @@ GET /v1/keys/:wallet/subscription
               id="ws-overview"
               className={cn(
                 'rounded-xl border-[1.5px] p-5',
-                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+                'border-[rgba(59,130,246,0.15)] dark:border-[rgba(59,130,246,0.1)]'
               )}
             >
-              <h3 className={cn('text-[14px] font-medium mb-3', isDark ? 'text-white' : 'text-gray-900')}>Connection</h3>
-              <div className={cn('text-[13px] space-y-2', isDark ? 'text-white/60' : 'text-gray-600')}>
+              <h3 className={cn('text-[14px] font-medium mb-3', 'text-gray-900 dark:text-white')}>Connection</h3>
+              <div className={cn('text-[13px] space-y-2', 'text-gray-600 dark:text-white/60')}>
                 <p><strong>Base URL:</strong> <code className="text-primary">wss://api.xrpl.to/ws/</code></p>
                 <p><strong>Authentication:</strong> Pass API key via query param <code>?apiKey=xrpl_...</code></p>
                 <p><strong>Compression:</strong> permessage-deflate enabled (threshold 512 bytes)</p>
@@ -4357,10 +4440,10 @@ GET /v1/keys/:wallet/subscription
               id="ws-endpoints"
               className={cn(
                 'rounded-xl border-[1.5px] p-5',
-                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+                'border-[rgba(59,130,246,0.15)] dark:border-[rgba(59,130,246,0.1)]'
               )}
             >
-              <h3 className={cn('text-[14px] font-medium mb-4', isDark ? 'text-white' : 'text-gray-900')}>All Endpoints</h3>
+              <h3 className={cn('text-[14px] font-medium mb-4', 'text-gray-900 dark:text-white')}>All Endpoints</h3>
               <div className="space-y-3 text-[13px]">
                 {[
                   ['sync', '/ws/sync', 'Multi-token market sync stream'],
@@ -4383,7 +4466,7 @@ GET /v1/keys/:wallet/subscription
                     <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-purple-500/10 text-purple-500 shrink-0">WS</span>
                     <div>
                       <code className="font-mono text-[12px] text-primary break-all">{path}</code>
-                      <span className={cn('ml-2', isDark ? 'text-white/40' : 'text-gray-500')}>- {desc}</span>
+                      <span className={cn('ml-2', 'text-gray-500 dark:text-white/40')}>- {desc}</span>
                     </div>
                   </div>
                 ))}
@@ -4395,11 +4478,11 @@ GET /v1/keys/:wallet/subscription
               id="ws-example"
               className={cn(
                 'rounded-xl border-[1.5px] p-5',
-                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+                'border-[rgba(59,130,246,0.15)] dark:border-[rgba(59,130,246,0.1)]'
               )}
             >
-              <h3 className={cn('text-[14px] font-medium mb-3', isDark ? 'text-white' : 'text-gray-900')}>Example: Token Stream</h3>
-              <pre className={cn('text-[12px] p-3 rounded-lg overflow-x-auto', isDark ? 'bg-black/30' : 'bg-gray-100')}>
+              <h3 className={cn('text-[14px] font-medium mb-3', 'text-gray-900 dark:text-white')}>Example: Token Stream</h3>
+              <pre className={cn('text-[12px] p-3 rounded-lg overflow-x-auto', 'bg-gray-100 dark:bg-black/30')}>
 {`// Connect to single token stream
 const ws = new WebSocket('wss://api.xrpl.to/ws/token/0413ca7cfc258dfaf698c02fe304e607');
 
@@ -4422,7 +4505,7 @@ syncWs.onopen = () => {
             </div>
 
             {/* Info */}
-            <div className={cn('text-[13px] space-y-2 p-4 rounded-lg', isDark ? 'bg-primary/5' : 'bg-primary/5')}>
+            <div className={cn('text-[13px] space-y-2 p-4 rounded-lg', 'bg-primary/5 dark:bg-primary/5')}>
               <p><strong>Rate Limits:</strong> WebSocket connections follow the same tier limits as REST API</p>
               <p><strong>Heartbeat:</strong> Send ping frames every 30s to keep connection alive</p>
               <p><strong>Info endpoint:</strong> <code>GET /ws/info</code> returns all available WS endpoints and stats</p>
@@ -4438,16 +4521,16 @@ syncWs.onopen = () => {
               id="error-codes"
               className={cn(
                 'rounded-xl border-[1.5px] overflow-hidden',
-                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+                'border-[rgba(59,130,246,0.15)] dark:border-[rgba(59,130,246,0.1)]'
               )}
             >
               <table className="w-full text-[13px]">
-                <thead className={isDark ? 'bg-white/5' : 'bg-gray-50'}>
+                <thead className={'bg-gray-50 dark:bg-white/5'}>
                   <tr>
                     <th
                       className={cn(
                         'text-left px-4 py-3 font-medium',
-                        isDark ? 'text-white/60' : 'text-gray-600'
+                        'text-gray-600 dark:text-white/60'
                       )}
                     >
                       Code
@@ -4455,7 +4538,7 @@ syncWs.onopen = () => {
                     <th
                       className={cn(
                         'text-left px-4 py-3 font-medium',
-                        isDark ? 'text-white/60' : 'text-gray-600'
+                        'text-gray-600 dark:text-white/60'
                       )}
                     >
                       Description
@@ -4474,15 +4557,13 @@ syncWs.onopen = () => {
                     <tr
                       key={err.code}
                       className={
-                        isDark
-                          ? 'border-t border-[rgba(59,130,246,0.1)]'
-                          : 'border-t border-[rgba(59,130,246,0.15)]'
+                        'border-t border-[rgba(59,130,246,0.15)] dark:border-t dark:border-[rgba(59,130,246,0.1)]'
                       }
                     >
                       <td className="px-4 py-3">
                         <code className={cn('font-mono', err.color)}>{err.code}</code>
                       </td>
-                      <td className={cn('px-4 py-3', isDark ? 'text-white/60' : 'text-gray-600')}>
+                      <td className={cn('px-4 py-3', 'text-gray-600 dark:text-white/60')}>
                         {err.desc}
                       </td>
                     </tr>
@@ -4518,17 +4599,15 @@ syncWs.onopen = () => {
 
       <Header />
 
-      <div className={cn('min-h-dvh scroll-smooth overflow-x-hidden', isDark ? 'bg-black' : 'bg-white')}>
+      <div className={cn('min-h-dvh scroll-smooth overflow-x-hidden', 'bg-white dark:bg-black')}>
         {/* Mobile top bar */}
         <div className={cn(
           'md:hidden sticky top-0 z-50 flex items-center justify-between px-4 py-2.5 border-b mt-0',
-          isDark
-            ? 'bg-black/95 backdrop-blur-md border-white/10'
-            : 'bg-white/95 backdrop-blur-md border-black/10'
+          'bg-white/95 backdrop-blur-md border-black/10 dark:bg-black/95 dark:backdrop-blur-md dark:border-white/10'
         )}>
           <div className="flex items-center gap-2 min-w-0">
             <div className={cn('w-1.5 h-1.5 rounded-full shrink-0', 'bg-primary')} />
-            <span className={cn('text-[13px] font-medium truncate', isDark ? 'text-white/80' : 'text-gray-700')}>
+            <span className={cn('text-[13px] font-medium truncate', 'text-gray-700 dark:text-white/80')}>
               {allSections.find(s => s.id === currentSection)?.title || 'Documentation'}
             </span>
           </div>
@@ -4538,9 +4617,7 @@ syncWs.onopen = () => {
               'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[12px] font-medium shrink-0',
               isSidebarOpen
                 ? 'bg-primary/10 text-primary'
-                : isDark
-                  ? 'text-white/60 hover:text-white hover:bg-white/5'
-                  : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'
+                : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100 dark:text-white/60 dark:hover:text-white dark:hover:bg-white/5'
             )}
           >
             {isSidebarOpen ? <X size={15} /> : <Menu size={15} />}
@@ -4562,9 +4639,7 @@ syncWs.onopen = () => {
             className={cn(
               'w-[240px] border-r overflow-y-auto scrollbar-hide transition-all duration-300 pt-4',
               'fixed md:sticky top-0 h-dvh z-40',
-              isDark
-                ? 'bg-black border-white/10'
-                : 'bg-white border-[rgba(59,130,246,0.15)]',
+              'bg-white border-[rgba(59,130,246,0.15)] dark:bg-black dark:border-white/10',
               isSidebarOpen ? 'block' : 'hidden md:block'
             )}
           >
@@ -4580,14 +4655,12 @@ syncWs.onopen = () => {
                   className={cn(
                     'w-full pl-9 pr-12 py-2.5 rounded-xl border-[1.5px] text-[13px] transition-[border-color] duration-200',
                     'focus:outline-none focus:ring-2 focus:ring-primary/20',
-                    isDark
-                      ? 'bg-white/[0.02] border-white/10 placeholder:text-white/50 focus:border-primary/40'
-                      : 'bg-black/[0.02] border-black/10 placeholder:text-black/50 focus:border-primary/40'
+                    'bg-black/[0.02] border-black/10 placeholder:text-black/50 focus:border-primary/40 dark:bg-white/[0.02] dark:border-white/10 dark:placeholder:text-white/50 dark:focus:border-primary/40'
                   )}
                 />
                 <kbd className={cn(
                   'absolute right-2.5 top-1/2 -translate-y-1/2 px-1.5 py-0.5 rounded text-[10px] font-medium',
-                  isDark ? 'bg-white/10 text-white/60' : 'bg-black/5 text-black/60'
+                  'bg-black/5 text-black/60 dark:bg-white/10 dark:text-white/60'
                 )}>
                   ⌘K
                 </kbd>
@@ -4605,9 +4678,7 @@ syncWs.onopen = () => {
                     'flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] transition-[background-color] duration-200 relative',
                     currentSection === 'overview'
                       ? 'text-primary bg-primary/10 font-medium'
-                      : isDark
-                        ? 'text-white/70 hover:text-white hover:bg-white/5'
-                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100 dark:text-white/70 dark:hover:text-white dark:hover:bg-white/5'
                   )}
                 >
                   {currentSection === 'overview' && (
@@ -4626,9 +4697,7 @@ syncWs.onopen = () => {
                     'flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] transition-[background-color] duration-200 relative',
                     currentSection === 'endpoint-reference'
                       ? 'text-primary bg-primary/10 font-medium'
-                      : isDark
-                        ? 'text-white/70 hover:text-white hover:bg-white/5'
-                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100 dark:text-white/70 dark:hover:text-white dark:hover:bg-white/5'
                   )}
                 >
                   {currentSection === 'endpoint-reference' && (
@@ -4653,9 +4722,7 @@ syncWs.onopen = () => {
                         onClick={() => toggleGroup(group.name)}
                         className={cn(
                           'w-full flex items-center justify-between text-[10px] font-semibold uppercase tracking-wider mb-2 px-1 py-1 rounded',
-                          isDark
-                            ? 'text-white/60 hover:text-white/80'
-                            : 'text-gray-600 hover:text-gray-700'
+                          'text-gray-600 hover:text-gray-700 dark:text-white/60 dark:hover:text-white/80'
                         )}
                       >
                         {group.name}
@@ -4683,9 +4750,7 @@ syncWs.onopen = () => {
                                   'w-full text-left px-3 py-2 rounded-xl text-[13px] flex items-center gap-2.5 transition-[background-color] duration-200 relative',
                                   isActive
                                     ? 'text-primary bg-primary/10 font-medium'
-                                    : isDark
-                                      ? 'text-white/60 hover:text-white hover:bg-white/5'
-                                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100 dark:text-white/60 dark:hover:text-white dark:hover:bg-white/5'
                                 )}
                               >
                                 {isActive && (
@@ -4710,13 +4775,13 @@ syncWs.onopen = () => {
               <div
                 className={cn(
                   'mt-8 pt-6 border-t',
-                  isDark ? 'border-white/5' : 'border-black/5'
+                  'border-black/5 dark:border-white/5'
                 )}
               >
                 <div
                   className={cn(
                     'text-[10px] font-semibold uppercase tracking-wider mb-3 px-1',
-                    isDark ? 'text-white/60' : 'text-gray-600'
+                    'text-gray-600 dark:text-white/60'
                   )}
                 >
                   Support
@@ -4728,9 +4793,7 @@ syncWs.onopen = () => {
                     rel="noopener noreferrer"
                     className={cn(
                       'flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] transition-[background-color] duration-200',
-                      isDark
-                        ? 'text-white/60 hover:text-white hover:bg-white/5'
-                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                      'text-gray-600 hover:text-gray-900 hover:bg-gray-100 dark:text-white/60 dark:hover:text-white dark:hover:bg-white/5'
                     )}
                   >
                     <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 opacity-50" fill="currentColor">
@@ -4743,9 +4806,7 @@ syncWs.onopen = () => {
                     href="mailto:hello@xrpl.to"
                     className={cn(
                       'flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] transition-[background-color] duration-200',
-                      isDark
-                        ? 'text-white/60 hover:text-white hover:bg-white/5'
-                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                      'text-gray-600 hover:text-gray-900 hover:bg-gray-100 dark:text-white/60 dark:hover:text-white dark:hover:bg-white/5'
                     )}
                   >
                     <Mail size={14} className="opacity-50" />
@@ -4757,9 +4818,7 @@ syncWs.onopen = () => {
                     rel="noopener noreferrer"
                     className={cn(
                       'flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] transition-[background-color] duration-200',
-                      isDark
-                        ? 'text-white/60 hover:text-white hover:bg-white/5'
-                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                      'text-gray-600 hover:text-gray-900 hover:bg-gray-100 dark:text-white/60 dark:hover:text-white dark:hover:bg-white/5'
                     )}
                   >
                     <MessageCircle size={14} className="opacity-50" />
@@ -4779,22 +4838,20 @@ syncWs.onopen = () => {
               {/* Prev/next navigation */}
               <div className={cn(
                 'mt-12 pt-6 border-t flex items-stretch gap-2 sm:gap-3',
-                isDark ? 'border-white/10' : 'border-black/10'
+                'border-black/10 dark:border-white/10'
               )}>
                 {prevSection ? (
                   <button
                     onClick={() => { setCurrentSection(prevSection.id); window.scrollTo(0, 0); }}
                     className={cn(
                       'flex-1 min-w-0 flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-3 sm:py-4 rounded-xl border-[1.5px] text-left transition-[border-color,background-color] duration-200',
-                      isDark
-                        ? 'border-white/10 hover:border-primary/40 hover:bg-primary/5'
-                        : 'border-black/10 hover:border-primary/40 hover:bg-primary/5'
+                      'border-black/10 hover:border-primary/40 hover:bg-primary/5 dark:border-white/10 dark:hover:border-primary/40 dark:hover:bg-primary/5'
                     )}
                   >
                     <ChevronLeft size={14} className="text-primary shrink-0" />
                     <div className="min-w-0">
-                      <div className={cn('text-[10px] sm:text-[11px] uppercase tracking-wider mb-0.5', isDark ? 'text-white/60' : 'text-gray-500')}>Prev</div>
-                      <div className={cn('text-[12px] sm:text-[13px] font-medium truncate', isDark ? 'text-white/80' : 'text-gray-700')}>{prevSection.title}</div>
+                      <div className={cn('text-[10px] sm:text-[11px] uppercase tracking-wider mb-0.5', 'text-gray-500 dark:text-white/60')}>Prev</div>
+                      <div className={cn('text-[12px] sm:text-[13px] font-medium truncate', 'text-gray-700 dark:text-white/80')}>{prevSection.title}</div>
                     </div>
                   </button>
                 ) : <div className="flex-1" />}
@@ -4803,14 +4860,12 @@ syncWs.onopen = () => {
                     onClick={() => { setCurrentSection(nextSection.id); window.scrollTo(0, 0); }}
                     className={cn(
                       'flex-1 min-w-0 flex items-center justify-end gap-2 sm:gap-3 px-3 sm:px-4 py-3 sm:py-4 rounded-xl border-[1.5px] text-right transition-[border-color,background-color] duration-200',
-                      isDark
-                        ? 'border-white/10 hover:border-primary/40 hover:bg-primary/5'
-                        : 'border-black/10 hover:border-primary/40 hover:bg-primary/5'
+                      'border-black/10 hover:border-primary/40 hover:bg-primary/5 dark:border-white/10 dark:hover:border-primary/40 dark:hover:bg-primary/5'
                     )}
                   >
                     <div className="min-w-0">
-                      <div className={cn('text-[10px] sm:text-[11px] uppercase tracking-wider mb-0.5', isDark ? 'text-white/60' : 'text-gray-500')}>Next</div>
-                      <div className={cn('text-[12px] sm:text-[13px] font-medium truncate', isDark ? 'text-white/80' : 'text-gray-700')}>{nextSection.title}</div>
+                      <div className={cn('text-[10px] sm:text-[11px] uppercase tracking-wider mb-0.5', 'text-gray-500 dark:text-white/60')}>Next</div>
+                      <div className={cn('text-[12px] sm:text-[13px] font-medium truncate', 'text-gray-700 dark:text-white/80')}>{nextSection.title}</div>
                     </div>
                     <ChevronRight size={14} className="text-primary shrink-0" />
                   </button>
@@ -4823,17 +4878,17 @@ syncWs.onopen = () => {
           <div
             className={cn(
               'hidden xl:block w-[200px] pt-6 pr-4',
-              isDark ? 'border-white/[0.05]' : 'border-gray-100'
+              'border-gray-100 dark:border-white/[0.05]'
             )}
           >
             <div className="sticky top-[68px]">
               <div
                 className={cn(
                   'text-[11px] font-semibold uppercase tracking-wider mb-4 flex items-center gap-2',
-                  isDark ? 'text-white/60' : 'text-gray-500'
+                  'text-gray-500 dark:text-white/60'
                 )}
               >
-                <div className={cn('w-1 h-3 rounded-full', isDark ? 'bg-primary/60' : 'bg-primary/40')} />
+                <div className={cn('w-1 h-3 rounded-full', 'bg-primary/40 dark:bg-primary/60')} />
                 On this page
               </div>
               <nav className="space-y-0.5 border-l border-white/10 pl-3">
@@ -4843,9 +4898,7 @@ syncWs.onopen = () => {
                     href={`#${anchor.id}`}
                     className={cn(
                       'block text-left text-[12px] py-1.5 transition-transform duration-200 hover:translate-x-0.5',
-                      isDark
-                        ? 'text-white/60 hover:text-primary'
-                        : 'text-gray-500 hover:text-primary'
+                      'text-gray-500 hover:text-primary dark:text-white/60 dark:hover:text-primary'
                     )}
                   >
                     {anchor.label}
@@ -4862,27 +4915,27 @@ syncWs.onopen = () => {
             className="fixed inset-0 z-50 flex items-center justify-center p-4 max-sm:h-dvh"
             onClick={() => setIsModalOpen(false)}
           >
-            <div className={cn('fixed inset-0', isDark ? 'bg-black/70' : 'bg-black/30')} />
+            <div className={cn('fixed inset-0', 'bg-black/30 dark:bg-black/70')} />
             <div
               onClick={(e) => e.stopPropagation()}
               className={cn(
                 'relative rounded-xl border w-full max-w-[900px] max-h-[85dvh] overflow-hidden flex flex-col',
-                isDark ? 'bg-[#0a0a0a] border-white/10' : 'bg-white border-gray-200'
+                'bg-white border-gray-200 dark:bg-[#0a0a0a] dark:border-white/10'
               )}
             >
               <div
                 className={cn(
                   'px-4 py-3 border-b shrink-0',
-                  isDark ? 'border-white/10' : 'border-gray-100'
+                  'border-gray-100 dark:border-white/10'
                 )}
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Code size={14} className={isDark ? 'text-[#3f96fe]' : 'text-cyan-600'} />
+                    <Code size={14} className={'text-cyan-600 dark:text-[#3f96fe]'} />
                     <span
                       className={cn(
                         'text-[13px] font-medium',
-                        isDark ? 'text-white' : 'text-gray-900'
+                        'text-gray-900 dark:text-white'
                       )}
                     >
                       API Response
@@ -4898,19 +4951,19 @@ syncWs.onopen = () => {
                       onClick={handleCopyResponse}
                       className={cn(
                         'p-1.5 rounded-lg',
-                        isDark ? 'hover:bg-white/10' : 'hover:bg-gray-100'
+                        'hover:bg-gray-100 dark:hover:bg-white/10'
                       )}
                     >
-                      <Copy size={14} className={isDark ? 'text-white/40' : 'text-gray-400'} />
+                      <Copy size={14} className={'text-gray-400 dark:text-white/40'} />
                     </button>
                     <button
                       onClick={() => setIsModalOpen(false)}
                       className={cn(
                         'p-1.5 rounded-lg',
-                        isDark ? 'hover:bg-white/10' : 'hover:bg-gray-100'
+                        'hover:bg-gray-100 dark:hover:bg-white/10'
                       )}
                     >
-                      <X size={14} className={isDark ? 'text-white/40' : 'text-gray-400'} />
+                      <X size={14} className={'text-gray-400 dark:text-white/40'} />
                     </button>
                   </div>
                 </div>
@@ -4925,7 +4978,7 @@ syncWs.onopen = () => {
                   <pre
                     className={cn(
                       'text-[11px] font-mono p-4 m-0 leading-relaxed',
-                      isDark ? 'text-white/80' : 'text-gray-800'
+                      'text-gray-800 dark:text-white/80'
                     )}
                   >
                     {JSON.stringify(apiResponse, null, 2)
@@ -4940,19 +4993,19 @@ syncWs.onopen = () => {
                               __html: escaped
                                 .replace(
                                   /"([^"]+)":/g,
-                                  `<span class="${isDark ? 'text-[#7dd3fc]' : 'text-cyan-600'}">"$1"</span>:`
+                                  `<span class="${'text-cyan-600 dark:text-[#7dd3fc]'}">"$1"</span>:`
                                 )
                                 .replace(
                                   /: "([^"]*)"/g,
-                                  `: <span class="${isDark ? 'text-[#fde047]' : 'text-amber-600'}">"$1"</span>`
+                                  `: <span class="${'text-amber-600 dark:text-[#fde047]'}">"$1"</span>`
                                 )
                                 .replace(
                                   /: (\d+\.?\d*)/g,
-                                  `: <span class="${isDark ? 'text-[#a78bfa]' : 'text-purple-600'}">$1</span>`
+                                  `: <span class="${'text-purple-600 dark:text-[#a78bfa]'}">$1</span>`
                                 )
                                 .replace(
                                   /: (true|false|null)/g,
-                                  `: <span class="${isDark ? 'text-[#f472b6]' : 'text-pink-600'}">$1</span>`
+                                  `: <span class="${'text-pink-600 dark:text-[#f472b6]'}">$1</span>`
                                 )
                             }}
                           />

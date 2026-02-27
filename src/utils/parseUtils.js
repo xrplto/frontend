@@ -805,29 +805,31 @@ export function parseTransaction(rawTx, userAddress, decodeCurrency = normalizeC
   const feeStr = fee > 0 ? (fee < 0.001 ? `${fee.toFixed(6)} XRP` : `${fee.toFixed(4)} XRP`) : null;
 
   // Helper to format amounts (handles scientific notation)
+  const fmtNum = (n) => {
+    if (n === 0) return '0';
+    if (n >= 1e9) return (n / 1e9).toFixed(2) + 'B';
+    if (n >= 1e6) return (n / 1e6).toFixed(2) + 'M';
+    if (n >= 1e4) return n.toLocaleString('en-US', { maximumFractionDigits: 2 });
+    if (n >= 1) return n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 4 });
+    if (n >= 0.01) return n.toFixed(4);
+    if (n >= 0.0001) return n.toFixed(6);
+    if (n >= 0.00000001) return n.toFixed(8).replace(/0+$/, '');
+    return n.toExponential(2);
+  };
+
   const formatAmt = (amt) => {
     if (!amt) return null;
     if (typeof amt === 'string') {
       const xrp = parseInt(amt) / 1000000;
-      if (xrp === 0) return '0 XRP';
-      if (xrp >= 1) return `${xrp.toFixed(2)} XRP`;
-      if (xrp >= 0.0001) return `${xrp.toFixed(6)} XRP`;
-      return `${xrp.toExponential(2)} XRP`;
+      return `${fmtNum(xrp)} XRP`;
     }
     if (amt?.value) {
       try {
         const dec = new Decimal(amt.value);
         const val = Math.abs(dec.toNumber());
         const currency = decodeCurrency(amt.currency);
-        if (val === 0 || !isFinite(val)) return `0 ${currency}`;
-        // Show appropriate precision based on magnitude
-        let formatted;
-        if (val >= 1000) formatted = val.toLocaleString(undefined, { maximumFractionDigits: 2 });
-        else if (val >= 1) formatted = val.toFixed(2);
-        else if (val >= 0.01) formatted = val.toFixed(4);
-        else if (val >= 0.0001) formatted = val.toFixed(6);
-        else formatted = val.toExponential(2); // Very small: use scientific notation
-        return `${formatted} ${currency}`;
+        if (!isFinite(val)) return `0 ${currency}`;
+        return `${fmtNum(val)} ${currency}`;
       } catch {
         return `${amt.value} ${decodeCurrency(amt.currency)}`;
       }
@@ -897,7 +899,7 @@ export function parseTransaction(rawTx, userAddress, decodeCurrency = normalizeC
             const finalBal = parseInt(userAcct.FinalFields.Balance);
             const fee = parseInt(tx.Fee || 0);
             const xrpDiff = Math.abs(prevBal - finalBal - fee) / 1000000;
-            actualSpent = xrpDiff < 0.01 ? `${xrpDiff.toFixed(6)} XRP` : `${xrpDiff.toFixed(2)} XRP`;
+            actualSpent = `${fmtNum(xrpDiff)} XRP`;
           }
         } else {
           // For SELL: spent tokens, calculate from RippleState balance change
@@ -919,7 +921,7 @@ export function parseTransaction(rawTx, userAddress, decodeCurrency = normalizeC
               const prevBal = parseFloat(userTrustline.PreviousFields.Balance.value);
               const finalBal = parseFloat(userTrustline.FinalFields.Balance.value);
               const tokenDiff = Math.abs(Math.abs(prevBal) - Math.abs(finalBal));
-              actualSpent = `${tokenDiff.toFixed(2)} ${decodeCurrency(sendMaxCurrency)}`;
+              actualSpent = `${fmtNum(tokenDiff)} ${decodeCurrency(sendMaxCurrency)}`;
             }
           }
         }
@@ -965,12 +967,12 @@ export function parseTransaction(rawTx, userAddress, decodeCurrency = normalizeC
       // Regular payment
       if (typeof delivered === 'string') {
         const xrpAmt = parseInt(delivered) / 1000000;
-        amount = xrpAmt < 0.01 ? `${xrpAmt.toFixed(6)} XRP` : `${xrpAmt.toFixed(2)} XRP`;
+        amount = `${fmtNum(xrpAmt)} XRP`;
         isDust = isIncoming && xrpAmt < 0.001;
         tokenCurrency = 'XRP';
       } else if (delivered?.value) {
         const val = parseFloat(delivered.value);
-        amount = `${val >= 1 ? val.toFixed(2) : val >= 0.01 ? val.toFixed(4) : String(val)} ${decodeCurrency(delivered.currency)}`;
+        amount = `${fmtNum(Math.abs(val))} ${decodeCurrency(delivered.currency)}`;
         tokenCurrency = delivered.currency;
         tokenIssuer = delivered.issuer;
       }
@@ -1025,16 +1027,16 @@ export function parseTransaction(rawTx, userAddress, decodeCurrency = normalizeC
       if (userXrpChange > 0 && userTokenChange < 0) {
         // User received XRP, gave tokens = user sold tokens
         label = 'Order Filled';
-        const soldAmt = Math.abs(userTokenChange).toFixed(2);
-        const receivedAmt = userXrpChange < 0.01 ? userXrpChange.toFixed(6) : userXrpChange.toFixed(2);
+        const soldAmt = fmtNum(Math.abs(userTokenChange));
+        const receivedAmt = fmtNum(userXrpChange);
         amount = `${soldAmt} ${decodeCurrency(userTokenCurrency)} → ${receivedAmt} XRP`;
         counterparty = `${decodeCurrency(userTokenCurrency)}/XRP`;
         txType = 'in'; // Received XRP
       } else if (userXrpChange < 0 && userTokenChange > 0) {
         // User gave XRP, received tokens = user bought tokens
         label = 'Order Filled';
-        const spentAmt = Math.abs(userXrpChange) < 0.01 ? Math.abs(userXrpChange).toFixed(6) : Math.abs(userXrpChange).toFixed(2);
-        const receivedAmt = userTokenChange.toFixed(2);
+        const spentAmt = fmtNum(Math.abs(userXrpChange));
+        const receivedAmt = fmtNum(userTokenChange);
         amount = `${spentAmt} XRP → ${receivedAmt} ${decodeCurrency(userTokenCurrency)}`;
         counterparty = `XRP/${decodeCurrency(userTokenCurrency)}`;
         txType = 'in'; // Received tokens
@@ -1077,7 +1079,7 @@ export function parseTransaction(rawTx, userAddress, decodeCurrency = normalizeC
           const fee = parseInt(tx.Fee || 0);
           const xrpReceived = (finalBal - prevBal + fee) / 1000000;
           if (xrpReceived > 0) {
-            filledPays = xrpReceived < 0.01 ? `${xrpReceived.toFixed(6)} XRP` : `${xrpReceived.toFixed(2)} XRP`;
+            filledPays = `${fmtNum(xrpReceived)} XRP`;
           }
         }
 
@@ -1098,9 +1100,9 @@ export function parseTransaction(rawTx, userAddress, decodeCurrency = normalizeC
                 if (tokenDiff > 0) {
                   const tokenName = decodeCurrency(tokenCurr);
                   if (isSell) {
-                    filledGets = `${tokenDiff.toFixed(2)} ${tokenName}`;
+                    filledGets = `${fmtNum(tokenDiff)} ${tokenName}`;
                   } else {
-                    filledPays = `${tokenDiff.toFixed(2)} ${tokenName}`;
+                    filledPays = `${fmtNum(tokenDiff)} ${tokenName}`;
                   }
                 }
                 break;
@@ -1224,7 +1226,7 @@ export function parseTransaction(rawTx, userAddress, decodeCurrency = normalizeC
             const diff = Math.abs(finalBal - prevBal);
             if (diff > 0) {
               const curr = modified.FinalFields?.Balance?.currency;
-              balanceChanges.push(`${diff.toFixed(2)} ${decodeCurrency(curr)}`);
+              balanceChanges.push(`${fmtNum(diff)} ${decodeCurrency(curr)}`);
             }
           }
         });
@@ -1429,6 +1431,7 @@ export function parseTransaction(rawTx, userAddress, decodeCurrency = normalizeC
     counterparty,
     sourceTag: tx.SourceTag,
     sourceTagName: getSourceTagName(tx.SourceTag),
+    destinationTag: tx.DestinationTag,
     fee: feeStr,
     tokenCurrency,
     tokenIssuer,

@@ -16,20 +16,21 @@ const currencySymbols = {
 };
 
 // Components
-import { ThemeContext, WalletContext, AppContext } from 'src/context/AppContext';
+import { WalletContext, AppContext } from 'src/context/AppContext';
 import Link from 'next/link';
 import { TrendingUp, Sparkles, ExternalLink, Star, Check, Flame } from 'lucide-react';
 import { TIER_CONFIG } from 'src/components/VerificationBadge';
 import dynamic from 'next/dynamic';
 const BoostModal = dynamic(() => import('src/components/BoostModal'), { ssr: false });
 
-const Container = ({ className, children, isDark, ...p }) => (
+const Container = ({ className, children, ...p }) => (
   <div
     className={cn(
       'summary-root flex flex-col gap-0 relative mb-1 box-border w-full min-w-0',
       'max-[600px]:gap-0 max-[600px]:mb-1',
       className
     )}
+    style={undefined}
     {...p}
   >
     {children}
@@ -106,24 +107,27 @@ const Grid = ({ className, children, ...p }) => (
   </>
 );
 
-const MetricBox = ({ className, children, isDark, ...p }) => (
+const MetricBox = ({ className, children, ...p }) => (
   <div
     className={cn(
       'summary-metric flex flex-col justify-between rounded-xl transition-[background-color,border-color,opacity,transform] duration-200',
       'max-[600px]:rounded-[10px]',
-      'py-[6px] px-[10px] gap-0 backdrop-blur-[4px] border-[1.5px] min-w-0 overflow-hidden',
+      'py-[6px] px-[10px] gap-0 backdrop-blur-md border-[1.5px] min-w-0 overflow-hidden',
       'max-[600px]:h-auto max-[600px]:py-[8px] max-[600px]:px-[7px] max-[600px]:gap-0',
-      isDark ? 'bg-white/[0.02] border-white/[0.08]' : 'bg-black/[0.01] border-black/[0.06]',
+      'bg-white border-black/[0.06] dark:bg-white/[0.02] dark:border-white/[0.08]',
       className
     )}
     style={{ ...p.style }}
     onMouseEnter={(e) => {
-      e.currentTarget.style.borderColor = isDark ? 'rgba(19, 125, 254, 0.25)' : 'rgba(19, 125, 254, 0.15)';
-      e.currentTarget.style.background = isDark ? 'rgba(19, 125, 254, 0.05)' : 'rgba(19, 125, 254, 0.03)';
+      const dk = document.documentElement.classList.contains('dark');
+      e.currentTarget.style.borderColor = dk ? 'rgba(19, 125, 254, 0.25)' : 'rgba(19, 125, 254, 0.15)';
+      e.currentTarget.style.background = dk ? 'rgba(19, 125, 254, 0.05)' : 'rgba(19, 125, 254, 0.03)';
+      e.currentTarget.style.boxShadow = dk ? '0 0 12px rgba(19,125,254,0.15)' : '0 0 8px rgba(19,125,254,0.08)';
     }}
     onMouseLeave={(e) => {
-      e.currentTarget.style.borderColor = isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)';
-      e.currentTarget.style.background = isDark ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.01)';
+      e.currentTarget.style.borderColor = '';
+      e.currentTarget.style.background = '';
+      e.currentTarget.style.boxShadow = 'none';
     }}
     {...(({ style, ...rest }) => rest)(p)}
   >
@@ -131,11 +135,11 @@ const MetricBox = ({ className, children, isDark, ...p }) => (
   </div>
 );
 
-const MetricTitle = ({ className, children, isDark, ...p }) => (
+const MetricTitle = ({ className, children, ...p }) => (
   <span
     className={cn(
-      'summary-title text-[0.85rem] max-[600px]:text-[0.56rem] font-normal tracking-[0.02em]',
-      isDark ? 'text-white/50' : 'text-[rgba(33,43,54,0.5)]',
+      'summary-title text-[0.85rem] max-[600px]:text-[0.56rem] font-normal font-mono uppercase tracking-widest',
+      'text-[rgba(33,43,54,0.5)] dark:text-white/50',
       className
     )}
     {...p}
@@ -144,11 +148,11 @@ const MetricTitle = ({ className, children, isDark, ...p }) => (
   </span>
 );
 
-const MetricValue = ({ className, children, isDark, ...p }) => (
+const MetricValue = ({ className, children, ...p }) => (
   <span
     className={cn(
-      'summary-value text-2xl max-[600px]:text-[0.85rem] font-semibold whitespace-nowrap leading-[1] tracking-[-0.02em]',
-      isDark ? 'text-white' : 'text-[#212B36]',
+      'summary-value text-2xl max-[600px]:text-[0.85rem] font-semibold whitespace-nowrap leading-[1] tracking-[-0.02em] tabular-nums',
+      'text-[#212B36] dark:text-white',
       className
     )}
     style={{ ...p.style }}
@@ -166,7 +170,10 @@ const PercentageChange = ({ className, children, isPositive, ...p }) => (
       isPositive ? 'text-[#10b981] bg-[rgba(16,185,129,0.1)]' : 'text-[#ef4444] bg-[rgba(239,68,68,0.1)]',
       className
     )}
-    style={{ ...p.style }}
+    style={{
+      boxShadow: isPositive ? '0 0 6px rgba(16,185,129,0.4)' : '0 0 6px rgba(239,68,68,0.4)',
+      ...p.style
+    }}
     {...(({ style, ...rest }) => rest)(p)}
   >
     {children}
@@ -182,9 +189,8 @@ const Skeleton = ({ className, height, width, ...p }) => (
       }
     `}</style>
     <div
-      className={cn('rounded-lg', className)}
+      className={cn('rounded-lg bg-black/[0.06] dark:bg-white/[0.08]', className)}
       style={{
-        background: '#e8e8e8',
         backgroundSize: '200% 100%',
         animation: 'summary-loading 1.5s infinite',
         height: height || '20px',
@@ -216,11 +222,11 @@ const timeAgo = (ts) => {
   return `${days}d ago`;
 };
 
-const TokenAvatar = ({ token, isDark }) => {
+const TokenAvatar = ({ token }) => {
   const tier = TIER_CONFIG[token.verified];
   return (
     <div className="relative flex-shrink-0">
-      <div className={cn('w-[20px] h-[20px] min-w-[20px] max-[600px]:w-[16px] max-[600px]:h-[16px] max-[600px]:min-w-[16px] rounded-md max-[600px]:rounded overflow-hidden flex items-center justify-center', isDark ? 'bg-white/[0.06]' : 'bg-black/[0.04]')}>
+      <div className={cn('w-[20px] h-[20px] min-w-[20px] max-[600px]:w-[16px] max-[600px]:h-[16px] max-[600px]:min-w-[16px] rounded-md max-[600px]:rounded overflow-hidden flex items-center justify-center', 'bg-black/[0.04] dark:bg-white/[0.06]')}>
         {token.md5 ? (
           <img src={`https://s1.xrpl.to/thumb/${token.md5}_32`} alt="" className="w-full h-full object-cover" loading="lazy" onError={(e) => { e.target.style.display = 'none'; }} />
         ) : (
@@ -228,7 +234,7 @@ const TokenAvatar = ({ token, isDark }) => {
         )}
       </div>
       {tier && (
-        <div className={cn('absolute -bottom-[2px] -right-[2px] rounded-full p-[1px]', isDark ? 'ring-[1px] ring-[#0a0a0a]' : 'ring-[1px] ring-white', tier.bg)} title={tier.label}>
+        <div className={cn('absolute -bottom-[2px] -right-[2px] rounded-full p-[1px]', 'ring-[1px] ring-white dark:ring-[#0a0a0a]', tier.bg)} title={tier.label}>
           {tier.icon(6)}
         </div>
       )}
@@ -236,22 +242,22 @@ const TokenAvatar = ({ token, isDark }) => {
   );
 };
 
-const RowShell = ({ token, isDark, children }) => (
+const RowShell = ({ token, children }) => (
   <Link
     href={`/token/${token.slug}`}
     prefetch={false}
     className={cn(
       'flex items-center gap-[6px] py-[2px] px-[6px] no-underline transition-colors duration-150 rounded-md',
       'max-[600px]:py-[2px] max-[600px]:px-[4px] max-[600px]:gap-[4px]',
-      isDark ? 'hover:bg-white/[0.04]' : 'hover:bg-black/[0.02]'
+      'hover:bg-black/[0.02] dark:hover:bg-white/[0.04]'
     )}
   >
     {children}
   </Link>
 );
 
-const RankNum = ({ idx, isDark }) => (
-  <span className={cn('text-[10px] tabular-nums font-medium w-[14px] text-center flex-shrink-0 max-[600px]:hidden', isDark ? 'text-white/25' : 'text-black/25')}>
+const RankNum = ({ idx }) => (
+  <span className={cn('text-[10px] tabular-nums font-medium w-[14px] text-center flex-shrink-0 max-[600px]:hidden', 'text-black/25 dark:text-white/25')}>
     {idx + 1}
   </span>
 );
@@ -259,16 +265,19 @@ const RankNum = ({ idx, isDark }) => (
 const ChangePill = ({ change }) => {
   const isUp = change >= 0;
   return (
-    <div className={cn(
-      'text-[10px] max-[600px]:text-[8px] font-bold tabular-nums px-[5px] py-[1px] max-[600px]:px-[3px] max-[600px]:py-[1px] rounded-md max-[600px]:rounded leading-tight flex-shrink-0',
-      isUp ? 'text-[#10b981] bg-[rgba(16,185,129,0.1)]' : 'text-[#ef4444] bg-[rgba(239,68,68,0.1)]'
-    )}>
+    <div
+      className={cn(
+        'text-[10px] max-[600px]:text-[8px] font-bold tabular-nums px-[5px] py-[1px] max-[600px]:px-[3px] max-[600px]:py-[1px] rounded-md max-[600px]:rounded leading-tight flex-shrink-0',
+        isUp ? 'text-[#10b981] bg-[rgba(16,185,129,0.1)]' : 'text-[#ef4444] bg-[rgba(239,68,68,0.1)]'
+      )}
+      style={{ boxShadow: isUp ? '0 0 4px rgba(16,185,129,0.3)' : '0 0 4px rgba(239,68,68,0.3)' }}
+    >
       {isUp ? '+' : ''}{change.toFixed(1)}%
     </div>
   );
 };
 
-const OriginIcon = ({ origin, isDark }) => {
+const OriginIcon = ({ origin }) => {
   const s = 'w-3 h-3';
   switch (origin) {
     case 'FirstLedger': return <ExternalLink className={cn(s, 'text-[#013CFE]')} />;
@@ -278,26 +287,26 @@ const OriginIcon = ({ origin, isDark }) => {
     case 'aigent.run': return <img src="/static/aigentrun.gif" alt="Aigent.Run" className="w-3 h-3 object-contain" />;
     case 'Magnetic X': return <img src="/static/magneticx-logo.webp" alt="Magnetic X" className="w-3 h-3 object-contain" />;
     case 'xrp.fun': return <TrendingUp className={cn(s, 'text-[#B72136]')} />;
-    default: return <Sparkles className={cn(s, isDark ? 'text-white/40' : 'text-gray-400')} />;
+    default: return <Sparkles className={cn(s, 'text-gray-400 dark:text-white/40')} />;
   }
 };
 
 // Both rows: rank | avatar | name | vol24h | origin icon (desktop) | %change | boost
-const DiscoverRow = ({ token, idx, isDark, onBoost, currencySymbol, volConvert }) => (
-  <RowShell token={token} isDark={isDark}>
-    <RankNum idx={idx} isDark={isDark} />
-    <TokenAvatar token={token} isDark={isDark} />
-    <span className={cn('text-[11px] max-[600px]:text-[10px] font-semibold truncate leading-none flex-1 min-w-0', isDark ? 'text-white' : 'text-[#1a1f2e]')}>{token.name}</span>
-    <span className={cn('text-[9px] tabular-nums font-medium flex-shrink-0 ml-[4px] max-[600px]:ml-[1px] w-[40px] max-[600px]:w-[32px] text-right', isDark ? 'text-white/30' : 'text-black/30')}>{currencySymbol}{fmtVol((token.vol24hxrp || 0) * volConvert)}</span>
-    <span className="flex-shrink-0 ml-[6px] w-[12px] flex items-center justify-center max-[600px]:hidden" title={token.origin || 'XRPL'}><OriginIcon origin={token.origin} isDark={isDark} /></span>
-    <span className={cn('text-[9px] tabular-nums font-medium flex-shrink-0 ml-[6px] max-[600px]:hidden w-[34px] text-right', isDark ? 'text-white/25' : 'text-black/25')}>{timeAgo(token.dateon)}</span>
+const DiscoverRow = ({ token, idx, onBoost, currencySymbol, volConvert }) => (
+  <RowShell token={token}>
+    <RankNum idx={idx} />
+    <TokenAvatar token={token} />
+    <span className={cn('text-[11px] max-[600px]:text-[10px] font-semibold truncate leading-none flex-1 min-w-0', 'text-[#1a1f2e] dark:text-white')}>{token.name}</span>
+    <span className={cn('text-[9px] tabular-nums font-medium flex-shrink-0 ml-[4px] max-[600px]:ml-[1px] w-[40px] max-[600px]:w-[32px] text-right', 'text-black/30 dark:text-white/30')}>{currencySymbol}{fmtVol((token.vol24hxrp || 0) * volConvert)}</span>
+    <span className="flex-shrink-0 ml-[6px] w-[12px] flex items-center justify-center max-[600px]:hidden" title={token.origin || 'XRPL'}><OriginIcon origin={token.origin} /></span>
+    <span className={cn('text-[9px] tabular-nums font-medium flex-shrink-0 ml-[6px] max-[600px]:hidden w-[34px] text-right', 'text-black/25 dark:text-white/25')}>{timeAgo(token.dateon)}</span>
     <span className="ml-[4px] max-[600px]:ml-[1px] w-[50px] max-[600px]:w-[40px] flex justify-end"><ChangePill change={token.pro24h || 0} /></span>
     <button
       onClick={(e) => { e.preventDefault(); e.stopPropagation(); onBoost(token); }}
       title="Boost"
       className={cn(
         'flex-shrink-0 ml-[4px] max-[600px]:ml-[1px] w-[18px] h-[18px] max-[600px]:w-[18px] max-[600px]:h-[18px] rounded-md flex items-center justify-center transition-colors duration-150 border-none cursor-pointer',
-        isDark ? 'bg-white/[0.04] hover:bg-orange-500/20 text-white/25 hover:text-orange-400' : 'bg-black/[0.03] hover:bg-orange-500/10 text-black/20 hover:text-orange-500'
+        'bg-black/[0.03] hover:bg-orange-500/10 text-black/20 hover:text-orange-500 hover:shadow-[0_0_6px_rgba(249,115,22,0.3)] dark:bg-white/[0.04] dark:hover:bg-orange-500/20 dark:text-white/25 dark:hover:text-orange-400 dark:hover:shadow-[0_0_6px_rgba(249,115,22,0.4)]'
       )}
     >
       <Flame size={10} />
@@ -347,7 +356,6 @@ export const SummaryWatchList = () => {
 // Main Summary component
 export default function Summary({ tokens = [], trendingTokens: trendingProp = [], newTokens: newProp = [] }) {
   const metrics = useSelector(selectMetrics);
-  const { darkMode } = useContext(ThemeContext);
   const { activeFiatCurrency } = useContext(AppContext);
   const [isLoading, setIsLoading] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -380,12 +388,12 @@ export default function Summary({ tokens = [], trendingTokens: trendingProp = []
 
 
   return (
-    <Container isDark={darkMode}>
+    <Container>
         {/* Metrics Row */}
         {isLoading ? (
           <Grid>
             {[...Array(4)].map((_, i) => (
-              <MetricBox key={`summary-skeleton-${i}`} isDark={darkMode}>
+              <MetricBox key={`summary-skeleton-${i}`}>
                 <Skeleton height="12px" width="60%" style={{ marginBottom: '4px' }} />
                 <Skeleton height="20px" width="80%" />
               </MetricBox>
@@ -394,11 +402,11 @@ export default function Summary({ tokens = [], trendingTokens: trendingProp = []
         ) : (
           <Grid>
               {/* MCap / TVL */}
-              <MetricBox isDark={darkMode}>
+              <MetricBox>
                 <div className="flex items-center justify-between w-full">
-                  <MetricTitle isDark={darkMode}>{isMobile ? 'MCap' : 'MCap / TVL'}</MetricTitle>
+                  <MetricTitle>{isMobile ? 'MCap' : 'MCap / TVL'}</MetricTitle>
                   {!isMobile && metrics.USD > 0 && (
-                    <span className={cn('text-[0.7rem] font-medium tabular-nums', darkMode ? 'text-white/50' : 'text-black/50')}>
+                    <span className={cn('text-[0.7rem] font-medium tabular-nums', 'text-black/50 dark:text-white/50')}>
                       XRP ${new Decimal(1).div(activeFiatCurrency === 'XRP' ? metrics.USD : fiatRate).toFixed(2)}
                       <span className={cn('ml-0.5 text-[0.6rem]', (metrics.H24?.xrpPro24h || 0) >= 0 ? 'text-[#10b981]' : 'text-[#ef4444]')}>
                         {(metrics.H24?.xrpPro24h || 0) >= 0 ? '↑' : '↓'}{Math.abs(metrics.H24?.xrpPro24h || 0).toFixed(1)}%
@@ -408,11 +416,11 @@ export default function Summary({ tokens = [], trendingTokens: trendingProp = []
                 </div>
                 {isMobile ? (
                   <div className="flex-1 flex flex-col justify-center gap-[2px]">
-                    <MetricValue isDark={darkMode}>
+                    <MetricValue>
                       {currencySymbols[activeFiatCurrency]}
                       {formatNumberWithDecimals(new Decimal(metrics.global?.gMarketcap || metrics.market_cap_usd || 0).div(fiatRate).toNumber())}
                     </MetricValue>
-                    <span className={cn('text-[0.5rem] leading-[1] whitespace-nowrap', darkMode ? 'text-white/50' : 'text-black/50')}>
+                    <span className={cn('text-[0.5rem] leading-[1] whitespace-nowrap', 'text-black/50 dark:text-white/50')}>
                       TVL {currencySymbols[activeFiatCurrency]}
                       {formatNumberWithDecimals(new Decimal(metrics.global?.gTVL || metrics.global?.totalTVL || metrics.H24?.totalTVL || 0).div(fiatRate).toNumber())}
                     </span>
@@ -420,11 +428,11 @@ export default function Summary({ tokens = [], trendingTokens: trendingProp = []
                 ) : (
                   <>
                     <div className="summary-mcap-row flex-1 flex w-full items-center justify-between">
-                      <MetricValue isDark={darkMode} style={{ fontSize: '1.5rem' }}>
+                      <MetricValue style={{ fontSize: '1.5rem' }}>
                         {currencySymbols[activeFiatCurrency]}
                         {formatNumberWithDecimals(new Decimal(metrics.global?.gMarketcap || metrics.market_cap_usd || 0).div(fiatRate).toNumber())}
                       </MetricValue>
-                      <MetricValue isDark={darkMode} style={{ fontSize: '1.3rem', opacity: 0.5 }}>
+                      <MetricValue style={{ fontSize: '1.3rem', opacity: 0.5 }}>
                         {currencySymbols[activeFiatCurrency]}
                         {formatNumberWithDecimals(new Decimal(metrics.global?.gTVL || metrics.global?.totalTVL || metrics.H24?.totalTVL || 0).div(fiatRate).toNumber())}
                       </MetricValue>
@@ -442,10 +450,10 @@ export default function Summary({ tokens = [], trendingTokens: trendingProp = []
               </MetricBox>
 
               {/* 24h Volume */}
-              <MetricBox isDark={darkMode}>
-                <MetricTitle isDark={darkMode}>{isMobile ? '24h Volume' : '24h Volume'}</MetricTitle>
+              <MetricBox>
+                <MetricTitle>{isMobile ? '24h Volume' : '24h Volume'}</MetricTitle>
                 <div className="flex-1 flex items-center">
-                  <MetricValue isDark={darkMode} style={!isMobile ? { fontSize: '1.5rem' } : undefined}>
+                  <MetricValue style={!isMobile ? { fontSize: '1.5rem' } : undefined}>
                     {currencySymbols[activeFiatCurrency]}
                     {formatNumberWithDecimals(new Decimal(metrics.global?.gDexVolume || metrics.total_volume_usd || 0).div(fiatRate).toNumber())}
                   </MetricValue>
@@ -474,10 +482,10 @@ export default function Summary({ tokens = [], trendingTokens: trendingProp = []
               </MetricBox>
 
               {/* 24h Traders */}
-              <MetricBox isDark={darkMode}>
-                <MetricTitle isDark={darkMode}>{isMobile ? 'Traders' : '24h Traders'}</MetricTitle>
+              <MetricBox>
+                <MetricTitle>{isMobile ? 'Traders' : '24h Traders'}</MetricTitle>
                 <div className="flex-1 flex items-center">
-                  <MetricValue isDark={darkMode} style={!isMobile ? { fontSize: '1.5rem' } : undefined}>
+                  <MetricValue style={!isMobile ? { fontSize: '1.5rem' } : undefined}>
                     {formatNumberWithDecimals(metrics.H24?.uniqueTraders24H || 0)}
                   </MetricValue>
                 </div>
@@ -500,8 +508,8 @@ export default function Summary({ tokens = [], trendingTokens: trendingProp = []
               </MetricBox>
 
               {/* Market */}
-              <MetricBox isDark={darkMode}>
-                <MetricTitle isDark={darkMode}>Market</MetricTitle>
+              <MetricBox>
+                <MetricTitle>Market</MetricTitle>
                 {(() => {
                   const sentiment = metrics.global?.sentimentScore || 50;
                   const rsi = metrics.global?.avgRSI || 50;
@@ -518,11 +526,11 @@ export default function Summary({ tokens = [], trendingTokens: trendingProp = []
                             <div className="absolute w-10 h-[20px] rounded-t-[20px] opacity-20 bg-[#fbbf24]" />
                             <div className="absolute bottom-0 left-1/2 w-[2px] h-[17px] rounded-[1px] origin-bottom"
                               style={{ background: sentColor, transform: `translateX(-50%) rotate(${(sentiment - 50) * 1.8}deg)` }} />
-                            <div className="absolute -bottom-[1px] left-1/2 -translate-x-1/2 w-[6px] h-[6px] rounded-full" style={{ background: sentColor }} />
+                            <div className="absolute -bottom-[1px] left-1/2 -translate-x-1/2 w-[6px] h-[6px] rounded-full" style={{ background: sentColor, boxShadow: `0 0 6px ${sentColor}` }} />
                           </div>
                           <div className="flex items-baseline gap-[2px]">
                             <span className="text-[0.85rem] font-semibold leading-none" style={{ color: sentColor }}>{sentiment.toFixed(0)}</span>
-                            <span className={cn('text-[0.4rem]', darkMode ? 'text-white/50' : 'text-black/50')}>Sent</span>
+                            <span className={cn('text-[0.4rem]', 'text-black/50 dark:text-white/50')}>Sent</span>
                           </div>
                         </div>
                         <div className="flex flex-col items-center gap-[3px]">
@@ -530,11 +538,11 @@ export default function Summary({ tokens = [], trendingTokens: trendingProp = []
                             <div className="absolute w-10 h-[20px] rounded-t-[20px] opacity-20 bg-[#10b981]" />
                             <div className="absolute bottom-0 left-1/2 w-[2px] h-[17px] rounded-[1px] origin-bottom"
                               style={{ background: rsiColor, transform: `translateX(-50%) rotate(${(rsi - 50) * 1.8}deg)` }} />
-                            <div className="absolute -bottom-[1px] left-1/2 -translate-x-1/2 w-[6px] h-[6px] rounded-full" style={{ background: rsiColor }} />
+                            <div className="absolute -bottom-[1px] left-1/2 -translate-x-1/2 w-[6px] h-[6px] rounded-full" style={{ background: rsiColor, boxShadow: `0 0 6px ${rsiColor}` }} />
                           </div>
                           <div className="flex items-baseline gap-[2px]">
                             <span className="text-[0.85rem] font-semibold leading-none" style={{ color: rsiColor }}>{rsi.toFixed(0)}</span>
-                            <span className={cn('text-[0.4rem]', darkMode ? 'text-white/50' : 'text-black/50')}>RSI</span>
+                            <span className={cn('text-[0.4rem]', 'text-black/50 dark:text-white/50')}>RSI</span>
                           </div>
                         </div>
                       </div>
@@ -548,11 +556,11 @@ export default function Summary({ tokens = [], trendingTokens: trendingProp = []
                           <div className="absolute opacity-20 bg-[#fbbf24] w-20 h-10 rounded-t-[40px]" />
                           <div className="absolute bottom-0 left-1/2 w-[2px] rounded-[1px] origin-bottom h-9"
                             style={{ background: sentColor, transform: `translateX(-50%) rotate(${(sentiment - 50) * 1.8}deg)` }} />
-                          <div className="absolute -bottom-[2px] left-1/2 -translate-x-1/2 rounded-full w-[9px] h-[9px]" style={{ background: sentColor }} />
+                          <div className="absolute -bottom-[2px] left-1/2 -translate-x-1/2 rounded-full w-[9px] h-[9px]" style={{ background: sentColor, boxShadow: `0 0 8px ${sentColor}` }} />
                         </div>
                         <div className="flex items-baseline gap-[4px]">
                           <span className="font-semibold leading-[1] text-[1.75rem]" style={{ color: sentColor }}>{sentiment.toFixed(0)}</span>
-                          <span className={cn('text-[0.8rem]', darkMode ? 'text-white/60' : 'text-black/60')}>Sent</span>
+                          <span className={cn('text-[0.8rem]', 'text-black/60 dark:text-white/60')}>Sent</span>
                         </div>
                       </div>
                       <div className="flex flex-col items-center gap-[8px]">
@@ -560,11 +568,11 @@ export default function Summary({ tokens = [], trendingTokens: trendingProp = []
                           <div className="absolute opacity-20 bg-[#10b981] w-20 h-10 rounded-t-[40px]" />
                           <div className="absolute bottom-0 left-1/2 w-[2px] rounded-[1px] origin-bottom h-9"
                             style={{ background: rsiColor, transform: `translateX(-50%) rotate(${(rsi - 50) * 1.8}deg)` }} />
-                          <div className="absolute -bottom-[2px] left-1/2 -translate-x-1/2 rounded-full w-[9px] h-[9px]" style={{ background: rsiColor }} />
+                          <div className="absolute -bottom-[2px] left-1/2 -translate-x-1/2 rounded-full w-[9px] h-[9px]" style={{ background: rsiColor, boxShadow: `0 0 8px ${rsiColor}` }} />
                         </div>
                         <div className="flex items-baseline gap-[4px]">
                           <span className="font-semibold leading-[1] text-[1.75rem]" style={{ color: rsiColor }}>{rsi.toFixed(0)}</span>
-                          <span className={cn('text-[0.8rem]', darkMode ? 'text-white/60' : 'text-black/60')}>RSI</span>
+                          <span className={cn('text-[0.8rem]', 'text-black/60 dark:text-white/60')}>RSI</span>
                         </div>
                       </div>
                     </div>
@@ -575,26 +583,27 @@ export default function Summary({ tokens = [], trendingTokens: trendingProp = []
               {/* Trending Panel — inline in grid */}
               {trendingTokens.length > 0 && (
                 <div className={cn(
-                  'rounded-xl max-[600px]:rounded-[10px] border-[1.5px] overflow-hidden flex flex-col',
-                  darkMode ? 'border-white/[0.08] bg-white/[0.02]' : 'border-black/[0.06] bg-black/[0.01]'
+                  'rounded-xl max-[600px]:rounded-[10px] border-[1.5px] overflow-hidden flex flex-col backdrop-blur-md',
+                  'border-black/[0.06] bg-white dark:border-white/[0.08] dark:bg-white/[0.02]'
                 )}>
                   <div className={cn(
-                    'flex items-center justify-between px-[8px] py-[2px] max-[600px]:px-[6px] max-[600px]:py-[2px]',
-                    darkMode ? 'border-b border-white/[0.06]' : 'border-b border-black/[0.05]'
+                    'flex items-center justify-between px-[8px] py-[2px] max-[600px]:px-[6px] max-[600px]:py-[2px] relative',
+                    ''
                   )}>
                     <div className="flex items-center gap-[4px]">
-                      <TrendingUp size={11} className={cn('max-[600px]:w-[10px] max-[600px]:h-[10px]', darkMode ? 'text-white/40' : 'text-black/40')} />
-                      <span className={cn('text-[10px] max-[600px]:text-[9px] font-semibold', darkMode ? 'text-white/70' : 'text-black/70')}>
+                      <TrendingUp size={11} className={cn('max-[600px]:w-[10px] max-[600px]:h-[10px] animate-pulse', 'text-[#10b981]')} />
+                      <span className={cn('text-[10px] max-[600px]:text-[9px] font-semibold font-mono uppercase tracking-wider', 'text-black/70 dark:text-white/70')}>
                         Trending
                       </span>
                     </div>
                     <Link href="/trending" prefetch={false} className="text-[9px] max-[600px]:text-[8px] text-[#137DFE] no-underline font-medium hover:underline">
                       View All
                     </Link>
+                    <div className={cn('absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent to-transparent', 'via-black/[0.05] dark:via-white/10')} />
                   </div>
                   <div className="flex-1 flex flex-col justify-evenly py-0">
                     {trendingTokens.map((t, i) => (
-                      <DiscoverRow key={t.md5} token={t} idx={i} isDark={darkMode} onBoost={setBoostToken} currencySymbol={currencySymbol} volConvert={volConvert} />
+                      <DiscoverRow key={t.md5} token={t} idx={i} onBoost={setBoostToken} currencySymbol={currencySymbol} volConvert={volConvert} />
                     ))}
                   </div>
                 </div>
@@ -603,26 +612,27 @@ export default function Summary({ tokens = [], trendingTokens: trendingProp = []
               {/* New Launches Panel — inline in grid */}
               {newTokens.length > 0 && (
                 <div className={cn(
-                  'rounded-xl max-[600px]:rounded-[10px] border-[1.5px] overflow-hidden flex flex-col',
-                  darkMode ? 'border-white/[0.08] bg-white/[0.02]' : 'border-black/[0.06] bg-black/[0.01]'
+                  'rounded-xl max-[600px]:rounded-[10px] border-[1.5px] overflow-hidden flex flex-col backdrop-blur-md',
+                  'border-black/[0.06] bg-white dark:border-white/[0.08] dark:bg-white/[0.02]'
                 )}>
                   <div className={cn(
-                    'flex items-center justify-between px-[8px] py-[2px] max-[600px]:px-[6px] max-[600px]:py-[2px]',
-                    darkMode ? 'border-b border-white/[0.06]' : 'border-b border-black/[0.05]'
+                    'flex items-center justify-between px-[8px] py-[2px] max-[600px]:px-[6px] max-[600px]:py-[2px] relative',
+                    ''
                   )}>
                     <div className="flex items-center gap-[4px]">
-                      <Sparkles size={11} className={cn('max-[600px]:w-[10px] max-[600px]:h-[10px]', darkMode ? 'text-white/40' : 'text-black/40')} />
-                      <span className={cn('text-[10px] max-[600px]:text-[9px] font-semibold', darkMode ? 'text-white/70' : 'text-black/70')}>
+                      <Sparkles size={11} className={cn('max-[600px]:w-[10px] max-[600px]:h-[10px] animate-pulse', 'text-[#8b5cf6]')} />
+                      <span className={cn('text-[10px] max-[600px]:text-[9px] font-semibold font-mono uppercase tracking-wider', 'text-black/70 dark:text-white/70')}>
                         New Launches
                       </span>
                     </div>
                     <Link href="/new" prefetch={false} className="text-[9px] max-[600px]:text-[8px] text-[#137DFE] no-underline font-medium hover:underline">
                       View All
                     </Link>
+                    <div className={cn('absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent to-transparent', 'via-black/[0.05] dark:via-white/10')} />
                   </div>
                   <div className="flex-1 flex flex-col justify-evenly py-0">
                     {newTokens.map((t, i) => (
-                      <DiscoverRow key={t.md5} token={t} idx={i} isDark={darkMode} onBoost={setBoostToken} currencySymbol={currencySymbol} volConvert={volConvert} />
+                      <DiscoverRow key={t.md5} token={t} idx={i} onBoost={setBoostToken} currencySymbol={currencySymbol} volConvert={volConvert} />
                     ))}
                   </div>
                 </div>

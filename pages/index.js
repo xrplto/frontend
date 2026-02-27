@@ -29,14 +29,14 @@ function MaintenanceView({ isDark }) {
         <Logo style={{ width: '120px', height: '42px', margin: '0 auto' }} />
         <div className="text-center mt-6">
           <h1
-            className={cn('text-3xl font-normal mb-4', isDark ? 'text-primary' : 'text-blue-600')}
+            className={cn('text-3xl font-normal mb-4', 'text-blue-600 dark:text-primary')}
           >
             Under Maintenance
           </h1>
-          <p className={cn('text-base mb-2', isDark ? 'text-white/70' : 'text-gray-600')}>
+          <p className={cn('text-base mb-2', 'text-gray-600 dark:text-white/70')}>
             We're currently performing some updates to improve our service.
           </p>
-          <p className={cn('text-base', isDark ? 'text-white/70' : 'text-gray-600')}>
+          <p className={cn('text-base', 'text-gray-600 dark:text-white/70')}>
             Please check back soon.
           </p>
         </div>
@@ -77,7 +77,7 @@ function Overview({ data, summaryTokens }) {
   };
 
   if (MAINTENANCE_MODE) {
-    return <MaintenanceView isDark={isDark} />;
+    return <MaintenanceView />;
   }
 
   return (

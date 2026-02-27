@@ -169,9 +169,7 @@ const Tooltip = ({ children, title, onOpen, ...p }) => {
           <div
             className={cn(
               'fixed z-[99999] min-w-[200px] -translate-x-1/2 -translate-y-full rounded-xl p-3 backdrop-blur-[12px] shadow-[0_8px_32px_rgba(0,0,0,0.3)] border',
-              isDark
-                ? 'bg-black/85 border-white/10'
-                : 'bg-white/90 border-black/10'
+              'bg-white/90 border-black/10 dark:bg-black/85 dark:border-white/10'
             )}
             style={{ top: pos.top, left: pos.left }}
           >
@@ -281,7 +279,8 @@ const JsonViewer = ({ data, isDark: isDarkProp }) => {
   const { themeName } = useContext(ThemeContext);
   const isDark = isDarkProp ?? themeName === 'XrplToDarkTheme';
   const [copied, setCopied] = useState(false);
-  const jsonString = JSON.stringify(data, null, 2);
+  const isMobileView = typeof window !== 'undefined' && window.innerWidth <= 640;
+  const jsonString = JSON.stringify(data, null, isMobileView ? 1 : 2);
   const lines = jsonString.split('\n');
 
   const copyJson = () => {
@@ -306,12 +305,10 @@ const JsonViewer = ({ data, isDark: isDarkProp }) => {
       <button
         onClick={copyJson}
         className={cn(
-          'absolute top-2 right-2 z-10 px-2.5 py-1 rounded-md text-[11px] font-medium transition-[background-color,border-color]',
+          'absolute top-2 right-2 z-10 px-2.5 py-1 rounded-md text-[11px] font-medium transition-[background-color,border-color] max-sm:top-1 max-sm:right-1 max-sm:px-1.5 max-sm:py-0.5 max-sm:text-[9px]',
           copied
             ? 'text-emerald-400'
-            : isDark
-              ? 'bg-white/10 hover:bg-white/15 text-white/60'
-              : 'bg-black/5 hover:bg-black/10 text-gray-500'
+            : 'bg-black/5 hover:bg-black/10 text-gray-500 dark:bg-white/10 dark:hover:bg-white/15 dark:text-white/60'
         )}
       >
         {copied ? 'Copied' : 'Copy'}
@@ -319,25 +316,25 @@ const JsonViewer = ({ data, isDark: isDarkProp }) => {
       <div
         className={cn(
           'rounded-lg overflow-hidden border',
-          isDark ? 'bg-white/[0.02] border-white/5' : 'bg-gray-50 border-gray-200'
+          'bg-gray-50 border-gray-200 dark:bg-white/[0.02] dark:border-white/5'
         )}
       >
         <div className="overflow-x-auto">
           <table className="w-full">
-            <tbody className="font-mono text-[12px] leading-[1.6]">
+            <tbody className="font-mono text-[12px] leading-[1.6] max-sm:text-[9px] max-sm:leading-[1.25]">
               {lines.map((line, i) => (
-                <tr key={i} className={cn(isDark ? 'hover:bg-white/[0.03]' : 'hover:bg-gray-100')}>
+                <tr key={i} className={cn('hover:bg-gray-100 dark:hover:bg-white/[0.03]')}>
                   <td
                     className={cn(
-                      'px-3 py-0.5 text-right select-none w-[1%] whitespace-nowrap',
-                      isDark ? 'text-white/20 border-r border-white/5' : 'text-gray-300 border-r border-gray-200'
+                      'px-3 py-0.5 text-right select-none w-[1%] whitespace-nowrap max-sm:hidden',
+                      'text-gray-300 border-r border-gray-200 dark:text-white/20 dark:border-r dark:border-white/5'
                     )}
                   >
                     {i + 1}
                   </td>
-                  <td className="px-3 py-0.5">
+                  <td className="px-3 py-0.5 max-sm:px-1 max-sm:py-0">
                     <pre
-                      className={cn('whitespace-pre', isDark ? 'text-white/80' : 'text-gray-700')}
+                      className={cn('whitespace-pre', 'text-gray-700 dark:text-white/80')}
                       dangerouslySetInnerHTML={{ __html: highlightLine(line) }}
                     />
                   </td>
@@ -360,15 +357,15 @@ const DetailRow = ({ label, children, index = 0, alignValue = 'right' }) => {
     <div
       className={cn(
         'grid grid-cols-1 sm:grid-cols-[140px_1fr] items-start sm:items-center px-4 py-2.5 min-h-[44px] gap-0.5 sm:gap-0',
-        isOdd && (isDark ? 'bg-white/[0.02]' : 'bg-gray-50/50')
+        isOdd && ('bg-gray-50/50 dark:bg-white/[0.02]')
       )}
     >
-      <span className={cn('text-[13px]', isDark ? 'text-white/50' : 'text-gray-500')}>{label}</span>
+      <span className={cn('text-[13px]', 'text-gray-500 dark:text-white/50')}>{label}</span>
       <div
         className={cn(
           'text-[13px] flex items-center gap-2 min-w-0 overflow-hidden',
           alignValue === 'right' ? 'sm:justify-end' : 'justify-start',
-          isDark ? 'text-white/90' : 'text-gray-800'
+          'text-gray-800 dark:text-white/90'
         )}
       >
         {children}
@@ -1792,14 +1789,14 @@ const TransactionSummaryCard = ({
     <div
       className={cn(
         'rounded-xl mb-4 overflow-hidden border-[1.5px] max-w-full',
-        isDark ? 'bg-transparent border-white/10' : 'bg-white border-black/[0.08]'
+        'bg-white border-black/[0.08] dark:bg-transparent dark:border-white/10'
       )}
     >
       {/* Header bar */}
       <div
         className={cn(
           'flex flex-wrap items-center justify-between gap-2 px-4 py-3',
-          isDark ? 'border-b border-[rgba(255,255,255,0.10)]' : 'border-b border-[rgba(0,0,0,0.08)]'
+          'border-b border-[rgba(0,0,0,0.08)] dark:border-b dark:border-[rgba(255,255,255,0.10)]'
         )}
       >
         <div className="flex items-center gap-2 sm:gap-3 flex-wrap min-w-0">
@@ -1818,9 +1815,7 @@ const TransactionSummaryCard = ({
               'px-2.5 py-1 rounded-md text-[11px] font-medium',
               isBurn
                 ? 'bg-orange-500/15 text-orange-400 border border-orange-500/20'
-                : isDark
-                  ? 'bg-white/5 text-white/80 border border-white/10'
-                  : 'bg-gray-50 text-gray-600 border border-gray-200'
+                : 'bg-gray-50 text-gray-600 border border-gray-200 dark:bg-white/5 dark:text-white/80 dark:border dark:border-white/10'
             )}
           >
             {isBurn ? 'Burn' : isSwap ? 'Swap' : TransactionType}
@@ -1833,7 +1828,7 @@ const TransactionSummaryCard = ({
                   -{formatDecimal(new Decimal(swapInfo.paid.value))} {swapInfo.paid.currency}
                 </span>
               </span>
-              <span className={cn('text-[11px]', isDark ? 'text-white/30' : 'text-gray-400')}>to</span>
+              <span className={cn('text-[11px]', 'text-gray-400 dark:text-white/30')}>to</span>
               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/15">
                 <span className="text-emerald-400 text-[12px] font-medium font-mono">
                   +{formatDecimal(new Decimal(swapInfo.got.value))} {swapInfo.got.currency}
@@ -1849,9 +1844,7 @@ const TransactionSummaryCard = ({
               onClick={onCloseAI}
               className={cn(
                 'px-3 py-1.5 rounded-lg border text-[12px] font-medium transition-[background-color,border-color] duration-200',
-                isDark
-                  ? 'border-white/10 hover:border-white/20 text-white/50 hover:text-white/70'
-                  : 'border-gray-200 hover:border-gray-300 text-gray-500 hover:text-gray-700'
+                'border-gray-200 hover:border-gray-300 text-gray-500 hover:text-gray-700 dark:border-white/10 dark:hover:border-white/20 dark:text-white/50 dark:hover:text-white/70'
               )}
             >
               Close AI
@@ -1861,9 +1854,7 @@ const TransactionSummaryCard = ({
               onClick={onExplainWithAI}
               className={cn(
                 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-[12px] font-medium transition-[background-color,border-color] duration-200',
-                isDark
-                  ? 'border-[#8b5cf6]/25 hover:border-[#8b5cf6]/40 bg-[#8b5cf6]/10 hover:bg-[#8b5cf6]/15 text-[#c4b5fd] hover:text-[#ddd6fe]'
-                  : 'border-[#8b5cf6]/30 hover:border-[#8b5cf6]/50 bg-[#8b5cf6]/10 hover:bg-[#8b5cf6]/20 text-[#7c3aed] hover:text-[#6d28d9]'
+                'border-[#8b5cf6]/30 hover:border-[#8b5cf6]/50 bg-[#8b5cf6]/10 hover:bg-[#8b5cf6]/20 text-[#7c3aed] hover:text-[#6d28d9] dark:border-[#8b5cf6]/25 dark:hover:border-[#8b5cf6]/40 dark:bg-[#8b5cf6]/10 dark:hover:bg-[#8b5cf6]/15 dark:text-[#c4b5fd] dark:hover:text-[#ddd6fe]'
               )}
             >
               <Sparkles size={12} />
@@ -1878,9 +1869,7 @@ const TransactionSummaryCard = ({
         <div
           className={cn(
             'px-6 py-5 relative overflow-hidden',
-            isDark
-              ? 'border-b border-[rgba(255,255,255,0.10)]'
-              : 'border-b border-[rgba(0,0,0,0.08)]'
+            'border-b border-[rgba(0,0,0,0.08)] dark:border-b dark:border-[rgba(255,255,255,0.10)]'
           )}
         >
           <style jsx>{`
@@ -1924,9 +1913,7 @@ const TransactionSummaryCard = ({
                     background:
                       i === 5
                         ? 'rgba(139,92,246,0.3)'
-                        : isDark
-                          ? 'rgba(255,255,255,0.08)'
-                          : 'rgba(0,0,0,0.08)',
+                        : isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)',
                     animation: `pulse-bar 2s ease-in-out infinite`,
                     animationDelay: `${i * 0.15}s`
                   }}
@@ -1948,7 +1935,7 @@ const TransactionSummaryCard = ({
           <div
             className={cn(
               'mt-5 text-[13px] font-mono flex items-center gap-2',
-              isDark ? 'text-white/50' : 'text-gray-400'
+              'text-gray-400 dark:text-white/50'
             )}
           >
             <span
@@ -2001,9 +1988,7 @@ const TransactionSummaryCard = ({
             <div
               className={cn(
                 'px-6 py-5',
-                isDark
-                  ? 'border-b border-[rgba(139,92,246,0.12)]'
-                  : 'border-b border-[rgba(0,0,0,0.08)]'
+                'border-b border-[rgba(0,0,0,0.08)] dark:border-b dark:border-[rgba(139,92,246,0.12)]'
               )}
             >
               {/* Title with summary */}
@@ -2011,7 +1996,7 @@ const TransactionSummaryCard = ({
                 <span className="text-[#a78bfa] font-medium">
                   {aiExplanation.extracted?.type || 'Transaction'}:
                 </span>{' '}
-                <span className={isDark ? 'text-white' : 'text-gray-900'}>{summaryText}</span>
+                <span className={'text-gray-900 dark:text-white'}>{summaryText}</span>
               </h3>
 
               {/* Key Points */}
@@ -2020,7 +2005,7 @@ const TransactionSummaryCard = ({
                   <h4
                     className={cn(
                       'text-[11px] font-medium uppercase tracking-wider mb-3',
-                      isDark ? 'text-white/60' : 'text-gray-500'
+                      'text-gray-500 dark:text-white/60'
                     )}
                   >
                     Key Points
@@ -2031,7 +2016,7 @@ const TransactionSummaryCard = ({
                         key={idx}
                         className={cn(
                           'flex items-start gap-2 text-[13px] font-mono',
-                          isDark ? 'text-white/80' : 'text-gray-700'
+                          'text-gray-700 dark:text-white/80'
                         )}
                       >
                         <span className="text-[#8b5cf6]">•</span>
@@ -2053,12 +2038,12 @@ const TransactionSummaryCard = ({
                       <h4
                         className={cn(
                           'text-[11px] font-medium uppercase tracking-wider mb-2',
-                          isDark ? 'text-white/60' : 'text-gray-500'
+                          'text-gray-500 dark:text-white/60'
                         )}
                       >
                         Additional Information
                       </h4>
-                      <p className={cn('text-[13px]', isDark ? 'text-white/70' : 'text-gray-600')}>
+                      <p className={cn('text-[13px]', 'text-gray-600 dark:text-white/70')}>
                         Transaction via{' '}
                         {platformUrl ? (
                           <a
@@ -2084,7 +2069,7 @@ const TransactionSummaryCard = ({
       <div
         className={cn(
           'flex items-center gap-2 px-4 py-3 overflow-x-auto',
-          isDark ? 'border-b border-[rgba(255,255,255,0.10)]' : 'border-b border-[rgba(0,0,0,0.08)]'
+          'border-b border-[rgba(0,0,0,0.08)] dark:border-b dark:border-[rgba(255,255,255,0.10)]'
         )}
       >
         {tabs.map((tab) => (
@@ -2094,12 +2079,8 @@ const TransactionSummaryCard = ({
             className={cn(
               'px-3 sm:px-4 py-2 rounded-lg text-[12px] font-medium transition-[background-color,border-color] border shrink-0',
               activeTab === tab.id
-                ? isDark
-                  ? 'bg-white/10 text-white/90 border-white/15'
-                  : 'bg-black/[0.06] text-black/80 border-black/10'
-                : isDark
-                  ? 'text-white/50 border-white/10 hover:bg-white/[0.06] hover:text-white/70'
-                  : 'text-gray-500 border-gray-200 hover:bg-black/[0.04] hover:text-gray-700'
+                ? 'bg-black/[0.06] text-black/80 border-black/10 dark:bg-white/10 dark:text-white/90 dark:border-white/15'
+                : 'text-gray-500 border-gray-200 hover:bg-black/[0.04] hover:text-gray-700 dark:text-white/50 dark:border-white/10 dark:hover:bg-white/[0.06] dark:hover:text-white/70'
             )}
           >
             {tab.label}
@@ -2111,21 +2092,21 @@ const TransactionSummaryCard = ({
       <div
         className={cn(
           'grid grid-cols-1 sm:grid-cols-[1fr_2fr_1fr]',
-          isDark ? 'sm:divide-x divide-white/[0.06]' : 'sm:divide-x divide-gray-100'
+          'sm:divide-x divide-gray-100 dark:sm:divide-x dark:divide-white/[0.06]'
         )}
       >
         <div className="px-4 py-3">
           <div
             className={cn(
               'text-[10px] uppercase tracking-wider mb-1.5',
-              isDark ? 'text-white/50' : 'text-gray-500'
+              'text-gray-500 dark:text-white/50'
             )}
           >
             Signature
           </div>
           <div className="flex items-center gap-1.5">
             <code
-              className={cn('text-[13px] font-mono', isDark ? 'text-white/80' : 'text-gray-700')}
+              className={cn('text-[13px] font-mono', 'text-gray-700 dark:text-white/80')}
             >
               {hash.slice(0, 4)}...{hash.slice(-4)}
             </code>
@@ -2135,9 +2116,7 @@ const TransactionSummaryCard = ({
                 'px-1.5 py-0.5 rounded text-[10px] font-medium transition-[background-color,border-color]',
                 copied
                   ? 'text-emerald-400'
-                  : isDark
-                    ? 'text-white/50 hover:text-primary'
-                    : 'text-gray-500 hover:text-primary'
+                  : 'text-gray-500 hover:text-primary dark:text-white/50 dark:hover:text-primary'
               )}
             >
               {copied ? 'Copied' : 'Copy'}
@@ -2148,16 +2127,16 @@ const TransactionSummaryCard = ({
           <div
             className={cn(
               'text-[10px] uppercase tracking-wider mb-1.5',
-              isDark ? 'text-white/50' : 'text-gray-500'
+              'text-gray-500 dark:text-white/50'
             )}
           >
             Time
           </div>
-          <div className={cn('text-[13px] break-words', isDark ? 'text-white/80' : 'text-gray-700')}>
+          <div className={cn('text-[13px] break-words', 'text-gray-700 dark:text-white/80')}>
             {timeAgo ? (
               <>
                 <span className="text-primary">{timeAgo} ago</span>{' '}
-                <span className={cn('hidden sm:inline', isDark ? 'text-white/50' : 'text-gray-500')}>({dateStr})</span>
+                <span className={cn('hidden sm:inline', 'text-gray-500 dark:text-white/50')}>({dateStr})</span>
               </>
             ) : (
               'Unknown'
@@ -2168,7 +2147,7 @@ const TransactionSummaryCard = ({
           <div
             className={cn(
               'text-[10px] uppercase tracking-wider mb-1.5',
-              isDark ? 'text-white/50' : 'text-gray-500'
+              'text-gray-500 dark:text-white/50'
             )}
           >
             Ledger
@@ -3085,19 +3064,19 @@ const TransactionDetails = ({ txData }) => {
         <div
           className={cn(
             'rounded-xl overflow-hidden border-[1.5px]',
-            isDark ? 'bg-transparent border-white/10' : 'bg-white border-black/[0.08]'
+            'bg-white border-black/[0.08] dark:bg-transparent dark:border-white/10'
           )}
         >
           <div
             className={cn(
               'px-4 py-3',
-              isDark ? 'border-b border-white/10' : 'border-b border-gray-100'
+              'border-b border-gray-100 dark:border-b dark:border-white/10'
             )}
           >
             <span
               className={cn(
                 'text-[11px] font-medium uppercase tracking-wider',
-                isDark ? 'text-white/50' : 'text-gray-400'
+                'text-gray-400 dark:text-white/50'
               )}
             >
               Details
@@ -3491,7 +3470,7 @@ const TransactionDetails = ({ txData }) => {
                       const fallbackView = (
                         <Grid container spacing={1}>
                           <DetailRow label="Offer" sx={{ mb: 1, pb: 1, borderBottom: 'none' }}>
-                            <span className={cn('text-[13px] font-mono', isDark ? 'text-white/70' : 'text-gray-700')} title={offer.offerId}>
+                            <span className={cn('text-[13px] font-mono', 'text-gray-700 dark:text-white/70')} title={offer.offerId}>
                               <span className="hidden sm:inline break-all">{offer.offerId}</span>
                               <span className="inline sm:hidden">{offer.offerId.slice(0, 12)}...{offer.offerId.slice(-8)}</span>
                             </span>
@@ -3572,7 +3551,7 @@ const TransactionDetails = ({ txData }) => {
                   NFTokenOffers.length > 0 && (
                     <DetailRow label={NFTokenOffers.length > 1 ? 'Offers' : 'Offer'}>
                       {NFTokenOffers.map((offer) => (
-                        <span key={offer} className={cn('text-[13px] font-mono block', isDark ? 'text-white/70' : 'text-gray-700')} title={offer}>
+                        <span key={offer} className={cn('text-[13px] font-mono block', 'text-gray-700 dark:text-white/70')} title={offer}>
                           <span className="hidden sm:inline break-all">{offer}</span>
                           <span className="inline sm:hidden">{offer.slice(0, 12)}...{offer.slice(-8)}</span>
                         </span>
@@ -3590,7 +3569,7 @@ const TransactionDetails = ({ txData }) => {
                     <span
                       className={cn(
                         'text-[13px] font-mono',
-                        isDark ? 'text-white/70' : 'text-gray-700'
+                        'text-gray-700 dark:text-white/70'
                       )}
                       title={NFTokenSellOffer || NFTokenBuyOffer}
                     >
@@ -3603,7 +3582,7 @@ const TransactionDetails = ({ txData }) => {
                     <span
                       className={cn(
                         'text-[13px] font-mono',
-                        isDark ? 'text-white/70' : 'text-gray-700'
+                        'text-gray-700 dark:text-white/70'
                       )}
                       title={NFTokenBuyOffer}
                     >
@@ -3634,7 +3613,7 @@ const TransactionDetails = ({ txData }) => {
                 )}
                 {/* NFT Card - Structured Layout */}
                 {nftInfoLoading ? (
-                  <div className={cn('mx-4 my-3 p-4 rounded-xl', isDark ? 'bg-white/[0.02]' : 'bg-gray-50')}>
+                  <div className={cn('mx-4 my-3 p-4 rounded-xl', 'bg-gray-50 dark:bg-white/[0.02]')}>
                     <div className="flex items-center gap-3">
                       <div className="w-28 h-28 rounded-lg bg-white/5 animate-pulse" />
                       <div className="flex-1 space-y-2">
@@ -3647,7 +3626,7 @@ const TransactionDetails = ({ txData }) => {
                   <div
                     className={cn(
                       'mx-4 my-3 rounded-xl overflow-hidden',
-                      isDark ? 'bg-white/[0.02] border border-white/10' : 'bg-gray-50 border border-gray-200'
+                      'bg-gray-50 border border-gray-200 dark:bg-white/[0.02] dark:border dark:border-white/10'
                     )}
                   >
                     <div className="flex">
@@ -3666,7 +3645,7 @@ const TransactionDetails = ({ txData }) => {
                         <div className="flex items-start justify-between">
                           <div>
                             <Link href={`/nft/${acceptedNftInfo.NFTokenID}`}>
-                              <h3 className={cn('text-[14px] font-medium hover:text-primary cursor-pointer', isDark ? 'text-white' : 'text-gray-900')}>
+                              <h3 className={cn('text-[14px] font-medium hover:text-primary cursor-pointer', 'text-gray-900 dark:text-white')}>
                                 {acceptedNftInfo.meta?.name || 'Unnamed NFT'}
                               </h3>
                             </Link>
@@ -3677,7 +3656,7 @@ const TransactionDetails = ({ txData }) => {
                             )}
                           </div>
                           {typeof acceptedNftInfo.royalty !== 'undefined' && acceptedNftInfo.royalty > 0 && (
-                            <span className={cn('text-[10px] px-1.5 py-0.5 rounded', isDark ? 'bg-white/10 text-white/50' : 'bg-gray-200 text-gray-500')}>
+                            <span className={cn('text-[10px] px-1.5 py-0.5 rounded', 'bg-gray-200 text-gray-500 dark:bg-white/10 dark:text-white/50')}>
                               {acceptedNftInfo.royalty / 1000}% royalty
                             </span>
                           )}
@@ -3685,20 +3664,20 @@ const TransactionDetails = ({ txData }) => {
                         {/* Structured NFT Details Grid */}
                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-1 mt-2">
                           <div>
-                            <span className={cn('text-[10px] uppercase block', isDark ? 'text-white/30' : 'text-gray-400')}>Issuer</span>
+                            <span className={cn('text-[10px] uppercase block', 'text-gray-400 dark:text-white/30')}>Issuer</span>
                             <Link href={`/address/${acceptedNftInfo.issuer}`}>
                               <span className="text-[11px] text-primary hover:underline font-mono">{acceptedNftInfo.issuer.slice(0, 8)}...{acceptedNftInfo.issuer.slice(-4)}</span>
                             </Link>
                           </div>
                           <div>
-                            <span className={cn('text-[10px] uppercase block', isDark ? 'text-white/30' : 'text-gray-400')}>ID</span>
+                            <span className={cn('text-[10px] uppercase block', 'text-gray-400 dark:text-white/30')}>ID</span>
                             <Link href={`/nft/${acceptedNftInfo.NFTokenID}`}>
                               <span className="text-[11px] text-primary hover:underline font-mono">{acceptedNftInfo.NFTokenID.slice(0, 8)}...{acceptedNftInfo.NFTokenID.slice(-8)}</span>
                             </Link>
                           </div>
                           <div>
-                            <span className={cn('text-[10px] uppercase block', isDark ? 'text-white/30' : 'text-gray-400')}>Taxon</span>
-                            <span className={cn('text-[11px]', isDark ? 'text-white/70' : 'text-gray-600')}>{acceptedNftInfo.taxon}</span>
+                            <span className={cn('text-[10px] uppercase block', 'text-gray-400 dark:text-white/30')}>Taxon</span>
+                            <span className={cn('text-[11px]', 'text-gray-600 dark:text-white/70')}>{acceptedNftInfo.taxon}</span>
                           </div>
                         </div>
                       </div>
@@ -3720,7 +3699,7 @@ const TransactionDetails = ({ txData }) => {
               <>
                 {offerNftInfoLoading ? (
                   <DetailRow label="NFT">
-                    <span className={cn('text-[13px]', isDark ? 'text-white/50' : 'text-gray-500')}>
+                    <span className={cn('text-[13px]', 'text-gray-500 dark:text-white/50')}>
                       Loading...
                     </span>
                   </DetailRow>
@@ -3784,7 +3763,7 @@ const TransactionDetails = ({ txData }) => {
                     <span
                       className={cn(
                         'text-[13px] font-mono',
-                        isDark ? 'text-white/70' : 'text-gray-700'
+                        'text-gray-700 dark:text-white/70'
                       )}
                       title={meta.offer_id}
                     >
@@ -3839,14 +3818,14 @@ const TransactionDetails = ({ txData }) => {
                 )}
                 {typeof TransferFee !== 'undefined' && (
                   <DetailRow label="Transfer Fee">
-                    <span className={cn('text-[13px]', isDark ? 'text-white/70' : 'text-gray-700')}>
+                    <span className={cn('text-[13px]', 'text-gray-700 dark:text-white/70')}>
                       {TransferFee / 1000}%
                     </span>
                   </DetailRow>
                 )}
                 {Flags > 0 && (
                   <DetailRow label="Flag">
-                    <span className={cn('text-[13px]', isDark ? 'text-white/70' : 'text-gray-700')}>
+                    <span className={cn('text-[13px]', 'text-gray-700 dark:text-white/70')}>
                       {getNFTokenMintFlagExplanation(Flags)}
                     </span>
                   </DetailRow>
@@ -3856,7 +3835,7 @@ const TransactionDetails = ({ txData }) => {
                     <span
                       className={cn(
                         'text-[13px] font-mono',
-                        isDark ? 'text-white/70' : 'text-gray-700'
+                        'text-gray-700 dark:text-white/70'
                       )}
                     >
                       {NFTokenTaxon}
@@ -4034,7 +4013,7 @@ const TransactionDetails = ({ txData }) => {
                 )}
                 {txData.MessageKey && (
                   <DetailRow label="Message Key">
-                    <span className={cn('text-[13px] font-mono', isDark ? 'text-white/70' : 'text-gray-700')} title={txData.MessageKey}>
+                    <span className={cn('text-[13px] font-mono', 'text-gray-700 dark:text-white/70')} title={txData.MessageKey}>
                       <span className="hidden sm:inline break-all">{txData.MessageKey}</span>
                       <span className="inline sm:hidden">{txData.MessageKey.slice(0, 16)}...{txData.MessageKey.slice(-8)}</span>
                     </span>
@@ -4072,7 +4051,7 @@ const TransactionDetails = ({ txData }) => {
               <>
                 {txData.CheckID && (
                   <DetailRow label="Check ID">
-                    <span className={cn('text-[13px] font-mono', isDark ? 'text-white/70' : 'text-gray-700')} title={txData.CheckID}>
+                    <span className={cn('text-[13px] font-mono', 'text-gray-700 dark:text-white/70')} title={txData.CheckID}>
                       <span className="hidden sm:inline break-all">{txData.CheckID}</span>
                       <span className="inline sm:hidden">{txData.CheckID.slice(0, 12)}...{txData.CheckID.slice(-8)}</span>
                     </span>
@@ -4112,7 +4091,7 @@ const TransactionDetails = ({ txData }) => {
                 )}
                 {txData.Condition && (
                   <DetailRow label="Condition">
-                    <span className={cn('text-[13px] font-mono', isDark ? 'text-white/70' : 'text-gray-700')} title={txData.Condition}>
+                    <span className={cn('text-[13px] font-mono', 'text-gray-700 dark:text-white/70')} title={txData.Condition}>
                       <span className="hidden sm:inline break-all">{txData.Condition}</span>
                       <span className="inline sm:hidden">{txData.Condition.slice(0, 16)}...{txData.Condition.slice(-8)}</span>
                     </span>
@@ -4120,7 +4099,7 @@ const TransactionDetails = ({ txData }) => {
                 )}
                 {txData.Fulfillment && (
                   <DetailRow label="Fulfillment">
-                    <span className={cn('text-[13px] font-mono', isDark ? 'text-white/70' : 'text-gray-700')} title={txData.Fulfillment}>
+                    <span className={cn('text-[13px] font-mono', 'text-gray-700 dark:text-white/70')} title={txData.Fulfillment}>
                       <span className="hidden sm:inline break-all">{txData.Fulfillment}</span>
                       <span className="inline sm:hidden">{txData.Fulfillment.slice(0, 16)}...{txData.Fulfillment.slice(-8)}</span>
                     </span>
@@ -4136,7 +4115,7 @@ const TransactionDetails = ({ txData }) => {
               <>
                 {txData.Channel && (
                   <DetailRow label="Channel ID">
-                    <span className={cn('text-[13px] font-mono', isDark ? 'text-white/70' : 'text-gray-700')} title={txData.Channel}>
+                    <span className={cn('text-[13px] font-mono', 'text-gray-700 dark:text-white/70')} title={txData.Channel}>
                       <span className="hidden sm:inline break-all">{txData.Channel}</span>
                       <span className="inline sm:hidden">{txData.Channel.slice(0, 12)}...{txData.Channel.slice(-8)}</span>
                     </span>
@@ -4149,7 +4128,7 @@ const TransactionDetails = ({ txData }) => {
                 )}
                 {txData.PublicKey && (
                   <DetailRow label="Public Key">
-                    <span className={cn('text-[13px] font-mono', isDark ? 'text-white/70' : 'text-gray-700')} title={txData.PublicKey}>
+                    <span className={cn('text-[13px] font-mono', 'text-gray-700 dark:text-white/70')} title={txData.PublicKey}>
                       <span className="hidden sm:inline break-all">{txData.PublicKey}</span>
                       <span className="inline sm:hidden">{txData.PublicKey.slice(0, 12)}...{txData.PublicKey.slice(-8)}</span>
                     </span>
@@ -4294,7 +4273,7 @@ const TransactionDetails = ({ txData }) => {
                           </Link>
                         );
                       })()}
-                      <span className={cn('text-[11px] ml-1', isDark ? 'text-white/50' : 'text-gray-400')}>
+                      <span className={cn('text-[11px] ml-1', 'text-gray-400 dark:text-white/50')}>
                         ({ammCreateDetails.lpTokenBalance.issuer.slice(0, 6)}...{ammCreateDetails.lpTokenBalance.issuer.slice(-6)})
                       </span>
                     </span>
@@ -4302,7 +4281,7 @@ const TransactionDetails = ({ txData }) => {
                 )}
                 {txData.TradingFee !== undefined && (
                   <DetailRow label="Trading fee">
-                    <span className={cn('text-[13px]', isDark ? 'text-white/70' : 'text-gray-700')}>
+                    <span className={cn('text-[13px]', 'text-gray-700 dark:text-white/70')}>
                       {txData.TradingFee / 1000}%
                     </span>
                   </DetailRow>
@@ -4310,7 +4289,7 @@ const TransactionDetails = ({ txData }) => {
                 {/* Show specification of what was instructed */}
                 {(Amount || Amount2) && (
                   <DetailRow label="Specification">
-                    <span className={cn('text-[13px]', isDark ? 'text-white/60' : 'text-gray-500')}>
+                    <span className={cn('text-[13px]', 'text-gray-500 dark:text-white/60')}>
                       It was instructed to deposit maximum{' '}
                       {Amount && (
                         <>
@@ -4376,7 +4355,7 @@ const TransactionDetails = ({ txData }) => {
                           <span
                             className={cn(
                               'text-[13px]',
-                              isDark ? 'text-white/50' : 'text-gray-400'
+                              'text-gray-400 dark:text-white/50'
                             )}
                           >
                             N/A
@@ -4395,7 +4374,7 @@ const TransactionDetails = ({ txData }) => {
                     } catch (error) {
                       return (
                         <span
-                          className={cn('text-[13px]', isDark ? 'text-white/50' : 'text-gray-400')}
+                          className={cn('text-[13px]', 'text-gray-400 dark:text-white/50')}
                         >
                           N/A
                         </span>
@@ -4484,10 +4463,10 @@ const TransactionDetails = ({ txData }) => {
           <div
             className={cn(
               'grid grid-cols-1 sm:grid-cols-[140px_1fr] items-start sm:items-center px-4 py-2.5 min-h-[44px] border-t gap-0.5 sm:gap-0',
-              isDark ? 'border-white/[0.06]' : 'border-gray-100'
+              'border-gray-100 dark:border-white/[0.06]'
             )}
           >
-            <span className={cn('text-[13px]', isDark ? 'text-white/50' : 'text-gray-500')}>
+            <span className={cn('text-[13px]', 'text-gray-500 dark:text-white/50')}>
               Link
             </span>
             <div className="flex items-center gap-2 sm:justify-end min-w-0">
@@ -4506,9 +4485,7 @@ const TransactionDetails = ({ txData }) => {
                   'px-2 py-0.5 rounded text-[11px] font-medium shrink-0 transition-[background-color,border-color]',
                   urlCopied
                     ? 'text-emerald-400'
-                    : isDark
-                      ? 'text-white/50 hover:text-primary'
-                      : 'text-gray-500 hover:text-primary'
+                    : 'text-gray-500 hover:text-primary dark:text-white/50 dark:hover:text-primary'
                 )}
               >
                 {urlCopied ? 'Copied' : 'Copy'}
@@ -4523,21 +4500,19 @@ const TransactionDetails = ({ txData }) => {
         <div
           className={cn(
             'rounded-xl overflow-hidden border-[1.5px]',
-            isDark ? 'bg-transparent border-white/10' : 'bg-white border-black/[0.08]'
+            'bg-white border-black/[0.08] dark:bg-transparent dark:border-white/10'
           )}
         >
           <div
             className={cn(
               'px-4 py-3',
-              isDark
-                ? 'border-b border-white/10'
-                : 'border-b border-black/[0.08]'
+              'border-b border-black/[0.08] dark:border-b dark:border-white/10'
             )}
           >
             <span
               className={cn(
                 'text-[11px] font-medium uppercase tracking-wider',
-                isDark ? 'text-white/50' : 'text-gray-400'
+                'text-gray-400 dark:text-white/50'
               )}
             >
               Balance Changes ({balanceChanges.length})
@@ -4545,14 +4520,14 @@ const TransactionDetails = ({ txData }) => {
           </div>
           {balanceChanges.length > 0 && isSuccess ? (
             <div
-              className={cn('divide-y', isDark ? 'divide-white/5' : 'divide-black/5')}
+              className={cn('divide-y', 'divide-black/5 dark:divide-white/5')}
             >
               {balanceChanges.map(({ account, changes }, idx) => (
                 <div
                   key={account}
                   className={cn(
                     'px-4 py-3 flex items-start gap-4 flex-wrap',
-                    idx % 2 === 1 && (isDark ? 'bg-white/[0.02]' : 'bg-gray-50/50')
+                    idx % 2 === 1 && ('bg-gray-50/50 dark:bg-white/[0.02]')
                   )}
                 >
                   <div className="flex items-center gap-2 min-w-0 sm:min-w-[280px] flex-1">
@@ -4602,7 +4577,7 @@ const TransactionDetails = ({ txData }) => {
             <div
               className={cn(
                 'px-4 py-8 text-center text-[13px]',
-                isDark ? 'text-white/50' : 'text-gray-400'
+                'text-gray-400 dark:text-white/50'
               )}
             >
               No balance changes
@@ -4616,21 +4591,19 @@ const TransactionDetails = ({ txData }) => {
         <div
           className={cn(
             'rounded-xl overflow-hidden border-[1.5px]',
-            isDark ? 'bg-transparent border-white/10' : 'bg-white border-black/[0.08]'
+            'bg-white border-black/[0.08] dark:bg-transparent dark:border-white/10'
           )}
         >
           <div
             className={cn(
               'px-4 py-3',
-              isDark
-                ? 'border-b border-white/10'
-                : 'border-b border-black/[0.08]'
+              'border-b border-black/[0.08] dark:border-b dark:border-white/10'
             )}
           >
             <span
               className={cn(
                 'text-[11px] font-medium uppercase tracking-wider',
-                isDark ? 'text-white/50' : 'text-gray-400'
+                'text-gray-400 dark:text-white/50'
               )}
             >
               Technical Details
@@ -4676,42 +4649,40 @@ const TransactionDetails = ({ txData }) => {
         <div
           className={cn(
             'rounded-xl overflow-hidden border-[1.5px]',
-            isDark ? 'bg-transparent border-white/10' : 'bg-white border-black/[0.08]'
+            'bg-white border-black/[0.08] dark:bg-transparent dark:border-white/10'
           )}
         >
           <div
             className={cn(
               'px-4 py-3',
-              isDark
-                ? 'border-b border-white/10'
-                : 'border-b border-black/[0.08]'
+              'border-b border-black/[0.08] dark:border-b dark:border-white/10'
             )}
           >
             <span
               className={cn(
                 'text-[11px] font-medium uppercase tracking-wider',
-                isDark ? 'text-white/50' : 'text-gray-400'
+                'text-gray-400 dark:text-white/50'
               )}
             >
               Raw Transaction JSON
             </span>
           </div>
-          <div className="p-4">
-            <JsonViewer data={rawData} isDark={isDark} />
+          <div className="p-4 max-sm:p-2">
+            <JsonViewer data={rawData} />
           </div>
 
-          <div className={cn('px-4 py-3 border-t', isDark ? 'border-white/10' : 'border-gray-200')}>
+          <div className={cn('px-4 py-3 border-t max-sm:px-2 max-sm:py-2', 'border-gray-200 dark:border-white/10')}>
             <span
               className={cn(
                 'text-[11px] font-medium uppercase tracking-wider',
-                isDark ? 'text-white/50' : 'text-gray-400'
+                'text-gray-400 dark:text-white/50'
               )}
             >
               Transaction Metadata
             </span>
           </div>
-          <div className="p-4">
-            <JsonViewer data={meta} isDark={isDark} />
+          <div className="p-4 max-sm:p-2">
+            <JsonViewer data={meta} />
           </div>
         </div>
       )}
@@ -4722,9 +4693,7 @@ const TransactionDetails = ({ txData }) => {
           <div
             className={cn(
               'px-4 py-2.5 rounded-lg text-[13px] font-medium shadow-lg flex items-center gap-2',
-              isDark
-                ? 'bg-[#1a1a1a] text-white border border-white/10'
-                : 'bg-white text-gray-800 border border-gray-200'
+              'bg-white text-gray-800 border border-gray-200 dark:bg-[#1a1a1a] dark:text-white dark:border dark:border-white/10'
             )}
           >
             <span className="text-[#22c55e]">✓</span>
@@ -4769,44 +4738,44 @@ const TxPage = ({ txData, error }) => {
           <div
             className={cn(
               'rounded-xl border-[1.5px] p-8 text-center max-w-md mx-auto mt-8',
-              isDark ? 'border-white/10 bg-white/[0.02]' : 'border-gray-200 bg-gray-50/50'
+              'border-gray-200 bg-gray-50/50 dark:border-white/10 dark:bg-white/[0.02]'
             )}
           >
             <div className="relative w-14 h-14 mx-auto mb-4">
-              <div className={cn('absolute -top-1 left-0 w-5 h-5 rounded-full', isDark ? 'bg-white/15' : 'bg-gray-200')}>
-                <div className={cn('absolute top-1 left-1 w-3 h-3 rounded-full', isDark ? 'bg-white/10' : 'bg-gray-100')} />
+              <div className={cn('absolute -top-1 left-0 w-5 h-5 rounded-full', 'bg-gray-200 dark:bg-white/15')}>
+                <div className={cn('absolute top-1 left-1 w-3 h-3 rounded-full', 'bg-gray-100 dark:bg-white/10')} />
               </div>
-              <div className={cn('absolute -top-1 right-0 w-5 h-5 rounded-full', isDark ? 'bg-white/15' : 'bg-gray-200')}>
-                <div className={cn('absolute top-1 right-1 w-3 h-3 rounded-full', isDark ? 'bg-white/10' : 'bg-gray-100')} />
+              <div className={cn('absolute -top-1 right-0 w-5 h-5 rounded-full', 'bg-gray-200 dark:bg-white/15')}>
+                <div className={cn('absolute top-1 right-1 w-3 h-3 rounded-full', 'bg-gray-100 dark:bg-white/10')} />
               </div>
-              <div className={cn('absolute top-2 left-1/2 -translate-x-1/2 w-12 h-11 rounded-full', isDark ? 'bg-white/15' : 'bg-gray-200')}>
+              <div className={cn('absolute top-2 left-1/2 -translate-x-1/2 w-12 h-11 rounded-full', 'bg-gray-200 dark:bg-white/15')}>
                 <div className="absolute inset-0 rounded-full overflow-hidden">
                   {[...Array(5)].map((_, i) => (
-                    <div key={i} className={cn('h-[2px] w-full', isDark ? 'bg-white/15' : 'bg-gray-300/50')} style={{ marginTop: i * 3 + 2, transform: `translateX(${i % 2 === 0 ? '1px' : '-1px'})` }} />
+                    <div key={i} className={cn('h-[2px] w-full', 'bg-gray-300/50 dark:bg-white/15')} style={{ marginTop: i * 3 + 2, transform: `translateX(${i % 2 === 0 ? '1px' : '-1px'})` }} />
                   ))}
                 </div>
                 <div className="absolute top-3 left-2 w-3 h-3 flex items-center justify-center">
-                  <div className={cn('absolute w-2.5 h-[2px] rotate-45', isDark ? 'bg-white/40' : 'bg-gray-400')} />
-                  <div className={cn('absolute w-2.5 h-[2px] -rotate-45', isDark ? 'bg-white/40' : 'bg-gray-400')} />
+                  <div className={cn('absolute w-2.5 h-[2px] rotate-45', 'bg-gray-400 dark:bg-white/40')} />
+                  <div className={cn('absolute w-2.5 h-[2px] -rotate-45', 'bg-gray-400 dark:bg-white/40')} />
                 </div>
                 <div className="absolute top-3 right-2 w-3 h-3 flex items-center justify-center">
-                  <div className={cn('absolute w-2.5 h-[2px] rotate-45', isDark ? 'bg-white/40' : 'bg-gray-400')} />
-                  <div className={cn('absolute w-2.5 h-[2px] -rotate-45', isDark ? 'bg-white/40' : 'bg-gray-400')} />
+                  <div className={cn('absolute w-2.5 h-[2px] rotate-45', 'bg-gray-400 dark:bg-white/40')} />
+                  <div className={cn('absolute w-2.5 h-[2px] -rotate-45', 'bg-gray-400 dark:bg-white/40')} />
                 </div>
-                <div className={cn('absolute bottom-1.5 left-1/2 -translate-x-1/2 w-6 h-4 rounded-full', isDark ? 'bg-white/10' : 'bg-gray-100')}>
-                  <div className={cn('absolute top-0.5 left-1/2 -translate-x-1/2 w-2.5 h-2 rounded-full', isDark ? 'bg-white/25' : 'bg-gray-300')} />
+                <div className={cn('absolute bottom-1.5 left-1/2 -translate-x-1/2 w-6 h-4 rounded-full', 'bg-gray-100 dark:bg-white/10')}>
+                  <div className={cn('absolute top-0.5 left-1/2 -translate-x-1/2 w-2.5 h-2 rounded-full', 'bg-gray-300 dark:bg-white/25')} />
                 </div>
               </div>
             </div>
             <p
               className={cn(
                 'text-sm font-medium tracking-widest mb-2',
-                isDark ? 'text-white/80' : 'text-gray-600'
+                'text-gray-600 dark:text-white/80'
               )}
             >
               TX NOT FOUND
             </p>
-            <p className={cn('text-xs mb-6', isDark ? 'text-white/30' : 'text-gray-400')}>
+            <p className={cn('text-xs mb-6', 'text-gray-400 dark:text-white/30')}>
               {error}
             </p>
             <div className="flex items-center justify-center gap-3">
@@ -4814,9 +4783,7 @@ const TxPage = ({ txData, error }) => {
                 <button
                   className={cn(
                     'flex items-center gap-2 px-4 py-2.5 rounded-lg border-[1.5px] text-[13px] font-normal transition-[background-color,border-color]',
-                    isDark
-                      ? 'border-white/15 text-white/80 hover:border-primary hover:bg-primary/5'
-                      : 'border-gray-300 text-gray-700 hover:border-primary hover:bg-primary/5'
+                    'border-gray-300 text-gray-700 hover:border-primary hover:bg-primary/5 dark:border-white/15 dark:text-white/80 dark:hover:border-primary dark:hover:bg-primary/5'
                   )}
                 >
                   <Home size={14} />
@@ -4827,9 +4794,7 @@ const TxPage = ({ txData, error }) => {
                 onClick={() => router.back()}
                 className={cn(
                   'flex items-center gap-2 px-4 py-2.5 rounded-lg border-[1.5px] text-[13px] font-normal transition-[background-color,border-color]',
-                  isDark
-                    ? 'border-white/15 text-white/80 hover:border-primary hover:bg-primary/5'
-                    : 'border-gray-300 text-gray-700 hover:border-primary hover:bg-primary/5'
+                  'border-gray-300 text-gray-700 hover:border-primary hover:bg-primary/5 dark:border-white/15 dark:text-white/80 dark:hover:border-primary dark:hover:bg-primary/5'
                 )}
               >
                 <Search size={14} />

@@ -234,7 +234,7 @@ export default function GiftTierModal({ open, onClose, recipientAddress, gifterA
     <div
       className={cn(
         'fixed inset-0 z-[9999] flex items-center justify-center p-4 backdrop-blur-md max-sm:h-dvh',
-        isDark ? 'bg-black/70' : 'bg-white/60'
+        'bg-white/60 dark:bg-black/70'
       )}
       onClick={onClose}
       role="dialog"
@@ -244,24 +244,22 @@ export default function GiftTierModal({ open, onClose, recipientAddress, gifterA
       <div
         className={cn(
           'w-full max-w-xl rounded-2xl border-[1.5px] overflow-hidden',
-          isDark
-            ? 'bg-black/95 backdrop-blur-2xl border-white/[0.08] shadow-2xl shadow-black/50'
-            : 'bg-white backdrop-blur-2xl border-gray-200 shadow-2xl shadow-gray-300/30'
+          'bg-white backdrop-blur-2xl border-gray-200 shadow-2xl shadow-gray-300/30 dark:bg-black/95 dark:backdrop-blur-2xl dark:border-white/[0.08] dark:shadow-2xl dark:shadow-black/50'
         )}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className={cn(
           'flex items-center justify-between px-5 py-4 border-b',
-          isDark ? 'border-white/[0.06]' : 'border-gray-100'
+          'border-gray-100 dark:border-white/[0.06]'
         )}>
           <div className="flex items-center gap-2.5">
             <Gift size={18} className="text-[#137DFE]" />
             <div>
-              <div className={cn('font-semibold text-[15px]', isDark ? 'text-white' : 'text-gray-900')}>
+              <div className={cn('font-semibold text-[15px]', 'text-gray-900 dark:text-white')}>
                 {step === 'success' ? 'Gift Sent!' : 'Gift a Tier'}
               </div>
-              <div className={cn('text-[12px] mt-0.5', isDark ? 'text-white/50' : 'text-gray-500')}>
+              <div className={cn('text-[12px] mt-0.5', 'text-gray-500 dark:text-white/50')}>
                 to {shortAddr(recipientAddress)}
               </div>
             </div>
@@ -271,7 +269,7 @@ export default function GiftTierModal({ open, onClose, recipientAddress, gifterA
             aria-label="Close"
             className={cn(
               'p-2 rounded-lg transition-colors',
-              isDark ? 'hover:bg-white/10 text-white/50' : 'hover:bg-gray-100 text-gray-400'
+              'hover:bg-gray-100 text-gray-400 dark:hover:bg-white/10 dark:text-white/50'
             )}
           >
             <X size={18} />
@@ -282,7 +280,7 @@ export default function GiftTierModal({ open, onClose, recipientAddress, gifterA
           {/* Step 1: Tier Selection */}
           {step === 'select' && (
             <div className="space-y-3">
-              <div className={cn('text-[13px] font-medium', isDark ? 'text-white/70' : 'text-gray-600')}>
+              <div className={cn('text-[13px] font-medium', 'text-gray-600 dark:text-white/70')}>
                 Choose a tier to gift
               </div>
               {GIFT_TIERS.map(tier => {
@@ -299,10 +297,8 @@ export default function GiftTierModal({ open, onClose, recipientAddress, gifterA
                       'w-full flex items-center gap-3 p-3.5 rounded-xl border-[1.5px] transition-all text-left',
                       alreadyHas
                         ? 'opacity-40 cursor-not-allowed'
-                        : isDark
-                          ? 'bg-white/[0.02] border-white/10 hover:border-white/20 hover:bg-white/[0.04]'
-                          : 'bg-gray-50 border-gray-200 hover:border-gray-300 hover:bg-gray-100',
-                      isDark ? 'border-white/10' : 'border-gray-200'
+                        : 'bg-gray-50 border-gray-200 hover:border-gray-300 hover:bg-gray-100 dark:bg-white/[0.02] dark:border-white/10 dark:hover:border-white/20 dark:hover:bg-white/[0.04]',
+                      'border-gray-200 dark:border-white/10'
                     )}
                   >
                     <div
@@ -312,20 +308,20 @@ export default function GiftTierModal({ open, onClose, recipientAddress, gifterA
                       <Icon size={18} style={{ color: tier.color }} />
                     </div>
                     <div className="flex-1">
-                      <div className={cn('font-semibold text-[14px]', isDark ? 'text-white' : 'text-gray-900')}>
+                      <div className={cn('font-semibold text-[14px]', 'text-gray-900 dark:text-white')}>
                         {tier.name}
-                        {alreadyHas && <span className={cn('ml-1.5 text-[11px] font-normal', isDark ? 'text-white/30' : 'text-gray-400')}>(Current)</span>}
+                        {alreadyHas && <span className={cn('ml-1.5 text-[11px] font-normal', 'text-gray-400 dark:text-white/30')}>(Current)</span>}
                       </div>
-                      <div className={cn('text-[12px]', isDark ? 'text-white/40' : 'text-gray-400')}>
+                      <div className={cn('text-[12px]', 'text-gray-400 dark:text-white/40')}>
                         {tier.billing === 'monthly' ? 'Monthly' : 'Lifetime'}
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className={cn('font-bold text-[15px]', isDark ? 'text-white' : 'text-gray-900')}>
+                      <div className={cn('font-bold text-[15px]', 'text-gray-900 dark:text-white')}>
                         ${usdPrice}
                       </div>
                       {xrpPrice && (
-                        <div className={cn('text-[11px]', isDark ? 'text-white/30' : 'text-gray-400')}>
+                        <div className={cn('text-[11px]', 'text-gray-400 dark:text-white/30')}>
                           ~{xrpPrice} XRP
                         </div>
                       )}
@@ -342,27 +338,27 @@ export default function GiftTierModal({ open, onClose, recipientAddress, gifterA
               {/* Summary */}
               <div className={cn(
                 'p-4 rounded-xl border-[1.5px]',
-                isDark ? 'bg-white/[0.02] border-white/10' : 'bg-gray-50 border-gray-200'
+                'bg-gray-50 border-gray-200 dark:bg-white/[0.02] dark:border-white/10'
               )}>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <selectedTier.icon size={16} style={{ color: selectedTier.color }} />
-                    <span className={cn('font-semibold', isDark ? 'text-white' : 'text-gray-900')}>
+                    <span className={cn('font-semibold', 'text-gray-900 dark:text-white')}>
                       {selectedTier.name} Tier
                     </span>
                   </div>
                   <div className="text-right">
-                    <span className={cn('font-bold text-[16px]', isDark ? 'text-white' : 'text-gray-900')}>
+                    <span className={cn('font-bold text-[16px]', 'text-gray-900 dark:text-white')}>
                       ${getUsdPrice(selectedTier.id)}
                     </span>
                     {getXrpPrice(selectedTier.id) && (
-                      <div className={cn('text-[11px]', isDark ? 'text-white/30' : 'text-gray-400')}>
+                      <div className={cn('text-[11px]', 'text-gray-400 dark:text-white/30')}>
                         ~{getXrpPrice(selectedTier.id)} XRP
                       </div>
                     )}
                   </div>
                 </div>
-                <div className={cn('text-[12px] mt-1.5', isDark ? 'text-white/40' : 'text-gray-400')}>
+                <div className={cn('text-[12px] mt-1.5', 'text-gray-400 dark:text-white/40')}>
                   Gift to {shortAddr(recipientAddress)} {selectedTier.billing === 'monthly' ? '(1 month)' : '(Lifetime)'}
                 </div>
               </div>
@@ -379,23 +375,23 @@ export default function GiftTierModal({ open, onClose, recipientAddress, gifterA
               {invoice && paymentStatus && paymentStatus !== 'signing' && paymentStatus !== 'submitting' && (
                 <div className={cn(
                   'p-4 rounded-xl border-[1.5px] space-y-3',
-                  isDark ? 'bg-white/[0.02] border-white/10' : 'bg-gray-50 border-gray-200'
+                  'bg-gray-50 border-gray-200 dark:bg-white/[0.02] dark:border-white/10'
                 )}>
                   <div className="flex items-center justify-between">
-                    <span className={cn('text-[12px]', isDark ? 'text-white/50' : 'text-gray-500')}>Send to</span>
+                    <span className={cn('text-[12px]', 'text-gray-500 dark:text-white/50')}>Send to</span>
                     <button
                       onClick={() => copyToClipboard(invoice.payment.destination)}
                       className="flex items-center gap-1.5"
                     >
-                      <span className={cn('text-[12px] font-mono', isDark ? 'text-white/80' : 'text-gray-700')}>
+                      <span className={cn('text-[12px] font-mono', 'text-gray-700 dark:text-white/80')}>
                         {shortAddr(invoice.payment.destination)}
                       </span>
-                      {copied ? <CheckCircle size={12} className="text-green-400" /> : <Copy size={12} className={isDark ? 'text-white/30' : 'text-gray-400'} />}
+                      {copied ? <CheckCircle size={12} className="text-green-400" /> : <Copy size={12} className={'text-gray-400 dark:text-white/30'} />}
                     </button>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className={cn('text-[12px]', isDark ? 'text-white/50' : 'text-gray-500')}>Amount</span>
-                    <span className={cn('font-bold text-[15px]', isDark ? 'text-white' : 'text-gray-900')}>
+                    <span className={cn('text-[12px]', 'text-gray-500 dark:text-white/50')}>Amount</span>
+                    <span className={cn('font-bold text-[15px]', 'text-gray-900 dark:text-white')}>
                       {invoice.payment.xrpAmount} XRP
                     </span>
                   </div>
@@ -421,9 +417,7 @@ export default function GiftTierModal({ open, onClose, recipientAddress, gifterA
                     disabled={loading}
                     className={cn(
                       'w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-[14px] transition-all border-[1.5px]',
-                      isDark
-                        ? 'border-white/10 text-white hover:bg-white/5 disabled:opacity-50'
-                        : 'border-gray-200 text-gray-900 hover:bg-gray-50 disabled:opacity-50'
+                      'border-gray-200 text-gray-900 hover:bg-gray-50 disabled:opacity-50 dark:border-white/10 dark:text-white dark:hover:bg-white/5 dark:disabled:opacity-50'
                     )}
                   >
                     {loading ? <Loader2 size={16} className="animate-spin" /> : <CreditCard size={16} />}
@@ -431,7 +425,7 @@ export default function GiftTierModal({ open, onClose, recipientAddress, gifterA
                   </button>
                   <button
                     onClick={() => { setStep('select'); setError(null); setInvoice(null); }}
-                    className={cn('w-full text-center text-[12px] py-1', isDark ? 'text-white/40 hover:text-white/60' : 'text-gray-400 hover:text-gray-600')}
+                    className={cn('w-full text-center text-[12px] py-1', 'text-gray-400 hover:text-gray-600 dark:text-white/40 dark:hover:text-white/60')}
                   >
                     Back
                   </button>
@@ -441,7 +435,7 @@ export default function GiftTierModal({ open, onClose, recipientAddress, gifterA
                   {paymentStatus === 'signing' || paymentStatus === 'submitting' || paymentStatus === 'verifying' ? (
                     <div className="flex flex-col items-center gap-2 py-4">
                       <Loader2 size={24} className="animate-spin text-[#137DFE]" />
-                      <span className={cn('text-[13px]', isDark ? 'text-white/60' : 'text-gray-500')}>
+                      <span className={cn('text-[13px]', 'text-gray-500 dark:text-white/60')}>
                         {paymentStatus === 'signing' && 'Signing transaction...'}
                         {paymentStatus === 'submitting' && 'Submitting payment...'}
                         {paymentStatus === 'verifying' && 'Verifying payment...'}
@@ -460,9 +454,7 @@ export default function GiftTierModal({ open, onClose, recipientAddress, gifterA
                         onClick={handleManualVerify}
                         className={cn(
                           'w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-[14px] border-[1.5px]',
-                          isDark
-                            ? 'border-white/10 text-white hover:bg-white/5'
-                            : 'border-gray-200 text-gray-900 hover:bg-gray-50'
+                          'border-gray-200 text-gray-900 hover:bg-gray-50 dark:border-white/10 dark:text-white dark:hover:bg-white/5'
                         )}
                       >
                         I Have Paid
@@ -480,10 +472,10 @@ export default function GiftTierModal({ open, onClose, recipientAddress, gifterA
               <div className="w-14 h-14 rounded-full bg-[#08AA09]/10 flex items-center justify-center">
                 <CheckCircle size={28} className="text-[#08AA09]" />
               </div>
-              <div className={cn('font-semibold text-[16px]', isDark ? 'text-white' : 'text-gray-900')}>
+              <div className={cn('font-semibold text-[16px]', 'text-gray-900 dark:text-white')}>
                 Gift Sent!
               </div>
-              <div className={cn('text-[13px] text-center', isDark ? 'text-white/50' : 'text-gray-500')}>
+              <div className={cn('text-[13px] text-center', 'text-gray-500 dark:text-white/50')}>
                 {selectedTier?.name} tier gifted to {shortAddr(recipientAddress)}
               </div>
               <button

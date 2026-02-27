@@ -97,7 +97,7 @@ const LoadingTextField = ({ type, value, uuid, setValid, startText, ...props }) 
           <span
             className={cn(
               'absolute left-3 top-1/2 -translate-y-1/2 text-[13px]',
-              isDark ? 'text-white/60' : 'text-gray-600'
+              'text-gray-600 dark:text-white/60'
             )}
           >
             {startText}
@@ -110,9 +110,7 @@ const LoadingTextField = ({ type, value, uuid, setValid, startText, ...props }) 
           className={cn(
             'w-full rounded-lg border-[1.5px] px-3 py-2 text-[13px] font-normal outline-none transition-colors',
             startText && 'pl-[200px]',
-            isDark
-              ? 'border-white/15 bg-transparent text-white placeholder:text-white/40 focus:border-primary'
-              : 'border-gray-300 bg-white text-gray-900 placeholder:text-gray-400 focus:border-primary'
+            'border-gray-300 bg-white text-gray-900 placeholder:text-gray-400 focus:border-primary dark:border-white/15 dark:bg-transparent dark:text-white dark:placeholder:text-white/40 dark:focus:border-primary'
           )}
         />
         <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
@@ -169,9 +167,7 @@ const LoadingButton = ({
         'flex items-center gap-2 rounded-lg border-[1.5px] px-4 py-2 text-[13px] font-normal transition-colors',
         isDisabled
           ? 'cursor-not-allowed opacity-40'
-          : isDark
-            ? 'border-primary bg-primary/10 text-primary hover:bg-primary/20'
-            : 'border-primary bg-primary text-white hover:bg-primary/90',
+          : 'border-primary bg-primary text-white hover:bg-primary/90 dark:border-primary dark:bg-primary/10 dark:text-primary dark:hover:bg-primary/20',
         className
       )}
     >
@@ -482,7 +478,7 @@ export default function CreateCollection({ showHeader = true, onCreate }) {
           <div
             className={cn(
               'border-[3px] border-dashed rounded-full p-1 w-fit cursor-pointer',
-              isDark ? 'border-white/20' : 'border-gray-300'
+              'border-gray-300 dark:border-white/20'
             )}
           >
             <input
@@ -494,7 +490,7 @@ export default function CreateCollection({ showHeader = true, onCreate }) {
               onChange={handleFileSelect1}
             />
             <div
-              className={cn('relative flex items-center justify-center w-[140px] h-[140px] rounded-full overflow-hidden cursor-pointer border', isDark ? 'border-white/10' : 'border-black/10')}
+              className={cn('relative flex items-center justify-center w-[140px] h-[140px] rounded-full overflow-hidden cursor-pointer border', 'border-black/10 dark:border-white/10')}
             >
               <div
                 className="absolute inset-0 flex flex-col items-center justify-center bg-black opacity-0 hover:opacity-60 transition-opacity z-10"
@@ -510,7 +506,7 @@ export default function CreateCollection({ showHeader = true, onCreate }) {
               {fileUrl1 ? (
                 <img src={fileUrl1} alt="" className="w-full h-full object-cover" />
               ) : (
-                <ImageIcon size={64} className={isDark ? 'text-white/20' : 'text-gray-300'} />
+                <ImageIcon size={64} className={'text-gray-300 dark:text-white/20'} />
               )}
             </div>
           </div>
@@ -526,7 +522,7 @@ export default function CreateCollection({ showHeader = true, onCreate }) {
           <div
             className={cn(
               'border-[3px] border-dashed rounded-xl p-1 w-fit cursor-pointer',
-              isDark ? 'border-white/20' : 'border-gray-300'
+              'border-gray-300 dark:border-white/20'
             )}
           >
             <input
@@ -538,7 +534,7 @@ export default function CreateCollection({ showHeader = true, onCreate }) {
               onChange={handleFileSelect2}
             />
             <div
-              className={cn('relative flex items-center justify-center w-[320px] h-[240px] rounded-lg overflow-hidden cursor-pointer border', isDark ? 'border-white/10' : 'border-black/10')}
+              className={cn('relative flex items-center justify-center w-[320px] h-[240px] rounded-lg overflow-hidden cursor-pointer border', 'border-black/10 dark:border-white/10')}
             >
               <div
                 className="absolute inset-0 flex flex-col items-center justify-center bg-black opacity-0 hover:opacity-60 transition-opacity z-10"
@@ -554,7 +550,7 @@ export default function CreateCollection({ showHeader = true, onCreate }) {
               {fileUrl2 ? (
                 <img src={fileUrl2} alt="" className="w-full h-full object-cover" />
               ) : (
-                <ImageIcon size={100} className={isDark ? 'text-white/20' : 'text-gray-300'} />
+                <ImageIcon size={100} className={'text-gray-300 dark:text-white/20'} />
               )}
             </div>
           </div>
@@ -571,7 +567,7 @@ export default function CreateCollection({ showHeader = true, onCreate }) {
           <div
             className={cn(
               'border-[3px] border-dashed rounded-xl p-1 cursor-pointer',
-              isDark ? 'border-white/20' : 'border-gray-300'
+              'border-gray-300 dark:border-white/20'
             )}
           >
             <input
@@ -583,7 +579,7 @@ export default function CreateCollection({ showHeader = true, onCreate }) {
               onChange={handleFileSelect3}
             />
             <div
-              className={cn('relative flex items-center justify-center h-[200px] rounded-lg overflow-hidden cursor-pointer border', isDark ? 'border-white/10' : 'border-black/10')}
+              className={cn('relative flex items-center justify-center h-[200px] rounded-lg overflow-hidden cursor-pointer border', 'border-black/10 dark:border-white/10')}
             >
               <div
                 className="absolute inset-0 flex flex-col items-center justify-center bg-black opacity-0 hover:opacity-60 transition-opacity z-10"
@@ -599,7 +595,7 @@ export default function CreateCollection({ showHeader = true, onCreate }) {
               {fileUrl3 ? (
                 <img src={fileUrl3} alt="" className="w-full h-full object-cover" />
               ) : (
-                <ImageIcon size={100} className={isDark ? 'text-white/20' : 'text-gray-300'} />
+                <ImageIcon size={100} className={'text-gray-300 dark:text-white/20'} />
               )}
             </div>
           </div>
@@ -636,9 +632,7 @@ export default function CreateCollection({ showHeader = true, onCreate }) {
           onChange={(e) => handleChangeCategory(e.target.value)}
           className={cn(
             'w-full rounded-lg border-[1.5px] px-3 py-2 text-[13px] font-normal outline-none',
-            isDark
-              ? 'border-white/15 bg-transparent text-white'
-              : 'border-gray-300 bg-white text-gray-900'
+            'border-gray-300 bg-white text-gray-900 dark:border-white/15 dark:bg-transparent dark:text-white'
           )}
         >
           {CATEGORIES.map((cat) => (
@@ -707,9 +701,7 @@ export default function CreateCollection({ showHeader = true, onCreate }) {
                 'rounded-lg border-[1.5px] px-4 py-1 text-[13px] font-normal capitalize transition-colors',
                 type === t
                   ? 'border-primary bg-primary/10 text-primary'
-                  : isDark
-                    ? 'border-white/15 text-white hover:border-primary'
-                    : 'border-gray-300 text-gray-900 hover:border-primary'
+                  : 'border-gray-300 text-gray-900 hover:border-primary dark:border-white/15 dark:text-white dark:hover:border-primary'
               )}
             >
               {t}
@@ -758,11 +750,11 @@ export default function CreateCollection({ showHeader = true, onCreate }) {
                       </div>
 
                       <button onClick={() => handleRemoveCost(cost.md5)}>
-                        <XCircle size={20} className={isDark ? 'text-white/60' : 'text-gray-600'} />
+                        <XCircle size={20} className={'text-gray-600 dark:text-white/60'} />
                       </button>
                     </div>
                   </div>
-                  <div className={cn('h-[1px]', isDark ? 'bg-white/10' : 'bg-gray-200')} />
+                  <div className={cn('h-[1px]', 'bg-gray-200 dark:bg-white/10')} />
                 </div>
               ))}
 
@@ -771,9 +763,7 @@ export default function CreateCollection({ showHeader = true, onCreate }) {
                   onClick={() => setOpenAddCost(true)}
                   className={cn(
                     'flex items-center gap-2 rounded-lg border-[1.5px] px-3 py-1 text-[13px] font-normal',
-                    isDark
-                      ? 'border-white/15 text-white hover:border-primary'
-                      : 'border-gray-300 text-gray-900 hover:border-primary'
+                    'border-gray-300 text-gray-900 hover:border-primary dark:border-white/15 dark:text-white dark:hover:border-primary'
                   )}
                 >
                   <Plus size={16} />
@@ -801,9 +791,7 @@ export default function CreateCollection({ showHeader = true, onCreate }) {
                 }}
                 className={cn(
                   'w-full rounded-lg border-[1.5px] px-3 py-2 text-[13px] font-normal outline-none',
-                  isDark
-                    ? 'border-white/15 bg-transparent text-white placeholder:text-white/40'
-                    : 'border-gray-300 bg-white text-gray-900 placeholder:text-gray-400'
+                  'border-gray-300 bg-white text-gray-900 placeholder:text-gray-400 dark:border-white/15 dark:bg-transparent dark:text-white dark:placeholder:text-white/40'
                 )}
               />
             </div>
@@ -826,7 +814,7 @@ export default function CreateCollection({ showHeader = true, onCreate }) {
                 <div
                   className={cn(
                     'border-[3px] border-dashed rounded-xl p-1 w-fit cursor-pointer',
-                    isDark ? 'border-white/20' : 'border-gray-300'
+                    'border-gray-300 dark:border-white/20'
                   )}
                 >
                   <input
@@ -838,7 +826,7 @@ export default function CreateCollection({ showHeader = true, onCreate }) {
                     onChange={handleFileSelect4}
                   />
                   <div
-                    className={cn('relative flex items-center justify-center w-[320px] h-[240px] rounded-lg overflow-hidden cursor-pointer border', isDark ? 'border-white/10' : 'border-black/10')}
+                    className={cn('relative flex items-center justify-center w-[320px] h-[240px] rounded-lg overflow-hidden cursor-pointer border', 'border-black/10 dark:border-white/10')}
                   >
                     <div
                       className="absolute inset-0 flex flex-col items-center justify-center bg-black opacity-0 hover:opacity-60 transition-opacity z-10"
@@ -856,7 +844,7 @@ export default function CreateCollection({ showHeader = true, onCreate }) {
                     ) : (
                       <ImageIcon
                         size={100}
-                        className={isDark ? 'text-white/20' : 'text-gray-300'}
+                        className={'text-gray-300 dark:text-white/20'}
                       />
                     )}
                   </div>
@@ -887,9 +875,7 @@ export default function CreateCollection({ showHeader = true, onCreate }) {
           }}
           className={cn(
             'w-full rounded-lg border-[1.5px] px-3 py-2 text-[13px] font-normal outline-none resize-none',
-            isDark
-              ? 'border-white/15 bg-transparent text-white placeholder:text-white/40'
-              : 'border-gray-300 bg-white text-gray-900 placeholder:text-gray-400'
+            'border-gray-300 bg-white text-gray-900 placeholder:text-gray-400 dark:border-white/15 dark:bg-transparent dark:text-white dark:placeholder:text-white/40'
           )}
         />
       </div>
@@ -908,9 +894,7 @@ export default function CreateCollection({ showHeader = true, onCreate }) {
           value={taxon}
           className={cn(
             'w-full rounded-lg border-[1.5px] px-3 py-2 text-[13px] font-normal outline-none',
-            isDark
-              ? 'border-white/15 bg-white/5 text-white/40'
-              : 'border-gray-300 bg-gray-100 text-gray-500'
+            'border-gray-300 bg-gray-100 text-gray-500 dark:border-white/15 dark:bg-white/5 dark:text-white/40'
           )}
         />
       </div>
@@ -988,9 +972,7 @@ export default function CreateCollection({ showHeader = true, onCreate }) {
                 'rounded-lg border-[1.5px] px-4 py-1 text-[13px] font-normal capitalize transition-colors',
                 privateCollection === p
                   ? 'border-primary bg-primary/10 text-primary'
-                  : isDark
-                    ? 'border-white/15 text-white hover:border-primary'
-                    : 'border-gray-300 text-gray-900 hover:border-primary'
+                  : 'border-gray-300 text-gray-900 hover:border-primary dark:border-white/15 dark:text-white dark:hover:border-primary'
               )}
             >
               {p}

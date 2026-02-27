@@ -4,7 +4,7 @@ import Footer from 'src/components/Footer';
 import ScrollToTop from 'src/components/ScrollToTop';
 import { useRouter } from 'next/router';
 import api from 'src/utils/api';
-import { ThemeContext, AppContext } from 'src/context/AppContext';
+import { AppContext } from 'src/context/AppContext';
 import { useSelector } from 'react-redux';
 import { selectMetrics } from 'src/redux/statusSlice';
 import { cn } from 'src/utils/cn';
@@ -20,9 +20,9 @@ const currencySymbols = {
 import { fNumber, fCurrency5 } from 'src/utils/formatters';
 import Decimal from 'decimal.js-light';
 
-const Controls = ({ darkMode, className, children, ...p }) => <div className={cn('flex flex-col gap-[14px] mb-4 py-4 px-5 rounded-xl border w-full transition-[border-color] duration-200', darkMode ? 'bg-white/[0.02] border-white/[0.08] hover:border-white/[0.15]' : 'bg-black/[0.02] border-black/[0.08] hover:border-black/[0.15]', className)} {...p}>{children}</div>;
+const Controls = ({ className, children, ...p }) => <div className={cn('flex flex-col gap-[14px] mb-4 py-4 px-5 rounded-xl border w-full transition-[border-color] duration-200', 'bg-black/[0.02] border-black/[0.08] hover:border-black/[0.15] dark:bg-white/[0.02] dark:border-white/[0.08] dark:hover:border-white/[0.15]', className)} {...p}>{children}</div>;
 
-const ControlRow = ({ darkMode, className, children, ...p }) => <div className={cn('flex gap-3 items-center flex-wrap w-full max-md:flex-col max-md:items-stretch max-md:gap-3', className)} {...p}>{children}</div>;
+const ControlRow = ({ className, children, ...p }) => <div className={cn('flex gap-3 items-center flex-wrap w-full max-md:flex-col max-md:items-stretch max-md:gap-3', className)} {...p}>{children}</div>;
 
 const MobileButtonGrid = ({ className, children, ...p }) => <div className={cn('contents max-md:!grid max-md:grid-cols-[repeat(auto-fit,minmax(80px,1fr))] max-md:gap-2 max-md:w-full', className)} {...p}>{children}</div>;
 
@@ -30,11 +30,11 @@ const MobileFilterGrid = ({ className, children, ...p }) => <div className={cn('
 
 const ActiveFilters = ({ className, children, ...p }) => <div className={cn('flex gap-2 flex-wrap items-center min-h-[24px] max-md:w-full', className)} {...p}>{children}</div>;
 
-const FilterChip = ({ darkMode, className, children, ...p }) => (
+const FilterChip = ({ className, children, ...p }) => (
   <div
     className={cn(
       'inline-flex items-center gap-1 py-1 px-[10px] text-[#3b82f6] rounded-md text-[11px] font-normal cursor-pointer transition-all duration-150 after:content-["\\00d7"] after:text-xs after:font-medium after:opacity-60 after:ml-[2px] max-md:py-[5px]',
-      darkMode ? 'bg-[rgba(59,130,246,0.1)] hover:bg-[rgba(59,130,246,0.18)]' : 'bg-[rgba(59,130,246,0.08)] hover:bg-[rgba(59,130,246,0.15)]',
+      'bg-[rgba(59,130,246,0.08)] hover:bg-[rgba(59,130,246,0.15)] dark:bg-[rgba(59,130,246,0.1)] dark:hover:bg-[rgba(59,130,246,0.18)]',
       className
     )}
     {...p}
@@ -43,18 +43,18 @@ const FilterChip = ({ darkMode, className, children, ...p }) => (
   </div>
 );
 
-const SearchInput = ({ darkMode, className, ...p }) => (
+const SearchInput = ({ className, ...p }) => (
   <input
     className={cn(
       'py-[10px] px-4 border-[1.5px] rounded-xl text-sm min-w-[200px] flex-1 max-w-[300px] focus:outline-none focus:border-[rgba(59,130,246,0.5)]',
-      darkMode ? 'border-white/[0.15] bg-[rgba(17,24,39,0.8)] text-white placeholder:text-white/50' : 'border-[rgba(145,158,171,0.2)] bg-[rgba(255,255,255,0.95)] text-[#333] placeholder:text-black/50',
+      'border-[rgba(145,158,171,0.2)] bg-[rgba(255,255,255,0.95)] text-[#333] placeholder:text-black/50 dark:border-white/[0.15] dark:bg-[rgba(17,24,39,0.8)] dark:text-white dark:placeholder:text-white/50',
       className
     )}
     {...p}
   />
 );
 
-const Button = ({ selected, darkMode, className, children, disabled, ...p }) => (
+const Button = ({ selected, className, children, disabled, ...p }) => (
   <button
     className={cn(
       'py-2 px-[14px] border-[1.5px] rounded-lg text-[13px] font-normal transition-[border-color,background-color] duration-150',
@@ -63,9 +63,7 @@ const Button = ({ selected, darkMode, className, children, disabled, ...p }) => 
         : 'cursor-pointer',
       selected
         ? 'border-[rgba(59,130,246,0.25)] bg-[rgba(59,130,246,0.08)] text-[#3b82f6] hover:border-[rgba(59,130,246,0.35)] hover:bg-[rgba(59,130,246,0.12)]'
-        : darkMode
-          ? 'border-white/10 bg-transparent text-white/80 hover:border-white/20 hover:bg-white/[0.05]'
-          : 'border-black/10 bg-transparent text-black/70 hover:border-black/20 hover:bg-black/[0.03]',
+        : 'border-black/10 bg-transparent text-black/70 hover:border-black/20 hover:bg-black/[0.03] dark:border-white/10 dark:bg-transparent dark:text-white/80 dark:hover:border-white/20 dark:hover:bg-white/[0.05]',
       className
     )}
     disabled={disabled}
@@ -77,54 +75,56 @@ const Button = ({ selected, darkMode, className, children, disabled, ...p }) => 
 
 const optionStyle = { dark: { background: '#111', color: '#f5f5f5' }, light: { background: '#fff', color: '#1a1a2e' } };
 
-const Select = ({ selected, darkMode, className, children, ...p }) => (
-  <select
-    className={cn(
-      'py-2 pl-[14px] pr-[30px] border-[1.5px] rounded-lg text-[13px] font-normal cursor-pointer appearance-none bg-no-repeat bg-[length:14px] bg-[position:right_8px_center] transition-[border-color] duration-150',
-      selected
-        ? 'border-[rgba(59,130,246,0.25)] bg-[rgba(59,130,246,0.08)] text-[#3b82f6] hover:border-[rgba(59,130,246,0.35)]'
-        : darkMode
-          ? 'border-white/10 bg-white/[0.04] text-white/80 hover:border-white/20'
-          : 'border-black/10 bg-[rgba(255,255,255,0.95)] text-black/70 hover:border-black/20',
-      className
-    )}
-    style={{ backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e")` }}
-    {...p}
-  >
-    {Array.isArray(children) ? children.map((child, i) =>
-      child?.type === 'option' ? { ...child, props: { ...child.props, key: child.props.value ?? i, style: { ...child.props.style, ...optionStyle[darkMode ? 'dark' : 'light'] } } } : child
-    ) : children}
-  </select>
-);
+const Select = ({ selected, className, children, ...p }) => {
+  const { themeName } = useContext(AppContext);
+  const isDarkSelect = themeName === 'XrplToDarkTheme';
+  return (
+    <select
+      className={cn(
+        'py-2 pl-[14px] pr-[30px] border-[1.5px] rounded-lg text-[13px] font-normal cursor-pointer appearance-none bg-no-repeat bg-[length:14px] bg-[position:right_8px_center] transition-[border-color] duration-150',
+        selected
+          ? 'border-[rgba(59,130,246,0.25)] bg-[rgba(59,130,246,0.08)] text-[#3b82f6] hover:border-[rgba(59,130,246,0.35)]'
+          : 'border-black/10 bg-[rgba(255,255,255,0.95)] text-black/70 hover:border-black/20 dark:border-white/10 dark:bg-white/[0.04] dark:text-white/80 dark:hover:border-white/20',
+        className
+      )}
+      style={{ backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e")` }}
+      {...p}
+    >
+      {Array.isArray(children) ? children.map((child, i) =>
+        child?.type === 'option' ? { ...child, props: { ...child.props, key: child.props.value ?? i, style: { ...child.props.style, ...optionStyle[isDarkSelect ? 'dark' : 'light'] } } } : child
+      ) : children}
+    </select>
+  );
+};
 
-const FilterInput = ({ darkMode, className, ...p }) => (
+const FilterInput = ({ className, ...p }) => (
   <input
     className={cn(
       'py-2 px-3 border-[1.5px] rounded-lg text-[13px] w-[100px] transition-[border-color] duration-150 focus:outline-none focus:border-[rgba(59,130,246,0.35)]',
-      darkMode ? 'border-white/10 bg-white/[0.04] text-white/90 placeholder:text-white/[0.35]' : 'border-black/10 bg-[rgba(255,255,255,0.95)] text-black/80 placeholder:text-black/[0.35]',
+      'border-black/10 bg-[rgba(255,255,255,0.95)] text-black/80 placeholder:text-black/[0.35] dark:border-white/10 dark:bg-white/[0.04] dark:text-white/90 dark:placeholder:text-white/[0.35]',
       className
     )}
     {...p}
   />
 );
 
-const HeatMap = ({ darkMode, className, children, ...p }) => <div className={cn('w-full h-[320px] rounded-xl border mb-5 relative overflow-hidden transition-[border-color] duration-200', darkMode ? 'bg-white/[0.02] border-white/[0.08] hover:border-white/[0.15]' : 'bg-black/[0.02] border-black/[0.08] hover:border-black/[0.15]', className)} {...p}>{children}</div>;
+const HeatMap = ({ className, children, ...p }) => <div className={cn('w-full h-[320px] rounded-xl border mb-5 relative overflow-hidden transition-[border-color] duration-200', 'bg-black/[0.02] border-black/[0.08] hover:border-black/[0.15] dark:bg-white/[0.02] dark:border-white/[0.08] dark:hover:border-white/[0.15]', className)} {...p}>{children}</div>;
 
 const Canvas = ({ className, ...p }) => <canvas className={cn('w-full h-full cursor-crosshair', className)} {...p} />;
 
-const CustomTooltip = ({ darkMode, className, children, ...p }) => <div className={cn('fixed rounded-lg py-[10px] px-[14px] text-xs pointer-events-none z-[1000] backdrop-blur-[8px] whitespace-nowrap', darkMode ? 'bg-black/90 border border-white/[0.15] text-white' : 'bg-white/95 border border-black/10 text-[#333]', className)} {...p}>{children}</div>;
+const CustomTooltip = ({ className, children, ...p }) => <div className={cn('fixed rounded-lg py-[10px] px-[14px] text-xs pointer-events-none z-[1000] backdrop-blur-[8px] whitespace-nowrap', 'bg-white/95 border border-black/10 text-[#333] dark:bg-black/90 dark:border dark:border-white/[0.15] dark:text-white', className)} {...p}>{children}</div>;
 
-const TableWrapper = ({ darkMode, className, children, ...p }) => <div className={cn('overflow-auto rounded-xl border w-full max-h-[70vh]', darkMode ? 'border-white/[0.08] bg-white/[0.02]' : 'border-black/[0.08] bg-black/[0.02]', className)} {...p}>{children}</div>;
+const TableWrapper = ({ className, children, ...p }) => <div className={cn('overflow-auto rounded-xl border w-full max-h-[70vh]', 'border-black/[0.08] bg-black/[0.02] dark:border-white/[0.08] dark:bg-white/[0.02]', className)} {...p}>{children}</div>;
 
 const Table = ({ className, children, ...p }) => <table className={cn('w-full border-collapse min-w-full table-auto hidden md:table', className)} {...p}>{children}</table>;
 
-const Th = ({ darkMode, align, sortable, className, children, ...p }) => (
+const Th = ({ align, sortable, className, children, ...p }) => (
   <th
     className={cn(
       'py-[14px] px-4 font-semibold text-[10px] uppercase tracking-[0.06em] whitespace-nowrap sticky top-0 z-10',
-      darkMode ? 'text-white/60 bg-[#111] border-b border-white/[0.06]' : 'text-[#919EAB] bg-[#f8fafd] border-b border-black/[0.06]',
+      'text-[#919EAB] bg-[#f8fafd] border-b border-black/[0.06] dark:text-white/60 dark:bg-white/[0.04] dark:border-b dark:border-white/[0.06]',
       sortable ? 'cursor-pointer select-none' : 'cursor-default',
-      sortable && (darkMode ? 'hover:text-white/80' : 'hover:text-black/80'),
+      sortable && ('hover:text-black/80 dark:hover:text-white/80'),
       className
     )}
     style={{ textAlign: align || 'left' }}
@@ -134,11 +134,11 @@ const Th = ({ darkMode, align, sortable, className, children, ...p }) => (
   </th>
 );
 
-const Tr = ({ darkMode, className, children, ...p }) => (
+const Tr = ({ className, children, ...p }) => (
   <tr
     className={cn(
       'border-b cursor-pointer transition-[border-color,background-color] duration-200 last:border-b-0',
-      darkMode ? 'border-white/[0.05] hover:bg-white/[0.04]' : 'border-black/[0.05] hover:bg-black/[0.02]',
+      'border-black/[0.05] hover:bg-black/[0.02] dark:border-white/[0.05] dark:hover:bg-white/[0.04]',
       className
     )}
     {...p}
@@ -147,9 +147,9 @@ const Tr = ({ darkMode, className, children, ...p }) => (
   </tr>
 );
 
-const Td = ({ darkMode, align, className, children, ...p }) => (
+const Td = ({ align, className, children, ...p }) => (
   <td
-    className={cn('py-[14px] px-4 text-sm tracking-[0.005em]', darkMode ? 'text-white/88' : 'text-[#1a1a2e]', className)}
+    className={cn('py-[14px] px-4 text-sm tracking-[0.005em]', 'text-[#1a1a2e] dark:text-white/88', className)}
     style={{ textAlign: align || 'left' }}
     {...p}
   >
@@ -159,13 +159,13 @@ const Td = ({ darkMode, align, className, children, ...p }) => (
 
 const TokenInfo = ({ className, children, ...p }) => <div className={cn('flex items-center gap-3', className)} {...p}>{children}</div>;
 
-const TokenImage = ({ darkMode, className, ...p }) => <img className={cn('w-8 h-8 rounded-full border-2 object-cover', darkMode ? 'border-white/10' : 'border-black/10', className)} loading="lazy" decoding="async" width={32} height={32} {...p} />;
+const TokenImage = ({ className, ...p }) => <img className={cn('w-8 h-8 rounded-full border-2 object-cover', 'border-black/10 dark:border-white/10', className)} loading="lazy" decoding="async" width={32} height={32} {...p} />;
 
 const TokenDetails = ({ className, children, ...p }) => <div className={cn('flex flex-col', className)} {...p}>{children}</div>;
 
-const TokenName = ({ darkMode, className, children, ...p }) => <div className={cn('font-semibold text-sm tracking-[-0.01em]', darkMode ? 'text-white/95' : 'text-[#1a1a2e]', className)} {...p}>{children}</div>;
+const TokenName = ({ className, children, ...p }) => <div className={cn('font-semibold text-sm tracking-[-0.01em]', 'text-[#1a1a2e] dark:text-white/95', className)} {...p}>{children}</div>;
 
-const TokenSymbol = ({ darkMode, className, children, ...p }) => <div className={cn('text-[11px] uppercase font-medium tracking-[0.02em]', darkMode ? 'text-white/60' : 'text-black/40', className)} {...p}>{children}</div>;
+const TokenSymbol = ({ className, children, ...p }) => <div className={cn('text-[11px] uppercase font-medium tracking-[0.02em]', 'text-black/40 dark:text-white/60', className)} {...p}>{children}</div>;
 
 const RSIBadge = ({ bg, color, className, children, ...p }) => (
   <span
@@ -180,9 +180,8 @@ const RSIBadge = ({ bg, color, className, children, ...p }) => (
 const PriceChange = ({ positive, className, children, ...p }) => <span className={cn('font-semibold text-[13px]', positive ? 'text-[#22c55e]' : 'text-[#ef4444]', className)} {...p}>{children}</span>;
 
 function RSIAnalysisPage({ data }) {
-  const { themeName } = useContext(ThemeContext);
-  const { activeFiatCurrency } = useContext(AppContext);
-  const darkMode = themeName === 'XrplToDarkTheme';
+  const { activeFiatCurrency, themeName } = useContext(AppContext);
+  const isDark = themeName === 'XrplToDarkTheme';
   const metrics = useSelector(selectMetrics);
   const exchRate = metrics[activeFiatCurrency] || 1;
   const canvasRef = useRef(null);
@@ -384,20 +383,20 @@ function RSIAnalysisPage({ data }) {
   const getRSIValue = useCallback((token) => token[rsiField], [rsiField]);
 
   const getMarketCapColor = (mcap) => {
-    if (!mcap || isNaN(mcap)) return darkMode ? '#FFFFFF' : '#000000';
-    if (mcap >= 5e6) return darkMode ? '#2E7D32' : '#1B5E20';
-    if (mcap >= 1e6) return darkMode ? '#4CAF50' : '#2E7D32';
-    if (mcap >= 1e5) return darkMode ? '#42A5F5' : '#1976D2';
-    if (mcap >= 1e4) return darkMode ? '#FFC107' : '#F57F17';
-    if (mcap >= 1e3) return darkMode ? '#FF9800' : '#E65100';
-    return darkMode ? '#EF5350' : '#C62828';
+    if (!mcap || isNaN(mcap)) return isDark ? '#FFFFFF' : '#000000';
+    if (mcap >= 5e6) return isDark ? '#2E7D32' : '#1B5E20';
+    if (mcap >= 1e6) return isDark ? '#4CAF50' : '#2E7D32';
+    if (mcap >= 1e5) return isDark ? '#42A5F5' : '#1976D2';
+    if (mcap >= 1e4) return isDark ? '#FFC107' : '#F57F17';
+    if (mcap >= 1e3) return isDark ? '#FF9800' : '#E65100';
+    return isDark ? '#EF5350' : '#C62828';
   };
 
   const getRSIColor = (rsi) => {
     if (!rsi || isNaN(rsi))
       return {
         bg: 'transparent',
-        color: darkMode ? '#666' : '#999',
+        color: isDark ? '#666' : '#999',
         border: 'transparent'
       };
 
@@ -430,9 +429,9 @@ function RSIAnalysisPage({ data }) {
       };
 
     return {
-      bg: darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
-      color: darkMode ? '#fff' : '#000',
-      border: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'
+      bg: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
+      color: isDark ? '#fff' : '#000',
+      border: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'
     };
   };
 
@@ -530,10 +529,10 @@ function RSIAnalysisPage({ data }) {
     const height = rect.height;
     const padding = 60;
 
-    ctx.fillStyle = darkMode ? '#1a1a1a' : '#fff';
+    ctx.fillStyle = isDark ? '#1a1a1a' : '#fff';
     ctx.fillRect(0, 0, width, height);
 
-    ctx.strokeStyle = darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
+    ctx.strokeStyle = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
     ctx.lineWidth = 1;
     ctx.setLineDash([5, 5]);
 
@@ -547,11 +546,11 @@ function RSIAnalysisPage({ data }) {
 
     ctx.setLineDash([]);
 
-    ctx.fillStyle = darkMode ? 'rgba(244,67,54,0.08)' : 'rgba(244,67,54,0.05)';
+    ctx.fillStyle = isDark ? 'rgba(244,67,54,0.08)' : 'rgba(244,67,54,0.05)';
     const overboughtY = height - padding - (70 / 100) * (height - padding * 2);
     ctx.fillRect(padding, padding, width - padding * 1.5, overboughtY - padding);
 
-    ctx.fillStyle = darkMode ? 'rgba(76,175,80,0.08)' : 'rgba(76,175,80,0.05)';
+    ctx.fillStyle = isDark ? 'rgba(76,175,80,0.08)' : 'rgba(76,175,80,0.05)';
     const oversoldY = height - padding - (30 / 100) * (height - padding * 2);
     ctx.fillRect(padding, oversoldY, width - padding * 1.5, height - padding - oversoldY);
 
@@ -598,13 +597,13 @@ function RSIAnalysisPage({ data }) {
         ctx.fillStyle = color;
         ctx.fill();
 
-        ctx.strokeStyle = darkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)';
+        ctx.strokeStyle = isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)';
         ctx.lineWidth = 1;
         ctx.stroke();
       });
     }
 
-    ctx.fillStyle = darkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)';
+    ctx.fillStyle = isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)';
     ctx.font = '12px -apple-system, system-ui, sans-serif';
     ctx.textAlign = 'right';
     ctx.textBaseline = 'middle';
@@ -625,7 +624,7 @@ function RSIAnalysisPage({ data }) {
     ctx.textAlign = 'center';
     ctx.font = 'bold 12px -apple-system, system-ui, sans-serif';
     ctx.fillText(`Market Cap (${activeFiatCurrency})`, width / 2, height - 20);
-  }, [tokens, params.timeframe, darkMode, activeFiatCurrency, getRSIValue]);
+  }, [tokens, params.timeframe, activeFiatCurrency, getRSIValue, isDark]);
 
   useEffect(() => {
     const timer = setTimeout(drawHeatMap, 100);
@@ -645,13 +644,12 @@ function RSIAnalysisPage({ data }) {
       </h1>
 
       <div id="back-to-top-anchor" className="mx-auto max-w-[1920px] px-2.5 md:px-4 mt-4">
-        <Controls darkMode={darkMode}>
+        <Controls>
           <ControlRow>
             <MobileButtonGrid>
               {timeframes.map((tf) => (
                 <Button
                   key={tf.value}
-                  darkMode={darkMode}
                   selected={params.timeframe === tf.value}
                   onClick={() => setTimeframe(tf.value)}
                 >
@@ -660,14 +658,13 @@ function RSIAnalysisPage({ data }) {
               ))}
             </MobileButtonGrid>
             <div className="flex gap-2 ml-auto items-center flex-wrap max-md:ml-0 max-md:w-full max-md:justify-start">
-              <span className={cn('hidden md:block w-px h-5 mx-1', darkMode ? 'bg-white/10' : 'bg-black/10')} />
+              <span className={cn('hidden md:block w-px h-5 mx-1', 'bg-black/10 dark:bg-white/10')} />
               {presets.map((preset) => (
-                <Button key={preset.label} darkMode={darkMode} onClick={() => applyPreset(preset)} className="max-md:text-[12px] max-md:py-1.5 max-md:px-2.5">
+                <Button key={preset.label} onClick={() => applyPreset(preset)} className="max-md:text-[12px] max-md:py-1.5 max-md:px-2.5">
                   {preset.label}
                 </Button>
               ))}
               <Select
-                darkMode={darkMode}
                 value={params.limit}
                 onChange={(e) => updateParam('limit', Number(e.target.value))}
                 aria-label="Results per page"
@@ -682,14 +679,12 @@ function RSIAnalysisPage({ data }) {
           <ControlRow>
             <MobileFilterGrid>
               <SearchInput
-                darkMode={darkMode}
                 placeholder="Search..."
                 value={params.filter}
                 onChange={(e) => updateParam('filter', e.target.value)}
                 className="!min-w-[120px] !max-w-[160px]"
               />
               <Select
-                darkMode={darkMode}
                 selected={!!params.tag}
                 value={params.tag}
                 onChange={(e) => updateParam('tag', e.target.value)}
@@ -703,7 +698,6 @@ function RSIAnalysisPage({ data }) {
                 <option value="Stablecoin">Stablecoin</option>
               </Select>
               <Select
-                darkMode={darkMode}
                 selected={!!params.origin}
                 value={params.origin}
                 onChange={(e) => updateParam('origin', e.target.value)}
@@ -713,31 +707,26 @@ function RSIAnalysisPage({ data }) {
                 <option value="FirstLedger">FirstLedger</option>
               </Select>
               <FilterInput
-                darkMode={darkMode}
                 placeholder="Min MC"
                 value={params.minMarketCap}
                 onChange={(e) => updateParam('minMarketCap', e.target.value)}
               />
               <FilterInput
-                darkMode={darkMode}
                 placeholder="Min Volume"
                 value={params.minVolume24h}
                 onChange={(e) => updateParam('minVolume24h', e.target.value)}
               />
               <FilterInput
-                darkMode={darkMode}
                 placeholder="Min RSI"
                 value={params.minRsi}
                 onChange={(e) => updateParam('minRsi', e.target.value)}
               />
               <FilterInput
-                darkMode={darkMode}
                 placeholder="Max RSI"
                 value={params.maxRsi}
                 onChange={(e) => updateParam('maxRsi', e.target.value)}
               />
               <Button
-                darkMode={darkMode}
                 selected={params.activeOnly}
                 onClick={() => updateParam('activeOnly', !params.activeOnly)}
                 title="Only tokens with 24h volume"
@@ -745,7 +734,6 @@ function RSIAnalysisPage({ data }) {
                 Active
               </Button>
               <Button
-                darkMode={darkMode}
                 selected={params.excludeNeutral}
                 onClick={() => updateParam('excludeNeutral', !params.excludeNeutral)}
                 title="Exclude RSI=50 (no data)"
@@ -760,7 +748,6 @@ function RSIAnalysisPage({ data }) {
               {activeFilters.map((filter) => (
                 <FilterChip
                   key={filter.key}
-                  darkMode={darkMode}
                   onClick={() => removeFilter(filter.key)}
                   title="Click to remove"
                 >
@@ -771,7 +758,7 @@ function RSIAnalysisPage({ data }) {
           )}
         </Controls>
 
-        <HeatMap darkMode={darkMode}>
+        <HeatMap>
           <Canvas
             ref={canvasRef}
             onMouseMove={handleCanvasMouseMove}
@@ -780,36 +767,36 @@ function RSIAnalysisPage({ data }) {
           />
           <div className="absolute top-3 left-5 right-5 flex justify-between items-center flex-wrap gap-2">
             <span
-              className={cn('text-sm font-semibold tracking-[-0.01em]', darkMode ? 'text-white/60' : 'text-black/60')}
+              className={cn('text-sm font-semibold tracking-[-0.01em]', 'text-black/60 dark:text-white/60')}
             >
               RSI Heatmap · {params.timeframe.toUpperCase()}
             </span>
             <div className="flex gap-3 text-[11px] flex-wrap">
               <span className="flex items-center gap-1">
                 <span className="w-2 h-2 rounded-full bg-[#ff4444]" />
-                <span className={darkMode ? 'text-white/50' : 'text-black/50'}>≥80</span>
+                <span className={'text-black/50 dark:text-white/50'}>≥80</span>
               </span>
               <span className="flex items-center gap-1">
                 <span className="w-2 h-2 rounded-full bg-[#ff8844]" />
-                <span className={darkMode ? 'text-white/50' : 'text-black/50'}>≥70</span>
+                <span className={'text-black/50 dark:text-white/50'}>≥70</span>
               </span>
               <span className="flex items-center gap-1">
                 <span className="w-2 h-2 rounded-full bg-[#44ff44]" />
-                <span className={darkMode ? 'text-white/50' : 'text-black/50'}>30-70</span>
+                <span className={'text-black/50 dark:text-white/50'}>30-70</span>
               </span>
               <span className="flex items-center gap-1">
                 <span className="w-2 h-2 rounded-full bg-[#4488ff]" />
-                <span className={darkMode ? 'text-white/50' : 'text-black/50'}>≤30</span>
+                <span className={'text-black/50 dark:text-white/50'}>≤30</span>
               </span>
               <span className="flex items-center gap-1">
                 <span className="w-2 h-2 rounded-full bg-[#8844ff]" />
-                <span className={darkMode ? 'text-white/50' : 'text-black/50'}>≤20</span>
+                <span className={'text-black/50 dark:text-white/50'}>≤20</span>
               </span>
             </div>
           </div>
           {loading && (
             <div
-              className={cn('absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[13px] animate-pulse', darkMode ? 'text-white/60' : 'text-black/50')}
+              className={cn('absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[13px] animate-pulse', 'text-black/50 dark:text-white/60')}
             >
               Loading...
             </div>
@@ -819,8 +806,8 @@ function RSIAnalysisPage({ data }) {
             const tSignal = getRSISignal(tRsi);
             const tColors = getRSIColor(tRsi);
             return (
-              <CustomTooltip darkMode={darkMode} style={{ left: tooltip.x, top: tooltip.y }}>
-                <div className="font-semibold mb-1">{tooltip.data.name} {tooltip.data.user && <span className={cn('font-normal', darkMode ? 'text-white/50' : 'text-black/40')}>{tooltip.data.user}</span>}</div>
+              <CustomTooltip style={{ left: tooltip.x, top: tooltip.y }}>
+                <div className="font-semibold mb-1">{tooltip.data.name} {tooltip.data.user && <span className={cn('font-normal', 'text-black/40 dark:text-white/50')}>{tooltip.data.user}</span>}</div>
                 <div className="flex items-center gap-2">
                   <span>RSI: <span style={{ color: tColors.color, fontWeight: 600 }}>{tRsi?.toFixed(1) || 'N/A'}</span></span>
                   {tSignal && tSignal !== 'Neutral' && <span className="text-[10px] font-medium py-px px-1.5 rounded" style={{ background: tColors.bg, color: tColors.color }}>{tSignal}</span>}
@@ -834,10 +821,10 @@ function RSIAnalysisPage({ data }) {
           })()}
         </HeatMap>
 
-        <TableWrapper darkMode={darkMode} style={{ position: 'relative' }}>
+        <TableWrapper style={{ position: 'relative' }}>
           {loading && tokens.length > 0 && (
             <div className="absolute inset-0 z-20 flex items-center justify-center backdrop-blur-[1px]">
-              <div className={cn('text-[13px] animate-pulse py-2 px-4 rounded-lg', darkMode ? 'text-white/60 bg-black/60' : 'text-black/50 bg-white/80')}>
+              <div className={cn('text-[13px] animate-pulse py-2 px-4 rounded-lg', 'text-black/50 bg-white/80 dark:text-white/60 dark:bg-black/60')}>
                 Updating...
               </div>
             </div>
@@ -845,16 +832,15 @@ function RSIAnalysisPage({ data }) {
           <Table>
             <thead>
               <tr>
-                <Th darkMode={darkMode}>#</Th>
-                <Th darkMode={darkMode}>Token</Th>
-                <Th darkMode={darkMode} align="right" sortable onClick={() => handleSort('exch')}>
+                <Th>#</Th>
+                <Th>Token</Th>
+                <Th align="right" sortable onClick={() => handleSort('exch')}>
                   Price{getSortIndicator('exch')}
                 </Th>
-                <Th darkMode={darkMode} align="right" sortable onClick={() => handleSort('pro24h')}>
+                <Th align="right" sortable onClick={() => handleSort('pro24h')}>
                   24h{getSortIndicator('pro24h')}
                 </Th>
                 <Th
-                  darkMode={darkMode}
                   align="right"
                   sortable
                   onClick={() => handleSort('vol24hxrp')}
@@ -862,7 +848,6 @@ function RSIAnalysisPage({ data }) {
                   Volume{getSortIndicator('vol24hxrp')}
                 </Th>
                 <Th
-                  darkMode={darkMode}
                   align="right"
                   sortable
                   onClick={() => handleSort('marketcap')}
@@ -870,7 +855,6 @@ function RSIAnalysisPage({ data }) {
                   MCap{getSortIndicator('marketcap')}
                 </Th>
                 <Th
-                  darkMode={darkMode}
                   align="right"
                   sortable
                   onClick={() => handleSort('holders')}
@@ -878,7 +862,6 @@ function RSIAnalysisPage({ data }) {
                   Holders{getSortIndicator('holders')}
                 </Th>
                 <Th
-                  darkMode={darkMode}
                   align="center"
                   sortable
                   onClick={() => handleSort(`rsi${params.timeframe}`)}
@@ -898,37 +881,35 @@ function RSIAnalysisPage({ data }) {
                 return (
                   <Tr
                     key={token.md5}
-                    darkMode={darkMode}
                     onClick={() => router.push(`/token/${token.slug}`)}
                   >
-                    <Td darkMode={darkMode} className="w-[52px]">{params.start + idx + 1}</Td>
-                    <Td darkMode={darkMode}>
+                    <Td className="w-[52px]">{params.start + idx + 1}</Td>
+                    <Td>
                       <TokenInfo>
                         <TokenImage
-                          darkMode={darkMode}
                           src={`https://s1.xrpl.to/thumb/${token.md5}_48`}
                           alt=""
                           onError={(e) => (e.target.style.display = 'none')}
                         />
                         <TokenDetails>
-                          <TokenName darkMode={darkMode}>{token.name}</TokenName>
-                          <TokenSymbol darkMode={darkMode}>{token.user || token.slug?.split('-')[0]?.slice(0, 8) || '—'}</TokenSymbol>
+                          <TokenName>{token.name}</TokenName>
+                          <TokenSymbol>{token.user || token.slug?.split('-')[0]?.slice(0, 8) || '—'}</TokenSymbol>
                         </TokenDetails>
                       </TokenInfo>
                     </Td>
-                    <Td darkMode={darkMode} align="right">
+                    <Td align="right">
                       <span>
                         {currencySymbols[activeFiatCurrency]}
                         {fCurrency5(priceFiat)}
                       </span>
                     </Td>
-                    <Td darkMode={darkMode} align="right">
+                    <Td align="right">
                       <PriceChange positive={token.pro24h >= 0}>
                         {token.pro24h >= 0 ? '+' : ''}
                         {token.pro24h?.toFixed(2) || '0.00'}%
                       </PriceChange>
                     </Td>
-                    <Td darkMode={darkMode} align="right">
+                    <Td align="right">
                       <span>
                         {currencySymbols[activeFiatCurrency]}
                         {volumeFiat >= 1e6
@@ -938,7 +919,7 @@ function RSIAnalysisPage({ data }) {
                             : fNumber(volumeFiat)}
                       </span>
                     </Td>
-                    <Td darkMode={darkMode} align="right">
+                    <Td align="right">
                       <span style={{ color: getMarketCapColor(marketCapFiat) }}>
                         {currencySymbols[activeFiatCurrency]}
                         {marketCapFiat >= 1e6
@@ -948,14 +929,14 @@ function RSIAnalysisPage({ data }) {
                             : fNumber(marketCapFiat)}
                       </span>
                     </Td>
-                    <Td darkMode={darkMode} align="right">
+                    <Td align="right">
                       <span
-                        className={darkMode ? 'text-white/70' : 'text-black/70'}
+                        className={'text-black/70 dark:text-white/70'}
                       >
                         {token.holders ? fNumber(token.holders) : '-'}
                       </span>
                     </Td>
-                    <Td darkMode={darkMode} align="center">
+                    <Td align="center">
                       <div className="flex flex-col items-center gap-0.5">
                         <RSIBadge {...rsiColors}>{rsi ? rsi.toFixed(1) : '-'}</RSIBadge>
                         {rsi && getRSISignal(rsi) !== 'Neutral' && (
@@ -970,7 +951,7 @@ function RSIAnalysisPage({ data }) {
           </Table>
 
           {/* Mobile card layout */}
-          <div className={cn('md:hidden', darkMode ? 'divide-y divide-white/10' : 'divide-y divide-black/10')}>
+          <div className={cn('md:hidden', 'divide-y divide-black/10 dark:divide-y dark:divide-white/10')}>
             {tokens.map((token, idx) => {
               const rsi = getRSIValue(token);
               const rsiColors = getRSIColor(rsi);
@@ -982,22 +963,21 @@ function RSIAnalysisPage({ data }) {
                 <div
                   key={token.md5}
                   onClick={() => router.push(`/token/${token.slug}`)}
-                  className={cn('px-3 py-3 cursor-pointer transition-colors duration-150', darkMode ? 'border-white/[0.05] hover:bg-white/[0.04]' : 'border-black/[0.05] hover:bg-black/[0.02]', idx > 0 && 'border-t-[1.5px]')}
+                  className={cn('px-3 py-3 cursor-pointer transition-colors duration-150', 'border-black/[0.05] hover:bg-black/[0.02] dark:border-white/[0.05] dark:hover:bg-white/[0.04]', idx > 0 && 'border-t-[1.5px]')}
                 >
                   {/* Row 1: Rank + Token + RSI badge */}
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2 min-w-0">
-                      <span className={cn('text-[11px] w-5 text-center shrink-0', darkMode ? 'text-white/60' : 'text-[#919EAB]')}>{params.start + idx + 1}</span>
+                      <span className={cn('text-[11px] w-5 text-center shrink-0', 'text-[#919EAB] dark:text-white/60')}>{params.start + idx + 1}</span>
                       <TokenImage
-                        darkMode={darkMode}
                         src={`https://s1.xrpl.to/thumb/${token.md5}_32`}
                         alt=""
                         onError={(e) => (e.target.style.display = 'none')}
                         className="!w-6 !h-6"
                       />
                       <div className="min-w-0">
-                        <div className={cn('text-[13px] font-semibold tracking-[-0.01em] truncate', darkMode ? 'text-white/95' : 'text-[#1a1a2e]')}>{token.name}</div>
-                        <div className={cn('text-[10px] uppercase font-medium tracking-[0.02em]', darkMode ? 'text-white/60' : 'text-black/40')}>{token.user || token.slug?.split('-')[0]?.slice(0, 8) || '—'}</div>
+                        <div className={cn('text-[13px] font-semibold tracking-[-0.01em] truncate', 'text-[#1a1a2e] dark:text-white/95')}>{token.name}</div>
+                        <div className={cn('text-[10px] uppercase font-medium tracking-[0.02em]', 'text-black/40 dark:text-white/60')}>{token.user || token.slug?.split('-')[0]?.slice(0, 8) || '—'}</div>
                       </div>
                     </div>
                     <div className="flex items-center gap-1.5 shrink-0 ml-2">
@@ -1013,26 +993,26 @@ function RSIAnalysisPage({ data }) {
                   {/* Row 2: Key stats grid */}
                   <div className="grid grid-cols-4 gap-x-3 gap-y-1.5 ml-7">
                     <div>
-                      <div className={cn('text-[9px] uppercase tracking-[0.06em] font-semibold', darkMode ? 'text-white/50' : 'text-black/30')}>Price</div>
-                      <div className={cn('text-[12px] font-medium', darkMode ? 'text-white/85' : 'text-[#1a1a2e]')}>
+                      <div className={cn('text-[9px] uppercase tracking-[0.06em] font-semibold', 'text-black/30 dark:text-white/50')}>Price</div>
+                      <div className={cn('text-[12px] font-medium', 'text-[#1a1a2e] dark:text-white/85')}>
                         {currencySymbols[activeFiatCurrency]}{fCurrency5(priceFiat)}
                       </div>
                     </div>
                     <div>
-                      <div className={cn('text-[9px] uppercase tracking-[0.06em] font-semibold', darkMode ? 'text-white/50' : 'text-black/30')}>24h</div>
+                      <div className={cn('text-[9px] uppercase tracking-[0.06em] font-semibold', 'text-black/30 dark:text-white/50')}>24h</div>
                       <div className="text-[12px] font-semibold" style={{ color: token.pro24h >= 0 ? '#22c55e' : '#ef4444' }}>
                         {token.pro24h >= 0 ? '+' : ''}{token.pro24h?.toFixed(2) || '0.00'}%
                       </div>
                     </div>
                     <div>
-                      <div className={cn('text-[9px] uppercase tracking-[0.06em] font-semibold', darkMode ? 'text-white/50' : 'text-black/30')}>MCap</div>
-                      <div className={cn('text-[12px] font-medium', darkMode ? 'text-white/85' : 'text-[#1a1a2e]')}>
+                      <div className={cn('text-[9px] uppercase tracking-[0.06em] font-semibold', 'text-black/30 dark:text-white/50')}>MCap</div>
+                      <div className={cn('text-[12px] font-medium', 'text-[#1a1a2e] dark:text-white/85')}>
                         {marketCapFiat >= 1e6 ? `${(marketCapFiat / 1e6).toFixed(1)}M` : marketCapFiat >= 1e3 ? `${(marketCapFiat / 1e3).toFixed(1)}K` : fNumber(marketCapFiat)}
                       </div>
                     </div>
                     <div>
-                      <div className={cn('text-[9px] uppercase tracking-[0.06em] font-semibold', darkMode ? 'text-white/50' : 'text-black/30')}>Volume</div>
-                      <div className={cn('text-[12px] font-medium', darkMode ? 'text-white/85' : 'text-[#1a1a2e]')}>
+                      <div className={cn('text-[9px] uppercase tracking-[0.06em] font-semibold', 'text-black/30 dark:text-white/50')}>Volume</div>
+                      <div className={cn('text-[12px] font-medium', 'text-[#1a1a2e] dark:text-white/85')}>
                         {volumeFiat >= 1e6 ? `${(volumeFiat / 1e6).toFixed(1)}M` : volumeFiat >= 1e3 ? `${(volumeFiat / 1e3).toFixed(1)}K` : fNumber(volumeFiat)}
                       </div>
                     </div>
@@ -1044,7 +1024,7 @@ function RSIAnalysisPage({ data }) {
         </TableWrapper>
 
         {!loading && tokens.length === 0 && (
-          <div className={cn('text-center py-16 text-sm', darkMode ? 'text-white/40' : 'text-black/40')}>
+          <div className={cn('text-center py-16 text-sm', 'text-black/40 dark:text-white/40')}>
             No tokens found matching your filters.
           </div>
         )}

@@ -1,40 +1,40 @@
 import React, { useState, useEffect, useContext, useRef } from 'react';
-import { ThemeContext, WalletContext } from 'src/context/AppContext';
+import { WalletContext } from 'src/context/AppContext';
 import { cn } from 'src/utils/cn';
 import { Loader2, ChevronLeft, ChevronRight, Search, X, Wifi, WifiOff, MessageCircle, Tag, Trash2 } from 'lucide-react';
 import api, { getWalletAuthHeaders } from 'src/utils/api';
 import Link from 'next/link';
 import { MD5 } from 'crypto-js';
 
-const BearEmptyState = ({ isDark, title, subtitle }) => (
-  <div className={cn('rounded-xl', isDark ? 'border-[1.5px] border-dashed border-white/10 bg-white/[0.02]' : 'border-[1.5px] border-dashed border-black/10 bg-black/[0.02]')}>
+const BearEmptyState = ({ title, subtitle }) => (
+  <div className={cn('rounded-xl', 'border-[1.5px] border-dashed border-black/10 bg-black/[0.02] dark:border-white/10 dark:bg-white/[0.02]')}>
     <div className="flex flex-col items-center justify-center p-6">
       <div className="relative w-12 h-12 mb-3">
-      <div className={cn('absolute -top-[3px] left-0 w-4 h-4 rounded-full', isDark ? 'bg-white/[0.15]' : 'bg-gray-300')}>
-        <div className={cn('absolute top-[3px] left-[3px] w-[10px] h-[10px] rounded-full', isDark ? 'bg-white/10' : 'bg-gray-200')} />
+      <div className={cn('absolute -top-[3px] left-0 w-4 h-4 rounded-full', 'bg-gray-300 dark:bg-white/[0.15]')}>
+        <div className={cn('absolute top-[3px] left-[3px] w-[10px] h-[10px] rounded-full', 'bg-gray-200 dark:bg-white/10')} />
       </div>
-      <div className={cn('absolute -top-[3px] right-0 w-4 h-4 rounded-full', isDark ? 'bg-white/[0.15]' : 'bg-gray-300')}>
-        <div className={cn('absolute top-[3px] right-[3px] w-[10px] h-[10px] rounded-full', isDark ? 'bg-white/10' : 'bg-gray-200')} />
+      <div className={cn('absolute -top-[3px] right-0 w-4 h-4 rounded-full', 'bg-gray-300 dark:bg-white/[0.15]')}>
+        <div className={cn('absolute top-[3px] right-[3px] w-[10px] h-[10px] rounded-full', 'bg-gray-200 dark:bg-white/10')} />
       </div>
-      <div className={cn('absolute top-1.5 left-1/2 -translate-x-1/2 w-10 h-9 rounded-full overflow-hidden', isDark ? 'bg-white/[0.15]' : 'bg-gray-300')}>
+      <div className={cn('absolute top-1.5 left-1/2 -translate-x-1/2 w-10 h-9 rounded-full overflow-hidden', 'bg-gray-300 dark:bg-white/[0.15]')}>
         {[0,1,2,3,4].map(i => (
-          <div key={i} className={cn('h-0.5 w-full', isDark ? 'bg-white/[0.15]' : 'bg-gray-200')} style={{ marginTop: i * 2.5 + 2 }} />
+          <div key={i} className={cn('h-0.5 w-full', 'bg-gray-200 dark:bg-white/[0.15]')} style={{ marginTop: i * 2.5 + 2 }} />
         ))}
         <div className="absolute top-[10px] left-1.5 w-[10px] h-[10px]">
-          <div className={cn('absolute w-2 h-0.5 rotate-45 top-1', isDark ? 'bg-white/40' : 'bg-gray-500')} />
-          <div className={cn('absolute w-2 h-0.5 -rotate-45 top-1', isDark ? 'bg-white/40' : 'bg-gray-500')} />
+          <div className={cn('absolute w-2 h-0.5 rotate-45 top-1', 'bg-gray-500 dark:bg-white/40')} />
+          <div className={cn('absolute w-2 h-0.5 -rotate-45 top-1', 'bg-gray-500 dark:bg-white/40')} />
         </div>
         <div className="absolute top-[10px] right-1.5 w-[10px] h-[10px]">
-          <div className={cn('absolute w-2 h-0.5 rotate-45 top-1', isDark ? 'bg-white/40' : 'bg-gray-500')} />
-          <div className={cn('absolute w-2 h-0.5 -rotate-45 top-1', isDark ? 'bg-white/40' : 'bg-gray-500')} />
+          <div className={cn('absolute w-2 h-0.5 rotate-45 top-1', 'bg-gray-500 dark:bg-white/40')} />
+          <div className={cn('absolute w-2 h-0.5 -rotate-45 top-1', 'bg-gray-500 dark:bg-white/40')} />
         </div>
-        <div className={cn('absolute bottom-[5px] left-1/2 -translate-x-1/2 w-[18px] h-3 rounded-full', isDark ? 'bg-white/10' : 'bg-gray-200')}>
-          <div className={cn('absolute top-0.5 left-1/2 -translate-x-1/2 w-2 h-1.5 rounded-full', isDark ? 'bg-white/25' : 'bg-gray-400')} />
+        <div className={cn('absolute bottom-[5px] left-1/2 -translate-x-1/2 w-[18px] h-3 rounded-full', 'bg-gray-200 dark:bg-white/10')}>
+          <div className={cn('absolute top-0.5 left-1/2 -translate-x-1/2 w-2 h-1.5 rounded-full', 'bg-gray-400 dark:bg-white/25')} />
         </div>
       </div>
     </div>
-      <span className={cn('text-[11px] font-medium tracking-[0.05em] uppercase mb-1', isDark ? 'text-white/50' : 'text-black/50')}>{title}</span>
-      <span className={cn('text-[10px]', isDark ? 'text-white/30' : 'text-black/30')}>{subtitle}</span>
+      <span className={cn('text-[11px] font-medium tracking-[0.05em] uppercase mb-1', 'text-black/50 dark:text-white/50')}>{title}</span>
+      <span className={cn('text-[10px]', 'text-black/30 dark:text-white/30')}>{subtitle}</span>
     </div>
   </div>
 );
@@ -68,10 +68,8 @@ const formatNumber = (num) => {
 };
 
 const RichList = ({ token, walletLabels: walletLabelsProp = {}, onLabelsChange }) => {
-  const { themeName } = useContext(ThemeContext);
   const { accountProfile } = useContext(WalletContext);
   const accountLogin = accountProfile?.account;
-  const isDark = themeName === 'XrplToDarkTheme';
   const [isMobile, setIsMobile] = useState(false);
   const [mobileChecked, setMobileChecked] = useState(false);
 
@@ -306,10 +304,10 @@ const RichList = ({ token, walletLabels: walletLabelsProp = {}, onLabelsChange }
       <div
         className={cn(
           'flex flex-1 items-center gap-2 rounded-lg border px-3 py-1.5',
-          isDark ? 'border-white/10 bg-white/[0.02]' : 'border-gray-200 bg-gray-50'
+          'border-gray-200 bg-gray-50 dark:border-white/10 dark:bg-white/[0.02]'
         )}
       >
-        <Search size={14} className={isDark ? 'text-white/40' : 'text-gray-400'} />
+        <Search size={14} className="text-gray-400 dark:text-white/40" />
         <input
           type="text"
           value={searchInput}
@@ -318,16 +316,14 @@ const RichList = ({ token, walletLabels: walletLabelsProp = {}, onLabelsChange }
           placeholder="Search by address (min 3 chars)"
           className={cn(
             'flex-1 bg-transparent text-[13px] outline-none placeholder:text-[12px]',
-            isDark
-              ? 'text-white placeholder:text-white/30'
-              : 'text-gray-900 placeholder:text-gray-400'
+            'text-gray-900 placeholder:text-gray-400 dark:text-white dark:placeholder:text-white/30'
           )}
         />
         {searchInput && (
           <button
             onClick={clearSearch}
             aria-label="Clear search"
-            className={cn('hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] rounded', isDark ? 'text-white/40' : 'text-gray-400')}
+            className={cn('hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] rounded', 'text-gray-400 dark:text-white/40')}
           >
             <X size={14} />
           </button>
@@ -338,9 +334,7 @@ const RichList = ({ token, walletLabels: walletLabelsProp = {}, onLabelsChange }
         disabled={searchInput.length > 0 && searchInput.length < 3}
         className={cn(
           'rounded-lg border px-3 py-1.5 text-[12px] font-medium transition-[background-color,border-color] disabled:opacity-40',
-          isDark
-            ? 'border-white/10 hover:border-primary hover:bg-primary/5'
-            : 'border-gray-200 hover:border-primary hover:bg-primary/5'
+          'border-gray-200 hover:border-primary hover:bg-primary/5 dark:border-white/10 dark:hover:border-primary dark:hover:bg-primary/5'
         )}
       >
         Search
@@ -364,12 +358,11 @@ const RichList = ({ token, walletLabels: walletLabelsProp = {}, onLabelsChange }
       <div className="space-y-4">
         {renderSearchBar()}
         {searchTerm && (
-          <div className={cn('text-[11px]', isDark ? 'text-white/50' : 'text-gray-500')}>
+          <div className={cn('text-[11px]', 'text-gray-500 dark:text-white/50')}>
             No results for "{searchTerm}"
           </div>
         )}
         <BearEmptyState
-          isDark={isDark}
           title={searchTerm ? 'No Matching Holders' : 'No Holder Data Available'}
           subtitle={searchTerm ? 'Try a different address' : 'Rich list data will appear here when available'}
         />
@@ -381,7 +374,7 @@ const RichList = ({ token, walletLabels: walletLabelsProp = {}, onLabelsChange }
     if (rank === 1) return 'bg-yellow-500/15 text-yellow-500';
     if (rank === 2) return 'bg-gray-400/15 text-gray-400';
     if (rank === 3) return 'bg-orange-600/15 text-orange-500';
-    return isDark ? 'bg-white/[0.06] text-white/50' : 'bg-gray-100 text-gray-500';
+    return 'bg-gray-100 text-gray-500 dark:bg-white/[0.06] dark:text-white/50';
   };
 
   return (
@@ -401,13 +394,13 @@ const RichList = ({ token, walletLabels: walletLabelsProp = {}, onLabelsChange }
                 key={label}
                 className={cn(
                   'rounded-lg border px-3 py-2',
-                  isDark ? 'border-white/10 bg-white/[0.02]' : 'border-gray-200 bg-gray-50'
+                  'border-gray-200 bg-gray-50 dark:border-white/10 dark:bg-white/[0.02]'
                 )}
               >
                 <div
                   className={cn(
                     'text-[10px] uppercase tracking-wide',
-                    isDark ? 'text-white/40' : 'text-gray-400'
+                    'text-gray-400 dark:text-white/40'
                   )}
                 >
                   {label}
@@ -419,12 +412,10 @@ const RichList = ({ token, walletLabels: walletLabelsProp = {}, onLabelsChange }
                       ? 'text-red-400'
                       : hasValue && value > 50
                         ? 'text-yellow-500'
-                        : isDark
-                          ? 'text-white'
-                          : 'text-gray-900'
+                        : 'text-gray-900 dark:text-white'
                   )}
                 >
-                  {hasValue ? `${value}%` : '—'}
+                  {hasValue ? `${value}%` : '\u2014'}
                 </div>
               </div>
             );
@@ -438,7 +429,7 @@ const RichList = ({ token, walletLabels: walletLabelsProp = {}, onLabelsChange }
         <div
           className={cn(
             'flex items-center gap-2 text-[11px]',
-            isDark ? 'text-white/50' : 'text-gray-500'
+            'text-gray-500 dark:text-white/50'
           )}
         >
           Showing results for "{searchTerm}" ({totalHolders} found)
@@ -450,11 +441,11 @@ const RichList = ({ token, walletLabels: walletLabelsProp = {}, onLabelsChange }
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
-            <tr className={cn('border-b', isDark ? 'border-white/5' : 'border-gray-200')}>
+            <tr className={cn('border-b', 'border-gray-200 dark:border-white/5')}>
               <th
                 className={cn(
                   'py-2 pr-2 text-left text-[10px] font-medium uppercase tracking-wider',
-                  isDark ? 'text-white/40' : 'text-gray-400'
+                  'text-gray-400 dark:text-white/40'
                 )}
               >
                 #
@@ -462,7 +453,7 @@ const RichList = ({ token, walletLabels: walletLabelsProp = {}, onLabelsChange }
               <th
                 className={cn(
                   'py-2 px-2 text-left text-[10px] font-medium uppercase tracking-wider',
-                  isDark ? 'text-white/40' : 'text-gray-400'
+                  'text-gray-400 dark:text-white/40'
                 )}
               >
                 Address
@@ -470,7 +461,7 @@ const RichList = ({ token, walletLabels: walletLabelsProp = {}, onLabelsChange }
               <th
                 className={cn(
                   'py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider',
-                  isDark ? 'text-white/40' : 'text-gray-400'
+                  'text-gray-400 dark:text-white/40'
                 )}
               >
                 Balance
@@ -479,7 +470,7 @@ const RichList = ({ token, walletLabels: walletLabelsProp = {}, onLabelsChange }
                 <th
                   className={cn(
                     'py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider',
-                    isDark ? 'text-white/40' : 'text-gray-400'
+                    'text-gray-400 dark:text-white/40'
                   )}
                 >
                   Acquisition
@@ -489,7 +480,7 @@ const RichList = ({ token, walletLabels: walletLabelsProp = {}, onLabelsChange }
                 <th
                   className={cn(
                     'py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider',
-                    isDark ? 'text-white/40' : 'text-gray-400'
+                    'text-gray-400 dark:text-white/40'
                   )}
                 >
                   24h %
@@ -498,7 +489,7 @@ const RichList = ({ token, walletLabels: walletLabelsProp = {}, onLabelsChange }
               <th
                 className={cn(
                   'py-2 pl-2 text-right text-[10px] font-medium uppercase tracking-wider',
-                  isDark ? 'text-white/40' : 'text-gray-400'
+                  'text-gray-400 dark:text-white/40'
                 )}
               >
                 Share
@@ -521,9 +512,7 @@ const RichList = ({ token, walletLabels: walletLabelsProp = {}, onLabelsChange }
                   key={holder.account || index}
                   className={cn(
                     'border-b',
-                    isDark
-                      ? 'border-white/5 hover:bg-white/[0.02]'
-                      : 'border-gray-100 hover:bg-gray-50'
+                    'border-gray-100 hover:bg-gray-50 dark:border-white/5 dark:hover:bg-white/[0.02]'
                   )}
                 >
                   <td className="py-2.5 pr-2">
@@ -546,11 +535,11 @@ const RichList = ({ token, walletLabels: walletLabelsProp = {}, onLabelsChange }
                             onChange={(e) => setLabelInput(e.target.value.slice(0, 30))}
                             placeholder="Label"
                             autoFocus
-                            className={cn('w-20 px-1.5 py-0.5 rounded text-[11px] outline-none', isDark ? 'bg-white/10 text-white border border-white/20' : 'bg-gray-100 text-gray-900 border border-gray-300')}
+                            className={cn('w-20 px-1.5 py-0.5 rounded text-[11px] outline-none', 'bg-gray-100 text-gray-900 border border-gray-300 dark:bg-white/10 dark:text-white dark:border dark:border-white/20')}
                           />
                           <button onClick={() => handleSaveLabel(holder.account)} disabled={labelSaving || !labelInput.trim()} className="px-1.5 py-0.5 rounded text-[10px] bg-primary text-white disabled:opacity-50">Save</button>
                           {walletLabels[holder.account] && <button onClick={() => handleDeleteLabel(holder.account)} disabled={labelSaving} className="p-0.5 rounded text-red-400 hover:bg-red-500/10"><Trash2 size={10} /></button>}
-                          <button onClick={() => { setEditingLabel(null); setLabelInput(''); }} className={cn('text-[10px]', isDark ? 'text-white/40' : 'text-gray-400')}>✕</button>
+                          <button onClick={() => { setEditingLabel(null); setLabelInput(''); }} className={cn('text-[10px]', 'text-gray-400 dark:text-white/40')}>&#x2715;</button>
                         </div>
                       ) : (
                         <>
@@ -558,7 +547,7 @@ const RichList = ({ token, walletLabels: walletLabelsProp = {}, onLabelsChange }
                             href={`/address/${holder.account}`}
                             className={cn(
                               'text-[12px] font-mono hover:text-primary transition-[background-color,border-color] min-w-[80px]',
-                              walletLabels[holder.account] ? 'text-primary' : isDark ? 'text-white/80' : 'text-gray-700'
+                              walletLabels[holder.account] ? 'text-primary' : 'text-gray-700 dark:text-white/80'
                             )}
                             title={holder.account}
                           >
@@ -569,7 +558,7 @@ const RichList = ({ token, walletLabels: walletLabelsProp = {}, onLabelsChange }
                           {holder.account && holder.account !== accountLogin && accountLogin && (
                             <button
                               onClick={() => { setEditingLabel(holder.account); setLabelInput(walletLabels[holder.account] || ''); }}
-                              className={cn('p-0.5 rounded hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]', walletLabels[holder.account] ? 'text-primary' : isDark ? 'text-white/20 hover:text-primary' : 'text-gray-300 hover:text-primary')}
+                              className={cn('p-0.5 rounded hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]', walletLabels[holder.account] ? 'text-primary' : 'text-gray-300 hover:text-primary dark:text-white/20 dark:hover:text-primary')}
                               title={walletLabels[holder.account] ? 'Edit label' : 'Add label'}
                               aria-label={walletLabels[holder.account] ? 'Edit label' : 'Add label'}
                             >
@@ -579,7 +568,7 @@ const RichList = ({ token, walletLabels: walletLabelsProp = {}, onLabelsChange }
                           {holder.account && holder.account !== accountLogin && (
                             <button
                               onClick={() => window.dispatchEvent(new CustomEvent('openDm', { detail: { user: holder.account } }))}
-                              className={cn('p-0.5 rounded hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]', isDark ? 'text-white/30 hover:text-[#650CD4]' : 'text-gray-300 hover:text-[#650CD4]')}
+                              className={cn('p-0.5 rounded hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]', 'text-gray-300 hover:text-[#650CD4] dark:text-white/30 dark:hover:text-[#650CD4]')}
                               title="Message"
                               aria-label="Send direct message"
                             >
@@ -621,7 +610,7 @@ const RichList = ({ token, walletLabels: walletLabelsProp = {}, onLabelsChange }
                             <span
                               className={cn(
                                 'text-[9px]',
-                                isDark ? 'text-white/30' : 'text-gray-400'
+                                'text-gray-400 dark:text-white/30'
                               )}
                             >
                               {holder.tradeCount} trades
@@ -634,7 +623,7 @@ const RichList = ({ token, walletLabels: walletLabelsProp = {}, onLabelsChange }
                   <td
                     className={cn(
                       'py-2.5 px-2 text-right text-[12px] font-medium tabular-nums',
-                      isDark ? 'text-white' : 'text-gray-900'
+                      'text-gray-900 dark:text-white'
                     )}
                   >
                     {formatNumber(holder.balance)}
@@ -646,7 +635,7 @@ const RichList = ({ token, walletLabels: walletLabelsProp = {}, onLabelsChange }
                           <div
                             className={cn(
                               'flex h-1.5 w-12 overflow-hidden rounded-full',
-                              isDark ? 'bg-white/10' : 'bg-gray-200'
+                              'bg-gray-200 dark:bg-white/10'
                             )}
                           >
                             {holder.acquisition.dexPct > 0 && (
@@ -684,7 +673,7 @@ const RichList = ({ token, walletLabels: walletLabelsProp = {}, onLabelsChange }
                                 { label: 'DEX', pct: holder.acquisition.dexPct, color: 'text-emerald-500' },
                                 { label: 'AMM', pct: holder.acquisition.ammPct, color: 'text-primary' },
                                 { label: 'LP', pct: holder.acquisition.lpPct, color: 'text-purple-400' },
-                                { label: 'Transfer', pct: holder.acquisition.transferPct, color: isDark ? 'text-white/25' : 'text-gray-400' }
+                                { label: 'Transfer', pct: holder.acquisition.transferPct, color: 'text-gray-400 dark:text-white/25' }
                               ].filter(s => s.pct > 0).sort((a, b) => b.pct - a.pct);
 
                               if (sources.length === 0) return null;
@@ -700,9 +689,9 @@ const RichList = ({ token, walletLabels: walletLabelsProp = {}, onLabelsChange }
                       ) : (
                         <div className="flex justify-end">
                           <span
-                            className={cn('text-[9px]', isDark ? 'text-white/20' : 'text-gray-300')}
+                            className={cn('text-[9px]', 'text-gray-300 dark:text-white/20')}
                           >
-                            —
+                            {'\u2014'}
                           </span>
                         </div>
                       )}
@@ -724,9 +713,9 @@ const RichList = ({ token, walletLabels: walletLabelsProp = {}, onLabelsChange }
                         </span>
                       ) : (
                         <span
-                          className={cn('text-[10px]', isDark ? 'text-white/20' : 'text-gray-300')}
+                          className={cn('text-[10px]', 'text-gray-300 dark:text-white/20')}
                         >
-                          —
+                          {'\u2014'}
                         </span>
                       )}
                     </td>
@@ -736,7 +725,7 @@ const RichList = ({ token, walletLabels: walletLabelsProp = {}, onLabelsChange }
                       <div
                         className={cn(
                           'h-1.5 w-12 overflow-hidden rounded-full',
-                          isDark ? 'bg-white/10' : 'bg-gray-200'
+                          'bg-gray-200 dark:bg-white/10'
                         )}
                       >
                         <div
@@ -749,9 +738,7 @@ const RichList = ({ token, walletLabels: walletLabelsProp = {}, onLabelsChange }
                           'text-[12px] font-medium tabular-nums min-w-[40px]',
                           percentOfSupply > 5
                             ? 'text-yellow-500'
-                            : isDark
-                              ? 'text-white/70'
-                              : 'text-gray-600'
+                            : 'text-gray-600 dark:text-white/70'
                         )}
                       >
                         {percentOfSupply}%
@@ -775,7 +762,7 @@ const RichList = ({ token, walletLabels: walletLabelsProp = {}, onLabelsChange }
             className={cn(
               'p-1.5 rounded-md transition-[background-color,border-color] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
               page === 1 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-white/10',
-              isDark ? 'text-white/50' : 'text-gray-500'
+              'text-gray-500 dark:text-white/50'
             )}
           >
             <ChevronLeft size={14} />
@@ -783,7 +770,7 @@ const RichList = ({ token, walletLabels: walletLabelsProp = {}, onLabelsChange }
           <span
             className={cn(
               'text-[11px] px-2 tabular-nums',
-              isDark ? 'text-white/40' : 'text-gray-500'
+              'text-gray-500 dark:text-white/40'
             )}
           >
             {page} / {totalPages}
@@ -796,7 +783,7 @@ const RichList = ({ token, walletLabels: walletLabelsProp = {}, onLabelsChange }
             className={cn(
               'p-1.5 rounded-md transition-[background-color,border-color] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
               page === totalPages ? 'opacity-30 cursor-not-allowed' : 'hover:bg-white/10',
-              isDark ? 'text-white/50' : 'text-gray-500'
+              'text-gray-500 dark:text-white/50'
             )}
           >
             <ChevronRight size={14} />

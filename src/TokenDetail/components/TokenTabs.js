@@ -189,9 +189,7 @@ const TokenTabs = memo(({ currentMd5 }) => {
             }
             className={cn(
               'group flex items-center gap-1 px-2 h-9 rounded-md text-[10px] font-bold uppercase tracking-wider transition-[opacity,transform,background-color,border-color] border',
-              isDark
-                ? 'text-white/60 border-white/[0.05] hover:text-white hover:bg-white/[0.05] hover:border-white/10'
-                : 'text-gray-400 border-black/[0.05] hover:text-gray-700 hover:bg-gray-100/50'
+              'text-gray-400 border-black/[0.05] hover:text-gray-700 hover:bg-gray-100/50 dark:text-white/60 dark:border-white/[0.05] dark:hover:text-white dark:hover:bg-white/[0.05] dark:hover:border-white/10'
             )}
           >
             <ChevronLeft size={12} strokeWidth={3} className="transition-transform group-hover:-translate-x-0.5" />
@@ -203,7 +201,7 @@ const TokenTabs = memo(({ currentMd5 }) => {
                   : 'Tokens'}
             </span>
           </a>
-          <div className={cn('w-px h-4 opacity-20', isDark ? 'bg-white' : 'bg-black')} />
+          <div className={cn('w-px h-4 opacity-20', 'bg-black dark:bg-white')} />
         </div>
       )}
 
@@ -268,12 +266,8 @@ const TokenTabs = memo(({ currentMd5 }) => {
                 className={cn(
                   'group flex items-center gap-1 px-1.5 h-9 rounded-md text-[10px] font-bold transition-[opacity,transform,background-color,border-color] shrink-0 border relative outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                   isActive
-                    ? isDark
-                      ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
-                      : 'bg-emerald-50 text-emerald-600 border-emerald-200'
-                    : isDark
-                      ? 'text-white/60 hover:text-white/80 bg-white/[0.02] border-white/10 hover:border-white/20'
-                      : 'text-gray-500 hover:text-gray-900 bg-white border-black/[0.04] hover:border-black/10'
+                    ? 'bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/30'
+                    : 'text-gray-500 hover:text-gray-900 bg-white border-black/[0.04] hover:border-black/10 dark:text-white/60 dark:hover:text-white/80 dark:bg-white/[0.02] dark:border-white/10 dark:hover:border-white/20'
                 )}
               >
                 <img
@@ -297,8 +291,8 @@ const TokenTabs = memo(({ currentMd5 }) => {
                   className={cn(
                     'flex items-center justify-center w-4 h-4 rounded transition-[opacity,transform,background-color,border-color] outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                     isActive
-                      ? isDark ? 'hover:bg-emerald-500/20 text-emerald-400/50 hover:text-emerald-400' : 'hover:bg-emerald-100 text-emerald-600/50 hover:text-emerald-600'
-                      : isDark ? 'opacity-0 group-hover:opacity-100 hover:bg-white/10 text-white/60 hover:text-white' : 'opacity-0 group-hover:opacity-100 hover:bg-black/5 text-gray-400 hover:text-gray-900'
+                      ? 'hover:bg-emerald-100 text-emerald-600/50 hover:text-emerald-600 dark:hover:bg-emerald-500/20 dark:text-emerald-400/50 dark:hover:text-emerald-400'
+                      : 'opacity-0 group-hover:opacity-100 hover:bg-black/5 text-gray-400 hover:text-gray-900 dark:opacity-0 dark:group-hover:opacity-100 dark:hover:bg-white/10 dark:text-white/60 dark:hover:text-white'
                   )}
                 >
                   <X size={10} strokeWidth={3} />
@@ -318,16 +312,14 @@ const TokenTabs = memo(({ currentMd5 }) => {
           aria-label="Search tokens"
           className={cn(
             'flex items-center gap-1.5 px-2 h-9 rounded-md transition-[opacity,transform,background-color,border-color] border font-bold text-[10px] uppercase tracking-widest outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
-            isDark
-              ? 'bg-white/[0.05] border-white/10 text-white/55 hover:text-white hover:border-white/20'
-              : 'bg-gray-50 border-black/[0.05] text-gray-400 hover:text-gray-700 hover:border-black/10'
+            'bg-gray-50 border-black/[0.05] text-gray-400 hover:text-gray-700 hover:border-black/10 dark:bg-white/[0.05] dark:border-white/10 dark:text-white/55 dark:hover:text-white dark:hover:border-white/20'
           )}
         >
           <Search size={12} strokeWidth={3} />
           <span className="hidden sm:inline">Add</span>
           <kbd className={cn(
             'hidden sm:inline-flex items-center px-1 py-0.5 rounded text-[9px] font-bold border ml-1',
-            isDark ? 'border-white/10 text-white/30' : 'border-black/5 text-gray-300'
+            'border-black/5 text-gray-300 dark:border-white/10 dark:text-white/30'
           )}>
             {typeof navigator !== 'undefined' && /Mac/.test(navigator.userAgent) ? '\u2318' : 'Ctrl+'}K
           </kbd>
@@ -340,9 +332,7 @@ const TokenTabs = memo(({ currentMd5 }) => {
             aria-label="Clear other tabs"
             className={cn(
               'flex items-center justify-center w-9 h-9 rounded-md transition-[opacity,transform,background-color,border-color] border outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
-              isDark
-                ? 'bg-white/[0.02] border-white/10 text-white/55 hover:text-red-400 hover:border-red-400/30'
-                : 'bg-white border-black/[0.05] text-gray-400 hover:text-red-500 hover:border-red-200'
+              'bg-white border-black/[0.05] text-gray-400 hover:text-red-500 hover:border-red-200 dark:bg-white/[0.02] dark:border-white/10 dark:text-white/55 dark:hover:text-red-400 dark:hover:border-red-400/30'
             )}
           >
             <Trash2 size={12} />
@@ -360,7 +350,7 @@ const TokenTabs = memo(({ currentMd5 }) => {
           <div
             className={cn(
               'fixed inset-0 backdrop-blur-xl transition-opacity animate-in fade-in duration-300',
-              isDark ? 'bg-[#0a0a0a]/80' : 'bg-white/60'
+              'bg-white/60 dark:bg-[#0a0a0a]/80'
             )}
           />
           <div
@@ -371,15 +361,13 @@ const TokenTabs = memo(({ currentMd5 }) => {
             onClick={(e) => e.stopPropagation()}
             className={cn(
               'relative w-full max-w-xl rounded-2xl border transition-[opacity,transform,background-color,border-color] animate-in slide-in-from-top-4 duration-300 overflow-hidden shadow-2xl',
-              isDark
-                ? 'bg-[#111111]/90 border-white/[0.08] shadow-black/80'
-                : 'bg-white/90 border-black/[0.06] shadow-gray-200'
+              'bg-white/90 border-black/[0.06] shadow-gray-200 dark:bg-[#111111]/90 dark:border-white/[0.08] dark:shadow-black/80'
             )}
           >
             <div
               className={cn(
                 'flex items-center gap-4 px-5 py-4 border-b',
-                isDark ? 'border-white/10' : 'border-gray-100'
+                'border-gray-100 dark:border-white/10'
               )}
             >
               <Search size={20} strokeWidth={2.5} className="text-emerald-500" />
@@ -392,22 +380,20 @@ const TokenTabs = memo(({ currentMd5 }) => {
                 aria-label="Search tokens, collections, or addresses"
                 className={cn(
                   'flex-1 bg-transparent text-[16px] font-medium outline-none',
-                  isDark
-                    ? 'text-white placeholder:text-white/20'
-                    : 'text-gray-900 placeholder:text-gray-400'
+                  'text-gray-900 placeholder:text-gray-400 dark:text-white dark:placeholder:text-white/20'
                 )}
               />
               <div className="flex items-center gap-2">
                 <span className={cn(
                   'hidden sm:flex items-center justify-center px-1.5 py-0.5 rounded text-[10px] font-bold border uppercase tracking-tighter',
-                  isDark ? 'border-white/10 text-white/55' : 'border-black/5 text-gray-400'
+                  'border-black/5 text-gray-400 dark:border-white/10 dark:text-white/55'
                 )}>
                   ESC
                 </span>
                 <button
                   onClick={closeSearch}
                   aria-label="Close search"
-                  className={cn('p-1.5 rounded-lg transition-[background-color,border-color] outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]', isDark ? 'hover:bg-white/10 text-white/55' : 'hover:bg-gray-100 text-gray-400')}
+                  className={cn('p-1.5 rounded-lg transition-[background-color,border-color] outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]', 'hover:bg-gray-100 text-gray-400 dark:hover:bg-white/10 dark:text-white/55')}
                 >
                   <X size={18} />
                 </button>
@@ -418,7 +404,7 @@ const TokenTabs = memo(({ currentMd5 }) => {
               {loading && (
                 <div className="flex flex-col items-center justify-center py-12 gap-3">
                   <div className="w-6 h-6 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
-                  <span className={cn('text-[12px] font-medium', isDark ? 'text-white/20' : 'text-gray-400')}>Searching XRPL...</span>
+                  <span className={cn('text-[12px] font-medium', 'text-gray-400 dark:text-white/20')}>Searching XRPL...</span>
                 </div>
               )}
 
@@ -427,7 +413,7 @@ const TokenTabs = memo(({ currentMd5 }) => {
                 <div className="mb-2">
                   <div className={cn(
                     'px-5 py-2 text-[10px] font-black uppercase tracking-[0.15em]',
-                    isDark ? 'text-white/55' : 'text-gray-400'
+                    'text-gray-400 dark:text-white/55'
                   )}>
                     Top Tokens
                   </div>
@@ -439,8 +425,8 @@ const TokenTabs = memo(({ currentMd5 }) => {
                       className={cn(
                         'flex items-center gap-4 px-5 py-3 cursor-pointer transition-[opacity,transform,background-color,border-color] mx-2 rounded-xl group',
                         activeIndex === idx
-                          ? isDark ? 'bg-white/[0.06]' : 'bg-gray-100/80'
-                          : isDark ? 'hover:bg-white/[0.04]' : 'hover:bg-gray-50'
+                          ? 'bg-gray-100/80 dark:bg-white/[0.06]'
+                          : 'hover:bg-gray-50 dark:hover:bg-white/[0.04]'
                       )}
                     >
                       <div className="relative">
@@ -450,25 +436,25 @@ const TokenTabs = memo(({ currentMd5 }) => {
                           alt=""
                           onError={(e) => (e.target.src = '/static/alt.webp')}
                         />
-                        <VerificationBadge verified={token.verified} size="sm" isDark={isDark} />
+                        <VerificationBadge verified={token.verified} size="sm" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <span className={cn('text-[15px] font-bold', isDark ? 'text-white' : 'text-gray-900')}>
+                          <span className={cn('text-[15px] font-bold', 'text-gray-900 dark:text-white')}>
                             {token.user}
                           </span>
-                          <span className={cn('text-[12px] font-medium opacity-40', isDark ? 'text-white' : 'text-gray-500')}>
+                          <span className={cn('text-[12px] font-medium opacity-40', 'text-gray-500 dark:text-white')}>
                             {token.name}
                           </span>
                         </div>
-                        <p className={cn('text-[11px] font-mono opacity-30 truncate', isDark ? 'text-white' : 'text-gray-500')}>
+                        <p className={cn('text-[11px] font-mono opacity-30 truncate', 'text-gray-500 dark:text-white')}>
                           {token.issuer}
                         </p>
                       </div>
                       <div className={cn(
                         'transition-opacity flex items-center gap-1 text-[11px] font-bold',
                         activeIndex === idx ? 'opacity-100' : 'opacity-0 group-hover:opacity-100',
-                        isDark ? 'text-emerald-400' : 'text-emerald-600'
+                        'text-emerald-600 dark:text-emerald-400'
                       )}>
                         VIEW <Plus size={12} strokeWidth={3} />
                       </div>
@@ -482,7 +468,7 @@ const TokenTabs = memo(({ currentMd5 }) => {
                 <div className="mb-2">
                   <div className={cn(
                     'px-5 py-2 text-[10px] font-black uppercase tracking-[0.15em] border-t mt-2 pt-4',
-                    isDark ? 'text-white/55 border-white/5' : 'text-gray-400 border-gray-100'
+                    'text-gray-400 border-gray-100 dark:text-white/55 dark:border-white/5'
                   )}>
                     NFT Collections
                   </div>
@@ -496,8 +482,8 @@ const TokenTabs = memo(({ currentMd5 }) => {
                         className={cn(
                           'flex items-center gap-4 px-5 py-3 cursor-pointer transition-[opacity,transform,background-color,border-color] mx-2 rounded-xl group',
                           activeIndex === flatIdx
-                            ? isDark ? 'bg-white/[0.06]' : 'bg-gray-100/80'
-                            : isDark ? 'hover:bg-white/[0.04]' : 'hover:bg-gray-50'
+                            ? 'bg-gray-100/80 dark:bg-white/[0.06]'
+                            : 'hover:bg-gray-50 dark:hover:bg-white/[0.04]'
                         )}
                       >
                         <div className="relative">
@@ -507,22 +493,22 @@ const TokenTabs = memo(({ currentMd5 }) => {
                             alt=""
                             onError={(e) => { e.target.onerror = null; e.target.style.opacity = '0'; }}
                           />
-                          <VerificationBadge verified={col.verified === 'yes' ? 4 : col.verified} size="sm" isDark={isDark} />
+                          <VerificationBadge verified={col.verified === 'yes' ? 4 : col.verified} size="sm" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
-                            <span className={cn('text-[15px] font-bold', isDark ? 'text-white' : 'text-gray-900')}>
+                            <span className={cn('text-[15px] font-bold', 'text-gray-900 dark:text-white')}>
                               {typeof col.name === 'object' ? col.name?.collection_name : col.name}
                             </span>
                           </div>
-                          <p className={cn('text-[11px] font-mono opacity-30 truncate', isDark ? 'text-white' : 'text-gray-500')}>
+                          <p className={cn('text-[11px] font-mono opacity-30 truncate', 'text-gray-500 dark:text-white')}>
                             {col.account}
                           </p>
                         </div>
                         <div className={cn(
                           'transition-opacity flex items-center gap-1 text-[11px] font-bold',
                           activeIndex === flatIdx ? 'opacity-100' : 'opacity-0 group-hover:opacity-100',
-                          isDark ? 'text-emerald-400' : 'text-emerald-600'
+                          'text-emerald-600 dark:text-emerald-400'
                         )}>
                           VIEW <Plus size={12} strokeWidth={3} />
                         </div>
@@ -537,10 +523,10 @@ const TokenTabs = memo(({ currentMd5 }) => {
                 results.tokens.length === 0 &&
                 results.collections.length === 0 && (
                   <div className="flex flex-col items-center justify-center py-20 gap-4">
-                    <div className={cn('w-12 h-12 rounded-full flex items-center justify-center border-2 border-dashed', isDark ? 'border-white/10 text-white/10' : 'border-black/5 text-black/5')}>
+                    <div className={cn('w-12 h-12 rounded-full flex items-center justify-center border-2 border-dashed', 'border-black/5 text-black/5 dark:border-white/10 dark:text-white/10')}>
                       <Search size={24} />
                     </div>
-                    <p className={cn('text-[14px] font-medium', isDark ? 'text-white/55' : 'text-gray-400')}>
+                    <p className={cn('text-[14px] font-medium', 'text-gray-400 dark:text-white/55')}>
                       No results found for &ldquo;{query}&rdquo;
                     </p>
                   </div>
@@ -550,11 +536,11 @@ const TokenTabs = memo(({ currentMd5 }) => {
             {/* Modal Footer */}
             <div className={cn(
               'px-5 py-3 border-t flex items-center justify-between text-[10px] font-bold uppercase tracking-widest',
-              isDark ? 'border-white/10 bg-white/[0.02] text-white/20' : 'border-gray-100 bg-gray-50 text-gray-400'
+              'border-gray-100 bg-gray-50 text-gray-400 dark:border-white/10 dark:bg-white/[0.02] dark:text-white/20'
             )}>
               <div className="flex gap-4">
-                <span className="flex items-center gap-1"><span className={cn('px-1 rounded border', isDark ? 'border-white/10' : 'border-black/5')}>↑↓</span> Navigate</span>
-                <span className="flex items-center gap-1"><span className={cn('px-1 rounded border', isDark ? 'border-white/10' : 'border-black/5')}>ENTER</span> Select</span>
+                <span className="flex items-center gap-1"><span className={cn('px-1 rounded border', 'border-black/5 dark:border-white/10')}>↑↓</span> Navigate</span>
+                <span className="flex items-center gap-1"><span className={cn('px-1 rounded border', 'border-black/5 dark:border-white/10')}>ENTER</span> Select</span>
               </div>
               <span>Search Powered by XRPL.to</span>
             </div>

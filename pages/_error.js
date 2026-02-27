@@ -16,14 +16,14 @@ function ErrorPage({ statusCode }) {
       <div
         className={cn(
           'min-h-screen flex items-center justify-center',
-          isDark ? 'bg-black' : 'bg-white'
+          'bg-white dark:bg-black'
         )}
       >
         <div className="mx-auto max-w-xl px-4 text-center">
           <p
             className={cn(
               'text-4xl font-medium mb-4',
-              isDark ? 'text-white/80' : 'text-gray-600'
+              'text-gray-600 dark:text-white/80'
             )}
           >
             {statusCode || 'Error'}
@@ -32,7 +32,7 @@ function ErrorPage({ statusCode }) {
           <p
             className={cn(
               'text-sm font-medium tracking-widest mb-2',
-              isDark ? 'text-white/80' : 'text-gray-600'
+              'text-gray-600 dark:text-white/80'
             )}
           >
             {statusCode === 500
@@ -42,7 +42,7 @@ function ErrorPage({ statusCode }) {
                 : 'SOMETHING WENT WRONG'}
           </p>
 
-          <p className={cn('text-xs mb-8', isDark ? 'text-white/30' : 'text-gray-400')}>
+          <p className={cn('text-xs mb-8', 'text-gray-400 dark:text-white/30')}>
             {statusCode === 500
               ? 'The server encountered an error'
               : statusCode === 400
@@ -55,9 +55,7 @@ function ErrorPage({ statusCode }) {
             className={cn(
               'inline-block px-6 py-3 rounded-xl border-[1.5px] text-[0.95rem] font-normal transition-all',
               'text-primary',
-              isDark
-                ? 'border-white/20 hover:border-primary hover:bg-primary/5'
-                : 'border-gray-200 hover:border-primary hover:bg-primary/5'
+              'border-gray-200 hover:border-primary hover:bg-primary/5 dark:border-white/20 dark:hover:border-primary dark:hover:bg-primary/5'
             )}
           >
             Return home

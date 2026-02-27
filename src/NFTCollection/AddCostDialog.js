@@ -48,22 +48,20 @@ export default function AddCostDialog({ open, setOpen, openSnackbar, onAddCost }
         <div
           className={cn(
             'w-full max-w-xs rounded-2xl border',
-            isDark
-              ? 'bg-black/90 backdrop-blur-2xl border-[#3f96fe]/10 shadow-[0_8px_40px_rgba(0,0,0,0.6)]'
-              : 'bg-white/98 backdrop-blur-2xl border-gray-200 shadow-[0_8px_32px_rgba(0,0,0,0.08)]'
+            'bg-white/98 backdrop-blur-2xl border-gray-200 shadow-[0_8px_32px_rgba(0,0,0,0.08)] dark:bg-black/90 dark:backdrop-blur-2xl dark:border-[#3f96fe]/10 dark:shadow-[0_8px_40px_rgba(0,0,0,0.6)]'
           )}
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
           <div className="flex items-center justify-between p-2 border-b border-white/10">
-            <h3 className={cn('text-[15px] font-normal', isDark ? 'text-white' : 'text-gray-900')}>
+            <h3 className={cn('text-[15px] font-normal', 'text-gray-900 dark:text-white')}>
               Add Cost per Mint
             </h3>
             <button
               onClick={handleClose}
               className={cn(
                 'p-1 rounded-lg',
-                isDark ? 'hover:bg-white/5 text-gray-400' : 'hover:bg-gray-100 text-gray-600'
+                'hover:bg-gray-100 text-gray-600 dark:hover:bg-white/5 dark:text-gray-400'
               )}
             >
               <X size={20} />
@@ -76,11 +74,11 @@ export default function AddCostDialog({ open, setOpen, openSnackbar, onAddCost }
               <div
                 className={cn(
                   'flex items-center p-2 border-[1.5px] rounded-lg',
-                  isDark ? 'border-white/10 bg-white/[0.02]' : 'border-gray-200 bg-gray-50/50'
+                  'border-gray-200 bg-gray-50/50 dark:border-white/10 dark:bg-white/[0.02]'
                 )}
               >
                 <span
-                  className={cn('text-[13px] font-normal', isDark ? 'text-white' : 'text-gray-900')}
+                  className={cn('text-[13px] font-normal', 'text-gray-900 dark:text-white')}
                 >
                   {token?.name || 'XRP'}
                 </span>
@@ -98,9 +96,7 @@ export default function AddCostDialog({ open, setOpen, openSnackbar, onAddCost }
                     id="id_txt_costamountpermint"
                     className={cn(
                       'flex-1 rounded-lg border-[1.5px] px-3 py-2 text-[13px] font-normal',
-                      isDark
-                        ? 'bg-black border-white/15 text-white placeholder:text-gray-500'
-                        : 'bg-white border-gray-300 text-gray-900 placeholder:text-gray-400'
+                      'bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 dark:bg-black dark:border-white/15 dark:text-white dark:placeholder:text-gray-500'
                     )}
                     placeholder=""
                     value={amount}
@@ -114,7 +110,7 @@ export default function AddCostDialog({ open, setOpen, openSnackbar, onAddCost }
                   <span
                     className={cn(
                       'text-[15px] font-normal',
-                      isDark ? 'text-white' : 'text-gray-900'
+                      'text-gray-900 dark:text-white'
                     )}
                   >
                     {token?.name}
@@ -126,9 +122,7 @@ export default function AddCostDialog({ open, setOpen, openSnackbar, onAddCost }
                 <button
                   className={cn(
                     'flex items-center gap-2 rounded-lg border-[1.5px] px-3 py-1.5 text-[13px] font-normal',
-                    isDark
-                      ? 'border-white/15 hover:bg-primary/5 text-white'
-                      : 'border-gray-300 hover:bg-gray-100 text-gray-900'
+                    'border-gray-300 hover:bg-gray-100 text-gray-900 dark:border-white/15 dark:hover:bg-primary/5 dark:text-white'
                   )}
                   onClick={handleAddCost}
                 >

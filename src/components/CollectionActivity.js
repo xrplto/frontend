@@ -2,7 +2,7 @@ import api from 'src/utils/api';
 import { useState, useEffect, useContext } from 'react';
 import { ExternalLink, ChevronLeft, ChevronRight, MessageCircle } from 'lucide-react';
 import { cn } from 'src/utils/cn';
-import { ThemeContext, WalletContext, AppContext } from 'src/context/AppContext';
+import { WalletContext, AppContext } from 'src/context/AppContext';
 import { fNumber } from 'src/utils/formatters';
 
 // Filter type labels
@@ -17,36 +17,34 @@ const FILTER_TYPES = [
 
 // Main AccountTransactions Component
 export default function AccountTransactions({ creatorAccount, collectionSlug }) {
-  const { themeName } = useContext(ThemeContext);
   const { accountProfile } = useContext(WalletContext);
   const { openSnackbar } = useContext(AppContext);
-  const isDark = themeName === 'XrplToDarkTheme';
   const accountLogin = accountProfile?.account;
 
   const BearIcon = () => (
     <div className="relative w-14 h-14 mx-auto mb-4">
-      <div className={cn('absolute -top-1 left-0 w-5 h-5 rounded-full', isDark ? 'bg-white/15' : 'bg-gray-300')}>
-        <div className={cn('absolute top-1 left-1 w-3 h-3 rounded-full', isDark ? 'bg-white/10' : 'bg-gray-200')} />
+      <div className={cn('absolute -top-1 left-0 w-5 h-5 rounded-full bg-gray-300 dark:bg-white/15')}>
+        <div className={cn('absolute top-1 left-1 w-3 h-3 rounded-full bg-gray-200 dark:bg-white/10')} />
       </div>
-      <div className={cn('absolute -top-1 right-0 w-5 h-5 rounded-full', isDark ? 'bg-white/15' : 'bg-gray-300')}>
-        <div className={cn('absolute top-1 right-1 w-3 h-3 rounded-full', isDark ? 'bg-white/10' : 'bg-gray-200')} />
+      <div className={cn('absolute -top-1 right-0 w-5 h-5 rounded-full bg-gray-300 dark:bg-white/15')}>
+        <div className={cn('absolute top-1 right-1 w-3 h-3 rounded-full bg-gray-200 dark:bg-white/10')} />
       </div>
-      <div className={cn('absolute top-2 left-1/2 -translate-x-1/2 w-12 h-11 rounded-full', isDark ? 'bg-white/15' : 'bg-gray-300')}>
+      <div className={cn('absolute top-2 left-1/2 -translate-x-1/2 w-12 h-11 rounded-full bg-gray-300 dark:bg-white/15')}>
         <div className="absolute inset-0 rounded-full overflow-hidden">
           {[...Array(5)].map((_, i) => (
-            <div key={i} className={cn('h-[2px] w-full', isDark ? 'bg-white/15' : 'bg-gray-200')} style={{ marginTop: i * 3 + 2, transform: `translateX(${i % 2 === 0 ? '1px' : '-1px'})` }} />
+            <div key={i} className={cn('h-[2px] w-full bg-gray-200 dark:bg-white/15')} style={{ marginTop: i * 3 + 2, transform: `translateX(${i % 2 === 0 ? '1px' : '-1px'})` }} />
           ))}
         </div>
         <div className="absolute top-3 left-2 w-3 h-3 flex items-center justify-center">
-          <div className={cn('absolute w-2.5 h-[2px] rotate-45', isDark ? 'bg-white/40' : 'bg-gray-500')} />
-          <div className={cn('absolute w-2.5 h-[2px] -rotate-45', isDark ? 'bg-white/40' : 'bg-gray-500')} />
+          <div className={cn('absolute w-2.5 h-[2px] rotate-45 bg-gray-500 dark:bg-white/40')} />
+          <div className={cn('absolute w-2.5 h-[2px] -rotate-45 bg-gray-500 dark:bg-white/40')} />
         </div>
         <div className="absolute top-3 right-2 w-3 h-3 flex items-center justify-center">
-          <div className={cn('absolute w-2.5 h-[2px] rotate-45', isDark ? 'bg-white/40' : 'bg-gray-500')} />
-          <div className={cn('absolute w-2.5 h-[2px] -rotate-45', isDark ? 'bg-white/40' : 'bg-gray-500')} />
+          <div className={cn('absolute w-2.5 h-[2px] rotate-45 bg-gray-500 dark:bg-white/40')} />
+          <div className={cn('absolute w-2.5 h-[2px] -rotate-45 bg-gray-500 dark:bg-white/40')} />
         </div>
-        <div className={cn('absolute bottom-1.5 left-1/2 -translate-x-1/2 w-6 h-4 rounded-full', isDark ? 'bg-white/10' : 'bg-gray-200')}>
-          <div className={cn('absolute top-0.5 left-1/2 -translate-x-1/2 w-2.5 h-2 rounded-full', isDark ? 'bg-white/25' : 'bg-gray-400')} />
+        <div className={cn('absolute bottom-1.5 left-1/2 -translate-x-1/2 w-6 h-4 rounded-full bg-gray-200 dark:bg-white/10')}>
+          <div className={cn('absolute top-0.5 left-1/2 -translate-x-1/2 w-2.5 h-2 rounded-full bg-gray-400 dark:bg-white/25')} />
         </div>
       </div>
     </div>
@@ -115,7 +113,7 @@ export default function AccountTransactions({ creatorAccount, collectionSlug }) 
         <div
           className={cn(
             'rounded-xl border-[1.5px] p-8 mb-6 text-center',
-            isDark ? 'bg-black/20 border-white/[0.08]' : 'bg-white border-gray-200'
+            'bg-white border-gray-200 dark:bg-black/20 dark:border-white/[0.08]'
           )}
         >
           <p className="text-[15px] text-gray-500">No creator account available</p>
@@ -145,9 +143,7 @@ export default function AccountTransactions({ creatorAccount, collectionSlug }) 
                   'rounded-lg border-[1.5px] px-3 py-1 text-[11px] font-normal capitalize transition-colors',
                   (type === 'ALL' && !filterType) || filterType === type
                     ? 'border-primary/50 text-primary bg-primary/10'
-                    : isDark
-                      ? 'border-white/15 text-gray-400 hover:bg-white/5 hover:border-primary/30'
-                      : 'border-gray-300 text-gray-600 hover:bg-gray-100 hover:border-primary/30'
+                    : 'border-gray-300 text-gray-600 hover:bg-gray-100 hover:border-primary/30 dark:border-white/15 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:border-primary/30'
                 )}
               >
                 {type === 'ALL' ? 'All' : type.replace(/_/g, ' ').toLowerCase()}
@@ -165,7 +161,7 @@ export default function AccountTransactions({ creatorAccount, collectionSlug }) 
                   key={i}
                   className={cn(
                     'mb-2 h-12 rounded-lg animate-pulse',
-                    isDark ? 'bg-white/5' : 'bg-gray-200'
+                    'bg-gray-200 dark:bg-white/5'
                   )}
                 />
               ))}
@@ -174,7 +170,7 @@ export default function AccountTransactions({ creatorAccount, collectionSlug }) 
             <div
               className={cn(
                 'rounded-xl border-[1.5px] p-12 text-center',
-                isDark ? 'bg-black/20 border-white/[0.08]' : 'bg-white border-gray-200'
+                'bg-white border-gray-200 dark:bg-black/20 dark:border-white/[0.08]'
               )}
             >
               <p className="text-[15px] font-medium text-red-500 mb-2">{error}</p>
@@ -183,12 +179,12 @@ export default function AccountTransactions({ creatorAccount, collectionSlug }) 
               </p>
             </div>
           ) : transactions.length === 0 ? (
-            <div className={cn('rounded-xl border-[1.5px] py-12 px-8 text-center', isDark ? 'bg-black/20 border-white/[0.08]' : 'bg-white border-gray-200')}>
+            <div className={cn('rounded-xl border-[1.5px] py-12 px-8 text-center', 'bg-white border-gray-200 dark:bg-black/20 dark:border-white/[0.08]')}>
               <BearIcon />
-              <p className={cn('text-xs font-medium tracking-widest mb-1', isDark ? 'text-white/80' : 'text-gray-600')}>
+              <p className={cn('text-xs font-medium tracking-widest mb-1', 'text-gray-600 dark:text-white/80')}>
                 NO ACTIVITY
               </p>
-              <p className={cn('text-[11px]', isDark ? 'text-white/30' : 'text-gray-400')}>
+              <p className={cn('text-[11px]', 'text-gray-400 dark:text-white/30')}>
                 This collection hasn't had any recent activity
               </p>
             </div>
@@ -197,23 +193,21 @@ export default function AccountTransactions({ creatorAccount, collectionSlug }) 
               <div
                 className={cn(
                   'overflow-x-auto rounded-xl border-[1.5px]',
-                  isDark ? 'border-white/[0.08]' : 'border-gray-200'
+                  'border-gray-200 dark:border-white/[0.08]'
                 )}
               >
                 <table className="w-full min-w-[500px] sm:min-w-[700px]">
                   <thead
                     className={cn(
                       'sticky top-0 z-10',
-                      isDark ? 'bg-black/50 backdrop-blur-lg' : 'bg-gray-50/50 backdrop-blur-lg'
+                      'bg-gray-50/50 backdrop-blur-lg dark:bg-black/50 dark:backdrop-blur-lg'
                     )}
                   >
                     <tr>
                       <th
                         className={cn(
                           'px-4 py-3 text-left text-[11px] font-medium uppercase tracking-wide',
-                          isDark
-                            ? 'text-gray-400 border-b border-white/5'
-                            : 'text-gray-600 border-b border-gray-200'
+                          'text-gray-600 border-b border-gray-200 dark:text-gray-400 dark:border-b dark:border-white/5'
                         )}
                       >
                         Type
@@ -221,9 +215,7 @@ export default function AccountTransactions({ creatorAccount, collectionSlug }) 
                       <th
                         className={cn(
                           'px-4 py-3 text-left text-[11px] font-medium uppercase tracking-wide',
-                          isDark
-                            ? 'text-gray-400 border-b border-white/5'
-                            : 'text-gray-600 border-b border-gray-200'
+                          'text-gray-600 border-b border-gray-200 dark:text-gray-400 dark:border-b dark:border-white/5'
                         )}
                       >
                         NFT
@@ -231,9 +223,7 @@ export default function AccountTransactions({ creatorAccount, collectionSlug }) 
                       <th
                         className={cn(
                           'px-4 py-3 text-left text-[11px] font-medium uppercase tracking-wide',
-                          isDark
-                            ? 'text-gray-400 border-b border-white/5'
-                            : 'text-gray-600 border-b border-gray-200'
+                          'text-gray-600 border-b border-gray-200 dark:text-gray-400 dark:border-b dark:border-white/5'
                         )}
                       >
                         Price
@@ -241,9 +231,7 @@ export default function AccountTransactions({ creatorAccount, collectionSlug }) 
                       <th
                         className={cn(
                           'px-4 py-3 text-left text-[11px] font-medium uppercase tracking-wide',
-                          isDark
-                            ? 'text-gray-400 border-b border-white/5'
-                            : 'text-gray-600 border-b border-gray-200'
+                          'text-gray-600 border-b border-gray-200 dark:text-gray-400 dark:border-b dark:border-white/5'
                         )}
                       >
                         Fees
@@ -251,9 +239,7 @@ export default function AccountTransactions({ creatorAccount, collectionSlug }) 
                       <th
                         className={cn(
                           'px-4 py-3 text-left text-[11px] font-medium uppercase tracking-wide',
-                          isDark
-                            ? 'text-gray-400 border-b border-white/5'
-                            : 'text-gray-600 border-b border-gray-200'
+                          'text-gray-600 border-b border-gray-200 dark:text-gray-400 dark:border-b dark:border-white/5'
                         )}
                       >
                         From
@@ -261,9 +247,7 @@ export default function AccountTransactions({ creatorAccount, collectionSlug }) 
                       <th
                         className={cn(
                           'px-4 py-3 text-left text-[11px] font-medium uppercase tracking-wide',
-                          isDark
-                            ? 'text-gray-400 border-b border-white/5'
-                            : 'text-gray-600 border-b border-gray-200'
+                          'text-gray-600 border-b border-gray-200 dark:text-gray-400 dark:border-b dark:border-white/5'
                         )}
                       >
                         To
@@ -271,9 +255,7 @@ export default function AccountTransactions({ creatorAccount, collectionSlug }) 
                       <th
                         className={cn(
                           'px-4 py-3 text-left text-[11px] font-medium uppercase tracking-wide',
-                          isDark
-                            ? 'text-gray-400 border-b border-white/5'
-                            : 'text-gray-600 border-b border-gray-200'
+                          'text-gray-600 border-b border-gray-200 dark:text-gray-400 dark:border-b dark:border-white/5'
                         )}
                       >
                         Origin
@@ -281,9 +263,7 @@ export default function AccountTransactions({ creatorAccount, collectionSlug }) 
                       <th
                         className={cn(
                           'px-4 py-3 text-left text-[11px] font-medium uppercase tracking-wide',
-                          isDark
-                            ? 'text-gray-400 border-b border-white/5'
-                            : 'text-gray-600 border-b border-gray-200'
+                          'text-gray-600 border-b border-gray-200 dark:text-gray-400 dark:border-b dark:border-white/5'
                         )}
                       >
                         Date
@@ -291,9 +271,7 @@ export default function AccountTransactions({ creatorAccount, collectionSlug }) 
                       <th
                         className={cn(
                           'px-4 py-3 text-center text-[11px] font-medium uppercase tracking-wide',
-                          isDark
-                            ? 'text-gray-400 border-b border-white/5'
-                            : 'text-gray-600 border-b border-gray-200'
+                          'text-gray-600 border-b border-gray-200 dark:text-gray-400 dark:border-b dark:border-white/5'
                         )}
                       >
                         Tx
@@ -306,9 +284,7 @@ export default function AccountTransactions({ creatorAccount, collectionSlug }) 
                         key={item.hash || idx}
                         className={cn(
                           'transition-colors',
-                          isDark
-                            ? 'border-b border-white/5 hover:bg-white/5'
-                            : 'border-b border-gray-100 hover:bg-gray-50'
+                          'border-b border-gray-100 hover:bg-gray-50 dark:border-b dark:border-white/5 dark:hover:bg-white/5'
                         )}
                       >
                         <td className="px-4 py-3">
@@ -469,7 +445,7 @@ export default function AccountTransactions({ creatorAccount, collectionSlug }) 
                       className={cn(
                         'p-1.5 rounded-md transition-colors',
                         !hasPrev ? 'opacity-30 cursor-not-allowed' : 'hover:bg-white/10',
-                        isDark ? 'text-white/50' : 'text-gray-500'
+                        'text-gray-500 dark:text-white/50'
                       )}
                     >
                       <ChevronLeft size={14} />
@@ -477,7 +453,7 @@ export default function AccountTransactions({ creatorAccount, collectionSlug }) 
                     <span
                       className={cn(
                         'text-[11px] px-2 tabular-nums',
-                        isDark ? 'text-white/40' : 'text-gray-500'
+                        'text-gray-500 dark:text-white/40'
                       )}
                     >
                       {currentPage} / {totalPages}
@@ -490,7 +466,7 @@ export default function AccountTransactions({ creatorAccount, collectionSlug }) 
                       className={cn(
                         'p-1.5 rounded-md transition-colors',
                         !hasNext ? 'opacity-30 cursor-not-allowed' : 'hover:bg-white/10',
-                        isDark ? 'text-white/50' : 'text-gray-500'
+                        'text-gray-500 dark:text-white/50'
                       )}
                     >
                       <ChevronRight size={14} />

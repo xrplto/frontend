@@ -2,7 +2,7 @@ import api from 'src/utils/api';
 import { useState, useContext } from 'react';
 import Decimal from 'decimal.js-light';
 import { X, CheckCircle, ArrowRight } from 'lucide-react';
-import { ThemeContext, WalletContext, AppContext } from 'src/context/AppContext';
+import { WalletContext, AppContext } from 'src/context/AppContext';
 import { normalizeAmount } from 'src/utils/parseUtils';
 import { formatDateTime, checkExpiration } from 'src/utils/formatters';
 import { cn } from 'src/utils/cn';
@@ -17,8 +17,6 @@ function GetNum(amount) {
 }
 
 export default function SelectPriceDialog({ open, setOpen, offers, handleAccept }) {
-  const { themeName } = useContext(ThemeContext);
-  const isDark = themeName === 'XrplToDarkTheme';
   const { accountProfile } = useContext(WalletContext);
   const { openSnackbar } = useContext(AppContext);
 
@@ -52,14 +50,14 @@ export default function SelectPriceDialog({ open, setOpen, offers, handleAccept 
       <div
         className={cn(
           'relative w-full max-w-xs rounded-xl',
-          isDark ? 'bg-[#0d0d0d] border border-white/[0.08] text-white' : 'bg-white text-gray-900'
+          'bg-white text-gray-900 dark:bg-[#0d0d0d] dark:border dark:border-white/[0.08] dark:text-white'
         )}
       >
         {/* Header */}
         <div
           className={cn(
             'flex items-center justify-between border-b p-4',
-            isDark ? 'border-white/[0.08]' : 'border-gray-200'
+            'border-gray-200 dark:border-white/[0.08]'
           )}
         >
           <div className="flex items-center gap-2">
@@ -68,7 +66,7 @@ export default function SelectPriceDialog({ open, setOpen, offers, handleAccept 
           </div>
           <button
             onClick={handleClose}
-            className={cn('rounded-lg p-1.5', isDark ? 'hover:bg-white/10' : 'hover:bg-gray-100')}
+            className={cn('rounded-lg p-1.5', 'hover:bg-gray-100 dark:hover:bg-white/10')}
           >
             <X size={18} />
           </button>
@@ -89,19 +87,15 @@ export default function SelectPriceDialog({ open, setOpen, offers, handleAccept 
             return (
               <div key={offer.nft_offer_index}>
                 {idx > 0 && (
-                  <div className={cn('my-2 h-px', isDark ? 'bg-white/10' : 'bg-gray-200')} />
+                  <div className={cn('my-2 h-px', 'bg-gray-200 dark:bg-white/10')} />
                 )}
                 <button
                   onClick={(event) => handleListItemClick(event, idx)}
                   className={cn(
                     'w-full rounded-lg p-4 text-left transition-colors',
                     selectedIndex === idx
-                      ? isDark
-                        ? 'bg-primary/10'
-                        : 'bg-primary/5'
-                      : isDark
-                        ? 'hover:bg-white/5'
-                        : 'hover:bg-gray-50'
+                      ? 'bg-primary/5 dark:bg-primary/10'
+                      : 'hover:bg-gray-50 dark:hover:bg-white/5'
                   )}
                 >
                   <div className="space-y-2">
@@ -114,14 +108,14 @@ export default function SelectPriceDialog({ open, setOpen, offers, handleAccept 
                       <div className="flex items-center gap-2">
                         <ArrowRight size={14} />
                         <p
-                          className={cn('text-[11px]', isDark ? 'text-white/50' : 'text-gray-500')}
+                          className={cn('text-[11px]', 'text-gray-500 dark:text-white/50')}
                         >
                           {offer.destination}
                         </p>
                       </div>
                     )}
                     {offer.expiration && (
-                      <p className={cn('text-[11px]', isDark ? 'text-white/50' : 'text-gray-500')}>
+                      <p className={cn('text-[11px]', 'text-gray-500 dark:text-white/50')}>
                         {expired ? 'Expired' : 'Expires'} on{' '}
                         {formatDateTime(offer.expiration * 1000)}
                       </p>
@@ -137,9 +131,7 @@ export default function SelectPriceDialog({ open, setOpen, offers, handleAccept 
               onClick={handleOK}
               className={cn(
                 'rounded-lg border-[1.5px] px-8 py-2 text-[13px] font-normal transition-colors',
-                isDark
-                  ? 'border-primary bg-primary/10 text-primary hover:bg-primary/20'
-                  : 'border-primary bg-primary/5 text-primary hover:bg-primary/10'
+                'border-primary bg-primary/5 text-primary hover:bg-primary/10 dark:bg-primary/10 dark:hover:bg-primary/20'
               )}
             >
               OK

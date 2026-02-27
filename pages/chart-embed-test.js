@@ -44,7 +44,7 @@ export default function ChartEmbedTest() {
       <div
         className={cn(
           'min-h-screen p-6',
-          isDark ? 'bg-black text-white' : 'bg-gray-50 text-gray-900'
+          'bg-gray-50 text-gray-900 dark:bg-black dark:text-white'
         )}
       >
         <div className="mx-auto max-w-6xl">
@@ -54,7 +54,7 @@ export default function ChartEmbedTest() {
           <div
             className={cn(
               'mb-6 grid grid-cols-2 gap-4 rounded-xl border-[1.5px] p-4 md:grid-cols-4',
-              isDark ? 'border-white/10 bg-white/[0.02]' : 'border-gray-200 bg-white'
+              'border-gray-200 bg-white dark:border-white/10 dark:bg-white/[0.02]'
             )}
           >
             <div>
@@ -67,7 +67,7 @@ export default function ChartEmbedTest() {
                 onChange={(e) => setParams({ ...params, md5: e.target.value })}
                 className={cn(
                   'w-full rounded-lg border-[1.5px] px-3 py-2 text-[13px]',
-                  isDark ? 'border-white/15 bg-white/5' : 'border-gray-300 bg-gray-50'
+                  'border-gray-300 bg-gray-50 dark:border-white/15 dark:bg-white/5'
                 )}
               />
             </div>
@@ -81,7 +81,7 @@ export default function ChartEmbedTest() {
                 onChange={(e) => setParams({ ...params, theme: e.target.value })}
                 className={cn(
                   'w-full rounded-lg border-[1.5px] px-3 py-2 text-[13px]',
-                  isDark ? 'border-white/15 bg-white/5' : 'border-gray-300 bg-gray-50'
+                  'border-gray-300 bg-gray-50 dark:border-white/15 dark:bg-white/5'
                 )}
               >
                 <option value="dark">Dark</option>
@@ -98,7 +98,7 @@ export default function ChartEmbedTest() {
                 onChange={(e) => setParams({ ...params, interval: e.target.value })}
                 className={cn(
                   'w-full rounded-lg border-[1.5px] px-3 py-2 text-[13px]',
-                  isDark ? 'border-white/15 bg-white/5' : 'border-gray-300 bg-gray-50'
+                  'border-gray-300 bg-gray-50 dark:border-white/15 dark:bg-white/5'
                 )}
               >
                 <option value="1m">1m</option>
@@ -119,7 +119,7 @@ export default function ChartEmbedTest() {
                 onChange={(e) => setParams({ ...params, range: e.target.value })}
                 className={cn(
                   'w-full rounded-lg border-[1.5px] px-3 py-2 text-[13px]',
-                  isDark ? 'border-white/15 bg-white/5' : 'border-gray-300 bg-gray-50'
+                  'border-gray-300 bg-gray-50 dark:border-white/15 dark:bg-white/5'
                 )}
               >
                 <option value="1D">1D</option>
@@ -140,7 +140,7 @@ export default function ChartEmbedTest() {
                 onChange={(e) => setParams({ ...params, height: e.target.value })}
                 className={cn(
                   'w-full rounded-lg border-[1.5px] px-3 py-2 text-[13px]',
-                  isDark ? 'border-white/15 bg-white/5' : 'border-gray-300 bg-gray-50'
+                  'border-gray-300 bg-gray-50 dark:border-white/15 dark:bg-white/5'
                 )}
               />
             </div>
@@ -154,7 +154,7 @@ export default function ChartEmbedTest() {
                 onChange={(e) => setParams({ ...params, showVolume: e.target.value })}
                 className={cn(
                   'w-full rounded-lg border-[1.5px] px-3 py-2 text-[13px]',
-                  isDark ? 'border-white/15 bg-white/5' : 'border-gray-300 bg-gray-50'
+                  'border-gray-300 bg-gray-50 dark:border-white/15 dark:bg-white/5'
                 )}
               >
                 <option value="true">Yes</option>
@@ -171,7 +171,7 @@ export default function ChartEmbedTest() {
                 onChange={(e) => setParams({ ...params, showLogo: e.target.value })}
                 className={cn(
                   'w-full rounded-lg border-[1.5px] px-3 py-2 text-[13px]',
-                  isDark ? 'border-white/15 bg-white/5' : 'border-gray-300 bg-gray-50'
+                  'border-gray-300 bg-gray-50 dark:border-white/15 dark:bg-white/5'
                 )}
               >
                 <option value="true">Yes</option>
@@ -190,7 +190,7 @@ export default function ChartEmbedTest() {
                 placeholder="Optional"
                 className={cn(
                   'w-full rounded-lg border-[1.5px] px-3 py-2 text-[13px]',
-                  isDark ? 'border-white/15 bg-white/5' : 'border-gray-300 bg-gray-50'
+                  'border-gray-300 bg-gray-50 dark:border-white/15 dark:bg-white/5'
                 )}
               />
             </div>
@@ -200,13 +200,13 @@ export default function ChartEmbedTest() {
           <div
             className={cn(
               'mb-6 overflow-hidden rounded-xl border-[1.5px]',
-              isDark ? 'border-white/10' : 'border-gray-200'
+              'border-gray-200 dark:border-white/10'
             )}
           >
             <div
               className={cn(
                 'border-b-[1.5px] px-4 py-2 text-[11px] font-medium uppercase tracking-wide',
-                isDark ? 'border-white/10 bg-white/[0.02]' : 'border-gray-200 bg-gray-100'
+                'border-gray-200 bg-gray-100 dark:border-white/10 dark:bg-white/[0.02]'
               )}
             >
               Preview
@@ -225,13 +225,13 @@ export default function ChartEmbedTest() {
           <div
             className={cn(
               'rounded-xl border-[1.5px]',
-              isDark ? 'border-white/10 bg-white/[0.02]' : 'border-gray-200 bg-white'
+              'border-gray-200 bg-white dark:border-white/10 dark:bg-white/[0.02]'
             )}
           >
             <div
               className={cn(
                 'flex items-center justify-between border-b-[1.5px] px-4 py-2',
-                isDark ? 'border-white/10' : 'border-gray-200'
+                'border-gray-200 dark:border-white/10'
               )}
             >
               <span className="text-[11px] font-medium uppercase tracking-wide opacity-60">
@@ -241,7 +241,7 @@ export default function ChartEmbedTest() {
                 onClick={() => navigator.clipboard.writeText(iframeCode)}
                 className={cn(
                   'rounded-lg border-[1.5px] px-3 py-1 text-[12px]',
-                  isDark ? 'border-white/15 hover:bg-white/5' : 'border-gray-300 hover:bg-gray-100'
+                  'border-gray-300 hover:bg-gray-100 dark:border-white/15 dark:hover:bg-white/5'
                 )}
               >
                 Copy
@@ -250,7 +250,7 @@ export default function ChartEmbedTest() {
             <pre
               className={cn(
                 'overflow-x-auto p-4 text-[13px]',
-                isDark ? 'bg-white/[0.02] text-green-400' : 'bg-gray-50 text-green-700'
+                'bg-gray-50 text-green-700 dark:bg-white/[0.02] dark:text-green-400'
               )}
             >
               {iframeCode}

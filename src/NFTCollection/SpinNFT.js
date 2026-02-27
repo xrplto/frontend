@@ -39,7 +39,7 @@ import BuyMintDialog from './BuyMintDialog';
 import { useRouter } from 'next/router';
 
 // Linear Progress Component
-function LinearProgressWithLabel({ value, progressColor, isDark }) {
+function LinearProgressWithLabel({ value, progressColor }) {
   return (
     <div className="flex items-center gap-2">
       <div className="flex-1 h-2.5 rounded-lg overflow-hidden bg-gray-200 dark:bg-gray-700">
@@ -54,7 +54,7 @@ function LinearProgressWithLabel({ value, progressColor, isDark }) {
       <div
         className={cn(
           'min-w-[35px] text-[13px] font-normal',
-          isDark ? 'text-gray-400' : 'text-gray-600'
+          'text-gray-600 dark:text-gray-400'
         )}
       >
         {value}%
@@ -253,7 +253,7 @@ export default function SpinNFT({ collection, setView }) {
           className={cn(
             'w-[102px] h-[102px] -mt-14 mb-4 sm:w-[132px] sm:h-[132px] sm:-mt-[86px] md:w-48 md:h-48 md:-mt-[156px]',
             'border-[6px] rounded-xl shadow-md relative overflow-hidden',
-            isDark ? 'border-black/50 bg-white/70' : 'border-gray-200 bg-white/70'
+            'border-gray-200 bg-white/70 dark:border-black/50 dark:bg-white/70'
           )}
         >
           <div className="box-border inline-block relative w-[90px] h-[90px] sm:w-[120px] sm:h-[120px] md:w-[180px] md:h-[180px] group">
@@ -275,7 +275,7 @@ export default function SpinNFT({ collection, setView }) {
 
         {/* Collection Name */}
         <div className="flex flex-row items-center gap-2">
-          <h1 className={cn('text-[32px] font-semibold', isDark ? 'text-white' : 'text-gray-900')}>
+          <h1 className={cn('text-[32px] font-semibold', 'text-gray-900 dark:text-white')}>
             {name}
           </h1>
           {verified === 'yes' && (
@@ -290,7 +290,7 @@ export default function SpinNFT({ collection, setView }) {
           <p
             className={cn(
               'text-[15px] font-normal max-w-[600px] mt-2 text-center',
-              isDark ? 'text-gray-400' : 'text-gray-600'
+              'text-gray-600 dark:text-gray-400'
             )}
           >
             {description}
@@ -331,7 +331,7 @@ export default function SpinNFT({ collection, setView }) {
                 />
               )}
 
-              <div className={cn('h-px mt-2 mb-4', isDark ? 'bg-white/10' : 'bg-gray-200')} />
+              <div className={cn('h-px mt-2 mb-4', 'bg-gray-200 dark:bg-white/10')} />
               <div className="flex flex-col items-center">{/* Mint button removed */}</div>
             </div>
           </div>
@@ -339,7 +339,7 @@ export default function SpinNFT({ collection, setView }) {
           {/* Info Section */}
           <div className="flex-1 flex justify-start items-start">
             <div className="flex flex-col gap-4 mt-6 mb-6">
-              <p className={cn('text-[15px] font-normal', isDark ? 'text-white' : 'text-gray-900')}>
+              <p className={cn('text-[15px] font-normal', 'text-gray-900 dark:text-white')}>
                 Get a {type} NFT from the{' '}
                 <span className="text-[15px] font-medium text-[#57CA22]">{name}</span>
               </p>
@@ -348,7 +348,7 @@ export default function SpinNFT({ collection, setView }) {
                   <p
                     className={cn(
                       'text-[15px] font-normal',
-                      isDark ? 'text-white' : 'text-gray-900'
+                      'text-gray-900 dark:text-white'
                     )}
                   >
                     Buy Mints to participate
@@ -358,7 +358,7 @@ export default function SpinNFT({ collection, setView }) {
                   <p
                     className={cn(
                       'text-[15px] font-normal',
-                      isDark ? 'text-white' : 'text-gray-900'
+                      'text-gray-900 dark:text-white'
                     )}
                   >
                     Your Mints:{' '}
@@ -369,7 +369,7 @@ export default function SpinNFT({ collection, setView }) {
                   <p
                     className={cn(
                       'text-[15px] font-normal',
-                      isDark ? 'text-white' : 'text-gray-900'
+                      'text-gray-900 dark:text-white'
                     )}
                   >
                     Available XRP:{' '}
@@ -380,7 +380,7 @@ export default function SpinNFT({ collection, setView }) {
                   <p
                     className={cn(
                       'text-[15px] font-normal',
-                      isDark ? 'text-white' : 'text-gray-900'
+                      'text-gray-900 dark:text-white'
                     )}
                   >
                     Remaining NFTs:{' '}
@@ -396,7 +396,6 @@ export default function SpinNFT({ collection, setView }) {
                 <LinearProgressWithLabel
                   value={pendingProgress}
                   progressColor={progressColor}
-                  isDark={isDark}
                 />
               </div>
 
@@ -405,9 +404,7 @@ export default function SpinNFT({ collection, setView }) {
                   onClick={() => setOpenBuyMint(true)}
                   className={cn(
                     'rounded-lg border-[1.5px] px-4 py-2 text-[13px] font-normal',
-                    isDark
-                      ? 'border-primary bg-primary text-white hover:bg-primary/90'
-                      : 'border-primary bg-primary text-white hover:bg-primary/90'
+                    'border-primary bg-primary text-white hover:bg-primary/90 dark:border-primary dark:bg-primary dark:text-white dark:hover:bg-primary/90'
                   )}
                 >
                   Buy Mints
@@ -422,9 +419,7 @@ export default function SpinNFT({ collection, setView }) {
                   <button
                     className={cn(
                       'rounded-lg border-[1.5px] px-4 py-2 text-[13px] font-normal',
-                      isDark
-                        ? 'border-white/15 hover:bg-primary/5 text-white'
-                        : 'border-gray-300 hover:bg-gray-100 text-gray-900'
+                      'border-gray-300 hover:bg-gray-100 text-gray-900 dark:border-white/15 dark:hover:bg-primary/5 dark:text-white'
                     )}
                   >
                     Buy XRP

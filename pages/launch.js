@@ -50,9 +50,7 @@ const InputField = ({
           'w-full px-2.5 py-2 rounded-lg border text-[13px] max-sm:text-base bg-transparent resize-none transition-colors',
           error
             ? 'border-red-500/40'
-            : isDark
-              ? 'border-white/10 hover:border-white/20'
-              : 'border-gray-200 hover:border-gray-300',
+            : 'border-gray-200 hover:border-gray-300 dark:border-white/10 dark:hover:border-white/20',
           'focus:outline-none focus:border-[#3b82f6] placeholder:opacity-40'
         )}
       />
@@ -69,9 +67,7 @@ const InputField = ({
           'w-full px-2.5 py-2 rounded-lg border text-[13px] max-sm:text-base bg-transparent transition-colors',
           error
             ? 'border-red-500/40'
-            : isDark
-              ? 'border-white/10 hover:border-white/20'
-              : 'border-gray-200 hover:border-gray-300',
+            : 'border-gray-200 hover:border-gray-300 dark:border-white/10 dark:hover:border-white/20',
           'focus:outline-none focus:border-[#3b82f6] placeholder:opacity-40'
         )}
       />
@@ -1122,8 +1118,8 @@ function CreatePage() {
           <div className={cn(
             'mb-3 px-3 py-2 rounded-lg flex items-center gap-2 text-[11px] font-mono',
             accountProfile
-              ? isDark ? 'bg-green-500/10 text-green-400' : 'bg-green-50 text-green-700'
-              : isDark ? 'bg-white/5 text-white/40' : 'bg-gray-50 text-gray-400'
+              ? 'bg-green-50 text-green-700 dark:bg-green-500/10 dark:text-green-400'
+              : 'bg-gray-50 text-gray-400 dark:bg-white/5 dark:text-white/40'
           )}>
             <span className={cn('w-1.5 h-1.5 rounded-full flex-shrink-0', accountProfile ? 'bg-green-500' : 'bg-gray-400')} />
             {accountProfile
@@ -1138,9 +1134,7 @@ function CreatePage() {
           <div
             className={cn(
               'rounded-xl border p-4 mb-4 transition-colors',
-              isDark
-                ? 'border-[rgba(59,130,246,0.1)] hover:border-[rgba(59,130,246,0.2)]'
-                : 'border-[rgba(59,130,246,0.15)] hover:border-[rgba(59,130,246,0.25)]'
+              'border-[rgba(59,130,246,0.15)] hover:border-[rgba(59,130,246,0.25)] dark:border-[rgba(59,130,246,0.1)] dark:hover:border-[rgba(59,130,246,0.2)]'
             )}
           >
             <div className="flex justify-between items-center mb-3">
@@ -1223,7 +1217,7 @@ function CreatePage() {
                 <div
                   className={cn(
                     'flex items-center gap-2 px-3 py-2 rounded-lg text-[11px]',
-                    isDark ? 'bg-yellow-500/10 text-yellow-400' : 'bg-yellow-50 text-yellow-700'
+                    'bg-yellow-50 text-yellow-700 dark:bg-yellow-500/10 dark:text-yellow-400'
                   )}
                 >
                   <Info size={14} className="flex-shrink-0" />
@@ -1240,12 +1234,8 @@ function CreatePage() {
                 className={cn(
                   'flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer transition-colors border',
                   formData.antiSnipe
-                    ? isDark
-                      ? 'border-[#3b82f6]/40 bg-[#3b82f6]/10'
-                      : 'border-[#3b82f6]/30 bg-[#3b82f6]/5'
-                    : isDark
-                      ? 'border-white/10 hover:border-white/20'
-                      : 'border-gray-200 hover:border-gray-300'
+                    ? 'border-[#3b82f6]/30 bg-[#3b82f6]/5 dark:border-[#3b82f6]/40 dark:bg-[#3b82f6]/10'
+                    : 'border-gray-200 hover:border-gray-300 dark:border-white/10 dark:hover:border-white/20'
                 )}
               >
                 <div className="flex items-center gap-2">
@@ -1253,7 +1243,7 @@ function CreatePage() {
                   <span
                     className={cn(
                       'text-[10px] px-1.5 py-0.5 rounded',
-                      isDark ? 'bg-white/10' : 'bg-gray-100'
+                      'bg-gray-100 dark:bg-white/10'
                     )}
                   >
                     2 min window
@@ -1262,7 +1252,7 @@ function CreatePage() {
                 <div
                   className={cn(
                     'w-8 h-4 rounded-full transition-colors relative',
-                    formData.antiSnipe ? 'bg-[#3b82f6]' : isDark ? 'bg-white/20' : 'bg-gray-300'
+                    formData.antiSnipe ? 'bg-[#3b82f6]' : 'bg-gray-300 dark:bg-white/20'
                   )}
                 >
                   <div
@@ -1279,12 +1269,8 @@ function CreatePage() {
                 className={cn(
                   'flex items-center justify-between px-3 py-2.5 rounded-lg border transition-colors',
                   formData.platformRetentionPercent > 0
-                    ? isDark
-                      ? 'border-[#3b82f6]/40 bg-[#3b82f6]/10'
-                      : 'border-[#3b82f6]/30 bg-[#3b82f6]/5'
-                    : isDark
-                      ? 'border-white/10 hover:border-white/20'
-                      : 'border-gray-200 hover:border-gray-300'
+                    ? 'border-[#3b82f6]/30 bg-[#3b82f6]/5 dark:border-[#3b82f6]/40 dark:bg-[#3b82f6]/10'
+                    : 'border-gray-200 hover:border-gray-300 dark:border-white/10 dark:hover:border-white/20'
                 )}
               >
                 <div
@@ -1294,7 +1280,7 @@ function CreatePage() {
                     platformRetentionPercent: prev.platformRetentionPercent > 0 ? 0 : 3
                   }))}
                 >
-                  <span className="text-[12px]">Platform token share</span>
+                  <span className="text-[12px]">X engagement airdrop</span>
                 </div>
                 <div className="flex items-center gap-2">
                   {formData.platformRetentionPercent > 0 && (
@@ -1307,19 +1293,17 @@ function CreatePage() {
                       onChange={handleInputChange('platformRetentionPercent')}
                       className={cn(
                         'w-12 text-center text-[12px] max-sm:text-base font-medium py-0.5 rounded border outline-none',
-                        isDark
-                          ? 'bg-white/10 border-white/20 text-white'
-                          : 'bg-white border-gray-200 text-gray-900'
+                        'bg-white border-gray-200 text-gray-900 dark:bg-white/10 dark:border-white/20 dark:text-white'
                       )}
                     />
                   )}
                   {formData.platformRetentionPercent > 0 && (
-                    <span className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-gray-400')}>%</span>
+                    <span className={cn('text-[11px]', 'text-gray-400 dark:text-white/40')}>%</span>
                   )}
                   <div
                     className={cn(
                       'w-8 h-4 rounded-full transition-colors relative cursor-pointer',
-                      formData.platformRetentionPercent > 0 ? 'bg-[#3b82f6]' : isDark ? 'bg-white/20' : 'bg-gray-300'
+                      formData.platformRetentionPercent > 0 ? 'bg-[#3b82f6]' : 'bg-gray-300 dark:bg-white/20'
                     )}
                     onClick={() => setFormData((prev) => ({
                       ...prev,
@@ -1341,12 +1325,8 @@ function CreatePage() {
                 className={cn(
                   'rounded-lg border overflow-hidden transition-colors',
                   formData.bundleRecipients.length > 0
-                    ? isDark
-                      ? 'border-[#3b82f6]/40 bg-[#3b82f6]/10'
-                      : 'border-[#3b82f6]/30 bg-[#3b82f6]/5'
-                    : isDark
-                      ? 'border-white/10 hover:border-white/20'
-                      : 'border-gray-200 hover:border-gray-300'
+                    ? 'border-[#3b82f6]/30 bg-[#3b82f6]/5 dark:border-[#3b82f6]/40 dark:bg-[#3b82f6]/10'
+                    : 'border-gray-200 hover:border-gray-300 dark:border-white/10 dark:hover:border-white/20'
                 )}
               >
                 <div
@@ -1367,7 +1347,7 @@ function CreatePage() {
                     <span
                       className={cn(
                         'text-[10px] px-1.5 py-0.5 rounded',
-                        isDark ? 'bg-white/10' : 'bg-gray-100'
+                        'bg-gray-100 dark:bg-white/10'
                       )}
                     >
                       1 XRP/recipient
@@ -1376,7 +1356,7 @@ function CreatePage() {
                   <div
                     className={cn(
                       'w-8 h-4 rounded-full transition-colors relative',
-                      formData.bundleRecipients.length > 0 ? 'bg-[#3b82f6]' : isDark ? 'bg-white/20' : 'bg-gray-300'
+                      formData.bundleRecipients.length > 0 ? 'bg-[#3b82f6]' : 'bg-gray-300 dark:bg-white/20'
                     )}
                   >
                     <div
@@ -1418,9 +1398,7 @@ function CreatePage() {
                                     ? 'border-red-500/40'
                                     : r.address && /^r[1-9A-HJ-NP-Za-km-z]{24,34}$/.test(r.address)
                                       ? 'border-green-500/40'
-                                      : isDark
-                                        ? 'border-white/10 hover:border-white/20'
-                                        : 'border-gray-200 hover:border-gray-300',
+                                      : 'border-gray-200 hover:border-gray-300 dark:border-white/10 dark:hover:border-white/20',
                                   'focus:outline-none focus:border-[#3b82f6] placeholder:opacity-40'
                                 )}
                               />
@@ -1435,21 +1413,19 @@ function CreatePage() {
                                   }}
                                   className={cn(
                                     'px-1.5 py-2 rounded-lg border text-[11px] bg-transparent transition-colors cursor-pointer',
-                                    isDark
-                                      ? 'border-white/10 hover:border-white/20'
-                                      : 'border-gray-200 hover:border-gray-300',
+                                    'border-gray-200 hover:border-gray-300 dark:border-white/10 dark:hover:border-white/20',
                                     'focus:outline-none focus:border-[#3b82f6]'
                                   )}
                                   title="Pick from connected wallets"
                                 >
-                                  <option value="" className={isDark ? 'bg-[#111]' : 'bg-white'}>My wallets</option>
+                                  <option value="" className={'bg-white dark:bg-[#111]'}>My wallets</option>
                                   {availableProfiles.map((p) => {
                                     const addr = p.account || p.address;
                                     const typeLabel = p.wallet_type === 'oauth' || p.wallet_type === 'social'
                                       ? p.provider || 'social'
                                       : p.wallet_type || 'wallet';
                                     return (
-                                      <option key={addr} value={addr} className={isDark ? 'bg-[#111]' : 'bg-white'}>
+                                      <option key={addr} value={addr} className={'bg-white dark:bg-[#111]'}>
                                         {addr.slice(0, 8)}...{addr.slice(-4)} ({typeLabel})
                                       </option>
                                     );
@@ -1494,13 +1470,11 @@ function CreatePage() {
                                   'w-full px-2 py-2 rounded-lg border text-[12px] max-sm:text-base bg-transparent text-center transition-colors',
                                   r.percent <= 0 || r.percent > 50
                                     ? 'border-red-500/40'
-                                    : isDark
-                                      ? 'border-white/10 hover:border-white/20'
-                                      : 'border-gray-200 hover:border-gray-300',
+                                    : 'border-gray-200 hover:border-gray-300 dark:border-white/10 dark:hover:border-white/20',
                                   'focus:outline-none focus:border-[#3b82f6]'
                                 )}
                               />
-                              <span className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-gray-400')}>%</span>
+                              <span className={cn('text-[11px]', 'text-gray-400 dark:text-white/40')}>%</span>
                             </div>
                           </div>
                           <button
@@ -1510,7 +1484,7 @@ function CreatePage() {
                             }}
                             className={cn(
                               'mt-2 text-[14px] leading-none opacity-40 hover:opacity-80 transition-opacity',
-                              isDark ? 'text-white' : 'text-gray-600'
+                              'text-gray-600 dark:text-white'
                             )}
                           >
                             ×
@@ -1563,9 +1537,7 @@ function CreatePage() {
             <div
               className={cn(
                 'rounded-xl border p-4 flex-1 transition-colors',
-                isDark
-                  ? 'border-[rgba(59,130,246,0.1)] hover:border-[rgba(59,130,246,0.2)]'
-                  : 'border-[rgba(59,130,246,0.15)] hover:border-[rgba(59,130,246,0.25)]'
+                'border-[rgba(59,130,246,0.15)] hover:border-[rgba(59,130,246,0.25)] dark:border-[rgba(59,130,246,0.1)] dark:hover:border-[rgba(59,130,246,0.2)]'
               )}
             >
               <div className="flex justify-between items-center mb-3">
@@ -1589,9 +1561,7 @@ function CreatePage() {
             <div
               className={cn(
                 'rounded-xl border p-4 flex-[2] transition-colors',
-                isDark
-                  ? 'border-[rgba(59,130,246,0.1)] hover:border-[rgba(59,130,246,0.2)]'
-                  : 'border-[rgba(59,130,246,0.15)] hover:border-[rgba(59,130,246,0.25)]'
+                'border-[rgba(59,130,246,0.15)] hover:border-[rgba(59,130,246,0.25)] dark:border-[rgba(59,130,246,0.1)] dark:hover:border-[rgba(59,130,246,0.2)]'
               )}
             >
               <div className="flex justify-between items-center mb-3">
@@ -1639,15 +1609,13 @@ function CreatePage() {
               <div
                 className={cn(
                   'rounded-xl border mb-4 overflow-hidden transition-colors',
-                  isDark
-                    ? 'border-white/[0.06] bg-white/[0.02]'
-                    : 'border-gray-200 bg-gray-50/50'
+                  'border-gray-200 bg-gray-50/50 dark:border-white/[0.06] dark:bg-white/[0.02]'
                 )}
               >
                 {/* Total header */}
                 <div className={cn(
                   'px-4 py-3 flex items-center justify-between',
-                  isDark ? 'bg-white/[0.03]' : 'bg-gray-100/60'
+                  'bg-gray-100/60 dark:bg-white/[0.03]'
                 )}>
                   <span className="text-[13px] font-medium">Launch Cost</span>
                   <div className="flex items-center gap-2">
@@ -1698,7 +1666,7 @@ function CreatePage() {
                   )}
                   {bd?.platformTokenRetentionPercent > 0 && (
                     <div className="flex items-center justify-between py-1.5">
-                      <span className="text-[12px] opacity-50">Platform token share</span>
+                      <span className="text-[12px] opacity-50">X engagement airdrop</span>
                       <span className="text-[12px] opacity-40">{bd.platformTokenRetentionPercent}% of supply</span>
                     </div>
                   )}
@@ -1709,8 +1677,8 @@ function CreatePage() {
                   <div className={cn(
                     'px-4 py-2.5 flex items-center justify-between',
                     hasFunds
-                      ? isDark ? 'bg-green-500/[0.06]' : 'bg-green-50'
-                      : isDark ? 'bg-red-500/[0.06]' : 'bg-red-50'
+                      ? 'bg-green-50 dark:bg-green-500/[0.06]'
+                      : 'bg-red-50 dark:bg-red-500/[0.06]'
                   )}>
                     <span className={cn('text-[12px]', hasFunds ? 'text-green-500' : 'text-red-400')}>
                       {hasFunds ? 'Sufficient balance' : 'Insufficient balance'}
@@ -1728,9 +1696,7 @@ function CreatePage() {
           <div
             className={cn(
               'rounded-xl border p-4 mb-5 transition-colors',
-              isDark
-                ? 'border-[rgba(59,130,246,0.1)] hover:border-[rgba(59,130,246,0.2)]'
-                : 'border-[rgba(59,130,246,0.15)] hover:border-[rgba(59,130,246,0.25)]'
+              'border-[rgba(59,130,246,0.15)] hover:border-[rgba(59,130,246,0.25)] dark:border-[rgba(59,130,246,0.1)] dark:hover:border-[rgba(59,130,246,0.2)]'
             )}
           >
             <div className="flex justify-between items-center mb-3">
@@ -1749,9 +1715,7 @@ function CreatePage() {
                   ? 'border-[#3b82f6] bg-[#3b82f6]/5'
                   : imagePreview
                     ? 'border-green-500/30'
-                    : isDark
-                      ? 'border-white/15 hover:border-white/25'
-                      : 'border-gray-300 hover:border-gray-400'
+                    : 'border-gray-300 hover:border-gray-400 dark:border-white/15 dark:hover:border-white/25'
               )}
             >
               {imagePreview ? (
@@ -1840,12 +1804,12 @@ function CreatePage() {
           <div className="sticky top-6 flex flex-col gap-3">
             <div className={cn(
               'rounded-2xl border overflow-hidden transition-[border-color] duration-200',
-              isDark ? 'border-white/[0.06] bg-transparent' : 'border-black/[0.06] bg-transparent'
+              'border-black/[0.06] bg-transparent dark:border-white/[0.06]'
             )}>
               {/* Preview header */}
               <div className={cn(
                 'px-4 py-2 text-[10px] uppercase tracking-widest',
-                isDark ? 'text-white/25' : 'text-black/25'
+                'text-black/25 dark:text-white/25'
               )}>
                 Preview
               </div>
@@ -1858,7 +1822,7 @@ function CreatePage() {
                   ) : (
                     <div className={cn(
                       'w-10 h-10 rounded-full flex items-center justify-center text-[15px] font-semibold flex-shrink-0 transition-colors duration-200',
-                      isDark ? 'bg-white/[0.06] text-white/20' : 'bg-black/[0.04] text-black/20'
+                      'bg-black/[0.04] text-black/20 dark:bg-white/[0.06] dark:text-white/20'
                     )}>
                       {formData.ticker ? formData.ticker.charAt(0) : '?'}
                     </div>
@@ -1874,23 +1838,23 @@ function CreatePage() {
                 </div>
 
                 {formData.description && (
-                  <p className={cn('text-[11px] leading-relaxed mb-3 line-clamp-3', isDark ? 'text-white/40' : 'text-black/40')}>{formData.description}</p>
+                  <p className={cn('text-[11px] leading-relaxed mb-3 line-clamp-3', 'text-black/40 dark:text-white/40')}>{formData.description}</p>
                 )}
 
                 {(formData.website || formData.twitter || formData.telegram) && (
                   <div className="flex flex-wrap gap-1.5 mb-3">
                     {formData.website && (
-                      <span className={cn('flex items-center gap-1 text-[10px] px-2 py-[3px] rounded-[8px]', isDark ? 'bg-white/[0.04] text-white/40' : 'bg-black/[0.03] text-black/40')}>
+                      <span className={cn('flex items-center gap-1 text-[10px] px-2 py-[3px] rounded-[8px]', 'bg-black/[0.03] text-black/40 dark:bg-white/[0.04] dark:text-white/40')}>
                         <Globe size={9} /> Website
                       </span>
                     )}
                     {formData.twitter && (
-                      <span className={cn('flex items-center gap-1 text-[10px] px-2 py-[3px] rounded-[8px]', isDark ? 'bg-white/[0.04] text-white/40' : 'bg-black/[0.03] text-black/40')}>
+                      <span className={cn('flex items-center gap-1 text-[10px] px-2 py-[3px] rounded-[8px]', 'bg-black/[0.03] text-black/40 dark:bg-white/[0.04] dark:text-white/40')}>
                         <Twitter size={9} /> {formData.twitter}
                       </span>
                     )}
                     {formData.telegram && (
-                      <span className={cn('flex items-center gap-1 text-[10px] px-2 py-[3px] rounded-[8px]', isDark ? 'bg-white/[0.04] text-white/40' : 'bg-black/[0.03] text-black/40')}>
+                      <span className={cn('flex items-center gap-1 text-[10px] px-2 py-[3px] rounded-[8px]', 'bg-black/[0.03] text-black/40 dark:bg-white/[0.04] dark:text-white/40')}>
                         <Send size={9} /> Telegram
                       </span>
                     )}
@@ -1900,32 +1864,32 @@ function CreatePage() {
                 {/* Stats */}
                 <div className={cn(
                   'rounded-[10px] border p-3 space-y-[7px] transition-colors duration-200',
-                  isDark ? 'bg-white/[0.025] border-white/[0.06]' : 'bg-black/[0.015] border-black/[0.06]'
+                  'bg-black/[0.015] border-black/[0.06] dark:bg-white/[0.025] dark:border-white/[0.06]'
                 )}>
                   <div className="flex items-center justify-between">
-                    <span className={cn('text-[11px]', isDark ? 'text-white/30' : 'text-black/35')}>Supply</span>
+                    <span className={cn('text-[11px]', 'text-black/35 dark:text-white/30')}>Supply</span>
                     <span className="text-[12px] font-mono">{formData.tokenSupply.toLocaleString()}</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className={cn('text-[11px]', isDark ? 'text-white/30' : 'text-black/35')}>Liquidity</span>
+                    <span className={cn('text-[11px]', 'text-black/35 dark:text-white/30')}>Liquidity</span>
                     <span className="text-[12px] font-mono">{formData.ammXrpAmount} XRP</span>
                   </div>
                   {formData.userCheckPercent > 0 && (
                     <div className="flex items-center justify-between">
-                      <span className={cn('text-[11px]', isDark ? 'text-white/30' : 'text-black/35')}>Your allocation</span>
+                      <span className={cn('text-[11px]', 'text-black/35 dark:text-white/30')}>Your allocation</span>
                       <span className="text-[12px] font-mono text-[#08AA09]">{formData.userCheckPercent}%</span>
                     </div>
                   )}
                   {formData.platformRetentionPercent > 0 && (
                     <div className="flex items-center justify-between">
-                      <span className={cn('text-[11px]', isDark ? 'text-white/30' : 'text-black/35')}>Platform share</span>
-                      <span className={cn('text-[12px] font-mono', isDark ? 'text-white/20' : 'text-black/25')}>{formData.platformRetentionPercent}%</span>
+                      <span className={cn('text-[11px]', 'text-black/35 dark:text-white/30')}>X airdrop</span>
+                      <span className={cn('text-[12px] font-mono', 'text-black/25 dark:text-white/20')}>{formData.platformRetentionPercent}%</span>
                     </div>
                   )}
                   {formData.bundleRecipients.length > 0 && (
                     <div>
                       <div className="flex items-center justify-between">
-                        <span className={cn('text-[11px]', isDark ? 'text-white/30' : 'text-black/35')}>Bundle</span>
+                        <span className={cn('text-[11px]', 'text-black/35 dark:text-white/30')}>Bundle</span>
                         <span className="text-[12px] font-mono text-[#650CD4]">
                           {formData.bundleRecipients.length} addr · {formData.bundleRecipients.reduce((s, r) => s + r.percent, 0)}%
                         </span>
@@ -1937,7 +1901,7 @@ function CreatePage() {
                   )}
                   {formData.antiSnipe && (
                     <div className="flex items-center justify-between">
-                      <span className={cn('text-[11px]', isDark ? 'text-white/30' : 'text-black/35')}>Anti-snipe</span>
+                      <span className={cn('text-[11px]', 'text-black/35 dark:text-white/30')}>Anti-snipe</span>
                       <span className="text-[12px] text-[#137DFE]">2 min</span>
                     </div>
                   )}
@@ -1954,14 +1918,14 @@ function CreatePage() {
                       <div className="flex h-[6px] rounded-full overflow-hidden gap-[1px]">
                         {ammPct > 0 && <div className="bg-[#137DFE] transition-all duration-300" style={{ width: `${ammPct}%` }} />}
                         {userPct > 0 && <div className="bg-[#08AA09] transition-all duration-300" style={{ width: `${userPct}%` }} />}
-                        {platPct > 0 && <div className={cn('transition-all duration-300', isDark ? 'bg-white/15' : 'bg-black/10')} style={{ width: `${platPct}%` }} />}
+                        {platPct > 0 && <div className={cn('transition-all duration-300', 'bg-black/10 dark:bg-white/15')} style={{ width: `${platPct}%` }} />}
                         {bundlePct > 0 && <div className="bg-[#650CD4] transition-all duration-300" style={{ width: `${bundlePct}%` }} />}
                       </div>
                       <div className="flex flex-wrap gap-x-3 gap-y-0 mt-1.5">
-                        {ammPct > 0 && <span className={cn('flex items-center gap-1 text-[10px]', isDark ? 'text-white/30' : 'text-black/30')}><span className="w-1.5 h-1.5 rounded-full bg-[#137DFE]" />AMM {ammPct}%</span>}
-                        {userPct > 0 && <span className={cn('flex items-center gap-1 text-[10px]', isDark ? 'text-white/30' : 'text-black/30')}><span className="w-1.5 h-1.5 rounded-full bg-[#08AA09]" />You {userPct}%</span>}
-                        {platPct > 0 && <span className={cn('flex items-center gap-1 text-[10px]', isDark ? 'text-white/30' : 'text-black/30')}><span className={cn('w-1.5 h-1.5 rounded-full', isDark ? 'bg-white/15' : 'bg-black/10')} />Platform {platPct}%</span>}
-                        {bundlePct > 0 && <span className={cn('flex items-center gap-1 text-[10px]', isDark ? 'text-white/30' : 'text-black/30')}><span className="w-1.5 h-1.5 rounded-full bg-[#650CD4]" />Bundle {bundlePct}%</span>}
+                        {ammPct > 0 && <span className={cn('flex items-center gap-1 text-[10px]', 'text-black/30 dark:text-white/30')}><span className="w-1.5 h-1.5 rounded-full bg-[#137DFE]" />AMM {ammPct}%</span>}
+                        {userPct > 0 && <span className={cn('flex items-center gap-1 text-[10px]', 'text-black/30 dark:text-white/30')}><span className="w-1.5 h-1.5 rounded-full bg-[#08AA09]" />You {userPct}%</span>}
+                        {platPct > 0 && <span className={cn('flex items-center gap-1 text-[10px]', 'text-black/30 dark:text-white/30')}><span className={cn('w-1.5 h-1.5 rounded-full', 'bg-black/10 dark:bg-white/15')} />X airdrop {platPct}%</span>}
+                        {bundlePct > 0 && <span className={cn('flex items-center gap-1 text-[10px]', 'text-black/30 dark:text-white/30')}><span className="w-1.5 h-1.5 rounded-full bg-[#650CD4]" />Bundle {bundlePct}%</span>}
                       </div>
                     </div>
                   );
@@ -1979,7 +1943,7 @@ function CreatePage() {
               if (!formData.image) unused.push('Image');
               if (!formData.antiSnipe) unused.push('Anti-snipe');
               if (formData.userCheckPercent === 0) unused.push('Allocation');
-              if (formData.platformRetentionPercent === 0) unused.push('Platform share');
+              if (formData.platformRetentionPercent === 0) unused.push('X airdrop');
               if (formData.bundleRecipients.length === 0) unused.push('Bundle');
               // Warn about bundle recipients with missing addresses
               const bundleMissing = formData.bundleRecipients.length > 0 && formData.bundleRecipients.some(r => !r.address);
@@ -1987,7 +1951,7 @@ function CreatePage() {
               return (
                 <div className={cn(
                   'rounded-[10px] border px-3 py-2.5 transition-colors duration-200',
-                  isDark ? 'border-white/[0.04] bg-white/[0.015]' : 'border-black/[0.04] bg-black/[0.01]'
+                  'border-black/[0.04] bg-black/[0.01] dark:border-white/[0.04] dark:bg-white/[0.015]'
                 )}>
                   {bundleMissing && (
                     <div className="flex items-center gap-1.5 mb-2">
@@ -1997,12 +1961,12 @@ function CreatePage() {
                   )}
                   {unused.length > 0 && (
                     <>
-                      <span className={cn('text-[10px] block mb-1.5', isDark ? 'text-white/20' : 'text-black/20')}>Not configured</span>
+                      <span className={cn('text-[10px] block mb-1.5', 'text-black/20 dark:text-white/20')}>Not configured</span>
                       <div className="flex flex-wrap gap-1.5">
                         {unused.map(item => (
                           <span key={item} className={cn(
                             'text-[10px] px-2 py-[2px] rounded-[6px] transition-colors duration-200',
-                            isDark ? 'bg-white/[0.03] text-white/15' : 'bg-black/[0.025] text-black/20'
+                            'bg-black/[0.025] text-black/20 dark:bg-white/[0.03] dark:text-white/15'
                           )}>
                             {item}
                           </span>
@@ -2030,11 +1994,11 @@ function CreatePage() {
             {/* Token Identity */}
             <div className={cn(
               'rounded-xl border overflow-hidden',
-              isDark ? 'border-white/10' : 'border-gray-200'
+              'border-gray-200 dark:border-white/10'
             )}>
               <div className={cn(
                 'px-4 py-3 flex items-center justify-between',
-                isDark ? 'bg-white/[0.03]' : 'bg-gray-100/60'
+                'bg-gray-100/60 dark:bg-white/[0.03]'
               )}>
                 <span className="text-[13px] font-medium">Token</span>
               </div>
@@ -2055,7 +2019,7 @@ function CreatePage() {
               {(formData.website || formData.twitter || formData.telegram) && (
                 <div className={cn(
                   'px-4 py-2.5 flex flex-wrap gap-3 text-[11px]',
-                  isDark ? 'border-t border-white/5' : 'border-t border-gray-100'
+                  'border-t border-gray-100 dark:border-white/5'
                 )}>
                   {formData.website && (
                     <span className="flex items-center gap-1 opacity-50"><Globe size={11} /> {formData.website}</span>
@@ -2073,11 +2037,11 @@ function CreatePage() {
             {/* Token Economics */}
             <div className={cn(
               'rounded-xl border overflow-hidden',
-              isDark ? 'border-white/10' : 'border-gray-200'
+              'border-gray-200 dark:border-white/10'
             )}>
               <div className={cn(
                 'px-4 py-3 flex items-center justify-between',
-                isDark ? 'bg-white/[0.03]' : 'bg-gray-100/60'
+                'bg-gray-100/60 dark:bg-white/[0.03]'
               )}>
                 <span className="text-[13px] font-medium">Economics</span>
                 <span className="text-[12px] opacity-40">{formData.tokenSupply.toLocaleString()} supply</span>
@@ -2100,11 +2064,11 @@ function CreatePage() {
                 {formData.platformRetentionPercent > 0 && (
                   <div className="py-1.5">
                     <div className="flex items-center justify-between">
-                      <span className="text-[12px] opacity-50">Platform share</span>
+                      <span className="text-[12px] opacity-50">X engagement airdrop</span>
                       <span className="text-[12px] opacity-40">{formData.platformRetentionPercent}%</span>
                     </div>
                     <p className="text-[11px] opacity-40 mt-0.5">
-                      All platform share supply will be distributed to users who tweet about your token. You can turn this off above if you wish.
+                      This supply is airdropped to users who engage with your token on X. You can turn this off above.
                     </p>
                   </div>
                 )}
@@ -2138,7 +2102,7 @@ function CreatePage() {
               {formData.bundleRecipients.length > 0 && formData.bundleRecipients.some(r => !r.address) && (
                 <div className={cn(
                   'px-4 py-2 text-[11px]',
-                  isDark ? 'bg-red-500/[0.06] text-red-400' : 'bg-red-50 text-red-500'
+                  'bg-red-50 text-red-500 dark:bg-red-500/[0.06] dark:text-red-400'
                 )}>
                   Bundle recipient missing wallet address — go back and select one.
                 </div>
@@ -2146,7 +2110,7 @@ function CreatePage() {
               {formData.userCheckPercent === 0 && (
                 <div className={cn(
                   'px-4 py-2 text-[11px]',
-                  isDark ? 'bg-amber-500/[0.06] text-amber-400' : 'bg-amber-50 text-amber-600'
+                  'bg-amber-50 text-amber-600 dark:bg-amber-500/[0.06] dark:text-amber-400'
                 )}>
                   {formData.platformRetentionPercent > 0
                     ? `${100 - formData.platformRetentionPercent}% of supply goes to AMM pool`
@@ -2158,11 +2122,11 @@ function CreatePage() {
             {/* Wallet */}
             <div className={cn(
               'rounded-xl border overflow-hidden',
-              isDark ? 'border-white/10' : 'border-gray-200'
+              'border-gray-200 dark:border-white/10'
             )}>
               <div className={cn(
                 'px-4 py-3 flex items-center justify-between',
-                isDark ? 'bg-white/[0.03]' : 'bg-gray-100/60'
+                'bg-gray-100/60 dark:bg-white/[0.03]'
               )}>
                 <span className="text-[13px] font-medium">Wallet</span>
                 {walletBalance !== null && (
@@ -2185,7 +2149,7 @@ function CreatePage() {
                     disabled={!!accountProfile}
                     className={cn(
                       'flex-1 px-3 py-2 rounded-lg border text-[13px] max-sm:text-base bg-transparent font-mono',
-                      isDark ? 'border-white/10' : 'border-gray-200'
+                      'border-gray-200 dark:border-white/10'
                     )}
                   />
                 </div>
@@ -2235,7 +2199,7 @@ function CreatePage() {
             {launchStep === 'initializing' && (
               <div className={cn(
                 'rounded-xl border p-4 text-center py-8',
-                isDark ? 'border-white/10' : 'border-gray-200'
+                'border-gray-200 dark:border-white/10'
               )}>
                 <Spinner />
                 <p className="mt-4 text-[13px] opacity-60">Setting up...</p>
@@ -2247,11 +2211,11 @@ function CreatePage() {
                 {/* Unified Progress */}
                 <div className={cn(
                   'rounded-xl border overflow-hidden',
-                  isDark ? 'border-white/10' : 'border-gray-200'
+                  'border-gray-200 dark:border-white/10'
                 )}>
                   <div className={cn(
                     'px-4 py-3 flex items-center justify-between',
-                    isDark ? 'bg-white/[0.03]' : 'bg-gray-100/60'
+                    'bg-gray-100/60 dark:bg-white/[0.03]'
                   )}>
                     {launchStep === 'processing' ? (
                       <>
@@ -2287,7 +2251,7 @@ function CreatePage() {
                   <div className="px-4 py-3">
                     <div className={cn(
                       'h-1.5 rounded-full overflow-hidden',
-                      isDark ? 'bg-white/10' : 'bg-gray-200'
+                      'bg-gray-200 dark:bg-white/10'
                     )}>
                       <div
                         className="h-full bg-[#3b82f6] transition-all duration-500"
@@ -2345,21 +2309,21 @@ function CreatePage() {
                             <>
                               <div className={cn(
                                 'mt-2 px-3 py-2.5 rounded-lg border flex items-center justify-between',
-                                isDark ? 'border-yellow-500/20 bg-yellow-500/[0.06]' : 'border-yellow-500/20 bg-yellow-50'
+                                'border-yellow-500/20 bg-yellow-50 dark:bg-yellow-500/[0.06]'
                               )}>
                                 <div>
-                                  <span className={cn('text-[12px] font-medium', isDark ? 'text-yellow-400' : 'text-yellow-600')}>
+                                  <span className={cn('text-[12px] font-medium', 'text-yellow-600 dark:text-yellow-400')}>
                                     Anti-snipe window
                                   </span>
-                                  <p className={cn('text-[10px] mt-0.5', isDark ? 'text-yellow-400/60' : 'text-yellow-600/60')}>
+                                  <p className={cn('text-[10px] mt-0.5', 'text-yellow-600/60 dark:text-yellow-400/60')}>
                                     Issuer locked until window closes
                                   </p>
                                 </div>
                                 <span className={cn(
                                   'text-[20px] font-semibold tabular-nums',
                                   antiSnipeRemaining <= 30
-                                    ? isDark ? 'text-green-400' : 'text-green-600'
-                                    : isDark ? 'text-yellow-400' : 'text-yellow-600'
+                                    ? 'text-green-600 dark:text-green-400'
+                                    : 'text-yellow-600 dark:text-yellow-400'
                                 )}>
                                   {Math.floor(antiSnipeRemaining / 60)}:{String(antiSnipeRemaining % 60).padStart(2, '0')}
                                 </span>
@@ -2384,9 +2348,7 @@ function CreatePage() {
                                     }}
                                     className={cn(
                                       'flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-[12px] transition-colors border',
-                                      isDark
-                                        ? 'border-white/10 hover:bg-white/5'
-                                        : 'border-gray-200 hover:bg-gray-50'
+                                      'border-gray-200 hover:bg-gray-50 dark:border-white/10 dark:hover:bg-white/5'
                                     )}
                                   >
                                     <Copy size={11} /> Copy Link
@@ -2397,9 +2359,7 @@ function CreatePage() {
                                     rel="noopener noreferrer"
                                     className={cn(
                                       'flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-[12px] font-medium transition-colors',
-                                      isDark
-                                        ? 'bg-white text-black hover:bg-white/90'
-                                        : 'bg-black text-white hover:bg-black/90'
+                                      'bg-black text-white hover:bg-black/90 dark:bg-white dark:text-black dark:hover:bg-white/90'
                                     )}
                                   >
                                     <svg width={11} height={11} viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>
@@ -2418,11 +2378,11 @@ function CreatePage() {
                 {/* Issuer Address */}
                 <div className={cn(
                   'rounded-xl border overflow-hidden',
-                  isDark ? 'border-white/10' : 'border-gray-200'
+                  'border-gray-200 dark:border-white/10'
                 )}>
                   <div className={cn(
                     'px-4 py-3 flex items-center justify-between',
-                    isDark ? 'bg-white/[0.03]' : 'bg-gray-100/60'
+                    'bg-gray-100/60 dark:bg-white/[0.03]'
                   )}>
                     <span className="text-[13px] font-medium">Issuer Address</span>
                   </div>
@@ -2430,7 +2390,7 @@ function CreatePage() {
                     <div className="flex items-center gap-2">
                       <code className={cn(
                         'flex-1 px-3 py-2 rounded-lg text-[12px] font-mono truncate',
-                        isDark ? 'bg-black/30' : 'bg-gray-50'
+                        'bg-gray-50 dark:bg-black/30'
                       )}>
                         {sessionData?.issuerAddress || 'Loading...'}
                       </code>
@@ -2453,11 +2413,11 @@ function CreatePage() {
                 {launchStep === 'funding' && (
                 <div className={cn(
                   'rounded-xl border overflow-hidden',
-                  isDark ? 'border-white/10' : 'border-gray-200'
+                  'border-gray-200 dark:border-white/10'
                 )}>
                   <div className={cn(
                     'px-4 py-3 flex items-center justify-between',
-                    isDark ? 'bg-white/[0.03]' : 'bg-gray-100/60'
+                    'bg-gray-100/60 dark:bg-white/[0.03]'
                   )}>
                     <span className="text-[13px] font-medium">Wallet</span>
                     {walletBalance !== null && (
@@ -2485,7 +2445,7 @@ function CreatePage() {
                         disabled={!!accountProfile}
                         className={cn(
                           'flex-1 px-3 py-2 rounded-lg border text-[13px] max-sm:text-base bg-transparent font-mono',
-                          isDark ? 'border-white/10' : 'border-gray-200'
+                          'border-gray-200 dark:border-white/10'
                         )}
                       />
                     </div>
@@ -2504,11 +2464,11 @@ function CreatePage() {
                   return (
                     <div className={cn(
                       'rounded-xl border overflow-hidden',
-                      isDark ? 'border-white/10' : 'border-gray-200'
+                      'border-gray-200 dark:border-white/10'
                     )}>
                       <div className={cn(
                         'px-4 py-2.5 flex items-center justify-between',
-                        isDark ? 'bg-white/[0.03]' : 'bg-gray-100/60'
+                        'bg-gray-100/60 dark:bg-white/[0.03]'
                       )}>
                         <span className="text-[13px] font-medium">Cost</span>
                         <span className="text-[16px] font-semibold text-[#137DFE]">
@@ -2541,7 +2501,7 @@ function CreatePage() {
                       ? fundingStep === 'confirmed'
                         ? 'border-green-500/20 bg-green-500/5'
                         : 'border-[#3b82f6]/20 bg-[#3b82f6]/5'
-                      : isDark ? 'border-white/10' : 'border-gray-200'
+                      : 'border-gray-200 dark:border-white/10'
                   )}>
                     {fundingStep && (
                       <div className="px-4 py-3 space-y-1.5">
@@ -2609,7 +2569,7 @@ function CreatePage() {
                       <div className="p-4 space-y-3">
                         <p className={cn(
                           'text-[12px] text-center',
-                          isDark ? 'text-white/60' : 'text-gray-600'
+                          'text-gray-600 dark:text-white/60'
                         )}>
                           Send <span className="font-semibold text-white">{sessionData.requiredFunding || fundingAmount.required} XRP</span> to launch <span className="font-semibold text-white">{formData.tokenName || sessionData?.formData?.tokenName || 'your token'}</span>?
                         </p>
@@ -2618,9 +2578,7 @@ function CreatePage() {
                             onClick={() => setFundConfirm(false)}
                             className={cn(
                               'flex-1 py-2 rounded-lg text-[12px] font-medium transition-colors',
-                              isDark
-                                ? 'bg-white/[0.06] text-white/60 hover:bg-white/10'
-                                : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                              'bg-gray-200 text-gray-600 hover:bg-gray-300 dark:bg-white/[0.06] dark:text-white/60 dark:hover:bg-white/10'
                             )}
                           >
                             Go Back
@@ -2700,11 +2658,11 @@ function CreatePage() {
                     {cancelConfirm ? (
                       <div className={cn(
                         'rounded-xl border p-4 space-y-3',
-                        isDark ? 'border-red-500/20 bg-red-500/[0.04]' : 'border-red-200 bg-red-50/50'
+                        'border-red-200 bg-red-50/50 dark:border-red-500/20 dark:bg-red-500/[0.04]'
                       )}>
                         <p className={cn(
                           'text-[12px] text-center',
-                          isDark ? 'text-white/60' : 'text-gray-600'
+                          'text-gray-600 dark:text-white/60'
                         )}>
                           Are you sure? The session will expire and you'll need to start over.
                         </p>
@@ -2713,9 +2671,7 @@ function CreatePage() {
                             onClick={() => setCancelConfirm(false)}
                             className={cn(
                               'flex-1 py-2 rounded-lg text-[12px] font-medium transition-colors',
-                              isDark
-                                ? 'bg-white/[0.06] text-white/60 hover:bg-white/10'
-                                : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                              'bg-gray-200 text-gray-600 hover:bg-gray-300 dark:bg-white/[0.06] dark:text-white/60 dark:hover:bg-white/10'
                             )}
                           >
                             Keep Going
@@ -2733,9 +2689,7 @@ function CreatePage() {
                         onClick={() => setCancelConfirm(true)}
                         className={cn(
                           'w-full py-2 text-[11px] transition-colors',
-                          isDark
-                            ? 'text-white/20 hover:text-white/40'
-                            : 'text-gray-300 hover:text-gray-400'
+                          'text-gray-300 hover:text-gray-400 dark:text-white/20 dark:hover:text-white/40'
                         )}
                       >
                         Cancel launch
@@ -2751,7 +2705,7 @@ function CreatePage() {
             {launchStep === 'completed' && sessionData && (
               <div className={cn(
                 'rounded-xl border p-4 space-y-4',
-                isDark ? 'border-white/10' : 'border-gray-200'
+                'border-gray-200 dark:border-white/10'
               )}>
                 <Alert severity="success">
                   <CheckCircle size={14} />
@@ -2768,7 +2722,7 @@ function CreatePage() {
                 <div
                   className={cn(
                     'p-4 rounded-lg space-y-2 text-[13px]',
-                    isDark ? 'bg-white/5' : 'bg-gray-50'
+                    'bg-gray-50 dark:bg-white/5'
                   )}
                 >
                   <div className="flex justify-between">
@@ -3016,7 +2970,7 @@ function CreatePage() {
                     <div
                       className={cn(
                         'p-4 rounded-lg border space-y-3',
-                        isDark ? 'border-white/10' : 'border-gray-200'
+                        'border-gray-200 dark:border-white/10'
                       )}
                     >
                       <p className="text-[14px] font-medium">Bundle Checks</p>
@@ -3048,7 +3002,7 @@ function CreatePage() {
                                 </span>
                                 <span className={cn(
                                   'text-[9px] px-1.5 py-0.5 rounded',
-                                  isDark ? 'bg-white/10' : 'bg-gray-100'
+                                  'bg-gray-100 dark:bg-white/10'
                                 )}>
                                   {typeLabel}
                                 </span>
@@ -3242,9 +3196,7 @@ function CreatePage() {
                         rel="noopener noreferrer"
                         className={cn(
                           'w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-[12px] font-semibold transition-colors',
-                          isDark
-                            ? 'bg-white text-black hover:bg-white/90'
-                            : 'bg-black text-white hover:bg-black/90'
+                          'bg-black text-white hover:bg-black/90 dark:bg-white dark:text-black dark:hover:bg-white/90'
                         )}
                       >
                         <svg width={14} height={14} viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>
@@ -3299,7 +3251,7 @@ function CreatePage() {
             {launchStep === 'error' && (
               <div className={cn(
                 'rounded-xl border p-4 space-y-4',
-                isDark ? 'border-white/10' : 'border-gray-200'
+                'border-gray-200 dark:border-white/10'
               )}>
                 <Alert severity="error">{launchError || 'An error occurred'}</Alert>
                 <Button fullWidth onClick={resetLaunchState}>

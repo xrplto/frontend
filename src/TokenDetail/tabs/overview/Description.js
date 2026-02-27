@@ -125,7 +125,7 @@ export default function Description({
       <div
         className={cn(
           'flex justify-between items-center px-[14px] py-3 border-b',
-          effectiveIsDark ? 'border-white/[0.06] bg-white/[0.02]' : 'border-black/[0.04] bg-black/[0.01]'
+          effectiveIsDark ? 'border-white/[0.06] bg-white/[0.02]' : 'border-black/[0.04] bg-white'
         )}
       >
         {/* Title */}

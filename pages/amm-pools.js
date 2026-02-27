@@ -22,19 +22,19 @@ const currencySymbols = {
 
 const Wrapper = ({ className, children, ...p }) => <div className={cn('overflow-x-clip w-full max-w-[100vw] min-h-screen', className)} {...p}>{children}</div>;
 
-const Controls = ({ darkMode, className, children, ...p }) => <div className={cn('flex flex-col gap-3 mb-4 p-[14px] rounded-xl border w-full transition-[border-color] duration-150', darkMode ? 'bg-white/[0.015] border-white/[0.06] hover:border-white/10' : 'bg-black/[0.01] border-black/[0.06] hover:border-black/10', className)} {...p}>{children}</div>;
+const Controls = ({ className, children, ...p }) => <div className={cn('flex flex-col gap-3 mb-4 p-[14px] rounded-xl border w-full transition-[border-color] duration-150', 'bg-black/[0.01] border-black/[0.06] hover:border-black/10 dark:bg-white/[0.015] dark:border-white/[0.06] dark:hover:border-white/10', className)} {...p}>{children}</div>;
 
-const ControlRow = ({ darkMode, className, children, ...p }) => <div className={cn('flex gap-4 items-center flex-wrap w-full max-md:flex-col max-md:items-stretch max-md:gap-3', className)} {...p}>{children}</div>;
+const ControlRow = ({ className, children, ...p }) => <div className={cn('flex gap-4 items-center flex-wrap w-full max-md:flex-col max-md:items-stretch max-md:gap-3', className)} {...p}>{children}</div>;
 
 const MobileSection = ({ className, children, ...p }) => <div className={cn('max-md:w-full max-md:flex max-md:flex-col max-md:gap-2', className)} {...p}>{children}</div>;
 
 const MobileButtonGrid = ({ className, children, ...p }) => <div className={cn('flex gap-4 max-md:grid max-md:grid-cols-[repeat(auto-fit,minmax(80px,1fr))] max-md:gap-2 max-md:w-full', className)} {...p}>{children}</div>;
 
-const Button = ({ darkMode, className, children, ...p }) => (
+const Button = ({ className, children, ...p }) => (
   <button
     className={cn(
       'py-2 px-4 border-none rounded-lg cursor-pointer text-[13px] font-normal transition-[background-color] duration-150 disabled:opacity-40 disabled:cursor-not-allowed',
-      darkMode ? 'bg-white/[0.06] text-white/70 hover:not-disabled:bg-white/10 hover:not-disabled:text-white' : 'bg-black/[0.04] text-black/60 hover:not-disabled:bg-black/[0.08] hover:not-disabled:text-[#333]',
+      'bg-black/[0.04] text-black/60 hover:not-disabled:bg-black/[0.08] hover:not-disabled:text-[#333] dark:bg-white/[0.06] dark:text-white/70 dark:hover:not-disabled:bg-white/10 dark:hover:not-disabled:text-white',
       className
     )}
     {...p}
@@ -43,11 +43,11 @@ const Button = ({ darkMode, className, children, ...p }) => (
   </button>
 );
 
-const Select = ({ darkMode, className, children, ...p }) => (
+const Select = ({ className, children, ...p }) => (
   <select
     className={cn(
       'py-2 pl-[14px] pr-[30px] rounded-lg border text-[13px] font-normal cursor-pointer appearance-none bg-no-repeat bg-[length:14px] bg-[position:right_8px_center] transition-[border-color] duration-150 focus:outline-none focus:border-[#3b82f6]',
-      darkMode ? 'border-white/[0.08] bg-white/[0.03] text-white/80 hover:border-white/[0.15]' : 'border-black/[0.08] bg-black/[0.02] text-black/70 hover:border-black/[0.15]',
+      'border-black/[0.08] bg-black/[0.02] text-black/70 hover:border-black/[0.15] dark:border-white/[0.08] dark:bg-white/[0.03] dark:text-white/80 dark:hover:border-white/[0.15]',
       className
     )}
     style={{ backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e")` }}
@@ -57,27 +57,27 @@ const Select = ({ darkMode, className, children, ...p }) => (
   </select>
 );
 
-const Label = ({ darkMode, className, children, ...p }) => <span className={cn('text-[13px] font-medium tracking-[0.01em] whitespace-nowrap', darkMode ? 'text-white/40' : 'text-black/40', className)} {...p}>{children}</span>;
+const Label = ({ className, children, ...p }) => <span className={cn('text-[13px] font-medium tracking-[0.01em] whitespace-nowrap', 'text-black/40 dark:text-white/40', className)} {...p}>{children}</span>;
 
 const SummaryGrid = ({ className, children, ...p }) => <div className={cn('grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4 mt-5 mb-5 max-md:mt-4', className)} {...p}>{children}</div>;
 
-const SummaryCard = ({ darkMode, className, children, ...p }) => <div className={cn('p-4 rounded-xl border transition-[border-color,background-color] duration-200', darkMode ? 'bg-white/[0.02] border-white/[0.08] hover:border-white/[0.15] hover:bg-white/[0.04]' : 'bg-black/[0.02] border-black/[0.08] hover:border-black/[0.15] hover:bg-black/[0.04]', className)} {...p}>{children}</div>;
+const SummaryCard = ({ className, children, ...p }) => <div className={cn('p-4 rounded-xl border transition-[border-color,background-color] duration-200', 'bg-black/[0.02] border-black/[0.08] hover:border-black/[0.15] hover:bg-black/[0.04] dark:bg-white/[0.02] dark:border-white/[0.08] dark:hover:border-white/[0.15] dark:hover:bg-white/[0.04]', className)} {...p}>{children}</div>;
 
-const SummaryLabel = ({ darkMode, className, children, ...p }) => <div className={cn('text-[10px] mb-2 font-semibold uppercase tracking-[0.06em]', darkMode ? 'text-white/60' : 'text-[#919EAB]', className)} {...p}>{children}</div>;
+const SummaryLabel = ({ className, children, ...p }) => <div className={cn('text-[10px] mb-2 font-semibold uppercase tracking-[0.06em]', 'text-[#919EAB] dark:text-white/60', className)} {...p}>{children}</div>;
 
-const SummaryValue = ({ darkMode, className, children, ...p }) => <div className={cn('text-xl font-bold tracking-[-0.01em]', darkMode ? 'text-white/95' : 'text-[#1a1a2e]', className)} {...p}>{children}</div>;
+const SummaryValue = ({ className, children, ...p }) => <div className={cn('text-xl font-bold tracking-[-0.01em]', 'text-[#1a1a2e] dark:text-white/95', className)} {...p}>{children}</div>;
 
-const TableWrapper = ({ darkMode, className, children, ...p }) => <div className={cn('overflow-x-auto rounded-xl border w-full', darkMode ? 'border-white/[0.08] bg-white/[0.02]' : 'border-black/[0.08] bg-black/[0.02]', className)} {...p}>{children}</div>;
+const TableWrapper = ({ className, children, ...p }) => <div className={cn('overflow-x-auto rounded-xl border w-full', 'border-black/[0.08] bg-black/[0.02] dark:border-white/[0.08] dark:bg-white/[0.02]', className)} {...p}>{children}</div>;
 
 const Table = ({ className, children, ...p }) => <table className={cn('w-full border-collapse min-w-full table-auto hidden md:table', className)} {...p}>{children}</table>;
 
-const Th = ({ darkMode, align, sortable, className, children, ...p }) => (
+const Th = ({ align, sortable, className, children, ...p }) => (
   <th
     className={cn(
       'py-[10px] px-2 font-semibold text-[10px] uppercase tracking-[0.06em] whitespace-nowrap font-[inherit]',
-      darkMode ? 'text-white/60 bg-white/[0.02] border-b border-white/[0.05]' : 'text-[#919EAB] bg-black/[0.01] border-b border-black/[0.05]',
+      'text-[#919EAB] bg-black/[0.01] border-b border-black/[0.05] dark:text-white/60 dark:bg-white/[0.02] dark:border-b dark:border-white/[0.05]',
       sortable ? 'cursor-pointer' : 'cursor-default',
-      sortable && (darkMode ? 'hover:text-white/70' : 'hover:text-black/60'),
+      sortable && 'hover:text-black/60 dark:hover:text-white/70',
       className
     )}
     style={{ textAlign: align || 'left' }}
@@ -87,11 +87,11 @@ const Th = ({ darkMode, align, sortable, className, children, ...p }) => (
   </th>
 );
 
-const Tr = ({ darkMode, className, children, ...p }) => (
+const Tr = ({ className, children, ...p }) => (
   <tr
     className={cn(
       'border-b cursor-pointer transition-[border-color,background-color] duration-200 last:border-b-0',
-      darkMode ? 'border-white/[0.05] hover:bg-white/[0.04]' : 'border-black/[0.05] hover:bg-black/[0.02]',
+      'border-black/[0.05] hover:bg-black/[0.02] dark:border-white/[0.05] dark:hover:bg-white/[0.04]',
       className
     )}
     {...p}
@@ -100,9 +100,9 @@ const Tr = ({ darkMode, className, children, ...p }) => (
   </tr>
 );
 
-const Td = ({ darkMode, align, className, children, ...p }) => (
+const Td = ({ align, className, children, ...p }) => (
   <td
-    className={cn('py-[14px] px-4 text-sm tracking-[0.005em]', darkMode ? 'text-white/[0.88]' : 'text-[#1a1a2e]', className)}
+    className={cn('py-[14px] px-4 text-sm tracking-[0.005em]', 'text-[#1a1a2e] dark:text-white/[0.88]', className)}
     style={{ textAlign: align || 'left' }}
     {...p}
   >
@@ -112,13 +112,13 @@ const Td = ({ darkMode, align, className, children, ...p }) => (
 
 const PoolInfo = ({ className, children, ...p }) => <div className={cn('flex flex-col gap-1', className)} {...p}>{children}</div>;
 
-const PoolPair = ({ darkMode, className, children, ...p }) => <div className={cn('flex items-center gap-2 font-semibold text-sm tracking-[-0.01em]', darkMode ? 'text-white/95' : 'text-[#1a1a2e]', className)} {...p}>{children}</div>;
+const PoolPair = ({ className, children, ...p }) => <div className={cn('flex items-center gap-2 font-semibold text-sm tracking-[-0.01em]', 'text-[#1a1a2e] dark:text-white/95', className)} {...p}>{children}</div>;
 
 const TokenIconPair = ({ className, children, ...p }) => <div className={cn('flex mr-2', className)} {...p}>{children}</div>;
 
-const TokenImage = ({ darkMode, className, ...p }) => (
+const TokenImage = ({ className, ...p }) => (
   <img
-    className={cn('w-6 h-6 rounded-full object-cover border-2 last:-ml-2', darkMode ? 'border-[#1a1a1a]' : 'border-white', className)}
+    className={cn('w-6 h-6 rounded-full object-cover border-2 last:-ml-2', 'border-white dark:border-[#1a1a1a]', className)}
     width={24}
     height={24}
     decoding="async"
@@ -126,7 +126,7 @@ const TokenImage = ({ darkMode, className, ...p }) => (
   />
 );
 
-const PoolAccount = ({ darkMode, className, children, ...p }) => <div className={cn('text-[11px] font-mono tracking-[0.02em]', darkMode ? 'text-white/60' : 'text-black/40', className)} {...p}>{children}</div>;
+const PoolAccount = ({ className, children, ...p }) => <div className={cn('text-[11px] font-mono tracking-[0.02em]', 'text-black/40 dark:text-white/60', className)} {...p}>{children}</div>;
 
 const APYBadge = ({ bg, color, border, className, children, ...p }) => (
   <span
@@ -315,13 +315,13 @@ function AMMPoolsPage({ data, initialQuery }) {
       <div id="back-to-top-anchor" className="mx-auto max-w-[1920px] px-2.5 md:px-4 mt-4">
         {summary && (
           <SummaryGrid>
-            <SummaryCard darkMode={darkMode}>
-              <SummaryLabel darkMode={darkMode}>Total Liquidity</SummaryLabel>
-              <SummaryValue darkMode={darkMode}>
+            <SummaryCard>
+              <SummaryLabel>Total Liquidity</SummaryLabel>
+              <SummaryValue>
                 {formatCurrency(summary.totalLiquidity)} XRP
               </SummaryValue>
               {(summary.xrpTokenLiquidity || summary.tokenTokenLiquidity) && (
-                <div className={cn('text-[11px] mt-1 tracking-[0.01em]', darkMode ? 'text-white/50' : 'text-black/35')}>
+                <div className={cn('text-[11px] mt-1 tracking-[0.01em]', 'text-black/35 dark:text-white/50')}>
                   {summary.xrpTokenLiquidity && (
                     <span>XRP Pools: {formatCurrency(summary.xrpTokenLiquidity)}</span>
                   )}
@@ -332,40 +332,40 @@ function AMMPoolsPage({ data, initialQuery }) {
                 </div>
               )}
             </SummaryCard>
-            <SummaryCard darkMode={darkMode}>
-              <SummaryLabel darkMode={darkMode}>Volume (24h)</SummaryLabel>
-              <SummaryValue darkMode={darkMode}>
+            <SummaryCard>
+              <SummaryLabel>Volume (24h)</SummaryLabel>
+              <SummaryValue>
                 {formatCurrency(summary.totalVolume24h)} XRP
               </SummaryValue>
             </SummaryCard>
-            <SummaryCard darkMode={darkMode}>
-              <SummaryLabel darkMode={darkMode}>Volume (7d)</SummaryLabel>
-              <SummaryValue darkMode={darkMode}>
+            <SummaryCard>
+              <SummaryLabel>Volume (7d)</SummaryLabel>
+              <SummaryValue>
                 {formatCurrency(summary.totalVolume7d)} XRP
               </SummaryValue>
             </SummaryCard>
-            <SummaryCard darkMode={darkMode}>
-              <SummaryLabel darkMode={darkMode}>Fees Earned (24h)</SummaryLabel>
-              <SummaryValue darkMode={darkMode}>
+            <SummaryCard>
+              <SummaryLabel>Fees Earned (24h)</SummaryLabel>
+              <SummaryValue>
                 {formatCurrency(summary.totalFees24h)} XRP
               </SummaryValue>
             </SummaryCard>
-            <SummaryCard darkMode={darkMode}>
-              <SummaryLabel darkMode={darkMode}>Fees Earned (7d)</SummaryLabel>
-              <SummaryValue darkMode={darkMode}>
+            <SummaryCard>
+              <SummaryLabel>Fees Earned (7d)</SummaryLabel>
+              <SummaryValue>
                 {formatCurrency(summary.totalFees7d)} XRP
               </SummaryValue>
             </SummaryCard>
-            <SummaryCard darkMode={darkMode}>
-              <SummaryLabel darkMode={darkMode}>Average Trade Fee</SummaryLabel>
-              <SummaryValue darkMode={darkMode}>{(summary.avgFee / 10).toFixed(4)}%</SummaryValue>
+            <SummaryCard>
+              <SummaryLabel>Average Trade Fee</SummaryLabel>
+              <SummaryValue>{(summary.avgFee / 10).toFixed(4)}%</SummaryValue>
             </SummaryCard>
           </SummaryGrid>
         )}
 
         {/* Mobile sort chips */}
         <div className="md:hidden mb-3 flex items-center gap-2 overflow-x-auto scrollbar-none pb-1" style={{ scrollbarWidth: 'none' }}>
-          <div className={cn('flex items-center gap-1 shrink-0 pl-0.5', darkMode ? 'text-white/40' : 'text-black/[0.45]')}>
+          <div className={cn('flex items-center gap-1 shrink-0 pl-0.5', 'text-black/[0.45] dark:text-white/40')}>
             <ArrowDownUp size={12} />
           </div>
           {sortOptions.map((opt) => (
@@ -376,9 +376,7 @@ function AMMPoolsPage({ data, initialQuery }) {
                 'shrink-0 text-[11px] tracking-[0.02em] py-[5px] px-2.5 rounded-full border-[1.5px] transition-[border-color,background-color] duration-150 cursor-pointer whitespace-nowrap',
                 params.sortBy === opt.value
                   ? 'border-[#3b82f6] bg-[#3b82f6]/10 text-[#3b82f6] font-medium'
-                  : darkMode
-                    ? 'border-white/10 bg-transparent text-white/50 hover:border-white/20 hover:text-white/70'
-                    : 'border-black/[0.06] bg-transparent text-black/40 hover:border-black/10 hover:text-black/60'
+                  : 'border-black/[0.06] bg-transparent text-black/40 hover:border-black/10 hover:text-black/60 dark:border-white/10 dark:bg-transparent dark:text-white/50 dark:hover:border-white/20 dark:hover:text-white/70'
               )}
             >
               {opt.label}
@@ -397,7 +395,7 @@ function AMMPoolsPage({ data, initialQuery }) {
                   'py-2 px-[14px] rounded-lg border-[1.5px] text-[13px] cursor-pointer',
                   params.sortBy === opt.value
                     ? 'border-blue-500/40 bg-blue-500/10 text-blue-500 font-medium'
-                    : cn('bg-transparent font-normal', darkMode ? 'border-white/10 text-white' : 'border-black/10 text-[#333]')
+                    : cn('bg-transparent font-normal', 'border-black/10 text-[#333] dark:border-white/10 dark:text-white')
                 )}
               >
                 {opt.label}
@@ -410,7 +408,7 @@ function AMMPoolsPage({ data, initialQuery }) {
             onChange={(e) => updateParam('limit', e.target.value)}
             className={cn(
               'py-2 pl-3 pr-8 rounded-lg border-[1.5px] text-[13px] cursor-pointer appearance-none bg-no-repeat bg-[length:14px] bg-[position:right_8px_center]',
-              darkMode ? 'border-white/10 bg-white/5 text-white' : 'border-black/10 bg-white text-[#333]'
+              'border-black/10 bg-white text-[#333] dark:border-white/10 dark:bg-white/5 dark:text-white'
             )}
             style={{ backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='${darkMode ? '%23fff' : '%23333'}' stroke-width='2'%3e%3cpolyline points='6 9 12 15 18 9'/%3e%3c/svg%3e")` }}
           >
@@ -420,34 +418,34 @@ function AMMPoolsPage({ data, initialQuery }) {
           </select>
         </div>
 
-        <TableWrapper darkMode={darkMode}>
+        <TableWrapper>
           <Table>
             <thead>
               <tr>
-                <Th darkMode={darkMode}>#</Th>
-                <Th darkMode={darkMode}>POOL</Th>
-                <Th darkMode={darkMode} align="right">
+                <Th>#</Th>
+                <Th>POOL</Th>
+                <Th align="right">
                   TRADE FEE
                 </Th>
-                <Th darkMode={darkMode} align="right">
+                <Th align="right">
                   LIQUIDITY
                 </Th>
-                <Th darkMode={darkMode} align="right">
+                <Th align="right">
                   VOL (24H)
                 </Th>
-                <Th darkMode={darkMode} align="right">
+                <Th align="right">
                   VOL (7D)
                 </Th>
-                <Th darkMode={darkMode} align="right">
+                <Th align="right">
                   FEES (24H)
                 </Th>
-                <Th darkMode={darkMode} align="right">
+                <Th align="right">
                   FEES (7D)
                 </Th>
-                <Th darkMode={darkMode} align="center">
+                <Th align="center">
                   APY (24H)
                 </Th>
-                <Th darkMode={darkMode} align="center">
+                <Th align="center">
                   APY (7D)
                 </Th>
               </tr>
@@ -465,63 +463,60 @@ function AMMPoolsPage({ data, initialQuery }) {
                 return (
                   <Tr
                     key={pool._id}
-                    darkMode={darkMode}
                     onClick={() => router.push(`/amm/${pool.ammAccount}`)}
                   >
-                    <Td darkMode={darkMode}>{idx + 1}</Td>
-                    <Td darkMode={darkMode}>
+                    <Td>{idx + 1}</Td>
+                    <Td>
                       <PoolInfo>
-                        <PoolPair darkMode={darkMode}>
+                        <PoolPair>
                           <TokenIconPair>
                             <TokenImage
                               src={`https://s1.xrpl.to/thumb/${pool.asset1.md5 || '84e5efeb89c4eae8f68188982dc290d8'}_32`}
                               alt=""
                               loading="lazy"
-                              darkMode={darkMode}
                             />
                             <TokenImage
                               src={`https://s1.xrpl.to/thumb/${pool.asset2.md5}_32`}
                               alt=""
                               loading="lazy"
-                              darkMode={darkMode}
                             />
                           </TokenIconPair>
                           {formatPair(pool)}
                         </PoolPair>
-                        <PoolAccount darkMode={darkMode}>
+                        <PoolAccount>
                           {pool.ammAccount.substring(0, 20)}...
                         </PoolAccount>
                       </PoolInfo>
                     </Td>
-                    <Td darkMode={darkMode} align="right">
+                    <Td align="right">
                       <span>
                         {pool.tradingFee ? `${(pool.tradingFee / 1000).toFixed(2)}%` : '-'}
                       </span>
                     </Td>
-                    <Td darkMode={darkMode} align="right">
+                    <Td align="right">
                       <span>
                         {currencySymbols[activeFiatCurrency]}
                         {formatCurrency(liquidityFiat)}
                       </span>
                     </Td>
-                    <Td darkMode={darkMode} align="right">
+                    <Td align="right">
                       <span>{formatCurrency(pool.apy24h?.volume || 0)}</span>
                     </Td>
-                    <Td darkMode={darkMode} align="right">
+                    <Td align="right">
                       <span>{formatCurrency(pool.apy7d?.volume || 0)}</span>
                     </Td>
-                    <Td darkMode={darkMode} align="right">
+                    <Td align="right">
                       <span>{formatCurrency(pool.apy24h?.fees || 0)}</span>
                     </Td>
-                    <Td darkMode={darkMode} align="right">
+                    <Td align="right">
                       <span>{formatCurrency(pool.apy7d?.fees || 0)}</span>
                     </Td>
-                    <Td darkMode={darkMode} align="center">
+                    <Td align="center">
                       <APYBadge {...apyColors24h}>
                         {apy24h > 0 ? `${apy24h.toFixed(1)}%` : '-'}
                       </APYBadge>
                     </Td>
-                    <Td darkMode={darkMode} align="center">
+                    <Td align="center">
                       <APYBadge {...apyColors7d}>
                         {apy7d > 0 ? `${apy7d.toFixed(1)}%` : '-'}
                       </APYBadge>
@@ -545,23 +540,23 @@ function AMMPoolsPage({ data, initialQuery }) {
                 <div
                   key={pool._id}
                   onClick={() => router.push(`/amm/${pool.ammAccount}`)}
-                  className={cn('px-3 py-3 cursor-pointer transition-[background-color] duration-150', darkMode ? 'border-white/[0.05] hover:bg-white/[0.04]' : 'border-black/[0.05] hover:bg-black/[0.02]', idx > 0 && 'border-t-[1.5px]')}
+                  className={cn('px-3 py-3 cursor-pointer transition-[background-color] duration-150', 'border-black/[0.05] hover:bg-black/[0.02] dark:border-white/[0.05] dark:hover:bg-white/[0.04]', idx > 0 && 'border-t-[1.5px]')}
                 >
                   {/* Row 1: Rank + Pool pair + APY badge */}
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2 min-w-0">
-                      <span className={cn('text-[11px] w-5 text-center shrink-0', darkMode ? 'text-white/60' : 'text-[#919EAB]')}>{idx + 1}</span>
+                      <span className={cn('text-[11px] w-5 text-center shrink-0', 'text-[#919EAB] dark:text-white/60')}>{idx + 1}</span>
                       <TokenIconPair>
                         <TokenImage
                           src={`https://s1.xrpl.to/thumb/${pool.asset1.md5 || '84e5efeb89c4eae8f68188982dc290d8'}_32`}
-                          alt="" loading="lazy" darkMode={darkMode}
+                          alt="" loading="lazy"
                         />
                         <TokenImage
                           src={`https://s1.xrpl.to/thumb/${pool.asset2.md5}_32`}
-                          alt="" loading="lazy" darkMode={darkMode}
+                          alt="" loading="lazy"
                         />
                       </TokenIconPair>
-                      <span className={cn('text-[13px] font-semibold tracking-[-0.01em]', darkMode ? 'text-white/95' : 'text-[#1a1a2e]')}>
+                      <span className={cn('text-[13px] font-semibold tracking-[-0.01em]', 'text-[#1a1a2e] dark:text-white/95')}>
                         {formatPair(pool)}
                       </span>
                     </div>
@@ -573,22 +568,22 @@ function AMMPoolsPage({ data, initialQuery }) {
                   {/* Row 2: Key stats grid */}
                   <div className="grid grid-cols-4 gap-x-3 gap-y-1.5 ml-7">
                     <div>
-                      <div className={cn('text-[9px] uppercase tracking-[0.06em] font-semibold', darkMode ? 'text-white/50' : 'text-black/30')}>Liq</div>
-                      <div className={cn('text-[12px] font-medium', darkMode ? 'text-white/85' : 'text-[#1a1a2e]')}>
+                      <div className={cn('text-[9px] uppercase tracking-[0.06em] font-semibold', 'text-black/30 dark:text-white/50')}>Liq</div>
+                      <div className={cn('text-[12px] font-medium', 'text-[#1a1a2e] dark:text-white/85')}>
                         {currencySymbols[activeFiatCurrency]}{formatCurrency(liquidityFiat)}
                       </div>
                     </div>
                     <div>
-                      <div className={cn('text-[9px] uppercase tracking-[0.06em] font-semibold', darkMode ? 'text-white/50' : 'text-black/30')}>Volume 7d</div>
-                      <div className={cn('text-[12px] font-medium', darkMode ? 'text-white/85' : 'text-[#1a1a2e]')}>{formatCurrency(pool.apy7d?.volume || 0)}</div>
+                      <div className={cn('text-[9px] uppercase tracking-[0.06em] font-semibold', 'text-black/30 dark:text-white/50')}>Volume 7d</div>
+                      <div className={cn('text-[12px] font-medium', 'text-[#1a1a2e] dark:text-white/85')}>{formatCurrency(pool.apy7d?.volume || 0)}</div>
                     </div>
                     <div>
-                      <div className={cn('text-[9px] uppercase tracking-[0.06em] font-semibold', darkMode ? 'text-white/50' : 'text-black/30')}>Fees 7d</div>
-                      <div className={cn('text-[12px] font-medium', darkMode ? 'text-white/85' : 'text-[#1a1a2e]')}>{formatCurrency(pool.apy7d?.fees || 0)}</div>
+                      <div className={cn('text-[9px] uppercase tracking-[0.06em] font-semibold', 'text-black/30 dark:text-white/50')}>Fees 7d</div>
+                      <div className={cn('text-[12px] font-medium', 'text-[#1a1a2e] dark:text-white/85')}>{formatCurrency(pool.apy7d?.fees || 0)}</div>
                     </div>
                     <div>
-                      <div className={cn('text-[9px] uppercase tracking-[0.06em] font-semibold', darkMode ? 'text-white/50' : 'text-black/30')}>Fee</div>
-                      <div className={cn('text-[12px] font-medium', darkMode ? 'text-white/85' : 'text-[#1a1a2e]')}>
+                      <div className={cn('text-[9px] uppercase tracking-[0.06em] font-semibold', 'text-black/30 dark:text-white/50')}>Fee</div>
+                      <div className={cn('text-[12px] font-medium', 'text-[#1a1a2e] dark:text-white/85')}>
                         {pool.tradingFee ? `${(pool.tradingFee / 1000).toFixed(2)}%` : '-'}
                       </div>
                     </div>
@@ -602,17 +597,15 @@ function AMMPoolsPage({ data, initialQuery }) {
         {totalPages > 1 && (
           <div className="flex items-center justify-center gap-2 mt-6">
             <Button
-              darkMode={darkMode}
               disabled={currentPage === 0}
               onClick={() => updateParam('page', currentPage - 1)}
             >
               Previous
             </Button>
-            <span className={cn('py-[10px] px-[18px] font-medium tracking-[0.02em]', darkMode ? 'text-white/60' : 'text-black/35')}>
+            <span className={cn('py-[10px] px-[18px] font-medium tracking-[0.02em]', 'text-black/35 dark:text-white/60')}>
               Page {currentPage + 1} of {totalPages}
             </span>
             <Button
-              darkMode={darkMode}
               disabled={currentPage >= totalPages - 1}
               onClick={() => updateParam('page', currentPage + 1)}
             >

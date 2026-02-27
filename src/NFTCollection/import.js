@@ -98,7 +98,7 @@ const LoadingTextField = ({ type, value, uuid, setValid, startText, ...props }) 
           <span
             className={cn(
               'absolute left-3 top-1/2 -translate-y-1/2 text-[13px]',
-              isDark ? 'text-white/60' : 'text-gray-600'
+              'text-gray-600 dark:text-white/60'
             )}
           >
             {startText}
@@ -111,9 +111,7 @@ const LoadingTextField = ({ type, value, uuid, setValid, startText, ...props }) 
           className={cn(
             'w-full rounded-lg border-[1.5px] px-3 py-2 text-[13px] font-normal outline-none transition-colors',
             startText && 'pl-[200px]',
-            isDark
-              ? 'border-white/15 bg-transparent text-white placeholder:text-white/40 focus:border-[#137DFE]'
-              : 'border-gray-300 bg-white text-gray-900 placeholder:text-gray-400 focus:border-[#137DFE]'
+            'border-gray-300 bg-white text-gray-900 placeholder:text-gray-400 focus:border-[#137DFE] dark:border-white/15 dark:bg-transparent dark:text-white dark:placeholder:text-white/40 dark:focus:border-[#137DFE]'
           )}
         />
         <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
@@ -170,9 +168,7 @@ const LoadingButton = ({
         'flex items-center gap-2 rounded-lg border-[1.5px] px-4 py-2 text-[13px] font-normal transition-colors',
         isDisabled
           ? 'cursor-not-allowed opacity-40'
-          : isDark
-            ? 'border-[#137DFE] bg-[#137DFE]/10 text-[#137DFE] hover:bg-[#137DFE]/20'
-            : 'border-[#137DFE] bg-[#137DFE] text-white hover:bg-[#137DFE]/90',
+          : 'border-[#137DFE] bg-[#137DFE] text-white hover:bg-[#137DFE]/90 dark:border-[#137DFE] dark:bg-[#137DFE]/10 dark:text-[#137DFE] dark:hover:bg-[#137DFE]/20',
         className
       )}
     >
@@ -480,7 +476,7 @@ export default function ImportCollection() {
           <span
             className={cn(
               'absolute left-3 top-1/2 -translate-y-1/2 flex items-center',
-              isDark ? 'text-white/60' : 'text-gray-600'
+              'text-gray-600 dark:text-white/60'
             )}
           >
             <PermIdentityIcon size={20} />
@@ -489,9 +485,7 @@ export default function ImportCollection() {
             id="textIssuer"
             className={cn(
               'w-full rounded-lg border-[1.5px] pl-10 pr-10 py-2 text-[13px] font-normal outline-none transition-colors',
-              isDark
-                ? 'border-white/15 bg-transparent text-white placeholder:text-white/40 focus:border-[#137DFE]'
-                : 'border-gray-300 bg-white text-gray-900 placeholder:text-gray-400 focus:border-[#137DFE]'
+              'border-gray-300 bg-white text-gray-900 placeholder:text-gray-400 focus:border-[#137DFE] dark:border-white/15 dark:bg-transparent dark:text-white dark:placeholder:text-white/40 dark:focus:border-[#137DFE]'
             )}
             placeholder="Issuer Address"
             onChange={handleChangeIssuer}
@@ -520,9 +514,7 @@ export default function ImportCollection() {
               'rounded-lg border-[1.5px] px-3 py-1 text-[13px] font-normal transition-colors',
               !taxons || taxons.length === 0
                 ? 'cursor-not-allowed opacity-40'
-                : isDark
-                  ? 'border-white/15 text-white hover:border-[#137DFE]'
-                  : 'border-gray-300 text-gray-900 hover:border-[#137DFE]'
+                : 'border-gray-300 text-gray-900 hover:border-[#137DFE] dark:border-white/15 dark:text-white dark:hover:border-[#137DFE]'
             )}
           >
             {taxons.length > 0 && taxons.length === selectedTaxons.length
@@ -542,18 +534,14 @@ export default function ImportCollection() {
           return (
             <div key={tx.taxon}>
               {idx > 0 && (
-                <div className={cn('h-px my-2', isDark ? 'bg-white/10' : 'bg-gray-200')} />
+                <div className={cn('h-px my-2', 'bg-gray-200 dark:bg-white/10')} />
               )}
               <button
                 className={cn(
                   'w-full text-left py-4 px-3 rounded-lg transition-colors',
                   selectedTaxons.includes(tx.taxon)
-                    ? isDark
-                      ? 'bg-[#137DFE]/10'
-                      : 'bg-[#137DFE]/5'
-                    : isDark
-                      ? 'hover:bg-white/5'
-                      : 'hover:bg-gray-100'
+                    ? 'bg-[#137DFE]/5 dark:bg-[#137DFE]/10'
+                    : 'hover:bg-gray-100 dark:hover:bg-white/5'
                 )}
                 onClick={(event) => handleListItemClick(event, tx.taxon)}
               >
@@ -586,7 +574,7 @@ export default function ImportCollection() {
           <div
             className={cn(
               'border-[3px] border-dashed rounded-full p-1 w-fit cursor-pointer',
-              isDark ? 'border-white/20' : 'border-gray-300'
+              'border-gray-300 dark:border-white/20'
             )}
           >
             <input
@@ -600,7 +588,7 @@ export default function ImportCollection() {
             <div
               className={cn(
                 'relative flex items-center justify-center w-[140px] h-[140px] rounded-full overflow-hidden cursor-pointer border',
-                isDark ? 'border-white/10' : 'border-black/10'
+                'border-black/10 dark:border-white/10'
               )}
             >
               <div
@@ -617,7 +605,7 @@ export default function ImportCollection() {
               {fileUrl1 ? (
                 <img src={fileUrl1} alt="" className="w-full h-full object-cover" />
               ) : (
-                <ImageIcon size={64} className={isDark ? 'text-white/20' : 'text-gray-300'} />
+                <ImageIcon size={64} className={'text-gray-300 dark:text-white/20'} />
               )}
             </div>
           </div>
@@ -633,7 +621,7 @@ export default function ImportCollection() {
           <div
             className={cn(
               'border-[3px] border-dashed rounded-xl p-1 w-fit cursor-pointer',
-              isDark ? 'border-white/20' : 'border-gray-300'
+              'border-gray-300 dark:border-white/20'
             )}
           >
             <input
@@ -647,7 +635,7 @@ export default function ImportCollection() {
             <div
               className={cn(
                 'relative flex items-center justify-center w-[320px] h-[240px] rounded-lg overflow-hidden cursor-pointer border',
-                isDark ? 'border-white/10' : 'border-black/10'
+                'border-black/10 dark:border-white/10'
               )}
             >
               <div
@@ -664,7 +652,7 @@ export default function ImportCollection() {
               {fileUrl2 ? (
                 <img src={fileUrl2} alt="" className="w-full h-full object-cover" />
               ) : (
-                <ImageIcon size={100} className={isDark ? 'text-white/20' : 'text-gray-300'} />
+                <ImageIcon size={100} className={'text-gray-300 dark:text-white/20'} />
               )}
             </div>
           </div>
@@ -681,7 +669,7 @@ export default function ImportCollection() {
           <div
             className={cn(
               'border-[3px] border-dashed rounded-xl p-1 cursor-pointer',
-              isDark ? 'border-white/20' : 'border-gray-300'
+              'border-gray-300 dark:border-white/20'
             )}
           >
             <input
@@ -695,7 +683,7 @@ export default function ImportCollection() {
             <div
               className={cn(
                 'relative flex items-center justify-center h-[200px] rounded-lg overflow-hidden cursor-pointer border',
-                isDark ? 'border-white/10' : 'border-black/10'
+                'border-black/10 dark:border-white/10'
               )}
             >
               <div
@@ -712,7 +700,7 @@ export default function ImportCollection() {
               {fileUrl3 ? (
                 <img src={fileUrl3} alt="" className="w-full h-full object-cover" />
               ) : (
-                <ImageIcon size={100} className={isDark ? 'text-white/20' : 'text-gray-300'} />
+                <ImageIcon size={100} className={'text-gray-300 dark:text-white/20'} />
               )}
             </div>
           </div>
@@ -749,9 +737,7 @@ export default function ImportCollection() {
           onChange={(e) => handleChangeCategory(e.target.value)}
           className={cn(
             'w-full rounded-lg border-[1.5px] px-3 py-2 text-[13px] font-normal outline-none',
-            isDark
-              ? 'border-white/15 bg-transparent text-white'
-              : 'border-gray-300 bg-white text-gray-900'
+            'border-gray-300 bg-white text-gray-900 dark:border-white/15 dark:bg-transparent dark:text-white'
           )}
         >
           {CATEGORIES.map((cat) => (
@@ -815,9 +801,7 @@ export default function ImportCollection() {
                 t.disabled && 'cursor-not-allowed opacity-40',
                 type === t.value
                   ? 'border-[#137DFE] bg-[#137DFE]/10 text-[#137DFE]'
-                  : isDark
-                    ? 'border-white/15 text-white hover:border-[#137DFE]'
-                    : 'border-gray-300 text-gray-900 hover:border-[#137DFE]'
+                  : 'border-gray-300 text-gray-900 hover:border-[#137DFE] dark:border-white/15 dark:text-white dark:hover:border-[#137DFE]'
               )}
             >
               {t.value}
@@ -846,9 +830,7 @@ export default function ImportCollection() {
           }}
           className={cn(
             'w-full rounded-lg border-[1.5px] px-3 py-2 text-[13px] font-normal outline-none resize-none',
-            isDark
-              ? 'border-white/15 bg-transparent text-white placeholder:text-white/40'
-              : 'border-gray-300 bg-white text-gray-900 placeholder:text-gray-400'
+            'border-gray-300 bg-white text-gray-900 placeholder:text-gray-400 dark:border-white/15 dark:bg-transparent dark:text-white dark:placeholder:text-white/40'
           )}
         />
       </div>
@@ -926,9 +908,7 @@ export default function ImportCollection() {
                 'rounded-lg border-[1.5px] px-4 py-1 text-[13px] font-normal capitalize transition-colors',
                 privateCollection === p
                   ? 'border-[#137DFE] bg-[#137DFE]/10 text-[#137DFE]'
-                  : isDark
-                    ? 'border-white/15 text-white hover:border-[#137DFE]'
-                    : 'border-gray-300 text-gray-900 hover:border-[#137DFE]'
+                  : 'border-gray-300 text-gray-900 hover:border-[#137DFE] dark:border-white/15 dark:text-white dark:hover:border-[#137DFE]'
               )}
             >
               {p}

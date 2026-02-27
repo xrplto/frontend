@@ -121,7 +121,7 @@ export default function NFTActionsBulk({ nft }) {
         <div
           className={cn(
             'fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md max-sm:h-dvh',
-            isDark ? 'bg-black/70' : 'bg-white/60'
+            'bg-white/60 dark:bg-black/70'
           )}
         >
           <div className="flex flex-col items-center gap-2">
@@ -135,7 +135,7 @@ export default function NFTActionsBulk({ nft }) {
         <h3
           className={cn(
             'text-[30px] font-semibold overflow-hidden',
-            isDark ? 'text-white' : 'text-gray-900'
+            'text-gray-900 dark:text-white'
           )}
         >
           {name}
@@ -143,15 +143,15 @@ export default function NFTActionsBulk({ nft }) {
         <div
           className={cn(
             'rounded-xl border-[1.5px] p-2',
-            isDark ? 'border-white/10 bg-white/[0.02]' : 'border-gray-200 bg-gray-50'
+            'border-gray-200 bg-gray-50 dark:border-white/10 dark:bg-white/[0.02]'
           )}
         >
           <div className="flex flex-col gap-2">
-            <p className={cn('text-[15px] font-normal', isDark ? 'text-white' : 'text-gray-900')}>
+            <p className={cn('text-[15px] font-normal', 'text-gray-900 dark:text-white')}>
               You can only buy this NFT with a Mint and there are currently {pendingNfts} NFTs that
               can be bought with Mints.
             </p>
-            <p className={cn('text-[15px] font-normal', isDark ? 'text-white' : 'text-gray-900')}>
+            <p className={cn('text-[15px] font-normal', 'text-gray-900 dark:text-white')}>
               You currently have{' '}
               <span className="text-[15px] font-medium text-[#33C2FF]">{mints} Mints</span>{' '}
               available and{' '}
@@ -162,9 +162,7 @@ export default function NFTActionsBulk({ nft }) {
               <button
                 className={cn(
                   'flex items-center gap-2 rounded-lg border-[1.5px] px-4 py-2 text-[13px] font-normal',
-                  isDark
-                    ? 'border-white/15 bg-primary text-white hover:bg-primary/90'
-                    : 'border-primary bg-primary text-white hover:bg-primary/90',
+                  'border-primary bg-primary text-white hover:bg-primary/90 dark:border-white/15 dark:bg-primary dark:text-white dark:hover:bg-primary/90',
                   (!accountLogin || status != NFToken.SELL_WITH_MINT_BULK) &&
                     'opacity-50 cursor-not-allowed'
                 )}
@@ -177,9 +175,7 @@ export default function NFTActionsBulk({ nft }) {
               <button
                 className={cn(
                   'flex items-center gap-2 rounded-lg border-[1.5px] px-4 py-2 text-[13px] font-normal',
-                  isDark
-                    ? 'border-white/15 hover:bg-primary/5 text-white'
-                    : 'border-gray-300 hover:bg-gray-100 text-gray-900'
+                  'border-gray-300 hover:bg-gray-100 text-gray-900 dark:border-white/15 dark:hover:bg-primary/5 dark:text-white'
                 )}
                 onClick={() => setOpenBuyMint(true)}
               >

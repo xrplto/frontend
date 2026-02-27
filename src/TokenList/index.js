@@ -11,7 +11,7 @@ import {
 } from 'react';
 import { cn } from 'src/utils/cn';
 import { useContext } from 'react';
-import { ThemeContext, WalletContext, AppContext } from 'src/context/AppContext';
+import { WalletContext, AppContext } from 'src/context/AppContext';
 import { useDispatch, useSelector } from 'react-redux';
 import { update_metrics, update_filteredCount, selectMetrics } from 'src/redux/statusSlice';
 import { TokenListHead } from './TokenListControls';
@@ -40,11 +40,11 @@ const Container = ({ className, children, ...p }) => (
   </div>
 );
 
-const TableWrapper = ({ className, children, darkMode, ...p }) => (
+const TableWrapper = ({ className, children, ...p }) => (
   <div
     className={cn(
       'rounded-xl overflow-clip border-[1.5px] backdrop-blur-[4px]',
-      darkMode ? 'border-white/[0.08] bg-white/[0.02]' : 'border-black/[0.06] bg-black/[0.01]',
+      'border-black/[0.06] bg-[#F8FAFD] dark:border-white/[0.08] dark:bg-white/[0.02]',
       className
     )}
     style={{ minHeight: '680px', contain: 'content', ...p.style }}
@@ -76,7 +76,7 @@ const StyledTable = React.forwardRef(({ className, children, isMobile, ...p }, r
   </table>
 ));
 
-const StyledTableBody = ({ className, children, isMobile, darkMode, ...p }) => (
+const StyledTableBody = ({ className, children, isMobile, ...p }) => (
   <tbody className={cn('m-0 p-0', className)} {...p}>
     {children}
   </tbody>
@@ -101,11 +101,11 @@ const SearchContainer = ({ className, children, ...p }) => (
   </div>
 );
 
-const CustomColumnsPanel = ({ className, children, darkMode, ...p }) => (
+const CustomColumnsPanel = ({ className, children, ...p }) => (
   <div
     className={cn(
       'w-full rounded-xl p-6 my-5 backdrop-blur-[16px] border-[1.5px]',
-      darkMode ? 'bg-black/50 border-white/10' : 'bg-white/80 border-black/[0.06]',
+      'bg-white/95 border-black/[0.06] dark:bg-black/50 dark:border-white/10',
       className
     )}
     style={{ ...p.style }}
@@ -124,20 +124,20 @@ const ColumnsGrid = ({ className, children, ...p }) => (
   </div>
 );
 
-const ColumnItem = ({ className, children, darkMode, ...p }) => (
+const ColumnItem = ({ className, children, ...p }) => (
   <label
     className={cn(
       'flex items-center gap-2.5 p-3 bg-transparent rounded-lg cursor-pointer border-[1.5px]',
-      darkMode ? 'border-white/10' : 'border-black/10',
+      'border-black/10 dark:border-white/10',
       className
     )}
     onMouseEnter={(e) => {
-      e.currentTarget.style.background = darkMode ? 'rgba(66, 133, 244, 0.04)' : 'rgba(66, 133, 244, 0.02)';
+      e.currentTarget.style.background = 'rgba(66, 133, 244, 0.02) dark:rgba(66, dark:133, dark:244, dark:0.04)';
       e.currentTarget.style.borderColor = '#4285f4';
     }}
     onMouseLeave={(e) => {
       e.currentTarget.style.background = 'transparent';
-      e.currentTarget.style.borderColor = darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+      e.currentTarget.style.borderColor = 'rgba(0, 0, 0, 0.1) dark:rgba(255, dark:255, dark:255, dark:0.1)';
     }}
     {...p}
   >
@@ -164,7 +164,6 @@ function TokenListComponent({
   autoAddNewTokens = false,
   tokenType = ''
 }) {
-  const { darkMode } = useContext(ThemeContext);
   const { accountProfile } = useContext(WalletContext);
   const {
     openSnackbar,
@@ -692,7 +691,6 @@ function TokenListComponent({
 
       {customSettingsOpen && viewMode === 'custom' ? (
         <CustomColumnsPanel
-          darkMode={darkMode}
           role="dialog"
           aria-label="Customize table columns"
           style={isMobile ? { padding: '16px', margin: '8px 0', borderRadius: '8px' } : {}}
@@ -702,7 +700,7 @@ function TokenListComponent({
               className={cn(
                 'm-0 font-medium',
                 isMobile ? 'text-[15px]' : 'text-[18px]',
-                darkMode ? 'text-white' : 'text-black'
+                'text-black dark:text-white'
               )}
             >
               {isMobile ? 'Custom Columns' : 'Customize Table Columns'}
@@ -716,7 +714,7 @@ function TokenListComponent({
                 aria-label="Close custom columns settings"
                 className={cn(
                   'bg-transparent border-none text-xl cursor-pointer p-1 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] rounded',
-                  darkMode ? 'text-white/50' : 'text-black/50'
+                  'text-black/50 dark:text-white/50'
                 )}
               >
                 {'\u00D7'}
@@ -731,7 +729,7 @@ function TokenListComponent({
                   htmlFor="column-2-select"
                   className={cn(
                     'block mb-[6px] text-[11px] font-medium uppercase tracking-[0.5px]',
-                    darkMode ? 'text-white/40' : 'text-black/40'
+                    'text-black/40 dark:text-white/40'
                   )}
                 >
                   Middle Column
@@ -744,25 +742,25 @@ function TokenListComponent({
                   }
                   className={cn(
                     'w-full p-3 rounded-lg border-[1.5px] text-[13px] cursor-pointer appearance-none bg-no-repeat bg-[position:right_12px_center] outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
-                    darkMode ? 'border-[#f59e0b] bg-[#1a1a1a] text-white' : 'border-black/10 bg-white text-black'
+                    'border-black/10 bg-white text-black dark:border-[#f59e0b] dark:bg-[#1a1a1a] dark:text-white'
                   )}
                   style={{
-                    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='${darkMode ? '%23fff' : '%23000'}' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`
+                    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='${'%23000 dark:%23fff'}' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`
                   }}
                 >
-                  <option value="price" className={cn(darkMode ? 'bg-[#1a1a1a] text-white' : 'bg-white text-black')}>Price</option>
-                  <option value="volume24h" className={cn(darkMode ? 'bg-[#1a1a1a] text-white' : 'bg-white text-black')}>Volume 24h</option>
-                  <option value="volume7d" className={cn(darkMode ? 'bg-[#1a1a1a] text-white' : 'bg-white text-black')}>Volume 7d</option>
-                  <option value="marketCap" className={cn(darkMode ? 'bg-[#1a1a1a] text-white' : 'bg-white text-black')}>Market Cap</option>
-                  <option value="tvl" className={cn(darkMode ? 'bg-[#1a1a1a] text-white' : 'bg-white text-black')}>TVL</option>
-                  <option value="holders" className={cn(darkMode ? 'bg-[#1a1a1a] text-white' : 'bg-white text-black')}>Holders</option>
-                  <option value="trades" className={cn(darkMode ? 'bg-[#1a1a1a] text-white' : 'bg-white text-black')}>Trades</option>
-                  <option value="created" className={cn(darkMode ? 'bg-[#1a1a1a] text-white' : 'bg-white text-black')}>Age</option>
-                  <option value="supply" className={cn(darkMode ? 'bg-[#1a1a1a] text-white' : 'bg-white text-black')}>Supply</option>
-                  <option value="pro5m" className={cn(darkMode ? 'bg-[#1a1a1a] text-white' : 'bg-white text-black')}>5m %</option>
-                  <option value="pro1h" className={cn(darkMode ? 'bg-[#1a1a1a] text-white' : 'bg-white text-black')}>1h %</option>
-                  <option value="pro24h" className={cn(darkMode ? 'bg-[#1a1a1a] text-white' : 'bg-white text-black')}>24h %</option>
-                  <option value="pro7d" className={cn(darkMode ? 'bg-[#1a1a1a] text-white' : 'bg-white text-black')}>7d %</option>
+                  <option value="price" className={cn('bg-white text-black dark:bg-[#1a1a1a] dark:text-white')}>Price</option>
+                  <option value="volume24h" className={cn('bg-white text-black dark:bg-[#1a1a1a] dark:text-white')}>Volume 24h</option>
+                  <option value="volume7d" className={cn('bg-white text-black dark:bg-[#1a1a1a] dark:text-white')}>Volume 7d</option>
+                  <option value="marketCap" className={cn('bg-white text-black dark:bg-[#1a1a1a] dark:text-white')}>Market Cap</option>
+                  <option value="tvl" className={cn('bg-white text-black dark:bg-[#1a1a1a] dark:text-white')}>TVL</option>
+                  <option value="holders" className={cn('bg-white text-black dark:bg-[#1a1a1a] dark:text-white')}>Holders</option>
+                  <option value="trades" className={cn('bg-white text-black dark:bg-[#1a1a1a] dark:text-white')}>Trades</option>
+                  <option value="created" className={cn('bg-white text-black dark:bg-[#1a1a1a] dark:text-white')}>Age</option>
+                  <option value="supply" className={cn('bg-white text-black dark:bg-[#1a1a1a] dark:text-white')}>Supply</option>
+                  <option value="pro5m" className={cn('bg-white text-black dark:bg-[#1a1a1a] dark:text-white')}>5m %</option>
+                  <option value="pro1h" className={cn('bg-white text-black dark:bg-[#1a1a1a] dark:text-white')}>1h %</option>
+                  <option value="pro24h" className={cn('bg-white text-black dark:bg-[#1a1a1a] dark:text-white')}>24h %</option>
+                  <option value="pro7d" className={cn('bg-white text-black dark:bg-[#1a1a1a] dark:text-white')}>7d %</option>
                 </select>
               </div>
               <div>
@@ -770,7 +768,7 @@ function TokenListComponent({
                   htmlFor="column-3-select"
                   className={cn(
                     'block mb-[6px] text-[11px] font-medium uppercase tracking-[0.5px]',
-                    darkMode ? 'text-white/40' : 'text-black/40'
+                    'text-black/40 dark:text-white/40'
                   )}
                 >
                   Right Column
@@ -783,25 +781,25 @@ function TokenListComponent({
                   }
                   className={cn(
                     'w-full p-3 rounded-lg border-[1.5px] text-[13px] cursor-pointer appearance-none bg-no-repeat bg-[position:right_12px_center] outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
-                    darkMode ? 'border-[#f59e0b] bg-[#1a1a1a] text-white' : 'border-black/10 bg-white text-black'
+                    'border-black/10 bg-white text-black dark:border-[#f59e0b] dark:bg-[#1a1a1a] dark:text-white'
                   )}
                   style={{
-                    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='${darkMode ? '%23fff' : '%23000'}' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`
+                    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='${'%23000 dark:%23fff'}' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`
                   }}
                 >
-                  <option value="pro5m" className={cn(darkMode ? 'bg-[#1a1a1a] text-white' : 'bg-white text-black')}>5m %</option>
-                  <option value="pro1h" className={cn(darkMode ? 'bg-[#1a1a1a] text-white' : 'bg-white text-black')}>1h %</option>
-                  <option value="pro24h" className={cn(darkMode ? 'bg-[#1a1a1a] text-white' : 'bg-white text-black')}>24h %</option>
-                  <option value="pro7d" className={cn(darkMode ? 'bg-[#1a1a1a] text-white' : 'bg-white text-black')}>7d %</option>
-                  <option value="price" className={cn(darkMode ? 'bg-[#1a1a1a] text-white' : 'bg-white text-black')}>Price</option>
-                  <option value="volume24h" className={cn(darkMode ? 'bg-[#1a1a1a] text-white' : 'bg-white text-black')}>Volume 24h</option>
-                  <option value="volume7d" className={cn(darkMode ? 'bg-[#1a1a1a] text-white' : 'bg-white text-black')}>Volume 7d</option>
-                  <option value="marketCap" className={cn(darkMode ? 'bg-[#1a1a1a] text-white' : 'bg-white text-black')}>Market Cap</option>
-                  <option value="tvl" className={cn(darkMode ? 'bg-[#1a1a1a] text-white' : 'bg-white text-black')}>TVL</option>
-                  <option value="holders" className={cn(darkMode ? 'bg-[#1a1a1a] text-white' : 'bg-white text-black')}>Holders</option>
-                  <option value="trades" className={cn(darkMode ? 'bg-[#1a1a1a] text-white' : 'bg-white text-black')}>Trades</option>
-                  <option value="created" className={cn(darkMode ? 'bg-[#1a1a1a] text-white' : 'bg-white text-black')}>Age</option>
-                  <option value="supply" className={cn(darkMode ? 'bg-[#1a1a1a] text-white' : 'bg-white text-black')}>Supply</option>
+                  <option value="pro5m" className={cn('bg-white text-black dark:bg-[#1a1a1a] dark:text-white')}>5m %</option>
+                  <option value="pro1h" className={cn('bg-white text-black dark:bg-[#1a1a1a] dark:text-white')}>1h %</option>
+                  <option value="pro24h" className={cn('bg-white text-black dark:bg-[#1a1a1a] dark:text-white')}>24h %</option>
+                  <option value="pro7d" className={cn('bg-white text-black dark:bg-[#1a1a1a] dark:text-white')}>7d %</option>
+                  <option value="price" className={cn('bg-white text-black dark:bg-[#1a1a1a] dark:text-white')}>Price</option>
+                  <option value="volume24h" className={cn('bg-white text-black dark:bg-[#1a1a1a] dark:text-white')}>Volume 24h</option>
+                  <option value="volume7d" className={cn('bg-white text-black dark:bg-[#1a1a1a] dark:text-white')}>Volume 7d</option>
+                  <option value="marketCap" className={cn('bg-white text-black dark:bg-[#1a1a1a] dark:text-white')}>Market Cap</option>
+                  <option value="tvl" className={cn('bg-white text-black dark:bg-[#1a1a1a] dark:text-white')}>TVL</option>
+                  <option value="holders" className={cn('bg-white text-black dark:bg-[#1a1a1a] dark:text-white')}>Holders</option>
+                  <option value="trades" className={cn('bg-white text-black dark:bg-[#1a1a1a] dark:text-white')}>Trades</option>
+                  <option value="created" className={cn('bg-white text-black dark:bg-[#1a1a1a] dark:text-white')}>Age</option>
+                  <option value="supply" className={cn('bg-white text-black dark:bg-[#1a1a1a] dark:text-white')}>Supply</option>
                 </select>
               </div>
               <div className="flex gap-2 mt-1">
@@ -814,7 +812,7 @@ function TokenListComponent({
                   }}
                   className={cn(
                     'flex-1 p-[10px] rounded-lg border-[1.5px] bg-transparent text-xs font-medium cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
-                    darkMode ? 'border-white/10 text-white/70' : 'border-black/10 text-black/70'
+                    'border-black/10 text-black/70 dark:border-white/10 dark:text-white/70'
                   )}
                 >
                   Reset
@@ -836,14 +834,14 @@ function TokenListComponent({
               <p
                 className={cn(
                   'text-sm mb-5 mt-0 mx-0',
-                  darkMode ? 'text-[#999]' : 'text-[#666]'
+                  'text-[#666] dark:text-[#999]'
                 )}
               >
                 Select the columns you want to display in the token list
               </p>
               <ColumnsGrid>
                 {AVAILABLE_COLUMNS.map((column) => (
-                  <ColumnItem key={column.id} darkMode={darkMode}>
+                  <ColumnItem key={column.id}>
                     <input
                       type="checkbox"
                       checked={tempCustomColumns.includes(column.id)}
@@ -858,11 +856,11 @@ function TokenListComponent({
                     />
                     <div className="flex-1">
                       <div
-                        className={cn('text-sm font-normal', darkMode ? 'text-white' : 'text-black')}
+                        className={cn('text-sm font-normal', 'text-black dark:text-white')}
                       >
                         {column.label}
                       </div>
-                      <div className={cn('text-xs', darkMode ? 'text-[#999]' : 'text-[#666]')}>
+                      <div className={cn('text-xs', 'text-[#666] dark:text-[#999]')}>
                         {column.description}
                       </div>
                     </div>
@@ -879,7 +877,7 @@ function TokenListComponent({
                   }}
                   className={cn(
                     'py-[10px] px-5 rounded-lg border-[1.5px] bg-transparent cursor-pointer text-[13px] font-medium outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
-                    darkMode ? 'border-white/10 text-white' : 'border-black/10 text-black'
+                    'border-black/10 text-black dark:border-white/10 dark:text-white'
                   )}
                 >
                   Reset
@@ -908,13 +906,13 @@ function TokenListComponent({
           )}
         </CustomColumnsPanel>
       ) : isMobile ? (
-        <TableWrapper darkMode={darkMode}>
+        <TableWrapper>
           <MobileContainer>
-            <MobileHeader isDark={darkMode} role="row">
+            <MobileHeader role="row">
               <HeaderCell
                 flex={2}
                 align="left"
-                isDark={darkMode}
+                
                 sortable
                 onClick={() => handleRequestSort(null, 'name')}
               >
@@ -923,7 +921,7 @@ function TokenListComponent({
               <HeaderCell
                 flex={1}
                 align="right"
-                isDark={darkMode}
+                
                 sortable
                 onClick={() => {
                   const col = customColumns && customColumns[0] ? customColumns[0] : 'price';
@@ -977,7 +975,7 @@ function TokenListComponent({
               <HeaderCell
                 flex={0.8}
                 align="right"
-                isDark={darkMode}
+                
                 sortable
                 onClick={() => {
                   const col = customColumns && customColumns[1] ? customColumns[1] : 'pro24h';
@@ -1031,7 +1029,7 @@ function TokenListComponent({
               <HeaderCell
                 flex={0.8}
                 align="right"
-                isDark={darkMode}
+                
                 sortable
                 onClick={() => {
                   const col = customColumns && customColumns[2] ? customColumns[2] : 'volume24h';
@@ -1096,7 +1094,6 @@ function TokenListComponent({
                 scrollLeft={scrollLeft}
                 activeFiatCurrency={activeFiatCurrency}
                 exchRate={exchRate}
-                darkMode={darkMode}
                 isMobile={true}
                 isLoggedIn={hasMounted && !!accountProfile?.account}
                 viewMode={viewMode}
@@ -1108,7 +1105,7 @@ function TokenListComponent({
           </MobileContainer>
         </TableWrapper>
       ) : (
-        <TableWrapper darkMode={darkMode}>
+        <TableWrapper>
           <TableContainer ref={tableContainerRef} isMobile={isMobile} className="table-container-hide-scrollbar">
             <StyledTable ref={tableRef} isMobile={isMobile}>
               {viewMode === 'classic' && (
@@ -1137,13 +1134,12 @@ function TokenListComponent({
                 onRequestSort={handleRequestSort}
                 scrollLeft={scrollLeft}
                 tokens={tokens}
-                darkMode={darkMode}
                 isMobile={isMobile}
                 isLoggedIn={hasMounted && !!accountProfile?.account}
                 viewMode={viewMode}
                 customColumns={customColumns}
               />
-              <StyledTableBody isMobile={isMobile} darkMode={darkMode} className="token-tbody">
+              <StyledTableBody isMobile={isMobile} className="token-tbody">
                 {deferredTokens.map((row, idx) => (
                   <MemoizedTokenRow
                     key={row.md5}
@@ -1157,7 +1153,6 @@ function TokenListComponent({
                     scrollLeft={scrollLeft}
                     activeFiatCurrency={activeFiatCurrency}
                     exchRate={exchRate}
-                    darkMode={darkMode}
                     isMobile={isMobile}
                     isLoggedIn={hasMounted && !!accountProfile?.account}
                     viewMode={viewMode}

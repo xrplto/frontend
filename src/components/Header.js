@@ -633,25 +633,25 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
       path: '/token-traders',
       name: 'Top Traders',
       desc: 'Token traders leaderboard',
-      icon: <Sparkles size={18} className={isDark ? 'text-white/60' : 'text-gray-500'} />
+      icon: <Sparkles size={18} className={'text-gray-500 dark:text-white/60'} />
     },
     {
       path: '/token-market',
       name: 'Market Stats',
       desc: 'DEX trading analytics',
-      icon: <BarChart3 size={18} className={isDark ? 'text-white/60' : 'text-gray-500'} />
+      icon: <BarChart3 size={18} className={'text-gray-500 dark:text-white/60'} />
     },
     {
       path: '/rsi-analysis',
       name: 'RSI Analysis',
       desc: 'Technical indicators',
-      icon: <Activity size={18} className={isDark ? 'text-white/60' : 'text-gray-500'} />
+      icon: <Activity size={18} className={'text-gray-500 dark:text-white/60'} />
     },
     {
       path: '/amm-pools',
       name: 'AMM Pools',
       desc: 'Liquidity pools & APY',
-      icon: <Waves size={18} className={isDark ? 'text-white/60' : 'text-gray-500'} />
+      icon: <Waves size={18} className={'text-gray-500 dark:text-white/60'} />
     }
   ];
 
@@ -661,13 +661,13 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
       path: '/nft-traders',
       name: 'Top Traders',
       desc: 'NFT traders leaderboard',
-      icon: <Sparkles size={18} className={isDark ? 'text-white/60' : 'text-gray-500'} />
+      icon: <Sparkles size={18} className={'text-gray-500 dark:text-white/60'} />
     },
     {
       path: '/nft-market',
       name: 'Market Stats',
       desc: 'NFT market analytics',
-      icon: <Activity size={18} className={isDark ? 'text-white/60' : 'text-gray-500'} />
+      icon: <Activity size={18} className={'text-gray-500 dark:text-white/60'} />
     }
   ];
   const nftMenuItems = nftMenuItemsRight;
@@ -777,7 +777,12 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
   }, []);
 
   const handleTokenOptionSelect = useCallback((path) => {
-    router.push(path);
+    const fullReloadPaths = ['/token-traders', '/nft-traders'];
+    if (fullReloadPaths.includes(path)) {
+      window.location.href = path;
+    } else {
+      router.push(path);
+    }
     setTokensMenuOpen(false);
     setNftsMenuOpen(false);
   }, [router]);
@@ -809,9 +814,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
       <header
         className={cn(
           'relative z-[1100] flex h-[52px] items-center overflow-visible',
-          isDark
-            ? 'bg-transparent backdrop-blur-md border-b border-white/10'
-            : 'bg-white/95 backdrop-blur-md border-b border-gray-200'
+          'bg-white/95 backdrop-blur-md border-b border-gray-200 dark:bg-transparent dark:border-white/10'
         )}
       >
       <div className="relative mx-auto flex w-full max-w-full items-center justify-between px-4 sm:px-6">
@@ -834,12 +837,8 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   className={cn(
                     'mr-1 inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[13px] font-semibold transition-[background-color,border-color,opacity,transform] duration-200',
                     isTokensActive
-                      ? isDark
-                        ? 'text-[#3f96fe] bg-[rgba(63,150,254,0.1)]'
-                        : 'text-blue-600 bg-blue-50'
-                      : isDark
-                        ? 'text-white/70 hover:text-[#3f96fe] hover:bg-[rgba(63,150,254,0.05)]'
-                        : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50/50'
+                      ? 'text-blue-600 bg-blue-50 dark:text-[#3f96fe] dark:bg-[rgba(63,150,254,0.1)]'
+                      : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50/50 dark:text-white/70 dark:hover:text-[#3f96fe] dark:hover:bg-[rgba(63,150,254,0.05)]'
                   )}
                 >
                   <span>Tokens</span>
@@ -864,9 +863,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   <div
                     className={cn(
                       'w-full overflow-hidden rounded-2xl border animate-in fade-in slide-in-from-top-1 duration-150',
-                      isDark
-                        ? 'bg-black/80 backdrop-blur-xl border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)]'
-                        : 'bg-white/90 backdrop-blur-xl border-gray-100 shadow-[0_20px_50px_rgba(0,0,0,0.1)]'
+                      'bg-white/90 backdrop-blur-xl border-gray-100 shadow-[0_20px_50px_rgba(0,0,0,0.1)] dark:bg-black/80 dark:backdrop-blur-xl dark:border-white/10 dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)]'
                     )}
                   >
                     <div className="flex flex-col p-1.5">
@@ -877,18 +874,14 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                           className={cn(
                             'group flex cursor-pointer items-center gap-3 rounded-xl px-3 py-2 transition-[background-color,border-color,opacity,transform] duration-200',
                             isActive(item.path)
-                              ? isDark
-                                ? 'bg-white/10'
-                                : 'bg-blue-50'
-                              : isDark
-                                ? 'hover:bg-white/5'
-                                : 'hover:bg-gray-50'
+                    ? 'bg-blue-50 dark:bg-white/10'
+                    : 'hover:bg-gray-50 dark:hover:bg-white/5'
                           )}
                         >
                           <div
                             className={cn(
                               'flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg transition-transform duration-200 group-hover:scale-110',
-                              isDark ? 'bg-white/5' : 'bg-gray-100'
+                              'bg-gray-100 dark:bg-white/5'
                             )}
                           >
                             {item.icon}
@@ -897,7 +890,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                             <span
                               className={cn(
                                 'text-[13px] font-semibold truncate',
-                                isDark ? 'text-white' : 'text-gray-900'
+                                'text-gray-900 dark:text-white'
                               )}
                             >
                               {item.name}
@@ -905,7 +898,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                             <span
                               className={cn(
                                 'text-[11px] truncate opacity-50 font-medium',
-                                isDark ? 'text-white' : 'text-gray-500'
+                                'text-gray-500 dark:text-white'
                               )}
                             >
                               {item.desc}
@@ -931,12 +924,8 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   className={cn(
                     'mr-1 inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[13px] font-semibold transition-[background-color,border-color,opacity,transform] duration-200',
                     isNftsActive
-                      ? isDark
-                        ? 'text-[#3f96fe] bg-[rgba(63,150,254,0.1)]'
-                        : 'text-blue-600 bg-blue-50'
-                      : isDark
-                        ? 'text-white/70 hover:text-[#3f96fe] hover:bg-[rgba(63,150,254,0.05)]'
-                        : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50/50'
+                      ? 'text-blue-600 bg-blue-50 dark:text-[#3f96fe] dark:bg-[rgba(63,150,254,0.1)]'
+                      : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50/50 dark:text-white/70 dark:hover:text-[#3f96fe] dark:hover:bg-[rgba(63,150,254,0.05)]'
                   )}
                 >
                   <span>NFTs</span>
@@ -961,9 +950,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   <div
                     className={cn(
                       'w-full overflow-hidden rounded-2xl border animate-in fade-in slide-in-from-top-1 duration-150',
-                      isDark
-                        ? 'bg-black/80 backdrop-blur-xl border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)]'
-                        : 'bg-white/90 backdrop-blur-xl border-gray-100 shadow-[0_20px_50px_rgba(0,0,0,0.1)]'
+                      'bg-white/90 backdrop-blur-xl border-gray-100 shadow-[0_20px_50px_rgba(0,0,0,0.1)] dark:bg-black/80 dark:backdrop-blur-xl dark:border-white/10 dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)]'
                     )}
                   >
                     <div className="flex flex-col p-1.5">
@@ -974,18 +961,14 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                           className={cn(
                             'group flex cursor-pointer items-center gap-3 rounded-xl px-3 py-2 transition-[background-color,border-color,opacity,transform] duration-200',
                             isActive(item.path)
-                              ? isDark
-                                ? 'bg-white/10'
-                                : 'bg-blue-50'
-                              : isDark
-                                ? 'hover:bg-white/5'
-                                : 'hover:bg-gray-50'
+                    ? 'bg-blue-50 dark:bg-white/10'
+                    : 'hover:bg-gray-50 dark:hover:bg-white/5'
                           )}
                         >
                           <div
                             className={cn(
                               'flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg transition-transform duration-200 group-hover:scale-110',
-                              isDark ? 'bg-white/5' : 'bg-gray-100'
+                              'bg-gray-100 dark:bg-white/5'
                             )}
                           >
                             {item.icon}
@@ -994,7 +977,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                             <span
                               className={cn(
                                 'text-[13px] font-semibold truncate',
-                                isDark ? 'text-white' : 'text-gray-900'
+                                'text-gray-900 dark:text-white'
                               )}
                             >
                               {item.name}
@@ -1002,7 +985,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                             <span
                               className={cn(
                                 'text-[11px] truncate opacity-50 font-medium',
-                                isDark ? 'text-white' : 'text-gray-500'
+                                'text-gray-500 dark:text-white'
                               )}
                             >
                               {item.desc}
@@ -1021,12 +1004,8 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                 className={cn(
                   'mr-1 inline-flex items-center rounded-lg px-3 py-1.5 text-[13px] font-medium transition-[background-color,border-color,opacity,transform] duration-200',
                   isActive('/swap')
-                    ? isDark
-                      ? 'text-[#3f96fe] bg-[rgba(63,150,254,0.1)]'
-                      : 'text-blue-600 bg-blue-50'
-                    : isDark
-                      ? 'text-white/70 hover:text-[#3f96fe] hover:bg-[rgba(63,150,254,0.05)]'
-                      : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50/50'
+                    ? 'text-blue-600 bg-blue-50 dark:text-[#3f96fe] dark:bg-[rgba(63,150,254,0.1)]'
+                    : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50/50 dark:text-white/70 dark:hover:text-[#3f96fe] dark:hover:bg-[rgba(63,150,254,0.05)]'
                 )}
               >
                 Swap
@@ -1036,12 +1015,8 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                 className={cn(
                   'mr-1 inline-flex items-center rounded-lg px-3 py-1.5 text-[13px] font-medium transition-[background-color,border-color,opacity,transform] duration-200',
                   isActive('/news')
-                    ? isDark
-                      ? 'text-[#3f96fe] bg-[rgba(63,150,254,0.1)]'
-                      : 'text-blue-600 bg-blue-50'
-                    : isDark
-                      ? 'text-white/70 hover:text-[#3f96fe] hover:bg-[rgba(63,150,254,0.05)]'
-                      : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50/50'
+                    ? 'text-blue-600 bg-blue-50 dark:text-[#3f96fe] dark:bg-[rgba(63,150,254,0.1)]'
+                    : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50/50 dark:text-white/70 dark:hover:text-[#3f96fe] dark:hover:bg-[rgba(63,150,254,0.05)]'
                 )}
               >
                 News
@@ -1058,12 +1033,8 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
               className={cn(
                 'flex items-center gap-3 px-4 h-[38px] w-full cursor-text rounded-xl transition-[background-color,border-color,opacity,transform] duration-300 border',
                 searchOpen
-                  ? isDark
-                    ? 'bg-blue-600/10 border-blue-500/50 shadow-[0_0_15px_rgba(59,130,246,0.2)]'
-                    : 'bg-white border-blue-500/50 shadow-[0_0_15px_rgba(59,130,246,0.1)]'
-                  : isDark
-                    ? 'bg-white/[0.03] border-white/10 hover:bg-white/[0.06] hover:border-white/20'
-                    : 'bg-gray-100/80 border-gray-200 hover:bg-gray-100 hover:border-gray-300'
+                  ? 'bg-white border-blue-500/50 shadow-[0_0_15px_rgba(59,130,246,0.1)] dark:bg-blue-600/10 dark:border-blue-500/50 dark:shadow-[0_0_15px_rgba(59,130,246,0.2)]'
+                  : 'bg-gray-100/80 border-gray-200 hover:bg-gray-100 hover:border-gray-300 dark:bg-white/[0.03] dark:border-white/10 dark:hover:bg-white/[0.06] dark:hover:border-white/20'
               )}
               onClick={openSearch}
             >
@@ -1071,8 +1042,8 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                 size={17}
                 className={cn(
                   searchOpen
-                    ? isDark ? 'text-blue-400' : 'text-blue-600'
-                    : isDark ? 'text-white/60' : 'text-gray-400'
+                    ? 'text-blue-600 dark:text-blue-400'
+                    : 'text-gray-400 dark:text-white/60'
                 )}
               />
               {searchOpen ? (
@@ -1083,16 +1054,14 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   placeholder="Search assets, NFTs, accounts..."
                   className={cn(
                     'flex-1 bg-transparent text-[14px] max-sm:text-base outline-none font-medium',
-                    isDark
-                      ? 'text-white placeholder:text-white/60'
-                      : 'text-gray-900 placeholder:text-gray-400'
+                    'text-gray-900 placeholder:text-gray-400 dark:text-white dark:placeholder:text-white/60'
                   )}
                 />
               ) : (
                 <span
                   className={cn(
                     'flex-1 text-[13.5px] font-medium',
-                    isDark ? 'text-white/60' : 'text-gray-400'
+                    'text-gray-400 dark:text-white/60'
                   )}
                 >
                   Search assets, NFTs, accounts...
@@ -1103,9 +1072,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   <kbd
                     className={cn(
                       'px-1.5 py-0.5 rounded-md text-[10px] font-medium border flex items-center justify-center min-w-[20px]',
-                      isDark
-                        ? 'bg-white/[0.05] border-white/10 text-white/60'
-                        : 'bg-white border-gray-200 text-gray-400 shadow-sm'
+                      'bg-white border-gray-200 text-gray-400 shadow-sm dark:bg-white/[0.05] dark:border-white/10 dark:text-white/60'
                     )}
                   >
                     /
@@ -1113,9 +1080,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   <kbd
                     className={cn(
                       'px-1.5 py-0.5 rounded-md text-[10px] font-medium border flex items-center justify-center gap-1 min-w-[40px]',
-                      isDark
-                        ? 'bg-white/[0.05] border-white/10 text-white/60'
-                        : 'bg-white border-gray-200 text-gray-400 shadow-sm'
+                      'bg-white border-gray-200 text-gray-400 shadow-sm dark:bg-white/[0.05] dark:border-white/10 dark:text-white/60'
                     )}
                   >
                     {isMac ? '⌘' : 'Ctrl'} K
@@ -1129,9 +1094,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
               <div
                 className={cn(
                   'absolute top-full left-1/2 -translate-x-1/2 w-full mt-2 rounded-2xl border overflow-hidden z-[9999] animate-in fade-in zoom-in-95 duration-200',
-                  isDark
-                    ? 'bg-black/95 backdrop-blur-2xl border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.8)]'
-                    : 'bg-white/98 backdrop-blur-2xl border-gray-200 shadow-[0_20px_50px_rgba(0,0,0,0.1)]'
+                  'bg-white/98 backdrop-blur-2xl border-gray-200 shadow-[0_20px_50px_rgba(0,0,0,0.1)] dark:bg-black/95 dark:backdrop-blur-2xl dark:border-white/10 dark:shadow-[0_20px_50px_rgba(0,0,0,0.8)]'
                 )}
               >
                 {!searchQuery && recentSearches.length > 0 && (
@@ -1140,7 +1103,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       <span
                         className={cn(
                           'text-[10px] font-bold uppercase tracking-[0.1em]',
-                          isDark ? 'text-white/60' : 'text-gray-400'
+                          'text-gray-400 dark:text-white/60'
                         )}
                       >
                         Recent
@@ -1151,9 +1114,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                           onClick={() => handleSearchSelect(item, item.type)}
                           className={cn(
                             'flex items-center gap-2 pl-1.5 pr-3 py-1 rounded-lg transition-[background-color,border-color,opacity,transform] duration-150 border group',
-                            isDark
-                              ? 'bg-white/[0.03] border-white/5 hover:bg-white/[0.08] hover:border-white/10'
-                              : 'bg-gray-50 border-gray-100 hover:bg-gray-100 hover:border-gray-200 shadow-sm'
+                            'bg-gray-50 border-gray-100 hover:bg-gray-100 hover:border-gray-200 shadow-sm dark:bg-white/[0.03] dark:border-white/5 dark:hover:bg-white/[0.08] dark:hover:border-white/10'
                           )}
                         >
                           <img
@@ -1173,7 +1134,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                           <span
                             className={cn(
                               'text-[12px] font-medium',
-                              isDark ? 'text-white/60 group-hover:text-white' : 'text-gray-600 group-hover:text-gray-900'
+                              'text-gray-600 group-hover:text-gray-900 dark:text-white/60 dark:group-hover:text-white'
                             )}
                           >
                             {item.type === 'token' ? `${item.name}/XRP` : item.user || item.name}
@@ -1184,9 +1145,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                         onClick={clearRecentSearches}
                         className={cn(
                           'text-[11px] ml-auto font-medium',
-                          isDark
-                            ? 'text-white/20 hover:text-white/60'
-                            : 'text-gray-300 hover:text-gray-500'
+                          'text-gray-300 hover:text-gray-500 dark:text-white/20 dark:hover:text-white/60'
                         )}
                       >
                         Clear
@@ -1203,12 +1162,12 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                             <span
                               className={cn(
                                 'text-[10px] font-bold uppercase tracking-[0.1em]',
-                                isDark ? 'text-blue-400/80' : 'text-blue-600/80'
+                                'text-blue-600/80 dark:text-blue-400/80'
                               )}
                             >
                               Suggested Tokens
                             </span>
-                            <div className={cn('flex-1 h-px', isDark ? 'bg-white/5' : 'bg-gray-100')} />
+                            <div className={cn('flex-1 h-px', 'bg-gray-100 dark:bg-white/5')} />
                           </div>
                           <div className="grid grid-cols-1 gap-1">
                             {suggestedTokens.map((token, i) => (
@@ -1217,7 +1176,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                                 onClick={() => handleSearchSelect(token, 'token')}
                                 className={cn(
                                   'flex items-center gap-3 px-3 py-1.5 rounded-xl cursor-pointer transition-[background-color,border-color,opacity,transform] duration-200 group border border-transparent',
-                                  isDark ? 'hover:bg-white/5 hover:border-white/5' : 'hover:bg-gray-50 hover:border-gray-100'
+                                  'hover:bg-gray-50 hover:border-gray-100 dark:hover:bg-white/5 dark:hover:border-white/5'
                                 )}
                               >
                                 <div className="relative">
@@ -1232,11 +1191,11 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                                 </div>
                                 <div className="flex-1 min-w-0">
                                   <div className="flex items-center gap-2">
-                                    <span className={cn('text-[13.5px] font-semibold truncate', token.trendingBoost >= 500 && token.trendingBoostExpires > Date.now() ? 'text-[#FFD700]' : isDark ? 'text-white/90' : 'text-gray-900')}>
+                                    <span className={cn('text-[13.5px] font-semibold truncate', token.trendingBoost >= 500 && token.trendingBoostExpires > Date.now() ? 'text-[#FFD700]' : 'text-gray-900 dark:text-white/90')}>
                                       {token.user}
                                     </span>
                                     <span className={cn('text-[11px] font-medium px-1.5 py-0.5 rounded uppercase tracking-wider',
-                                      isDark ? 'bg-white/5 text-white/60' : 'bg-gray-100 text-gray-500')}>
+                                      'bg-gray-100 text-gray-500 dark:bg-white/5 dark:text-white/60')}>
                                       {token.name}
                                     </span>
                                     {token.trendingBoost > 0 && token.trendingBoostExpires > Date.now() && (
@@ -1246,12 +1205,12 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                                       </span>
                                     )}
                                   </div>
-                                  <span className={cn('text-[11px] truncate block opacity-50 font-mono', isDark ? 'text-white' : 'text-gray-600')}>
+                                  <span className={cn('text-[11px] truncate block opacity-50 font-mono', 'text-gray-600 dark:text-white')}>
                                     {truncateAccount(token.issuer, 8)}
                                   </span>
                                 </div>
                                 <div className="flex flex-col items-end shrink-0 pl-4">
-                                  <span className={cn('text-[13px] font-bold tabular-nums', isDark ? 'text-white/80' : 'text-gray-900')}>
+                                  <span className={cn('text-[13px] font-bold tabular-nums', 'text-gray-900 dark:text-white/80')}>
                                     {formatMcap(getMcap(token.marketcap))}
                                   </span>
                                   <span className={cn('text-[9px] font-bold uppercase text-blue-500/80 tracking-tighter')}>
@@ -1269,12 +1228,12 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                             <span
                               className={cn(
                                 'text-[10px] font-bold uppercase tracking-[0.1em]',
-                                isDark ? 'text-purple-400/80' : 'text-purple-600/80'
+                                'text-purple-600/80 dark:text-purple-400/80'
                               )}
                             >
                               Suggested NFTs
                             </span>
-                            <div className={cn('flex-1 h-px', isDark ? 'bg-white/5' : 'bg-gray-100')} />
+                            <div className={cn('flex-1 h-px', 'bg-gray-100 dark:bg-white/5')} />
                           </div>
                           <div className="grid grid-cols-1 gap-1">
                             {suggestedCollections.map((col, i) => (
@@ -1283,7 +1242,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                                 onClick={() => handleSearchSelect(col, 'collection')}
                                 className={cn(
                                   'flex items-center gap-3 px-3 py-1.5 rounded-xl cursor-pointer transition-[background-color,border-color,opacity,transform] duration-200 group border border-transparent',
-                                  isDark ? 'hover:bg-white/5 hover:border-white/5' : 'hover:bg-gray-50 hover:border-gray-100'
+                                  'hover:bg-gray-50 hover:border-gray-100 dark:hover:bg-white/5 dark:hover:border-white/5'
                                 )}
                               >
                                 <div className="relative">
@@ -1296,16 +1255,16 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                                 </div>
                                 <div className="flex-1 min-w-0">
                                   <div className="flex items-center gap-2">
-                                    <span className={cn('text-[13.5px] font-semibold truncate', isDark ? 'text-white/90' : 'text-gray-900')}>
+                                    <span className={cn('text-[13.5px] font-semibold truncate', 'text-gray-900 dark:text-white/90')}>
                                       {typeof col.name === 'object' ? col.name?.collection_name : col.name}
                                     </span>
                                   </div>
-                                  <span className={cn('text-[11px] truncate block opacity-50 font-mono', isDark ? 'text-white' : 'text-gray-600')}>
+                                  <span className={cn('text-[11px] truncate block opacity-50 font-mono', 'text-gray-600 dark:text-white')}>
                                     {truncateAccount(col.account, 8)}
                                   </span>
                                 </div>
                                 <div className="flex flex-col items-end shrink-0 pl-4">
-                                  <span className={cn('text-[13px] font-bold tabular-nums', isDark ? 'text-white/80' : 'text-gray-900')}>
+                                  <span className={cn('text-[13px] font-bold tabular-nums', 'text-gray-900 dark:text-white/80')}>
                                     {getMcap(col.marketcap) ? formatMcap(getMcap(col.marketcap)) : Number(col.items || 0).toLocaleString()}
                                   </span>
                                   <span className={cn('text-[9px] font-bold uppercase text-purple-500/80 tracking-tighter')}>
@@ -1325,37 +1284,37 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       <span
                         className={cn(
                           'text-[10px] font-bold uppercase tracking-[0.1em]',
-                          isDark ? 'text-blue-400/80' : 'text-blue-600/80'
+                          'text-blue-600/80 dark:text-blue-400/80'
                         )}
                       >
                         Transaction
                       </span>
-                      <div className={cn('flex-1 h-px', isDark ? 'bg-white/5' : 'bg-gray-100')} />
+                      <div className={cn('flex-1 h-px', 'bg-gray-100 dark:bg-white/5')} />
                     </div>
                     <div
                       onClick={() => handleSearchSelect(searchResults.txHash, 'tx')}
                       className={cn(
                         'flex items-center gap-3 px-3 py-2 rounded-xl cursor-pointer transition-[background-color,border-color,opacity,transform] duration-300 group border border-transparent',
-                        isDark ? 'hover:bg-white/5 hover:border-white/5' : 'hover:bg-gray-50 hover:border-gray-100'
+                        'hover:bg-gray-50 hover:border-gray-100 dark:hover:bg-white/5 dark:hover:border-white/5'
                       )}
                     >
                       <div className={cn(
                         'w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-sm transition-transform group-hover:scale-105',
-                        isDark ? 'bg-blue-500/10 text-blue-400' : 'bg-blue-50 text-blue-600'
+                        'bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400'
                       )}>
                         <ArrowLeftRight size={14} />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <span className={cn('text-[13.5px] font-semibold block', isDark ? 'text-white/90' : 'text-gray-900')}>
+                        <span className={cn('text-[13.5px] font-semibold block', 'text-gray-900 dark:text-white/90')}>
                           View Transaction
                         </span>
-                        <span className={cn('text-[11px] truncate block opacity-50 font-mono', isDark ? 'text-white' : 'text-gray-600')}>
+                        <span className={cn('text-[11px] truncate block opacity-50 font-mono', 'text-gray-600 dark:text-white')}>
                           {searchResults.txHash}
                         </span>
                       </div>
                       <div className="flex flex-col items-end shrink-0 pl-4">
                         <span className={cn('text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded',
-                          isDark ? 'bg-blue-500/10 text-blue-400' : 'bg-blue-50 text-blue-600')}>
+                          'bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400')}>
                           TX
                         </span>
                       </div>
@@ -1368,18 +1327,18 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       <span
                         className={cn(
                           'text-[10px] font-bold uppercase tracking-[0.1em]',
-                          isDark ? 'text-pink-400/80' : 'text-pink-600/80'
+                          'text-pink-600/80 dark:text-pink-400/80'
                         )}
                       >
                         NFT
                       </span>
-                      <div className={cn('flex-1 h-px', isDark ? 'bg-white/5' : 'bg-gray-100')} />
+                      <div className={cn('flex-1 h-px', 'bg-gray-100 dark:bg-white/5')} />
                     </div>
                     <div
                       onClick={() => handleSearchSelect(searchResults.nft, 'nft')}
                       className={cn(
                         'flex items-center gap-3 px-3 py-2 rounded-xl cursor-pointer transition-[background-color,border-color,opacity,transform] duration-300 group border border-transparent',
-                        isDark ? 'hover:bg-white/5 hover:border-white/5' : 'hover:bg-gray-50 hover:border-gray-100'
+                        'hover:bg-gray-50 hover:border-gray-100 dark:hover:bg-white/5 dark:hover:border-white/5'
                       )}
                     >
                       {getNftImage(searchResults.nft) ? (
@@ -1391,16 +1350,16 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       ) : (
                         <div className={cn(
                           'w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-sm transition-transform group-hover:scale-105',
-                          isDark ? 'bg-pink-500/10 text-pink-400' : 'bg-pink-50 text-pink-600'
+                          'bg-pink-50 text-pink-600 dark:bg-pink-500/10 dark:text-pink-400'
                         )}>
                           <Sparkles size={14} />
                         </div>
                       )}
                       <div className="flex-1 min-w-0">
-                        <span className={cn('text-[13.5px] font-semibold block truncate', isDark ? 'text-white/90' : 'text-gray-900')}>
+                        <span className={cn('text-[13.5px] font-semibold block truncate', 'text-gray-900 dark:text-white/90')}>
                           {searchResults.nft.name || 'View NFT'}
                         </span>
-                        <span className={cn('text-[11px] truncate block opacity-50 font-mono', isDark ? 'text-white' : 'text-gray-600')}>
+                        <span className={cn('text-[11px] truncate block opacity-50 font-mono', 'text-gray-600 dark:text-white')}>
                           {(typeof searchResults.nft.collection === 'string'
                             ? searchResults.nft.collection
                             : searchResults.nft.collection?.name) || 'NFT Collection'}
@@ -1408,7 +1367,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       </div>
                       <div className="flex flex-col items-end shrink-0 pl-4">
                         <span className={cn('text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded',
-                          isDark ? 'bg-pink-500/10 text-pink-400' : 'bg-pink-50 text-pink-600')}>
+                          'bg-pink-50 text-pink-600 dark:bg-pink-500/10 dark:text-pink-400')}>
                           NFT
                         </span>
                       </div>
@@ -1421,38 +1380,38 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       <span
                         className={cn(
                           'text-[10px] font-bold uppercase tracking-[0.1em]',
-                          isDark ? 'text-purple-400/80' : 'text-purple-600/80'
+                          'text-purple-600/80 dark:text-purple-400/80'
                         )}
                       >
                         Account
                       </span>
-                      <div className={cn('flex-1 h-px', isDark ? 'bg-white/5' : 'bg-gray-100')} />
+                      <div className={cn('flex-1 h-px', 'bg-gray-100 dark:bg-white/5')} />
                     </div>
                     <div
                       onClick={() => handleSearchSelect(searchResults.address.address, 'address')}
                       className={cn(
                         'flex items-center gap-3 px-3 py-2 rounded-xl cursor-pointer transition-[background-color,border-color,opacity,transform] duration-300 group border border-transparent',
-                        isDark ? 'hover:bg-white/5 hover:border-white/5' : 'hover:bg-gray-50 hover:border-gray-100'
+                        'hover:bg-gray-50 hover:border-gray-100 dark:hover:bg-white/5 dark:hover:border-white/5'
                       )}
                     >
                       <div className={cn(
                         'w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-sm transition-transform group-hover:scale-105',
-                        isDark ? 'bg-purple-500/10 text-purple-400' : 'bg-purple-50 text-purple-500'
+                        'bg-purple-50 text-purple-500 dark:bg-purple-500/10 dark:text-purple-400'
                       )}>
                         <Wallet size={14} />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <span className={cn('text-[13.5px] font-semibold block', isDark ? 'text-white/90' : 'text-gray-900')}>
+                        <span className={cn('text-[13.5px] font-semibold block', 'text-gray-900 dark:text-white/90')}>
                           {searchResults.address.balance != null
                             ? `${Number(searchResults.address.balance).toLocaleString(undefined, { maximumFractionDigits: 2 })} XRP`
                             : 'View Profile'}
                         </span>
-                        <span className={cn('text-[11px] truncate block opacity-50 font-mono', isDark ? 'text-white' : 'text-gray-600')}>
+                        <span className={cn('text-[11px] truncate block opacity-50 font-mono', 'text-gray-600 dark:text-white')}>
                           {searchResults.address.address}
                         </span>
                       </div>
                       <div className="flex flex-col items-end shrink-0 pl-4">
-                        <span className={cn('text-[13px] font-bold tabular-nums', isDark ? 'text-white/80' : 'text-gray-900')}>
+                        <span className={cn('text-[13px] font-bold tabular-nums', 'text-gray-900 dark:text-white/80')}>
                           {searchResults.address.rank ? `#${searchResults.address.rank.toLocaleString()}` : ''}
                         </span>
                         <span className={cn('text-[9px] font-bold uppercase text-purple-500/80 tracking-tighter')}>
@@ -1468,37 +1427,37 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       <span
                         className={cn(
                           'text-[10px] font-bold uppercase tracking-[0.1em]',
-                          isDark ? 'text-blue-400/80' : 'text-blue-600/80'
+                          'text-blue-600/80 dark:text-blue-400/80'
                         )}
                       >
                         Ledger
                       </span>
-                      <div className={cn('flex-1 h-px', isDark ? 'bg-white/5' : 'bg-gray-100')} />
+                      <div className={cn('flex-1 h-px', 'bg-gray-100 dark:bg-white/5')} />
                     </div>
                     <div
                       onClick={() => handleSearchSelect(searchResults.ledger, 'ledger')}
                       className={cn(
                         'flex items-center gap-3 px-3 py-2 rounded-xl cursor-pointer transition-[background-color,border-color,opacity,transform] duration-300 group border border-transparent',
-                        isDark ? 'hover:bg-white/5 hover:border-white/5' : 'hover:bg-gray-50 hover:border-gray-100'
+                        'hover:bg-gray-50 hover:border-gray-100 dark:hover:bg-white/5 dark:hover:border-white/5'
                       )}
                     >
                       <div className={cn(
                         'w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-sm transition-transform group-hover:scale-105',
-                        isDark ? 'bg-blue-500/10 text-blue-400' : 'bg-blue-50 text-blue-600'
+                        'bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400'
                       )}>
                         <Layers size={14} />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <span className={cn('text-[13.5px] font-semibold block', isDark ? 'text-white/90' : 'text-gray-900')}>
+                        <span className={cn('text-[13.5px] font-semibold block', 'text-gray-900 dark:text-white/90')}>
                           View Ledger
                         </span>
-                        <span className={cn('text-[11px] truncate block opacity-50 font-mono', isDark ? 'text-white' : 'text-gray-600')}>
+                        <span className={cn('text-[11px] truncate block opacity-50 font-mono', 'text-gray-600 dark:text-white')}>
                           #{searchResults.ledger}
                         </span>
                       </div>
                       <div className="flex flex-col items-end shrink-0 pl-4">
                         <span className={cn('text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded',
-                          isDark ? 'bg-blue-500/10 text-blue-400' : 'bg-blue-50 text-blue-600')}>
+                          'bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400')}>
                           Ledger
                         </span>
                       </div>
@@ -1511,12 +1470,12 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       <span
                         className={cn(
                           'text-[10px] font-bold uppercase tracking-[0.1em]',
-                          isDark ? 'text-blue-400/80' : 'text-blue-600/80'
+                          'text-blue-600/80 dark:text-blue-400/80'
                         )}
                       >
                         Tokens
                       </span>
-                      <div className={cn('flex-1 h-px', isDark ? 'bg-white/5' : 'bg-gray-100')} />
+                      <div className={cn('flex-1 h-px', 'bg-gray-100 dark:bg-white/5')} />
                     </div>
                     <div className="grid grid-cols-1 gap-1">
                       {searchResults.tokens.map((token, i) => (
@@ -1525,7 +1484,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                           onClick={() => handleSearchSelect(token, 'token')}
                           className={cn(
                             'flex items-center gap-3 px-3 py-1.5 rounded-xl cursor-pointer transition-[background-color,border-color,opacity,transform] duration-300 group border border-transparent',
-                            isDark ? 'hover:bg-white/5 hover:border-white/5' : 'hover:bg-gray-50 hover:border-gray-100'
+                            'hover:bg-gray-50 hover:border-gray-100 dark:hover:bg-white/5 dark:hover:border-white/5'
                           )}
                         >
                           <div className="relative">
@@ -1538,11 +1497,11 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2">
-                              <span className={cn('text-[13.5px] font-semibold truncate', token.trendingBoost >= 500 && token.trendingBoostExpires > Date.now() ? 'text-[#FFD700]' : isDark ? 'text-white/90' : 'text-gray-900')}>
+                              <span className={cn('text-[13.5px] font-semibold truncate', token.trendingBoost >= 500 && token.trendingBoostExpires > Date.now() ? 'text-[#FFD700]' : 'text-gray-900 dark:text-white/90')}>
                                 {token.user}
                               </span>
                               <span className={cn('text-[11px] font-medium px-1.5 py-0.5 rounded uppercase tracking-wider',
-                                isDark ? 'bg-white/5 text-white/60' : 'bg-gray-100 text-gray-500')}>
+                                'bg-gray-100 text-gray-500 dark:bg-white/5 dark:text-white/60')}>
                                 {token.name}
                               </span>
                               {token.trendingBoost > 0 && token.trendingBoostExpires > Date.now() && (
@@ -1552,12 +1511,12 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                                 </span>
                               )}
                             </div>
-                            <span className={cn('text-[11px] truncate block opacity-50 font-mono', isDark ? 'text-white' : 'text-gray-600')}>
+                            <span className={cn('text-[11px] truncate block opacity-50 font-mono', 'text-gray-600 dark:text-white')}>
                               {truncateAccount(token.issuer, 8)}
                             </span>
                           </div>
                           <div className="flex flex-col items-end shrink-0 pl-4">
-                            <span className={cn('text-[13px] font-bold tabular-nums', isDark ? 'text-white/80' : 'text-gray-900')}>
+                            <span className={cn('text-[13px] font-bold tabular-nums', 'text-gray-900 dark:text-white/80')}>
                               {formatMcap(getMcap(token.marketcap))}
                             </span>
                             <span className={cn('text-[9px] font-bold uppercase text-blue-500/80 tracking-tighter')}>
@@ -1575,12 +1534,12 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       <span
                         className={cn(
                           'text-[10px] font-bold uppercase tracking-[0.1em]',
-                          isDark ? 'text-purple-400/80' : 'text-purple-600/80'
+                          'text-purple-600/80 dark:text-purple-400/80'
                         )}
                       >
                         NFTs
                       </span>
-                      <div className={cn('flex-1 h-px', isDark ? 'bg-white/5' : 'bg-gray-100')} />
+                      <div className={cn('flex-1 h-px', 'bg-gray-100 dark:bg-white/5')} />
                     </div>
                     <div className="grid grid-cols-1 gap-1">
                       {searchResults.collections.map((col, i) => (
@@ -1589,7 +1548,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                           onClick={() => handleSearchSelect(col, 'collection')}
                           className={cn(
                             'flex items-center gap-3 px-3 py-1.5 rounded-xl cursor-pointer transition-[background-color,border-color,opacity,transform] duration-300 group border border-transparent',
-                            isDark ? 'hover:bg-white/5 hover:border-white/5' : 'hover:bg-gray-50 hover:border-gray-100'
+                            'hover:bg-gray-50 hover:border-gray-100 dark:hover:bg-white/5 dark:hover:border-white/5'
                           )}
                         >
                           <div className="relative">
@@ -1602,16 +1561,16 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2">
-                              <span className={cn('text-[13.5px] font-semibold truncate', isDark ? 'text-white/90' : 'text-gray-900')}>
+                              <span className={cn('text-[13.5px] font-semibold truncate', 'text-gray-900 dark:text-white/90')}>
                                 {typeof col.name === 'object' ? col.name?.collection_name : col.name}
                               </span>
                             </div>
-                            <span className={cn('text-[11px] truncate block opacity-50 font-mono', isDark ? 'text-white' : 'text-gray-600')}>
+                            <span className={cn('text-[11px] truncate block opacity-50 font-mono', 'text-gray-600 dark:text-white')}>
                               {truncateAccount(col.account, 8)}
                             </span>
                           </div>
                           <div className="flex flex-col items-end shrink-0 pl-4">
-                            <span className={cn('text-[13px] font-bold tabular-nums', isDark ? 'text-white/80' : 'text-gray-900')}>
+                            <span className={cn('text-[13px] font-bold tabular-nums', 'text-gray-900 dark:text-white/80')}>
                               {getMcap(col.marketcap) ? formatMcap(getMcap(col.marketcap)) : Number(col.items || 0).toLocaleString()}
                             </span>
                             <span className={cn('text-[9px] font-bold uppercase text-purple-500/80 tracking-tighter')}>
@@ -1625,8 +1584,8 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                 )}
                 {searchQuery && searchLoading && (
                   <div className="py-12 flex flex-col items-center justify-center gap-3">
-                    <Loader2 size={24} className={cn('animate-spin', isDark ? 'text-blue-400/50' : 'text-blue-500/50')} />
-                    <span className={cn('text-[13px] font-medium animate-pulse', isDark ? 'text-white/60' : 'text-gray-400')}>
+                    <Loader2 size={24} className={cn('animate-spin', 'text-blue-500/50 dark:text-blue-400/50')} />
+                    <span className={cn('text-[13px] font-medium animate-pulse', 'text-gray-400 dark:text-white/60')}>
                       Searching curated data...
                     </span>
                   </div>
@@ -1640,13 +1599,13 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   searchResults.tokens.length === 0 &&
                   searchResults.collections.length === 0 && (
                     <div className="py-12 flex flex-col items-center justify-center gap-2">
-                      <div className={cn('w-12 h-12 rounded-full flex items-center justify-center mb-2', isDark ? 'bg-white/5' : 'bg-gray-50')}>
-                        <Search size={20} className={isDark ? 'text-white/20' : 'text-gray-300'} />
+                      <div className={cn('w-12 h-12 rounded-full flex items-center justify-center mb-2', 'bg-gray-50 dark:bg-white/5')}>
+                        <Search size={20} className={'text-gray-300 dark:text-white/20'} />
                       </div>
-                      <p className={cn('text-[14px] font-semibold', isDark ? 'text-white/90' : 'text-gray-900')}>
+                      <p className={cn('text-[14px] font-semibold', 'text-gray-900 dark:text-white/90')}>
                         No results found
                       </p>
-                      <p className={cn('text-[12px]', isDark ? 'text-white/60' : 'text-gray-400')}>
+                      <p className={cn('text-[12px]', 'text-gray-400 dark:text-white/60')}>
                         Try searching for a different token, NFT or address
                       </p>
                     </div>
@@ -1661,7 +1620,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
             <div
               className={cn(
                 'fixed inset-0 z-[9998] backdrop-blur-md max-sm:h-dvh',
-                isDark ? 'bg-black/70' : 'bg-white/60'
+                'bg-white/60 dark:bg-black/70'
               )}
               onClick={() => {
                 setFullSearch(false);
@@ -1672,12 +1631,10 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
               <div
                 className={cn(
                   'flex items-center gap-3 px-4 h-[42px] rounded-2xl border transition-[background-color,border-color,opacity,transform] duration-300',
-                  isDark
-                    ? 'bg-black/80 backdrop-blur-2xl border-blue-500/30 shadow-[0_4px_30px_rgba(59,130,246,0.3)]'
-                    : 'bg-white/90 backdrop-blur-2xl border-blue-500/20 shadow-[0_4px_30px_rgba(59,130,246,0.1)]'
+                  'bg-white/90 backdrop-blur-2xl border-blue-500/20 shadow-[0_4px_30px_rgba(59,130,246,0.1)] dark:bg-black/80 dark:backdrop-blur-2xl dark:border-blue-500/30 dark:shadow-[0_4px_30px_rgba(59,130,246,0.3)]'
                 )}
               >
-                <Search size={18} className={isDark ? 'text-blue-400' : 'text-blue-600'} />
+                <Search size={18} className={'text-blue-600 dark:text-blue-400'} />
                 <input
                   autoFocus
                   value={searchQuery}
@@ -1685,9 +1642,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   placeholder="Search assets, NFTs, accounts..."
                   className={cn(
                     'flex-1 bg-transparent text-[15px] max-sm:text-base font-medium outline-none',
-                    isDark
-                      ? 'text-white placeholder:text-white/60'
-                      : 'text-gray-900 placeholder:text-gray-400'
+                    'text-gray-900 placeholder:text-gray-400 dark:text-white dark:placeholder:text-white/60'
                   )}
                 />
                 <button
@@ -1698,7 +1653,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   aria-label="Close search"
                   className={cn(
                     'p-1.5 rounded-lg transition-colors outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
-                    isDark ? 'text-white/60 hover:text-white hover:bg-white/10' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
+                    'text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:text-white/60 dark:hover:text-white dark:hover:bg-white/10'
                   )}
                 >
                   <X size={18} />
@@ -1709,9 +1664,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
               <div
                 className={cn(
                   'mt-3 rounded-2xl border overflow-hidden max-h-[calc(100dvh-100px)] overflow-y-auto animate-in fade-in zoom-in-95 duration-300',
-                  isDark
-                    ? 'bg-black/90 backdrop-blur-2xl border-white/5 shadow-[0_20px_50px_rgba(0,0,0,0.8)]'
-                    : 'bg-white/98 backdrop-blur-2xl border-gray-100 shadow-[0_20px_50px_rgba(0,0,0,0.1)]'
+                  'bg-white/98 backdrop-blur-2xl border-gray-100 shadow-[0_20px_50px_rgba(0,0,0,0.1)] dark:bg-black/90 dark:backdrop-blur-2xl dark:border-white/5 dark:shadow-[0_20px_50px_rgba(0,0,0,0.8)]'
                 )}
               >
                 {!searchQuery && suggestedTokens.length > 0 && (
@@ -1720,12 +1673,12 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       <span
                         className={cn(
                           'text-[10px] font-bold uppercase tracking-[0.1em]',
-                          isDark ? 'text-blue-400/80' : 'text-blue-600/80'
+                          'text-blue-600/80 dark:text-blue-400/80'
                         )}
                       >
                         Suggested Tokens
                       </span>
-                      <div className={cn('flex-1 h-px', isDark ? 'bg-white/5' : 'bg-gray-100')} />
+                      <div className={cn('flex-1 h-px', 'bg-gray-100 dark:bg-white/5')} />
                     </div>
                     <div className="grid grid-cols-1 gap-1">
                       {suggestedTokens.map((token, i) => (
@@ -1734,7 +1687,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                           onClick={() => handleSearchSelect(token, 'token')}
                           className={cn(
                             'flex items-center gap-3 px-3 py-1.5 rounded-xl cursor-pointer transition-[background-color,border-color,opacity,transform] duration-300 group border border-transparent',
-                            isDark ? 'hover:bg-white/5 hover:border-white/5' : 'hover:bg-gray-50 hover:border-gray-100'
+                            'hover:bg-gray-50 hover:border-gray-100 dark:hover:bg-white/5 dark:hover:border-white/5'
                           )}
                         >
                           <div className="relative">
@@ -1747,11 +1700,11 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2">
-                              <span className={cn('text-[14px] font-semibold truncate', token.trendingBoost >= 500 && token.trendingBoostExpires > Date.now() ? 'text-[#FFD700]' : isDark ? 'text-white/90' : 'text-gray-900')}>
+                              <span className={cn('text-[14px] font-semibold truncate', token.trendingBoost >= 500 && token.trendingBoostExpires > Date.now() ? 'text-[#FFD700]' : 'text-gray-900 dark:text-white/90')}>
                                 {token.user}
                               </span>
                               <span className={cn('text-[11px] font-medium px-1.5 py-0.5 rounded uppercase tracking-wider',
-                                isDark ? 'bg-white/5 text-white/60' : 'bg-gray-100 text-gray-500')}>
+                                'bg-gray-100 text-gray-500 dark:bg-white/5 dark:text-white/60')}>
                                 {token.name}
                               </span>
                               {token.trendingBoost > 0 && token.trendingBoostExpires > Date.now() && (
@@ -1761,12 +1714,12 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                                 </span>
                               )}
                             </div>
-                            <span className={cn('text-[11px] truncate block opacity-50 font-mono', isDark ? 'text-white' : 'text-gray-600')}>
+                            <span className={cn('text-[11px] truncate block opacity-50 font-mono', 'text-gray-600 dark:text-white')}>
                               {truncateAccount(token.issuer, 8)}
                             </span>
                           </div>
                           <div className="flex flex-col items-end shrink-0 pl-4">
-                            <span className={cn('text-[13px] font-bold tabular-nums', isDark ? 'text-white/80' : 'text-gray-900')}>
+                            <span className={cn('text-[13px] font-bold tabular-nums', 'text-gray-900 dark:text-white/80')}>
                               {formatMcap(getMcap(token.marketcap))}
                             </span>
                             <span className={cn('text-[9px] font-bold uppercase text-blue-500/80 tracking-tighter')}>
@@ -1784,12 +1737,12 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       <span
                         className={cn(
                           'text-[10px] font-bold uppercase tracking-[0.1em]',
-                          isDark ? 'text-purple-400/80' : 'text-purple-600/80'
+                          'text-purple-600/80 dark:text-purple-400/80'
                         )}
                       >
                         Suggested NFTs
                       </span>
-                      <div className={cn('flex-1 h-px', isDark ? 'bg-white/5' : 'bg-gray-100')} />
+                      <div className={cn('flex-1 h-px', 'bg-gray-100 dark:bg-white/5')} />
                     </div>
                     <div className="grid grid-cols-1 gap-1">
                       {suggestedCollections.map((col, i) => (
@@ -1798,7 +1751,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                           onClick={() => handleSearchSelect(col, 'collection')}
                           className={cn(
                             'flex items-center gap-3 px-3 py-1.5 rounded-xl cursor-pointer transition-[background-color,border-color,opacity,transform] duration-300 group border border-transparent',
-                            isDark ? 'hover:bg-white/5 hover:border-white/5' : 'hover:bg-gray-50 hover:border-gray-100'
+                            'hover:bg-gray-50 hover:border-gray-100 dark:hover:bg-white/5 dark:hover:border-white/5'
                           )}
                         >
                           <div className="relative">
@@ -1811,16 +1764,16 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2">
-                              <span className={cn('text-[14px] font-semibold truncate', isDark ? 'text-white/90' : 'text-gray-900')}>
+                              <span className={cn('text-[14px] font-semibold truncate', 'text-gray-900 dark:text-white/90')}>
                                 {typeof col.name === 'object' ? col.name?.collection_name : col.name}
                               </span>
                             </div>
-                            <span className={cn('text-[11px] truncate block opacity-50 font-mono', isDark ? 'text-white' : 'text-gray-600')}>
+                            <span className={cn('text-[11px] truncate block opacity-50 font-mono', 'text-gray-600 dark:text-white')}>
                               {truncateAccount(col.account, 8)}
                             </span>
                           </div>
                           <div className="flex flex-col items-end shrink-0 pl-4">
-                            <span className={cn('text-[13px] font-bold tabular-nums', isDark ? 'text-white/80' : 'text-gray-900')}>
+                            <span className={cn('text-[13px] font-bold tabular-nums', 'text-gray-900 dark:text-white/80')}>
                               {getMcap(col.marketcap) ? formatMcap(getMcap(col.marketcap)) : Number(col.items || 0).toLocaleString()}
                             </span>
                             <span className={cn('text-[9px] font-bold uppercase text-purple-500/80 tracking-tighter')}>
@@ -1838,37 +1791,37 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       <span
                         className={cn(
                           'text-[10px] font-bold uppercase tracking-[0.1em]',
-                          isDark ? 'text-blue-400/80' : 'text-blue-600/80'
+                          'text-blue-600/80 dark:text-blue-400/80'
                         )}
                       >
                         Transaction
                       </span>
-                      <div className={cn('flex-1 h-px', isDark ? 'bg-white/5' : 'bg-gray-100')} />
+                      <div className={cn('flex-1 h-px', 'bg-gray-100 dark:bg-white/5')} />
                     </div>
                     <div
                       onClick={() => handleSearchSelect(searchResults.txHash, 'tx')}
                       className={cn(
                         'flex items-center gap-3 px-3 py-1.5 rounded-xl cursor-pointer transition-[background-color,border-color,opacity,transform] duration-300 group border border-transparent',
-                        isDark ? 'hover:bg-white/5 hover:border-white/5' : 'hover:bg-gray-50 hover:border-gray-100'
+                        'hover:bg-gray-50 hover:border-gray-100 dark:hover:bg-white/5 dark:hover:border-white/5'
                       )}
                     >
                       <div className={cn(
                         'w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-sm transition-transform group-hover:scale-105',
-                        isDark ? 'bg-blue-500/10 text-blue-400' : 'bg-blue-50 text-blue-600'
+                        'bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400'
                       )}>
                         <ArrowLeftRight size={14} />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <span className={cn('text-[13.5px] font-semibold block', isDark ? 'text-white/90' : 'text-gray-900')}>
+                        <span className={cn('text-[13.5px] font-semibold block', 'text-gray-900 dark:text-white/90')}>
                           View Transaction
                         </span>
-                        <span className={cn('text-[11px] truncate block opacity-50 font-mono', isDark ? 'text-white' : 'text-gray-600')}>
+                        <span className={cn('text-[11px] truncate block opacity-50 font-mono', 'text-gray-600 dark:text-white')}>
                           {searchResults.txHash}
                         </span>
                       </div>
                       <div className="flex flex-col items-end shrink-0 pl-4">
                         <span className={cn('text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded',
-                          isDark ? 'bg-blue-500/10 text-blue-400' : 'bg-blue-50 text-blue-600')}>
+                          'bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400')}>
                           TX
                         </span>
                       </div>
@@ -1881,18 +1834,18 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       <span
                         className={cn(
                           'text-[10px] font-bold uppercase tracking-[0.1em]',
-                          isDark ? 'text-pink-400/80' : 'text-pink-600/80'
+                          'text-pink-600/80 dark:text-pink-400/80'
                         )}
                       >
                         NFT
                       </span>
-                      <div className={cn('flex-1 h-px', isDark ? 'bg-white/5' : 'bg-gray-100')} />
+                      <div className={cn('flex-1 h-px', 'bg-gray-100 dark:bg-white/5')} />
                     </div>
                     <div
                       onClick={() => handleSearchSelect(searchResults.nft, 'nft')}
                       className={cn(
                         'flex items-center gap-3 px-3 py-1.5 rounded-xl cursor-pointer transition-[background-color,border-color,opacity,transform] duration-300 group border border-transparent',
-                        isDark ? 'hover:bg-white/5 hover:border-white/5' : 'hover:bg-gray-50 hover:border-gray-100'
+                        'hover:bg-gray-50 hover:border-gray-100 dark:hover:bg-white/5 dark:hover:border-white/5'
                       )}
                     >
                       {getNftImage(searchResults.nft) ? (
@@ -1904,16 +1857,16 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       ) : (
                         <div className={cn(
                           'w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-sm transition-transform group-hover:scale-105',
-                          isDark ? 'bg-pink-500/10 text-pink-400' : 'bg-pink-50 text-pink-600'
+                          'bg-pink-50 text-pink-600 dark:bg-pink-500/10 dark:text-pink-400'
                         )}>
                           <Sparkles size={14} />
                         </div>
                       )}
                       <div className="flex-1 min-w-0">
-                        <span className={cn('text-[13.5px] font-semibold block truncate', isDark ? 'text-white/90' : 'text-gray-900')}>
+                        <span className={cn('text-[13.5px] font-semibold block truncate', 'text-gray-900 dark:text-white/90')}>
                           {searchResults.nft.name || 'View NFT'}
                         </span>
-                        <span className={cn('text-[11px] truncate block opacity-50 font-mono', isDark ? 'text-white' : 'text-gray-600')}>
+                        <span className={cn('text-[11px] truncate block opacity-50 font-mono', 'text-gray-600 dark:text-white')}>
                           {(typeof searchResults.nft.collection === 'string'
                             ? searchResults.nft.collection
                             : searchResults.nft.collection?.name) || 'NFT Collection'}
@@ -1921,7 +1874,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       </div>
                       <div className="flex flex-col items-end shrink-0 pl-4">
                         <span className={cn('text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded',
-                          isDark ? 'bg-pink-500/10 text-pink-400' : 'bg-pink-50 text-pink-600')}>
+                          'bg-pink-50 text-pink-600 dark:bg-pink-500/10 dark:text-pink-400')}>
                           NFT
                         </span>
                       </div>
@@ -1934,38 +1887,38 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       <span
                         className={cn(
                           'text-[10px] font-bold uppercase tracking-[0.1em]',
-                          isDark ? 'text-purple-400/80' : 'text-purple-600/80'
+                          'text-purple-600/80 dark:text-purple-400/80'
                         )}
                       >
                         Account
                       </span>
-                      <div className={cn('flex-1 h-px', isDark ? 'bg-white/5' : 'bg-gray-100')} />
+                      <div className={cn('flex-1 h-px', 'bg-gray-100 dark:bg-white/5')} />
                     </div>
                     <div
                       onClick={() => handleSearchSelect(searchResults.address.address, 'address')}
                       className={cn(
                         'flex items-center gap-3 px-3 py-1.5 rounded-xl cursor-pointer transition-[background-color,border-color,opacity,transform] duration-300 group border border-transparent',
-                        isDark ? 'hover:bg-white/5 hover:border-white/5' : 'hover:bg-gray-50 hover:border-gray-100'
+                        'hover:bg-gray-50 hover:border-gray-100 dark:hover:bg-white/5 dark:hover:border-white/5'
                       )}
                     >
                       <div className={cn(
                         'w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-sm transition-transform group-hover:scale-105',
-                        isDark ? 'bg-purple-500/10 text-purple-400' : 'bg-purple-50 text-purple-500'
+                        'bg-purple-50 text-purple-500 dark:bg-purple-500/10 dark:text-purple-400'
                       )}>
                         <Wallet size={14} />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <span className={cn('text-[13.5px] font-semibold block', isDark ? 'text-white/90' : 'text-gray-900')}>
+                        <span className={cn('text-[13.5px] font-semibold block', 'text-gray-900 dark:text-white/90')}>
                           {searchResults.address.balance != null
                             ? `${Number(searchResults.address.balance).toLocaleString(undefined, { maximumFractionDigits: 2 })} XRP`
                             : 'View Profile'}
                         </span>
-                        <span className={cn('text-[11px] truncate block opacity-50 font-mono', isDark ? 'text-white' : 'text-gray-600')}>
+                        <span className={cn('text-[11px] truncate block opacity-50 font-mono', 'text-gray-600 dark:text-white')}>
                           {searchResults.address.address}
                         </span>
                       </div>
                       <div className="flex flex-col items-end shrink-0 pl-4">
-                        <span className={cn('text-[13px] font-bold tabular-nums', isDark ? 'text-white/80' : 'text-gray-900')}>
+                        <span className={cn('text-[13px] font-bold tabular-nums', 'text-gray-900 dark:text-white/80')}>
                           {searchResults.address.rank ? `#${searchResults.address.rank.toLocaleString()}` : ''}
                         </span>
                         <span className={cn('text-[9px] font-bold uppercase text-purple-500/80 tracking-tighter')}>
@@ -1981,37 +1934,37 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       <span
                         className={cn(
                           'text-[10px] font-bold uppercase tracking-[0.1em]',
-                          isDark ? 'text-blue-400/80' : 'text-blue-600/80'
+                          'text-blue-600/80 dark:text-blue-400/80'
                         )}
                       >
                         Ledger
                       </span>
-                      <div className={cn('flex-1 h-px', isDark ? 'bg-white/5' : 'bg-gray-100')} />
+                      <div className={cn('flex-1 h-px', 'bg-gray-100 dark:bg-white/5')} />
                     </div>
                     <div
                       onClick={() => handleSearchSelect(searchResults.ledger, 'ledger')}
                       className={cn(
                         'flex items-center gap-3 px-3 py-1.5 rounded-xl cursor-pointer transition-[background-color,border-color,opacity,transform] duration-300 group border border-transparent',
-                        isDark ? 'hover:bg-white/5 hover:border-white/5' : 'hover:bg-gray-50 hover:border-gray-100'
+                        'hover:bg-gray-50 hover:border-gray-100 dark:hover:bg-white/5 dark:hover:border-white/5'
                       )}
                     >
                       <div className={cn(
                         'w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-sm transition-transform group-hover:scale-105',
-                        isDark ? 'bg-blue-500/10 text-blue-400' : 'bg-blue-50 text-blue-600'
+                        'bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400'
                       )}>
                         <Layers size={14} />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <span className={cn('text-[13.5px] font-semibold block', isDark ? 'text-white/90' : 'text-gray-900')}>
+                        <span className={cn('text-[13.5px] font-semibold block', 'text-gray-900 dark:text-white/90')}>
                           View Ledger
                         </span>
-                        <span className={cn('text-[11px] truncate block opacity-50 font-mono', isDark ? 'text-white' : 'text-gray-600')}>
+                        <span className={cn('text-[11px] truncate block opacity-50 font-mono', 'text-gray-600 dark:text-white')}>
                           #{searchResults.ledger}
                         </span>
                       </div>
                       <div className="flex flex-col items-end shrink-0 pl-4">
                         <span className={cn('text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded',
-                          isDark ? 'bg-blue-500/10 text-blue-400' : 'bg-blue-50 text-blue-600')}>
+                          'bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400')}>
                           Ledger
                         </span>
                       </div>
@@ -2024,12 +1977,12 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       <span
                         className={cn(
                           'text-[10px] font-bold uppercase tracking-[0.1em]',
-                          isDark ? 'text-blue-400/80' : 'text-blue-600/80'
+                          'text-blue-600/80 dark:text-blue-400/80'
                         )}
                       >
                         Tokens
                       </span>
-                      <div className={cn('flex-1 h-px', isDark ? 'bg-white/5' : 'bg-gray-100')} />
+                      <div className={cn('flex-1 h-px', 'bg-gray-100 dark:bg-white/5')} />
                     </div>
                     <div className="grid grid-cols-1 gap-1">
                       {searchResults.tokens.map((token, i) => (
@@ -2038,7 +1991,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                           onClick={() => handleSearchSelect(token, 'token')}
                           className={cn(
                             'flex items-center gap-3 px-3 py-1.5 rounded-xl cursor-pointer transition-[background-color,border-color,opacity,transform] duration-300 group border border-transparent',
-                            isDark ? 'hover:bg-white/5 hover:border-white/5' : 'hover:bg-gray-50 hover:border-gray-100'
+                            'hover:bg-gray-50 hover:border-gray-100 dark:hover:bg-white/5 dark:hover:border-white/5'
                           )}
                         >
                           <div className="relative">
@@ -2051,11 +2004,11 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2">
-                              <span className={cn('text-[13.5px] font-semibold truncate', token.trendingBoost >= 500 && token.trendingBoostExpires > Date.now() ? 'text-[#FFD700]' : isDark ? 'text-white/90' : 'text-gray-900')}>
+                              <span className={cn('text-[13.5px] font-semibold truncate', token.trendingBoost >= 500 && token.trendingBoostExpires > Date.now() ? 'text-[#FFD700]' : 'text-gray-900 dark:text-white/90')}>
                                 {token.user}
                               </span>
                               <span className={cn('text-[11px] font-medium px-1.5 py-0.5 rounded uppercase tracking-wider',
-                                isDark ? 'bg-white/5 text-white/60' : 'bg-gray-100 text-gray-500')}>
+                                'bg-gray-100 text-gray-500 dark:bg-white/5 dark:text-white/60')}>
                                 {token.name}
                               </span>
                               {token.trendingBoost > 0 && token.trendingBoostExpires > Date.now() && (
@@ -2065,12 +2018,12 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                                 </span>
                               )}
                             </div>
-                            <span className={cn('text-[11px] truncate block opacity-50 font-mono', isDark ? 'text-white' : 'text-gray-600')}>
+                            <span className={cn('text-[11px] truncate block opacity-50 font-mono', 'text-gray-600 dark:text-white')}>
                               {truncateAccount(token.issuer, 8)}
                             </span>
                           </div>
                           <div className="flex flex-col items-end shrink-0 pl-4">
-                            <span className={cn('text-[13px] font-bold tabular-nums', isDark ? 'text-white/80' : 'text-gray-900')}>
+                            <span className={cn('text-[13px] font-bold tabular-nums', 'text-gray-900 dark:text-white/80')}>
                               {formatMcap(getMcap(token.marketcap))}
                             </span>
                             <span className={cn('text-[9px] font-bold uppercase text-blue-500/80 tracking-tighter')}>
@@ -2088,12 +2041,12 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       <span
                         className={cn(
                           'text-[10px] font-bold uppercase tracking-[0.1em]',
-                          isDark ? 'text-purple-400/80' : 'text-purple-600/80'
+                          'text-purple-600/80 dark:text-purple-400/80'
                         )}
                       >
                         NFTs
                       </span>
-                      <div className={cn('flex-1 h-px', isDark ? 'bg-white/5' : 'bg-gray-100')} />
+                      <div className={cn('flex-1 h-px', 'bg-gray-100 dark:bg-white/5')} />
                     </div>
                     <div className="grid grid-cols-1 gap-1">
                       {searchResults.collections.map((col, i) => (
@@ -2102,7 +2055,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                           onClick={() => handleSearchSelect(col, 'collection')}
                           className={cn(
                             'flex items-center gap-3 px-3 py-1.5 rounded-xl cursor-pointer transition-[background-color,border-color,opacity,transform] duration-300 group border border-transparent',
-                            isDark ? 'hover:bg-white/5 hover:border-white/5' : 'hover:bg-gray-50 hover:border-gray-100'
+                            'hover:bg-gray-50 hover:border-gray-100 dark:hover:bg-white/5 dark:hover:border-white/5'
                           )}
                         >
                           <div className="relative">
@@ -2115,16 +2068,16 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2">
-                              <span className={cn('text-[13.5px] font-semibold truncate', isDark ? 'text-white/90' : 'text-gray-900')}>
+                              <span className={cn('text-[13.5px] font-semibold truncate', 'text-gray-900 dark:text-white/90')}>
                                 {typeof col.name === 'object' ? col.name?.collection_name : col.name}
                               </span>
                             </div>
-                            <span className={cn('text-[11px] truncate block opacity-50 font-mono', isDark ? 'text-white' : 'text-gray-600')}>
+                            <span className={cn('text-[11px] truncate block opacity-50 font-mono', 'text-gray-600 dark:text-white')}>
                               {truncateAccount(col.account, 8)}
                             </span>
                           </div>
                           <div className="flex flex-col items-end shrink-0 pl-4">
-                            <span className={cn('text-[13px] font-bold tabular-nums', isDark ? 'text-white/80' : 'text-gray-900')}>
+                            <span className={cn('text-[13px] font-bold tabular-nums', 'text-gray-900 dark:text-white/80')}>
                               {getMcap(col.marketcap) ? formatMcap(getMcap(col.marketcap)) : Number(col.items || 0).toLocaleString()}
                             </span>
                             <span className={cn('text-[9px] font-bold uppercase text-purple-500/80 tracking-tighter')}>
@@ -2138,8 +2091,8 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                 )}
                 {searchQuery && searchLoading && (
                   <div className="py-12 flex flex-col items-center justify-center gap-3">
-                    <Loader2 size={24} className={cn('animate-spin', isDark ? 'text-blue-400/50' : 'text-blue-500/50')} />
-                    <span className={cn('text-[13px] font-medium animate-pulse', isDark ? 'text-white/60' : 'text-gray-400')}>
+                    <Loader2 size={24} className={cn('animate-spin', 'text-blue-500/50 dark:text-blue-400/50')} />
+                    <span className={cn('text-[13px] font-medium animate-pulse', 'text-gray-400 dark:text-white/60')}>
                       Searching curated data...
                     </span>
                   </div>
@@ -2153,13 +2106,13 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   searchResults.tokens.length === 0 &&
                   searchResults.collections.length === 0 && (
                     <div className="py-12 flex flex-col items-center justify-center gap-2">
-                      <div className={cn('w-12 h-12 rounded-full flex items-center justify-center mb-2', isDark ? 'bg-white/5' : 'bg-gray-50')}>
-                        <Search size={20} className={isDark ? 'text-white/20' : 'text-gray-300'} />
+                      <div className={cn('w-12 h-12 rounded-full flex items-center justify-center mb-2', 'bg-gray-50 dark:bg-white/5')}>
+                        <Search size={20} className={'text-gray-300 dark:text-white/20'} />
                       </div>
-                      <p className={cn('text-[14px] font-semibold', isDark ? 'text-white/90' : 'text-gray-900')}>
+                      <p className={cn('text-[14px] font-semibold', 'text-gray-900 dark:text-white/90')}>
                         No results found
                       </p>
-                      <p className={cn('text-[12px]', isDark ? 'text-white/60' : 'text-gray-400')}>
+                      <p className={cn('text-[12px]', 'text-gray-400 dark:text-white/60')}>
                         Try searching for a different token, NFT or address
                       </p>
                     </div>
@@ -2168,8 +2121,8 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   suggestedTokens.length === 0 &&
                   suggestedCollections.length === 0 && (
                     <div className="py-12 flex flex-col items-center justify-center gap-3">
-                      <Loader2 size={24} className={cn('animate-spin', isDark ? 'text-blue-400/50' : 'text-blue-500/50')} />
-                      <span className={cn('text-[13px] font-medium animate-pulse', isDark ? 'text-white/60' : 'text-gray-400')}>
+                      <Loader2 size={24} className={cn('animate-spin', 'text-blue-500/50 dark:text-blue-400/50')} />
+                      <span className={cn('text-[13px] font-medium animate-pulse', 'text-gray-400 dark:text-white/60')}>
                         Fetching suggestions...
                       </span>
                     </div>
@@ -2191,9 +2144,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
               onClick={handleFullSearch}
               className={cn(
                 'lg:hidden flex h-9 w-9 items-center justify-center rounded-full transition-[background-color,border-color,opacity,transform] duration-200 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
-                isDark
-                  ? 'text-white/60 hover:text-[#3f96fe] hover:bg-[rgba(63,150,254,0.1)]'
-                  : 'text-gray-500 hover:text-[#3f96fe] hover:bg-blue-50'
+                'text-gray-500 hover:text-[#3f96fe] hover:bg-blue-50 dark:text-white/60 dark:hover:text-[#3f96fe] dark:hover:bg-[rgba(63,150,254,0.1)]'
               )}
             >
               <Search size={18} />
@@ -2209,9 +2160,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                 aria-label="Watchlist"
                 className={cn(
                   'flex h-8 w-8 items-center justify-center rounded-lg border transition-[background-color,border-color,opacity,transform] duration-200 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
-                  isDark
-                    ? 'border-white/10 text-white/50 hover:text-[#3f96fe] hover:border-[#3f96fe]/50 hover:bg-[rgba(63,150,254,0.1)]'
-                    : 'border-gray-200 text-gray-400 hover:text-[#3f96fe] hover:border-[#3f96fe]/50 hover:bg-blue-50'
+                  'border-gray-200 text-gray-400 hover:text-[#3f96fe] hover:border-[#3f96fe]/50 hover:bg-blue-50 dark:border-white/10 dark:text-white/50 dark:hover:text-[#3f96fe] dark:hover:border-[#3f96fe]/50 dark:hover:bg-[rgba(63,150,254,0.1)]'
                 )}
               >
                 <Bookmark size={16} />
@@ -2224,9 +2173,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   aria-label="Settings"
                   className={cn(
                     'flex h-8 w-8 items-center justify-center rounded-lg border transition-[background-color,border-color,opacity,transform] duration-200 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
-                    isDark
-                      ? 'border-white/10 text-white/50 hover:text-[#3f96fe] hover:border-[#3f96fe]/50 hover:bg-[rgba(63,150,254,0.1)]'
-                      : 'border-gray-200 text-gray-400 hover:text-[#3f96fe] hover:border-[#3f96fe]/50 hover:bg-blue-50'
+                    'border-gray-200 text-gray-400 hover:text-[#3f96fe] hover:border-[#3f96fe]/50 hover:bg-blue-50 dark:border-white/10 dark:text-white/50 dark:hover:text-[#3f96fe] dark:hover:border-[#3f96fe]/50 dark:hover:bg-[rgba(63,150,254,0.1)]'
                   )}
                 >
                   <Settings size={16} />
@@ -2236,9 +2183,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   <div
                     className={cn(
                       'absolute right-0 top-10 z-[2147483647] w-[200px] overflow-hidden rounded-xl border animate-in fade-in slide-in-from-top-1 duration-150',
-                      isDark
-                        ? 'border-gray-700 bg-black shadow-2xl'
-                        : 'border-gray-200 bg-white shadow-xl'
+                      'border-gray-200 bg-white shadow-xl dark:border-gray-700 dark:bg-black dark:shadow-2xl'
                     )}
                   >
                     <div className="p-3">
@@ -2246,7 +2191,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       <p
                         className={cn(
                           'text-[10px] font-medium uppercase tracking-wider mb-2',
-                          isDark ? 'text-white/60' : 'text-gray-400'
+                          'text-gray-400 dark:text-white/60'
                         )}
                       >
                         Currency
@@ -2254,7 +2199,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       <div
                         className={cn(
                           'grid grid-cols-5 gap-1 mb-3 p-2 rounded-lg border',
-                          isDark ? 'bg-black border-gray-700' : 'bg-gray-50 border-gray-200'
+                          'bg-gray-50 border-gray-200 dark:bg-black dark:border-gray-700'
                         )}
                       >
                         {currencyConfig.availableFiatCurrencies.map((currency) => (
@@ -2267,12 +2212,8 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                             className={cn(
                               'flex items-center justify-center h-8 rounded-lg text-[11px] font-medium transition-[background-color,opacity,transform] duration-150',
                               currency === activeFiatCurrency
-                                ? isDark
-                                  ? 'bg-[rgba(63,150,254,0.15)] text-[#3f96fe] ring-1 ring-[rgba(63,150,254,0.4)]'
-                                  : 'bg-blue-500 text-white'
-                                : isDark
-                                  ? 'text-white/60 hover:bg-white/5 hover:text-white'
-                                  : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                                ? 'bg-blue-500 text-white dark:bg-[rgba(63,150,254,0.15)] dark:text-[#3f96fe] dark:ring-1 dark:ring-[rgba(63,150,254,0.4)]'
+                                : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-white/60 dark:hover:bg-white/5 dark:hover:text-white'
                             )}
                           >
                             {currency === 'XRP'
@@ -2285,7 +2226,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       <div
                         className={cn(
                           'border-t mb-3',
-                          isDark ? 'border-white/5' : 'border-gray-100'
+                          'border-gray-100 dark:border-white/5'
                         )}
                       />
 
@@ -2293,7 +2234,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       <p
                         className={cn(
                           'text-[10px] font-medium uppercase tracking-wider mb-2',
-                          isDark ? 'text-white/60' : 'text-gray-400'
+                          'text-gray-400 dark:text-white/60'
                         )}
                       >
                         Theme
@@ -2307,12 +2248,8 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                           className={cn(
                             'flex items-center justify-center gap-1.5 h-8 rounded-lg text-[12px] font-medium transition-[background-color,opacity,transform] duration-150',
                             themeName === 'XrplToLightTheme'
-                              ? isDark
-                                ? 'bg-[rgba(63,150,254,0.15)] text-[#3f96fe] ring-1 ring-[rgba(63,150,254,0.4)]'
-                                : 'bg-blue-500 text-white'
-                              : isDark
-                                ? 'text-white/60 hover:bg-white/5 hover:text-white'
-                                : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                              ? 'bg-blue-500 text-white dark:bg-[rgba(63,150,254,0.15)] dark:text-[#3f96fe] dark:ring-1 dark:ring-[rgba(63,150,254,0.4)]'
+                              : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-white/60 dark:hover:bg-white/5 dark:hover:text-white'
                           )}
                         >
                           <Sun size={12} />
@@ -2326,12 +2263,8 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                           className={cn(
                             'flex items-center justify-center gap-1.5 h-8 rounded-lg text-[12px] font-medium transition-[background-color,opacity,transform] duration-150',
                             themeName === 'XrplToDarkTheme'
-                              ? isDark
-                                ? 'bg-[rgba(63,150,254,0.15)] text-[#3f96fe] ring-1 ring-[rgba(63,150,254,0.4)]'
-                                : 'bg-blue-500 text-white'
-                              : isDark
-                                ? 'text-white/60 hover:bg-white/5 hover:text-white'
-                                : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                              ? 'bg-blue-500 text-white dark:bg-[rgba(63,150,254,0.15)] dark:text-[#3f96fe] dark:ring-1 dark:ring-[rgba(63,150,254,0.4)]'
+                              : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-white/60 dark:hover:bg-white/5 dark:hover:text-white'
                           )}
                         >
                           <Moon size={12} />
@@ -2348,17 +2281,12 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                 href="/launch"
                 className={cn(
                   'group relative flex h-8 items-center gap-1.5 rounded-lg px-3 text-[13px] font-medium transition-[background-color,border-color,opacity,transform] duration-300 overflow-hidden',
-                  isDark
-                    ? 'bg-[#0d0d1a] text-purple-300 border border-purple-500/30 hover:border-purple-400/50 hover:text-white hover:shadow-[0_0_20px_rgba(168,85,247,0.3)]'
-                    : 'bg-gradient-to-r from-violet-50 to-fuchsia-50 text-violet-600 border border-violet-200 hover:from-violet-100 hover:to-fuchsia-100 hover:border-violet-300'
+                  'bg-gradient-to-r from-violet-50 to-fuchsia-50 text-violet-600 border border-violet-200 hover:from-violet-100 hover:to-fuchsia-100 hover:border-violet-300',
+                  'dark:bg-none dark:bg-[#0d0d1a] dark:text-purple-300 dark:border-purple-500/30 dark:hover:border-purple-400/50 dark:hover:text-white dark:hover:shadow-[0_0_20px_rgba(168,85,247,0.3)]'
                 )}
               >
-                {isDark && (
-                  <>
-                    <span className="absolute inset-0 bg-gradient-to-r from-purple-600/20 via-fuchsia-500/20 to-cyan-400/20 animate-[shimmer_3s_ease-in-out_infinite]" />
-                    <span className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(168,85,247,0.15),transparent_50%)]" />
-                  </>
-                )}
+                <span className="absolute inset-0 bg-gradient-to-r from-purple-600/20 via-fuchsia-500/20 to-cyan-400/20 animate-[shimmer_3s_ease-in-out_infinite] hidden dark:block" />
+                <span className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(168,85,247,0.15),transparent_50%)] hidden dark:block" />
                 <Rocket
                   size={14}
                   className="relative z-10 transition-transform duration-300 group-hover:-rotate-12 group-hover:scale-110"
@@ -2376,9 +2304,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                     title="View wallet"
                     className={cn(
                       'flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-[12px] font-medium border transition-[background-color,border-color,opacity,transform] duration-200',
-                      isDark
-                        ? 'bg-white/[0.04] text-white/60 border-white/10 hover:border-white/25 hover:text-white'
-                        : 'bg-gray-50 text-gray-500 border-gray-200 hover:border-gray-300 hover:text-gray-700'
+                      'bg-gray-50 text-gray-500 border-gray-200 hover:border-gray-300 hover:text-gray-700 dark:bg-white/[0.04] dark:text-white/60 dark:border-white/10 dark:hover:border-white/25 dark:hover:text-white'
                     )}
                   >
                     <span className="relative flex h-1.5 w-1.5">
@@ -2403,12 +2329,8 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                     className={cn(
                       'flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-[13px] font-medium border transition-[background-color,border-color,opacity,transform] duration-200',
                       !isAccountActivated
-                        ? isDark
-                          ? 'bg-amber-500/5 text-white border-amber-500/20 hover:bg-amber-500/10'
-                          : 'bg-amber-50 text-gray-900 border-amber-200 hover:bg-amber-100/50'
-                        : isDark
-                          ? 'bg-emerald-500/5 text-white border-emerald-500/20 hover:bg-emerald-500/10'
-                          : 'bg-emerald-50 text-gray-900 border-emerald-200 hover:bg-emerald-100/50'
+                        ? 'bg-amber-50 text-gray-900 border-amber-200 hover:bg-amber-100/50 dark:bg-amber-500/5 dark:text-white dark:border-amber-500/20 dark:hover:bg-amber-500/10'
+                        : 'bg-emerald-50 text-gray-900 border-emerald-200 hover:bg-emerald-100/50 dark:bg-emerald-500/5 dark:text-white dark:border-emerald-500/20 dark:hover:bg-emerald-500/10'
                     )}
                   >
                     <span className="tabular-nums">
@@ -2418,17 +2340,15 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       <span
                         className={cn(
                           'text-[10px] px-1 py-px rounded font-semibold',
-                          isDark
-                            ? 'bg-white/10 text-white/60'
-                            : !isAccountActivated
-                              ? 'bg-amber-100 text-amber-600'
-                              : 'bg-emerald-100 text-emerald-600'
+                          !isAccountActivated
+                            ? 'bg-amber-100 text-amber-600 dark:bg-white/10 dark:text-white/60'
+                            : 'bg-emerald-100 text-emerald-600 dark:bg-white/10 dark:text-white/60'
                         )}
                       >
                         {profiles.length}
                       </span>
                     )}
-                    <ChevronDown size={11} className={isDark ? 'text-white/40' : 'text-gray-400'} />
+                    <ChevronDown size={11} className={'text-gray-400 dark:text-white/40'} />
                   </button>
                 </div>
               ) : (
@@ -2436,9 +2356,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   onClick={() => setOpenWalletModal(true)}
                   className={cn(
                     'relative flex h-8 items-center gap-2 rounded-lg px-3 text-[13px] font-medium transition-[background-color,border-color,opacity,transform] duration-200 border',
-                    isDark
-                      ? 'bg-white/[0.04] text-white/70 border-white/15 hover:border-white/30 hover:bg-white/[0.06]'
-                      : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100 hover:border-gray-300'
+                    'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100 hover:border-gray-300 dark:bg-white/[0.04] dark:text-white/70 dark:border-white/15 dark:hover:border-white/30 dark:hover:bg-white/[0.06]'
                   )}
                 >
                   <Wallet size={14} />
@@ -2462,9 +2380,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                     title="View wallet"
                     className={cn(
                       'flex h-8 items-center gap-1 rounded-lg px-2 text-[11px] font-medium border transition-[background-color,border-color,opacity,transform] duration-200',
-                      isDark
-                        ? 'bg-white/[0.04] text-white/60 border-white/10 hover:border-white/25'
-                        : 'bg-gray-50 text-gray-500 border-gray-200 hover:border-gray-300'
+                      'bg-gray-50 text-gray-500 border-gray-200 hover:border-gray-300 dark:bg-white/[0.04] dark:text-white/60 dark:border-white/10 dark:hover:border-white/25'
                     )}
                   >
                     <span className="relative flex h-1.5 w-1.5">
@@ -2489,15 +2405,11 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                     className={cn(
                       'flex h-8 w-7 items-center justify-center rounded-lg border transition-[background-color,border-color,opacity,transform] duration-200 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                       !isAccountActivated
-                        ? isDark
-                          ? 'bg-amber-500/5 border-amber-500/20 hover:bg-amber-500/10'
-                          : 'bg-amber-50 border-amber-200 hover:bg-amber-100/50'
-                        : isDark
-                          ? 'bg-emerald-500/5 border-emerald-500/20 hover:bg-emerald-500/10'
-                          : 'bg-emerald-50 border-emerald-200 hover:bg-emerald-100/50'
+                        ? 'bg-amber-50 border-amber-200 hover:bg-amber-100/50 dark:bg-amber-500/5 dark:border-amber-500/20 dark:hover:bg-amber-500/10'
+                        : 'bg-emerald-50 border-emerald-200 hover:bg-emerald-100/50 dark:bg-emerald-500/5 dark:border-emerald-500/20 dark:hover:bg-emerald-500/10'
                     )}
                   >
-                    <ChevronDown size={10} className={isDark ? 'text-white/50' : 'text-gray-400'} />
+                    <ChevronDown size={10} className={'text-gray-400 dark:text-white/50'} />
                   </button>
                 </div>
               ) : (
@@ -2506,9 +2418,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   onClick={() => setOpenWalletModal(true)}
                   className={cn(
                     'flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-[12px] font-medium transition-[background-color,border-color,opacity,transform] duration-200 border active:scale-95 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
-                    isDark
-                      ? 'bg-white/[0.08] text-white/70 border-white/20 hover:border-white/30 hover:bg-white/[0.12]'
-                      : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50 hover:border-gray-300'
+                    'bg-white text-gray-600 border-gray-200 hover:bg-gray-50 hover:border-gray-300 dark:bg-white/[0.08] dark:text-white/70 dark:border-white/20 dark:hover:border-white/30 dark:hover:bg-white/[0.12]'
                   )}
                 >
                   <Wallet size={14} />
@@ -2520,9 +2430,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                 onClick={() => toggleDrawer(true)}
                 className={cn(
                   'flex h-9 w-9 items-center justify-center rounded-full transition-[background-color,border-color,opacity,transform] duration-200 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
-                  isDark
-                    ? 'text-white/60 hover:text-[#3f96fe] hover:bg-[rgba(63,150,254,0.1)]'
-                    : 'text-gray-500 hover:text-[#3f96fe] hover:bg-blue-50'
+                  'text-gray-500 hover:text-[#3f96fe] hover:bg-blue-50 dark:text-white/60 dark:hover:text-[#3f96fe] dark:hover:bg-[rgba(63,150,254,0.1)]'
                 )}
               >
                 <Menu size={18} />
@@ -2538,9 +2446,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
         <div
           className={cn(
             'flex items-center justify-center gap-2 px-4 py-1.5 text-[12px]',
-            isDark
-              ? 'bg-[#137DFE]/10 text-[#5fa8ff] border-b border-white/5'
-              : 'bg-blue-50 text-blue-600 border-b border-blue-100'
+            'bg-blue-50 text-blue-600 border-b border-blue-100 dark:bg-[#137DFE]/10 dark:text-[#5fa8ff] dark:border-b dark:border-white/5'
           )}
         >
           <Info size={13} className="shrink-0 opacity-70" />
@@ -2554,7 +2460,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
             }}
             className={cn(
               'ml-1 shrink-0 rounded p-0.5 transition-colors',
-              isDark ? 'hover:bg-white/10' : 'hover:bg-blue-100'
+              'hover:bg-blue-100 dark:hover:bg-white/10'
             )}
             aria-label="Dismiss"
           >
@@ -2569,7 +2475,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
           <div
             className={cn(
               'fixed inset-0 z-[2147483646] backdrop-blur-md h-dvh',
-              isDark ? 'bg-black/70' : 'bg-white/60'
+              'bg-white/60 dark:bg-black/70'
             )}
             onClick={() => toggleDrawer(false)}
           />
@@ -2579,9 +2485,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
             aria-label="Navigation menu"
             className={cn(
               'fixed inset-x-4 top-2 bottom-4 pb-[env(safe-area-inset-bottom)] z-[2147483647] rounded-2xl border-[1.5px] animate-in fade-in zoom-in-95 duration-200',
-              isDark
-                ? 'bg-black/80 backdrop-blur-2xl border-white/[0.08] shadow-2xl shadow-black/50'
-                : 'bg-white/80 backdrop-blur-2xl border-gray-200/60 shadow-2xl shadow-gray-300/30'
+              'bg-white/80 backdrop-blur-2xl border-gray-200/60 shadow-2xl shadow-gray-300/30 dark:bg-black/80 dark:backdrop-blur-2xl dark:border-white/[0.08] dark:shadow-2xl dark:shadow-black/50'
             )}
             style={{ overflowY: 'auto' }}
           >
@@ -2590,7 +2494,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                 <span
                   className={cn(
                     'text-[14px] font-medium',
-                    isDark ? 'text-white/90' : 'text-gray-900'
+                    'text-gray-900 dark:text-white/90'
                   )}
                 >
                   Menu
@@ -2600,9 +2504,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   aria-label="Close menu"
                   className={cn(
                     'rounded-lg p-1.5 transition-colors duration-100 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
-                    isDark
-                      ? 'text-white/50 hover:text-white hover:bg-white/[0.05]'
-                      : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
+                    'text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:text-white/50 dark:hover:text-white dark:hover:bg-white/[0.05]'
                   )}
                 >
                   <X size={16} />
@@ -2615,12 +2517,8 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   className={cn(
                     'flex w-full items-center justify-between rounded-lg text-[13px] font-medium transition-colors duration-100',
                     isTokensActive
-                      ? isDark
-                        ? 'bg-white/[0.08] text-white'
-                        : 'bg-gray-100 text-gray-900'
-                      : isDark
-                        ? 'text-white/80 hover:bg-white/[0.05]'
-                        : 'text-gray-700 hover:bg-gray-50'
+                      ? 'bg-gray-100 text-gray-900 dark:bg-white/[0.08] dark:text-white'
+                      : 'text-gray-700 hover:bg-gray-50 dark:text-white/80 dark:hover:bg-white/[0.05]'
                   )}
                 >
                   <a
@@ -2634,7 +2532,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                     onClick={() => setTokensExpanded(!tokensExpanded)}
                     className={cn(
                       'px-3 py-2 rounded-r-lg transition-colors duration-100 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
-                      isDark ? 'hover:bg-white/[0.05]' : 'hover:bg-gray-100'
+                      'hover:bg-gray-100 dark:hover:bg-white/[0.05]'
                     )}
                     aria-label="Expand tokens submenu"
                   >
@@ -2643,7 +2541,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       className={cn(
                         'transition-transform duration-150',
                         tokensExpanded && 'rotate-180',
-                        isDark ? 'text-white/60' : 'text-gray-400'
+                        'text-gray-400 dark:text-white/60'
                       )}
                     />
                   </button>
@@ -2659,18 +2557,14 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                         className={cn(
                           'flex items-center gap-3 rounded-xl px-3 py-2 transition-[background-color,border-color,opacity,transform] duration-200',
                           isActive(item.path)
-                            ? isDark
-                              ? 'bg-white/10'
-                              : 'bg-blue-50'
-                            : isDark
-                              ? 'hover:bg-white/5'
-                              : 'hover:bg-gray-50'
+                    ? 'bg-blue-50 dark:bg-white/10'
+                    : 'hover:bg-gray-50 dark:hover:bg-white/5'
                         )}
                       >
                         <div
                           className={cn(
                             'flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg',
-                            isDark ? 'bg-white/5' : 'bg-gray-100'
+                            'bg-gray-100 dark:bg-white/5'
                           )}
                         >
                           {item.icon}
@@ -2679,7 +2573,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                           <span
                             className={cn(
                               'text-[13px] font-semibold truncate',
-                              isDark ? 'text-white' : 'text-gray-900'
+                              'text-gray-900 dark:text-white'
                             )}
                           >
                             {item.name}
@@ -2687,7 +2581,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                           <span
                             className={cn(
                               'text-[11px] truncate opacity-50 font-medium',
-                              isDark ? 'text-white' : 'text-gray-500'
+                              'text-gray-500 dark:text-white'
                             )}
                           >
                             {item.desc}
@@ -2703,12 +2597,8 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   className={cn(
                     'flex w-full items-center justify-between rounded-lg text-[13px] font-medium transition-colors duration-100',
                     isNftsActive
-                      ? isDark
-                        ? 'bg-white/[0.08] text-white'
-                        : 'bg-gray-100 text-gray-900'
-                      : isDark
-                        ? 'text-white/80 hover:bg-white/[0.05]'
-                        : 'text-gray-700 hover:bg-gray-50'
+                      ? 'bg-gray-100 text-gray-900 dark:bg-white/[0.08] dark:text-white'
+                      : 'text-gray-700 hover:bg-gray-50 dark:text-white/80 dark:hover:bg-white/[0.05]'
                   )}
                 >
                   <a
@@ -2722,7 +2612,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                     onClick={() => setNftsExpanded(!nftsExpanded)}
                     className={cn(
                       'px-3 py-2 rounded-r-lg transition-colors duration-100 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
-                      isDark ? 'hover:bg-white/[0.05]' : 'hover:bg-gray-100'
+                      'hover:bg-gray-100 dark:hover:bg-white/[0.05]'
                     )}
                     aria-label="Expand NFTs submenu"
                   >
@@ -2731,7 +2621,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       className={cn(
                         'transition-transform duration-150',
                         nftsExpanded && 'rotate-180',
-                        isDark ? 'text-white/60' : 'text-gray-400'
+                        'text-gray-400 dark:text-white/60'
                       )}
                     />
                   </button>
@@ -2747,18 +2637,14 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                         className={cn(
                           'flex items-center gap-3 rounded-xl px-3 py-2 transition-[background-color,border-color,opacity,transform] duration-200',
                           isActive(item.path)
-                            ? isDark
-                              ? 'bg-white/10'
-                              : 'bg-blue-50'
-                            : isDark
-                              ? 'hover:bg-white/5'
-                              : 'hover:bg-gray-50'
+                    ? 'bg-blue-50 dark:bg-white/10'
+                    : 'hover:bg-gray-50 dark:hover:bg-white/5'
                         )}
                       >
                         <div
                           className={cn(
                             'flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg',
-                            isDark ? 'bg-white/5' : 'bg-gray-100'
+                            'bg-gray-100 dark:bg-white/5'
                           )}
                         >
                           {item.icon}
@@ -2767,7 +2653,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                           <span
                             className={cn(
                               'text-[13px] font-semibold truncate',
-                              isDark ? 'text-white' : 'text-gray-900'
+                              'text-gray-900 dark:text-white'
                             )}
                           >
                             {item.name}
@@ -2775,7 +2661,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                           <span
                             className={cn(
                               'text-[11px] truncate opacity-50 font-medium',
-                              isDark ? 'text-white' : 'text-gray-500'
+                              'text-gray-500 dark:text-white'
                             )}
                           >
                             {item.desc}
@@ -2792,12 +2678,8 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   className={cn(
                     'flex items-center rounded-lg px-3 py-2 text-[13px] font-medium transition-colors duration-100',
                     isActive('/swap')
-                      ? isDark
-                        ? 'bg-white/[0.08] text-white'
-                        : 'bg-gray-100 text-gray-900'
-                      : isDark
-                        ? 'text-white/80 hover:bg-white/[0.05]'
-                        : 'text-gray-700 hover:bg-gray-50'
+                    ? 'bg-gray-100 text-gray-900 dark:bg-white/[0.08] dark:text-white'
+                    : 'text-gray-700 hover:bg-gray-50 dark:text-white/80 dark:hover:bg-white/[0.05]'
                   )}
                 >
                   Swap
@@ -2808,12 +2690,8 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   className={cn(
                     'flex items-center rounded-lg px-3 py-2 text-[13px] font-medium transition-colors duration-100',
                     isActive('/news')
-                      ? isDark
-                        ? 'bg-white/[0.08] text-white'
-                        : 'bg-gray-100 text-gray-900'
-                      : isDark
-                        ? 'text-white/80 hover:bg-white/[0.05]'
-                        : 'text-gray-700 hover:bg-gray-50'
+                    ? 'bg-gray-100 text-gray-900 dark:bg-white/[0.08] dark:text-white'
+                    : 'text-gray-700 hover:bg-gray-50 dark:text-white/80 dark:hover:bg-white/[0.05]'
                   )}
                 >
                   News
@@ -2825,9 +2703,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                     'flex items-center gap-2 rounded-lg px-3 py-2 text-[13px] font-medium transition-colors duration-100',
                     isActive('/watchlist')
                       ? 'bg-yellow-500/15 text-yellow-500'
-                      : isDark
-                        ? 'text-yellow-500/80 hover:bg-yellow-500/10'
-                        : 'text-yellow-600 hover:bg-yellow-500/10'
+                      : 'text-yellow-600 hover:bg-yellow-500/10 dark:text-yellow-500/80 dark:hover:bg-yellow-500/10'
                   )}
                 >
                   <Bookmark size={14} />
@@ -2837,7 +2713,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                 <div
                   className={cn(
                     'my-2 border-t',
-                    isDark ? 'border-[rgba(63,150,254,0.1)]' : 'border-blue-200/30'
+                    'border-blue-200/30 dark:border-[rgba(63,150,254,0.1)]'
                   )}
                 />
 
@@ -2846,17 +2722,12 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   onClick={() => toggleDrawer(false)}
                   className={cn(
                     'group relative flex items-center justify-center gap-1.5 rounded-lg px-4 py-2 text-[13px] font-medium transition-[background-color,border-color,opacity,transform] duration-300 overflow-hidden',
-                    isDark
-                      ? 'bg-[#0d0d1a] text-purple-300 border border-purple-500/30 hover:border-purple-400/50 hover:text-white hover:shadow-[0_0_20px_rgba(168,85,247,0.3)]'
-                      : 'bg-gradient-to-r from-violet-50 to-fuchsia-50 text-violet-600 border border-violet-200 hover:from-violet-100 hover:to-fuchsia-100 hover:border-violet-300'
+                    'bg-gradient-to-r from-violet-50 to-fuchsia-50 text-violet-600 border border-violet-200 hover:from-violet-100 hover:to-fuchsia-100 hover:border-violet-300',
+                    'dark:bg-none dark:bg-[#0d0d1a] dark:text-purple-300 dark:border-purple-500/30 dark:hover:border-purple-400/50 dark:hover:text-white dark:hover:shadow-[0_0_20px_rgba(168,85,247,0.3)]'
                   )}
                 >
-                  {isDark && (
-                    <>
-                      <span className="absolute inset-0 bg-gradient-to-r from-purple-600/20 via-fuchsia-500/20 to-cyan-400/20 animate-[shimmer_3s_ease-in-out_infinite]" />
-                      <span className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(168,85,247,0.15),transparent_50%)]" />
-                    </>
-                  )}
+                  <span className="absolute inset-0 bg-gradient-to-r from-purple-600/20 via-fuchsia-500/20 to-cyan-400/20 animate-[shimmer_3s_ease-in-out_infinite] hidden dark:block" />
+                  <span className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(168,85,247,0.15),transparent_50%)] hidden dark:block" />
                   <Rocket
                     size={14}
                     className="relative z-10 transition-transform duration-300 group-hover:-rotate-12 group-hover:scale-110"
@@ -2868,7 +2739,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
               <div
                 className={cn(
                   'my-3 border-t',
-                  isDark ? 'border-[rgba(63,150,254,0.1)]' : 'border-blue-200/30'
+                  'border-blue-200/30 dark:border-[rgba(63,150,254,0.1)]'
                 )}
               />
 
@@ -2881,9 +2752,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       onClick={() => toggleDrawer(false)}
                       className={cn(
                         'flex flex-1 items-center gap-2 rounded-lg px-3 py-2.5 text-[13px] font-medium border transition-[background-color,border-color,opacity,transform] duration-200',
-                        isDark
-                          ? 'bg-white/[0.04] text-white/60 border-white/10 hover:border-white/25 hover:text-white'
-                          : 'bg-gray-50 text-gray-500 border-gray-200 hover:border-gray-300 hover:text-gray-700'
+                        'bg-gray-50 text-gray-500 border-gray-200 hover:border-gray-300 hover:text-gray-700 dark:bg-white/[0.04] dark:text-white/60 dark:border-white/10 dark:hover:border-white/25 dark:hover:text-white'
                       )}
                     >
                       <span className="relative flex h-2 w-2">
@@ -2900,7 +2769,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       <span className="tabular-nums">
                         {accountLogin ? `${accountLogin.slice(0, 4)}...${accountLogin.slice(-4)}` : ''}
                       </span>
-                      <ArrowRight size={12} className={isDark ? 'text-white/20' : 'text-gray-300'} />
+                      <ArrowRight size={12} className={'text-gray-300 dark:text-white/20'} />
                     </a>
                     {/* Balance — opens wallet modal */}
                     <button
@@ -2911,12 +2780,8 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       className={cn(
                         'flex items-center gap-1.5 rounded-lg px-3 py-2.5 text-[13px] font-medium border transition-[background-color,border-color,opacity,transform] duration-200',
                         !isAccountActivated
-                          ? isDark
-                            ? 'bg-amber-500/5 text-white border-amber-500/20 hover:bg-amber-500/10'
-                            : 'bg-amber-50 text-gray-900 border-amber-200 hover:bg-amber-100/50'
-                          : isDark
-                            ? 'bg-emerald-500/5 text-white border-emerald-500/20 hover:bg-emerald-500/10'
-                            : 'bg-emerald-50 text-gray-900 border-emerald-200 hover:bg-emerald-100/50'
+                          ? 'bg-amber-50 text-gray-900 border-amber-200 hover:bg-amber-100/50 dark:bg-amber-500/5 dark:text-white dark:border-amber-500/20 dark:hover:bg-amber-500/10'
+                          : 'bg-emerald-50 text-gray-900 border-emerald-200 hover:bg-emerald-100/50 dark:bg-emerald-500/5 dark:text-white dark:border-emerald-500/20 dark:hover:bg-emerald-500/10'
                       )}
                     >
                       <span className="tabular-nums">
@@ -2926,17 +2791,15 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                         <span
                           className={cn(
                             'text-[10px] px-1 py-px rounded font-semibold',
-                            isDark
-                              ? 'bg-white/10 text-white/60'
-                              : !isAccountActivated
-                                ? 'bg-amber-100 text-amber-600'
-                                : 'bg-emerald-100 text-emerald-600'
+                            !isAccountActivated
+                              ? 'bg-amber-100 text-amber-600 dark:bg-white/10 dark:text-white/60'
+                              : 'bg-emerald-100 text-emerald-600 dark:bg-white/10 dark:text-white/60'
                           )}
                         >
                           {profiles.length}
                         </span>
                       )}
-                      <ChevronDown size={12} className={isDark ? 'text-white/40' : 'text-gray-400'} />
+                      <ChevronDown size={12} className={'text-gray-400 dark:text-white/40'} />
                     </button>
                   </div>
                 ) : (
@@ -2946,9 +2809,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       className={cn(
                         'relative flex w-full items-center justify-between rounded-lg px-4 py-2.5 text-[13px] font-medium transition-[background-color,border-color,opacity,transform] duration-300 border overflow-hidden',
                         'before:absolute before:inset-0 before:rounded-[inherit] before:bg-[length:250%_250%,100%_100%] before:bg-[position:200%_0,0_0] before:bg-no-repeat before:transition-[background-position_0s_ease] hover:before:bg-[position:-100%_0,0_0] hover:before:duration-[1500ms]',
-                        isDark
-                          ? 'bg-[#0a0a12] text-white/70 border-white/20 hover:border-white/40 hover:text-white before:bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.15)_50%,transparent_75%,transparent_100%)]'
-                          : 'bg-gray-50 text-gray-600 border-gray-300 hover:bg-gray-100 hover:border-gray-400 before:bg-[linear-gradient(45deg,transparent_25%,rgba(0,0,0,0.05)_50%,transparent_75%,transparent_100%)]'
+                        'bg-gray-50 text-gray-600 border-gray-300 hover:bg-gray-100 hover:border-gray-400 before:bg-[linear-gradient(45deg,transparent_25%,rgba(0,0,0,0.05)_50%,transparent_75%,transparent_100%)] dark:bg-[#0a0a12] dark:text-white/70 dark:border-white/20 dark:hover:border-white/40 dark:hover:text-white dark:before:bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.15)_50%,transparent_75%,transparent_100%)]'
                       )}
                     >
                       <div className="relative z-10 flex items-center gap-2">
@@ -2967,9 +2828,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       <div
                         className={cn(
                           'mt-2 rounded-lg border p-3',
-                          isDark
-                            ? 'border-[rgba(63,150,254,0.2)] bg-white/[0.02]'
-                            : 'border-gray-200 bg-gray-50'
+                          'border-gray-200 bg-gray-50 dark:border-[rgba(63,150,254,0.2)] dark:bg-white/[0.02]'
                         )}
                       >
                         <div className="grid grid-cols-2 gap-2">
@@ -2981,9 +2840,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                             }}
                             className={cn(
                               'flex items-center gap-2 rounded-lg border px-3 py-2.5 text-[12px] transition-colors',
-                              isDark
-                                ? 'border-white/10 hover:border-primary/50 hover:bg-primary/5'
-                                : 'border-gray-200 hover:border-primary/50 hover:bg-primary/5'
+                              'border-gray-200 hover:border-primary/50 hover:bg-primary/5 dark:border-white/10 dark:hover:border-primary/50 dark:hover:bg-primary/5'
                             )}
                           >
                             <svg className="h-4 w-4" viewBox="0 0 24 24">
@@ -3013,9 +2870,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                             }}
                             className={cn(
                               'flex items-center gap-2 rounded-lg border px-3 py-2.5 text-[12px] transition-colors',
-                              isDark
-                                ? 'border-white/10 hover:border-primary/50 hover:bg-primary/5'
-                                : 'border-gray-200 hover:border-primary/50 hover:bg-primary/5'
+                              'border-gray-200 hover:border-primary/50 hover:bg-primary/5 dark:border-white/10 dark:hover:border-primary/50 dark:hover:bg-primary/5'
                             )}
                           >
                             <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
@@ -3030,9 +2885,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                             }}
                             className={cn(
                               'flex items-center gap-2 rounded-lg border px-3 py-2.5 text-[12px] transition-colors',
-                              isDark
-                                ? 'border-white/10 hover:border-primary/50 hover:bg-primary/5'
-                                : 'border-gray-200 hover:border-primary/50 hover:bg-primary/5'
+                              'border-gray-200 hover:border-primary/50 hover:bg-primary/5 dark:border-white/10 dark:hover:border-primary/50 dark:hover:bg-primary/5'
                             )}
                           >
                             <svg className="h-4 w-4" viewBox="0 0 24 24" fill="#5865F2">
@@ -3048,9 +2901,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                             }}
                             className={cn(
                               'flex items-center gap-2 rounded-lg border px-3 py-2.5 text-[12px] transition-colors',
-                              isDark
-                                ? 'border-white/10 hover:border-primary/50 hover:bg-primary/5'
-                                : 'border-gray-200 hover:border-primary/50 hover:bg-primary/5'
+                              'border-gray-200 hover:border-primary/50 hover:bg-primary/5 dark:border-white/10 dark:hover:border-primary/50 dark:hover:bg-primary/5'
                             )}
                           >
                             <Fingerprint size={16} className="text-primary" />
@@ -3065,9 +2916,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                             placeholder="Enter email"
                             className={cn(
                               'flex-1 rounded-lg border px-3 py-2 text-[12px] max-sm:text-base outline-none',
-                              isDark
-                                ? 'border-white/10 bg-white/5 placeholder:text-white/60'
-                                : 'border-gray-200 bg-white placeholder:text-gray-400'
+                              'border-gray-200 bg-white placeholder:text-gray-400 dark:border-white/10 dark:bg-white/5 dark:placeholder:text-white/60'
                             )}
                           />
                           <button
@@ -3076,9 +2925,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                             disabled={mobileEmailLoading || !mobileEmail.includes('@')}
                             className={cn(
                               'rounded-lg border px-3 py-2 transition-colors disabled:opacity-50 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
-                              isDark
-                                ? 'border-white/10 hover:border-primary/50 hover:bg-primary/5'
-                                : 'border-gray-200 hover:border-primary/50 hover:bg-primary/5'
+                              'border-gray-200 hover:border-primary/50 hover:bg-primary/5 dark:border-white/10 dark:hover:border-primary/50 dark:hover:bg-primary/5'
                             )}
                           >
                             {mobileEmailLoading ? (
@@ -3097,7 +2944,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
               <div
                 className={cn(
                   'my-3 border-t',
-                  isDark ? 'border-[rgba(63,150,254,0.1)]' : 'border-blue-200/30'
+                  'border-blue-200/30 dark:border-[rgba(63,150,254,0.1)]'
                 )}
               />
 
@@ -3106,7 +2953,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                 <p
                   className={cn(
                     'mb-2 px-2 text-[10px] font-medium uppercase tracking-wider',
-                    isDark ? 'text-white/60' : 'text-gray-400'
+                    'text-gray-400 dark:text-white/60'
                   )}
                 >
                   Currency
@@ -3114,7 +2961,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                 <div
                   className={cn(
                     'grid grid-cols-5 gap-1.5 p-2 rounded-lg border',
-                    isDark ? 'bg-black border-gray-700' : 'bg-gray-50 border-gray-200'
+                    'bg-gray-50 border-gray-200 dark:bg-black dark:border-gray-700'
                   )}
                 >
                   {currencyConfig.availableFiatCurrencies.map((currency) => (
@@ -3124,12 +2971,8 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       className={cn(
                         'flex items-center justify-center h-10 rounded-lg text-[12px] font-medium transition-[background-color,opacity,transform] duration-150',
                         currency === activeFiatCurrency
-                          ? isDark
-                            ? 'bg-[rgba(63,150,254,0.15)] text-[#3f96fe] ring-1 ring-[rgba(63,150,254,0.4)]'
-                            : 'bg-blue-500 text-white'
-                          : isDark
-                            ? 'text-white/60 hover:bg-white/5 hover:text-white'
-                            : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                          ? 'bg-blue-500 text-white dark:bg-[rgba(63,150,254,0.15)] dark:text-[#3f96fe] dark:ring-1 dark:ring-[rgba(63,150,254,0.4)]'
+                          : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-white/60 dark:hover:bg-white/5 dark:hover:text-white'
                       )}
                     >
                       {currency === 'XRP'
@@ -3145,7 +2988,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                 <p
                   className={cn(
                     'mb-2 px-2 text-[10px] font-medium uppercase tracking-wider',
-                    isDark ? 'text-white/60' : 'text-gray-400'
+                    'text-gray-400 dark:text-white/60'
                   )}
                 >
                   Theme
@@ -3156,12 +2999,8 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                     className={cn(
                       'flex items-center justify-center gap-2 h-10 rounded-lg text-[13px] font-medium transition-[background-color,opacity,transform] duration-150',
                       themeName === 'XrplToLightTheme'
-                        ? isDark
-                          ? 'bg-[rgba(63,150,254,0.15)] text-[#3f96fe] ring-1 ring-[rgba(63,150,254,0.4)]'
-                          : 'bg-blue-500 text-white'
-                        : isDark
-                          ? 'text-white/60 hover:bg-white/5 hover:text-white'
-                          : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                        ? 'bg-blue-500 text-white dark:bg-[rgba(63,150,254,0.15)] dark:text-[#3f96fe] dark:ring-1 dark:ring-[rgba(63,150,254,0.4)]'
+                        : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-white/60 dark:hover:bg-white/5 dark:hover:text-white'
                     )}
                   >
                     <Sun size={14} />
@@ -3172,12 +3011,8 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                     className={cn(
                       'flex items-center justify-center gap-2 h-10 rounded-lg text-[13px] font-medium transition-[background-color,opacity,transform] duration-150',
                       themeName === 'XrplToDarkTheme'
-                        ? isDark
-                          ? 'bg-[rgba(63,150,254,0.15)] text-[#3f96fe] ring-1 ring-[rgba(63,150,254,0.4)]'
-                          : 'bg-blue-500 text-white'
-                        : isDark
-                          ? 'text-white/60 hover:bg-white/5 hover:text-white'
-                          : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                        ? 'bg-blue-500 text-white dark:bg-[rgba(63,150,254,0.15)] dark:text-[#3f96fe] dark:ring-1 dark:ring-[rgba(63,150,254,0.4)]'
+                        : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-white/60 dark:hover:bg-white/5 dark:hover:text-white'
                     )}
                   >
                     <Moon size={14} />
@@ -3196,7 +3031,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
           <div
             className={cn(
               'fixed inset-0 z-[2147483646] backdrop-blur-sm h-dvh',
-              isDark ? 'bg-black/60' : 'bg-black/20'
+              'bg-black/20 dark:bg-black/60'
             )}
             onClick={() => setCommandPaletteOpen(false)}
           />
@@ -3207,18 +3042,16 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
             aria-label="Command palette"
             className={cn(
               'fixed left-1/2 top-[15%] z-[2147483647] w-full max-w-[520px] -translate-x-1/2 rounded-xl border overflow-hidden animate-in fade-in zoom-in-95 duration-150',
-              isDark
-                ? 'bg-[#0a0a12] border-white/10 shadow-2xl shadow-black/50'
-                : 'bg-white border-gray-200 shadow-2xl'
+              'bg-white border-gray-200 shadow-2xl dark:bg-[#0a0a12] dark:border-white/10 dark:shadow-2xl dark:shadow-black/50'
             )}
           >
             <div
               className={cn(
                 'flex items-center gap-3 px-4 h-12 border-b',
-                isDark ? 'border-white/10' : 'border-gray-200'
+                'border-gray-200 dark:border-white/10'
               )}
             >
-              <Command size={16} className={isDark ? 'text-white/60' : 'text-gray-400'} />
+              <Command size={16} className={'text-gray-400 dark:text-white/60'} />
               <input
                 ref={commandInputRef}
                 value={commandQuery}
@@ -3226,9 +3059,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                 placeholder="Go to page..."
                 className={cn(
                   'flex-1 bg-transparent text-[14px] max-sm:text-base outline-none',
-                  isDark
-                    ? 'text-white placeholder:text-white/60'
-                    : 'text-gray-900 placeholder:text-gray-400'
+                  'text-gray-900 placeholder:text-gray-400 dark:text-white dark:placeholder:text-white/60'
                 )}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && filteredPages.length > 0) {
@@ -3240,7 +3071,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
               <kbd
                 className={cn(
                   'px-1.5 py-0.5 rounded text-[10px] font-mono',
-                  isDark ? 'bg-white/10 text-white/60' : 'bg-gray-100 text-gray-400'
+                  'bg-gray-100 text-gray-400 dark:bg-white/10 dark:text-white/60'
                 )}
               >
                 esc
@@ -3256,18 +3087,14 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                     className={cn(
                       'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors',
                       isActive(page.path)
-                        ? isDark
-                          ? 'bg-[rgba(63,150,254,0.15)] text-[#3f96fe]'
-                          : 'bg-blue-50 text-blue-600'
-                        : isDark
-                          ? 'text-white/70 hover:bg-white/5 hover:text-white'
-                          : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                    ? 'bg-blue-50 text-blue-600 dark:bg-[rgba(63,150,254,0.15)] dark:text-[#3f96fe]'
+                    : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900 dark:text-white/70 dark:hover:bg-white/5 dark:hover:text-white'
                     )}
                   >
                     <div
                       className={cn(
                         'flex h-8 w-8 items-center justify-center rounded-lg',
-                        isDark ? 'bg-white/5' : 'bg-gray-100'
+                        'bg-gray-100 dark:bg-white/5'
                       )}
                     >
                       {page.icon}
@@ -3276,7 +3103,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       <span
                         className={cn(
                           'text-[13px] font-medium block',
-                          isDark ? 'text-white/90' : 'text-gray-900'
+                          'text-gray-900 dark:text-white/90'
                         )}
                       >
                         {page.name}
@@ -3284,7 +3111,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       <span
                         className={cn(
                           'text-[11px] block',
-                          isDark ? 'text-white/60' : 'text-gray-500'
+                          'text-gray-500 dark:text-white/60'
                         )}
                       >
                         {page.desc}
@@ -3294,7 +3121,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       <div
                         className={cn(
                           'w-1.5 h-1.5 rounded-full',
-                          isDark ? 'bg-[#3f96fe]' : 'bg-blue-500'
+                          'bg-blue-500 dark:bg-[#3f96fe]'
                         )}
                       />
                     )}
@@ -3302,7 +3129,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                 ))
               ) : (
                 <div className="py-8 text-center">
-                  <p className={cn('text-[13px]', isDark ? 'text-white/60' : 'text-gray-400')}>
+                  <p className={cn('text-[13px]', 'text-gray-400 dark:text-white/60')}>
                     No pages found
                   </p>
                 </div>
@@ -3311,7 +3138,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
             <div
               className={cn(
                 'flex items-center justify-between px-4 py-2 border-t text-[10px]',
-                isDark ? 'border-white/10 text-white/60' : 'border-gray-200 text-gray-400'
+                'border-gray-200 text-gray-400 dark:border-white/10 dark:text-white/60'
               )}
             >
               <span>Navigate to any page</span>
@@ -3320,7 +3147,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   <kbd
                     className={cn(
                       'px-1 py-0.5 rounded font-mono',
-                      isDark ? 'bg-white/10' : 'bg-gray-100'
+                      'bg-gray-100 dark:bg-white/10'
                     )}
                   >
                     /

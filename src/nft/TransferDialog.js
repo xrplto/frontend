@@ -4,7 +4,7 @@ import Decimal from 'decimal.js-light';
 import { X, Send } from 'lucide-react';
 
 // Context
-import { ThemeContext, WalletContext, AppContext } from 'src/context/AppContext';
+import { WalletContext, AppContext } from 'src/context/AppContext';
 
 // Loader
 import { PulseLoader } from '../components/Spinners';
@@ -18,8 +18,6 @@ import { useDispatch, useSelector } from 'react-redux';
 
 export default function TransferDialog({ open, setOpen, nft, nftImageUrl }) {
   const BASE_URL = 'https://api.xrpl.to/v1';
-  const { themeName } = useContext(ThemeContext);
-  const isDark = themeName === 'XrplToDarkTheme';
 
   const dispatch = useDispatch();
   const isProcessing = useSelector(selectProcess);
@@ -106,7 +104,7 @@ export default function TransferDialog({ open, setOpen, nft, nftImageUrl }) {
         <div
           className={cn(
             'fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md max-sm:h-dvh',
-            isDark ? 'bg-black/70' : 'bg-white/60'
+            'bg-white/60 dark:bg-black/70'
           )}
         >
           <PulseLoader color={'#FF4842'} size={10} />
@@ -118,7 +116,7 @@ export default function TransferDialog({ open, setOpen, nft, nftImageUrl }) {
         <div
           className={cn(
             'absolute inset-0 backdrop-blur-md',
-            isDark ? 'bg-black/70' : 'bg-white/60'
+            'bg-white/60 dark:bg-black/70'
           )}
           onClick={!isLoading ? handleClose : undefined}
         />
@@ -126,16 +124,15 @@ export default function TransferDialog({ open, setOpen, nft, nftImageUrl }) {
         <div
           className={cn(
             'relative w-full max-w-md rounded-2xl border-[1.5px]',
-            isDark
-              ? 'bg-black/80 backdrop-blur-2xl border-white/[0.08] text-white shadow-2xl shadow-black/50'
-              : 'bg-white/80 backdrop-blur-2xl border-gray-200/60 text-gray-900 shadow-2xl shadow-gray-300/30'
+            'bg-white/80 backdrop-blur-2xl border-gray-200/60 text-gray-900 shadow-2xl shadow-gray-300/30',
+            'dark:bg-black/80 dark:backdrop-blur-2xl dark:border-white/[0.08] dark:text-white dark:shadow-2xl dark:shadow-black/50'
           )}
         >
           {/* Header */}
           <div
             className={cn(
               'flex items-center justify-between border-b p-4',
-              isDark ? 'border-white/[0.08]' : 'border-gray-200'
+              'border-gray-200 dark:border-white/[0.08]'
             )}
           >
             <h2 className="text-[15px] font-normal">Transfer NFT</h2>
@@ -144,7 +141,7 @@ export default function TransferDialog({ open, setOpen, nft, nftImageUrl }) {
                 onClick={handleClose}
                 className={cn(
                   'rounded-lg p-1.5',
-                  isDark ? 'hover:bg-white/10' : 'hover:bg-gray-100'
+                  'hover:bg-gray-100 dark:hover:bg-white/10'
                 )}
               >
                 <X size={18} />
@@ -166,13 +163,13 @@ export default function TransferDialog({ open, setOpen, nft, nftImageUrl }) {
               <div>
                 <p className="text-[13px] font-normal">{nft?.name}</p>
                 {nft?.collection && (
-                  <p className={cn('text-[11px]', isDark ? 'text-white/50' : 'text-gray-500')}>
+                  <p className={cn('text-[11px]', 'text-gray-500 dark:text-white/50')}>
                     Collection:{' '}
                     {typeof nft.collection === 'string' ? nft.collection : nft.collection?.name}
                   </p>
                 )}
                 {nft?.rarity_rank && (
-                  <p className={cn('text-[11px]', isDark ? 'text-white/50' : 'text-gray-500')}>
+                  <p className={cn('text-[11px]', 'text-gray-500 dark:text-white/50')}>
                     Rank: {nft.rarity_rank} / {nft.total}
                   </p>
                 )}
@@ -182,7 +179,7 @@ export default function TransferDialog({ open, setOpen, nft, nftImageUrl }) {
             <p
               className={cn(
                 'mb-6 text-[11px]',
-                isDark ? 'text-white/50' : 'text-gray-500',
+                'text-gray-500 dark:text-white/50',
                 isLoading && 'opacity-70'
               )}
             >
@@ -204,9 +201,8 @@ export default function TransferDialog({ open, setOpen, nft, nftImageUrl }) {
                 disabled={isLoading}
                 className={cn(
                   'w-full rounded-lg border-[1.5px] px-4 py-2 text-[13px] outline-none transition-colors',
-                  isDark
-                    ? 'border-white/15 bg-white/5 placeholder:text-white/30 focus:border-primary'
-                    : 'border-gray-300 bg-white placeholder:text-gray-400 focus:border-primary',
+                  'border-gray-300 bg-white placeholder:text-gray-400 focus:border-primary',
+                  'dark:border-white/15 dark:bg-white/5 dark:placeholder:text-white/30 dark:focus:border-primary',
                   isLoading && 'cursor-not-allowed opacity-50'
                 )}
               />
@@ -220,12 +216,8 @@ export default function TransferDialog({ open, setOpen, nft, nftImageUrl }) {
                 className={cn(
                   'flex min-w-[200px] items-center justify-center gap-2 rounded-lg border-[1.5px] px-6 py-2 text-[13px] font-normal transition-colors',
                   isLoading || !destination
-                    ? isDark
-                      ? 'cursor-not-allowed border-white/10 bg-white/5 text-white/30'
-                      : 'cursor-not-allowed border-gray-200 bg-gray-100 text-gray-400'
-                    : isDark
-                      ? 'border-primary bg-primary/10 text-primary hover:bg-primary/20'
-                      : 'border-primary bg-primary/5 text-primary hover:bg-primary/10'
+                    ? 'cursor-not-allowed border-gray-200 bg-gray-100 text-gray-400 dark:border-white/10 dark:bg-white/5 dark:text-white/30'
+                    : 'border-primary bg-primary/5 text-primary hover:bg-primary/10 dark:bg-primary/10 dark:hover:bg-primary/20'
                 )}
               >
                 {isLoading ? (

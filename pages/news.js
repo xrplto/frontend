@@ -1,10 +1,9 @@
 import { apiFetch } from 'src/utils/api';
-import { useState, useEffect, useMemo, useCallback, memo, useContext, useRef } from 'react';
+import { useState, useEffect, useMemo, useCallback, memo, useRef } from 'react';
 import { useRouter } from 'next/router';
 import dynamic from 'next/dynamic';
 import formatDistanceToNow from 'date-fns/formatDistanceToNow';
 import { cn } from 'src/utils/cn';
-import { ThemeContext } from 'src/context/AppContext';
 import { ApiButton, registerApiCalls } from 'src/components/ApiEndpointsModal';
 
 const Header = dynamic(() => import('../src/components/Header'), { ssr: true });
@@ -31,7 +30,7 @@ const SENTIMENT_COLORS = {
 
 const getSentimentColor = (s) => SENTIMENT_COLORS[s?.toLowerCase()] || SENTIMENT_COLORS.default;
 
-const SentimentChart = memo(({ data, period, onPeriodChange, onHover, hoverIdx, isDark }) => {
+const SentimentChart = memo(({ data, period, onPeriodChange, onHover, hoverIdx }) => {
   if (!data?.labels?.length) return null;
 
   const maxVal = Math.max(...data.bullish, ...data.bearish, ...(data.neutral || []), 1);
@@ -50,15 +49,13 @@ const SentimentChart = memo(({ data, period, onPeriodChange, onHover, hoverIdx, 
     <div className="flex flex-col gap-6 min-w-0">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className={cn("text-[13px] font-black uppercase tracking-widest opacity-70", isDark ? "text-white" : "text-black")}>
+          <h2 className={cn("text-[13px] font-black uppercase tracking-widest opacity-70", "text-black dark:text-white")}>
             Market Sentiment
           </h2>
           <div className="flex items-center gap-2 mt-1">
             <span className={cn(
               "inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-widest",
-              isDark
-                ? "bg-primary/10 text-primary border border-primary/20"
-                : "bg-primary/5 text-primary border border-primary/10"
+              "bg-primary/5 text-primary border border-primary/10 dark:bg-primary/10 dark:border-primary/20"
             )}>
               <Sparkles size={10} />
               Powered by AI
@@ -67,7 +64,7 @@ const SentimentChart = memo(({ data, period, onPeriodChange, onHover, hoverIdx, 
         </div>
         <div className={cn(
           "flex items-center p-1 rounded-xl border",
-          isDark ? "bg-white/[0.03] border-white/10" : "bg-black/[0.02] border-black/[0.05]"
+          "bg-black/[0.02] border-black/[0.05] dark:bg-white/[0.03] dark:border-white/10"
         )}>
           {[7, 30, 90, 'all'].map((p) => (
             <button
@@ -77,9 +74,7 @@ const SentimentChart = memo(({ data, period, onPeriodChange, onHover, hoverIdx, 
                 'rounded-lg px-3.5 py-2 sm:px-3 sm:py-1.5 text-[11px] font-black transition-[background-color,box-shadow]',
                 period === p
                   ? 'bg-[#0a5cc5] text-white shadow-lg shadow-primary/20'
-                  : isDark
-                    ? 'text-gray-300 hover:text-white'
-                    : 'text-gray-500 hover:text-black'
+                  : 'text-gray-500 hover:text-black dark:text-gray-300 dark:hover:text-white'
               )}
             >
               {p === 'all' ? 'ALL' : `${p}D`}
@@ -144,7 +139,7 @@ const SentimentChart = memo(({ data, period, onPeriodChange, onHover, hoverIdx, 
               y1="0"
               x2={hoverIdx * step}
               y2={h}
-              stroke={isDark ? '#fff' : '#000'}
+              stroke="currentColor" className="text-black dark:text-white"
               strokeOpacity="0.1"
               strokeWidth="1"
               vectorEffect="non-scaling-stroke"
@@ -156,7 +151,7 @@ const SentimentChart = memo(({ data, period, onPeriodChange, onHover, hoverIdx, 
           <div
             className={cn(
               'absolute top-2 px-3 py-1.5 rounded-xl border backdrop-blur-md pointer-events-none z-20',
-              isDark ? 'bg-black/80 border-white/10' : 'bg-white/80 border-black/10'
+              'bg-white/80 border-black/10 dark:bg-black/80 dark:border-white/10'
             )}
             style={{
               left: `clamp(0px, calc(${(hoverIdx / (pts - 1)) * 100}% - 50px), calc(100% - 100px))`
@@ -175,18 +170,18 @@ const SentimentChart = memo(({ data, period, onPeriodChange, onHover, hoverIdx, 
       <div className="flex items-center gap-4 sm:gap-8 justify-center pt-2 flex-wrap">
         <div className="flex items-center gap-2">
           <div className="h-1.5 w-1.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
-          <span className={cn('text-[11px] font-black tracking-widest opacity-70', isDark ? 'text-white' : 'text-black')}>BULLISH</span>
+          <span className={cn('text-[11px] font-black tracking-widest opacity-70', 'text-black dark:text-white')}>BULLISH</span>
           <span className="text-sm font-black text-green-500 tabular-nums">{totalBull.toLocaleString()}</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="h-1.5 w-1.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]" />
-          <span className={cn('text-[11px] font-black tracking-widest opacity-70', isDark ? 'text-white' : 'text-black')}>BEARISH</span>
+          <span className={cn('text-[11px] font-black tracking-widest opacity-70', 'text-black dark:text-white')}>BEARISH</span>
           <span className="text-sm font-black text-red-500 tabular-nums">{totalBear.toLocaleString()}</span>
         </div>
         {totalNeutral > 0 && (
           <div className="flex items-center gap-2">
             <div className="h-1.5 w-1.5 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]" />
-            <span className={cn('text-[11px] font-black tracking-widest opacity-70', isDark ? 'text-white' : 'text-black')}>NEUTRAL</span>
+            <span className={cn('text-[11px] font-black tracking-widest opacity-70', 'text-black dark:text-white')}>NEUTRAL</span>
             <span className="text-sm font-black text-amber-500 tabular-nums">{totalNeutral.toLocaleString()}</span>
           </div>
         )}
@@ -196,7 +191,7 @@ const SentimentChart = memo(({ data, period, onPeriodChange, onHover, hoverIdx, 
 });
 SentimentChart.displayName = 'SentimentChart';
 
-const SourcesMenu = memo(({ sources, selectedSource, onSourceSelect, isMobile, isDark }) => {
+const SourcesMenu = memo(({ sources, selectedSource, onSourceSelect, isMobile }) => {
   const [showAll, setShowAll] = useState(false);
   const sortedSources = useMemo(
     () => Object.entries(sources).sort(([, a], [, b]) => b.count - a.count),
@@ -215,9 +210,7 @@ const SourcesMenu = memo(({ sources, selectedSource, onSourceSelect, isMobile, i
             'rounded-xl px-4 py-2 text-[11px] font-black uppercase tracking-widest transition-[background-color,box-shadow] shrink-0',
             !selectedSource
               ? 'bg-[#0a5cc5] text-white shadow-lg shadow-primary/20'
-              : isDark
-                ? 'text-gray-300 bg-white/5 hover:bg-white/10'
-                : 'text-gray-500 bg-black/5 hover:bg-black/10'
+              : 'text-gray-500 bg-black/5 hover:bg-black/10 dark:text-gray-300 dark:bg-white/5 dark:hover:bg-white/10'
           )}
         >
           All
@@ -232,9 +225,7 @@ const SourcesMenu = memo(({ sources, selectedSource, onSourceSelect, isMobile, i
                 'group flex items-center gap-2 rounded-xl px-4 py-2 text-[11px] font-bold transition-[background-color,box-shadow] shrink-0',
                 isSelected
                   ? 'bg-primary text-white shadow-lg shadow-primary/20'
-                  : isDark
-                    ? 'text-gray-300 bg-white/5 hover:bg-white/10 hover:text-white'
-                    : 'text-gray-500 bg-black/5 hover:bg-black/10 hover:text-black'
+                  : 'text-gray-500 bg-black/5 hover:bg-black/10 hover:text-black dark:text-gray-300 dark:bg-white/5 dark:hover:bg-white/10 dark:hover:text-white'
               )}
             >
               {data.sentiment && (() => {
@@ -258,7 +249,7 @@ const SourcesMenu = memo(({ sources, selectedSource, onSourceSelect, isMobile, i
             onClick={() => setShowAll(!showAll)}
             className={cn(
               'px-4 py-2 text-[11px] font-bold opacity-60 hover:opacity-100 transition-opacity',
-              isDark ? 'text-white' : 'text-black'
+              'text-black dark:text-white'
             )}
           >
             {showAll ? 'LESS' : `+${hiddenCount} MORE`}
@@ -272,22 +263,22 @@ SourcesMenu.displayName = 'SourcesMenu';
 
 const proxyImageUrl = (url) => url ? `/api/news-image?url=${encodeURIComponent(url)}` : null;
 
-const NewsImageFallback = ({ isDark, className }) => (
+const NewsImageFallback = ({ className }) => (
   <div className={cn(
     'flex flex-col items-center justify-center gap-1.5 w-full h-full',
-    isDark ? 'bg-[#111] text-[#9CA3AF]' : 'bg-[#F1F5F9] text-[#64748B]',
+    'bg-[#F1F5F9] text-[#64748B] dark:bg-[#111] dark:text-[#9CA3AF]',
     className
   )}>
     <ImageOff size={24} strokeWidth={1.2} />
-    <span className={cn('text-[10px] font-medium', isDark ? 'text-[#4B5563]' : 'text-[#94A3B8]')}>
+    <span className={cn('text-[10px] font-medium', 'text-[#94A3B8] dark:text-[#4B5563]')}>
       Image Unavailable
     </span>
   </div>
 );
 
-const NewsImage = memo(({ src, isDark, className }) => {
+const NewsImage = memo(({ src, className }) => {
   const [errored, setErrored] = useState(false);
-  if (errored) return <NewsImageFallback isDark={isDark} className={className} />;
+  if (errored) return <NewsImageFallback className={className} />;
   return (
     <img
       src={src}
@@ -300,31 +291,29 @@ const NewsImage = memo(({ src, isDark, className }) => {
 });
 NewsImage.displayName = 'NewsImage';
 
-const NewsArticle = memo(({ article, isDark, extractTitle }) => (
+const NewsArticle = memo(({ article, extractTitle }) => (
   <a
     href={article.sourceUrl}
     target="_blank"
     rel="noopener noreferrer"
     className={cn(
       'group relative flex flex-col sm:flex-row gap-3 sm:gap-4 rounded-[16px] sm:rounded-[20px] p-4 sm:p-5 transition-[background-color,border-color] duration-300 active:scale-[0.99] min-w-0 overflow-hidden',
-      isDark
-        ? 'bg-white/[0.02] hover:bg-white/[0.04] border border-white/5'
-        : 'bg-[#fcfcfc] border border-black/[0.03] hover:border-primary/20'
+      'bg-white border border-black/[0.03] hover:border-primary/20 dark:bg-white/[0.02] dark:hover:bg-white/[0.04] dark:border-white/5'
     )}
   >
     {article.articleImage && (
       <div className="sm:hidden shrink-0 w-full h-[160px] rounded-xl overflow-hidden -mt-0.5">
-        <NewsImage src={proxyImageUrl(article.articleImage)} isDark={isDark} />
+        <NewsImage src={proxyImageUrl(article.articleImage)} />
       </div>
     )}
     <div className="flex flex-col gap-2 sm:gap-3 flex-1 min-w-0">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2 min-w-0">
-          <span className={cn('text-[11px] sm:text-[12px] font-black uppercase tracking-wider truncate', isDark ? 'text-white/60' : 'text-black/50')}>
+          <span className={cn('text-[11px] sm:text-[12px] font-black uppercase tracking-wider truncate', 'text-black/50 dark:text-white/60')}>
             {article.sourceName}
           </span>
-          <div className={cn('h-1 w-1 rounded-full shrink-0', isDark ? 'bg-white/10' : 'bg-black/5')} />
-          <span className={cn('text-[10px] font-bold opacity-60 shrink-0', isDark ? 'text-white' : 'text-black')}>
+          <div className={cn('h-1 w-1 rounded-full shrink-0', 'bg-black/5 dark:bg-white/10')} />
+          <span className={cn('text-[10px] font-bold opacity-60 shrink-0', 'text-black dark:text-white')}>
             {formatDistanceToNow(new Date(article.pubDate), { addSuffix: true })}
           </span>
         </div>
@@ -342,14 +331,14 @@ const NewsArticle = memo(({ article, isDark, extractTitle }) => (
 
       <h2 className={cn(
         'text-[14px] sm:text-[15px] font-bold leading-snug transition-colors group-hover:text-primary',
-        isDark ? 'text-white' : 'text-black'
+        'text-black dark:text-white'
       )}>
         {article.normalizedTitle || extractTitle(article.title)}
       </h2>
 
       <p className={cn(
         'line-clamp-2 text-[12px] sm:text-[13px] leading-relaxed opacity-50',
-        isDark ? 'text-white' : 'text-black'
+        'text-black dark:text-white'
       )}>
         {article.summary}
       </p>
@@ -361,14 +350,14 @@ const NewsArticle = memo(({ article, isDark, extractTitle }) => (
 
     {article.articleImage && (
       <div className="hidden sm:block shrink-0 w-[140px] h-[100px] rounded-xl overflow-hidden self-center">
-        <NewsImage src={proxyImageUrl(article.articleImage)} isDark={isDark} />
+        <NewsImage src={proxyImageUrl(article.articleImage)} />
       </div>
     )}
   </a>
 ));
 NewsArticle.displayName = 'NewsArticle';
 
-const Pagination = memo(({ currentPage, totalPages, onPageChange, isDark }) => {
+const Pagination = memo(({ currentPage, totalPages, onPageChange }) => {
   if (totalPages <= 1) return null;
 
   const pages = useMemo(() => {
@@ -387,18 +376,16 @@ const Pagination = memo(({ currentPage, totalPages, onPageChange, isDark }) => {
         aria-label="Previous page"
         className={cn(
           'flex h-9 w-9 items-center justify-center rounded-xl border transition-[background-color,border-color] disabled:opacity-30',
-          isDark
-            ? 'bg-white/[0.02] border-white/5 hover:border-white/20 hover:bg-white/10'
-            : 'bg-white border-black/[0.05] hover:border-black/20 hover:bg-black/[0.02]'
+          'bg-white border-black/[0.05] hover:border-black/20 hover:bg-black/[0.02] dark:bg-white/[0.02] dark:border-white/5 dark:hover:border-white/20 dark:hover:bg-white/10'
         )}
       >
-        <ChevronLeft size={16} className={isDark ? "text-white" : "text-black"} />
+        <ChevronLeft size={16} className="text-black dark:text-white" />
       </button>
       {pages.map((p, i) =>
         p === '...' ? (
           <span
             key={`e${i}`}
-            className={cn('px-2 text-[12px] font-bold opacity-60', isDark ? 'text-white' : 'text-black')}
+            className={cn('px-2 text-[12px] font-bold opacity-60', 'text-black dark:text-white')}
           >
             ...
           </span>
@@ -410,9 +397,7 @@ const Pagination = memo(({ currentPage, totalPages, onPageChange, isDark }) => {
               'flex h-9 min-w-[36px] items-center justify-center rounded-xl text-[12px] font-bold tabular-nums border transition-[background-color,border-color,box-shadow,transform] duration-300',
               p === currentPage
                 ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20 scale-105'
-                : isDark
-                  ? 'text-gray-400 bg-white/[0.02] border-white/5 hover:border-white/20 hover:bg-white/10'
-                  : 'text-gray-600 bg-white border-black/[0.05] hover:border-black/20 hover:bg-black/[0.02]'
+                : 'text-gray-600 bg-white border-black/[0.05] hover:border-black/20 hover:bg-black/[0.02] dark:text-gray-400 dark:bg-white/[0.02] dark:border-white/5 dark:hover:border-white/20 dark:hover:bg-white/10'
             )}
           >
             {p}
@@ -425,12 +410,10 @@ const Pagination = memo(({ currentPage, totalPages, onPageChange, isDark }) => {
         aria-label="Next page"
         className={cn(
           'flex h-9 w-9 items-center justify-center rounded-xl border transition-[background-color,border-color] disabled:opacity-30',
-          isDark
-            ? 'bg-white/[0.02] border-white/5 hover:border-white/20 hover:bg-white/10'
-            : 'bg-white border-black/[0.05] hover:border-black/20 hover:bg-black/[0.02]'
+          'bg-white border-black/[0.05] hover:border-black/20 hover:bg-black/[0.02] dark:bg-white/[0.02] dark:border-white/5 dark:hover:border-white/20 dark:hover:bg-white/10'
         )}
       >
-        <ChevronRight size={16} className={isDark ? "text-white" : "text-black"} />
+        <ChevronRight size={16} className="text-black dark:text-white" />
       </button>
     </div>
   );
@@ -446,8 +429,6 @@ function NewsPage({
   initialQuery
 }) {
   const router = useRouter();
-  const { themeName } = useContext(ThemeContext);
-  const isDark = themeName === 'XrplToDarkTheme';
   const [isMobile, setIsMobile] = useState(false);
   const [notificationPanelOpen, setNotificationPanelOpen] = useState(false);
   const [news, setNews] = useState(initialNews);
@@ -612,7 +593,7 @@ function NewsPage({
   }, [chartPeriod]);
 
   return (
-    <div className={cn('flex min-h-screen flex-col overflow-x-hidden', isDark ? 'bg-transparent' : 'bg-white')}>
+    <div className={cn('flex min-h-screen flex-col overflow-x-hidden', 'bg-white dark:bg-black')}>
       <Header
         notificationPanelOpen={notificationPanelOpen}
         onNotificationPanelToggle={setNotificationPanelOpen}
@@ -631,14 +612,14 @@ function NewsPage({
             <div className="mb-6 sm:mb-8 flex flex-col gap-3 sm:gap-4 sm:flex-row sm:items-end sm:justify-between">
               <div>
                 <div className="flex items-baseline gap-3">
-                  <h1 className={cn('text-xl sm:text-2xl font-black tracking-tight', isDark ? 'text-white' : 'text-black')}>
+                  <h1 className={cn('text-xl sm:text-2xl font-black tracking-tight', 'text-black dark:text-white')}>
                     News
                   </h1>
-                  <span className={cn('text-[11px] font-black tabular-nums opacity-60', isDark ? 'text-white' : 'text-black')}>
+                  <span className={cn('text-[11px] font-black tabular-nums opacity-60', 'text-black dark:text-white')}>
                     {totalCount.toLocaleString()} articles
                   </span>
                 </div>
-                <p className={cn('text-[12px] font-bold opacity-60 hidden sm:block', isDark ? 'text-white' : 'text-black')}>
+                <p className={cn('text-[12px] font-bold opacity-60 hidden sm:block', 'text-black dark:text-white')}>
                   Discover the latest pulse of the XRP Ledger ecosystem
                 </p>
               </div>
@@ -647,12 +628,10 @@ function NewsPage({
                   onSubmit={handleSearch}
                   className={cn(
                     'group relative flex items-center gap-2 rounded-lg border px-2.5 py-2 sm:py-1.5 transition-[background-color,border-color,box-shadow] duration-300 w-full sm:w-[320px]',
-                    isDark
-                      ? 'bg-white/[0.02] border-white/10 focus-within:border-primary focus-within:bg-white/[0.05]'
-                      : 'bg-white border-black/[0.05] focus-within:border-primary focus-within:shadow-[0_4px_20px_rgba(37,99,235,0.08)]'
+                    'bg-white border-black/[0.05] focus-within:border-primary focus-within:shadow-[0_4px_20px_rgba(37,99,235,0.08)] dark:bg-white/[0.02] dark:border-white/10 dark:focus-within:border-primary dark:focus-within:bg-white/[0.05] dark:focus-within:shadow-none'
                   )}
                 >
-                  <Search size={18} className={cn('shrink-0 opacity-30 transition-opacity group-focus-within:opacity-100', isDark ? 'text-white' : 'text-black')} />
+                  <Search size={18} className={cn('shrink-0 opacity-30 transition-opacity group-focus-within:opacity-100', 'text-black dark:text-white')} />
                   <input
                     type="text"
                     placeholder="Search keywords..."
@@ -660,7 +639,7 @@ function NewsPage({
                     onChange={(e) => setSearchInput(e.target.value)}
                     className={cn(
                       'w-full bg-transparent text-[14px] sm:text-[13px] font-bold focus:outline-none',
-                      isDark ? 'text-white placeholder:text-white/20' : 'text-black placeholder:text-black/20'
+                      'text-black placeholder:text-black/20 dark:text-white dark:placeholder:text-white/20'
                     )}
                   />
                   {searchInput && (
@@ -683,9 +662,7 @@ function NewsPage({
             <div
               className={cn(
                 'mb-8 sm:mb-10 overflow-hidden rounded-[16px] sm:rounded-[24px] border transition-[border-color]',
-                isDark
-                  ? 'bg-[#0a0a0a] border-white/5'
-                  : 'bg-white border-black/[0.03]'
+                'bg-white border-black/[0.03] dark:bg-white/[0.02] dark:border-white/5'
               )}
             >
               <div className="p-4 sm:p-8">
@@ -695,13 +672,12 @@ function NewsPage({
                   onPeriodChange={setChartPeriod}
                   onHover={setChartHover}
                   hoverIdx={chartHover}
-                  isDark={isDark}
                 />
               </div>
 
               <div className={cn(
                 'grid grid-cols-2 lg:grid-cols-4 border-t',
-                isDark ? 'border-white/5' : 'border-black/[0.03]'
+                'border-black/[0.03] dark:border-white/5'
               )}>
                 {[
                   { period: '24h', stats: sentimentStats.last24h },
@@ -711,12 +687,12 @@ function NewsPage({
                 ].map((item) => (
                   <div key={item.period} className={cn(
                     "p-4 sm:p-6 flex flex-col gap-2 sm:gap-3 group transition-[background-color]",
-                    isDark ? "hover:bg-white/[0.02]" : "hover:bg-black/[0.01]",
+                    "hover:bg-black/[0.02] dark:hover:bg-white/[0.03]",
                     "border-l first:border-l-0",
-                    isDark ? "border-white/5" : "border-black/[0.03]",
+                    "border-black/[0.03] dark:border-white/5",
                     "max-sm:border-l-0 max-sm:even:border-l max-sm:[&:nth-child(n+3)]:border-t"
                   )}>
-                    <span className={cn('text-[11px] font-black uppercase tracking-widest opacity-60', isDark ? 'text-white' : 'text-black')}>
+                    <span className={cn('text-[11px] font-black uppercase tracking-widest opacity-60 text-black dark:text-white')}>
                       {item.period}
                     </span>
 
@@ -728,7 +704,7 @@ function NewsPage({
                       </div>
                       <div className={cn(
                         'flex h-1 w-full overflow-hidden rounded-full',
-                        isDark ? 'bg-white/5' : 'bg-black/[0.05]'
+                        'bg-black/[0.05] dark:bg-white/5'
                       )}>
                         <div
                           style={{ width: `${item.stats?.bullish || 0}%` }}
@@ -751,9 +727,9 @@ function NewsPage({
               {searchQuery && searchSentimentScore !== null && (
                 <div className={cn(
                   "px-8 py-3 border-t flex items-center justify-between",
-                  isDark ? "bg-primary/5 border-white/5" : "bg-primary/[0.01] border-black/[0.03]"
+                  "bg-primary/5 border-black/[0.03] dark:bg-primary/5 dark:border-white/5"
                 )}>
-                  <span className={cn("text-[11px] font-bold opacity-60", isDark ? "text-white" : "text-black")}>
+                  <span className={cn("text-[11px] font-bold opacity-60 text-black dark:text-white")}>
                     Search Sentiment Score for <span className="text-primary italic">"{searchQuery}"</span>
                   </span>
                   <span className="text-sm font-black text-primary tabular-nums">
@@ -768,19 +744,18 @@ function NewsPage({
               selectedSource={selectedSource}
               onSourceSelect={handleSourceSelect}
               isMobile={isMobile}
-              isDark={isDark}
             />
 
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-3 sm:gap-5 min-w-0">
               {news.length === 0 ? (
                 <div className={cn(
                   "col-span-full py-24 rounded-[32px] border border-dashed flex flex-col items-center justify-center text-center",
-                  isDark ? "border-white/10 bg-white/[0.01]" : "border-black/10 bg-black/[0.01]"
+                  "border-black/10 bg-white dark:border-white/10 dark:bg-white/[0.02]"
                 )}>
-                  <h3 className={cn("text-xl font-black mb-2 uppercase tracking-tighter", isDark ? "text-white" : "text-black")}>
+                  <h3 className={cn("text-xl font-black mb-2 uppercase tracking-tighter", "text-black dark:text-white")}>
                     No Updates Found
                   </h3>
-                  <p className={cn("text-[12px] font-bold max-w-xs px-4 opacity-30", isDark ? "text-white" : "text-black")}>
+                  <p className={cn("text-[12px] font-bold max-w-xs px-4 opacity-30", "text-black dark:text-white")}>
                     Try adjusting your search keywords or clearing the source filters.
                   </p>
                   <button
@@ -795,7 +770,6 @@ function NewsPage({
                   <NewsArticle
                     key={article._id}
                     article={article}
-                    isDark={isDark}
                     extractTitle={extractTitle}
                   />
                 ))
@@ -806,7 +780,6 @@ function NewsPage({
               currentPage={currentPage}
               totalPages={totalPages}
               onPageChange={handlePageChange}
-              isDark={isDark}
             />
           </>
         )}

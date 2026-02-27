@@ -2,7 +2,7 @@ import { useState, useEffect, useContext, useMemo } from 'react';
 import api, { getWalletAuthHeaders } from 'src/utils/api';
 import Link from 'next/link';
 import { Loader2, Activity, Search, X, ChevronLeft, ChevronRight, MessageCircle, Tag, Trash2 } from 'lucide-react';
-import { ThemeContext, WalletContext } from 'src/context/AppContext';
+import { WalletContext } from 'src/context/AppContext';
 import { cn } from 'src/utils/cn';
 import { fNumber, formatDistanceToNowStrict } from 'src/utils/formatters';
 
@@ -34,9 +34,7 @@ const SORT_OPTIONS = [
 
 export default function TopTraders({ token, walletLabels: walletLabelsProp = {}, onLabelsChange }) {
   const BASE_URL = 'https://api.xrpl.to/v1';
-  const { themeName } = useContext(ThemeContext);
   const { accountProfile } = useContext(WalletContext);
-  const isDark = themeName === 'XrplToDarkTheme';
   const accountLogin = accountProfile?.account;
 
   // Local wallet labels state
@@ -83,28 +81,28 @@ export default function TopTraders({ token, walletLabels: walletLabelsProp = {},
 
   const BearIcon = () => (
     <div className="relative w-14 h-14 mx-auto mb-4">
-      <div className={cn('absolute -top-1 left-0 w-5 h-5 rounded-full', isDark ? 'bg-white/15' : 'bg-gray-300')}>
-        <div className={cn('absolute top-1 left-1 w-3 h-3 rounded-full', isDark ? 'bg-white/10' : 'bg-gray-200')} />
+      <div className={cn('absolute -top-1 left-0 w-5 h-5 rounded-full', 'bg-gray-300 dark:bg-white/15')}>
+        <div className={cn('absolute top-1 left-1 w-3 h-3 rounded-full', 'bg-gray-200 dark:bg-white/10')} />
       </div>
-      <div className={cn('absolute -top-1 right-0 w-5 h-5 rounded-full', isDark ? 'bg-white/15' : 'bg-gray-300')}>
-        <div className={cn('absolute top-1 right-1 w-3 h-3 rounded-full', isDark ? 'bg-white/10' : 'bg-gray-200')} />
+      <div className={cn('absolute -top-1 right-0 w-5 h-5 rounded-full', 'bg-gray-300 dark:bg-white/15')}>
+        <div className={cn('absolute top-1 right-1 w-3 h-3 rounded-full', 'bg-gray-200 dark:bg-white/10')} />
       </div>
-      <div className={cn('absolute top-2 left-1/2 -translate-x-1/2 w-12 h-11 rounded-full', isDark ? 'bg-white/15' : 'bg-gray-300')}>
+      <div className={cn('absolute top-2 left-1/2 -translate-x-1/2 w-12 h-11 rounded-full', 'bg-gray-300 dark:bg-white/15')}>
         <div className="absolute inset-0 rounded-full overflow-hidden">
           {[...Array(5)].map((_, i) => (
-            <div key={i} className={cn('h-[2px] w-full', isDark ? 'bg-white/15' : 'bg-gray-200')} style={{ marginTop: i * 3 + 2, transform: `translateX(${i % 2 === 0 ? '1px' : '-1px'})` }} />
+            <div key={i} className={cn('h-[2px] w-full', 'bg-gray-200 dark:bg-white/15')} style={{ marginTop: i * 3 + 2, transform: `translateX(${i % 2 === 0 ? '1px' : '-1px'})` }} />
           ))}
         </div>
         <div className="absolute top-3 left-2 w-3 h-3 flex items-center justify-center">
-          <div className={cn('absolute w-2.5 h-[2px] rotate-45', isDark ? 'bg-white/40' : 'bg-gray-500')} />
-          <div className={cn('absolute w-2.5 h-[2px] -rotate-45', isDark ? 'bg-white/40' : 'bg-gray-500')} />
+          <div className={cn('absolute w-2.5 h-[2px] rotate-45', 'bg-gray-500 dark:bg-white/40')} />
+          <div className={cn('absolute w-2.5 h-[2px] -rotate-45', 'bg-gray-500 dark:bg-white/40')} />
         </div>
         <div className="absolute top-3 right-2 w-3 h-3 flex items-center justify-center">
-          <div className={cn('absolute w-2.5 h-[2px] rotate-45', isDark ? 'bg-white/40' : 'bg-gray-500')} />
-          <div className={cn('absolute w-2.5 h-[2px] -rotate-45', isDark ? 'bg-white/40' : 'bg-gray-500')} />
+          <div className={cn('absolute w-2.5 h-[2px] rotate-45', 'bg-gray-500 dark:bg-white/40')} />
+          <div className={cn('absolute w-2.5 h-[2px] -rotate-45', 'bg-gray-500 dark:bg-white/40')} />
         </div>
-        <div className={cn('absolute bottom-1.5 left-1/2 -translate-x-1/2 w-6 h-4 rounded-full', isDark ? 'bg-white/10' : 'bg-gray-200')}>
-          <div className={cn('absolute top-0.5 left-1/2 -translate-x-1/2 w-2.5 h-2 rounded-full', isDark ? 'bg-white/25' : 'bg-gray-400')} />
+        <div className={cn('absolute bottom-1.5 left-1/2 -translate-x-1/2 w-6 h-4 rounded-full', 'bg-gray-200 dark:bg-white/10')}>
+          <div className={cn('absolute top-0.5 left-1/2 -translate-x-1/2 w-2.5 h-2 rounded-full', 'bg-gray-400 dark:bg-white/25')} />
         </div>
       </div>
     </div>
@@ -269,12 +267,12 @@ export default function TopTraders({ token, walletLabels: walletLabelsProp = {},
   return (
     <div className="space-y-3">
       {processedTraders.length === 0 ? (
-        <div className={cn('text-center py-12 px-8 rounded-xl border-[1.5px] border-dashed', isDark ? 'border-white/20 bg-white/[0.02]' : 'border-gray-300 bg-gray-50')}>
+        <div className={cn('text-center py-12 px-8 rounded-xl border-[1.5px] border-dashed', 'border-gray-300 bg-gray-50 dark:border-white/20 dark:bg-white/[0.02]')}>
           <BearIcon />
-          <p className={cn('text-xs font-medium tracking-widest mb-1', isDark ? 'text-white/80' : 'text-gray-600')}>
+          <p className={cn('text-xs font-medium tracking-widest mb-1', 'text-gray-600 dark:text-white/80')}>
             NO TRADERS
           </p>
-          <p className={cn('text-[11px]', isDark ? 'text-white/30' : 'text-gray-400')}>
+          <p className={cn('text-[11px]', 'text-gray-400 dark:text-white/30')}>
             Trading data will appear here when available
           </p>
         </div>
@@ -292,9 +290,7 @@ export default function TopTraders({ token, walletLabels: walletLabelsProp = {},
                     'px-2.5 py-1 text-[11px] font-medium rounded-md transition-[opacity,transform,background-color,border-color] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                     timePeriod === period.key
                       ? 'bg-primary text-white'
-                      : isDark
-                        ? 'text-white/60 hover:text-white hover:bg-white/5'
-                        : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+                      : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:text-white/60 dark:hover:text-white dark:hover:bg-white/5'
                   )}
                 >
                   {period.label}
@@ -313,12 +309,8 @@ export default function TopTraders({ token, walletLabels: walletLabelsProp = {},
                     className={cn(
                       'px-2 py-1 text-[11px] font-medium rounded-md transition-[opacity,transform,background-color,border-color] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                       sortType === option.key
-                        ? isDark
-                          ? 'bg-white/10 text-white'
-                          : 'bg-gray-100 text-gray-800'
-                        : isDark
-                          ? 'text-white/50 hover:text-white/80 hover:bg-white/5'
-                          : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
+                        ? 'bg-gray-100 text-gray-800 dark:bg-white/10 dark:text-white'
+                        : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50 dark:text-white/50 dark:hover:text-white/80 dark:hover:bg-white/5'
                     )}
                   >
                     {option.label}
@@ -333,7 +325,7 @@ export default function TopTraders({ token, walletLabels: walletLabelsProp = {},
                     size={14}
                     className={cn(
                       'absolute left-2.5 top-1/2 -translate-y-1/2',
-                      isDark ? 'text-white/40' : 'text-gray-400'
+                      'text-gray-400 dark:text-white/40'
                     )}
                   />
                   <input
@@ -343,9 +335,7 @@ export default function TopTraders({ token, walletLabels: walletLabelsProp = {},
                     onChange={(e) => setSearchAddress(e.target.value)}
                     className={cn(
                       'h-7 w-40 rounded-md border pl-8 pr-7 text-[12px] outline-none transition-[background-color,border-color]',
-                      isDark
-                        ? 'border-white/10 bg-white/5 text-white placeholder-white/40 focus:border-primary'
-                        : 'border-gray-200 bg-white text-gray-900 placeholder-gray-400 focus:border-primary'
+                      'border-gray-200 bg-white text-gray-900 placeholder-gray-400 focus:border-primary dark:border-white/10 dark:bg-white/5 dark:text-white dark:placeholder-white/40 dark:focus:border-primary'
                     )}
                   />
                   {searchAddress && (
@@ -354,9 +344,7 @@ export default function TopTraders({ token, walletLabels: walletLabelsProp = {},
                       aria-label="Clear search"
                       className={cn(
                         'absolute right-2 top-1/2 -translate-y-1/2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] rounded',
-                        isDark
-                          ? 'text-white/40 hover:text-white'
-                          : 'text-gray-400 hover:text-gray-600'
+                        'text-gray-400 hover:text-gray-600 dark:text-white/40 dark:hover:text-white'
                       )}
                     >
                       <X size={12} />
@@ -371,11 +359,11 @@ export default function TopTraders({ token, walletLabels: walletLabelsProp = {},
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className={cn('border-b', isDark ? 'border-white/5' : 'border-gray-100')}>
+                <tr className={cn('border-b', 'border-gray-100 dark:border-white/5')}>
                   <th
                     className={cn(
                       'py-2 pr-2 text-left text-[10px] font-medium uppercase tracking-wider',
-                      isDark ? 'text-white/40' : 'text-gray-400'
+                      'text-gray-400 dark:text-white/40'
                     )}
                   >
                     #
@@ -383,7 +371,7 @@ export default function TopTraders({ token, walletLabels: walletLabelsProp = {},
                   <th
                     className={cn(
                       'py-2 px-2 text-left text-[10px] font-medium uppercase tracking-wider',
-                      isDark ? 'text-white/40' : 'text-gray-400'
+                      'text-gray-400 dark:text-white/40'
                     )}
                   >
                     Trader
@@ -393,7 +381,7 @@ export default function TopTraders({ token, walletLabels: walletLabelsProp = {},
                       <th
                         className={cn(
                           'py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider',
-                          isDark ? 'text-white/40' : 'text-gray-400'
+                          'text-gray-400 dark:text-white/40'
                         )}
                       >
                         Volume
@@ -401,7 +389,7 @@ export default function TopTraders({ token, walletLabels: walletLabelsProp = {},
                       <th
                         className={cn(
                           'py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider',
-                          isDark ? 'text-white/40' : 'text-gray-400'
+                          'text-gray-400 dark:text-white/40'
                         )}
                       >
                         Trades
@@ -425,7 +413,7 @@ export default function TopTraders({ token, walletLabels: walletLabelsProp = {},
                   <th
                     className={cn(
                       'py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider',
-                      isDark ? 'text-white/40' : 'text-gray-400'
+                      'text-gray-400 dark:text-white/40'
                     )}
                   >
                     Profit / Loss
@@ -433,7 +421,7 @@ export default function TopTraders({ token, walletLabels: walletLabelsProp = {},
                   <th
                     className={cn(
                       'py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider',
-                      isDark ? 'text-white/40' : 'text-gray-400'
+                      'text-gray-400 dark:text-white/40'
                     )}
                   >
                     Return
@@ -450,7 +438,7 @@ export default function TopTraders({ token, walletLabels: walletLabelsProp = {},
                       <th
                         className={cn(
                           'py-2 pl-2 text-right text-[10px] font-medium uppercase tracking-wider',
-                          isDark ? 'text-white/40' : 'text-gray-400'
+                          'text-gray-400 dark:text-white/40'
                         )}
                       >
                         Last Active
@@ -474,9 +462,7 @@ export default function TopTraders({ token, walletLabels: walletLabelsProp = {},
                       key={trader.address + '-' + index}
                       className={cn(
                         'border-b',
-                        isDark
-                          ? 'border-white/5 hover:bg-white/[0.02]'
-                          : 'border-gray-100 hover:bg-gray-50'
+                        'border-gray-100 hover:bg-gray-50 dark:border-white/5 dark:hover:bg-white/[0.02]'
                       )}
                     >
                       <td className="py-2.5 pr-2">
@@ -489,9 +475,7 @@ export default function TopTraders({ token, walletLabels: walletLabelsProp = {},
                                 : rank === 2
                                   ? 'text-gray-400'
                                   : 'text-amber-600'
-                              : isDark
-                                ? 'text-white/30'
-                                : 'text-gray-400'
+                              : 'text-gray-400 dark:text-white/30'
                           )}
                         >
                           {rank}
@@ -507,11 +491,11 @@ export default function TopTraders({ token, walletLabels: walletLabelsProp = {},
                                 onChange={(e) => setLabelInput(e.target.value.slice(0, 30))}
                                 placeholder="Label"
                                 autoFocus
-                                className={cn('w-20 px-1.5 py-0.5 rounded text-[11px] outline-none', isDark ? 'bg-white/10 text-white border border-white/20' : 'bg-gray-100 text-gray-900 border border-gray-300')}
+                                className={cn('w-20 px-1.5 py-0.5 rounded text-[11px] outline-none', 'bg-gray-100 text-gray-900 border border-gray-300 dark:bg-white/10 dark:text-white dark:border dark:border-white/20')}
                               />
                               <button onClick={() => handleSaveLabel(trader.address)} disabled={labelSaving || !labelInput.trim()} className="px-1.5 py-0.5 rounded text-[10px] bg-primary text-white disabled:opacity-50">Save</button>
                               {walletLabels[trader.address] && <button onClick={() => handleDeleteLabel(trader.address)} disabled={labelSaving} className="p-0.5 rounded text-red-400 hover:bg-red-500/10"><Trash2 size={10} /></button>}
-                              <button onClick={() => { setEditingLabel(null); setLabelInput(''); }} className={cn('text-[10px]', isDark ? 'text-white/40' : 'text-gray-400')}>✕</button>
+                              <button onClick={() => { setEditingLabel(null); setLabelInput(''); }} className={cn('text-[10px]', 'text-gray-400 dark:text-white/40')}>&#x2715;</button>
                             </div>
                           ) : (
                             <>
@@ -520,7 +504,7 @@ export default function TopTraders({ token, walletLabels: walletLabelsProp = {},
                                 target="_blank"
                                 className={cn(
                                   'text-[12px] font-mono hover:text-primary transition-[background-color,border-color]',
-                                  walletLabels[trader.address] ? 'text-primary' : isDark ? 'text-white/80' : 'text-gray-700'
+                                  walletLabels[trader.address] ? 'text-primary' : 'text-gray-700 dark:text-white/80'
                                 )}
                                 title={trader.address}
                               >
@@ -529,7 +513,7 @@ export default function TopTraders({ token, walletLabels: walletLabelsProp = {},
                               {trader.address !== accountLogin && accountLogin && (
                                 <button
                                   onClick={() => { setEditingLabel(trader.address); setLabelInput(walletLabels[trader.address] || ''); }}
-                                  className={cn('p-0.5 rounded hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]', walletLabels[trader.address] ? 'text-primary' : isDark ? 'text-white/20 hover:text-primary' : 'text-gray-300 hover:text-primary')}
+                                  className={cn('p-0.5 rounded hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]', walletLabels[trader.address] ? 'text-primary' : 'text-gray-300 hover:text-primary dark:text-white/20 dark:hover:text-primary')}
                                   title={walletLabels[trader.address] ? 'Edit label' : 'Add label'}
                                   aria-label={walletLabels[trader.address] ? 'Edit label' : 'Add label'}
                                 >
@@ -539,7 +523,7 @@ export default function TopTraders({ token, walletLabels: walletLabelsProp = {},
                               {trader.address !== accountLogin && (
                                 <button
                                   onClick={() => window.dispatchEvent(new CustomEvent('openDm', { detail: { user: trader.address } }))}
-                                  className={cn('p-0.5 rounded hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]', isDark ? 'text-white/30 hover:text-[#650CD4]' : 'text-gray-300 hover:text-[#650CD4]')}
+                                  className={cn('p-0.5 rounded hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]', 'text-gray-300 hover:text-[#650CD4] dark:text-white/30 dark:hover:text-[#650CD4]')}
                                   title="Message"
                                   aria-label="Send direct message"
                                 >
@@ -555,7 +539,7 @@ export default function TopTraders({ token, walletLabels: walletLabelsProp = {},
                           <td
                             className={cn(
                               'py-2.5 px-2 text-right text-[12px] tabular-nums',
-                              isDark ? 'text-white/70' : 'text-gray-600'
+                              'text-gray-600 dark:text-white/70'
                             )}
                           >
                             {formatCompactNumber(volume)}
@@ -563,7 +547,7 @@ export default function TopTraders({ token, walletLabels: walletLabelsProp = {},
                           <td
                             className={cn(
                               'py-2.5 px-2 text-right text-[12px] tabular-nums',
-                              isDark ? 'text-white/70' : 'text-gray-600'
+                              'text-gray-600 dark:text-white/70'
                             )}
                           >
                             {fNumber(trades)}
@@ -610,9 +594,7 @@ export default function TopTraders({ token, walletLabels: walletLabelsProp = {},
                                 'text-[12px] tabular-nums',
                                 trader.washTradingScore > 0
                                   ? 'text-amber-500'
-                                  : isDark
-                                    ? 'text-white/30'
-                                    : 'text-gray-300'
+                                  : 'text-gray-300 dark:text-white/30'
                               )}
                             >
                               {trader.washTradingScore > 0
@@ -623,7 +605,7 @@ export default function TopTraders({ token, walletLabels: walletLabelsProp = {},
                           <td
                             className={cn(
                               'py-2.5 pl-2 text-right text-[11px] tabular-nums',
-                              isDark ? 'text-white/50' : 'text-gray-500'
+                              'text-gray-500 dark:text-white/50'
                             )}
                           >
                             {trader.lastTradeDate
@@ -649,7 +631,7 @@ export default function TopTraders({ token, walletLabels: walletLabelsProp = {},
               className={cn(
                 'p-1.5 rounded-md transition-[background-color,border-color] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                 !hasPrev ? 'opacity-30 cursor-not-allowed' : 'hover:bg-white/10',
-                isDark ? 'text-white/50' : 'text-gray-500'
+                'text-gray-500 dark:text-white/50'
               )}
             >
               <ChevronLeft size={14} />
@@ -657,7 +639,7 @@ export default function TopTraders({ token, walletLabels: walletLabelsProp = {},
             <span
               className={cn(
                 'text-[11px] px-2 tabular-nums',
-                isDark ? 'text-white/40' : 'text-gray-500'
+                'text-gray-500 dark:text-white/40'
               )}
             >
               Page {currentPage}
@@ -670,7 +652,7 @@ export default function TopTraders({ token, walletLabels: walletLabelsProp = {},
               className={cn(
                 'p-1.5 rounded-md transition-[background-color,border-color] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                 !hasNext ? 'opacity-30 cursor-not-allowed' : 'hover:bg-white/10',
-                isDark ? 'text-white/50' : 'text-gray-500'
+                'text-gray-500 dark:text-white/50'
               )}
             >
               <ChevronRight size={14} />

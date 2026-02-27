@@ -54,20 +54,20 @@ import { BookOpen } from 'lucide-react';
 const BASE_URL = 'https://api.xrpl.to/v1';
 const fetchInFlight = new Map();
 
-const Container = ({ className, children, isDark, ...p }) => (
+const Container = ({ className, children, ...p }) => (
   <div
-    className={cn('overflow-hidden h-full min-h-[600px] flex flex-col', isDark ? 'bg-transparent' : 'bg-white', className)}
+    className={cn('overflow-hidden h-full min-h-[600px] flex flex-col', 'bg-white dark:bg-transparent', className)}
     {...p}
   >
     {children}
   </div>
 );
 
-const Header = ({ className, children, isDark, ...p }) => (
+const Header = ({ className, children, ...p }) => (
   <div
     className={cn(
       'flex justify-between items-center px-4 py-3 border-b',
-      isDark ? 'bg-white/[0.02] border-white/[0.06]' : 'bg-black/[0.02] border-black/[0.06]',
+      'bg-black/[0.02] border-black/[0.06] dark:bg-white/[0.02] dark:border-white/[0.06]',
       className
     )}
     {...p}
@@ -76,9 +76,9 @@ const Header = ({ className, children, isDark, ...p }) => (
   </div>
 );
 
-const Title = ({ className, children, isDark, ...p }) => (
+const Title = ({ className, children, ...p }) => (
   <div
-    className={cn('flex items-center gap-2 text-[13px] font-semibold tracking-wide', isDark ? 'text-white' : 'text-[#212B36]', className)}
+    className={cn('flex items-center gap-2 text-[13px] font-semibold tracking-wide', 'text-[#212B36] dark:text-white', className)}
     {...p}
   >
     {children}
@@ -107,11 +107,11 @@ const Side = React.forwardRef(({ className, children, type, ...p }, ref) => (
   </div>
 ));
 
-const ColumnHeader = ({ className, children, isDark, ...p }) => (
+const ColumnHeader = ({ className, children, ...p }) => (
   <div
     className={cn(
       'flex justify-between px-4 py-1.5 text-[10px] font-semibold uppercase tracking-widest sticky top-0 z-[2] border-b',
-      isDark ? 'bg-[#010815] border-white/[0.06] text-white/60' : 'bg-[#fafafa] border-black/[0.06] text-black/60',
+      'bg-[#fafafa] border-black/[0.06] text-black/60 dark:bg-[#010815] dark:border-white/[0.06] dark:text-white/60',
       className
     )}
     {...p}
@@ -167,18 +167,18 @@ const Price = ({ className, children, type, ...p }) => (
   </span>
 );
 
-const Amount = ({ className, children, isDark, ...p }) => (
+const Amount = ({ className, children, ...p }) => (
   <span
-    className={cn('relative z-[1] text-right flex-1 mr-6', isDark ? 'text-white/[0.85]' : 'text-black/[0.85]', className)}
+    className={cn('relative z-[1] text-right flex-1 mr-6', 'text-black/[0.85] dark:text-white/[0.85]', className)}
     {...p}
   >
     {children}
   </span>
 );
 
-const Maker = ({ className, children, isDark, onClick, ...p }) => (
+const Maker = ({ className, children, onClick, ...p }) => (
   <span
-    className={cn('relative z-[1] cursor-pointer w-[50px] text-right text-[10px] transition-[background-color,border-color] duration-200 hover:text-[#3b82f6]', isDark ? 'text-white/60' : 'text-black/60', className)}
+    className={cn('relative z-[1] cursor-pointer w-[50px] text-right text-[10px] transition-[background-color,border-color] duration-200 hover:text-[#3b82f6]', 'text-black/60 dark:text-white/60', className)}
     onClick={onClick}
     {...p}
   >
@@ -186,11 +186,11 @@ const Maker = ({ className, children, isDark, onClick, ...p }) => (
   </span>
 );
 
-const SpreadBar = ({ className, children, isDark, ...p }) => (
+const SpreadBar = ({ className, children, ...p }) => (
   <div
     className={cn(
       'flex justify-between items-center px-4 py-2.5 text-[11px] flex-shrink-0 backdrop-blur-[4px] border-y font-mono',
-      isDark ? 'bg-white/[0.03] border-white/[0.06]' : 'bg-black/[0.04] border-black/[0.06]',
+      'bg-black/[0.04] border-black/[0.06] dark:bg-white/[0.03] dark:border-white/[0.06]',
       className
     )}
     {...p}
@@ -215,39 +215,35 @@ const LimitPriceLine = ({ className, ...p }) => (
   </div>
 );
 
-const OrderTooltip = ({ isDark, type, cumSum, avgPrice, cumXrp, pctFromBest, tokenName }) => (
+const OrderTooltip = ({ type, cumSum, avgPrice, cumXrp, pctFromBest, tokenName }) => (
   <div className={cn(
     'absolute left-1/2 -translate-x-1/2 rounded-[8px] px-[10px] py-[6px] text-[9px] whitespace-nowrap z-10 shadow-[0_4px_12px_rgba(0,0,0,0.3)] flex flex-col gap-[3px]',
     type === 'ask' ? '-top-[52px]' : 'top-full mt-1',
-    isDark
-      ? 'bg-black/95 border border-white/10'
-      : 'bg-white/95 border border-black/10'
+    'bg-white/95 border border-black/10 dark:bg-black/95 dark:border-white/10'
   )}>
     <div className="flex items-center gap-[6px]">
-      <span className={cn(isDark ? 'text-white/55' : 'text-black/40')}>{'\u03A3'}</span>
+      <span className={cn('text-black/40 dark:text-white/55')}>{'\u03A3'}</span>
       <span className={cn('font-semibold', type === 'ask' ? 'text-[#ef4444]' : 'text-[#22c55e]')}>{fNumber(cumSum)} {tokenName}</span>
-      <span className={cn(isDark ? 'text-white/20' : 'text-black/20')}>{'\u00B7'}</span>
-      <span className={cn(isDark ? 'text-white/55' : 'text-black/40')}>Average</span>
-      <span className={cn('font-medium', isDark ? 'text-white/80' : 'text-black/80')}>{renderInlinePrice(avgPrice)}</span>
+      <span className={cn('text-black/20 dark:text-white/20')}>{'\u00B7'}</span>
+      <span className={cn('text-black/40 dark:text-white/55')}>Average</span>
+      <span className={cn('font-medium', 'text-black/80 dark:text-white/80')}>{renderInlinePrice(avgPrice)}</span>
     </div>
     <div className="flex items-center gap-[6px]">
-      <span className={cn(isDark ? 'text-white/55' : 'text-black/40')}>Total</span>
-      <span className={cn('font-semibold', isDark ? 'text-white/80' : 'text-black/80')}>{fNumber(cumXrp)} XRP</span>
-      <span className={cn(isDark ? 'text-white/20' : 'text-black/20')}>{'\u00B7'}</span>
-      <span className={cn(isDark ? 'text-white/55' : 'text-black/40')}>Depth</span>
-      <span className={cn('font-semibold', pctFromBest > 5 ? 'text-[#f59e0b]' : isDark ? 'text-white/70' : 'text-black/70')}>
+      <span className={cn('text-black/40 dark:text-white/55')}>Total</span>
+      <span className={cn('font-semibold', 'text-black/80 dark:text-white/80')}>{fNumber(cumXrp)} XRP</span>
+      <span className={cn('text-black/20 dark:text-white/20')}>{'\u00B7'}</span>
+      <span className={cn('text-black/40 dark:text-white/55')}>Depth</span>
+      <span className={cn('font-semibold', pctFromBest > 5 ? 'text-[#f59e0b]' : 'text-black/70 dark:text-white/70')}>
         {pctFromBest != null ? `${pctFromBest.toFixed(2)}%` : '\u2014'}
       </span>
     </div>
   </div>
 );
 
-const BearEmptyState = ({ isDark, message }) => (
+const BearEmptyState = ({ message }) => (
   <div className={cn(
     'flex flex-col items-center justify-center px-[20px] py-[40px] m-[12px] rounded-[12px] gap-[12px]',
-    isDark
-      ? 'bg-white/[0.02] border-[1.5px] border-dashed border-white/[0.06] text-white/60'
-      : 'bg-black/[0.02] border-[1.5px] border-dashed border-black/[0.06] text-black/60'
+    'bg-black/[0.02] border-[1.5px] border-dashed border-black/[0.06] text-black/60 dark:bg-white/[0.02] dark:border-white/[0.06] dark:text-white/60'
   )}>
     <BookOpen size={24} className="opacity-30" />
     <span className="text-[11px] font-medium tracking-[0.05em] uppercase text-center">
@@ -258,7 +254,8 @@ const BearEmptyState = ({ isDark, message }) => (
 
 const MIN_XRP_OPTIONS = [0, 10, 100, 1000, 10000];
 
-const DepthChartModal = ({ bids, asks, isDark, onClose, userAccount }) => {
+const DepthChartModal = ({ bids, asks, onClose, userAccount }) => {
+  const isDark = typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
   const chartRef = useRef(null);
   const containerRef = useRef(null);
   const overlayRef = useRef(null);
@@ -435,7 +432,7 @@ const DepthChartModal = ({ bids, asks, isDark, onClose, userAccount }) => {
     return () => {
       unsub?.();
     };
-  }, [bids, asks, isDark, userAccount, minXrp, chartReady]);
+  }, [bids, asks, userAccount, minXrp, chartReady]);
 
   useEffect(() => {
     const handleEsc = (e) => e.key === 'Escape' && onClose();
@@ -453,7 +450,7 @@ const DepthChartModal = ({ bids, asks, isDark, onClose, userAccount }) => {
       <div
         className={cn(
           'relative w-full max-w-[1200px] rounded-2xl border-[1.5px] overflow-hidden flex flex-col',
-          isDark ? 'bg-[#000000] border-white/10' : 'bg-[#F8FAFD] border-black/10'
+          'bg-[#F8FAFD] border-black/10 dark:bg-[#000000] dark:border-white/10'
         )}
         style={{ height: 'min(80dvh, 720px)' }}
         onClick={(e) => e.stopPropagation()}
@@ -461,20 +458,20 @@ const DepthChartModal = ({ bids, asks, isDark, onClose, userAccount }) => {
         {/* Header */}
         <div className={cn(
           'flex items-center justify-between px-5 py-3.5 border-b flex-shrink-0',
-          isDark ? 'border-white/[0.06]' : 'border-black/[0.06]'
+          'border-black/[0.06] dark:border-white/[0.06]'
         )}>
           <div className="flex items-center gap-3">
-            <BarChart3 size={16} className={isDark ? 'text-white/50' : 'text-black/50'} />
-            <span className={cn('text-[13px] font-semibold tracking-wide', isDark ? 'text-white' : 'text-[#212B36]')}>
+            <BarChart3 size={16} className={'text-black/50 dark:text-white/50'} />
+            <span className={cn('text-[13px] font-semibold tracking-wide', 'text-[#212B36] dark:text-white')}>
               Depth Chart
             </span>
           </div>
           <div className="flex items-center gap-2">
             <div className={cn(
               'flex items-center rounded-lg p-[2px]',
-              isDark ? 'bg-white/[0.04] border border-white/[0.06]' : 'bg-black/[0.03] border border-black/[0.06]'
+              'bg-black/[0.03] border border-black/[0.06] dark:bg-white/[0.04] dark:border-white/[0.06]'
             )}>
-              <span className={cn('text-[10px] font-medium px-2.5', isDark ? 'text-white/60' : 'text-black/60')}>Min XRP</span>
+              <span className={cn('text-[10px] font-medium px-2.5', 'text-black/60 dark:text-white/60')}>Min XRP</span>
               {MIN_XRP_OPTIONS.map((v) => (
                 <button
                   key={v}
@@ -483,7 +480,7 @@ const DepthChartModal = ({ bids, asks, isDark, onClose, userAccount }) => {
                     'h-[26px] px-2.5 rounded-md border-none cursor-pointer text-[10px] font-semibold transition-[opacity,transform,background-color,border-color]',
                     minXrp === v
                       ? 'bg-[#3b82f6] text-white'
-                      : isDark ? 'text-white/55 hover:text-white hover:bg-white/10' : 'text-black/40 hover:text-black hover:bg-black/5'
+                      : 'text-black/40 hover:text-black hover:bg-black/5 dark:text-white/55 dark:hover:text-white dark:hover:bg-white/10'
                   )}
                 >
                   {v === 0 ? 'All' : v >= 1000 ? `${v / 1000}K` : v}
@@ -495,7 +492,7 @@ const DepthChartModal = ({ bids, asks, isDark, onClose, userAccount }) => {
               aria-label="Close depth chart"
               className={cn(
                 'p-1.5 rounded-lg transition-[background-color,border-color] ml-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
-                isDark ? 'hover:bg-white/10 text-white/55' : 'hover:bg-black/5 text-black/40'
+                'hover:bg-black/5 text-black/40 dark:hover:bg-white/10 dark:text-white/55'
               )}
             >
               <X size={16} />
@@ -509,29 +506,29 @@ const DepthChartModal = ({ bids, asks, isDark, onClose, userAccount }) => {
         {/* Footer */}
         <div className={cn(
           'flex items-center justify-between px-5 py-2.5 border-t flex-shrink-0',
-          isDark ? 'border-white/[0.06]' : 'border-black/[0.06]'
+          'border-black/[0.06] dark:border-white/[0.06]'
         )}>
           <div className="flex items-center gap-5 text-[11px]">
             <span className="flex items-center gap-1.5">
               <span className="w-2.5 h-2.5 rounded-full bg-[#22c55e]" />
-              <span className={isDark ? 'text-white/50' : 'text-black/50'}>Bids</span>
+              <span className={'text-black/50 dark:text-white/50'}>Bids</span>
               <span className="text-[#22c55e] font-semibold font-mono ml-0.5">{fNumber(totalBidVol)} XRP</span>
             </span>
             <span className="flex items-center gap-1.5">
               <span className="w-2.5 h-2.5 rounded-full bg-[#ef4444]" />
-              <span className={isDark ? 'text-white/50' : 'text-black/50'}>Asks</span>
+              <span className={'text-black/50 dark:text-white/50'}>Asks</span>
               <span className="text-[#ef4444] font-semibold font-mono ml-0.5">{fNumber(totalAskVol)} XRP</span>
             </span>
           </div>
           <div className="flex items-center gap-2.5">
             <div className={cn(
               'w-[120px] h-[6px] rounded-full overflow-hidden flex',
-              isDark ? 'bg-white/[0.06]' : 'bg-black/[0.06]'
+              'bg-black/[0.06] dark:bg-white/[0.06]'
             )}>
               <div className="h-full bg-[#22c55e] rounded-l-full" style={{ width: `${bidPct}%` }} />
               <div className="h-full bg-[#ef4444] rounded-r-full" style={{ width: `${100 - bidPct}%` }} />
             </div>
-            <span className={cn('text-[10px] font-mono font-medium', isDark ? 'text-white/55' : 'text-black/40')}>
+            <span className={cn('text-[10px] font-mono font-medium', 'text-black/40 dark:text-white/55')}>
               {bidPct.toFixed(0)}% / {(100 - bidPct).toFixed(0)}%
             </span>
           </div>
@@ -934,33 +931,33 @@ const OrderBook = ({ token, onPriceClick, limitPrice }) => {
   const isMPT = token?.tokenType === 'mpt';
 
   if (isMPT) {
-    return <BearEmptyState isDark={isDark} message="MPT tokens don't support orderbook yet" />;
+    return <BearEmptyState message="MPT tokens don't support orderbook yet" />;
   }
 
   if (!bids.length && !asks.length) {
-    if (!hasLoadedRef.current) return <Container isDark={isDark} />;
-    return <BearEmptyState isDark={isDark} message="No orderbook data" />;
+    if (!hasLoadedRef.current) return <Container />;
+    return <BearEmptyState message="No orderbook data" />;
   }
 
   const displayToken = effectiveToken || token;
 
   return (
-    <Container isDark={isDark}>
-      <Header isDark={isDark}>
-        <Title isDark={isDark} />
+    <Container>
+      <Header>
+        <Title />
         <div className="flex items-center gap-[10px]">
           <button
             onClick={() => setShowDepthChart(true)}
             className={cn(
               'h-[24px] w-[24px] flex items-center justify-center rounded-[6px] transition-[background-color,border-color] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
-              isDark ? 'hover:bg-white/10 text-white/55 hover:text-white/80' : 'hover:bg-black/5 text-black/40 hover:text-black/80'
+              'hover:bg-black/5 text-black/40 hover:text-black/80 dark:hover:bg-white/10 dark:text-white/55 dark:hover:text-white/80'
             )}
             aria-label="Depth Chart"
             title="Depth Chart"
           >
             <BarChart3 size={14} />
           </button>
-          <div className={cn('flex rounded-[6px] p-[2px]', isDark ? 'bg-white/[0.05]' : 'bg-black/[0.05]')}>
+          <div className={cn('flex rounded-[6px] p-[2px]', 'bg-black/[0.05] dark:bg-white/[0.05]')}>
             {[
               { id: 'both', label: 'Both' },
               { id: 'buy', label: 'Buy' },
@@ -977,7 +974,7 @@ const OrderBook = ({ token, onPriceClick, limitPrice }) => {
                   color: viewMode === mode.id
                     ? (isDark ? '#fff' : '#000')
                     : (isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)'),
-                  boxShadow: viewMode === mode.id && !isDark ? '0 1px 3px rgba(0,0,0,0.1)' : 'none'
+                  boxShadow: viewMode === mode.id ? (isDark ? '0 1px 3px rgba(0,0,0,0.1)' : 'none') : 'none'
                 }}
               >
                 {mode.id === 'both' && (
@@ -998,19 +995,17 @@ const OrderBook = ({ token, onPriceClick, limitPrice }) => {
             onChange={(e) => setPrecision(Number(e.target.value))}
             className={cn(
               'py-[4px] pl-[10px] pr-[24px] rounded-[6px] text-[10px] font-medium cursor-pointer outline-none appearance-none bg-no-repeat transition-[opacity,transform,background-color,border-color] duration-200 focus-visible:ring-2 focus-visible:ring-[#137DFE]',
-              isDark
-                ? 'bg-[#1a1f2e] text-white border border-white/10'
-                : 'bg-[#f4f6f8] text-[#212B36] border border-black/10'
+              'bg-[#f4f6f8] text-[#212B36] border border-black/10 dark:bg-[#1a1f2e] dark:text-white dark:border-white/10'
             )}
             style={{
               backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='${isDark ? '%23ffffff' : '%232c3e50'}' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`,
               backgroundPosition: 'right 8px center'
             }}
           >
-            <option value={2} className={cn(isDark ? 'bg-[#1a1f2e] text-white' : 'bg-white text-black')}>2 Decimals</option>
-            <option value={4} className={cn(isDark ? 'bg-[#1a1f2e] text-white' : 'bg-white text-black')}>4 Decimals</option>
-            <option value={6} className={cn(isDark ? 'bg-[#1a1f2e] text-white' : 'bg-white text-black')}>6 Decimals</option>
-            <option value={8} className={cn(isDark ? 'bg-[#1a1f2e] text-white' : 'bg-white text-black')}>8 Decimals</option>
+            <option value={2} className={cn('bg-white text-black dark:bg-[#1a1f2e] dark:text-white')}>2 Decimals</option>
+            <option value={4} className={cn('bg-white text-black dark:bg-[#1a1f2e] dark:text-white')}>4 Decimals</option>
+            <option value={6} className={cn('bg-white text-black dark:bg-[#1a1f2e] dark:text-white')}>6 Decimals</option>
+            <option value={8} className={cn('bg-white text-black dark:bg-[#1a1f2e] dark:text-white')}>8 Decimals</option>
           </select>
         </div>
       </Header>
@@ -1019,7 +1014,7 @@ const OrderBook = ({ token, onPriceClick, limitPrice }) => {
         {/* Asks (Sell Orders) */}
         {(viewMode === 'both' || viewMode === 'sell') && (
           <Side ref={asksSideRef} type="asks">
-            <ColumnHeader isDark={isDark}>
+            <ColumnHeader>
               <span className="text-[#ff4d4f]">Price (XRP)</span>
               <span>Size ({normalizeCurrencyCode(displayToken?.currency) || 'Token'})</span>
               <span>Maker</span>
@@ -1049,9 +1044,8 @@ const OrderBook = ({ token, onPriceClick, limitPrice }) => {
                   >
                     <DepthBar type="ask" width={askBarWidth(getXrpValue(ask))} />
                     <PriceDisplay price={ask.price} type="ask" precision={precision} />
-                    <Amount isDark={isDark}>{fNumber(ask.amount)}</Amount>
+                    <Amount>{fNumber(ask.amount)}</Amount>
                     <Maker
-                      isDark={isDark}
                       title={makerCount > 1 ? [...accs].join(', ') : (singleAcc || '')}
                       onClick={(e) => {
                         e.stopPropagation();
@@ -1062,7 +1056,7 @@ const OrderBook = ({ token, onPriceClick, limitPrice }) => {
                       {makerCount > 1 ? `${makerCount} makers` : hasUser ? 'YOU' : singleAcc ? `${singleAcc.slice(1, 5)}\u2026${singleAcc.slice(-2)}` : ''}
                     </Maker>
                     {hoveredRow === rowKey && (
-                      <OrderTooltip isDark={isDark} type="ask" cumSum={cumSum} avgPrice={avgPrice} cumXrp={cumXrp} pctFromBest={pctFromBest} tokenName={normalizeCurrencyCode(displayToken?.currency) || 'Token'} />
+                      <OrderTooltip type="ask" cumSum={cumSum} avgPrice={avgPrice} cumXrp={cumXrp} pctFromBest={pctFromBest} tokenName={normalizeCurrencyCode(displayToken?.currency) || 'Token'} />
                     )}
                   </Row>
                   {showLimitLine && <LimitPriceLine />}
@@ -1082,9 +1076,7 @@ const OrderBook = ({ token, onPriceClick, limitPrice }) => {
             <div
               className={cn(
                 'px-[16px] py-[8px]',
-                isDark
-                  ? 'bg-[rgba(59,130,246,0.08)] border-t border-b border-[rgba(59,130,246,0.2)]'
-                  : 'bg-[rgba(59,130,246,0.06)] border-t border-b border-[rgba(59,130,246,0.15)]'
+                'bg-[rgba(59,130,246,0.06)] border-t border-b border-[rgba(59,130,246,0.15)] dark:bg-[rgba(59,130,246,0.08)] dark:border-[rgba(59,130,246,0.2)]'
               )}
             >
               <div className="flex justify-between items-center mb-[6px]">
@@ -1094,7 +1086,7 @@ const OrderBook = ({ token, onPriceClick, limitPrice }) => {
                 </span>
                 <span className="text-[#ff4d4f] text-[10px] font-mono">{renderInlinePrice(bestAsk)}</span>
               </div>
-              <div className={cn('relative h-[4px] rounded-[2px]', isDark ? 'bg-white/10' : 'bg-black/10')}>
+              <div className={cn('relative h-[4px] rounded-[2px]', 'bg-black/10 dark:bg-white/10')}>
                 <div
                   className="absolute left-0 top-0 bottom-0 rounded-l-[2px]"
                   style={{
@@ -1121,16 +1113,16 @@ const OrderBook = ({ token, onPriceClick, limitPrice }) => {
               </div>
             </div>
           ) : (
-            <SpreadBar isDark={isDark}>
+            <SpreadBar>
               <div className="flex items-center gap-[4px]">
-                <span className={cn('text-[10px]', isDark ? 'text-white/60' : 'text-black/60')}>SPREAD</span>
-                <span className={cn('font-semibold', isDark ? 'text-white' : 'text-black')}>
+                <span className={cn('text-[10px]', 'text-black/60 dark:text-white/60')}>SPREAD</span>
+                <span className={cn('font-semibold', 'text-black dark:text-white')}>
                   {spreadPct != null ? `${spreadPct.toFixed(3)}%` : '\u2014'}
                 </span>
               </div>
               <div className="flex gap-[12px]">
                 <span className="text-[#2ecc71]">{bestBid != null ? renderInlinePrice(bestBid) : '\u2014'}</span>
-                <span className={cn(isDark ? 'text-white/10' : 'text-black/10')}>/</span>
+                <span className={cn('text-black/10 dark:text-white/10')}>/</span>
                 <span className="text-[#ff4d4f]">{bestAsk != null ? renderInlinePrice(bestAsk) : '\u2014'}</span>
               </div>
             </SpreadBar>
@@ -1140,7 +1132,7 @@ const OrderBook = ({ token, onPriceClick, limitPrice }) => {
         {/* Bids (Buy Orders) */}
         {(viewMode === 'both' || viewMode === 'buy') && (
           <Side type="bids">
-            <ColumnHeader isDark={isDark}>
+            <ColumnHeader>
               <span className="text-[#2ecc71]">Price (XRP)</span>
               <span>Size ({normalizeCurrencyCode(displayToken?.currency) || 'Token'})</span>
               <span>Maker</span>
@@ -1170,9 +1162,8 @@ const OrderBook = ({ token, onPriceClick, limitPrice }) => {
                   >
                     <DepthBar type="bid" width={bidBarWidth(getXrpValue(bid))} />
                     <PriceDisplay price={bid.price} type="bid" precision={precision} />
-                    <Amount isDark={isDark}>{fNumber(bid.amount)}</Amount>
+                    <Amount>{fNumber(bid.amount)}</Amount>
                     <Maker
-                      isDark={isDark}
                       title={makerCount > 1 ? [...accs].join(', ') : (singleAcc || '')}
                       onClick={(e) => {
                         e.stopPropagation();
@@ -1183,7 +1174,7 @@ const OrderBook = ({ token, onPriceClick, limitPrice }) => {
                       {makerCount > 1 ? `${makerCount} makers` : hasUser ? 'YOU' : singleAcc ? `${singleAcc.slice(1, 5)}\u2026${singleAcc.slice(-2)}` : ''}
                     </Maker>
                     {hoveredRow === rowKey && (
-                      <OrderTooltip isDark={isDark} type="bid" cumSum={cumSum} avgPrice={avgPrice} cumXrp={cumXrp} pctFromBest={pctFromBest} tokenName={normalizeCurrencyCode(displayToken?.currency) || 'Token'} />
+                      <OrderTooltip type="bid" cumSum={cumSum} avgPrice={avgPrice} cumXrp={cumXrp} pctFromBest={pctFromBest} tokenName={normalizeCurrencyCode(displayToken?.currency) || 'Token'} />
                     )}
                   </Row>
                   {showLimitLine && <LimitPriceLine />}
@@ -1194,7 +1185,7 @@ const OrderBook = ({ token, onPriceClick, limitPrice }) => {
         )}
       </Content>
       {showDepthChart && (
-        <DepthChartModal bids={bids} asks={asks} isDark={isDark} onClose={() => setShowDepthChart(false)} userAccount={userAccount} />
+        <DepthChartModal bids={bids} asks={asks} onClose={() => setShowDepthChart(false)} userAccount={userAccount} />
       )}
     </Container>
   );

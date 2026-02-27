@@ -202,7 +202,7 @@ const ThemedToaster = dynamic(
             position="top-right"
             closeButton
             duration={4000}
-            theme={isDark ? 'dark' : 'light'}
+            theme={'light dark:dark'}
             gap={8}
             visibleToasts={5}
             expand={true}

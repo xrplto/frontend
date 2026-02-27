@@ -8,7 +8,7 @@ export default class MyDocument extends Document {
           <meta charSet="utf-8" />
 
           {/* Critical font sizes to prevent FOUC - must match globals.css @theme */}
-          <style dangerouslySetInnerHTML={{ __html: `html{font-size:14px;line-height:1.5}body{font-family:var(--font-inter),-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}` }} />
+          <style dangerouslySetInnerHTML={{ __html: `html{font-size:14px;line-height:1.5}body{font-family:var(--font-inter),-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}html:not(.dark):not(.light) body{opacity:0}` }} />
 
           {/* Theme detection + LCP logo preload + body styling — single script to avoid duplicated logic */}
           <script dangerouslySetInnerHTML={{ __html: `(function(){try{var t=localStorage.getItem('appThemeName');if(!t){var d=localStorage.getItem('appTheme');t=d==='false'?'XrplToLightTheme':'XrplToDarkTheme'}var dk=t==='XrplToDarkTheme';var l=document.createElement('link');l.rel='preload';l.as='image';l.type='image/svg+xml';l.href=dk?'/logo/xrpl-to-logo-white.svg':'/logo/xrpl-to-logo-black.svg';l.fetchPriority='high';document.head.appendChild(l);window.__XRPL_THEME__=t}catch(e){}})();` }} />

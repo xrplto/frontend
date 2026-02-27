@@ -71,6 +71,13 @@
 }
 
 html { scroll-behavior: smooth; overflow-x: clip; }
+
+/* Hide body until blocking inline script sets .dark or .light on <html>.
+   This prevents the SSR dark-themed HTML from flashing before the correct
+   theme is applied. The inline script runs before first paint, so the
+   opacity transition is effectively invisible (<1ms). */
+html:not(.dark):not(.light) body { opacity: 0; }
+
 body {
   margin: 0;
   -webkit-font-smoothing: antialiased;
@@ -78,14 +85,13 @@ body {
   overflow-x: clip;
   max-width: 100vw;
   width: 100%;
-  background: #000000;
-  color-scheme: dark;
-}
-
-/* Light mode override - applied when inline script detects light theme */
-html.light body {
   background: #F8FAFD;
   color-scheme: light;
+}
+
+html.dark body {
+  background: #000000;
+  color-scheme: dark;
 }
 
 /* Firefox focus fix */

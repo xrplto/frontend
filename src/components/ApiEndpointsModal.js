@@ -784,7 +784,7 @@ const ApiEndpointsModal = memo(({ open, onClose, token = null }) => {
 
   return createPortal(
     <div className="fixed inset-0 z-[1400] flex items-center justify-center p-4 max-sm:h-dvh" onClick={onClose}>
-      <div className={cn('fixed inset-0 z-[1400]', isDark ? 'bg-black/80' : 'bg-black/40')} />
+      <div className={cn('fixed inset-0 z-[1400]', 'bg-black/40 dark:bg-black/80')} />
       <div
         role="dialog"
         aria-modal="true"
@@ -792,29 +792,29 @@ const ApiEndpointsModal = memo(({ open, onClose, token = null }) => {
         onClick={(e) => e.stopPropagation()}
         className={cn(
           'relative z-[1401] rounded-2xl border-[1.5px] w-full max-w-xl max-h-[85dvh] overflow-hidden flex flex-col',
-          isDark ? 'bg-black border-white/[0.08]' : 'bg-white border-black/[0.06]'
+          'bg-white border-black/[0.06] dark:bg-black dark:border-white/[0.08]'
         )}
       >
         {/* Header */}
         <div
           className={cn(
             'px-4 py-4 border-b shrink-0',
-            isDark ? 'border-white/[0.06]' : 'border-black/[0.06]'
+            'border-black/[0.06] dark:border-white/[0.06]'
           )}
         >
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2.5">
               <div className={cn(
                 'p-1.5 rounded-lg',
-                isDark ? 'bg-blue-500/10' : 'bg-blue-500/[0.06]'
+                'bg-blue-500/[0.06] dark:bg-blue-500/10'
               )}>
-                <Code2 size={16} className={isDark ? 'text-blue-400' : 'text-blue-600'} />
+                <Code2 size={16} className={'text-blue-600 dark:text-blue-400'} />
               </div>
               <div className="flex flex-col">
-                <span className={cn('text-sm font-bold tracking-tight', isDark ? 'text-white' : 'text-[#0F172A]')}>
+                <span className={cn('text-sm font-bold tracking-tight', 'text-[#0F172A] dark:text-white')}>
                   Developer API
                 </span>
-                <span className={cn('text-[10px]', isDark ? 'text-white/40' : 'text-[#64748B]')}>
+                <span className={cn('text-[10px]', 'text-[#64748B] dark:text-white/40')}>
                   Interact with real-time XRPL data
                 </span>
               </div>
@@ -826,7 +826,7 @@ const ApiEndpointsModal = memo(({ open, onClose, token = null }) => {
               <button
                 onClick={onClose}
                 aria-label="Close"
-                className={cn('p-1.5 rounded-lg transition-colors outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]', isDark ? 'hover:bg-white/[0.06] text-white/40 hover:text-white' : 'hover:bg-black/[0.04] text-black/30 hover:text-black')}
+                className={cn('p-1.5 rounded-lg transition-colors outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]', 'hover:bg-black/[0.04] text-black/30 hover:text-black dark:hover:bg-white/[0.06] dark:text-white/40 dark:hover:text-white')}
               >
                 <X size={16} />
               </button>
@@ -834,7 +834,7 @@ const ApiEndpointsModal = memo(({ open, onClose, token = null }) => {
           </div>
 
           {/* Tab Toggle */}
-          <div role="tablist" aria-label="Endpoint views" className={cn('flex p-1 rounded-[10px]', isDark ? 'bg-white/[0.025] border border-white/[0.06]' : 'bg-black/[0.02] border border-black/[0.06]')}>
+          <div role="tablist" aria-label="Endpoint views" className={cn('flex p-1 rounded-[10px]', 'bg-black/[0.02] border border-black/[0.06] dark:bg-white/[0.025] dark:border dark:border-white/[0.06]')}>
             <button
               role="tab"
               aria-selected={view === 'detected'}
@@ -843,16 +843,14 @@ const ApiEndpointsModal = memo(({ open, onClose, token = null }) => {
                 'flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-[11px] font-semibold transition-all duration-200 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                 view === 'detected'
                   ? 'bg-blue-500 text-white'
-                  : isDark
-                    ? 'text-white/40 hover:text-white/60'
-                    : 'text-black/40 hover:text-black/60'
+                  : 'text-black/40 hover:text-black/60 dark:text-white/40 dark:hover:text-white/60'
               )}
             >
               <Zap size={12} />
               Current View
               <span className={cn(
                 'ml-1 px-1.5 py-0.5 rounded-full text-[9px]',
-                view === 'detected' ? 'bg-white/20 text-white' : isDark ? 'bg-white/[0.06] text-white/40' : 'bg-black/[0.06] text-black/40'
+                view === 'detected' ? 'bg-white/20 text-white' : 'bg-black/[0.06] text-black/40 dark:bg-white/[0.06] dark:text-white/40'
               )}>
                 {pageEndpointDetails.length}
               </span>
@@ -865,9 +863,7 @@ const ApiEndpointsModal = memo(({ open, onClose, token = null }) => {
                 'flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-[11px] font-semibold transition-all duration-200 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                 view === 'all'
                   ? 'bg-blue-500 text-white'
-                  : isDark
-                    ? 'text-white/40 hover:text-white/60'
-                    : 'text-black/40 hover:text-black/60'
+                  : 'text-black/40 hover:text-black/60 dark:text-white/40 dark:hover:text-white/60'
               )}
             >
               <Layers size={12} />
@@ -887,9 +883,7 @@ const ApiEndpointsModal = memo(({ open, onClose, token = null }) => {
               }}
               className={cn(
                 'w-full pl-3 pr-10 py-2 rounded-[10px] text-[11px] border-[1.5px] outline-none transition-all duration-200',
-                isDark
-                  ? 'bg-white/[0.025] border-white/[0.06] text-white placeholder:text-white/20 focus:border-blue-500/40 focus:bg-blue-500/[0.03]'
-                  : 'bg-black/[0.02] border-black/[0.06] text-[#0F172A] placeholder:text-black/30 focus:border-blue-500/50 focus:bg-blue-500/[0.03]'
+                'bg-black/[0.02] border-black/[0.06] text-[#0F172A] placeholder:text-black/30 focus:border-blue-500/50 focus:bg-blue-500/[0.03] dark:bg-white/[0.025] dark:border-white/[0.06] dark:text-white dark:placeholder:text-white/20 dark:focus:border-blue-500/40 dark:focus:bg-blue-500/[0.03]'
               )}
             />
             {search && (
@@ -898,7 +892,7 @@ const ApiEndpointsModal = memo(({ open, onClose, token = null }) => {
                 aria-label="Clear search"
                 className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 rounded-full hover:bg-white/10 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]"
               >
-                <X size={12} className={isDark ? 'text-white/30' : 'text-gray-400'} />
+                <X size={12} className={'text-gray-400 dark:text-white/30'} />
               </button>
             )}
           </div>
@@ -908,10 +902,10 @@ const ApiEndpointsModal = memo(({ open, onClose, token = null }) => {
         {token && (
           <div className={cn(
             'mx-4 mt-3 mb-2 p-3 rounded-[10px] border-[1.5px] flex flex-col gap-2.5 transition-all duration-200',
-            isDark ? 'bg-white/[0.025] border-white/[0.06]' : 'bg-black/[0.02] border-black/[0.06]'
+            'bg-black/[0.02] border-black/[0.06] dark:bg-white/[0.025] dark:border-white/[0.06]'
           )}>
             <div className="flex items-center justify-between">
-              <span className={cn('text-[10px] font-bold uppercase tracking-[0.1em]', isDark ? 'text-white/30' : 'text-gray-400')}>
+              <span className={cn('text-[10px] font-bold uppercase tracking-[0.1em]', 'text-gray-400 dark:text-white/30')}>
                 Active Context
               </span>
               <div className="flex items-center gap-1.5 grayscale opacity-50">
@@ -930,17 +924,17 @@ const ApiEndpointsModal = memo(({ open, onClose, token = null }) => {
                   onClick={() => copyField(item.value, item.field)}
                   className={cn(
                     'group relative p-2 rounded-lg border-[1.5px] text-left transition-all duration-200',
-                    isDark ? 'bg-white/[0.025] border-white/[0.06] hover:border-blue-500/40' : 'bg-black/[0.02] border-black/[0.06] hover:border-blue-500/50'
+                    'bg-black/[0.02] border-black/[0.06] hover:border-blue-500/50 dark:bg-white/[0.025] dark:border-white/[0.06] dark:hover:border-blue-500/40'
                   )}
                 >
-                  <div className={cn('text-[8px] font-bold mb-0.5', isDark ? 'text-white/30' : 'text-gray-400')}>
+                  <div className={cn('text-[8px] font-bold mb-0.5', 'text-gray-400 dark:text-white/30')}>
                     {item.label}
                   </div>
-                  <div className={cn('font-mono text-[10px] truncate', isDark ? 'text-blue-400' : 'text-blue-600')}>
+                  <div className={cn('font-mono text-[10px] truncate', 'text-blue-600 dark:text-blue-400')}>
                     {item.value}
                   </div>
                   <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    {copiedField === item.field ? <Check size={10} className="text-emerald-500" /> : <Copy size={10} className={isDark ? 'text-white/20' : 'text-gray-300'} />}
+                    {copiedField === item.field ? <Check size={10} className="text-emerald-500" /> : <Copy size={10} className={'text-gray-300 dark:text-white/20'} />}
                   </div>
                 </button>
               ))}
@@ -953,7 +947,7 @@ const ApiEndpointsModal = memo(({ open, onClose, token = null }) => {
           {view === 'detected' ? (
             <div className="p-3 space-y-2">
               {pageEndpointDetails.length === 0 ? (
-                <div className={cn('text-center py-8', isDark ? 'text-white/40' : 'text-gray-400')}>
+                <div className={cn('text-center py-8', 'text-gray-400 dark:text-white/40')}>
                   <Code2 size={24} className="mx-auto mb-2 opacity-50" />
                   <div className="text-[12px]">No endpoints mapped for this page</div>
                 </div>
@@ -961,7 +955,7 @@ const ApiEndpointsModal = memo(({ open, onClose, token = null }) => {
                 pageEndpointDetails.map((ep) => (
                   <div
                     key={ep.path}
-                    className={cn('rounded-[10px] group border-[1.5px]', isDark ? 'bg-white/[0.025] border-white/[0.06]' : 'bg-black/[0.02] border-black/[0.06]')}
+                    className={cn('rounded-[10px] group border-[1.5px]', 'bg-black/[0.02] border-black/[0.06] dark:bg-white/[0.025] dark:border-white/[0.06]')}
                   >
                     <div className="p-3">
                       <div className="flex justify-between items-start mb-2">
@@ -982,7 +976,7 @@ const ApiEndpointsModal = memo(({ open, onClose, token = null }) => {
                             <code
                               className={cn(
                                 'text-[10px] font-mono font-medium truncate',
-                                isDark ? 'text-blue-400' : 'text-blue-600'
+                                'text-blue-600 dark:text-blue-400'
                               )}
                             >
                               {ep.path}
@@ -991,7 +985,7 @@ const ApiEndpointsModal = memo(({ open, onClose, token = null }) => {
                           <div
                             className={cn(
                               'text-[10px] line-clamp-1',
-                              isDark ? 'text-white/40' : 'text-[#64748B]'
+                              'text-[#64748B] dark:text-white/40'
                             )}
                           >
                             {ep.desc}
@@ -1006,9 +1000,7 @@ const ApiEndpointsModal = memo(({ open, onClose, token = null }) => {
                                 'p-1.5 rounded-lg transition-all duration-200 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                                 copiedResponse === ep.path
                                   ? 'text-emerald-500 bg-emerald-500/10'
-                                  : isDark
-                                    ? 'text-white/30 hover:text-white hover:bg-white/[0.06]'
-                                    : 'text-black/30 hover:text-black hover:bg-black/[0.04]'
+                                  : 'text-black/30 hover:text-black hover:bg-black/[0.04] dark:text-white/30 dark:hover:text-white dark:hover:bg-white/[0.06]'
                               )}
                               title="Fetch Example JSON"
                             >
@@ -1028,9 +1020,7 @@ const ApiEndpointsModal = memo(({ open, onClose, token = null }) => {
                               'p-1.5 rounded-lg transition-all duration-200 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                               copiedCurl === ep.path
                                 ? 'text-blue-500 bg-blue-500/10'
-                                : isDark
-                                  ? 'text-white/30 hover:text-blue-400 hover:bg-white/[0.06]'
-                                  : 'text-black/30 hover:text-blue-600 hover:bg-black/[0.04]'
+                                : 'text-black/30 hover:text-blue-600 hover:bg-black/[0.04] dark:text-white/30 dark:hover:text-blue-400 dark:hover:bg-white/[0.06]'
                             )}
                             title="Copy cURL"
                           >
@@ -1043,9 +1033,7 @@ const ApiEndpointsModal = memo(({ open, onClose, token = null }) => {
                               'p-1.5 rounded-lg transition-all duration-200 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                               copiedPath === ep.path
                                 ? 'text-emerald-500 bg-emerald-500/10'
-                                : isDark
-                                  ? 'text-white/30 hover:text-white hover:bg-white/[0.06]'
-                                  : 'text-black/30 hover:text-black hover:bg-black/[0.04]'
+                                : 'text-black/30 hover:text-black hover:bg-black/[0.04] dark:text-white/30 dark:hover:text-white dark:hover:bg-white/[0.06]'
                             )}
                             title="Copy API URL"
                           >
@@ -1056,12 +1044,12 @@ const ApiEndpointsModal = memo(({ open, onClose, token = null }) => {
                     </div>
                     {responsePreview?.url === ep.path && (
                       <div
-                        className={cn('border-t', isDark ? 'border-white/[0.06]' : 'border-black/[0.06]')}
+                        className={cn('border-t', 'border-black/[0.06] dark:border-white/[0.06]')}
                       >
                         <div
                           className={cn(
                             'flex items-center justify-between px-2.5 py-1.5',
-                            isDark ? 'bg-emerald-500/10' : 'bg-emerald-50'
+                            'bg-emerald-50 dark:bg-emerald-500/10'
                           )}
                         >
                           <span className="flex items-center gap-1.5 text-[10px] text-emerald-500 font-medium">
@@ -1072,16 +1060,16 @@ const ApiEndpointsModal = memo(({ open, onClose, token = null }) => {
                             aria-label="Close preview"
                             className={cn(
                               'p-0.5 rounded outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
-                              isDark ? 'hover:bg-white/[0.06]' : 'hover:bg-black/[0.04]'
+                              'hover:bg-black/[0.04] dark:hover:bg-white/[0.06]'
                             )}
                           >
-                            <X size={10} className={isDark ? 'text-white/40' : 'text-black/30'} />
+                            <X size={10} className={'text-black/30 dark:text-white/40'} />
                           </button>
                         </div>
                         <pre
                           className={cn(
                             'p-2.5 text-[9px] leading-relaxed max-h-[120px] overflow-auto',
-                            isDark ? 'text-white/70' : 'text-[#64748B]'
+                            'text-[#64748B] dark:text-white/70'
                           )}
                         >
                           <JsonHighlight data={responsePreview.data} />
@@ -1104,20 +1092,20 @@ const ApiEndpointsModal = memo(({ open, onClose, token = null }) => {
                       onClick={() => toggleCategory(key)}
                       className={cn(
                         'w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-left transition-colors duration-200',
-                        isDark ? 'hover:bg-white/[0.04]' : 'hover:bg-black/[0.02]'
+                        'hover:bg-black/[0.02] dark:hover:bg-white/[0.04]'
                       )}
                     >
                       {isExpanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
                       <span
                         className={cn(
                           'text-[11px] font-medium flex-1',
-                          isDark ? 'text-white' : 'text-[#0F172A]'
+                          'text-[#0F172A] dark:text-white'
                         )}
                       >
                         {category.label}
                       </span>
                       <span
-                        className={cn('text-[10px]', isDark ? 'text-white/40' : 'text-[#64748B]')}
+                        className={cn('text-[10px]', 'text-[#64748B] dark:text-white/40')}
                       >
                         {category.endpoints.length}
                       </span>
@@ -1139,9 +1127,7 @@ const ApiEndpointsModal = memo(({ open, onClose, token = null }) => {
                                 'rounded-lg overflow-hidden',
                                 detected
                                   ? 'bg-emerald-500/[0.08] border border-emerald-500/20'
-                                  : isDark
-                                    ? 'bg-white/[0.02]'
-                                    : 'bg-black/[0.015]'
+                                  : 'bg-black/[0.015] dark:bg-white/[0.02]'
                               )}
                             >
                               <div className="flex items-start gap-2 px-2.5 py-2 group">
@@ -1163,9 +1149,7 @@ const ApiEndpointsModal = memo(({ open, onClose, token = null }) => {
                                       'text-[10px] block',
                                       detected
                                         ? 'text-emerald-400'
-                                        : isDark
-                                          ? 'text-blue-400'
-                                          : 'text-blue-600'
+                                        : 'text-blue-600 dark:text-blue-400'
                                     )}
                                   >
                                     {ep.path}
@@ -1173,7 +1157,7 @@ const ApiEndpointsModal = memo(({ open, onClose, token = null }) => {
                                   <div
                                     className={cn(
                                       'text-[10px] mt-0.5',
-                                      isDark ? 'text-white/40' : 'text-[#64748B]'
+                                      'text-[#64748B] dark:text-white/40'
                                     )}
                                   >
                                     {ep.desc}
@@ -1188,9 +1172,7 @@ const ApiEndpointsModal = memo(({ open, onClose, token = null }) => {
                                         'p-1 opacity-0 group-hover:opacity-100 transition-opacity outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] focus-visible:opacity-100',
                                         copiedResponse === ep.path
                                           ? 'text-emerald-500 opacity-100'
-                                          : isDark
-                                            ? 'text-white/30'
-                                            : 'text-black/30'
+                                          : 'text-black/30 dark:text-white/30'
                                       )}
                                       title="Try & copy response"
                                     >
@@ -1210,9 +1192,7 @@ const ApiEndpointsModal = memo(({ open, onClose, token = null }) => {
                                       'p-1 opacity-0 group-hover:opacity-100 transition-opacity outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] focus-visible:opacity-100',
                                       copiedPath === ep.path
                                         ? 'text-emerald-500 opacity-100'
-                                        : isDark
-                                          ? 'text-white/30'
-                                          : 'text-black/30'
+                                        : 'text-black/30 dark:text-white/30'
                                     )}
                                     title="Copy URL"
                                   >
@@ -1228,13 +1208,13 @@ const ApiEndpointsModal = memo(({ open, onClose, token = null }) => {
                                 <div
                                   className={cn(
                                     'border-t',
-                                    isDark ? 'border-white/[0.06]' : 'border-black/[0.06]'
+                                    'border-black/[0.06] dark:border-white/[0.06]'
                                   )}
                                 >
                                   <div
                                     className={cn(
                                       'flex items-center justify-between px-2.5 py-1.5',
-                                      isDark ? 'bg-emerald-500/[0.08]' : 'bg-emerald-50'
+                                      'bg-emerald-50 dark:bg-emerald-500/[0.08]'
                                     )}
                                   >
                                     <span className="flex items-center gap-1.5 text-[10px] text-emerald-500 font-medium">
@@ -1245,19 +1225,19 @@ const ApiEndpointsModal = memo(({ open, onClose, token = null }) => {
                                       aria-label="Close preview"
                                       className={cn(
                                         'p-0.5 rounded outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
-                                        isDark ? 'hover:bg-white/[0.06]' : 'hover:bg-black/[0.04]'
+                                        'hover:bg-black/[0.04] dark:hover:bg-white/[0.06]'
                                       )}
                                     >
                                       <X
                                         size={10}
-                                        className={isDark ? 'text-white/40' : 'text-black/30'}
+                                        className={'text-black/30 dark:text-white/40'}
                                       />
                                     </button>
                                   </div>
                                   <pre
                                     className={cn(
                                       'p-2.5 text-[9px] leading-relaxed max-h-[120px] overflow-auto',
-                                      isDark ? 'text-white/70' : 'text-[#64748B]'
+                                      'text-[#64748B] dark:text-white/70'
                                     )}
                                   >
                                     <JsonHighlight data={responsePreview.data} />
@@ -1273,7 +1253,7 @@ const ApiEndpointsModal = memo(({ open, onClose, token = null }) => {
                 );
               })}
               {Object.keys(filteredReference).length === 0 && (
-                <div className={cn('text-center py-8', isDark ? 'text-white/40' : 'text-gray-400')}>
+                <div className={cn('text-center py-8', 'text-gray-400 dark:text-white/40')}>
                   <div className="text-[12px]">No endpoints match "{search}"</div>
                 </div>
               )}
@@ -1285,14 +1265,14 @@ const ApiEndpointsModal = memo(({ open, onClose, token = null }) => {
         <div
           className={cn(
             'px-4 py-3 border-t shrink-0',
-            isDark ? 'border-white/[0.06]' : 'border-black/[0.06]'
+            'border-black/[0.06] dark:border-white/[0.06]'
           )}
         >
           <div className="flex items-center gap-2">
             <code
               className={cn(
                 'flex-1 text-[10px] px-2 py-1.5 rounded-lg',
-                isDark ? 'bg-white/[0.025] text-white/50' : 'bg-black/[0.02] text-[#64748B]'
+                'bg-black/[0.02] text-[#64748B] dark:bg-white/[0.025] dark:text-white/50'
               )}
             >
               https://api.xrpl.to/v1/...
@@ -1301,9 +1281,7 @@ const ApiEndpointsModal = memo(({ open, onClose, token = null }) => {
               href="/docs"
               className={cn(
                 'flex items-center gap-1 px-3 py-1.5 rounded-lg text-[11px] font-medium border-[1.5px] transition-colors duration-200',
-                isDark
-                  ? 'text-blue-400 border-blue-500/20 hover:bg-blue-500/[0.08]'
-                  : 'text-blue-600 border-blue-500/20 hover:bg-blue-500/[0.04]'
+                'text-blue-600 border-blue-500/20 hover:bg-blue-500/[0.04] dark:text-blue-400 dark:border-blue-500/20 dark:hover:bg-blue-500/[0.08]'
               )}
             >
               Full Docs
@@ -1330,9 +1308,7 @@ export const ApiButton = memo(({ className = '', token = null }) => {
         onClick={() => setOpen(true)}
         className={cn(
           'group border-[1.5px] gap-1 rounded-lg px-2 h-8 max-sm:h-[26px] text-[9px]',
-          isDark
-            ? 'border-white/[0.08] bg-white/[0.025] hover:bg-white/[0.05] text-white/50 hover:text-white/70'
-            : 'border-black/[0.06] bg-black/[0.02] hover:bg-black/[0.04] text-black/40 hover:text-black/60',
+          'border-black/[0.06] bg-black/[0.02] hover:bg-black/[0.04] text-black/40 hover:text-black/60 dark:border-white/[0.08] dark:bg-white/[0.025] dark:hover:bg-white/[0.05] dark:text-white/50 dark:hover:text-white/70',
           className
         )}
       >

@@ -37,14 +37,12 @@ export default function IssuerInfoDialog({ open, setOpen, token }) {
       <div
         className={cn(
           'relative w-full max-w-md rounded-2xl border overflow-hidden',
-          isDark
-            ? 'bg-black/90 backdrop-blur-2xl border-[#3f96fe]/10 shadow-[0_8px_40px_rgba(0,0,0,0.6)]'
-            : 'bg-white/98 backdrop-blur-2xl border-gray-200 shadow-[0_8px_32px_rgba(0,0,0,0.08)]'
+          'bg-white/98 backdrop-blur-2xl border-gray-200 shadow-[0_8px_32px_rgba(0,0,0,0.08)] dark:bg-black/90 dark:backdrop-blur-2xl dark:border-[#3f96fe]/10 dark:shadow-[0_8px_40px_rgba(0,0,0,0.6)]'
         )}
       >
         {/* Dialog Title */}
         <div
-          className={cn('flex items-center justify-between p-4', isDark ? 'bg-black' : 'bg-white')}
+          className={cn('flex items-center justify-between p-4', 'bg-white dark:bg-black')}
         >
           <div className="flex items-center gap-2">
             <img
@@ -54,7 +52,7 @@ export default function IssuerInfoDialog({ open, setOpen, token }) {
             />
             <div>
               <p className="text-primary text-[15px] font-normal">{name}</p>
-              <p className={cn('text-[12px]', isDark ? 'text-white/60' : 'text-gray-500')}>
+              <p className={cn('text-[12px]', 'text-gray-500 dark:text-white/60')}>
                 {user}
               </p>
             </div>
@@ -63,7 +61,7 @@ export default function IssuerInfoDialog({ open, setOpen, token }) {
             onClick={handleClose}
             className={cn(
               'flex h-8 w-8 items-center justify-center rounded-lg transition-[background-color,border-color]',
-              isDark ? 'text-white/60 hover:text-white' : 'text-gray-500 hover:text-gray-700'
+              'text-gray-500 hover:text-gray-700 dark:text-white/60 dark:hover:text-white'
             )}
           >
             <X size={20} />
@@ -71,11 +69,11 @@ export default function IssuerInfoDialog({ open, setOpen, token }) {
         </div>
 
         {/* Dialog Content */}
-        <div className={cn('p-4 space-y-4', isDark ? 'bg-black' : 'bg-gray-50')}>
+        <div className={cn('p-4 space-y-4', 'bg-gray-50 dark:bg-black')}>
           {/* Issuer */}
           <div className="flex items-center gap-2">
             <span
-              className={cn('text-[13px] font-normal', isDark ? 'text-white/60' : 'text-gray-500')}
+              className={cn('text-[13px] font-normal', 'text-gray-500 dark:text-white/60')}
             >
               Issuer:
             </span>
@@ -84,9 +82,7 @@ export default function IssuerInfoDialog({ open, setOpen, token }) {
                 href={`/address/${issuer}`}
                 className={cn(
                   'flex-1 font-mono text-[13px] px-2 py-1 rounded truncate transition-[background-color,border-color]',
-                  isDark
-                    ? 'bg-white/5 text-white/60 hover:text-primary'
-                    : 'bg-gray-100 text-gray-600 hover:text-primary'
+                  'bg-gray-100 text-gray-600 hover:text-primary dark:bg-white/5 dark:text-white/60 dark:hover:text-primary'
                 )}
               >
                 {issuer}
@@ -95,17 +91,17 @@ export default function IssuerInfoDialog({ open, setOpen, token }) {
                 onClick={() => copyToClipboard(issuer, 'Address')}
                 className={cn(
                   'flex-shrink-0 p-1 rounded transition-[background-color,border-color]',
-                  isDark ? 'hover:bg-white/10' : 'hover:bg-gray-200'
+                  'hover:bg-gray-200 dark:hover:bg-white/10'
                 )}
                 title="Copy address"
               >
-                <Copy size={14} className={isDark ? 'text-white/60' : 'text-gray-500'} />
+                <Copy size={14} className={'text-gray-500 dark:text-white/60'} />
               </button>
               <button
                 onClick={() => window.dispatchEvent(new CustomEvent('openDm', { detail: { user: issuer } }))}
                 className={cn(
                   'flex-shrink-0 p-1 rounded transition-[background-color,border-color]',
-                  isDark ? 'hover:bg-white/10 text-white/60 hover:text-[#650CD4]' : 'hover:bg-gray-200 text-gray-500 hover:text-[#650CD4]'
+                  'hover:bg-gray-200 text-gray-500 hover:text-[#650CD4] dark:hover:bg-white/10 dark:text-white/60 dark:hover:text-[#650CD4]'
                 )}
                 title="Message issuer"
               >
@@ -117,7 +113,7 @@ export default function IssuerInfoDialog({ open, setOpen, token }) {
           {/* Currency */}
           <div className="flex items-center gap-2">
             <span
-              className={cn('text-[13px] font-normal', isDark ? 'text-white/60' : 'text-gray-500')}
+              className={cn('text-[13px] font-normal', 'text-gray-500 dark:text-white/60')}
             >
               Currency:
             </span>
@@ -125,7 +121,7 @@ export default function IssuerInfoDialog({ open, setOpen, token }) {
               <span
                 className={cn(
                   'text-[13px] font-normal text-primary px-2 py-1 rounded',
-                  isDark ? 'bg-white/5' : 'bg-gray-100'
+                  'bg-gray-100 dark:bg-white/5'
                 )}
               >
                 {currency}
@@ -134,11 +130,11 @@ export default function IssuerInfoDialog({ open, setOpen, token }) {
                 onClick={() => copyToClipboard(currency, 'Currency code')}
                 className={cn(
                   'p-1 rounded transition-[background-color,border-color]',
-                  isDark ? 'hover:bg-white/10' : 'hover:bg-gray-200'
+                  'hover:bg-gray-200 dark:hover:bg-white/10'
                 )}
                 title="Copy currency code"
               >
-                <Copy size={14} className={isDark ? 'text-white/60' : 'text-gray-500'} />
+                <Copy size={14} className={'text-gray-500 dark:text-white/60'} />
               </button>
             </div>
           </div>
@@ -158,7 +154,7 @@ export default function IssuerInfoDialog({ open, setOpen, token }) {
               <span
                 className={cn(
                   'text-[13px] font-normal',
-                  isDark ? 'text-white/60' : 'text-gray-500'
+                  'text-gray-500 dark:text-white/60'
                 )}
               >
                 Domain:
@@ -193,12 +189,12 @@ export default function IssuerInfoDialog({ open, setOpen, token }) {
                   <span
                     className={cn(
                       'text-[13px] font-normal',
-                      isDark ? 'text-white/60' : 'text-gray-500'
+                      'text-gray-500 dark:text-white/60'
                     )}
                   >
                     {label}:
                   </span>
-                  <span className={cn('text-[13px]', isDark ? 'text-white' : 'text-gray-900')}>
+                  <span className={cn('text-[13px]', 'text-gray-900 dark:text-white')}>
                     {key === 'transferRate'
                       ? `${fNumber(new Decimal(info[key]).sub(1).mul(100).toNumber())}%`
                       : key === 'tickSize'

@@ -27,7 +27,7 @@ export default function ConfirmBurnDialog({ open, setOpen, onContinue }) {
       <div
         className={cn(
           'fixed inset-0 z-50 backdrop-blur-md max-sm:h-dvh',
-          isDark ? 'bg-black/70' : 'bg-white/60'
+          'bg-white/60 dark:bg-black/70'
         )}
         onClick={handleClose}
       />
@@ -35,16 +35,14 @@ export default function ConfirmBurnDialog({ open, setOpen, onContinue }) {
         <div
           className={cn(
             'rounded-2xl border-[1.5px] p-6',
-            isDark
-              ? 'bg-black/80 backdrop-blur-2xl border-white/[0.08] shadow-2xl shadow-black/50'
-              : 'bg-white/80 backdrop-blur-2xl border-gray-200/60 shadow-2xl shadow-gray-300/30'
+            'bg-white/80 backdrop-blur-2xl border-gray-200/60 shadow-2xl shadow-gray-300/30 dark:bg-black/80 dark:backdrop-blur-2xl dark:border-white/[0.08] dark:shadow-2xl dark:shadow-black/50'
           )}
         >
           <button
             onClick={handleClose}
             className={cn(
               'absolute right-4 top-4 rounded-lg p-1',
-              isDark ? 'hover:bg-white/5' : 'hover:bg-gray-100'
+              'hover:bg-gray-100 dark:hover:bg-white/5'
             )}
           >
             <X size={20} />
@@ -58,7 +56,7 @@ export default function ConfirmBurnDialog({ open, setOpen, onContinue }) {
             <h2
               className={cn(
                 'text-center text-[18px] font-normal',
-                isDark ? 'text-white' : 'text-gray-900'
+                'text-gray-900 dark:text-white'
               )}
             >
               Confirm NFT Burn
@@ -67,7 +65,7 @@ export default function ConfirmBurnDialog({ open, setOpen, onContinue }) {
             <p
               className={cn(
                 'text-center text-[13px] font-normal',
-                isDark ? 'text-white/60' : 'text-gray-600'
+                'text-gray-600 dark:text-white/60'
               )}
             >
               Are you absolutely certain you want to burn this NFT? This action cannot be undone.
@@ -78,7 +76,7 @@ export default function ConfirmBurnDialog({ open, setOpen, onContinue }) {
                 onClick={handleNo}
                 className={cn(
                   'rounded-lg border-[1.5px] px-6 py-2 text-[13px] font-normal',
-                  isDark ? 'border-white/15 hover:bg-white/5' : 'border-gray-300 hover:bg-gray-100'
+                  'border-gray-300 hover:bg-gray-100 dark:border-white/15 dark:hover:bg-white/5'
                 )}
               >
                 Cancel

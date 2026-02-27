@@ -63,7 +63,7 @@ export default function BurnNFT({ nft, onHandleBurn }) {
         <div
           className={cn(
             'fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md max-sm:h-dvh',
-            isDark ? 'bg-black/70' : 'bg-white/60'
+            'bg-white/60 dark:bg-black/70'
           )}
         >
           <PulseLoader color="#FF4842" size={10} />
@@ -76,9 +76,7 @@ export default function BurnNFT({ nft, onHandleBurn }) {
         className={cn(
           'flex-1 flex items-center justify-center gap-2 rounded-xl border py-3 text-[15px] font-normal transition-colors',
           'disabled:cursor-not-allowed disabled:opacity-50',
-          isDark
-            ? 'border-gray-700/50 text-gray-300 hover:border-gray-600 hover:text-white'
-            : 'border-gray-300 text-gray-700 hover:border-gray-400'
+          'border-gray-300 text-gray-700 hover:border-gray-400 dark:border-gray-700/50 dark:text-gray-300 dark:hover:border-gray-600 dark:hover:text-white'
         )}
         onClick={handleBurnNFT}
         disabled={!accountLogin || !isBurnable || !nft}

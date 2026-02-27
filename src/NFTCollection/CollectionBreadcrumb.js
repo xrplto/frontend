@@ -14,7 +14,7 @@ export default function CollectionBreadcrumb({ collection, nftName, nftId }) {
     <div
       className={cn(
         'mt-2 mb-2 flex flex-row items-center gap-1',
-        isDark ? 'text-gray-400' : 'text-gray-600'
+        'text-gray-600 dark:text-gray-400'
       )}
     >
       <a

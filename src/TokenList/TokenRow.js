@@ -174,29 +174,27 @@ const SparklineChart = memo(
 
 SparklineChart.displayName = 'SparklineChart';
 
-const StyledRow = ({ className, children, isDark, isNew, ...p }) => (
+const StyledRow = ({ className, children, isNew, ...p }) => (
   <tr
-    className={cn('tr-row cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#137DFE]', isNew && 'tr-row-new', className)}
-    style={{
-      borderBottom: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)'}`
-    }}
+    className={cn('tr-row cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#137DFE] border-b border-black/[0.06] dark:border-white/[0.06]', isNew && 'tr-row-new', className)}
     {...p}
   >
     {children}
   </tr>
 );
 
-const StyledCell = ({ className, children, isDark, isTokenColumn, align, fontWeight, color, ...p }) => (
+const StyledCell = ({ className, children, isTokenColumn, align, fontWeight, color, ...p }) => (
   <td
     className={cn(
       'tr-cell text-sm align-middle first:pl-3 last:pr-3 py-[14px] px-1 font-normal',
       isTokenColumn ? 'whitespace-normal' : 'whitespace-nowrap',
+      !color && 'text-[#1a1a1a] dark:text-white/90',
       className
     )}
     style={{
       textAlign: align || 'left',
       fontWeight: fontWeight || undefined,
-      color: color || (isDark ? 'rgba(255, 255, 255, 0.9)' : '#1a1a1a'),
+      ...(color ? { color } : {}),
       ...p.style
     }}
     {...(({ style, ...rest }) => rest)(p)}
@@ -206,12 +204,12 @@ const StyledCell = ({ className, children, isDark, isTokenColumn, align, fontWei
 );
 
 // Mobile-specific flexbox components
-const MobileTokenCard = ({ className, children, isDark, isNew, ...p }) => (
+const MobileTokenCard = ({ className, children, isNew, ...p }) => (
   <div
     className={cn(
       'mobile-card flex w-full items-center cursor-pointer box-border outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#137DFE]',
       'py-[7px] px-2.5 border-b border-l-2 bg-transparent',
-      isDark ? 'border-white/10' : 'border-black/[0.06]',
+      'border-black/[0.06] dark:border-white/10',
       isNew ? 'border-l-green-500 tr-row-new' : 'border-l-transparent',
       className
     )}
@@ -230,11 +228,11 @@ const MobileTokenInfo = ({ className, children, ...p }) => (
   </div>
 );
 
-const MobilePriceCell = ({ className, children, isDark, ...p }) => (
+const MobilePriceCell = ({ className, children, ...p }) => (
   <div
     className={cn(
       'text-right text-[12.5px] font-medium min-w-0 flex-[1] px-1 tracking-[0.01em] overflow-hidden text-ellipsis whitespace-nowrap',
-      isDark ? 'text-white/90' : 'text-black',
+      'text-black dark:text-white/90',
       className
     )}
     {...p}
@@ -243,7 +241,7 @@ const MobilePriceCell = ({ className, children, isDark, ...p }) => (
   </div>
 );
 
-const MobilePercentCell = ({ className, children, isDark, ...p }) => (
+const MobilePercentCell = ({ className, children, ...p }) => (
   <div
     className={cn('text-right text-[12.5px] font-medium min-w-0 flex-[0.8] px-1 tracking-[0.01em] overflow-hidden text-ellipsis whitespace-nowrap', className)}
     {...p}
@@ -252,11 +250,11 @@ const MobilePercentCell = ({ className, children, isDark, ...p }) => (
   </div>
 );
 
-const MobileVolumeCell = ({ className, children, isDark, ...p }) => (
+const MobileVolumeCell = ({ className, children, ...p }) => (
   <div
     className={cn(
       'text-right text-[12.5px] font-medium min-w-0 flex-[0.8] px-1 tracking-[0.01em] overflow-hidden text-ellipsis whitespace-nowrap',
-      isDark ? 'text-white/90' : 'text-black',
+      'text-black dark:text-white/90',
       className
     )}
     {...p}
@@ -266,12 +264,12 @@ const MobileVolumeCell = ({ className, children, isDark, ...p }) => (
 );
 
 // Shared components with mobile/desktop variations
-const TokenImage = ({ className, children, isDark, isMobile, ...p }) => (
+const TokenImage = ({ className, children, isMobile, ...p }) => (
   <div
     className={cn(
       'rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center',
       isMobile ? 'w-7 h-7' : 'tr-img w-10 h-10',
-      isDark ? 'bg-white/[0.08]' : 'bg-black/[0.05]',
+      'bg-black/[0.05] dark:bg-white/[0.08]',
       className
     )}
     {...p}
@@ -286,12 +284,12 @@ const TokenDetails = ({ className, children, ...p }) => (
   </div>
 );
 
-const TokenName = ({ className, children, isDark, isMobile, golden, ...p }) => (
+const TokenName = ({ className, children, isMobile, golden, ...p }) => (
   <span
     className={cn(
       'font-medium overflow-hidden text-ellipsis whitespace-nowrap block leading-[1.4]',
       isMobile ? 'text-[13px] max-w-[110px]' : 'tr-name text-[15px] max-w-[180px]',
-      golden ? 'text-[#FFD700]' : isDark ? 'text-white' : 'text-[#1a1a1a]',
+      golden ? 'text-[#FFD700]' : 'text-[#1a1a1a] dark:text-white',
       className
     )}
     {...p}
@@ -300,12 +298,12 @@ const TokenName = ({ className, children, isDark, isMobile, golden, ...p }) => (
   </span>
 );
 
-const UserName = ({ className, children, isDark, isMobile, ...p }) => (
+const UserName = ({ className, children, isMobile, ...p }) => (
   <span
     className={cn(
       'font-normal block overflow-hidden text-ellipsis whitespace-nowrap leading-[1.3]',
       isMobile ? 'text-[11px] max-w-[110px]' : 'tr-user text-[13px] max-w-[180px]',
-      isDark ? 'text-white/60' : 'text-black/60',
+      'text-black/60 dark:text-white/60',
       className
     )}
     {...p}
@@ -314,15 +312,14 @@ const UserName = ({ className, children, isDark, isMobile, ...p }) => (
   </span>
 );
 
-const PriceText = ({ flashColor, isDark, isMobile, children }) => (
+const PriceText = ({ flashColor, isMobile, children }) => (
   <span
     className={cn(
       'font-normal font-mono price-flash',
-      isMobile ? 'text-[14px]' : 'text-[15px]'
+      isMobile ? 'text-[14px]' : 'text-[15px]',
+      !flashColor && 'text-[#1a1a1a] dark:text-white/90'
     )}
-    style={{
-      color: flashColor || (isDark ? 'rgba(255, 255, 255, 0.9)' : '#1a1a1a')
-    }}
+    style={flashColor ? { color: flashColor } : undefined}
   >
     {children}
   </span>
@@ -474,7 +471,6 @@ const OptimizedImage = memo(
 
 const MobileTokenRow = ({
   token,
-  darkMode,
   exchRate,
   activeFiatCurrency,
   handleRowClick,
@@ -533,12 +529,12 @@ const MobileTokenRow = ({
 
   const getPercentColor = (value) => {
     if (value === undefined || value === null || isNaN(value))
-      return darkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)';
+      return 'inherit';
     return value < 0 ? '#c75050' : '#22a86b';
   };
 
   const getMarketCapColor = () => {
-    return darkMode ? 'rgba(255,255,255,0.9)' : '#1a1a1a';
+    return 'inherit';
   };
 
   const imgUrl = `https://s1.xrpl.to/token/${md5}`;
@@ -610,9 +606,9 @@ const MobileTokenRow = ({
 
   // Using flexbox layout instead of table
   return (
-    <MobileTokenCard onClick={handleRowClick} isDark={darkMode} isNew={isNew}>
+    <MobileTokenCard onClick={handleRowClick} isNew={isNew}>
       <MobileTokenInfo>
-        <TokenImage isMobile={true} isDark={darkMode}>
+        <TokenImage isMobile={true}>
           <OptimizedImage
             src={imgError ? '/static/alt.webp' : imgUrl}
             alt=""
@@ -625,7 +621,7 @@ const MobileTokenRow = ({
         </TokenImage>
         <TokenDetails>
           <span className="flex items-center gap-1">
-            <TokenName isMobile={true} isDark={darkMode} golden={isGolden}>
+            <TokenName isMobile={true} golden={isGolden}>
               {displayName}
             </TokenName>
             {boostActive && (
@@ -635,19 +631,19 @@ const MobileTokenRow = ({
               </span>
             )}
           </span>
-          <UserName isMobile={true} isDark={darkMode}>
+          <UserName isMobile={true}>
             {displayUser}
           </UserName>
         </TokenDetails>
       </MobileTokenInfo>
 
-      <MobilePriceCell isDark={darkMode}>{formatMobileValue(mobilePriceColumn)}</MobilePriceCell>
+      <MobilePriceCell>{formatMobileValue(mobilePriceColumn)}</MobilePriceCell>
 
-      <MobilePercentCell isDark={darkMode}>
+      <MobilePercentCell>
         {formatMobileValue(mobilePercentColumn)}
       </MobilePercentCell>
 
-      <MobileVolumeCell isDark={darkMode}>
+      <MobileVolumeCell>
         {formatMobileValue(mobileVolumeColumn)}
       </MobileVolumeCell>
     </MobileTokenCard>
@@ -656,7 +652,6 @@ const MobileTokenRow = ({
 
 const DesktopTokenRow = ({
   token,
-  darkMode,
   exchRate,
   activeFiatCurrency,
   handleRowClick,
@@ -720,12 +715,12 @@ const DesktopTokenRow = ({
 
   const getPercentColor = (value) => {
     if (value === undefined || value === null || isNaN(value))
-      return darkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)';
+      return 'inherit';
     return value < 0 ? '#c75050' : '#22a86b';
   };
 
   const getMarketCapColor = () => {
-    return darkMode ? 'rgba(255,255,255,0.9)' : '#1a1a1a';
+    return 'inherit';
   };
 
   const imgUrl = `https://s1.xrpl.to/token/${md5}`;
@@ -735,14 +730,13 @@ const DesktopTokenRow = ({
     const tokenCell = (
       <StyledCell
         align="left"
-        isDark={darkMode}
-        isTokenColumn={true}
+               isTokenColumn={true}
         style={{
           paddingRight: '4px'
         }}
       >
         <div className="flex items-center gap-[10px]">
-          <TokenImage isDark={darkMode}>
+          <TokenImage>
             <OptimizedImage
               src={imgError ? '/static/alt.webp' : imgUrl}
               alt=""
@@ -755,7 +749,7 @@ const DesktopTokenRow = ({
           </TokenImage>
           <div className="min-w-0 overflow-hidden">
             <span className="flex items-center gap-1 max-w-full">
-              <TokenName isDark={darkMode} title={displayName} golden={isGolden}>
+              <TokenName title={displayName} golden={isGolden}>
                 {truncate(displayName, 16)}
               </TokenName>
               {boostActive && (
@@ -765,7 +759,7 @@ const DesktopTokenRow = ({
                 </span>
               )}
             </span>
-            <UserName isDark={darkMode} title={displayUser}>
+            <UserName title={displayUser}>
               {truncate(displayUser, 12)}
             </UserName>
           </div>
@@ -777,8 +771,8 @@ const DesktopTokenRow = ({
       const rawPrice = activeFiatCurrency === 'XRP' ? exch : exch / exchRate;
       const formatted = formatPrice(rawPrice);
       return (
-        <StyledCell align="right" isDark={darkMode}>
-          <PriceText flashColor={flashColor} isDark={darkMode}>
+        <StyledCell align="right">
+          <PriceText flashColor={flashColor}>
             {formatted?.compact ? (
               <>
                 {currencySymbols[activeFiatCurrency]}0.0
@@ -802,50 +796,50 @@ const DesktopTokenRow = ({
           <>
             {tokenCell}
             {priceCell}
-            <StyledCell align="right" isDark={darkMode}>
+            <StyledCell align="right">
               <PercentText color={getPercentColor(pro5m)}>
                 {pro5m !== undefined && pro5m !== null && !isNaN(pro5m)
                   ? `${pro5m > 0 ? '+' : ''}${pro5m.toFixed(2)}%`
                   : '0.00%'}
               </PercentText>
             </StyledCell>
-            <StyledCell align="right" isDark={darkMode}>
+            <StyledCell align="right">
               <PercentText color={getPercentColor(pro1h)}>
                 {pro1h !== undefined && pro1h !== null && !isNaN(pro1h)
                   ? `${pro1h > 0 ? '+' : ''}${pro1h.toFixed(2)}%`
                   : '0.00%'}
               </PercentText>
             </StyledCell>
-            <StyledCell align="right" isDark={darkMode}>
+            <StyledCell align="right">
               <PercentText color={getPercentColor(pro24h)}>
                 {pro24h !== undefined && pro24h !== null && !isNaN(pro24h)
                   ? `${pro24h > 0 ? '+' : ''}${pro24h.toFixed(1)}%`
                   : '0.0%'}
               </PercentText>
             </StyledCell>
-            <StyledCell align="right" isDark={darkMode}>
+            <StyledCell align="right">
               <PercentText color={getPercentColor(pro7d)}>
                 {pro7d !== undefined && pro7d !== null && !isNaN(pro7d)
                   ? `${pro7d > 0 ? '+' : ''}${pro7d.toFixed(2)}%`
                   : '0.00%'}
               </PercentText>
             </StyledCell>
-            <StyledCell align="right" isDark={darkMode}>
+            <StyledCell align="right">
               <PercentText color={getPercentColor(pro24h * 30)}>
                 {pro24h !== undefined && pro24h !== null && !isNaN(pro24h)
                   ? `${pro24h * 30 > 0 ? '+' : ''}${(pro24h * 30).toFixed(0)}%`
                   : '0%'}
               </PercentText>
             </StyledCell>
-            <StyledCell align="right" isDark={darkMode}>
+            <StyledCell align="right">
               {currencySymbols[activeFiatCurrency]}
               {formatValue(convertedValues.volume)}
             </StyledCell>
-            <StyledCell align="right" isDark={darkMode}>
+            <StyledCell align="right">
               {sparklineUrl ? (
-                <SparklineChart key={sparklineUrl} url={sparklineUrl} darkMode={darkMode} />
+                <SparklineChart key={sparklineUrl} url={sparklineUrl} />
               ) : (
-                <span className={darkMode ? 'text-white/50' : 'text-black/50'}>
+                <span className={'text-black/50 dark:text-white/50'}>
                   -
                 </span>
               )}
@@ -858,7 +852,7 @@ const DesktopTokenRow = ({
           <>
             {tokenCell}
             {priceCell}
-            <StyledCell align="right" isDark={darkMode}>
+            <StyledCell align="right">
               <span
                 style={{ fontWeight: '400', color: getMarketCapColor(convertedValues.marketCap) }}
               >
@@ -866,21 +860,21 @@ const DesktopTokenRow = ({
                 {formatValue(convertedValues.marketCap)}
               </span>
             </StyledCell>
-            <StyledCell align="right" isDark={darkMode}>
+            <StyledCell align="right">
               {currencySymbols[activeFiatCurrency]}
               {formatValue(convertedValues.volume)}
             </StyledCell>
-            <StyledCell align="right" isDark={darkMode}>
+            <StyledCell align="right">
               {currencySymbols[activeFiatCurrency]}
               {formatValue(convertedValues.tvl)}
             </StyledCell>
-            <StyledCell align="right" isDark={darkMode}>
+            <StyledCell align="right">
               {formatValue(holders, 'int')}
             </StyledCell>
-            <StyledCell align="right" isDark={darkMode}>
+            <StyledCell align="right">
               {formatValue(amount, 'int')}
             </StyledCell>
-            <StyledCell align="right" isDark={darkMode} style={{ paddingLeft: 12, paddingRight: 16 }}>
+            <StyledCell align="right" style={{ paddingLeft: 12, paddingRight: 16 }}>
               {origin || 'XRPL'}
             </StyledCell>
           </>
@@ -891,49 +885,49 @@ const DesktopTokenRow = ({
           <>
             {tokenCell}
             {priceCell}
-            <StyledCell align="right" isDark={darkMode}>
+            <StyledCell align="right">
               <PercentText color={getPercentColor(pro5m)}>
                 {pro5m !== undefined && pro5m !== null && !isNaN(pro5m)
                   ? `${pro5m > 0 ? '+' : ''}${pro5m.toFixed(2)}%`
                   : '0.00%'}
               </PercentText>
             </StyledCell>
-            <StyledCell align="right" isDark={darkMode}>
+            <StyledCell align="right">
               <PercentText color={getPercentColor(pro1h)}>
                 {pro1h !== undefined && pro1h !== null && !isNaN(pro1h)
                   ? `${pro1h > 0 ? '+' : ''}${pro1h.toFixed(2)}%`
                   : '0.00%'}
               </PercentText>
             </StyledCell>
-            <StyledCell align="right" isDark={darkMode}>
+            <StyledCell align="right">
               <PercentText color={getPercentColor(pro24h)}>
                 {pro24h !== undefined && pro24h !== null && !isNaN(pro24h)
                   ? `${pro24h > 0 ? '+' : ''}${pro24h.toFixed(1)}%`
                   : '0.0%'}
               </PercentText>
             </StyledCell>
-            <StyledCell align="right" isDark={darkMode}>
+            <StyledCell align="right">
               <PercentText color={getPercentColor(pro7d)}>
                 {pro7d !== undefined && pro7d !== null && !isNaN(pro7d)
                   ? `${pro7d > 0 ? '+' : ''}${pro7d.toFixed(2)}%`
                   : '0.00%'}
               </PercentText>
             </StyledCell>
-            <StyledCell align="right" isDark={darkMode}>
+            <StyledCell align="right">
               {currencySymbols[activeFiatCurrency]}
               {formatValue(convertedValues.volume)}
             </StyledCell>
-            <StyledCell align="right" isDark={darkMode}>
+            <StyledCell align="right">
               <span style={{ fontWeight: '400', color: getMarketCapColor() }}>
                 {currencySymbols[activeFiatCurrency]}
                 {formatValue(convertedValues.marketCap)}
               </span>
             </StyledCell>
-            <StyledCell align="right" isDark={darkMode}>
+            <StyledCell align="right">
               {sparklineUrl ? (
-                <SparklineChart key={sparklineUrl} url={sparklineUrl} darkMode={darkMode} />
+                <SparklineChart key={sparklineUrl} url={sparklineUrl} />
               ) : (
-                <span className={darkMode ? 'text-white/50' : 'text-black/50'}>
+                <span className={'text-black/50 dark:text-white/50'}>
                   -
                 </span>
               )}
@@ -946,43 +940,43 @@ const DesktopTokenRow = ({
           <>
             {tokenCell}
             {priceCell}
-            <StyledCell align="right" isDark={darkMode}>
+            <StyledCell align="right">
               <PercentText color={getPercentColor(pro5m)}>
                 {pro5m !== undefined && pro5m !== null && !isNaN(pro5m)
                   ? `${pro5m > 0 ? '+' : ''}${pro5m.toFixed(2)}%`
                   : '0.00%'}
               </PercentText>
             </StyledCell>
-            <StyledCell align="right" isDark={darkMode}>
+            <StyledCell align="right">
               <PercentText color={getPercentColor(pro1h)}>
                 {pro1h !== undefined && pro1h !== null && !isNaN(pro1h)
                   ? `${pro1h > 0 ? '+' : ''}${pro1h.toFixed(2)}%`
                   : '0.00%'}
               </PercentText>
             </StyledCell>
-            <StyledCell align="right" isDark={darkMode}>
+            <StyledCell align="right">
               <PercentText color={getPercentColor(pro24h)}>
                 {pro24h !== undefined && pro24h !== null && !isNaN(pro24h)
                   ? `${pro24h > 0 ? '+' : ''}${pro24h.toFixed(1)}%`
                   : '0.0%'}
               </PercentText>
             </StyledCell>
-            <StyledCell align="right" isDark={darkMode}>
+            <StyledCell align="right">
               {currencySymbols[activeFiatCurrency]}
               {formatValue(convertedValues.volume)}
             </StyledCell>
-            <StyledCell align="right" isDark={darkMode}>
+            <StyledCell align="right">
               {formatValue(vol24htx, 'int')}
             </StyledCell>
-            <StyledCell align="right" isDark={darkMode}>
+            <StyledCell align="right">
               {currencySymbols[activeFiatCurrency]}
               {formatValue(convertedValues.tvl)}
             </StyledCell>
-            <StyledCell align="right" isDark={darkMode}>
+            <StyledCell align="right">
               {sparklineUrl ? (
-                <SparklineChart key={sparklineUrl} url={sparklineUrl} darkMode={darkMode} />
+                <SparklineChart key={sparklineUrl} url={sparklineUrl} />
               ) : (
-                <span className={darkMode ? 'text-white/50' : 'text-black/50'}>
+                <span className={'text-black/50 dark:text-white/50'}>
                   -
                 </span>
               )}
@@ -1008,8 +1002,8 @@ const DesktopTokenRow = ({
                 const customPrice = activeFiatCurrency === 'XRP' ? exch : exch / exchRate;
                 const customFormatted = formatPrice(customPrice);
                 columnElements.push(
-                  <StyledCell key="price" align="right" isDark={darkMode} style={extraStyle}>
-                    <PriceText flashColor={flashColor} isDark={darkMode}>
+                  <StyledCell key="price" align="right" style={extraStyle}>
+                    <PriceText flashColor={flashColor}>
                       {customFormatted?.compact ? (
                         <>
                           {currencySymbols[activeFiatCurrency]}0.0
@@ -1028,7 +1022,7 @@ const DesktopTokenRow = ({
                 break;
               case 'pro5m':
                 columnElements.push(
-                  <StyledCell key="pro5m" align="right" isDark={darkMode} style={extraStyle}>
+                  <StyledCell key="pro5m" align="right" style={extraStyle}>
                     <PercentText color={getPercentColor(pro5m)}>
                       {pro5m !== undefined && pro5m !== null && !isNaN(pro5m)
                         ? `${pro5m.toFixed(2)}%`
@@ -1039,7 +1033,7 @@ const DesktopTokenRow = ({
                 break;
               case 'pro1h':
                 columnElements.push(
-                  <StyledCell key="pro1h" align="right" isDark={darkMode} style={extraStyle}>
+                  <StyledCell key="pro1h" align="right" style={extraStyle}>
                     <PercentText color={getPercentColor(pro1h)}>
                       {pro1h !== undefined && pro1h !== null && !isNaN(pro1h)
                         ? `${pro1h.toFixed(2)}%`
@@ -1050,7 +1044,7 @@ const DesktopTokenRow = ({
                 break;
               case 'pro24h':
                 columnElements.push(
-                  <StyledCell key="pro24h" align="right" isDark={darkMode} style={extraStyle}>
+                  <StyledCell key="pro24h" align="right" style={extraStyle}>
                     <PercentText color={getPercentColor(pro24h)}>
                       {pro24h !== undefined && pro24h !== null && !isNaN(pro24h)
                         ? `${pro24h > 0 ? '+' : ''}${pro24h.toFixed(1)}%`
@@ -1061,7 +1055,7 @@ const DesktopTokenRow = ({
                 break;
               case 'pro7d':
                 columnElements.push(
-                  <StyledCell key="pro7d" align="right" isDark={darkMode} style={extraStyle}>
+                  <StyledCell key="pro7d" align="right" style={extraStyle}>
                     <PercentText color={getPercentColor(pro7d)}>
                       {pro7d !== undefined && pro7d !== null && !isNaN(pro7d)
                         ? `${pro7d.toFixed(2)}%`
@@ -1072,7 +1066,7 @@ const DesktopTokenRow = ({
                 break;
               case 'pro30d':
                 columnElements.push(
-                  <StyledCell key="pro30d" align="right" isDark={darkMode} style={extraStyle}>
+                  <StyledCell key="pro30d" align="right" style={extraStyle}>
                     <PercentText color={getPercentColor(pro24h * 30)}>
                       {pro24h !== undefined && pro24h !== null && !isNaN(pro24h)
                         ? `${(pro24h * 30).toFixed(0)}%`
@@ -1083,7 +1077,7 @@ const DesktopTokenRow = ({
                 break;
               case 'volume24h':
                 columnElements.push(
-                  <StyledCell key="volume24h" align="right" isDark={darkMode} style={extraStyle}>
+                  <StyledCell key="volume24h" align="right" style={extraStyle}>
                     {currencySymbols[activeFiatCurrency]}
                     {formatValue(convertedValues.volume)}
                   </StyledCell>
@@ -1091,7 +1085,7 @@ const DesktopTokenRow = ({
                 break;
               case 'volume7d':
                 columnElements.push(
-                  <StyledCell key="volume7d" align="right" isDark={darkMode} style={extraStyle}>
+                  <StyledCell key="volume7d" align="right" style={extraStyle}>
                     {currencySymbols[activeFiatCurrency]}
                     {formatValue(convertedValues.volume * 7)}
                   </StyledCell>
@@ -1099,7 +1093,7 @@ const DesktopTokenRow = ({
                 break;
               case 'marketCap':
                 columnElements.push(
-                  <StyledCell key="marketCap" align="right" isDark={darkMode} style={extraStyle}>
+                  <StyledCell key="marketCap" align="right" style={extraStyle}>
                     <span
                       style={{
                         fontWeight: '400',
@@ -1114,7 +1108,7 @@ const DesktopTokenRow = ({
                 break;
               case 'tvl':
                 columnElements.push(
-                  <StyledCell key="tvl" align="right" isDark={darkMode} style={extraStyle}>
+                  <StyledCell key="tvl" align="right" style={extraStyle}>
                     {currencySymbols[activeFiatCurrency]}
                     {formatValue(convertedValues.tvl)}
                   </StyledCell>
@@ -1122,23 +1116,23 @@ const DesktopTokenRow = ({
                 break;
               case 'holders':
                 columnElements.push(
-                  <StyledCell key="holders" align="right" isDark={darkMode} style={extraStyle}>
+                  <StyledCell key="holders" align="right" style={extraStyle}>
                     {formatValue(holders, 'int')}
                   </StyledCell>
                 );
                 break;
               case 'trades':
                 columnElements.push(
-                  <StyledCell key="trades" align="right" isDark={darkMode} style={extraStyle}>
+                  <StyledCell key="trades" align="right" style={extraStyle}>
                     {formatValue(vol24htx, 'int')}
                   </StyledCell>
                 );
                 break;
               case 'created':
                 columnElements.push(
-                  <StyledCell key="created" align="right" isDark={darkMode} style={extraStyle}>
+                  <StyledCell key="created" align="right" style={extraStyle}>
                     <span
-                      className={cn('text-[11px]', darkMode ? 'text-white/70' : 'text-black/70')}
+                      className={cn('text-[11px] text-black/70 dark:text-white/70')}
                     >
                       {formatTimeAgo(dateon, date)}
                     </span>
@@ -1147,26 +1141,26 @@ const DesktopTokenRow = ({
                 break;
               case 'supply':
                 columnElements.push(
-                  <StyledCell key="supply" align="right" isDark={darkMode} style={extraStyle}>
+                  <StyledCell key="supply" align="right" style={extraStyle}>
                     {formatValue(amount, 'int')}
                   </StyledCell>
                 );
                 break;
               case 'origin':
                 columnElements.push(
-                  <StyledCell key="origin" align="right" isDark={darkMode} style={{ ...extraStyle, paddingLeft: 12, paddingRight: 16 }}>
+                  <StyledCell key="origin" align="right" style={{ ...extraStyle, paddingLeft: 12, paddingRight: 16 }}>
                     {origin || 'XRPL'}
                   </StyledCell>
                 );
                 break;
               case 'sparkline':
                 columnElements.push(
-                  <StyledCell key="sparkline" align="right" isDark={darkMode}>
+                  <StyledCell key="sparkline" align="right">
                     {sparklineUrl ? (
-                      <SparklineChart key={sparklineUrl} url={sparklineUrl} darkMode={darkMode} />
+                      <SparklineChart key={sparklineUrl} url={sparklineUrl} />
                     ) : (
                       <span
-                        className={darkMode ? 'text-white/50' : 'text-black/50'}
+                        className={'text-black/50 dark:text-white/50'}
                       >
                         -
                       </span>
@@ -1195,72 +1189,72 @@ const DesktopTokenRow = ({
             {/* Trendline after price */}
             <td className="py-[14px] px-1 w-[128px] max-w-[128px]">
               {sparklineUrl ? (
-                <SparklineChart key={sparklineUrl} url={sparklineUrl} darkMode={darkMode} />
+                <SparklineChart key={sparklineUrl} url={sparklineUrl} />
               ) : (
                 <div
                   className={cn(
                     'w-[120px] h-[32px] rounded',
-                    darkMode ? 'bg-white/[0.03]' : 'bg-black/[0.02]'
+                    'bg-black/[0.02] dark:bg-white/[0.03]'
                   )}
                 />
               )}
             </td>
-            <StyledCell align="right" isDark={darkMode}>
+            <StyledCell align="right">
               <PercentText color={getPercentColor(pro5m)}>
                 {pro5m !== undefined && pro5m !== null && !isNaN(pro5m)
                   ? `${pro5m.toFixed(2)}%`
                   : '0.00%'}
               </PercentText>
             </StyledCell>
-            <StyledCell align="right" isDark={darkMode}>
+            <StyledCell align="right">
               <PercentText color={getPercentColor(pro1h)}>
                 {pro1h !== undefined && pro1h !== null && !isNaN(pro1h)
                   ? `${pro1h.toFixed(2)}%`
                   : '0.00%'}
               </PercentText>
             </StyledCell>
-            <StyledCell align="right" isDark={darkMode}>
+            <StyledCell align="right">
               <PercentText color={getPercentColor(pro24h)}>
                 {pro24h !== undefined && pro24h !== null && !isNaN(pro24h)
                   ? `${pro24h > 0 ? '+' : ''}${pro24h.toFixed(1)}%`
                   : '0.0%'}
               </PercentText>
             </StyledCell>
-            <StyledCell align="right" isDark={darkMode}>
+            <StyledCell align="right">
               <PercentText color={getPercentColor(pro7d)}>
                 {pro7d !== undefined && pro7d !== null && !isNaN(pro7d)
                   ? `${pro7d.toFixed(2)}%`
                   : '0.00%'}
               </PercentText>
             </StyledCell>
-            <StyledCell align="right" isDark={darkMode}>
+            <StyledCell align="right">
               {currencySymbols[activeFiatCurrency]}
               {formatValue(convertedValues.volume)}
             </StyledCell>
-            <StyledCell align="right" isDark={darkMode}>
+            <StyledCell align="right">
               <span
-                className={cn('text-[13px]', darkMode ? 'text-white/60' : 'text-black/60')}
+                className={cn('text-[13px] text-black/60 dark:text-white/60')}
               >
                 {formatTimeAgo(dateon, date)}
               </span>
             </StyledCell>
-            <StyledCell align="right" isDark={darkMode}>
+            <StyledCell align="right">
               {formatValue(vol24htx, 'int')}
             </StyledCell>
-            <StyledCell align="right" isDark={darkMode}>
+            <StyledCell align="right">
               {currencySymbols[activeFiatCurrency]}
               {formatValue(convertedValues.tvl)}
             </StyledCell>
-            <StyledCell align="right" isDark={darkMode}>
+            <StyledCell align="right">
               <span style={{ fontWeight: '400', color: getMarketCapColor() }}>
                 {currencySymbols[activeFiatCurrency]}
                 {formatValue(convertedValues.marketCap)}
               </span>
             </StyledCell>
-            <StyledCell align="right" isDark={darkMode}>
+            <StyledCell align="right">
               {formatValue(holders, 'int')}
             </StyledCell>
-            <StyledCell align="right" isDark={darkMode} style={{ paddingLeft: 12, paddingRight: 16 }}>
+            <StyledCell align="right" style={{ paddingLeft: 12, paddingRight: 16 }}>
               {origin || 'XRPL'}
             </StyledCell>
           </>
@@ -1269,12 +1263,11 @@ const DesktopTokenRow = ({
   };
 
   return (
-    <StyledRow onClick={handleRowClick} isDark={darkMode} isNew={isNew}>
+    <StyledRow onClick={handleRowClick} isNew={isNew}>
       {isLoggedIn && (
         <StyledCell
           align="center"
-          isDark={darkMode}
-          style={{ padding: '14px 0 14px 8px' }}
+                   style={{ padding: '14px 0 14px 8px' }}
         >
           <button
             onClick={handleWatchlistClick}
@@ -1283,9 +1276,7 @@ const DesktopTokenRow = ({
               'cursor-pointer inline-flex justify-center w-full transition-colors duration-150 bg-transparent border-none p-0 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] rounded',
               watchList.includes(md5)
                 ? 'text-[#F59E0B]'
-                : darkMode
-                  ? 'text-white/25'
-                  : 'text-black/20'
+                : 'text-black/20 dark:text-white/25'
             )}
           >
             <Bookmark size={16} fill={watchList.includes(md5) ? 'currentColor' : 'none'} />
@@ -1296,12 +1287,11 @@ const DesktopTokenRow = ({
       <StyledCell
         className="tr-idx"
         align="center"
-        isDark={darkMode}
-      >
+             >
         <span
           className={cn(
             'font-normal text-[13px] font-mono',
-            darkMode ? 'text-white/50' : 'text-black/50'
+            'text-black/50 dark:text-white/50'
           )}
         >
           {idx + 1}
@@ -1323,7 +1313,6 @@ const FTokenRow = memo(
     scrollLeft,
     exchRate,
     idx,
-    darkMode,
     isMobile,
     activeFiatCurrency,
     isLoggedIn,
@@ -1403,7 +1392,6 @@ const FTokenRow = memo(
       return (
         <MobileTokenRow
           token={token}
-          darkMode={darkMode}
           exchRate={exchRate}
           activeFiatCurrency={activeFiatCurrency}
           handleRowClick={handleRowClick}
@@ -1419,7 +1407,6 @@ const FTokenRow = memo(
     return (
       <DesktopTokenRow
         token={token}
-        darkMode={darkMode}
         exchRate={exchRate}
         activeFiatCurrency={activeFiatCurrency}
         handleRowClick={handleRowClick}
@@ -1455,7 +1442,6 @@ const FTokenRow = memo(
       prev.tvl === next.tvl &&
       prevProps.exchRate === nextProps.exchRate &&
       prevProps.isLoggedIn === nextProps.isLoggedIn &&
-      prevProps.darkMode === nextProps.darkMode &&
       prevProps.isMobile === nextProps.isMobile &&
       prevProps.viewMode === nextProps.viewMode &&
       prevProps.rows === nextProps.rows &&
@@ -1470,7 +1456,6 @@ const FTokenRow = memo(
 // Mobile list components for header and container
 export const MobileTokenList = ({
   tokens,
-  darkMode,
   exchRate,
   activeFiatCurrency,
   order,
@@ -1505,17 +1490,17 @@ export const MobileTokenList = ({
 };
 
 export const MobileContainer = ({ className, children, ...p }) => (
-  <div className={cn('w-full flex flex-col bg-transparent p-0 m-0', className)} {...p}>
+  <div className={cn('w-full flex flex-col p-0 m-0', className)} {...p}>
     {children}
   </div>
 );
 
-export const MobileHeader = ({ className, children, isDark, ...p }) => (
+export const MobileHeader = ({ className, children, ...p }) => (
   <div
     className={cn(
       'flex w-full text-xs font-normal sticky top-0 z-10 box-border',
       'py-2 px-2.5 backdrop-blur-[16px] border-b tracking-[0.01em]',
-      isDark ? 'bg-black/50 border-white/10 text-white/50' : 'bg-white/80 border-black/[0.06] text-black/50',
+      'bg-white/95 border-black/[0.06] text-black/50 dark:bg-black/50 dark:border-white/10 dark:text-white/50',
       className
     )}
     {...p}
@@ -1524,7 +1509,7 @@ export const MobileHeader = ({ className, children, isDark, ...p }) => (
   </div>
 );
 
-export const HeaderCell = ({ className, children, isDark, flex, align, sortable, ...p }) => (
+export const HeaderCell = ({ className, children, flex, align, sortable, ...p }) => (
   <div
     role={sortable ? 'button' : undefined}
     tabIndex={sortable ? 0 : undefined}
@@ -1538,7 +1523,7 @@ export const HeaderCell = ({ className, children, isDark, flex, align, sortable,
       textAlign: align || 'left'
     }}
     onMouseEnter={(e) => {
-      if (sortable) e.currentTarget.style.color = isDark ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)';
+      if (sortable) e.currentTarget.style.color = document.documentElement.classList.contains('dark') ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)';
     }}
     onMouseLeave={(e) => {
       if (sortable) e.currentTarget.style.color = '';

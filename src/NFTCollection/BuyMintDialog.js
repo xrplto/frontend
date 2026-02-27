@@ -149,22 +149,20 @@ export default function BuyMintDialog({
         <div
           className={cn(
             'w-full max-w-md rounded-2xl border my-8',
-            isDark
-              ? 'bg-black/90 backdrop-blur-2xl border-[#3f96fe]/10 shadow-[0_8px_40px_rgba(0,0,0,0.6)]'
-              : 'bg-white/98 backdrop-blur-2xl border-gray-200 shadow-[0_8px_32px_rgba(0,0,0,0.08)]'
+            'bg-white/98 backdrop-blur-2xl border-gray-200 shadow-[0_8px_32px_rgba(0,0,0,0.08)] dark:bg-black/90 dark:backdrop-blur-2xl dark:border-[#3f96fe]/10 dark:shadow-[0_8px_40px_rgba(0,0,0,0.6)]'
           )}
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
           <div className="flex items-center justify-between p-2 border-b border-white/10">
-            <h3 className={cn('text-[15px] font-normal', isDark ? 'text-white' : 'text-gray-900')}>
+            <h3 className={cn('text-[15px] font-normal', 'text-gray-900 dark:text-white')}>
               Buy Mint
             </h3>
             <button
               onClick={handleClose}
               className={cn(
                 'p-1 rounded-lg',
-                isDark ? 'hover:bg-white/5 text-gray-400' : 'hover:bg-gray-100 text-gray-600'
+                'hover:bg-gray-100 text-gray-600 dark:hover:bg-white/5 dark:text-gray-400'
               )}
             >
               <X size={20} />
@@ -177,7 +175,7 @@ export default function BuyMintDialog({
               <p
                 className={cn(
                   'text-[13px] font-normal mt-0',
-                  isDark ? 'text-white' : 'text-gray-900'
+                  'text-gray-900 dark:text-white'
                 )}
               >
                 To power up the spinner, you need at least 1 or more Mints. This will enable you to
@@ -187,7 +185,7 @@ export default function BuyMintDialog({
               <p
                 className={cn(
                   'text-[13px] font-normal mt-2',
-                  isDark ? 'text-white' : 'text-gray-900'
+                  'text-gray-900 dark:text-white'
                 )}
               >
                 Mints purchased for this collection cannot be used on other collections.
@@ -198,7 +196,7 @@ export default function BuyMintDialog({
                   <span
                     className={cn(
                       'text-[13px] font-medium',
-                      isDark ? 'text-white' : 'text-gray-900'
+                      'text-gray-900 dark:text-white'
                     )}
                   >
                     Cost
@@ -209,9 +207,7 @@ export default function BuyMintDialog({
                     onChange={handleChangeCost}
                     className={cn(
                       'rounded-lg border-[1.5px] px-2 py-1 text-[13px] font-normal',
-                      isDark
-                        ? 'bg-black border-white/15 text-white'
-                        : 'bg-white border-gray-300 text-gray-900'
+                      'bg-white border-gray-300 text-gray-900 dark:bg-black dark:border-white/15 dark:text-white'
                     )}
                   >
                     {costs.map((cost, idx) => (
@@ -225,7 +221,7 @@ export default function BuyMintDialog({
 
               <div className="flex flex-row gap-2 mt-2 items-center">
                 <span
-                  className={cn('text-[13px] font-medium', isDark ? 'text-white' : 'text-gray-900')}
+                  className={cn('text-[13px] font-medium', 'text-gray-900 dark:text-white')}
                 >
                   Quantity <span className="text-[11px] text-[#EB5757]">*</span>
                 </span>
@@ -240,16 +236,14 @@ export default function BuyMintDialog({
                   onKeyDown={(e) => e.stopPropagation()}
                   className={cn(
                     'w-20 rounded-lg border-[1.5px] px-3 py-1 text-center text-[13px] font-normal',
-                    isDark
-                      ? 'bg-black border-white/15 text-white placeholder:text-gray-500'
-                      : 'bg-white border-gray-300 text-gray-900 placeholder:text-gray-400'
+                    'bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 dark:bg-black dark:border-white/15 dark:text-white dark:placeholder:text-gray-500'
                   )}
                 />
               </div>
 
               <div className="flex flex-row gap-2 mt-3">
                 <span
-                  className={cn('text-[13px] font-medium', isDark ? 'text-white' : 'text-gray-900')}
+                  className={cn('text-[13px] font-medium', 'text-gray-900 dark:text-white')}
                 >
                   Total {cost.name} Required
                 </span>
@@ -268,7 +262,7 @@ export default function BuyMintDialog({
                 />
                 <label
                   htmlFor="disclaimer-checkbox"
-                  className={cn('text-[11px] font-normal', isDark ? 'text-white' : 'text-gray-900')}
+                  className={cn('text-[11px] font-normal', 'text-gray-900 dark:text-white')}
                 >
                   I understand that I will be purchasing{' '}
                   <span className="text-[11px] font-normal text-[#33C2FF]">{quantity} Mints</span>{' '}
@@ -285,9 +279,7 @@ export default function BuyMintDialog({
                 <button
                   className={cn(
                     'rounded-lg border-[1.5px] px-4 py-2 text-[13px] font-normal',
-                    isDark
-                      ? 'border-white/15 hover:bg-primary/5 text-white'
-                      : 'border-gray-300 hover:bg-gray-100 text-gray-900',
+                    'border-gray-300 hover:bg-gray-100 text-gray-900 dark:border-white/15 dark:hover:bg-primary/5 dark:text-white',
                     !canApprove && 'opacity-50 cursor-not-allowed'
                   )}
                   onClick={handleApprove}

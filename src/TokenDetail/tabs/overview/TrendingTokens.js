@@ -1,5 +1,5 @@
 import { useContext, useState, useEffect } from 'react';
-import { ThemeContext, WalletContext, AppContext } from 'src/context/AppContext';
+import { WalletContext, AppContext } from 'src/context/AppContext';
 import { cn } from 'src/utils/cn';
 import { useSelector } from 'react-redux';
 import { selectMetrics } from 'src/redux/statusSlice';
@@ -8,27 +8,26 @@ import { Bookmark, Flame } from 'lucide-react';
 
 const SYMBOLS = { USD: '$', EUR: '€', JPY: '¥', CNH: '¥', XRP: '✕' };
 
-const Container = ({ isDark, className, ...props }) => (
+const Container = ({ className, ...props }) => (
   <div
     className={cn(
       'flex flex-col h-full overflow-hidden',
-      isDark ? 'bg-transparent' : 'bg-white',
+      'bg-white dark:bg-transparent',
       className
     )}
     {...props}
   />
 );
 
-const TokenCard = ({ isDark, isWatched, className, children, ...props }) => (
+const TokenCard = ({ isWatched, className, children, ...props }) => (
   <a
     className={cn(
       'grid items-center no-underline text-inherit transition-[background-color] duration-150 relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#137DFE]',
       'grid-cols-[20px_28px_1fr_70px_54px] gap-2.5 py-2.5 px-4',
-      isDark
-        ? 'border-b border-white/[0.04] hover:bg-white/[0.03]'
-        : 'border-b border-black/[0.04] hover:bg-black/[0.02]',
+      'border-b border-black/[0.04] hover:bg-black/[0.02]',
+      'dark:border-white/[0.04] dark:hover:bg-white/[0.03]',
       'last:border-b-0',
-      isWatched && (isDark ? 'bg-[rgba(246,184,126,0.04)]' : 'bg-[rgba(246,184,126,0.06)]'),
+      isWatched && 'bg-[rgba(246,184,126,0.06)] dark:bg-[rgba(246,184,126,0.04)]',
       className
     )}
     {...props}
@@ -64,8 +63,6 @@ const formatPrice = (price, currency, rate) => {
 };
 
 const TrendingTokens = ({ token = null }) => {
-  const { darkMode } = useContext(ThemeContext);
-  const isDark = darkMode;
   const { accountProfile, setOpenWalletModal } = useContext(WalletContext);
   const { activeFiatCurrency } = useContext(AppContext);
   const metrics = useSelector(selectMetrics);
@@ -142,7 +139,7 @@ const TrendingTokens = ({ token = null }) => {
 
   if (error) {
     return (
-      <Container isDark={darkMode}>
+      <Container>
         <div className="p-4 text-[#f44336] text-xs">Failed to load trending tokens</div>
       </Container>
     );
@@ -150,18 +147,18 @@ const TrendingTokens = ({ token = null }) => {
 
   if (loading) {
     return (
-      <Container isDark={darkMode}>
+      <Container>
         <div className="p-3">
           {[...Array(10)].map((_, i) => (
             <div key={i} className="flex items-center gap-2 py-[6px] px-2">
-              <div className={cn('w-6 h-6 rounded-md flex-shrink-0', darkMode ? 'bg-white/[0.06]' : 'bg-black/[0.06]')} />
+              <div className="w-6 h-6 rounded-md flex-shrink-0 bg-black/[0.06] dark:bg-white/[0.06]" />
               <div className="flex flex-col gap-1 w-[72px] flex-shrink-0">
-                <div className={cn('h-2.5 rounded w-[80%]', darkMode ? 'bg-white/[0.06]' : 'bg-black/[0.06]')} />
-                <div className={cn('h-2 rounded w-[50%]', darkMode ? 'bg-white/[0.04]' : 'bg-black/[0.04]')} />
+                <div className="h-2.5 rounded w-[80%] bg-black/[0.06] dark:bg-white/[0.06]" />
+                <div className="h-2 rounded w-[50%] bg-black/[0.04] dark:bg-white/[0.04]" />
               </div>
-              <div className={cn('h-2.5 rounded w-12 ml-auto', darkMode ? 'bg-white/[0.06]' : 'bg-black/[0.06]')} />
-              <div className={cn('h-2.5 rounded w-8 flex-shrink-0', darkMode ? 'bg-white/[0.06]' : 'bg-black/[0.06]')} />
-              <div className={cn('h-2.5 rounded w-10 flex-shrink-0', darkMode ? 'bg-white/[0.06]' : 'bg-black/[0.06]')} />
+              <div className="h-2.5 rounded w-12 ml-auto bg-black/[0.06] dark:bg-white/[0.06]" />
+              <div className="h-2.5 rounded w-8 flex-shrink-0 bg-black/[0.06] dark:bg-white/[0.06]" />
+              <div className="h-2.5 rounded w-10 flex-shrink-0 bg-black/[0.06] dark:bg-white/[0.06]" />
             </div>
           ))}
         </div>
@@ -170,12 +167,12 @@ const TrendingTokens = ({ token = null }) => {
   }
 
   return (
-    <Container isDark={darkMode}>
+    <Container>
       <div className={cn(
         'flex items-center justify-between py-2 sm:py-3 px-2.5 sm:px-4 border-b',
-        darkMode ? 'border-white/[0.06] bg-white/[0.02]' : 'border-black/[0.06] bg-black/[0.02]'
+        'border-black/[0.06] bg-black/[0.02] dark:border-white/[0.06] dark:bg-white/[0.02]'
       )}>
-        <div className={cn('flex rounded-md p-0.5', darkMode ? 'bg-white/5' : 'bg-black/5')}>
+        <div className="flex rounded-md p-0.5 bg-black/5 dark:bg-white/5">
           {['trending', 'new'].map((tab) => (
             <button
               key={tab}
@@ -183,8 +180,8 @@ const TrendingTokens = ({ token = null }) => {
               className={cn(
                 'h-[22px] sm:h-6 px-2.5 sm:px-3 text-[10px] font-semibold border-none rounded cursor-pointer transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                 activeTab === tab
-                  ? cn(darkMode ? 'bg-white/10 text-white' : 'bg-white text-black shadow-[0_1px_3px_rgba(0,0,0,0.1)]')
-                  : cn('bg-transparent', darkMode ? 'text-white/55' : 'text-black/55')
+                  ? 'bg-white text-black shadow-[0_1px_3px_rgba(0,0,0,0.1)] dark:bg-white/10 dark:text-white dark:shadow-none'
+                  : 'bg-transparent text-black/55 dark:text-white/55'
               )}
             >
               {tab === 'trending' ? 'Trending' : 'New'}
@@ -221,16 +218,15 @@ const TrendingTokens = ({ token = null }) => {
                 href={`/token/${t.slug}`}
                 className={cn(
                   'flex items-center gap-2 py-[6px] px-2 no-underline text-inherit border-b relative',
-                  isDark
-                    ? 'border-white/[0.04] hover:bg-white/[0.03]'
-                    : 'border-black/[0.04] hover:bg-black/[0.02]',
+                  'border-black/[0.04] hover:bg-black/[0.02]',
+                  'dark:border-white/[0.04] dark:hover:bg-white/[0.03]',
                   'last:border-b-0',
-                  isWatched && (isDark ? 'bg-[rgba(246,184,126,0.04)]' : 'bg-[rgba(246,184,126,0.06)]')
+                  isWatched && 'bg-[rgba(246,184,126,0.06)] dark:bg-[rgba(246,184,126,0.04)]'
                 )}
               >
                 {isWatched && <span className="absolute left-0 top-[15%] bottom-[15%] w-0.5 bg-[#F6B87E] rounded-r" />}
                 <div className="relative w-6 h-6 flex-shrink-0">
-                  <div className={cn('w-6 h-6 rounded-md overflow-hidden flex items-center justify-center', isDark ? 'bg-white/5' : 'bg-black/5')}>
+                  <div className="w-6 h-6 rounded-md overflow-hidden flex items-center justify-center bg-black/5 dark:bg-white/5">
                     {t.md5 ? (
                       <img src={`https://s1.xrpl.to/thumb/${t.md5}_32`} alt="" className="w-full h-full object-cover" loading="lazy" onError={(e) => { e.target.style.display = 'none'; }} />
                     ) : (
@@ -242,12 +238,11 @@ const TrendingTokens = ({ token = null }) => {
                     onClick={(e) => toggleWatch(e, t.md5)}
                     fill={isWatched ? '#F59E0B' : 'none'}
                     strokeWidth={2}
-                    className="absolute -top-0.5 -right-0.5 cursor-pointer"
-                    style={{ color: isWatched ? '#F59E0B' : isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.2)' }}
+                    className={cn("absolute -top-0.5 -right-0.5 cursor-pointer", isWatched ? 'text-[#F59E0B]' : 'text-black/20 dark:text-white/25')}
                   />
                 </div>
                 <div className="min-w-0 flex-1 flex flex-col overflow-hidden">
-                  <div className={cn('overflow-hidden text-ellipsis whitespace-nowrap text-[11px] font-semibold leading-tight flex items-center gap-0.5', isDark ? 'text-white' : 'text-[#1a1f2e]')}>
+                  <div className="overflow-hidden text-ellipsis whitespace-nowrap text-[11px] font-semibold leading-tight flex items-center gap-0.5 text-[#1a1f2e] dark:text-white">
                     <span className={cn('truncate', t.trendingBoost >= 500 && t.trendingBoostExpires > Date.now() && 'text-[#FFD700]')}>{t.name}</span>
                     {t.trendingBoost > 0 && t.trendingBoostExpires > Date.now() && (
                       <Flame size={8} fill="#F6AF01" className="flex-shrink-0 text-[#F6AF01]" />
@@ -261,7 +256,7 @@ const TrendingTokens = ({ token = null }) => {
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0">
                   <div className="text-right flex flex-col">
-                    <div className={cn('text-[10px] font-semibold font-mono tabular-nums leading-tight', isDark ? 'text-white/90' : 'text-[#1a1f2e]')}>
+                    <div className="text-[10px] font-semibold font-mono tabular-nums leading-tight text-[#1a1f2e] dark:text-white/90">
                       {formatPrice(t.exch, activeFiatCurrency, rate)}
                     </div>
                     <div className="text-[8px] font-medium tabular-nums opacity-40 leading-tight">
@@ -283,7 +278,6 @@ const TrendingTokens = ({ token = null }) => {
             <TokenCard
               key={t.md5 || i}
               href={`/token/${t.slug}`}
-              isDark={darkMode}
               isWatched={isWatched}
             >
               <div className="flex items-center">
@@ -292,11 +286,10 @@ const TrendingTokens = ({ token = null }) => {
                   onClick={(e) => toggleWatch(e, t.md5)}
                   fill={isWatched ? '#F59E0B' : 'none'}
                   strokeWidth={2}
-                  className="cursor-pointer transition-transform duration-200 hover:scale-[1.2]"
-                  style={{ color: isWatched ? '#F59E0B' : isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)' }}
+                  className={cn("cursor-pointer transition-transform duration-200 hover:scale-[1.2]", isWatched ? 'text-[#F59E0B]' : 'text-black/20 dark:text-white/20')}
                 />
               </div>
-              <div className={cn('flex w-7 h-7 rounded-lg overflow-hidden items-center justify-center', isDark ? 'bg-white/5' : 'bg-black/5')}>
+              <div className="flex w-7 h-7 rounded-lg overflow-hidden items-center justify-center bg-black/5 dark:bg-white/5">
                 {t.md5 ? (
                   <img src={`https://s1.xrpl.to/thumb/${t.md5}_32`} alt="" className="w-full h-full object-cover" loading="lazy" onError={(e) => { e.target.style.display = 'none'; }} />
                 ) : (
@@ -304,7 +297,7 @@ const TrendingTokens = ({ token = null }) => {
                 )}
               </div>
               <div className="min-w-0 flex flex-col overflow-hidden">
-                <div className={cn('overflow-hidden text-ellipsis whitespace-nowrap text-xs font-semibold leading-tight flex items-center gap-1', isDark ? 'text-white' : 'text-[#1a1f2e]')}>
+                <div className="overflow-hidden text-ellipsis whitespace-nowrap text-xs font-semibold leading-tight flex items-center gap-1 text-[#1a1f2e] dark:text-white">
                   <span className={cn('truncate', t.trendingBoost >= 500 && t.trendingBoostExpires > Date.now() && 'text-[#FFD700]')}>{t.name}</span>
                   {t.trendingBoost > 0 && t.trendingBoostExpires > Date.now() && (
                     <span className="inline-flex items-center gap-0.5 flex-shrink-0 text-[#F6AF01]">
@@ -320,7 +313,7 @@ const TrendingTokens = ({ token = null }) => {
                 </div>
               </div>
               <div className="flex text-right flex-col gap-px">
-                <div className={cn('text-[11px] font-semibold font-mono tabular-nums', isDark ? 'text-white/90' : 'text-[#1a1f2e]')}>
+                <div className="text-[11px] font-semibold font-mono tabular-nums text-[#1a1f2e] dark:text-white/90">
                   {formatPrice(t.exch, activeFiatCurrency, rate)}
                 </div>
                 <div className="opacity-40 text-[9px] font-medium tabular-nums">

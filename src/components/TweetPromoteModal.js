@@ -1,7 +1,7 @@
 import { useState, useEffect, useContext, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { cn } from 'src/utils/cn';
-import { ThemeContext, WalletContext, AppContext } from 'src/context/AppContext';
+import { WalletContext, AppContext } from 'src/context/AppContext';
 import { Check, Loader2, ExternalLink, AlertCircle, X, Gift, Trophy, Crown, Award, Megaphone, Send, MessageCircle, Facebook, Linkedin, Mail, Copy, Share2, Clock, Info, Timer } from 'lucide-react';
 import api from 'src/utils/api';
 
@@ -13,15 +13,15 @@ const XSocialIcon = ({ size = 16 }) => (
   </svg>
 );
 
-const ShareAction = ({ icon: Icon, color, onClick, label, isDark }) => (
+const ShareAction = ({ icon: Icon, color, iconClassName, onClick, label }) => (
   <button onClick={onClick} className="flex flex-col items-center gap-1.5 group transition-all">
     <div className={cn(
       "w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-110 active:scale-95",
-      isDark ? "bg-white/[0.03] border border-white/[0.05] group-hover:bg-white/[0.08]" : "bg-gray-50 border border-gray-100 group-hover:bg-white"
+      "bg-gray-50 border border-gray-100 group-hover:bg-white dark:bg-white/[0.03] dark:border-white/[0.05] dark:group-hover:bg-white/[0.08]"
     )}>
-      <Icon size={18} style={{ color }} />
+      <Icon size={18} style={color ? { color } : undefined} className={iconClassName} />
     </div>
-    <span className={cn("text-[9px] font-medium opacity-50 group-hover:opacity-100", isDark ? "text-white" : "text-gray-900")}>{label}</span>
+    <span className={cn("text-[9px] font-medium opacity-50 group-hover:opacity-100", "text-gray-900 dark:text-white")}>{label}</span>
   </button>
 );
 
@@ -39,10 +39,8 @@ function TierIcon({ tierId, size = 12 }) {
 }
 
 export default function TweetPromoteModal({ token, tweetCount = 0, onCountChange, open: externalOpen, onOpenChange, wrapperClassName, className, type = 'token' }) {
-  const { themeName } = useContext(ThemeContext);
   const { accountProfile } = useContext(WalletContext);
   const { openSnackbar } = useContext(AppContext);
-  const isDark = themeName === 'XrplToDarkTheme';
 
   const [internalOpen, setInternalOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -280,20 +278,20 @@ export default function TweetPromoteModal({ token, tweetCount = 0, onCountChange
         onClick={(e) => e.stopPropagation()}
         className={cn(
           'relative w-full max-w-xl rounded-3xl border shadow-2xl animate-in zoom-in-95 duration-200 overflow-hidden',
-          isDark ? 'bg-[#0a0a0a] border-white/10' : 'bg-white border-gray-100'
+          'bg-white border-gray-100 dark:bg-[#0a0a0a] dark:border-white/10'
         )}
       >
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4">
           <div className="flex items-center gap-2">
             <Share2 size={14} className="opacity-40" />
-            <span className={cn('text-sm font-bold uppercase tracking-widest opacity-40', isDark ? 'text-white' : 'text-gray-900')}>
+            <span className={cn('text-sm font-bold uppercase tracking-widest opacity-40', 'text-gray-900 dark:text-white')}>
               Share {ticker}
             </span>
           </div>
           <button
             onClick={() => setIsOpen(false)}
-            className={cn('p-1.5 rounded-xl transition-colors', isDark ? 'hover:bg-white/10 text-white/40' : 'hover:bg-gray-100 text-gray-400')}
+            className={cn('p-1.5 rounded-xl transition-colors', 'hover:bg-gray-100 text-gray-400 dark:hover:bg-white/10 dark:text-white/40')}
           >
             <X size={20} />
           </button>
@@ -303,30 +301,30 @@ export default function TweetPromoteModal({ token, tweetCount = 0, onCountChange
         <div className="px-5 pb-5 space-y-3">
           {/* Share platforms */}
           <div className="grid grid-cols-7 gap-1.5">
-            <ShareAction icon={XSocialIcon} color={isDark ? '#fff' : '#000'} label="X" isDark={isDark}
+            <ShareAction icon={XSocialIcon} iconClassName="text-black dark:text-white" label="X"
               onClick={() => window.open(tweetIntentUrl, '_blank')} />
-            <ShareAction icon={Send} color="#229ED9" label="Telegram" isDark={isDark}
+            <ShareAction icon={Send} color="#229ED9" label="Telegram"
               onClick={() => window.open(`https://t.me/share/url?url=${encodeURIComponent(tokenPageUrl)}&text=${encodeURIComponent(tweetText)}`, '_blank')} />
-            <ShareAction icon={MessageCircle} color="#25D366" label="WhatsApp" isDark={isDark}
+            <ShareAction icon={MessageCircle} color="#25D366" label="WhatsApp"
               onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(`${tweetText} ${tokenPageUrl}`)}`, '_blank')} />
-            <ShareAction icon={Facebook} color="#1877F2" label="Facebook" isDark={isDark}
+            <ShareAction icon={Facebook} color="#1877F2" label="Facebook"
               onClick={() => window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(tokenPageUrl)}`, '_blank')} />
-            <ShareAction icon={Linkedin} color="#0A66C2" label="LinkedIn" isDark={isDark}
+            <ShareAction icon={Linkedin} color="#0A66C2" label="LinkedIn"
               onClick={() => window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(tokenPageUrl)}`, '_blank')} />
-            <ShareAction icon={Mail} color="#6B7280" label="Email" isDark={isDark}
+            <ShareAction icon={Mail} color="#6B7280" label="Email"
               onClick={() => { window.location.href = `mailto:?subject=${encodeURIComponent(tweetText)}&body=${encodeURIComponent(tokenPageUrl)}`; }} />
-            <ShareAction icon={Copy} color="#3f96fe" label="Copy" isDark={isDark}
+            <ShareAction icon={Copy} color="#3f96fe" label="Copy"
               onClick={() => { navigator.clipboard.writeText(tokenPageUrl); if (openSnackbar) openSnackbar('Link copied!', 'success'); }} />
           </div>
 
           {/* Verify tweet for promoter credit */}
           <div className={cn(
             'rounded-xl border px-3 py-2.5 flex items-start gap-2.5',
-            isDark ? 'bg-white/[0.03] border-white/[0.06]' : 'bg-gray-50 border-gray-100'
+            'bg-gray-50 border-gray-100 dark:bg-white/[0.03] dark:border-white/[0.06]'
           )}>
             <Trophy size={14} className="text-[#F6AF01] shrink-0 mt-0.5" />
-            <div className={cn('text-[11px] leading-[1.5]', isDark ? 'text-white/50' : 'text-gray-500')}>
-              <span className={cn('font-semibold', isDark ? 'text-white/80' : 'text-gray-700')}>Earn promoter rank.</span> Tweet about {ticker}, then paste your tweet URL below to verify and climb from Advocate to Legend.
+            <div className={cn('text-[11px] leading-[1.5]', 'text-gray-500 dark:text-white/50')}>
+              <span className={cn('font-semibold', 'text-gray-700 dark:text-white/80')}>Earn promoter rank.</span> Tweet about {ticker}, then paste your tweet URL below to verify and climb from Advocate to Legend.
             </div>
           </div>
 
@@ -336,11 +334,11 @@ export default function TweetPromoteModal({ token, tweetCount = 0, onCountChange
             return (
               <div className={cn(
                 'rounded-xl border px-3 py-2.5 flex items-start gap-2.5',
-                isDark ? 'bg-[#F6AF01]/10 border-[#F6AF01]/20' : 'bg-amber-50 border-amber-100'
+                'bg-amber-50 border-amber-100 dark:bg-[#F6AF01]/10 dark:border-[#F6AF01]/20'
               )}>
                 <Gift size={14} className="text-[#F6AF01] shrink-0 mt-0.5" />
-                <div className={cn('text-[11px] leading-[1.5]', isDark ? 'text-white/50' : 'text-gray-500')}>
-                  <span className={cn('font-semibold', isDark ? 'text-white/80' : 'text-gray-700')}>You have an unclaimed reward.</span> The promotion period has ended but your <span className={cn('font-semibold', isDark ? 'text-white/80' : 'text-gray-700')}>{Number(parseFloat(rewardInfo.amount) || 0).toLocaleString()} {rewardToken}</span> tokens are still available to claim.
+                <div className={cn('text-[11px] leading-[1.5]', 'text-gray-500 dark:text-white/50')}>
+                  <span className={cn('font-semibold', 'text-gray-700 dark:text-white/80')}>You have an unclaimed reward.</span> The promotion period has ended but your <span className={cn('font-semibold', 'text-gray-700 dark:text-white/80')}>{Number(parseFloat(rewardInfo.amount) || 0).toLocaleString()} {rewardToken}</span> tokens are still available to claim.
                 </div>
               </div>
             );
@@ -365,15 +363,15 @@ export default function TweetPromoteModal({ token, tweetCount = 0, onCountChange
             return (
               <div className={cn(
                 'rounded-xl border px-3 py-3 space-y-2.5',
-                isDark ? 'bg-[#650CD4]/10 border-[#650CD4]/20' : 'bg-purple-50 border-purple-100'
+                'bg-purple-50 border-purple-100 dark:bg-[#650CD4]/10 dark:border-[#650CD4]/20'
               )}>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Gift size={14} className="text-[#650CD4]" />
-                    <span className={cn('text-[12px] font-semibold', isDark ? 'text-white/90' : 'text-gray-800')}>
+                    <span className={cn('text-[12px] font-semibold', 'text-gray-800 dark:text-white/90')}>
                       Reward Pool
                     </span>
-                    <span className={cn('text-[10px] font-medium', isDark ? 'text-white/40' : 'text-gray-400')}>
+                    <span className={cn('text-[10px] font-medium', 'text-gray-400 dark:text-white/40')}>
                       {Number(totalPool).toLocaleString()} {rewardToken}
                     </span>
                   </div>
@@ -387,38 +385,38 @@ export default function TweetPromoteModal({ token, tweetCount = 0, onCountChange
                   </span>
                 </div>
 
-                <p className={cn('text-[11px] leading-[1.4]', isDark ? 'text-white/50' : 'text-gray-500')}>
-                  The token creator has allocated <span className={cn('font-semibold', isDark ? 'text-white/80' : 'text-gray-700')}>{Number(totalPool).toLocaleString()} {rewardToken}</span> for promoters. Post about this token on X, then verify your tweet URL to receive <span className={cn('font-semibold', isDark ? 'text-white/80' : 'text-gray-700')}>{Number(perUser).toLocaleString()} {rewardToken}</span>. {remaining > 0 ? `${remaining} spot${remaining !== 1 ? 's' : ''} remaining.` : 'All spots filled.'}
+                <p className={cn('text-[11px] leading-[1.4]', 'text-gray-500 dark:text-white/50')}>
+                  The token creator has allocated <span className={cn('font-semibold', 'text-gray-700 dark:text-white/80')}>{Number(totalPool).toLocaleString()} {rewardToken}</span> for promoters. Post about this token on X, then verify your tweet URL to receive <span className={cn('font-semibold', 'text-gray-700 dark:text-white/80')}>{Number(perUser).toLocaleString()} {rewardToken}</span>. {remaining > 0 ? `${remaining} spot${remaining !== 1 ? 's' : ''} remaining.` : 'All spots filled.'}
                 </p>
 
                 <div className="grid grid-cols-3 gap-2">
-                  <div className={cn('rounded-lg px-2 py-1.5 text-center', isDark ? 'bg-white/[0.04]' : 'bg-white/80')}>
-                    <div className={cn('text-[12px] font-bold', isDark ? 'text-white' : 'text-gray-900')}>
+                  <div className={cn('rounded-lg px-2 py-1.5 text-center', 'bg-white/80 dark:bg-white/[0.04]')}>
+                    <div className={cn('text-[12px] font-bold', 'text-gray-900 dark:text-white')}>
                       {Number(perUser).toLocaleString()}
                     </div>
-                    <div className={cn('text-[9px] uppercase tracking-wide', isDark ? 'text-white/30' : 'text-gray-400')}>
+                    <div className={cn('text-[9px] uppercase tracking-wide', 'text-gray-400 dark:text-white/30')}>
                       {rewardToken} / user
                     </div>
                   </div>
-                  <div className={cn('rounded-lg px-2 py-1.5 text-center', isDark ? 'bg-white/[0.04]' : 'bg-white/80')}>
-                    <div className={cn('text-[12px] font-bold', isDark ? 'text-white' : 'text-gray-900')}>
+                  <div className={cn('rounded-lg px-2 py-1.5 text-center', 'bg-white/80 dark:bg-white/[0.04]')}>
+                    <div className={cn('text-[12px] font-bold', 'text-gray-900 dark:text-white')}>
                       {remaining}
                     </div>
-                    <div className={cn('text-[9px] uppercase tracking-wide', isDark ? 'text-white/30' : 'text-gray-400')}>
+                    <div className={cn('text-[9px] uppercase tracking-wide', 'text-gray-400 dark:text-white/30')}>
                       Spots open
                     </div>
                   </div>
-                  <div className={cn('rounded-lg px-2 py-1.5 text-center', isDark ? 'bg-white/[0.04]' : 'bg-white/80')}>
-                    <div className={cn('text-[12px] font-bold', isDark ? 'text-white' : 'text-gray-900')}>
+                  <div className={cn('rounded-lg px-2 py-1.5 text-center', 'bg-white/80 dark:bg-white/[0.04]')}>
+                    <div className={cn('text-[12px] font-bold', 'text-gray-900 dark:text-white')}>
                       {earned}/{max}
                     </div>
-                    <div className={cn('text-[9px] uppercase tracking-wide', isDark ? 'text-white/30' : 'text-gray-400')}>
+                    <div className={cn('text-[9px] uppercase tracking-wide', 'text-gray-400 dark:text-white/30')}>
                       Earned
                     </div>
                   </div>
                 </div>
 
-                <div className={cn('h-1.5 rounded-full overflow-hidden', isDark ? 'bg-white/[0.06]' : 'bg-gray-200')}>
+                <div className={cn('h-1.5 rounded-full overflow-hidden', 'bg-gray-200 dark:bg-white/[0.06]')}>
                   <div
                     className="h-full rounded-full bg-[#650CD4] transition-all duration-500"
                     style={{ width: `${progressPct}%` }}
@@ -432,18 +430,18 @@ export default function TweetPromoteModal({ token, tweetCount = 0, onCountChange
           {poolActive && (
             <div className={cn(
               'rounded-xl border px-3 py-2.5 space-y-1.5',
-              isDark ? 'bg-white/[0.02] border-white/[0.06]' : 'bg-gray-50/50 border-gray-100'
+              'bg-gray-50/50 border-gray-100 dark:bg-white/[0.02] dark:border-white/[0.06]'
             )}>
               <div className="flex items-center gap-1.5">
-                <Info size={11} className={cn(isDark ? 'text-white/30' : 'text-gray-400')} />
-                <span className={cn('text-[10px] font-semibold uppercase tracking-wide', isDark ? 'text-white/40' : 'text-gray-400')}>
+                <Info size={11} className={cn('text-gray-400 dark:text-white/30')} />
+                <span className={cn('text-[10px] font-semibold uppercase tracking-wide', 'text-gray-400 dark:text-white/40')}>
                   How it works
                 </span>
               </div>
-              <ul className={cn('text-[10px] leading-[1.6] space-y-0.5 pl-4', isDark ? 'text-white/40' : 'text-gray-400')}>
+              <ul className={cn('text-[10px] leading-[1.6] space-y-0.5 pl-4', 'text-gray-400 dark:text-white/40')}>
                 <li className="list-disc">Post a unique tweet about this token on X, then paste the URL below</li>
-                <li className="list-disc">Up to <span className={cn('font-semibold', isDark ? 'text-white/60' : 'text-gray-600')}>6 verifications per day</span> across different tokens</li>
-                <li className="list-disc"><span className={cn('font-semibold', isDark ? 'text-white/60' : 'text-gray-600')}>2 hour cooldown</span> between each verification</li>
+                <li className="list-disc">Up to <span className={cn('font-semibold', 'text-gray-600 dark:text-white/60')}>6 verifications per day</span> across different tokens</li>
+                <li className="list-disc"><span className={cn('font-semibold', 'text-gray-600 dark:text-white/60')}>2 hour cooldown</span> between each verification</li>
                 <li className="list-disc">Each tweet can only be used for one token — no reuse</li>
               </ul>
             </div>
@@ -462,12 +460,12 @@ export default function TweetPromoteModal({ token, tweetCount = 0, onCountChange
             return (
               <div className={cn(
                 'rounded-xl border px-3 py-2.5 flex items-center gap-2.5',
-                isDark ? 'bg-[#137DFE]/10 border-[#137DFE]/20' : 'bg-blue-50 border-blue-100'
+                'bg-blue-50 border-blue-100 dark:bg-[#137DFE]/10 dark:border-[#137DFE]/20'
               )}>
                 <Timer size={14} className="text-[#137DFE] shrink-0 animate-pulse" />
-                <div className={cn('text-[11px] leading-[1.5] flex-1', isDark ? 'text-white/50' : 'text-gray-500')}>
-                  <span className={cn('font-semibold tabular-nums', isDark ? 'text-white/80' : 'text-gray-700')}>{timeStr}</span> until next verification
-                  <span className={cn('ml-2 text-[10px]', isDark ? 'text-white/30' : 'text-gray-400')}>
+                <div className={cn('text-[11px] leading-[1.5] flex-1', 'text-gray-500 dark:text-white/50')}>
+                  <span className={cn('font-semibold tabular-nums', 'text-gray-700 dark:text-white/80')}>{timeStr}</span> until next verification
+                  <span className={cn('ml-2 text-[10px]', 'text-gray-400 dark:text-white/30')}>
                     {dailyRemaining}/{dailyLimit} left today
                   </span>
                 </div>
@@ -479,11 +477,11 @@ export default function TweetPromoteModal({ token, tweetCount = 0, onCountChange
           {account && cooldownLeft === null && profileStats?.cooldown?.dailyUsed >= 6 && (
             <div className={cn(
               'rounded-xl border px-3 py-2.5 flex items-center gap-2.5',
-              isDark ? 'bg-[#F6AF01]/10 border-[#F6AF01]/20' : 'bg-amber-50 border-amber-100'
+              'bg-amber-50 border-amber-100 dark:bg-[#F6AF01]/10 dark:border-[#F6AF01]/20'
             )}>
               <AlertCircle size={14} className="text-[#F6AF01] shrink-0" />
-              <div className={cn('text-[11px] leading-[1.5]', isDark ? 'text-white/50' : 'text-gray-500')}>
-                You've used all <span className={cn('font-semibold', isDark ? 'text-white/80' : 'text-gray-700')}>6 verifications</span> for today. Come back tomorrow!
+              <div className={cn('text-[11px] leading-[1.5]', 'text-gray-500 dark:text-white/50')}>
+                You've used all <span className={cn('font-semibold', 'text-gray-700 dark:text-white/80')}>6 verifications</span> for today. Come back tomorrow!
               </div>
             </div>
           )}
@@ -492,7 +490,7 @@ export default function TweetPromoteModal({ token, tweetCount = 0, onCountChange
           <div className="space-y-1.5">
             <div className="flex items-center gap-1.5">
               <XSocialIcon size={11} />
-              <span className={cn('text-[10px] font-medium', isDark ? 'text-white/40' : 'text-gray-400')}>
+              <span className={cn('text-[10px] font-medium', 'text-gray-400 dark:text-white/40')}>
                 Only x.com / twitter.com links are supported
               </span>
             </div>
@@ -508,9 +506,7 @@ export default function TweetPromoteModal({ token, tweetCount = 0, onCountChange
               placeholder="Paste your X (Twitter) post URL..."
               className={cn(
                 'flex-1 px-3 py-2 rounded-lg text-[12px] border outline-none transition-colors',
-                isDark
-                  ? 'bg-white/[0.04] border-white/10 text-white placeholder:text-white/30 focus:border-white/20'
-                  : 'bg-white border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-gray-300'
+                'bg-white border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-gray-300 dark:bg-white/[0.04] dark:border-white/10 dark:text-white dark:placeholder:text-white/30 dark:focus:border-white/20'
               )}
             />
             <button
@@ -519,9 +515,7 @@ export default function TweetPromoteModal({ token, tweetCount = 0, onCountChange
               className={cn(
                 'px-4 py-2 rounded-lg text-[12px] font-semibold transition-colors flex items-center gap-1.5',
                 verifying || !tweetUrl.trim()
-                  ? isDark
-                    ? 'bg-white/5 text-white/30 cursor-not-allowed'
-                    : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-white/5 dark:text-white/30'
                   : 'bg-[#137DFE] text-white hover:bg-[#137DFE]/90'
               )}
             >
@@ -537,8 +531,8 @@ export default function TweetPromoteModal({ token, tweetCount = 0, onCountChange
               className={cn(
                 'flex items-center gap-2 px-3 py-2 rounded-lg text-[11px]',
                 verifyStatus === 'success'
-                  ? isDark ? 'bg-green-500/10 text-green-400' : 'bg-green-50 text-green-600'
-                  : isDark ? 'bg-red-500/10 text-red-400' : 'bg-red-50 text-red-600'
+                  ? 'bg-green-50 text-green-600 dark:bg-green-500/10 dark:text-green-400'
+                  : 'bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-400'
               )}
             >
               {verifyStatus === 'success' ? <Check size={12} /> : <AlertCircle size={12} />}
@@ -570,8 +564,8 @@ export default function TweetPromoteModal({ token, tweetCount = 0, onCountChange
             <div className={cn(
               'flex items-center gap-2 px-3 py-2 rounded-lg text-[11px]',
               claimResult.success
-                ? isDark ? 'bg-green-500/10 text-green-400' : 'bg-green-50 text-green-600'
-                : isDark ? 'bg-red-500/10 text-red-400' : 'bg-red-50 text-red-600'
+                ? 'bg-green-50 text-green-600 dark:bg-green-500/10 dark:text-green-400'
+                : 'bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-400'
             )}>
               {claimResult.success ? <Check size={12} /> : <AlertCircle size={12} />}
               {claimResult.success
@@ -585,7 +579,7 @@ export default function TweetPromoteModal({ token, tweetCount = 0, onCountChange
           {rewardInfo?.exists && rewardInfo.status === 'claimed' && !claimResult && (
             <div className={cn(
               'flex items-center gap-2 px-3 py-2 rounded-lg text-[11px]',
-              isDark ? 'bg-green-500/10 text-green-400' : 'bg-green-50 text-green-600'
+              'bg-green-50 text-green-600 dark:bg-green-500/10 dark:text-green-400'
             )}>
               <Check size={12} />
               Reward claimed! Tx: {rewardInfo.txHash?.slice(0, 8)}...{rewardInfo.txHash?.slice(-6)}
@@ -597,13 +591,13 @@ export default function TweetPromoteModal({ token, tweetCount = 0, onCountChange
             <div
               className={cn(
                 'border-t pt-3 space-y-1.5',
-                isDark ? 'border-white/[0.06]' : 'border-gray-100'
+                'border-gray-100 dark:border-white/[0.06]'
               )}
             >
               <span
                 className={cn(
                   'text-[10px] font-semibold uppercase tracking-wider',
-                  isDark ? 'text-white/40' : 'text-gray-400'
+                  'text-gray-400 dark:text-white/40'
                 )}
               >
                 Promoter Leaderboard
@@ -620,11 +614,11 @@ export default function TweetPromoteModal({ token, tweetCount = 0, onCountChange
                       rel="noopener noreferrer"
                       className={cn(
                         'flex items-center justify-between px-2.5 py-1.5 rounded-lg transition-colors group',
-                        isDark ? 'hover:bg-white/[0.04]' : 'hover:bg-gray-50'
+                        'hover:bg-gray-50 dark:hover:bg-white/[0.04]'
                       )}
                     >
                       <div className="flex items-center gap-2 min-w-0">
-                        <span className={cn('text-[10px] font-mono w-4 text-right flex-shrink-0', isDark ? 'text-white/30' : 'text-gray-300')}>
+                        <span className={cn('text-[10px] font-mono w-4 text-right flex-shrink-0', 'text-gray-300 dark:text-white/30')}>
                           #{promoter.rank}
                         </span>
                         {avatarUrl ? (
@@ -635,15 +629,15 @@ export default function TweetPromoteModal({ token, tweetCount = 0, onCountChange
                             onError={(e) => { e.target.style.display = 'none'; }}
                           />
                         ) : (
-                          <div className={cn('w-5 h-5 rounded-full flex-shrink-0', isDark ? 'bg-white/10' : 'bg-gray-200')} />
+                          <div className={cn('w-5 h-5 rounded-full flex-shrink-0', 'bg-gray-200 dark:bg-white/10')} />
                         )}
                         {promoter.tier && <TierIcon tierId={promoter.tier.id} size={11} />}
-                        <span className={cn('text-[11px] font-medium truncate', isDark ? 'text-white/60' : 'text-gray-600')}>
+                        <span className={cn('text-[11px] font-medium truncate', 'text-gray-600 dark:text-white/60')}>
                           @{username || promoter.account?.slice(0, 8) + '...'}
                         </span>
                       </div>
                       <div className="flex items-center gap-1.5 flex-shrink-0">
-                        <span className={cn('text-[9px] font-mono', isDark ? 'text-white/25' : 'text-gray-300')}>
+                        <span className={cn('text-[9px] font-mono', 'text-gray-300 dark:text-white/25')}>
                           {promoter.totalVerified}
                         </span>
                         {promoter.rewardStatus === 'claimed' && (
@@ -653,7 +647,7 @@ export default function TweetPromoteModal({ token, tweetCount = 0, onCountChange
                           size={10}
                           className={cn(
                             'opacity-0 group-hover:opacity-100 transition-opacity',
-                            isDark ? 'text-white/40' : 'text-gray-400'
+                            'text-gray-400 dark:text-white/40'
                           )}
                         />
                       </div>
@@ -668,25 +662,25 @@ export default function TweetPromoteModal({ token, tweetCount = 0, onCountChange
           {account && profileStats && profileStats.totalVerified > 0 && (
             <div className={cn(
               'border-t pt-3 space-y-2',
-              isDark ? 'border-white/[0.06]' : 'border-gray-100'
+              'border-gray-100 dark:border-white/[0.06]'
             )}>
-              <span className={cn('text-[10px] font-semibold uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>
+              <span className={cn('text-[10px] font-semibold uppercase tracking-wider', 'text-gray-400 dark:text-white/40')}>
                 Your Stats
               </span>
               <div className="flex items-center gap-3">
                 {profileStats.tier && (
                   <div className="flex items-center gap-1.5">
                     <TierIcon tierId={profileStats.tier.id} size={14} />
-                    <span className={cn('text-[12px] font-semibold', isDark ? 'text-white/80' : 'text-gray-700')}>
+                    <span className={cn('text-[12px] font-semibold', 'text-gray-700 dark:text-white/80')}>
                       {profileStats.tier.name}
                     </span>
                   </div>
                 )}
-                <div className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-gray-400')}>
+                <div className={cn('text-[11px]', 'text-gray-400 dark:text-white/40')}>
                   {profileStats.totalVerified} tweet{profileStats.totalVerified !== 1 ? 's' : ''} verified
                 </div>
                 {profileStats.claimedRewards > 0 && (
-                  <div className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-gray-400')}>
+                  <div className={cn('text-[11px]', 'text-gray-400 dark:text-white/40')}>
                     {profileStats.claimedRewards} claimed
                   </div>
                 )}
@@ -694,14 +688,14 @@ export default function TweetPromoteModal({ token, tweetCount = 0, onCountChange
               {profileStats.nextTier && (
                 <div className="space-y-1">
                   <div className="flex items-center justify-between">
-                    <span className={cn('text-[10px]', isDark ? 'text-white/30' : 'text-gray-400')}>
+                    <span className={cn('text-[10px]', 'text-gray-400 dark:text-white/30')}>
                       {profileStats.nextTier.tweetsNeeded} more to {profileStats.nextTier.name}
                     </span>
-                    <span className={cn('text-[10px] font-mono', isDark ? 'text-white/25' : 'text-gray-300')}>
+                    <span className={cn('text-[10px] font-mono', 'text-gray-300 dark:text-white/25')}>
                       {profileStats.totalVerified}/{profileStats.nextTier.min}
                     </span>
                   </div>
-                  <div className={cn('h-1 rounded-full overflow-hidden', isDark ? 'bg-white/[0.06]' : 'bg-gray-200')}>
+                  <div className={cn('h-1 rounded-full overflow-hidden', 'bg-gray-200 dark:bg-white/[0.06]')}>
                     <div
                       className="h-full rounded-full bg-[#137DFE] transition-all duration-500"
                       style={{ width: `${Math.min((profileStats.totalVerified / profileStats.nextTier.min) * 100, 100)}%` }}
@@ -718,7 +712,7 @@ export default function TweetPromoteModal({ token, tweetCount = 0, onCountChange
                     return (
                       <span key={badge} className={cn(
                         'inline-flex items-center gap-1 text-[9px] font-semibold px-1.5 py-0.5 rounded-full',
-                        isDark ? 'bg-white/[0.06] text-white/50' : 'bg-gray-100 text-gray-500'
+                        'bg-gray-100 text-gray-500 dark:bg-white/[0.06] dark:text-white/50'
                       )}>
                         <TierIcon tierId={tierId} size={9} />
                         {tierId}
@@ -745,7 +739,7 @@ export default function TweetPromoteModal({ token, tweetCount = 0, onCountChange
         {tweetCount > 0 && (
           <span className={cn(
             'ml-0.5 px-1 py-px rounded-full text-[8px] font-bold',
-            isDark ? 'bg-white/10 text-white/60' : 'bg-black/[0.06] text-gray-500'
+            'bg-black/[0.06] text-gray-500 dark:bg-white/10 dark:text-white/60'
           )}>
             {tweetCount}
           </span>

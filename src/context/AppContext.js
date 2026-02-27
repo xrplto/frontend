@@ -77,6 +77,8 @@ function ContextProviderInner({ children, data, openSnackbar }) {
   const [connecting, setConnecting] = useState(false);
   const [darkMode, setDarkMode] = useState(() => {
     if (typeof window === 'undefined') return true;
+    // Read from blocking inline script's result first (avoids hydration flash)
+    if (window.__XRPL_THEME__) return window.__XRPL_THEME__ === 'XrplToDarkTheme';
     const saved = window.localStorage.getItem('appThemeName');
     if (saved) return saved === 'XrplToDarkTheme';
     const legacy = window.localStorage.getItem('appTheme');
@@ -84,6 +86,8 @@ function ContextProviderInner({ children, data, openSnackbar }) {
   });
   const [themeName, setThemeName] = useState(() => {
     if (typeof window === 'undefined') return 'XrplToDarkTheme';
+    // Read from blocking inline script's result first (avoids hydration flash)
+    if (window.__XRPL_THEME__) return window.__XRPL_THEME__;
     const saved = window.localStorage.getItem('appThemeName');
     if (saved) return saved;
     const isDark = window.localStorage.getItem('appTheme');

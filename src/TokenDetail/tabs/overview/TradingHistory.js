@@ -61,42 +61,42 @@ const SYMBOLS = { USD: '$', EUR: '€', JPY: '¥', CNH: '¥', XRP: '✕' };
 
 const Spinner = ({ className, ...p }) => <Loader2 className={cn('animate-spin', className)} {...p} />;
 
-const BearEmptyState = ({ isDark, title, subtitle }) => (
-  <div className={cn('rounded-[12px]', isDark ? 'border-[1.5px] border-dashed border-white/10 bg-white/[0.02]' : 'border-[1.5px] border-dashed border-black/10 bg-black/[0.02]')}>
+const BearEmptyState = ({ title, subtitle }) => (
+  <div className={cn('rounded-[12px]', 'border-[1.5px] border-dashed border-black/10 bg-black/[0.02] dark:border-[1.5px] dark:border-dashed dark:border-white/10 dark:bg-white/[0.02]')}>
     <div className="flex flex-col items-center justify-center p-6">
       <div className="relative w-[48px] h-[48px] mb-3">
-        <div className={cn('absolute -top-[3px] left-0 w-[16px] h-[16px] rounded-full', isDark ? 'bg-white/15' : 'bg-[#d1d5db]')}>
-          <div className={cn('absolute top-[3px] left-[3px] w-[10px] h-[10px] rounded-full', isDark ? 'bg-white/10' : 'bg-[#e5e7eb]')} />
+        <div className={cn('absolute -top-[3px] left-0 w-[16px] h-[16px] rounded-full', 'bg-gray-300 dark:bg-white/15')}>
+          <div className={cn('absolute top-[3px] left-[3px] w-[10px] h-[10px] rounded-full', 'bg-gray-200 dark:bg-white/10')} />
         </div>
-        <div className={cn('absolute -top-[3px] right-0 w-[16px] h-[16px] rounded-full', isDark ? 'bg-white/15' : 'bg-[#d1d5db]')}>
-          <div className={cn('absolute top-[3px] right-[3px] w-[10px] h-[10px] rounded-full', isDark ? 'bg-white/10' : 'bg-[#e5e7eb]')} />
+        <div className={cn('absolute -top-[3px] right-0 w-[16px] h-[16px] rounded-full', 'bg-gray-300 dark:bg-white/15')}>
+          <div className={cn('absolute top-[3px] right-[3px] w-[10px] h-[10px] rounded-full', 'bg-gray-200 dark:bg-white/10')} />
         </div>
-        <div className={cn('absolute top-[6px] left-1/2 -translate-x-1/2 w-[40px] h-[36px] rounded-full overflow-hidden', isDark ? 'bg-white/15' : 'bg-[#d1d5db]')}>
+        <div className={cn('absolute top-[6px] left-1/2 -translate-x-1/2 w-[40px] h-[36px] rounded-full overflow-hidden', 'bg-gray-300 dark:bg-white/15')}>
           {[0, 1, 2, 3, 4].map(i => (
-            <div key={i} className={cn('h-[2px] w-full', isDark ? 'bg-white/15' : 'bg-[#e5e7eb]')} style={{ marginTop: i * 2.5 + 2 }} />
+            <div key={i} className={cn('h-[2px] w-full', 'bg-gray-200 dark:bg-white/15')} style={{ marginTop: i * 2.5 + 2 }} />
           ))}
           <div className="absolute top-[10px] left-[6px] w-[10px] h-[10px]">
-            <div className={cn('absolute w-[8px] h-[2px] rotate-45 top-[4px]', isDark ? 'bg-white/40' : 'bg-[#6b7280]')} />
-            <div className={cn('absolute w-[8px] h-[2px] -rotate-45 top-[4px]', isDark ? 'bg-white/40' : 'bg-[#6b7280]')} />
+            <div className={cn('absolute w-[8px] h-[2px] rotate-45 top-[4px]', 'bg-gray-500 dark:bg-white/40')} />
+            <div className={cn('absolute w-[8px] h-[2px] -rotate-45 top-[4px]', 'bg-gray-500 dark:bg-white/40')} />
           </div>
           <div className="absolute top-[10px] right-[6px] w-[10px] h-[10px]">
-            <div className={cn('absolute w-[8px] h-[2px] rotate-45 top-[4px]', isDark ? 'bg-white/40' : 'bg-[#6b7280]')} />
-            <div className={cn('absolute w-[8px] h-[2px] -rotate-45 top-[4px]', isDark ? 'bg-white/40' : 'bg-[#6b7280]')} />
+            <div className={cn('absolute w-[8px] h-[2px] rotate-45 top-[4px]', 'bg-gray-500 dark:bg-white/40')} />
+            <div className={cn('absolute w-[8px] h-[2px] -rotate-45 top-[4px]', 'bg-gray-500 dark:bg-white/40')} />
           </div>
-          <div className={cn('absolute bottom-[5px] left-1/2 -translate-x-1/2 w-[18px] h-[12px] rounded-full', isDark ? 'bg-white/10' : 'bg-[#e5e7eb]')}>
-            <div className={cn('absolute top-[2px] left-1/2 -translate-x-1/2 w-[8px] h-[6px] rounded-full', isDark ? 'bg-white/25' : 'bg-[#9ca3af]')} />
+          <div className={cn('absolute bottom-[5px] left-1/2 -translate-x-1/2 w-[18px] h-[12px] rounded-full', 'bg-gray-200 dark:bg-white/10')}>
+            <div className={cn('absolute top-[2px] left-1/2 -translate-x-1/2 w-[8px] h-[6px] rounded-full', 'bg-gray-400 dark:bg-white/25')} />
           </div>
         </div>
       </div>
-      <span className={cn('text-[11px] font-medium tracking-[0.05em] uppercase mb-1', isDark ? 'text-white/50' : 'text-black/50')}>{title}</span>
-      <span className={cn('text-[10px]', isDark ? 'text-white/60' : 'text-black/60')}>{subtitle}</span>
+      <span className={cn('text-[11px] font-medium tracking-[0.05em] uppercase mb-1', 'text-black/50 dark:text-white/50')}>{title}</span>
+      <span className={cn('text-[10px]', 'text-black/60 dark:text-white/60')}>{subtitle}</span>
     </div>
   </div>
 );
 
 // Mini Sparkline SVG Component for TVL trends
 const MiniSparkline = memo(
-  ({ data, width = 60, height = 24, color = '#3b82f6', isDark = false }) => {
+  ({ data, width = 60, height = 24, color = '#3b82f6' }) => {
     if (!data || data.length < 2) return null;
 
     const values = data.map((d) => d.tvl || 0);
@@ -580,14 +580,14 @@ const TIER_CONFIG = [
   { max: Infinity, Icon: WhaleIcon, color: '#22c55e', name: 'Whale' }
 ];
 
-const TierIcon = ({ xrpValue, isDark }) => {
+const TierIcon = ({ xrpValue }) => {
   const tier = TIER_CONFIG.find((t) => xrpValue < t.max) || TIER_CONFIG[5];
   const IconComponent = tier.Icon;
   return (
     <span
       className={cn(
         'inline-flex items-center justify-center w-[28px] h-[18px] rounded-[4px] border',
-        isDark ? 'border-white/[0.08] bg-white/[0.025]' : 'border-black/[0.06] bg-black/[0.015]'
+        'border-black/[0.06] bg-black/[0.015] dark:border-white/[0.08] dark:bg-white/[0.025]'
       )}
     >
       <IconComponent color={tier.color} />
@@ -596,14 +596,14 @@ const TierIcon = ({ xrpValue, isDark }) => {
 };
 
 // Tier tooltip component
-const TierHelpIcon = ({ isDark }) => (
+const TierHelpIcon = () => (
   <span
     className={cn('relative inline-flex ml-1 cursor-help', 'tier-help')}
   >
     <span
       className={cn(
         'text-[9px] w-[12px] h-[12px] rounded-full border inline-flex items-center justify-center',
-        isDark ? 'border-white/30 text-white/60' : 'border-black/30 text-black/60'
+        'border-black/30 text-black/60 dark:border-white/30 dark:text-white/60'
       )}
     >
       ?
@@ -611,7 +611,7 @@ const TierHelpIcon = ({ isDark }) => (
     <span
       className={cn(
         'tier-tooltip absolute bottom-[18px] left-1/2 -translate-x-1/2 rounded-[6px] py-2 px-[10px] text-[10px] whitespace-nowrap opacity-0 invisible transition-[opacity,visibility] duration-150 z-[100] shadow-[0_2px_8px_rgba(0,0,0,0.15)] leading-[1.5] border',
-        isDark ? 'bg-[#1a1a1a] border-white/15 text-white/80' : 'bg-white border-black/10 text-black/80'
+        'bg-white border-black/10 text-black/80 dark:bg-white/[0.04] dark:border-white/15 dark:text-white/80'
       )}
     >
       &lt;100 · 100-500 · 500-2K
@@ -626,7 +626,7 @@ const TierHelpIcon = ({ isDark }) => (
 const traderStatsCache = new Map();
 const TRADER_CACHE_TTL = 120_000;
 
-const TraderTooltip = memo(({ address, tokenId, isDark, currency, children }) => {
+const TraderTooltip = memo(({ address, tokenId, currency, children }) => {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(false);
   const [visible, setVisible] = useState(false);
@@ -741,9 +741,7 @@ const TraderTooltip = memo(({ address, tokenId, isDark, currency, children }) =>
           onMouseLeave={handleTipLeave}
           className={cn(
             'fixed z-[9999] rounded-lg border py-2 px-3 text-[11px]',
-            isDark
-              ? 'bg-[#141414] border-white/[0.12] text-white/80'
-              : 'bg-white border-black/[0.08] text-black/80 shadow-[0_4px_16px_rgba(0,0,0,0.12)]'
+            'bg-white border-black/[0.08] text-black/80 shadow-[0_4px_16px_rgba(0,0,0,0.12)] dark:bg-white/[0.04] dark:border-white/[0.12] dark:text-white/80'
           )}
           style={{
             top: pos.top,
@@ -759,40 +757,40 @@ const TraderTooltip = memo(({ address, tokenId, isDark, currency, children }) =>
             </div>
           ) : stats ? (
             <div className="flex flex-col gap-[6px]">
-              <div className="flex items-center gap-2 pb-[4px] border-b" style={{ borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)' }}>
+              <div className="flex items-center gap-2 pb-[4px] border-b" className="border-black/[0.06] dark:border-white/[0.08]">
                 {TierIconComp && <TierIconComp color={tier.color} />}
-                <span className={cn('font-semibold text-[10px] uppercase tracking-wider', isDark ? 'text-white/50' : 'text-black/50')}>
+                <span className={cn('font-semibold text-[10px] uppercase tracking-wider', 'text-black/50 dark:text-white/50')}>
                   {tier?.name}
                 </span>
               </div>
               <div className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-[3px]">
-                <span className={isDark ? 'text-white/60' : 'text-black/60'}>Bought</span>
+                <span className={'text-black/60 dark:text-white/60'}>Bought</span>
                 <span className="text-right font-mono font-semibold text-[#22c55e]">
-                  {fv(stats.tokensBought)} <span className={isDark ? 'text-white/60' : 'text-black/60'}>{sym}</span>
-                  <span className={cn('ml-1 text-[9px] font-normal', isDark ? 'text-white/25' : 'text-black/25')}>{fv(stats.xrpBought)} XRP</span>
+                  {fv(stats.tokensBought)} <span className={'text-black/60 dark:text-white/60'}>{sym}</span>
+                  <span className={cn('ml-1 text-[9px] font-normal', 'text-black/25 dark:text-white/25')}>{fv(stats.xrpBought)} XRP</span>
                 </span>
-                <span className={isDark ? 'text-white/60' : 'text-black/60'}>Sold</span>
+                <span className={'text-black/60 dark:text-white/60'}>Sold</span>
                 <span className="text-right font-mono font-semibold text-[#ef4444]">
-                  {fv(stats.tokensSold)} <span className={isDark ? 'text-white/60' : 'text-black/60'}>{sym}</span>
-                  <span className={cn('ml-1 text-[9px] font-normal', isDark ? 'text-white/25' : 'text-black/25')}>{fv(stats.xrpSold)} XRP</span>
+                  {fv(stats.tokensSold)} <span className={'text-black/60 dark:text-white/60'}>{sym}</span>
+                  <span className={cn('ml-1 text-[9px] font-normal', 'text-black/25 dark:text-white/25')}>{fv(stats.xrpSold)} XRP</span>
                 </span>
-                <span className={isDark ? 'text-white/60' : 'text-black/60'}>Profit / Loss</span>
+                <span className={'text-black/60 dark:text-white/60'}>Profit / Loss</span>
                 <span className={cn('text-right font-mono font-semibold', (stats.totalPnl || 0) >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]')}>
-                  {(stats.totalPnl || 0) >= 0 ? '+' : ''}{fv(stats.totalPnl)} <span className={isDark ? 'text-white/60' : 'text-black/60'}>XRP</span>
+                  {(stats.totalPnl || 0) >= 0 ? '+' : ''}{fv(stats.totalPnl)} <span className={'text-black/60 dark:text-white/60'}>XRP</span>
                 </span>
-                <span className={isDark ? 'text-white/60' : 'text-black/60'}>Holds</span>
+                <span className={'text-black/60 dark:text-white/60'}>Holds</span>
                 <span className="text-right font-mono font-semibold">
-                  {fv(stats.actualBalance)} <span className={isDark ? 'text-white/60' : 'text-black/60'}>{sym}</span>
-                  {stats.holdingValue > 0 && <span className={cn('ml-1 text-[9px] font-normal', isDark ? 'text-white/25' : 'text-black/25')}>{fv(stats.holdingValue)} XRP</span>}
+                  {fv(stats.actualBalance)} <span className={'text-black/60 dark:text-white/60'}>{sym}</span>
+                  {stats.holdingValue > 0 && <span className={cn('ml-1 text-[9px] font-normal', 'text-black/25 dark:text-white/25')}>{fv(stats.holdingValue)} XRP</span>}
                 </span>
-                <span className={isDark ? 'text-white/60' : 'text-black/60'}>Since</span>
+                <span className={'text-black/60 dark:text-white/60'}>Since</span>
                 <span className="text-right font-mono">{since(stats.firstTradeDate)}</span>
-                <span className={isDark ? 'text-white/60' : 'text-black/60'}>Trades</span>
+                <span className={'text-black/60 dark:text-white/60'}>Trades</span>
                 <span className="text-right font-mono">{stats.tradesAll || 0}</span>
               </div>
             </div>
           ) : (
-            <span className={isDark ? 'text-white/60' : 'text-black/60'}>No data</span>
+            <span className={'text-black/60 dark:text-white/60'}>No data</span>
           )}
         </div>,
         document.body
@@ -802,13 +800,13 @@ const TraderTooltip = memo(({ address, tokenId, isDark, currency, children }) =>
 });
 
 // Define the highlight animation with softer colors
-const highlightAnimation = (isDark) => `
+const highlightAnimation = `
   @keyframes highlight {
     0% {
-      background-color: ${isDark ? 'rgba(20, 125, 254, 0.08)' : 'rgba(20, 125, 254, 0.08)'};
+      background-color: rgba(20, 125, 254, 0.08);
     }
     50% {
-      background-color: ${isDark ? 'rgba(20, 125, 254, 0.04)' : 'rgba(20, 125, 254, 0.04)'};
+      background-color: rgba(20, 125, 254, 0.04);
     }
     100% {
       background-color: transparent;
@@ -817,9 +815,9 @@ const highlightAnimation = (isDark) => `
 `;
 
 // Styled components with improved design
-const LiveIndicator = ({ isDark, className, children, ...p }) => (
+const LiveIndicator = ({ className, children, ...p }) => (
   <div
-    className={cn('inline-flex items-center gap-[5px] py-[3px] px-2 rounded-[20px] border', isDark ? 'bg-green-500/[0.08] border-green-500/[0.15]' : 'bg-green-500/[0.05] border-green-500/10', className)}
+    className={cn('inline-flex items-center gap-[5px] py-[3px] px-2 rounded-[20px] border', 'bg-green-500/[0.05] border-green-500/10 dark:bg-green-500/[0.08] dark:border-green-500/[0.15]', className)}
     {...p}
   >{children}</div>
 );
@@ -831,18 +829,18 @@ const LiveCircle = ({ className, ...p }) => (
   />
 );
 
-const Card = ({ isDark, isNew, className, children, ...p }) => (
+const Card = ({ isNew, className, children, ...p }) => (
   <div
     className={cn(
       'bg-transparent border-b relative transition-[opacity,transform,background-color,border-color] duration-200 last:border-b-0',
       'max-sm:px-3',
-      isDark ? 'border-white/[0.05] hover:bg-white/[0.03]' : 'border-black/[0.04] hover:bg-black/[0.02]',
+      'border-black/[0.04] hover:bg-black/[0.02] dark:border-white/[0.05] dark:hover:bg-white/[0.03]',
       className
     )}
     style={isNew ? { animation: 'highlight 0.8s ease-out' } : undefined}
     {...p}
   >
-    {isNew && <style>{highlightAnimation(isDark)}</style>}
+    {isNew && <style>{highlightAnimation}</style>}
     {children}
   </div>
 );
@@ -858,17 +856,18 @@ const TradeTypeChip = ({ tradetype, className, children, ...p }) => (
   >{children}</div>
 );
 
-const VolumeIndicator = ({ volume, isDark, className, ...p }) => (
+const VolumeIndicator = ({ volume, className, ...p }) => (
   <div
-    className={cn('absolute left-0 top-0 h-full transition-[width] duration-200', isDark ? 'bg-white/[0.04]' : 'bg-black/[0.03]', className)}
+    className={cn('absolute left-0 top-0 h-full transition-[width] duration-200', 'bg-black/[0.03] dark:bg-white/[0.04]', className)}
     style={{ width: `${volume}%` }}
     {...p}
   />
 );
 
 // Bar cell for showing colored bars behind values
-const BarCell = ({ barWidth, isCreate, isLP, isBuy, isDark, className, children, ...p }) => {
+const BarCell = ({ barWidth, isCreate, isLP, isBuy, className, children, ...p }) => {
   const w = Math.min(100, Math.max(8, barWidth || 0));
+  const isDark = typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
   const bg = isCreate
     ? (isDark ? 'linear-gradient(90deg, rgba(20,184,166,0.15) 0%, rgba(20,184,166,0.05) 100%)' : 'linear-gradient(90deg, rgba(20,184,166,0.10) 0%, rgba(20,184,166,0.03) 100%)')
     : isLP
@@ -888,9 +887,9 @@ const BarCell = ({ barWidth, isCreate, isLP, isBuy, isDark, className, children,
   );
 };
 
-const RefreshIcon = ({ isDark, className, children, ...p }) => (
+const RefreshIcon = ({ className, children, ...p }) => (
   <button
-    className={cn('bg-transparent border-none p-1 cursor-pointer flex items-center justify-center transition-[color] duration-150 hover:text-blue-500', isDark ? 'text-white/60' : 'text-black/60', className)}
+    className={cn('bg-transparent border-none p-1 cursor-pointer flex items-center justify-center transition-[color] duration-150 hover:text-blue-500', 'text-black/60 dark:text-white/60', className)}
     {...p}
   >{children}</button>
 );
@@ -899,32 +898,32 @@ const Pagination = ({ className, children, ...p }) => (
   <div className={cn('flex items-center justify-center gap-px', className)} {...p}>{children}</div>
 );
 
-const PaginationButton = ({ isDark, className, children, ...p }) => (
+const PaginationButton = ({ className, children, ...p }) => (
   <button
     className={cn(
       'flex items-center justify-center rounded-lg p-[6px] cursor-pointer border transition-[opacity,transform,background-color,border-color] duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
       'hover:enabled:text-blue-500 hover:enabled:border-blue-500/40',
       'disabled:opacity-25 disabled:cursor-default',
-      isDark ? 'text-white/60 bg-white/[0.03] border-white/[0.08] hover:enabled:bg-white/[0.08]' : 'text-black/60 bg-black/[0.03] border-black/[0.08] hover:enabled:bg-black/[0.06]',
+      'text-black/60 bg-black/[0.03] border-black/[0.08] hover:enabled:bg-black/[0.06] dark:text-white/60 dark:bg-white/[0.03] dark:border-white/[0.08] dark:hover:enabled:bg-white/[0.08]',
       className
     )}
     {...p}
   >{children}</button>
 );
 
-const PageInfo = ({ isDark, className, children, ...p }) => (
-  <span className={cn('text-[11px] px-[6px] whitespace-nowrap', isDark ? 'text-white/50' : 'text-black/50', className)} {...p}>{children}</span>
+const PageInfo = ({ className, children, ...p }) => (
+  <span className={cn('text-[11px] px-[6px] whitespace-nowrap', 'text-black/50 dark:text-white/50', className)} {...p}>{children}</span>
 );
 
-const Table = ({ isDark, className, children, ...p }) => (
-  <table className={cn('w-full border-collapse', isDark ? 'text-white' : 'text-[#212B36]', className)} {...p}>{children}</table>
+const Table = ({ className, children, ...p }) => (
+  <table className={cn('w-full border-collapse', 'text-[#212B36] dark:text-white', className)} {...p}>{children}</table>
 );
 
-const TableHeader = ({ isDark, className, children, ...p }) => (
+const TableHeader = ({ className, children, ...p }) => (
   <div
     className={cn(
       'flex py-2 border-b',
-      isDark ? 'border-white/[0.06] [&>div]:text-white/[0.35]' : 'border-black/[0.06] [&>div]:text-black/60',
+      'border-black/[0.06] [&>div]:text-black/60 dark:border-white/[0.06] dark:[&>div]:text-white/[0.35]',
       '[&>div]:text-[9px] [&>div]:font-normal [&>div]:uppercase [&>div]:tracking-[0.04em]',
       className
     )}
@@ -935,9 +934,9 @@ const TableHeader = ({ isDark, className, children, ...p }) => (
 const TableHead = ({ className, children, ...p }) => <thead className={className} {...p}>{children}</thead>;
 const TableBody = ({ className, children, ...p }) => <tbody className={className} {...p}>{children}</tbody>;
 
-const TableRow = ({ isDark, className, children, ...p }) => (
+const TableRow = ({ className, children, ...p }) => (
   <tr
-    className={cn('border-b', isDark ? 'hover:bg-white/[0.02] border-white/[0.05]' : 'hover:bg-black/[0.015] border-black/[0.05]', className)}
+    className={cn('border-b', 'hover:bg-black/[0.015] border-black/[0.05] dark:hover:bg-white/[0.02] dark:border-white/[0.05]', className)}
     {...p}
   >{children}</tr>
 );
@@ -950,15 +949,15 @@ const TableCell = ({ size, align, fontWeight, opacity, textTransform, className,
   >{children}</td>
 );
 
-const TableContainer = ({ isDark, className, children, ...p }) => (
+const TableContainer = ({ className, children, ...p }) => (
   <div
-    className={cn('rounded-xl border-[1.5px] overflow-auto bg-transparent', isDark ? 'border-white/10' : 'border-black/[0.06]', className)}
+    className={cn('rounded-xl border-[1.5px] overflow-auto bg-white dark:bg-white/[0.02]', 'border-black/[0.06] dark:border-white/10', className)}
     {...p}
   >{children}</div>
 );
 
-const Link = ({ isDark, className, children, ...p }) => (
-  <a className={cn('no-underline text-[11px] hover:text-blue-500', isDark ? 'text-white/50' : 'text-black/50', className)} {...p}>{children}</a>
+const Link = ({ className, children, ...p }) => (
+  <a className={cn('no-underline text-[11px] hover:text-blue-500', 'text-black/50 dark:text-white/50', className)} {...p}>{children}</a>
 );
 
 const Tooltip = ({ title, children, arrow }) => {
@@ -981,26 +980,26 @@ const Tooltip = ({ title, children, arrow }) => {
   );
 };
 
-const IconButton = ({ isDark, className, children, 'aria-label': ariaLabel, ...p }) => (
+const IconButton = ({ className, children, 'aria-label': ariaLabel, ...p }) => (
   <button
     aria-label={ariaLabel}
-    className={cn('p-1 bg-transparent border-none rounded-lg cursor-pointer inline-flex items-center justify-center transition-[color] duration-150 hover:text-blue-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]', isDark ? 'text-white/60' : 'text-black/60', className)}
+    className={cn('p-1 bg-transparent border-none rounded-lg cursor-pointer inline-flex items-center justify-center transition-[color] duration-150 hover:text-blue-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]', 'text-black/60 dark:text-white/60', className)}
     {...p}
   >{children}</button>
 );
 
-const FormControlLabel = ({ isDark, className, children, ...p }) => (
+const FormControlLabel = ({ className, children, ...p }) => (
   <label
-    className={cn('flex items-center gap-2 text-[13px] font-normal cursor-pointer', isDark ? 'text-white/90' : 'text-black/90', className)}
+    className={cn('flex items-center gap-2 text-[13px] font-normal cursor-pointer', 'text-black/90 dark:text-white/90', className)}
     {...p}
   >{children}</label>
 );
 
-const Tabs = ({ isDark, className, children, ...p }) => (
+const Tabs = ({ className, children, ...p }) => (
   <div role="tablist" className={cn('flex gap-2 mb-3 max-sm:w-full max-sm:gap-[6px]', className)} {...p}>{children}</div>
 );
 
-const Tab = ({ selected, isDark, className, children, ...p }) => (
+const Tab = ({ selected, className, children, ...p }) => (
   <button
     role="tab"
     aria-selected={selected}
@@ -1008,9 +1007,9 @@ const Tab = ({ selected, isDark, className, children, ...p }) => (
       'inline-flex items-center justify-center gap-2 text-xs font-medium tracking-[0.05em] py-[10px] px-4 bg-transparent border rounded-[6px] cursor-pointer transition-[opacity,transform,background-color,border-color] duration-150 whitespace-nowrap shrink-0 uppercase focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
       'max-sm:flex-1 max-sm:py-2 max-sm:px-1 max-sm:text-[10px] max-sm:gap-[3px] max-sm:[&_svg]:w-[14px] max-sm:[&_svg]:h-[14px]',
       selected
-        ? isDark ? 'border-white/20 text-white' : 'border-black/20 text-[#1a1a1a]'
-        : isDark ? 'border-white/10 text-white/60' : 'border-black/10 text-black/60',
-      !selected && (isDark ? 'hover:enabled:border-white/[0.15] hover:enabled:text-white/70' : 'hover:enabled:border-black/[0.15] hover:enabled:text-black/60'),
+        ? 'border-black/20 text-[#1a1a1a] dark:border-white/20 dark:text-white'
+        : 'border-black/10 text-black/60 dark:border-white/10 dark:text-white/60',
+      !selected && ('hover:enabled:border-black/[0.15] hover:enabled:text-black/60 dark:hover:enabled:border-white/[0.15] dark:hover:enabled:text-white/70'),
       !selected && 'max-sm:[&>span]:hidden',
       className
     )}
@@ -1018,11 +1017,11 @@ const Tab = ({ selected, isDark, className, children, ...p }) => (
   >{children}</button>
 );
 
-const Button = ({ size, isDark, className, children, ...p }) => (
+const Button = ({ size, className, children, ...p }) => (
   <button
     className={cn(
       'text-[11px] font-normal rounded-[6px] border bg-transparent cursor-pointer inline-flex items-center gap-1 transition-[opacity,transform,background-color,border-color] duration-150',
-      isDark ? 'border-white/10 text-white/60 hover:border-white/25 hover:text-white/90' : 'border-black/[0.08] text-black/60 hover:border-black/25 hover:text-black/80',
+      'border-black/[0.08] text-black/60 hover:border-black/25 hover:text-black/80 dark:border-white/10 dark:text-white/60 dark:hover:border-white/25 dark:hover:text-white/90',
       className
     )}
     style={{ padding: size === 'small' ? '4px 10px' : '6px 12px' }}
@@ -1037,29 +1036,29 @@ const Dialog = ({ open, className, children, ...p }) => (
   >{children}</div>
 );
 
-const DialogPaper = ({ isDark, className, children, ...p }) => (
+const DialogPaper = ({ className, children, ...p }) => (
   <div
-    className={cn('border rounded-[14px] max-w-[420px] w-[90%] max-h-[calc(100dvh-32px)] overflow-auto mx-auto', isDark ? 'bg-[#0a0a0a] border-white/10' : 'bg-white border-black/10', className)}
+    className={cn('border rounded-[14px] max-w-[420px] w-[90%] max-h-[calc(100dvh-32px)] overflow-auto mx-auto', 'bg-white border-black/10 dark:bg-white/[0.02] dark:border-white/10', className)}
     {...p}
   >{children}</div>
 );
 
-const DialogTitle = ({ isDark, className, children, ...p }) => (
+const DialogTitle = ({ className, children, ...p }) => (
   <div
-    className={cn('flex justify-between items-center py-4 px-5 text-[15px] font-semibold border-b', isDark ? 'text-white border-white/[0.06]' : 'text-[#1a1a1a] border-black/[0.06]', className)}
+    className={cn('flex justify-between items-center py-4 px-5 text-[15px] font-semibold border-b', 'text-[#1a1a1a] border-black/[0.06] dark:text-white dark:border-white/[0.06]', className)}
     {...p}
   >{children}</div>
 );
 
-const DialogContent = ({ isDark, className, children, ...p }) => (
-  <div className={cn('pt-4 px-5 pb-5', isDark ? 'text-white' : 'text-[#1a1a1a]', className)} {...p}>{children}</div>
+const DialogContent = ({ className, children, ...p }) => (
+  <div className={cn('pt-4 px-5 pb-5', 'text-[#1a1a1a] dark:text-white', className)} {...p}>{children}</div>
 );
 
-const TextField = ({ isDark, className, ...p }) => (
+const TextField = ({ className, ...p }) => (
   <input
     className={cn(
       'w-full py-3 px-[14px] text-[16px] sm:text-sm border-[1.5px] rounded-[10px] box-border transition-[border-color] duration-150 focus:outline-none focus:border-blue-500',
-      isDark ? 'border-white/10 bg-white/[0.04] text-white placeholder:text-white/25' : 'border-black/10 bg-black/[0.02] text-[#1a1a1a] placeholder:text-black/[0.35]',
+      'border-black/10 bg-black/[0.02] text-[#1a1a1a] placeholder:text-black/[0.35] dark:border-white/10 dark:bg-white/[0.04] dark:text-white dark:placeholder:text-white/25',
       className
     )}
     {...p}
@@ -1210,56 +1209,56 @@ const formatShare = (share) => {
   return '0%';
 };
 
-const SubTab = ({ selected, isDark, className, children, ...p }) => (
+const SubTab = ({ selected, className, children, ...p }) => (
   <button
     className={cn(
       'text-[11px] font-semibold py-2 px-4 border-none cursor-pointer uppercase tracking-[0.05em] rounded-lg transition-[opacity,transform,background-color,border-color] duration-200',
       'max-sm:py-[6px] max-sm:px-[10px] max-sm:text-[10px] max-sm:flex-1',
       selected
-        ? isDark ? 'bg-white/[0.08] text-white' : 'bg-black/[0.05] text-[#1a1a1a]'
-        : isDark ? 'bg-transparent text-white/60' : 'bg-transparent text-black/50',
-      isDark ? 'hover:bg-white/[0.04] hover:text-white/80' : 'hover:bg-black/[0.03] hover:text-black/70',
+        ? 'bg-black/[0.05] text-[#1a1a1a] dark:bg-white/[0.08] dark:text-white'
+        : 'bg-transparent text-black/50 dark:bg-transparent dark:text-white/60',
+      'hover:bg-black/[0.03] hover:text-black/70 dark:hover:bg-white/[0.04] dark:hover:text-white/80',
       className
     )}
     {...p}
   >{children}</button>
 );
 
-const StatGrid = ({ isDark, className, children, ...p }) => (
+const StatGrid = ({ className, children, ...p }) => (
   <div
-    className={cn('grid grid-cols-2 gap-px border rounded-xl overflow-hidden', isDark ? 'bg-white/[0.06] border-white/[0.06]' : 'bg-black/[0.06] border-black/[0.06]', className)}
+    className={cn('grid grid-cols-2 gap-px border rounded-xl overflow-hidden', 'bg-black/[0.06] border-black/[0.06] dark:bg-white/[0.06] dark:border-white/[0.06]', className)}
     {...p}
   >{children}</div>
 );
 
-const StatItem = ({ isDark, className, children, ...p }) => (
-  <div className={cn('py-3 px-4 flex flex-col gap-1', isDark ? 'bg-[#0d0d0d]' : 'bg-white', className)} {...p}>{children}</div>
+const StatItem = ({ className, children, ...p }) => (
+  <div className={cn('py-3 px-4 flex flex-col gap-1', 'bg-white dark:bg-white/[0.02]', className)} {...p}>{children}</div>
 );
 
-const Label = ({ isDark, className, children, ...p }) => (
-  <span className={cn('text-[10px] font-medium uppercase tracking-[0.05em]', isDark ? 'text-white/60' : 'text-black/60', className)} {...p}>{children}</span>
+const Label = ({ className, children, ...p }) => (
+  <span className={cn('text-[10px] font-medium uppercase tracking-[0.05em]', 'text-black/60 dark:text-white/60', className)} {...p}>{children}</span>
 );
 
-const Value = ({ isDark, className, children, ...p }) => (
-  <div className={cn('text-[15px] font-semibold flex items-baseline gap-1', isDark ? 'text-white' : 'text-[#1a1a1a]', className)} {...p}>{children}</div>
+const Value = ({ className, children, ...p }) => (
+  <div className={cn('text-[15px] font-semibold flex items-baseline gap-1', 'text-[#1a1a1a] dark:text-white', className)} {...p}>{children}</div>
 );
 
-const OfferCard = ({ isDark, className, children, ...p }) => (
+const OfferCard = ({ className, children, ...p }) => (
   <div
-    className={cn('border rounded-xl p-3 transition-[opacity,transform,background-color,border-color] duration-200', isDark ? 'bg-white/[0.02] border-white/[0.06] hover:border-white/[0.12] hover:bg-white/[0.03]' : 'bg-black/[0.01] border-black/[0.06] hover:border-black/[0.12] hover:bg-black/[0.02]', className)}
+    className={cn('border rounded-xl p-3 transition-[opacity,transform,background-color,border-color] duration-200', 'bg-white border-black/[0.06] hover:border-black/[0.12] hover:bg-black/[0.02] dark:bg-white/[0.02] dark:border-white/[0.06] dark:hover:border-white/[0.12] dark:hover:bg-white/[0.03]', className)}
     {...p}
   >{children}</div>
 );
 
-const CancelButton = ({ isDark, className, children, ...p }) => (
+const CancelButton = ({ className, children, ...p }) => (
   <button
-    className={cn('text-[10px] font-semibold py-[6px] px-3 bg-transparent border rounded-[6px] text-red-500 cursor-pointer uppercase tracking-[0.02em] transition-[opacity,transform,background-color,border-color] duration-200 hover:bg-red-500/[0.08] hover:border-red-500', isDark ? 'border-red-500/20' : 'border-red-500/30', className)}
+    className={cn('text-[10px] font-semibold py-[6px] px-3 bg-transparent border rounded-[6px] text-red-500 cursor-pointer uppercase tracking-[0.02em] transition-[opacity,transform,background-color,border-color] duration-200 hover:bg-red-500/[0.08] hover:border-red-500', 'border-red-500/30 dark:border-red-500/20', className)}
     {...p}
   >{children}</button>
 );
 
 // My Activity Tab Component - Shows user's trading history and open offers
-const MyActivityTabInner = ({ token, isDark, isMobile, onTransactionClick, ammPools, userLpBalances, ilPositions, onAddLiquidity, onWithdrawLiquidity, ammLoading }) => {
+const MyActivityTabInner = ({ token, isMobile, onTransactionClick, ammPools, userLpBalances, ilPositions, onAddLiquidity, onWithdrawLiquidity, ammLoading }) => {
   const { accountProfile } = useContext(WalletContext);
   const [activeSubTab, setActiveSubTab] = useState('assets'); // 'assets', 'history', 'offers', or 'pools'
   const [loading, setLoading] = useState(false);
@@ -1506,18 +1505,18 @@ const MyActivityTabInner = ({ token, isDark, isMobile, onTransactionClick, ammPo
     <div
       className={cn(
         'flex flex-col items-center justify-center gap-3 py-8 px-6 rounded-[12px] border border-dashed',
-        isDark ? 'border-white/10 bg-white/[0.01]' : 'border-black/10 bg-black/[0.01]'
+        'border-black/10 bg-white dark:border-white/10 dark:bg-white/[0.02]'
       )}
     >
-      <div className={cn('p-[10px] rounded-full', isDark ? 'bg-white/[0.04]' : 'bg-black/[0.04]')}>
+      <div className={cn('p-[10px] rounded-full', 'bg-black/[0.04] dark:bg-white/[0.04]')}>
         <Wallet
           size={20}
           strokeWidth={1.5}
-          className={cn(isDark ? 'text-white/60' : 'text-black/60')}
+          className={cn('text-black/60 dark:text-white/60')}
         />
       </div>
       <span
-        className={cn('text-[13px] font-medium', isDark ? 'text-white/60' : 'text-black/50')}
+        className={cn('text-[13px] font-medium', 'text-black/50 dark:text-white/60')}
       >
         Connect wallet to view activity
       </span>
@@ -1534,33 +1533,29 @@ const MyActivityTabInner = ({ token, isDark, isMobile, onTransactionClick, ammPo
     <div className="flex flex-col gap-4">
       {/* Sub-tabs */}
       <div
-        className={cn('flex gap-1 p-1 rounded-[12px] w-fit', isDark ? 'bg-white/[0.03]' : 'bg-black/[0.03]')}
+        className={cn('flex gap-1 p-1 rounded-[12px] w-fit', 'bg-black/[0.03] dark:bg-white/[0.03]')}
       >
         <SubTab
           selected={activeSubTab === 'assets'}
           onClick={() => setActiveSubTab('assets')}
-          isDark={isDark}
         >
           Assets
         </SubTab>
         <SubTab
           selected={activeSubTab === 'history'}
           onClick={() => setActiveSubTab('history')}
-          isDark={isDark}
         >
           History
         </SubTab>
         <SubTab
           selected={activeSubTab === 'pools'}
           onClick={() => setActiveSubTab('pools')}
-          isDark={isDark}
         >
           Pools {ammPools?.filter(p => { const pa = p.ammAccount || p.account || p._id; return userLpBalances?.[pa]?.balance > 0; }).length > 0 && `(${ammPools.filter(p => { const pa = p.ammAccount || p.account || p._id; return userLpBalances?.[pa]?.balance > 0; }).length})`}
         </SubTab>
         <SubTab
           selected={activeSubTab === 'offers'}
           onClick={() => setActiveSubTab('offers')}
-          isDark={isDark}
         >
           Offers {offersTotal > 0 && `(${offersTotal})`}
         </SubTab>
@@ -1601,7 +1596,7 @@ const MyActivityTabInner = ({ token, isDark, isMobile, onTransactionClick, ammPo
             onClick={(e) => { e.preventDefault(); window.location.href = '/wallet'; }}
             className={cn(
               'flex items-center gap-3 p-3 rounded-[12px] border cursor-pointer transition-all duration-200 no-underline',
-              isDark ? 'bg-white/[0.02] border-white/[0.06] hover:bg-white/[0.04] hover:border-white/10' : 'bg-black/[0.01] border-black/[0.06] hover:bg-black/[0.03] hover:border-black/10'
+              'bg-white border-black/[0.06] hover:bg-black/[0.03] hover:border-black/10 dark:bg-white/[0.02] dark:border-white/[0.06] dark:hover:bg-white/[0.04] dark:hover:border-white/10'
             )}
           >
             {/* Avatar */}
@@ -1609,12 +1604,12 @@ const MyActivityTabInner = ({ token, isDark, isMobile, onTransactionClick, ammPo
               {profileData.avatar ? (
                 <img src={profileData.avatar} alt="" className="w-9 h-9 rounded-full object-cover" />
               ) : (
-                <div className={cn('w-9 h-9 rounded-full flex items-center justify-center text-[14px] font-bold', isDark ? 'bg-white/10 text-white/70' : 'bg-black/10 text-black/70')}>
+                <div className={cn('w-9 h-9 rounded-full flex items-center justify-center text-[14px] font-bold', 'bg-black/10 text-black/70 dark:bg-white/10 dark:text-white/70')}>
                   {(profileData.username || account || '?')[0].toUpperCase()}
                 </div>
               )}
               {tc && (
-                <div className={cn('absolute -bottom-[2px] -right-[2px] w-[14px] h-[14px] rounded-full border-2 flex items-center justify-center', isDark ? 'border-[#0a0a0a]' : 'border-white', tc.dotColor)}>
+                <div className={cn('absolute -bottom-[2px] -right-[2px] w-[14px] h-[14px] rounded-full border-2 flex items-center justify-center', 'border-white dark:border-[#0a0a0a]', tc.dotColor)}>
                   {TierIcon && <TierIcon size={7} className="text-white" strokeWidth={3} />}
                 </div>
               )}
@@ -1623,7 +1618,7 @@ const MyActivityTabInner = ({ token, isDark, isMobile, onTransactionClick, ammPo
             {/* Name + Tier */}
             <div className="flex flex-col min-w-0 flex-1">
               <div className="flex items-center gap-[6px]">
-                <span className={cn('text-[13px] font-semibold truncate', isDark ? 'text-white' : 'text-[#1a1a1a]')}>
+                <span className={cn('text-[13px] font-semibold truncate', 'text-[#1a1a1a] dark:text-white')}>
                   {profileData.username || `${(account || '').slice(0, 8)}...`}
                 </span>
                 {groups.includes('admin') && <Shield size={12} className="text-rose-500 flex-shrink-0" />}
@@ -1636,7 +1631,7 @@ const MyActivityTabInner = ({ token, isDark, isMobile, onTransactionClick, ammPo
                   </span>
                 )}
                 {profileData.armyRank && profileData.armyRank !== 'Unranked' && (
-                  <span className={cn('text-[10px] font-medium', isDark ? 'text-white/40' : 'text-black/40')}>
+                  <span className={cn('text-[10px] font-medium', 'text-black/40 dark:text-white/40')}>
                     {profileData.armyRank}
                   </span>
                 )}
@@ -1654,14 +1649,14 @@ const MyActivityTabInner = ({ token, isDark, isMobile, onTransactionClick, ammPo
                     <div
                       key={badge.id || badge.name}
                       title={badge.label || badge.id || badge.name}
-                      className={cn('w-[22px] h-[22px] rounded-full flex items-center justify-center', isDark ? 'bg-white/[0.06]' : 'bg-black/[0.04]')}
+                      className={cn('w-[22px] h-[22px] rounded-full flex items-center justify-center', 'bg-black/[0.04] dark:bg-white/[0.06]')}
                     >
                       <BadgeIcon size={11} style={{ color: bc.color }} strokeWidth={2.5} />
                     </div>
                   );
                 })}
                 {earned.length > 4 && (
-                  <span className={cn('text-[10px] font-medium', isDark ? 'text-white/40' : 'text-black/40')}>
+                  <span className={cn('text-[10px] font-medium', 'text-black/40 dark:text-white/40')}>
                     +{earned.length - 4}
                   </span>
                 )}
@@ -1669,7 +1664,7 @@ const MyActivityTabInner = ({ token, isDark, isMobile, onTransactionClick, ammPo
             )}
 
             {/* Arrow */}
-            <ChevronRight size={14} className={cn('flex-shrink-0', isDark ? 'text-white/20' : 'text-black/20')} />
+            <ChevronRight size={14} className={cn('flex-shrink-0', 'text-black/20 dark:text-white/20')} />
           </a>
         );
       })()}
@@ -1678,32 +1673,32 @@ const MyActivityTabInner = ({ token, isDark, isMobile, onTransactionClick, ammPo
       {activeSubTab === 'assets' && (
         <div className="flex flex-col gap-3">
           {assetsLoading ? (
-            <div className={cn('text-center p-8', isDark ? 'text-white/50' : 'text-black/50')}>
+            <div className={cn('text-center p-8', 'text-black/50 dark:text-white/50')}>
               <Spinner size={24} className="mb-3 opacity-50" />
               <div className="text-[12px] font-medium tracking-[0.02em]">Fetching assets...</div>
             </div>
           ) : !tokenAssets ? (
-            <div className={cn('text-center p-8 rounded-[12px] border border-dashed', isDark ? 'border-white/10 bg-white/[0.01]' : 'border-black/10 bg-black/[0.01]')}>
-              <span className={cn('text-[13px] font-medium', isDark ? 'text-white/60' : 'text-black/60')}>No position in this token</span>
+            <div className={cn('text-center p-8 rounded-[12px] border border-dashed', 'border-black/10 bg-white dark:border-white/10 dark:bg-white/[0.02]')}>
+              <span className={cn('text-[13px] font-medium', 'text-black/60 dark:text-white/60')}>No position in this token</span>
             </div>
           ) : (
             <>
               {/* Balance & Value */}
-              <StatGrid isDark={isDark}>
-                <StatItem isDark={isDark} className={cn('col-span-2', isDark ? '!bg-white/[0.02]' : '!bg-black/[0.01]')}>
-                  <Label isDark={isDark}>Portfolio Balance</Label>
+              <StatGrid>
+                <StatItem className={cn('col-span-2', '!bg-white dark:!bg-white/[0.02]')}>
+                  <Label>Portfolio Balance</Label>
                   <div className="flex justify-between items-end">
-                    <div className={cn('text-[24px] font-bold', isDark ? 'text-white' : 'text-[#1a1a1a]')}>
+                    <div className={cn('text-[24px] font-bold', 'text-[#1a1a1a] dark:text-white')}>
                       {formatTradeDisplay(tokenAssets.balance)} <span className="text-[14px] font-medium opacity-60">{tokenCurrency}</span>
                     </div>
-                    <div className={cn('text-[16px] font-semibold mb-1', isDark ? 'text-white/70' : 'text-black/70')}>
+                    <div className={cn('text-[16px] font-semibold mb-1', 'text-black/70 dark:text-white/70')}>
                       ≈ {(tokenAssets.totalValue || 0).toFixed(2)} <span className="text-[11px] font-medium opacity-60">XRP</span>
                     </div>
                   </div>
                 </StatItem>
                 
-                <StatItem isDark={isDark}>
-                  <Label isDark={isDark}>Unrealized Profit / Loss</Label>
+                <StatItem>
+                  <Label>Unrealized Profit / Loss</Label>
                   {tokenAssets.pnl != null ? (
                     <div className="flex flex-col">
                       <span className={cn('text-[16px] font-bold', tokenAssets.pnl >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]')}>
@@ -1714,60 +1709,60 @@ const MyActivityTabInner = ({ token, isDark, isMobile, onTransactionClick, ammPo
                       </span>
                     </div>
                   ) : (
-                    <span className={cn('text-[14px] font-medium', isDark ? 'text-white/60' : 'text-black/60')}>—</span>
+                    <span className={cn('text-[14px] font-medium', 'text-black/60 dark:text-white/60')}>—</span>
                   )}
                 </StatItem>
 
-                <StatItem isDark={isDark}>
-                  <Label isDark={isDark}>Realized Profit / Loss</Label>
+                <StatItem>
+                  <Label>Realized Profit / Loss</Label>
                   {tokenAssets.tradeCount > 0 ? (
                     <span className={cn('text-[16px] font-bold', tokenAssets.realizedPnl >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]')}>
                       {tokenAssets.realizedPnl >= 0 ? '+' : ''}{tokenAssets.realizedPnl.toFixed(2)} <span className="text-[11px] font-semibold">XRP</span>
                     </span>
                   ) : (
-                    <span className={cn('text-[14px] font-medium', isDark ? 'text-white/60' : 'text-black/60')}>—</span>
+                    <span className={cn('text-[14px] font-medium', 'text-black/60 dark:text-white/60')}>—</span>
                   )}
                 </StatItem>
 
-                <StatItem isDark={isDark}>
-                  <Label isDark={isDark}>Average Buy Price</Label>
+                <StatItem>
+                  <Label>Average Buy Price</Label>
                   {tokenAssets.avgBuyPrice != null ? (
-                    <Value isDark={isDark} className="font-mono !text-[14px]">
+                    <Value className="font-mono !text-[14px]">
                       {formatPrice(tokenAssets.avgBuyPrice)} <span className="text-[10px] opacity-60">XRP</span>
                     </Value>
                   ) : (
-                    <span className={cn('text-[14px] font-medium', isDark ? 'text-white/60' : 'text-black/60')}>—</span>
+                    <span className={cn('text-[14px] font-medium', 'text-black/60 dark:text-white/60')}>—</span>
                   )}
                 </StatItem>
 
-                <StatItem isDark={isDark}>
-                  <Label isDark={isDark}>Total Return</Label>
+                <StatItem>
+                  <Label>Total Return</Label>
                   {tokenAssets.tradeCount > 0 ? (
                     <span className={cn('text-[16px] font-bold', tokenAssets.totalRoi >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]')}>
                       {tokenAssets.totalRoi >= 0 ? '+' : ''}{tokenAssets.totalRoi.toFixed(2)}%
                     </span>
                   ) : (
-                    <span className={cn('text-[14px] font-medium', isDark ? 'text-white/60' : 'text-black/60')}>—</span>
+                    <span className={cn('text-[14px] font-medium', 'text-black/60 dark:text-white/60')}>—</span>
                   )}
                 </StatItem>
               </StatGrid>
 
               {/* Trade Summary */}
               {tokenAssets.tradeCount > 0 && (
-                <div className={cn('flex gap-2 p-3 rounded-[12px] border', isDark ? 'bg-white/[0.02] border-white/5' : 'bg-black/[0.02] border-black/5')}>
+                <div className={cn('flex gap-2 p-3 rounded-[12px] border', 'bg-black/[0.02] border-black/5 dark:bg-white/[0.02] dark:border-white/5')}>
                   <div className="flex-1">
-                    <Label isDark={isDark} className="text-[9px] mb-[2px] block">Trades</Label>
+                    <Label className="text-[9px] mb-[2px] block">Trades</Label>
                     <span className="text-[13px] font-semibold">{tokenAssets.tradeCount}</span>
                   </div>
                   <div className="flex-[2]">
-                    <Label isDark={isDark} className="text-[9px] mb-[2px] block text-[#22c55e]">Bought</Label>
+                    <Label className="text-[9px] mb-[2px] block text-[#22c55e]">Bought</Label>
                     <div className="text-[11px] font-medium">
                       {formatTradeDisplay(tokenAssets.totalBought)} {tokenCurrency}
                       <span className="opacity-60 ml-1">({formatTradeDisplay(tokenAssets.totalSpentXRP)} XRP)</span>
                     </div>
                   </div>
                   <div className="flex-[2]">
-                    <Label isDark={isDark} className="text-[9px] mb-[2px] block text-[#ef4444]">Sold</Label>
+                    <Label className="text-[9px] mb-[2px] block text-[#ef4444]">Sold</Label>
                     <div className="text-[11px] font-medium">
                       {formatTradeDisplay(tokenAssets.totalSold)} {tokenCurrency}
                       <span className="opacity-60 ml-1">({formatTradeDisplay(tokenAssets.totalReceivedXRP)} XRP)</span>
@@ -1777,15 +1772,15 @@ const MyActivityTabInner = ({ token, isDark, isMobile, onTransactionClick, ammPo
               )}
 
               {/* Trustline Status */}
-              <div className={cn('flex justify-between items-center py-[10px] px-4 rounded-[10px] border', isDark ? 'bg-white/[0.02] border-white/5' : 'bg-black/[0.01] border-black/5')}>
+              <div className={cn('flex justify-between items-center py-[10px] px-4 rounded-[10px] border', 'bg-white border-black/5 dark:bg-white/[0.02] dark:border-white/5')}>
                 <div className="flex items-center gap-2">
                   <div className={cn('w-[6px] h-[6px] rounded-full', tokenAssets.trustlineSet ? 'bg-[#22c55e] shadow-[0_0_8px_rgba(34,197,94,0.4)]' : 'bg-[#ef4444] shadow-[0_0_8px_rgba(239,68,68,0.4)]')} />
-                  <span className={cn('text-[11px] font-semibold uppercase tracking-[0.02em]', isDark ? 'text-white/60' : 'text-black/60')}>
+                  <span className={cn('text-[11px] font-semibold uppercase tracking-[0.02em]', 'text-black/60 dark:text-white/60')}>
                     Trustline {tokenAssets.trustlineSet ? 'Enabled' : 'Disabled'}
                   </span>
                 </div>
                 {tokenAssets.limitAmount > 0 && (
-                  <span className={cn('text-[10px] font-medium', isDark ? 'text-white/60' : 'text-black/60')}>
+                  <span className={cn('text-[10px] font-medium', 'text-black/60 dark:text-white/60')}>
                     Limit: {abbreviateNumber(tokenAssets.limitAmount)}
                   </span>
                 )}
@@ -1799,17 +1794,17 @@ const MyActivityTabInner = ({ token, isDark, isMobile, onTransactionClick, ammPo
       {activeSubTab === 'history' && (
         <>
           {tradesLoading && myTrades.length === 0 ? (
-            <div className={cn('text-center p-8', isDark ? 'text-white/50' : 'text-black/50')}>
+            <div className={cn('text-center p-8', 'text-black/50 dark:text-white/50')}>
               <Spinner size={24} className="opacity-50" />
             </div>
           ) : myTrades.length === 0 ? (
-            <div className={cn('text-center p-8 rounded-[12px] border border-dashed', isDark ? 'border-white/10 bg-white/[0.01]' : 'border-black/10 bg-black/[0.01]')}>
-              <span className={cn('text-[13px] font-medium', isDark ? 'text-white/60' : 'text-black/60')}>No trade history found</span>
+            <div className={cn('text-center p-8 rounded-[12px] border border-dashed', 'border-black/10 bg-white dark:border-white/10 dark:bg-white/[0.02]')}>
+              <span className={cn('text-[13px] font-medium', 'text-black/60 dark:text-white/60')}>No trade history found</span>
             </div>
           ) : (
             <div className="flex flex-col">
               {!isMobile && (
-                <div className={cn('flex px-3 pb-2 border-b text-[9px] font-semibold uppercase tracking-[0.05em]', isDark ? 'border-white/[0.06] text-white/60' : 'border-black/[0.06] text-black/60')}>
+                <div className={cn('flex px-3 pb-2 border-b text-[9px] font-semibold uppercase tracking-[0.05em]', 'border-black/[0.06] text-black/60 dark:border-white/[0.06] dark:text-white/60')}>
                   <div className="flex-[0.6]">Time</div>
                   <div className="flex-[0.4]">Action</div>
                   <div className="flex-[1.2]">Amount</div>
@@ -1820,26 +1815,29 @@ const MyActivityTabInner = ({ token, isDark, isMobile, onTransactionClick, ammPo
               )}
               <div className="flex flex-col">
                 {myTrades.map((trade, idx) => {
-                  const isBuy = trade.paid?.currency === 'XRP';
-                  const tokenAmount = isBuy ? trade.got : trade.paid;
-                  const xrpAmount = isBuy ? trade.paid : trade.got;
+                  // DEX: paid = what taker paid. AMM: paid = what AMM paid out (inverted).
+                  const isBuy = trade.isAMM
+                    ? (trade.paid?.currency !== 'XRP')  // AMM paid token = taker received token = taker bought
+                    : (trade.paid?.currency === 'XRP'); // taker paid XRP = taker bought token
+                  const xrpAmount = trade.paid?.currency === 'XRP' ? trade.paid : trade.got;
+                  const tokenAmount = trade.paid?.currency === 'XRP' ? trade.got : trade.paid;
                   const price = parseFloat(xrpAmount?.value) / parseFloat(tokenAmount?.value) || 0;
 
                   return (
                     <div 
                       key={trade._id || trade.hash || idx} 
-                      className={cn('py-[10px] px-3 border-b flex items-center transition-[background-color,border-color] duration-200 cursor-default', isDark ? 'border-white/[0.04] hover:bg-white/[0.02]' : 'border-black/[0.04] hover:bg-black/[0.01]')}
+                      className={cn('py-[10px] px-3 border-b flex items-center transition-[background-color,border-color] duration-200 cursor-default', 'border-black/[0.04] hover:bg-black/[0.02] dark:border-white/[0.04] dark:hover:bg-white/[0.02]')}
                     >
                       {isMobile ? (
                         <div className="flex w-full justify-between items-center">
                           <div className="flex flex-col gap-[2px]">
                             <div className="flex items-center gap-[6px]">
                               <span className={cn('text-[11px] font-bold', isBuy ? 'text-[#22c55e]' : 'text-[#ef4444]')}>{isBuy ? 'BUY' : 'SELL'}</span>
-                              <span suppressHydrationWarning className={cn('text-[10px]', isDark ? 'text-white/60' : 'text-black/60')}>
+                              <span suppressHydrationWarning className={cn('text-[10px]', 'text-black/60 dark:text-white/60')}>
                                 {formatRelativeTime(trade.time)}
                               </span>
                             </div>
-                            <span className={cn('text-[13px] font-semibold', isDark ? 'text-white' : 'text-[#1a1a1a]')}>
+                            <span className={cn('text-[13px] font-semibold', 'text-[#1a1a1a] dark:text-white')}>
                               {formatTradeDisplay(tokenAmount?.value)} <span className="text-[10px] opacity-60">{tokenCurrency}</span>
                             </span>
                           </div>
@@ -1847,14 +1845,14 @@ const MyActivityTabInner = ({ token, isDark, isMobile, onTransactionClick, ammPo
                             <span className="text-[12px] font-medium font-mono">
                               {formatPrice(price)} <span className="text-[9px] opacity-60">XRP</span>
                             </span>
-                            <span className={cn('text-[11px]', isDark ? 'text-white/60' : 'text-black/50')}>
+                            <span className={cn('text-[11px]', 'text-black/50 dark:text-white/60')}>
                               {formatTradeDisplay(xrpAmount?.value)} XRP
                             </span>
                           </div>
                         </div>
                       ) : (
                         <>
-                          <span suppressHydrationWarning className={cn('flex-[0.6] text-[11px]', isDark ? 'text-white/60' : 'text-black/50')}>
+                          <span suppressHydrationWarning className={cn('flex-[0.6] text-[11px]', 'text-black/50 dark:text-white/60')}>
                             {formatRelativeTime(trade.time)}
                           </span>
                           <span className={cn('flex-[0.4] text-[11px] font-bold', isBuy ? 'text-[#22c55e]' : 'text-[#ef4444]')}>
@@ -1866,10 +1864,10 @@ const MyActivityTabInner = ({ token, isDark, isMobile, onTransactionClick, ammPo
                           <span className="flex-1 text-[12px] font-mono font-medium">
                             {formatPrice(price)}
                           </span>
-                          <span className={cn('flex-[0.8] text-[12px] font-medium', isDark ? 'text-white/70' : 'text-black/70')}>
+                          <span className={cn('flex-[0.8] text-[12px] font-medium', 'text-black/70 dark:text-white/70')}>
                             {formatTradeDisplay(xrpAmount?.value)} <span className="text-[10px] opacity-60">XRP</span>
                           </span>
-                          <IconButton aria-label="View transaction" onClick={() => onTransactionClick && onTransactionClick(trade.hash)} isDark={isDark} className="w-6">
+                          <IconButton aria-label="View transaction" onClick={() => onTransactionClick && onTransactionClick(trade.hash)} className="w-6">
                             <ExternalLink size={12} strokeWidth={2} />
                           </IconButton>
                         </>
@@ -1885,7 +1883,7 @@ const MyActivityTabInner = ({ token, isDark, isMobile, onTransactionClick, ammPo
                   className={cn(
                     'mt-3 p-[10px] text-[11px] font-semibold uppercase tracking-[0.05em] rounded-lg border w-full transition-[opacity,transform,background-color,border-color] duration-200',
                     tradesLoading ? 'cursor-not-allowed' : 'cursor-pointer',
-                    isDark ? 'bg-white/[0.04] border-white/[0.06] text-white/50 hover:enabled:bg-white/[0.08]' : 'bg-black/[0.03] border-black/[0.06] text-black/50 hover:enabled:bg-black/[0.05]'
+                    'bg-black/[0.03] border-black/[0.06] text-black/50 hover:enabled:bg-black/[0.05] dark:bg-white/[0.04] dark:border-white/[0.06] dark:text-white/50 dark:hover:enabled:bg-white/[0.08]'
                   )}
                 >
                   {tradesLoading ? 'Loading...' : 'Load More'}
@@ -1910,10 +1908,10 @@ const MyActivityTabInner = ({ token, isDark, isMobile, onTransactionClick, ammPo
             });
             if (userPools.length === 0) {
               return (
-                <div className={cn('text-center p-8 rounded-[12px] border border-dashed', isDark ? 'border-white/10 bg-white/[0.01]' : 'border-black/10 bg-black/[0.01]')}>
-                  <Droplets size={24} className={cn('mx-auto mb-2', isDark ? 'text-white/20' : 'text-black/20')} />
-                  <span className={cn('text-[13px] font-medium block', isDark ? 'text-white/60' : 'text-black/60')}>No liquidity positions</span>
-                  <span className={cn('text-[11px] block mt-1', isDark ? 'text-white/40' : 'text-black/40')}>Add liquidity to a pool from the Pools tab to start earning fees</span>
+                <div className={cn('text-center p-8 rounded-[12px] border border-dashed', 'border-black/10 bg-white dark:border-white/10 dark:bg-white/[0.02]')}>
+                  <Droplets size={24} className={cn('mx-auto mb-2', 'text-black/20 dark:text-white/20')} />
+                  <span className={cn('text-[13px] font-medium block', 'text-black/60 dark:text-white/60')}>No liquidity positions</span>
+                  <span className={cn('text-[11px] block mt-1', 'text-black/40 dark:text-white/40')}>Add liquidity to a pool from the Pools tab to start earning fees</span>
                 </div>
               );
             }
@@ -1930,17 +1928,17 @@ const MyActivityTabInner = ({ token, isDark, isMobile, onTransactionClick, ammPo
                   const ilColor = hasIl ? (ilData.ilPercent >= 0 ? '#08AA09' : '#ef4444') : null;
 
                   return (
-                    <div key={pool._id} className={cn('rounded-[14px] overflow-hidden border p-3', isDark ? 'bg-white/[0.03] border-white/[0.08]' : 'bg-black/[0.02] border-black/[0.08]')}>
+                    <div key={pool._id} className={cn('rounded-[14px] overflow-hidden border p-3', 'bg-black/[0.02] border-black/[0.08] dark:bg-white/[0.03] dark:border-white/[0.08]')}>
                       {/* Pool header */}
                       <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-[10px]">
                           <div className="flex shrink-0">
-                            <img src={getTokenImageUrl(pool.asset1.issuer, pool.asset1.currency)} alt="" className={cn('w-6 h-6 rounded-full', isDark ? 'border-[1.5px] border-[#1a1a1a]' : 'border-[1.5px] border-white')} />
-                            <img src={getTokenImageUrl(pool.asset2.issuer, pool.asset2.currency)} alt="" className={cn('w-6 h-6 rounded-full -ml-[10px]', isDark ? 'border-[1.5px] border-[#1a1a1a]' : 'border-[1.5px] border-white')} />
+                            <img src={getTokenImageUrl(pool.asset1.issuer, pool.asset1.currency)} alt="" className={cn('w-6 h-6 rounded-full', 'border-[1.5px] border-white dark:border-[1.5px] dark:border-[#1a1a1a]')} />
+                            <img src={getTokenImageUrl(pool.asset2.issuer, pool.asset2.currency)} alt="" className={cn('w-6 h-6 rounded-full -ml-[10px]', 'border-[1.5px] border-white dark:border-[1.5px] dark:border-[#1a1a1a]')} />
                           </div>
                           <div className="flex flex-col">
-                            <span className={cn('text-[13px] font-semibold', isDark ? 'text-white' : 'text-[#1a1a1a]')}>{asset1}/{asset2}</span>
-                            <span className={cn('text-[10px] font-medium', isDark ? 'text-white/60' : 'text-black/50')}>
+                            <span className={cn('text-[13px] font-semibold', 'text-[#1a1a1a] dark:text-white')}>{asset1}/{asset2}</span>
+                            <span className={cn('text-[10px] font-medium', 'text-black/50 dark:text-white/60')}>
                               {(pool.tradingFee / 100000).toFixed(3)}% Fee {hasApy && `· ${pool.apy7d.apy.toFixed(1)}% APY`}
                             </span>
                           </div>
@@ -1954,7 +1952,7 @@ const MyActivityTabInner = ({ token, isDark, isMobile, onTransactionClick, ammPo
                           </button>
                           <button
                             onClick={() => onWithdrawLiquidity?.(pool)}
-                            className={cn('flex items-center gap-1 py-[6px] px-3 text-[11px] font-bold rounded-lg border cursor-pointer', isDark ? 'border-white/10 bg-white/5 text-white' : 'border-black/10 bg-white text-[#1a1a1a]')}
+                            className={cn('flex items-center gap-1 py-[6px] px-3 text-[11px] font-bold rounded-lg border cursor-pointer', 'border-black/10 bg-white text-[#1a1a1a] dark:border-white/10 dark:bg-white/5 dark:text-white')}
                           >
                             <Minus size={13} /> Withdraw
                           </button>
@@ -1962,23 +1960,23 @@ const MyActivityTabInner = ({ token, isDark, isMobile, onTransactionClick, ammPo
                       </div>
 
                       {/* Position details */}
-                      <div className={cn('p-3 rounded-[10px]', isDark ? 'bg-white/[0.03]' : 'bg-black/[0.02]')}>
+                      <div className={cn('p-3 rounded-[10px]', 'bg-black/[0.02] dark:bg-white/[0.03]')}>
                         <div className="flex justify-between items-center mb-2">
-                          <span className={cn('text-[10px] font-semibold uppercase', isDark ? 'text-white/50' : 'text-black/50')}>Your Position</span>
+                          <span className={cn('text-[10px] font-semibold uppercase', 'text-black/50 dark:text-white/50')}>Your Position</span>
                           <span className="text-[11px] font-bold text-[#3b82f6]">{formatShare(userPosition.share)} share</span>
                         </div>
                         <div className="grid grid-cols-3 gap-3">
                           <div className="flex flex-col">
-                            <span className={cn('text-[10px]', isDark ? 'text-white/50' : 'text-black/50')}>{asset1}</span>
-                            <span className={cn('text-[13px] font-semibold', isDark ? 'text-white' : 'text-[#1a1a1a]')}>{abbreviateNumber(userPosition.asset1Amount)}</span>
+                            <span className={cn('text-[10px]', 'text-black/50 dark:text-white/50')}>{asset1}</span>
+                            <span className={cn('text-[13px] font-semibold', 'text-[#1a1a1a] dark:text-white')}>{abbreviateNumber(userPosition.asset1Amount)}</span>
                           </div>
                           <div className="flex flex-col">
-                            <span className={cn('text-[10px]', isDark ? 'text-white/50' : 'text-black/50')}>{asset2}</span>
-                            <span className={cn('text-[13px] font-semibold', isDark ? 'text-white' : 'text-[#1a1a1a]')}>{abbreviateNumber(userPosition.asset2Amount)}</span>
+                            <span className={cn('text-[10px]', 'text-black/50 dark:text-white/50')}>{asset2}</span>
+                            <span className={cn('text-[13px] font-semibold', 'text-[#1a1a1a] dark:text-white')}>{abbreviateNumber(userPosition.asset2Amount)}</span>
                           </div>
                           <div className="flex flex-col items-end">
-                            <span className={cn('text-[10px]', isDark ? 'text-white/50' : 'text-black/50')}>LP Tokens</span>
-                            <span className={cn('text-[13px] font-semibold', isDark ? 'text-white' : 'text-[#1a1a1a]')}>{abbreviateNumber(userPosition.balance)}</span>
+                            <span className={cn('text-[10px]', 'text-black/50 dark:text-white/50')}>LP Tokens</span>
+                            <span className={cn('text-[13px] font-semibold', 'text-[#1a1a1a] dark:text-white')}>{abbreviateNumber(userPosition.balance)}</span>
                           </div>
                         </div>
 
@@ -1986,8 +1984,8 @@ const MyActivityTabInner = ({ token, isDark, isMobile, onTransactionClick, ammPo
                         {hasIl && (() => {
                           const diff = ilData.poolValueXrp - ilData.holdValueXrp;
                           return (
-                            <div className={cn('mt-2 pt-2 border-t flex justify-between items-center', isDark ? 'border-white/[0.06]' : 'border-black/[0.06]')}>
-                              <span className={cn('text-[10px] font-semibold', isDark ? 'text-white/50' : 'text-black/50')}>
+                            <div className={cn('mt-2 pt-2 border-t flex justify-between items-center', 'border-black/[0.06] dark:border-white/[0.06]')}>
+                              <span className={cn('text-[10px] font-semibold', 'text-black/50 dark:text-white/50')}>
                                 IL {ilData.ilPercent >= 0 ? 'gain' : 'loss'}
                               </span>
                               <span className="text-[12px] font-bold" style={{ color: ilColor }}>
@@ -2015,9 +2013,9 @@ const MyActivityTabInner = ({ token, isDark, isMobile, onTransactionClick, ammPo
             </div>
           ) : openOffers.length === 0 ? (
             <div
-              className={cn('text-center p-8 rounded-[12px] border border-dashed', isDark ? 'border-white/10 bg-white/[0.01]' : 'border-black/10 bg-black/[0.01]')}
+              className={cn('text-center p-8 rounded-[12px] border border-dashed', 'border-black/10 bg-white dark:border-white/10 dark:bg-white/[0.02]')}
             >
-              <span className={cn('text-[13px] font-medium', isDark ? 'text-white/60' : 'text-black/60')}>No open offers</span>
+              <span className={cn('text-[13px] font-medium', 'text-black/60 dark:text-white/60')}>No open offers</span>
             </div>
           ) : (
             <div className="flex flex-col gap-2">
@@ -2058,7 +2056,7 @@ const MyActivityTabInner = ({ token, isDark, isMobile, onTransactionClick, ammPo
                 }
 
                 return (
-                  <OfferCard key={offer.seq || offer._id} isDark={isDark}>
+                  <OfferCard key={offer.seq || offer._id}>
                     <div className="flex items-center justify-between gap-4">
                       <div className="flex items-center gap-3 flex-1">
                         <div className={cn('text-[10px] font-extrabold py-1 px-2 rounded-[6px] tracking-[0.02em]', isBuy ? 'text-[#22c55e] bg-[rgba(34,197,94,0.1)]' : 'text-[#ef4444] bg-[rgba(239,68,68,0.1)]')}>
@@ -2070,7 +2068,7 @@ const MyActivityTabInner = ({ token, isDark, isMobile, onTransactionClick, ammPo
                             {formatTradeDisplay(tokenAmount)}{' '}
                             <span className="text-[10px] opacity-60">{tokenCurrency}</span>
                           </span>
-                          <span className={cn('text-[11px] font-mono', isDark ? 'text-white/60' : 'text-black/50')}>
+                          <span className={cn('text-[11px] font-mono', 'text-black/50 dark:text-white/60')}>
                             @ {formatPrice(price)} XRP
                           </span>
                         </div>
@@ -2080,7 +2078,7 @@ const MyActivityTabInner = ({ token, isDark, isMobile, onTransactionClick, ammPo
                         {expiryLabel && (
                           <div suppressHydrationWarning className={cn(
                             'text-[10px] font-medium py-[3px] px-[6px] rounded whitespace-nowrap',
-                            expiryLabel === 'Expired' ? 'text-[#ef4444] bg-[rgba(239,68,68,0.08)]' : isDark ? 'text-white/60 bg-white/[0.04]' : 'text-black/60 bg-black/[0.04]'
+                            expiryLabel === 'Expired' ? 'text-[#ef4444] bg-[rgba(239,68,68,0.08)]' : 'text-black/60 bg-black/[0.04] dark:text-white/60 dark:bg-white/[0.04]'
                           )}>
                             {expiryLabel === 'Expired' ? 'Expired' : `Expires ${expiryLabel}`}
                           </div>
@@ -2089,11 +2087,11 @@ const MyActivityTabInner = ({ token, isDark, isMobile, onTransactionClick, ammPo
                           <span className="text-[13px] font-semibold">
                             {formatXRPAmount(total)} <span className="text-[10px] opacity-60">XRP</span>
                           </span>
-                          <span className={cn('text-[9px] block uppercase', isDark ? 'text-white/60' : 'text-black/60')}>
+                          <span className={cn('text-[9px] block uppercase', 'text-black/60 dark:text-white/60')}>
                             Total Value
                           </span>
                         </div>
-                        <CancelButton onClick={() => handleCancelOffer(offer.seq)} isDark={isDark} disabled={cancellingOffer === offer.seq}>
+                        <CancelButton onClick={() => handleCancelOffer(offer.seq)} disabled={cancellingOffer === offer.seq}>
                           {cancellingOffer === offer.seq ? 'Cancelling...' : 'Cancel'}
                         </CancelButton>
                       </div>
@@ -2110,17 +2108,17 @@ const MyActivityTabInner = ({ token, isDark, isMobile, onTransactionClick, ammPo
               <button
                 onClick={() => setOffersPage((p) => Math.max(0, p - 1))}
                 disabled={offersPage === 0}
-                className={cn('p-[6px] rounded-lg border-none disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer', isDark ? 'bg-white/[0.04] text-white' : 'bg-black/[0.03] text-[#1a1a1a]')}
+                className={cn('p-[6px] rounded-lg border-none disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer', 'bg-black/[0.03] text-[#1a1a1a] dark:bg-white/[0.04] dark:text-white')}
               >
                 <ChevronLeft size={14} />
               </button>
-              <span className={cn('text-[11px] font-semibold', isDark ? 'text-white/60' : 'text-black/50')}>
+              <span className={cn('text-[11px] font-semibold', 'text-black/50 dark:text-white/60')}>
                 {offersPage + 1} <span className="opacity-50">/</span> {Math.ceil(offersTotal / offersLimit)}
               </span>
               <button
                 onClick={() => setOffersPage((p) => p + 1)}
                 disabled={(offersPage + 1) * offersLimit >= offersTotal}
-                className={cn('p-[6px] rounded-lg border-none disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer', isDark ? 'bg-white/[0.04] text-white' : 'bg-black/[0.03] text-[#1a1a1a]')}
+                className={cn('p-[6px] rounded-lg border-none disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer', 'bg-black/[0.03] text-[#1a1a1a] dark:bg-white/[0.04] dark:text-white')}
               >
                 <ChevronRight size={14} />
               </button>
@@ -2133,7 +2131,7 @@ const MyActivityTabInner = ({ token, isDark, isMobile, onTransactionClick, ammPo
 };
 
 // Inline Expandable Trade Details Component
-const TradeDetails = ({ trade, account, isDark, onClose, walletLabel, onTrackAddress, isMobilePanel = false }) => {
+const TradeDetails = ({ trade, account, onClose, walletLabel, onTrackAddress, isMobilePanel = false }) => {
   const [txData, setTxData] = useState(null);
   const [profileData, setProfileData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -2194,7 +2192,7 @@ const TradeDetails = ({ trade, account, isDark, onClose, walletLabel, onTrackAdd
 
   return (
     <div
-      className={cn('border-b animate-[expandIn_0.15s_ease-out] py-3 px-2 max-lg:py-2', isDark ? 'bg-black/40 border-white/10' : 'bg-[rgba(128,128,128,0.1)] border-black/10')}
+      className={cn('border-b animate-[expandIn_0.15s_ease-out] py-3 px-2 max-lg:py-2', 'bg-[rgba(128,128,128,0.1)] border-black/10 dark:bg-black/40 dark:border-white/10')}
     >
       <style>{`@keyframes expandIn { from { opacity: 0; max-height: 0; } to { opacity: 1; max-height: 400px; } }`}</style>
       {loading ? (
@@ -2208,7 +2206,7 @@ const TradeDetails = ({ trade, account, isDark, onClose, walletLabel, onTrackAdd
             {/* Trader Info */}
             {account && (
               <div className="overflow-hidden">
-                <div className={cn('text-[9px]', isDark ? 'text-white/60' : 'text-black/60')}>
+                <div className={cn('text-[9px]', 'text-black/60 dark:text-white/60')}>
                   Trader
                 </div>
                 <div className="flex items-center gap-1">
@@ -2225,7 +2223,7 @@ const TradeDetails = ({ trade, account, isDark, onClose, walletLabel, onTrackAdd
                       title="Track on chart"
                       className={cn(
                         'p-[3px] rounded cursor-pointer border-none transition-[background-color,border-color] flex-shrink-0',
-                        isDark ? 'text-white/25 hover:text-[#3b82f6] hover:bg-white/[0.06]' : 'text-black/25 hover:text-[#3b82f6] hover:bg-black/[0.04]'
+                        'text-black/25 hover:text-[#3b82f6] hover:bg-black/[0.04] dark:text-white/25 dark:hover:text-[#3b82f6] dark:hover:bg-white/[0.06]'
                       )}
                     >
                       <CandlestickChart size={12} />
@@ -2235,7 +2233,7 @@ const TradeDetails = ({ trade, account, isDark, onClose, walletLabel, onTrackAdd
                 {(profileData?.balance ||
                   profileData?.Balance ||
                   profileData?.account_data?.Balance) && (
-                    <div className={cn('text-[10px]', isDark ? 'text-white/50' : 'text-black/50')}>
+                    <div className={cn('text-[10px]', 'text-black/50 dark:text-white/50')}>
                       {dropsToXrp(
                         profileData?.balance ||
                         profileData?.Balance ||
@@ -2250,7 +2248,7 @@ const TradeDetails = ({ trade, account, isDark, onClose, walletLabel, onTrackAdd
             {txData && (
               <>
                 <div>
-                  <div className={cn('text-[9px]', isDark ? 'text-white/60' : 'text-black/60')}>
+                  <div className={cn('text-[9px]', 'text-black/60 dark:text-white/60')}>
                     Status
                   </div>
                   <span
@@ -2263,18 +2261,18 @@ const TradeDetails = ({ trade, account, isDark, onClose, walletLabel, onTrackAdd
                   </span>
                 </div>
                 <div>
-                  <div className={cn('text-[9px]', isDark ? 'text-white/60' : 'text-black/60')}>
+                  <div className={cn('text-[9px]', 'text-black/60 dark:text-white/60')}>
                     Fee
                   </div>
-                  <div className={cn('text-[11px]', isDark ? 'text-white' : 'text-[#1a1a1a]')}>
+                  <div className={cn('text-[11px]', 'text-[#1a1a1a] dark:text-white')}>
                     {dropsToXrp(txData.Fee)} XRP
                   </div>
                 </div>
                 <div>
-                  <div className={cn('text-[9px]', isDark ? 'text-white/60' : 'text-black/60')}>
+                  <div className={cn('text-[9px]', 'text-black/60 dark:text-white/60')}>
                     Ledger
                   </div>
-                  <div className={cn('text-[11px]', isDark ? 'text-white' : 'text-[#1a1a1a]')}>
+                  <div className={cn('text-[11px]', 'text-[#1a1a1a] dark:text-white')}>
                     #{txData.ledger_index}
                   </div>
                 </div>
@@ -2301,10 +2299,10 @@ const TradeDetails = ({ trade, account, isDark, onClose, walletLabel, onTrackAdd
               const data = memo?.MemoData ? decodeMemo(memo.MemoData) : null;
               return data ? (
                 <div className={cn(isMobilePanel ? 'max-w-full' : 'min-w-[120px] max-w-[200px]')}>
-                  <div className={cn('text-[9px]', isDark ? 'text-white/60' : 'text-black/60')}>
+                  <div className={cn('text-[9px]', 'text-black/60 dark:text-white/60')}>
                     Memo
                   </div>
-                  <div className={cn('text-[10px] overflow-hidden text-ellipsis whitespace-nowrap', isDark ? 'text-white/70' : 'text-black/70')}>
+                  <div className={cn('text-[10px] overflow-hidden text-ellipsis whitespace-nowrap', 'text-black/70 dark:text-white/70')}>
                     {data}
                   </div>
                 </div>
@@ -2328,12 +2326,8 @@ const TradeDetails = ({ trade, account, isDark, onClose, walletLabel, onTrackAdd
                 'flex items-center gap-1.5 rounded-lg border font-medium transition-[opacity,transform,background-color,border-color] duration-200',
                 isMobilePanel ? 'px-2 py-[5px] text-[10px]' : 'px-3 py-1.5 text-[12px]',
                 aiLoading || aiExplanation
-                  ? isDark
-                    ? 'border-white/10 bg-white/5 text-white/50 cursor-default'
-                    : 'border-gray-200 bg-gray-100 text-gray-400 cursor-default'
-                  : isDark
-                    ? 'border-[#8b5cf6]/25 hover:border-[#8b5cf6]/40 bg-[#8b5cf6]/10 hover:bg-[#8b5cf6]/15 text-[#c4b5fd] hover:text-[#ddd6fe] cursor-pointer'
-                    : 'border-[#8b5cf6]/30 hover:border-[#8b5cf6]/50 bg-[#8b5cf6]/10 hover:bg-[#8b5cf6]/20 text-[#7c3aed] hover:text-[#6d28d9] cursor-pointer'
+                  ? 'border-gray-200 bg-gray-100 text-gray-400 cursor-default dark:border-white/10 dark:bg-white/5 dark:text-white/50 dark:cursor-default'
+                  : 'border-[#8b5cf6]/30 hover:border-[#8b5cf6]/50 bg-[#8b5cf6]/10 hover:bg-[#8b5cf6]/20 text-[#7c3aed] hover:text-[#6d28d9] cursor-pointer dark:border-[#8b5cf6]/25 dark:hover:border-[#8b5cf6]/40 dark:bg-[#8b5cf6]/10 dark:hover:bg-[#8b5cf6]/15 dark:text-[#c4b5fd] dark:hover:text-[#ddd6fe] dark:cursor-pointer'
               )}
             >
               {aiLoading ? (
@@ -2349,7 +2343,7 @@ const TradeDetails = ({ trade, account, isDark, onClose, walletLabel, onTrackAdd
             >
               <X
                 size={14}
-                className={cn(isDark ? 'text-white/50' : 'text-black/60')}
+                className={cn('text-black/60 dark:text-white/50')}
               />
             </button>
           </div>
@@ -2379,40 +2373,40 @@ const TradeDetails = ({ trade, account, isDark, onClose, walletLabel, onTrackAdd
               className={cn(
                 'mt-2 rounded-[12px] border relative overflow-hidden',
                 isMobilePanel ? 'p-3' : 'p-4',
-                isDark ? 'border-[rgba(139,92,246,0.15)] shadow-[0_4px_20px_rgba(0,0,0,0.2)]' : 'border-[rgba(139,92,246,0.1)] shadow-[0_4px_20px_rgba(139,92,246,0.05)]'
+                'border-[rgba(139,92,246,0.1)] shadow-[0_4px_20px_rgba(139,92,246,0.05)] dark:border-[rgba(139,92,246,0.15)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.2)]'
               )}
-              style={{ background: isDark ? 'linear-gradient(145deg, rgba(139, 92, 246, 0.08) 0%, rgba(139, 92, 246, 0.02) 100%)' : 'linear-gradient(145deg, rgba(139, 92, 246, 0.04) 0%, rgba(139, 92, 246, 0.01) 100%)' }}
+              className="bg-[linear-gradient(145deg,rgba(139,92,246,0.04)_0%,rgba(139,92,246,0.01)_100%)] dark:bg-[linear-gradient(145deg,rgba(139,92,246,0.08)_0%,rgba(139,92,246,0.02)_100%)]"
             >
               <Sparkles
                 size={40}
-                className={cn('absolute -top-2 -right-2 text-[#8b5cf6] rotate-[15deg]', isDark ? 'opacity-5' : 'opacity-[0.03]')}
+                className={cn('absolute -top-2 -right-2 text-[#8b5cf6] rotate-[15deg]', 'opacity-[0.03] dark:opacity-5')}
               />
               <div className="flex items-center gap-2 mb-2">
                 <div className="text-[9px] font-bold uppercase py-[2px] px-[6px] rounded bg-[rgba(139,92,246,0.2)] text-[#a78bfa] tracking-[0.05em]">
                   {aiExplanation.extracted?.type || 'Analysis'}
                 </div>
-                <div className={cn('text-[11px] font-medium', isDark ? 'text-white/60' : 'text-black/60')}>
+                <div className={cn('text-[11px] font-medium', 'text-black/60 dark:text-white/60')}>
                   AI Insight
                 </div>
               </div>
 
               <div
-                className={cn('leading-[1.5]', isMobilePanel ? 'text-[12px]' : 'text-[13px]', isDark ? 'text-white/95' : 'text-[#1a1a1a]', keyPoints.length ? 'mb-3' : 'mb-0')}
+                className={cn('leading-[1.5]', isMobilePanel ? 'text-[12px]' : 'text-[13px]', 'text-[#1a1a1a] dark:text-white/95', keyPoints.length ? 'mb-3' : 'mb-0')}
               >
                 {summaryText}
               </div>
 
               {keyPoints.length > 0 && (
                 <div>
-                  <div className={cn('text-[10px] font-semibold uppercase tracking-[0.05em] mb-[8px] flex items-center gap-[6px]', isDark ? 'text-white/60' : 'text-black/50')}>
-                    <div className={cn('w-3 h-px', isDark ? 'bg-white/20' : 'bg-black/10')} />
+                  <div className={cn('text-[10px] font-semibold uppercase tracking-[0.05em] mb-[8px] flex items-center gap-[6px]', 'text-black/50 dark:text-white/60')}>
+                    <div className={cn('w-3 h-px', 'bg-black/10 dark:bg-white/20')} />
                     Key Points
                   </div>
                   <ul className="m-0 p-0 list-none flex flex-col gap-1.5">
                     {keyPoints.map((point, idx) => (
                       <li
                         key={idx}
-                        className={cn('flex items-start gap-[8px] leading-[1.4]', isMobilePanel ? 'text-[11px]' : 'text-[12px]', isDark ? 'text-white/80' : 'text-black/70')}
+                        className={cn('flex items-start gap-[8px] leading-[1.4]', isMobilePanel ? 'text-[11px]' : 'text-[12px]', 'text-black/70 dark:text-white/80')}
                       >
                         <div className="w-1 h-1 rounded-full bg-[#8b5cf6] mt-[6px] shrink-0" />
                         <span>{typeof point === 'string' ? point : JSON.stringify(point)}</span>
@@ -2430,7 +2424,6 @@ const TradeDetails = ({ trade, account, isDark, onClose, walletLabel, onTrackAdd
 
 const MyActivityTab = memo(MyActivityTabInner, (prev, next) =>
   prev.token?.md5 === next.token?.md5 &&
-  prev.isDark === next.isDark &&
   prev.isMobile === next.isMobile &&
   prev.ammLoading === next.ammLoading &&
   prev.ammPools === next.ammPools &&
@@ -2444,7 +2437,6 @@ const TradingHistory = ({
   token,
   pairs,
   onTransactionClick,
-  isDark = false,
   isMobile: isMobileProp = false,
   candleTimeFilter,
   onClearCandleFilter,
@@ -3956,7 +3948,10 @@ const TradingHistory = ({
 
     return trades.map((trade, index) => {
       const isLiquidity = trade.isLiquidity;
-      const isBuy = trade.paid.currency === 'XRP';
+      // DEX: paid = what taker paid. AMM: paid = what AMM paid out (inverted).
+      const isBuy = trade.isAMM
+        ? (trade.paid.currency !== 'XRP')  // AMM paid token = taker bought token
+        : (trade.paid.currency === 'XRP'); // taker paid XRP = taker bought token
       const xrpAmount = getXRPAmount(trade);
       const price = isLiquidity ? null : calculatePrice(trade);
       const volumePercentage = Math.min(100, Math.max(5, (xrpAmount / 50000) * 100));
@@ -3982,12 +3977,11 @@ const TradingHistory = ({
           <Card
             key={trade._id || trade.id || index}
             isNew={newTradeIds.has(trade._id || trade.id)}
-            isDark={isDark}
           >
             <CardContent className="!py-[6px] !px-0">
               <div className="grid grid-cols-[52px_36px_1fr_1fr_24px] gap-2 items-center">
                 {/* Time */}
-                <span suppressHydrationWarning className={cn('text-[10px] font-semibold tabular-nums', isDark ? 'text-white/60' : 'text-black/60')}>
+                <span suppressHydrationWarning className={cn('text-[10px] font-semibold tabular-nums', 'text-black/60 dark:text-white/60')}>
                   {formatRelativeTime(trade.time)}
                 </span>
 
@@ -4008,10 +4002,9 @@ const TradingHistory = ({
                   isBuy={isBuy}
                   isLP={isLiquidity}
                   isCreate={trade.type === 'create'}
-                  isDark={isDark}
                   className="h-[26px] !px-2"
                 >
-                  <span className={cn('text-[11px] font-semibold font-mono', isDark ? 'text-white' : 'text-[#1a1a1a]')}>
+                  <span className={cn('text-[11px] font-semibold font-mono', 'text-[#1a1a1a] dark:text-white')}>
                     {formatTradeDisplay(amountData.value)}{' '}
                     <span className="opacity-60 text-[9px] font-normal">
                       {decodeCurrency(amountData.currency)}
@@ -4025,10 +4018,9 @@ const TradingHistory = ({
                   isBuy={isBuy}
                   isLP={isLiquidity}
                   isCreate={trade.type === 'create'}
-                  isDark={isDark}
                   className="h-[26px] !px-2"
                 >
-                  <span className={cn('text-[11px] font-semibold font-mono', isDark ? 'text-white' : 'text-[#1a1a1a]')}>
+                  <span className={cn('text-[11px] font-semibold font-mono', 'text-[#1a1a1a] dark:text-white')}>
                     {formatTradeDisplay(totalData.value)}{' '}
                     <span className="opacity-60 text-[9px] font-normal">
                       {decodeCurrency(totalData.currency)}
@@ -4040,7 +4032,6 @@ const TradingHistory = ({
                 <IconButton
                   aria-label="View trade details"
                   onClick={() => setExpandedTradeId(expandedTradeId === (trade._id || trade.id) ? null : trade._id || trade.id)}
-                  isDark={isDark}
                   className="p-1 bg-transparent"
                 >
                   <ExternalLink size={12} strokeWidth={2.5} />
@@ -4051,7 +4042,6 @@ const TradingHistory = ({
               <TradeDetails
                 trade={trade}
                 account={addressToShow}
-                isDark={isDark}
                 onClose={() => setExpandedTradeId(null)}
                 walletLabel={walletLabels[addressToShow]}
                 onTrackAddress={onTrackAddress}
@@ -4070,7 +4060,6 @@ const TradingHistory = ({
         <Card
           key={trade._id || trade.id || index}
           isNew={newTradeIds.has(trade._id || trade.id)}
-          isDark={isDark}
         >
           <CardContent className="!py-[6px] !px-0">
             <div
@@ -4083,7 +4072,7 @@ const TradingHistory = ({
               }
             >
               {/* Time */}
-              <span suppressHydrationWarning className={cn('text-[11px] font-semibold tabular-nums', isDark ? 'text-white/60' : 'text-black/60')}>
+              <span suppressHydrationWarning className={cn('text-[11px] font-semibold tabular-nums', 'text-black/60 dark:text-white/60')}>
                 {formatRelativeTime(trade.time, true)}
               </span>
 
@@ -4101,7 +4090,7 @@ const TradingHistory = ({
               )}
 
               {/* Price */}
-              <span className={cn('text-[12px] font-bold font-mono -tracking-[0.02em]', isDark ? 'text-white' : 'text-[#1a1a1a]')}>
+              <span className={cn('text-[12px] font-bold font-mono -tracking-[0.02em]', 'text-[#1a1a1a] dark:text-white')}>
                 {isLiquidity ? '-' : formatPrice(price)}
               </span>
 
@@ -4111,9 +4100,8 @@ const TradingHistory = ({
                 isBuy={isBuy}
                 isLP={isLiquidity}
                 isCreate={trade.type === 'create'}
-                isDark={isDark}
               >
-                <span className={cn('text-[12px] font-mono', isDark ? 'text-white' : 'text-[#1a1a1a]')}>
+                <span className={cn('text-[12px] font-mono', 'text-[#1a1a1a] dark:text-white')}>
                   {formatTradeDisplay(amountData.value)}{' '}
                   <span className="opacity-60 text-[10px] font-normal">
                     {decodeCurrency(amountData.currency)}
@@ -4127,9 +4115,8 @@ const TradingHistory = ({
                 isBuy={isBuy}
                 isLP={isLiquidity}
                 isCreate={trade.type === 'create'}
-                isDark={isDark}
               >
-                <span className={cn('text-[12px] font-mono', isDark ? 'text-white' : 'text-[#1a1a1a]')}>
+                <span className={cn('text-[12px] font-mono', 'text-[#1a1a1a] dark:text-white')}>
                   {formatTradeDisplay(totalData.value)}{' '}
                   <span className="opacity-60 text-[10px] font-normal">
                     {decodeCurrency(totalData.currency)}
@@ -4139,7 +4126,7 @@ const TradingHistory = ({
 
               {/* Fiat Value */}
               {activeFiatCurrency !== 'XRP' && (
-                <span className={cn('text-[11px] font-medium text-right font-mono', isDark ? 'text-white/60' : 'text-black/60')}>
+                <span className={cn('text-[11px] font-medium text-right font-mono', 'text-black/60 dark:text-white/60')}>
                   {SYMBOLS[activeFiatCurrency]}
                   {formatTradeDisplay(
                     (xrpAmount > 0
@@ -4151,7 +4138,7 @@ const TradingHistory = ({
 
               {/* Trader Address */}
               <div className="flex items-center gap-1 overflow-hidden">
-                <TraderTooltip address={addressToShow} tokenId={tokenId} isDark={isDark} currency={token?.currency}>
+                <TraderTooltip address={addressToShow} tokenId={tokenId} currency={token?.currency}>
                   <a
                     href={`/address/${addressToShow}`}
                     target="_blank"
@@ -4159,30 +4146,26 @@ const TradingHistory = ({
                     onClick={(e) => e.stopPropagation()}
                     className={cn(
                       'inline-flex items-center gap-2 px-2 py-1 rounded-md border transition-[opacity,transform,background-color,border-color] duration-200 text-[11px] font-mono no-underline whitespace-nowrap overflow-hidden text-ellipsis',
-                      isDark
-                        ? 'bg-white/[0.03] border-white/[0.06] hover:bg-white/[0.08] hover:border-white/[0.12] text-white/50 hover:text-white/80'
-                        : 'bg-black/[0.02] border-black/[0.04] hover:bg-black/[0.04] hover:border-black/[0.08] text-gray-500 hover:text-gray-900'
+                      'bg-black/[0.02] border-black/[0.04] hover:bg-black/[0.04] hover:border-black/[0.08] text-gray-500 hover:text-gray-900 dark:bg-white/[0.03] dark:border-white/[0.06] dark:hover:bg-white/[0.08] dark:hover:border-white/[0.12] dark:text-white/50 dark:hover:text-white/80'
                     )}
                     title={addressToShow}
                   >
-                    {dotColor && (
-                      <span
-                        className="w-[5px] h-[5px] rounded-full shrink-0"
-                        style={{ background: dotColor, boxShadow: `0 0 6px ${dotColor}80` }}
-                      />
-                    )}
+                    <span
+                      className="w-[5px] h-[5px] rounded-full shrink-0"
+                      style={dotColor ? { background: dotColor, boxShadow: `0 0 6px ${dotColor}80` } : { background: 'transparent' }}
+                    />
                     {walletLabels[addressToShow] ? (
                       <span className="font-semibold text-[#3b82f6]">{walletLabels[addressToShow]}</span>
                     ) : addressToShow ? `${addressToShow.slice(0, 4)}...${addressToShow.slice(-4)}` : '-'}
                   </a>
                 </TraderTooltip>
-                {onTrackAddress && addressToShow && (
+                {onTrackAddress && (
                   <button
-                    onClick={(e) => { e.stopPropagation(); onTrackAddress(addressToShow); }}
+                    onClick={(e) => { e.stopPropagation(); if (addressToShow) onTrackAddress(addressToShow); }}
                     title="Track on chart"
                     className={cn(
                       'p-[3px] rounded cursor-pointer border-none transition-[background-color,border-color] flex-shrink-0',
-                      isDark ? 'text-white/25 hover:text-[#3b82f6] hover:bg-white/[0.06]' : 'text-black/25 hover:text-[#3b82f6] hover:bg-black/[0.04]'
+                      addressToShow ? 'text-black/25 hover:text-[#3b82f6] hover:bg-black/[0.04] dark:text-white/25 dark:hover:text-[#3b82f6] dark:hover:bg-white/[0.06]' : 'invisible'
                     )}
                   >
                     <CandlestickChart size={12} />
@@ -4191,13 +4174,13 @@ const TradingHistory = ({
               </div>
 
               {/* Source */}
-              <span className={cn('text-[10px] font-medium overflow-hidden text-ellipsis whitespace-nowrap uppercase tracking-[0.02em]', isDark ? 'text-white/55' : 'text-black/60')}>
+              <span className={cn('text-[10px] font-medium overflow-hidden text-ellipsis whitespace-nowrap uppercase tracking-[0.02em]', 'text-black/60 dark:text-white/55')}>
                 {getSourceTagName(trade.sourceTag) || (isLiquidity ? 'AMM' : '')}
               </span>
 
               {/* Animal tier icon */}
               <div className="flex items-center justify-center opacity-80">
-                <TierIcon xrpValue={xrpAmount} isDark={isDark} />
+                <TierIcon xrpValue={xrpAmount} />
               </div>
             </div>
           </CardContent>
@@ -4206,7 +4189,6 @@ const TradingHistory = ({
             <TradeDetails
               trade={trade}
               account={addressToShow}
-              isDark={isDark}
               onClose={() => setExpandedTradeId(null)}
               walletLabel={walletLabels[addressToShow]}
               onTrackAddress={onTrackAddress}
@@ -4222,7 +4204,6 @@ const TradingHistory = ({
     calculatePrice,
     handleTxClick,
     isMobile,
-    isDark,
     expandedTradeId,
     activeFiatCurrency,
     exchRate,
@@ -4232,7 +4213,6 @@ const TradingHistory = ({
 
   const emptyState = (
     <BearEmptyState
-      isDark={isDark}
       title={historyType === 'liquidity' ? 'No Liquidity Events' : historyType === 'all' ? 'No Activity' : 'No Recent Trades'}
       subtitle={historyType === 'liquidity' ? 'AMM liquidity events will appear here' : 'Trading activity will appear here when available'}
     />
@@ -4241,24 +4221,24 @@ const TradingHistory = ({
   return (
     <div className="flex flex-col gap-2 w-full flex-1 relative z-0">
       <div className="flex items-center justify-between flex-wrap gap-2">
-        <Tabs isDark={isDark}>
-          <Tab selected={tabValue === 0} onClick={(e) => handleTabChange(e, 0)} isDark={isDark} aria-label="Trades">
+        <Tabs>
+          <Tab selected={tabValue === 0} onClick={(e) => handleTabChange(e, 0)} aria-label="Trades">
             <Activity size={14} />
             <span>Trades</span>
           </Tab>
-          <Tab selected={tabValue === 1} onClick={(e) => handleTabChange(e, 1)} isDark={isDark} aria-label="Pools">
+          <Tab selected={tabValue === 1} onClick={(e) => handleTabChange(e, 1)} aria-label="Pools">
             <Droplets size={14} />
             <span>Pools</span>
           </Tab>
-          <Tab selected={tabValue === 2} onClick={(e) => handleTabChange(e, 2)} isDark={isDark} aria-label="Traders">
+          <Tab selected={tabValue === 2} onClick={(e) => handleTabChange(e, 2)} aria-label="Traders">
             <Users size={14} />
             <span>Traders</span>
           </Tab>
-          <Tab selected={tabValue === 3} onClick={(e) => handleTabChange(e, 3)} isDark={isDark} aria-label="Holders">
+          <Tab selected={tabValue === 3} onClick={(e) => handleTabChange(e, 3)} aria-label="Holders">
             <PieChart size={14} />
             <span>Holders</span>
           </Tab>
-          <Tab selected={tabValue === 4} onClick={(e) => handleTabChange(e, 4)} isDark={isDark} aria-label="My Activity">
+          <Tab selected={tabValue === 4} onClick={(e) => handleTabChange(e, 4)} aria-label="My Activity">
             <Wallet size={14} />
             <span>My Activity</span>
           </Tab>
@@ -4271,7 +4251,7 @@ const TradingHistory = ({
                 className={cn(
                   'flex items-center gap-[6px] py-[5px] px-2.5 text-[11px] font-semibold rounded-[6px] border transition-[background-color,border-color]',
                   'border-[#f59e0b] text-[#f59e0b]',
-                  isDark ? 'bg-[rgba(245,158,11,0.12)] hover:bg-[rgba(245,158,11,0.2)]' : 'bg-[rgba(245,158,11,0.08)] hover:bg-[rgba(245,158,11,0.15)]'
+                  'bg-[rgba(245,158,11,0.08)] hover:bg-[rgba(245,158,11,0.15)] dark:bg-[rgba(245,158,11,0.12)] dark:hover:bg-[rgba(245,158,11,0.2)]'
                 )}
               >
                 <Filter size={12} />
@@ -4287,19 +4267,19 @@ const TradingHistory = ({
               onChange={(e) => { setPairType(e.target.value); if (e.target.value === 'token') setXrpAmount(''); }}
               className={cn(
                 'py-[5px] px-2 text-[11px] font-medium rounded-[6px] border cursor-pointer outline-none appearance-none',
-                isDark ? 'color-scheme-dark' : 'color-scheme-light',
+                'color-scheme-light dark:color-scheme-dark',
                 pairType
-                  ? cn('border-[#3b82f6] text-[#3b82f6]', isDark ? 'bg-[rgba(59,130,246,0.15)]' : 'bg-[rgba(59,130,246,0.1)]')
-                  : cn(isDark ? 'border-[rgba(59,130,246,0.15)] bg-black/80 text-white/60' : 'border-black/[0.12] bg-white text-black/60')
+                  ? cn('border-[#3b82f6] text-[#3b82f6]', 'bg-[rgba(59,130,246,0.1)] dark:bg-[rgba(59,130,246,0.15)]')
+                  : cn('border-black/[0.12] bg-white text-black/60 dark:border-[rgba(59,130,246,0.15)] dark:bg-black/80 dark:text-white/60')
               )}
             >
-              <option value="" className={isDark ? 'bg-[#1a1a1a]' : 'bg-white'}>
+              <option value="" className={'bg-white dark:bg-neutral-900'}>
                 All Pairs
               </option>
-              <option value="xrp" className={isDark ? 'bg-[#1a1a1a]' : 'bg-white'}>
+              <option value="xrp" className={'bg-white dark:bg-neutral-900'}>
                 XRP Pairs
               </option>
-              <option value="token" className={isDark ? 'bg-[#1a1a1a]' : 'bg-white'}>
+              <option value="token" className={'bg-white dark:bg-neutral-900'}>
                 Token Pairs
               </option>
             </select>
@@ -4316,19 +4296,19 @@ const TradingHistory = ({
               }}
               className={cn(
                 'py-[5px] px-2 text-[11px] font-medium rounded-[6px] border cursor-pointer outline-none appearance-none',
-                isDark ? 'color-scheme-dark' : 'color-scheme-light',
+                'color-scheme-light dark:color-scheme-dark',
                 historyType !== 'trades'
-                  ? cn('border-[#3b82f6] text-[#3b82f6]', isDark ? 'bg-[rgba(59,130,246,0.15)]' : 'bg-[rgba(59,130,246,0.1)]')
-                  : cn(isDark ? 'border-[rgba(59,130,246,0.15)] bg-black/80 text-white/60' : 'border-black/[0.12] bg-white text-black/60')
+                  ? cn('border-[#3b82f6] text-[#3b82f6]', 'bg-[rgba(59,130,246,0.1)] dark:bg-[rgba(59,130,246,0.15)]')
+                  : cn('border-black/[0.12] bg-white text-black/60 dark:border-[rgba(59,130,246,0.15)] dark:bg-black/80 dark:text-white/60')
               )}
             >
-              <option value="trades" className={isDark ? 'bg-[#1a1a1a]' : 'bg-white'}>
+              <option value="trades" className={'bg-white dark:bg-neutral-900'}>
                 Trades
               </option>
-              <option value="liquidity" className={isDark ? 'bg-[#1a1a1a]' : 'bg-white'}>
+              <option value="liquidity" className={'bg-white dark:bg-neutral-900'}>
                 Liquidity
               </option>
-              <option value="all" className={isDark ? 'bg-[#1a1a1a]' : 'bg-white'}>
+              <option value="all" className={'bg-white dark:bg-neutral-900'}>
                 All
               </option>
             </select>
@@ -4339,22 +4319,22 @@ const TradingHistory = ({
                 onChange={(e) => setLiquidityType(e.target.value)}
                 className={cn(
                   'py-[5px] px-2 text-[11px] font-medium rounded-[6px] border cursor-pointer outline-none appearance-none',
-                  isDark ? 'color-scheme-dark' : 'color-scheme-light',
+                  'color-scheme-light dark:color-scheme-dark',
                   liquidityType
-                    ? cn('border-[#8b5cf6] text-[#8b5cf6]', isDark ? 'bg-[rgba(139,92,246,0.15)]' : 'bg-[rgba(139,92,246,0.1)]')
-                    : cn(isDark ? 'border-[rgba(59,130,246,0.15)] bg-black/80 text-white/60' : 'border-black/[0.12] bg-white text-black/60')
+                    ? cn('border-[#8b5cf6] text-[#8b5cf6]', 'bg-[rgba(139,92,246,0.1)] dark:bg-[rgba(139,92,246,0.15)]')
+                    : cn('border-black/[0.12] bg-white text-black/60 dark:border-[rgba(59,130,246,0.15)] dark:bg-black/80 dark:text-white/60')
                 )}
               >
-                <option value="" className={isDark ? 'bg-[#1a1a1a]' : 'bg-white'}>
+                <option value="" className={'bg-white dark:bg-neutral-900'}>
                   All Events
                 </option>
-                <option value="deposit" className={isDark ? 'bg-[#1a1a1a]' : 'bg-white'}>
+                <option value="deposit" className={'bg-white dark:bg-neutral-900'}>
                   Deposits
                 </option>
-                <option value="withdraw" className={isDark ? 'bg-[#1a1a1a]' : 'bg-white'}>
+                <option value="withdraw" className={'bg-white dark:bg-neutral-900'}>
                   Withdrawals
                 </option>
-                <option value="create" className={isDark ? 'bg-[#1a1a1a]' : 'bg-white'}>
+                <option value="create" className={'bg-white dark:bg-neutral-900'}>
                   Pool Creates
                 </option>
               </select>
@@ -4366,31 +4346,31 @@ const TradingHistory = ({
               onChange={(e) => setXrpAmount(e.target.value)}
               className={cn(
                 'py-[5px] px-2 text-[11px] font-medium rounded-[6px] border cursor-pointer outline-none appearance-none',
-                isDark ? 'color-scheme-dark' : 'color-scheme-light',
+                'color-scheme-light dark:color-scheme-dark',
                 xrpAmount
-                  ? cn('border-[#3b82f6] text-[#3b82f6]', isDark ? 'bg-[rgba(59,130,246,0.15)]' : 'bg-[rgba(59,130,246,0.1)]')
-                  : cn(isDark ? 'border-[rgba(59,130,246,0.15)] bg-black/80 text-white/60' : 'border-black/[0.12] bg-white text-black/60')
+                  ? cn('border-[#3b82f6] text-[#3b82f6]', 'bg-[rgba(59,130,246,0.1)] dark:bg-[rgba(59,130,246,0.15)]')
+                  : cn('border-black/[0.12] bg-white text-black/60 dark:border-[rgba(59,130,246,0.15)] dark:bg-black/80 dark:text-white/60')
               )}
             >
-              <option value="" className={isDark ? 'bg-[#1a1a1a]' : 'bg-white'}>
+              <option value="" className={'bg-white dark:bg-neutral-900'}>
                 Min XRP
               </option>
-              <option value="100" className={isDark ? 'bg-[#1a1a1a]' : 'bg-white'}>
+              <option value="100" className={'bg-white dark:bg-neutral-900'}>
                 100+
               </option>
-              <option value="500" className={isDark ? 'bg-[#1a1a1a]' : 'bg-white'}>
+              <option value="500" className={'bg-white dark:bg-neutral-900'}>
                 500+
               </option>
-              <option value="1000" className={isDark ? 'bg-[#1a1a1a]' : 'bg-white'}>
+              <option value="1000" className={'bg-white dark:bg-neutral-900'}>
                 1k+
               </option>
-              <option value="2500" className={isDark ? 'bg-[#1a1a1a]' : 'bg-white'}>
+              <option value="2500" className={'bg-white dark:bg-neutral-900'}>
                 2.5k+
               </option>
-              <option value="5000" className={isDark ? 'bg-[#1a1a1a]' : 'bg-white'}>
+              <option value="5000" className={'bg-white dark:bg-neutral-900'}>
                 5k+
               </option>
-              <option value="10000" className={isDark ? 'bg-[#1a1a1a]' : 'bg-white'}>
+              <option value="10000" className={'bg-white dark:bg-neutral-900'}>
                 10k+
               </option>
             </select>
@@ -4402,10 +4382,10 @@ const TradingHistory = ({
               placeholder="Filter account..."
               className={cn(
                 'py-[5px] px-2 text-[11px] font-medium rounded-[6px] border outline-none w-[120px]',
-                isDark ? 'text-white' : 'text-[#1a1a1a]',
+                'text-[#1a1a1a] dark:text-white',
                 accountFilter
-                  ? cn('border-[#3b82f6]', isDark ? 'bg-[rgba(59,130,246,0.15)]' : 'bg-[rgba(59,130,246,0.1)]')
-                  : cn(isDark ? 'border-[rgba(59,130,246,0.15)] bg-black/80' : 'border-black/[0.12] bg-white')
+                  ? cn('border-[#3b82f6]', 'bg-[rgba(59,130,246,0.1)] dark:bg-[rgba(59,130,246,0.15)]')
+                  : cn('border-black/[0.12] bg-white dark:border-[rgba(59,130,246,0.15)] dark:bg-black/80')
               )}
             />
           </div>
@@ -4418,7 +4398,7 @@ const TradingHistory = ({
           className={cn(
             'flex items-center gap-[6px] py-[5px] px-2.5 text-[11px] font-semibold rounded-[6px] border transition-[background-color,border-color] self-start',
             'border-[#f59e0b] text-[#f59e0b]',
-            isDark ? 'bg-[rgba(245,158,11,0.12)] hover:bg-[rgba(245,158,11,0.2)]' : 'bg-[rgba(245,158,11,0.08)] hover:bg-[rgba(245,158,11,0.15)]'
+            'bg-[rgba(245,158,11,0.08)] hover:bg-[rgba(245,158,11,0.15)] dark:bg-[rgba(245,158,11,0.12)] dark:hover:bg-[rgba(245,158,11,0.2)]'
           )}
         >
           <Filter size={12} />
@@ -4440,36 +4420,36 @@ const TradingHistory = ({
           {/* Desktop header - hidden on mobile */}
           {!isMobile && (
             <div
-              className={cn('grid gap-2 py-3 sticky top-0 z-10 backdrop-blur-[8px] border-b', isDark ? 'bg-[rgba(10,10,10,0.8)] border-white/[0.08]' : 'bg-[rgba(255,255,255,0.8)] border-black/[0.08]')}
+              className={cn('grid gap-2 py-3 sticky top-0 z-10 backdrop-blur-[8px] border-b', 'bg-white/80 border-black/[0.08] dark:bg-black/80 dark:border-white/[0.08]')}
               style={{ gridTemplateColumns: `66px 46px 88px 1fr 1fr ${activeFiatCurrency !== 'XRP' ? '68px ' : ''}115px 58px 36px` }}
             >
-              <div className={cn('text-[11px] font-semibold uppercase tracking-[0.08em] flex items-center gap-[6px]', isDark ? 'text-white/60' : 'text-black/60')}>
+              <div className={cn('text-[11px] font-semibold uppercase tracking-[0.08em] flex items-center gap-[6px]', 'text-black/60 dark:text-white/60')}>
                 Time
-                <LiveIndicator isDark={isDark}>
+                <LiveIndicator>
                   <LiveCircle />
                 </LiveIndicator>
               </div>
-              <div className={cn('text-[11px] font-semibold uppercase tracking-[0.08em]', isDark ? 'text-white/60' : 'text-black/60')}>
+              <div className={cn('text-[11px] font-semibold uppercase tracking-[0.08em]', 'text-black/60 dark:text-white/60')}>
                 Type
               </div>
-              <div className={cn('text-[11px] font-semibold uppercase tracking-[0.08em]', isDark ? 'text-white/60' : 'text-black/60')}>
+              <div className={cn('text-[11px] font-semibold uppercase tracking-[0.08em]', 'text-black/60 dark:text-white/60')}>
                 Price
               </div>
-              <div className={cn('text-[11px] font-semibold uppercase tracking-[0.08em] pl-[10px]', isDark ? 'text-white/60' : 'text-black/60')}>
+              <div className={cn('text-[11px] font-semibold uppercase tracking-[0.08em] pl-[10px]', 'text-black/60 dark:text-white/60')}>
                 Amount
               </div>
-              <div className={cn('text-[11px] font-semibold uppercase tracking-[0.08em] pl-[10px]', isDark ? 'text-white/60' : 'text-black/60')}>
+              <div className={cn('text-[11px] font-semibold uppercase tracking-[0.08em] pl-[10px]', 'text-black/60 dark:text-white/60')}>
                 Value
               </div>
               {activeFiatCurrency !== 'XRP' && (
-                <div className={cn('text-[11px] font-semibold uppercase tracking-[0.08em] text-right', isDark ? 'text-white/60' : 'text-black/60')}>
+                <div className={cn('text-[11px] font-semibold uppercase tracking-[0.08em] text-right', 'text-black/60 dark:text-white/60')}>
                   {activeFiatCurrency}
                 </div>
               )}
-              <div className={cn('text-[11px] font-semibold uppercase tracking-[0.08em]', isDark ? 'text-white/60' : 'text-black/60')}>
+              <div className={cn('text-[11px] font-semibold uppercase tracking-[0.08em]', 'text-black/60 dark:text-white/60')}>
                 Trader
               </div>
-              <div className={cn('text-[11px] font-semibold uppercase tracking-[0.08em]', isDark ? 'text-white/60' : 'text-black/60')}>
+              <div className={cn('text-[11px] font-semibold uppercase tracking-[0.08em]', 'text-black/60 dark:text-white/60')}>
                 Source
               </div>
               <div></div>
@@ -4478,11 +4458,11 @@ const TradingHistory = ({
 
           {/* Mobile header with column labels */}
           {isMobile && (
-            <div className={cn('grid grid-cols-[52px_36px_1fr_1fr_24px] gap-[6px] items-center px-3 py-1 mb-1 border-b', isDark ? 'border-white/[0.06]' : 'border-black/[0.06]')}>
-              <span className={cn('text-[9px] font-medium uppercase', isDark ? 'text-white/60' : 'text-black/60')}>Time</span>
-              <span className={cn('text-[9px] font-medium uppercase', isDark ? 'text-white/60' : 'text-black/60')}>Type</span>
-              <span className={cn('text-[9px] font-medium uppercase', isDark ? 'text-white/60' : 'text-black/60')}>Amount</span>
-              <span className={cn('text-[9px] font-medium uppercase', isDark ? 'text-white/60' : 'text-black/60')}>Total</span>
+            <div className={cn('grid grid-cols-[52px_36px_1fr_1fr_24px] gap-[6px] items-center px-3 py-1 mb-1 border-b', 'border-black/[0.06] dark:border-white/[0.06]')}>
+              <span className={cn('text-[9px] font-medium uppercase', 'text-black/60 dark:text-white/60')}>Time</span>
+              <span className={cn('text-[9px] font-medium uppercase', 'text-black/60 dark:text-white/60')}>Type</span>
+              <span className={cn('text-[9px] font-medium uppercase', 'text-black/60 dark:text-white/60')}>Amount</span>
+              <span className={cn('text-[9px] font-medium uppercase', 'text-black/60 dark:text-white/60')}>Total</span>
               <span></span>
             </div>
           )}
@@ -4498,11 +4478,10 @@ const TradingHistory = ({
           {/* Cursor-based pagination */}
           {(totalRecords > limit || currentPage > 1) && (
             <div className="flex justify-center items-center mt-[10px]">
-              <Pagination isDark={isDark}>
+              <Pagination>
                 <PaginationButton
                   onClick={handleFirstPage}
                   disabled={currentPage === 1}
-                  isDark={isDark}
                   title="First"
                   aria-label="First page"
                 >
@@ -4511,13 +4490,12 @@ const TradingHistory = ({
                 <PaginationButton
                   onClick={handlePrevPage}
                   disabled={currentPage === 1}
-                  isDark={isDark}
                   title="Previous"
                   aria-label="Previous page"
                 >
                   <ChevronLeft size={14} />
                 </PaginationButton>
-                <PageInfo isDark={isDark} suppressHydrationWarning>
+                <PageInfo suppressHydrationWarning>
                   {currentPage.toLocaleString()}
                   <span className="opacity-50">/</span>
                   {Math.ceil(totalRecords / limit).toLocaleString()}
@@ -4525,7 +4503,6 @@ const TradingHistory = ({
                 <PaginationButton
                   onClick={handleNextPage}
                   disabled={isLastPage}
-                  isDark={isDark}
                   title="Next"
                   aria-label="Next page"
                 >
@@ -4534,7 +4511,6 @@ const TradingHistory = ({
                 <PaginationButton
                   onClick={handleLastPage}
                   disabled={isLastPage && direction === 'asc'}
-                  isDark={isDark}
                   title="Last"
                   aria-label="Last page"
                 >
@@ -4552,7 +4528,7 @@ const TradingHistory = ({
           {!ammLoading && ammPools.length > 0 && (
             <div className="flex items-center justify-between gap-3 flex-wrap">
               {/* Pool Type Filter */}
-              <div className={cn('flex gap-1 p-1 rounded-[10px]', isDark ? 'bg-white/[0.03]' : 'bg-black/[0.03]')}>
+              <div className={cn('flex gap-1 p-1 rounded-[10px]', 'bg-black/[0.03] dark:bg-white/[0.03]')}>
                 {[
                   { value: 'all', label: 'All' },
                   { value: 'xrp', label: 'XRP Pools' },
@@ -4564,8 +4540,8 @@ const TradingHistory = ({
                     className={cn(
                       'py-[6px] px-3 text-[11px] font-semibold rounded-lg border-none cursor-pointer transition-[opacity,transform,background-color,border-color] duration-200 whitespace-nowrap',
                       poolTypeFilter === value
-                        ? cn(isDark ? 'bg-white/[0.08] text-white' : 'bg-white text-[#1a1a1a] shadow-[0_1px_3px_rgba(0,0,0,0.1)]')
-                        : cn('bg-transparent', isDark ? 'text-white/60' : 'text-black/50')
+                        ? cn('bg-white text-[#1a1a1a] shadow-[0_1px_3px_rgba(0,0,0,0.1)] dark:bg-white/[0.08] dark:text-white')
+                        : cn('bg-transparent', 'text-black/50 dark:text-white/60')
                     )}
                   >
                     {label}
@@ -4575,17 +4551,17 @@ const TradingHistory = ({
 
               {/* Sort Control + Create Pool */}
               <div className="flex items-center gap-2">
-                <div className={cn('flex items-center rounded-[10px] p-[2px]', isDark ? 'bg-white/[0.03]' : 'bg-black/[0.03]')}>
+                <div className={cn('flex items-center rounded-[10px] p-[2px]', 'bg-black/[0.03] dark:bg-white/[0.03]')}>
                   <div className="flex items-center gap-1 pl-[10px] pr-2">
                     <Filter
                       size={12}
-                      className={cn(isDark ? 'text-white/60' : 'text-black/60')}
+                      className={cn('text-black/60 dark:text-white/60')}
                     />
                     <select
                       aria-label="Sort AMM pools by"
                       value={poolSortBy}
                       onChange={(e) => setPoolSortBy(e.target.value)}
-                      className={cn('py-[6px] px-1 text-[11px] font-semibold border-none bg-transparent cursor-pointer outline-none appearance-none', isDark ? 'text-white/80' : 'text-black/80')}
+                      className={cn('py-[6px] px-1 text-[11px] font-semibold border-none bg-transparent cursor-pointer outline-none appearance-none', 'text-black/80 dark:text-white/80')}
                     >
                       <option value="liquidity">TVL</option>
                       <option value="apy">APY</option>
@@ -4597,7 +4573,7 @@ const TradingHistory = ({
                     onClick={() => setPoolSortDir((prev) => (prev === 'desc' ? 'asc' : 'desc'))}
                     className={cn(
                       'w-7 h-7 rounded-lg border-none cursor-pointer flex items-center justify-center transition-[opacity,transform,background-color,border-color] duration-200',
-                      isDark ? 'bg-white/5 text-white' : 'bg-white text-[#1a1a1a] shadow-[0_1px_2px_rgba(0,0,0,0.05)]'
+                      'bg-white text-[#1a1a1a] shadow-[0_1px_2px_rgba(0,0,0,0.05)] dark:bg-white/5 dark:text-white'
                     )}
                     title={poolSortDir === 'desc' ? 'Highest first' : 'Lowest first'}
                   >
@@ -4617,10 +4593,10 @@ const TradingHistory = ({
 
           {/* Missing XRP pool banner */}
           {!ammLoading && ammPools.length > 0 && !hasXrpPool && token?.currency !== 'XRP' && (
-            <div className={cn('flex items-center justify-between gap-3 py-[10px] px-[14px] rounded-[10px] border-[1.5px]', isDark ? 'bg-[rgba(19,125,254,0.06)] border-[rgba(19,125,254,0.15)]' : 'bg-[rgba(19,125,254,0.04)] border-[rgba(19,125,254,0.12)]')}>
+            <div className={cn('flex items-center justify-between gap-3 py-[10px] px-[14px] rounded-[10px] border-[1.5px]', 'bg-[rgba(19,125,254,0.04)] border-[rgba(19,125,254,0.12)] dark:bg-[rgba(19,125,254,0.06)] dark:border-[rgba(19,125,254,0.15)]')}>
               <div className="flex items-center gap-2">
                 <Droplets size={14} className="text-[#137DFE] shrink-0" />
-                <span className={cn('text-[12px]', isDark ? 'text-white/70' : 'text-black/60')}>
+                <span className={cn('text-[12px]', 'text-black/60 dark:text-white/70')}>
                   No {decodeCurrency(token?.currency)} / XRP pool exists yet
                 </span>
               </div>
@@ -4640,7 +4616,7 @@ const TradingHistory = ({
             </div>
           ) : ammPools.length === 0 ? (
             <div className="flex flex-col items-center gap-3 py-8 px-4">
-              <BearEmptyState isDark={isDark} title="No pools found" subtitle="Be the first to create a liquidity pool for this token" />
+              <BearEmptyState title="No pools found" subtitle="Be the first to create a liquidity pool for this token" />
               <button
                 onClick={() => handleOpenCreatePool({ currency: 'XRP' })}
                 className="flex items-center gap-[6px] py-[10px] px-5 text-[13px] font-semibold rounded-[10px] border-none bg-[#137DFE] text-white cursor-pointer transition-[opacity,transform,background-color,border-color] duration-150"
@@ -4650,7 +4626,7 @@ const TradingHistory = ({
               </button>
             </div>
           ) : filteredAndSortedPools.length === 0 ? (
-            <BearEmptyState isDark={isDark} title={`No ${poolTypeFilter === 'xrp' ? 'XRP' : 'token/token'} pools found`} subtitle="Try a different filter" />
+            <BearEmptyState title={`No ${poolTypeFilter === 'xrp' ? 'XRP' : 'token/token'} pools found`} subtitle="Try a different filter" />
           ) : isMobile ? (
             /* Mobile pool cards */
             <div className="flex flex-col gap-2">
@@ -4678,8 +4654,8 @@ const TradingHistory = ({
                     key={pool._id}
                     className={cn(
                       'rounded-[14px] overflow-hidden transition-[opacity,transform,background-color,border-color] duration-200 border',
-                      isDark ? 'bg-white/[0.03]' : 'bg-black/[0.02]',
-                      isMainPool ? 'border-[#3b82f6]' : isDark ? 'border-white/[0.06]' : 'border-black/[0.06]'
+                      'bg-black/[0.02] dark:bg-white/[0.03]',
+                      isMainPool ? 'border-[#3b82f6]' : 'border-black/[0.06] dark:border-white/[0.06]'
                     )}
                   >
                     <div
@@ -4692,17 +4668,17 @@ const TradingHistory = ({
                             <img
                               src={getTokenImageUrl(pool.asset1.issuer, pool.asset1.currency)}
                               alt=""
-                              className={cn('w-6 h-6 rounded-full', isDark ? 'border-[1.5px] border-[#1a1a1a]' : 'border-[1.5px] border-white')}
+                              className={cn('w-6 h-6 rounded-full', 'border-[1.5px] border-white dark:border-[1.5px] dark:border-[#1a1a1a]')}
                             />
                             <img
                               src={getTokenImageUrl(pool.asset2.issuer, pool.asset2.currency)}
                               alt=""
-                              className={cn('w-6 h-6 rounded-full -ml-[10px]', isDark ? 'border-[1.5px] border-[#1a1a1a]' : 'border-[1.5px] border-white')}
+                              className={cn('w-6 h-6 rounded-full -ml-[10px]', 'border-[1.5px] border-white dark:border-[1.5px] dark:border-[#1a1a1a]')}
                             />
                           </div>
                           <div className="flex flex-col">
                             <div className="flex items-center gap-[6px]">
-                              <span className={cn('text-[13px] font-semibold', isDark ? 'text-white' : 'text-[#1a1a1a]')}>
+                              <span className={cn('text-[13px] font-semibold', 'text-[#1a1a1a] dark:text-white')}>
                                 {asset1}/{asset2}
                               </span>
                               {isMainPool && (
@@ -4711,28 +4687,28 @@ const TradingHistory = ({
                                 </span>
                               )}
                             </div>
-                            <span className={cn('text-[10px] font-medium', isDark ? 'text-white/60' : 'text-black/50')}>
+                            <span className={cn('text-[10px] font-medium', 'text-black/50 dark:text-white/60')}>
                               {(pool.tradingFee / 100000).toFixed(3)}% Fee
                             </span>
                           </div>
                         </div>
 
                         <div className="text-right">
-                          <div className={cn('text-[14px] font-bold', hasApy ? 'text-[#22c55e]' : isDark ? 'text-white' : 'text-[#1a1a1a]')}>
+                          <div className={cn('text-[14px] font-bold', hasApy ? 'text-[#22c55e]' : 'text-[#1a1a1a] dark:text-white')}>
                             {hasApy ? `${pool.apy7d.apy.toFixed(1)}%` : '-%'}
                           </div>
-                          <div className={cn('text-[10px] font-semibold uppercase tracking-[0.02em]', isDark ? 'text-white/60' : 'text-black/50')}>
+                          <div className={cn('text-[10px] font-semibold uppercase tracking-[0.02em]', 'text-black/50 dark:text-white/60')}>
                             APY
                           </div>
                         </div>
                       </div>
 
-                      <div className={cn('flex items-center justify-between gap-3 py-2 px-[10px] rounded-[10px]', isDark ? 'bg-black/20' : 'bg-white/50')}>
+                      <div className={cn('flex items-center justify-between gap-3 py-2 px-[10px] rounded-[10px]', 'bg-white/50 dark:bg-black/20')}>
                         <div className="flex flex-col gap-[2px]">
-                          <span className={cn('text-[10px] font-medium uppercase', isDark ? 'text-white/60' : 'text-black/50')}>
+                          <span className={cn('text-[10px] font-medium uppercase', 'text-black/50 dark:text-white/60')}>
                             TVL
                           </span>
-                          <span className={cn('text-[12px] font-semibold', isDark ? 'text-white/90' : 'text-black/90')}>
+                          <span className={cn('text-[12px] font-semibold', 'text-black/90 dark:text-white/90')}>
                             {pool.apy7d?.liquidity > 0
                               ? `${abbreviateNumber(pool.apy7d.liquidity)} XRP`
                               : '-'}
@@ -4740,23 +4716,23 @@ const TradingHistory = ({
                         </div>
 
                         <div className="flex flex-col gap-[2px] items-center">
-                          <span className={cn('text-[10px] font-medium uppercase', isDark ? 'text-white/60' : 'text-black/50')}>
+                          <span className={cn('text-[10px] font-medium uppercase', 'text-black/50 dark:text-white/60')}>
                             Trend
                           </span>
                           {chartData && chartData.length >= 2 ? (
-                            <MiniSparkline data={chartData} width={50} height={18} isDark={isDark} />
+                            <MiniSparkline data={chartData} width={50} height={18} />
                           ) : (
-                            <span className={cn('text-[10px] font-semibold', isDark ? 'text-white/20' : 'text-black/20')}>
+                            <span className={cn('text-[10px] font-semibold', 'text-black/20 dark:text-white/20')}>
                               NEW
                             </span>
                           )}
                         </div>
 
                         <div className="flex flex-col gap-[2px] items-end">
-                          <span className={cn('text-[10px] font-medium uppercase', isDark ? 'text-white/60' : 'text-black/50')}>
+                          <span className={cn('text-[10px] font-medium uppercase', 'text-black/50 dark:text-white/60')}>
                             Volume 7d
                           </span>
-                          <span className={cn('text-[12px] font-semibold', isDark ? 'text-white/90' : 'text-black/90')}>
+                          <span className={cn('text-[12px] font-semibold', 'text-black/90 dark:text-white/90')}>
                             {pool.apy7d?.volume > 0
                               ? `${abbreviateNumber(pool.apy7d.volume)} XRP`
                               : '-'}
@@ -4767,7 +4743,7 @@ const TradingHistory = ({
 
                     {/* Expanded content */}
                     {isExpanded && (
-                      <div className={cn('px-3 pb-3 border-t', isDark ? 'border-white/[0.06]' : 'border-black/[0.06]')}>
+                      <div className={cn('px-3 pb-3 border-t', 'border-black/[0.06] dark:border-white/[0.06]')}>
                         {/* Action Buttons */}
                         <div className="grid grid-cols-2 gap-2 py-3">
                           <button
@@ -4784,7 +4760,7 @@ const TradingHistory = ({
                               e.stopPropagation();
                               handleWithdrawLiquidity(pool);
                             }}
-                            className={cn('p-[10px] text-[12px] font-bold rounded-[10px] border cursor-pointer flex items-center justify-center gap-[6px]', isDark ? 'border-white/10 bg-white/5 text-white' : 'border-black/10 bg-white text-[#1a1a1a]')}
+                            className={cn('p-[10px] text-[12px] font-bold rounded-[10px] border cursor-pointer flex items-center justify-center gap-[6px]', 'border-black/10 bg-white text-[#1a1a1a] dark:border-white/10 dark:bg-white/5 dark:text-white')}
                           >
                             <Minus size={16} /> Withdraw
                           </button>
@@ -4809,18 +4785,18 @@ const TradingHistory = ({
                             </div>
                             <div className="flex justify-between">
                               <div className="flex flex-col">
-                                <span className={cn('text-[13px] font-semibold', isDark ? 'text-white' : 'text-[#1a1a1a]')}>
+                                <span className={cn('text-[13px] font-semibold', 'text-[#1a1a1a] dark:text-white')}>
                                   {abbreviateNumber(userPosition.asset1Amount)} {asset1}
                                 </span>
-                                <span className={cn('text-[13px] font-semibold', isDark ? 'text-white' : 'text-[#1a1a1a]')}>
+                                <span className={cn('text-[13px] font-semibold', 'text-[#1a1a1a] dark:text-white')}>
                                   {abbreviateNumber(userPosition.asset2Amount)} {asset2}
                                 </span>
                               </div>
                               <div className="text-right">
-                                <span className={cn('text-[11px]', isDark ? 'text-white/60' : 'text-black/50')}>
+                                <span className={cn('text-[11px]', 'text-black/50 dark:text-white/60')}>
                                   LP Balance:
                                 </span>
-                                <div className={cn('text-[13px] font-semibold', isDark ? 'text-white' : 'text-[#1a1a1a]')}>
+                                <div className={cn('text-[13px] font-semibold', 'text-[#1a1a1a] dark:text-white')}>
                                   {abbreviateNumber(userPosition.balance)}
                                 </div>
                               </div>
@@ -4829,25 +4805,25 @@ const TradingHistory = ({
                             {hasIl && (() => {
                               const diff = ilData.poolValueXrp - ilData.holdValueXrp;
                               return (
-                              <div className={cn('mt-2 py-2 px-[10px] rounded-lg flex flex-col gap-[6px]', isDark ? 'bg-black/20' : 'bg-black/[0.03]')}>
+                              <div className={cn('mt-2 py-2 px-[10px] rounded-lg flex flex-col gap-[6px]', 'bg-black/[0.03] dark:bg-black/20')}>
                                 <div className="flex justify-between items-center">
-                                  <span className={cn('text-[10px] font-semibold', isDark ? 'text-white/60' : 'text-black/50')}>
+                                  <span className={cn('text-[10px] font-semibold', 'text-black/50 dark:text-white/60')}>
                                     Worth if held (no pool)
                                   </span>
-                                  <span className={cn('text-[12px] font-semibold', isDark ? 'text-white/90' : 'text-black/90')}>
+                                  <span className={cn('text-[12px] font-semibold', 'text-black/90 dark:text-white/90')}>
                                     {abbreviateNumber(ilData.holdValueXrp)} XRP
                                   </span>
                                 </div>
                                 <div className="flex justify-between items-center">
-                                  <span className={cn('text-[10px] font-semibold', isDark ? 'text-white/60' : 'text-black/50')}>
+                                  <span className={cn('text-[10px] font-semibold', 'text-black/50 dark:text-white/60')}>
                                     Worth in pool now
                                   </span>
-                                  <span className={cn('text-[12px] font-semibold', isDark ? 'text-white/90' : 'text-black/90')}>
+                                  <span className={cn('text-[12px] font-semibold', 'text-black/90 dark:text-white/90')}>
                                     {abbreviateNumber(ilData.poolValueXrp)} XRP
                                   </span>
                                 </div>
-                                <div className={cn('border-t pt-[5px] flex justify-between items-center', isDark ? 'border-white/[0.06]' : 'border-black/[0.06]')}>
-                                  <span className={cn('text-[10px] font-semibold', isDark ? 'text-white/60' : 'text-black/50')}>
+                                <div className={cn('border-t pt-[5px] flex justify-between items-center', 'border-black/[0.06] dark:border-white/[0.06]')}>
+                                  <span className={cn('text-[10px] font-semibold', 'text-black/50 dark:text-white/60')}>
                                     Impermanent {ilData.ilPercent >= 0 ? 'gain' : 'loss'}
                                   </span>
                                   <span className="text-[12px] font-bold" style={{ color: ilColor }}>
@@ -4863,21 +4839,21 @@ const TradingHistory = ({
 
                         {/* Additional Stats */}
                         <div className="grid grid-cols-2 gap-2">
-                          <div className={cn('p-[10px] rounded-[10px]', isDark ? 'bg-black/20' : 'bg-black/[0.03]')}>
-                            <span className={cn('text-[9px] uppercase block mb-[2px]', isDark ? 'text-white/60' : 'text-black/50')}>
+                          <div className={cn('p-[10px] rounded-[10px]', 'bg-black/[0.03] dark:bg-black/20')}>
+                            <span className={cn('text-[9px] uppercase block mb-[2px]', 'text-black/50 dark:text-white/60')}>
                               Fees 7d
                             </span>
-                            <span className={cn('text-[12px] font-semibold', isDark ? 'text-white' : 'text-[#1a1a1a]')}>
+                            <span className={cn('text-[12px] font-semibold', 'text-[#1a1a1a] dark:text-white')}>
                               {pool.apy7d?.fees > 0
                                 ? `${abbreviateNumber(pool.apy7d.fees)} XRP`
                                 : '-'}
                             </span>
                           </div>
-                          <div className={cn('p-[10px] rounded-[10px]', isDark ? 'bg-black/20' : 'bg-black/[0.03]')}>
-                            <span className={cn('text-[9px] uppercase block mb-[2px]', isDark ? 'text-white/60' : 'text-black/50')}>
+                          <div className={cn('p-[10px] rounded-[10px]', 'bg-black/[0.03] dark:bg-black/20')}>
+                            <span className={cn('text-[9px] uppercase block mb-[2px]', 'text-black/50 dark:text-white/60')}>
                               Last Trade
                             </span>
-                            <span suppressHydrationWarning className={cn('text-[12px] font-semibold', isDark ? 'text-white' : 'text-[#1a1a1a]')}>
+                            <span suppressHydrationWarning className={cn('text-[12px] font-semibold', 'text-[#1a1a1a] dark:text-white')}>
                               {pool.lastTraded ? formatRelativeTime(pool.lastTraded) : '-'}
                             </span>
                           </div>
@@ -4892,38 +4868,38 @@ const TradingHistory = ({
             /* Desktop grid layout */
             <div className="flex flex-col gap-1">
               {/* Header */}
-              <div className={cn('grid grid-cols-[minmax(160px,1.2fr)_70px_1fr_1fr_1fr_1.2fr_80px_140px_32px] gap-3 py-[10px] px-4 border-b items-center', isDark ? 'border-white/[0.06]' : 'border-black/[0.06]')}>
-                <span className={cn('text-[10px] font-semibold uppercase tracking-[0.05em]', isDark ? 'text-white/55' : 'text-black/60')}>
+              <div className={cn('grid grid-cols-[minmax(160px,1.2fr)_70px_1fr_1fr_1fr_1.2fr_80px_140px_32px] gap-3 py-[10px] px-4 border-b items-center', 'border-black/[0.06] dark:border-white/[0.06]')}>
+                <span className={cn('text-[10px] font-semibold uppercase tracking-[0.05em]', 'text-black/60 dark:text-white/55')}>
                   Pool
                 </span>
-                <span className={cn('text-[10px] font-semibold uppercase tracking-[0.05em] text-center', isDark ? 'text-white/55' : 'text-black/60')}>
+                <span className={cn('text-[10px] font-semibold uppercase tracking-[0.05em] text-center', 'text-black/60 dark:text-white/55')}>
                   Trend
                 </span>
-                <span className={cn('text-[10px] font-semibold uppercase tracking-[0.05em] text-right', isDark ? 'text-white/55' : 'text-black/60')}>
+                <span className={cn('text-[10px] font-semibold uppercase tracking-[0.05em] text-right', 'text-black/60 dark:text-white/55')}>
                   Fee
                 </span>
                 <span
-                  className={cn('text-[10px] font-semibold uppercase tracking-[0.05em] text-right cursor-pointer flex items-center justify-end gap-1', poolSortBy === 'apy' ? 'text-[#3b82f6]' : isDark ? 'text-white/55' : 'text-black/60')}
+                  className={cn('text-[10px] font-semibold uppercase tracking-[0.05em] text-right cursor-pointer flex items-center justify-end gap-1', poolSortBy === 'apy' ? 'text-[#3b82f6]' : 'text-black/60 dark:text-white/55')}
                   onClick={() => handlePoolSort('apy')}
                 >
                   APY {poolSortBy === 'apy' && (poolSortDir === 'desc' ? <ChevronDown size={10} /> : <ChevronUp size={10} />)}
                 </span>
                 <span
-                  className={cn('text-[10px] font-semibold uppercase tracking-[0.05em] text-right cursor-pointer flex items-center justify-end gap-1', poolSortBy === 'volume' ? 'text-[#3b82f6]' : isDark ? 'text-white/55' : 'text-black/60')}
+                  className={cn('text-[10px] font-semibold uppercase tracking-[0.05em] text-right cursor-pointer flex items-center justify-end gap-1', poolSortBy === 'volume' ? 'text-[#3b82f6]' : 'text-black/60 dark:text-white/55')}
                   onClick={() => handlePoolSort('volume')}
                 >
                   Volume {poolSortBy === 'volume' && (poolSortDir === 'desc' ? <ChevronDown size={10} /> : <ChevronUp size={10} />)}
                 </span>
                 <span
-                  className={cn('text-[10px] font-semibold uppercase tracking-[0.05em] text-right cursor-pointer flex items-center justify-end gap-1', poolSortBy === 'liquidity' ? 'text-[#3b82f6]' : isDark ? 'text-white/55' : 'text-black/60')}
+                  className={cn('text-[10px] font-semibold uppercase tracking-[0.05em] text-right cursor-pointer flex items-center justify-end gap-1', poolSortBy === 'liquidity' ? 'text-[#3b82f6]' : 'text-black/60 dark:text-white/55')}
                   onClick={() => handlePoolSort('liquidity')}
                 >
                   TVL {poolSortBy === 'liquidity' && (poolSortDir === 'desc' ? <ChevronDown size={10} /> : <ChevronUp size={10} />)}
                 </span>
-                <span className={cn('text-[10px] font-semibold uppercase tracking-[0.05em] text-right', isDark ? 'text-white/55' : 'text-black/60')}>
+                <span className={cn('text-[10px] font-semibold uppercase tracking-[0.05em] text-right', 'text-black/60 dark:text-white/55')}>
                   Last Trade
                 </span>
-                <span className={cn('text-[10px] font-semibold uppercase tracking-[0.05em] text-center', isDark ? 'text-white/55' : 'text-black/60')}>
+                <span className={cn('text-[10px] font-semibold uppercase tracking-[0.05em] text-center', 'text-black/60 dark:text-white/55')}>
                   Actions
                 </span>
                 <span></span>
@@ -4955,11 +4931,11 @@ const TradingHistory = ({
                       onClick={() => handlePoolExpand(pool._id, pool)}
                       className={cn(
                         'grid grid-cols-[minmax(160px,1.2fr)_70px_1fr_1fr_1fr_1.2fr_80px_140px_32px] gap-3 py-3 px-4 items-center cursor-pointer transition-[opacity,transform,background-color,border-color] duration-150',
-                        isExpanded ? 'border-b-0' : isDark ? 'border-b border-white/[0.04]' : 'border-b border-black/[0.04]',
+                        isExpanded ? 'border-b-0' : 'border-b border-black/[0.04] dark:border-b dark:border-white/[0.04]',
                         isMainPool
-                          ? cn('rounded-t-[12px] shadow-[inset_4px_0_0_#3b82f6]', isDark ? 'bg-[rgba(59,130,246,0.06)]' : 'bg-[rgba(59,130,246,0.03)]')
+                          ? cn('rounded-t-[12px] shadow-[inset_4px_0_0_#3b82f6]', 'bg-[rgba(59,130,246,0.03)] dark:bg-[rgba(59,130,246,0.06)]')
                           : isExpanded
-                            ? cn('rounded-t-[12px]', isDark ? 'bg-white/[0.03]' : 'bg-black/[0.02]')
+                            ? cn('rounded-t-[12px]', 'bg-black/[0.02] dark:bg-white/[0.03]')
                             : 'bg-transparent rounded-none'
                       )}
                     >
@@ -4969,17 +4945,17 @@ const TradingHistory = ({
                           <img
                             src={getTokenImageUrl(pool.asset1.issuer, pool.asset1.currency)}
                             alt=""
-                            className={cn('w-6 h-6 rounded-full', isDark ? 'border-[1.5px] border-[#1a1a1a]' : 'border-[1.5px] border-white')}
+                            className={cn('w-6 h-6 rounded-full', 'border-[1.5px] border-white dark:border-[1.5px] dark:border-[#1a1a1a]')}
                           />
                           <img
                             src={getTokenImageUrl(pool.asset2.issuer, pool.asset2.currency)}
                             alt=""
-                            className={cn('w-6 h-6 rounded-full -ml-[10px]', isDark ? 'border-[1.5px] border-[#1a1a1a]' : 'border-[1.5px] border-white')}
+                            className={cn('w-6 h-6 rounded-full -ml-[10px]', 'border-[1.5px] border-white dark:border-[1.5px] dark:border-[#1a1a1a]')}
                           />
                         </div>
                         <div className="flex flex-col">
                           <div className="flex items-center gap-[6px]">
-                            <span className={cn('text-[13px] font-semibold', isDark ? 'text-white' : 'text-[#1a1a1a]')}>
+                            <span className={cn('text-[13px] font-semibold', 'text-[#1a1a1a] dark:text-white')}>
                               {asset1}/{asset2}
                             </span>
                             {isMainPool && (
@@ -4994,9 +4970,9 @@ const TradingHistory = ({
                       {/* Mini Chart */}
                       <div className="flex justify-center">
                         {chartData && chartData.length >= 2 ? (
-                          <MiniSparkline data={chartData} width={50} height={18} isDark={isDark} />
+                          <MiniSparkline data={chartData} width={50} height={18} />
                         ) : (
-                          <span className={cn('text-[9px] font-bold uppercase', isDark ? 'text-white/20' : 'text-black/20')}>
+                          <span className={cn('text-[9px] font-bold uppercase', 'text-black/20 dark:text-white/20')}>
                             New
                           </span>
                         )}
@@ -5004,28 +4980,28 @@ const TradingHistory = ({
 
                       {/* Fee */}
                       <div className="text-right">
-                        <span className={cn('text-[12px] font-medium', isDark ? 'text-white/60' : 'text-black/60')}>
+                        <span className={cn('text-[12px] font-medium', 'text-black/60 dark:text-white/60')}>
                           {feePercent}%
                         </span>
                       </div>
 
                       {/* APY */}
                       <div className="text-right">
-                        <span className={cn('text-[13px] font-bold', hasApy ? 'text-[#22c55e]' : isDark ? 'text-white/60' : 'text-black/60')}>
+                        <span className={cn('text-[13px] font-bold', hasApy ? 'text-[#22c55e]' : 'text-black/60 dark:text-white/60')}>
                           {hasApy ? `${pool.apy7d.apy.toFixed(1)}%` : '-%'}
                         </span>
                       </div>
 
                       {/* Volume */}
                       <div className="text-right">
-                        <span className={cn('text-[12px] font-medium', isDark ? 'text-white/80' : 'text-black/80')}>
+                        <span className={cn('text-[12px] font-medium', 'text-black/80 dark:text-white/80')}>
                           {pool.apy7d?.volume > 0 ? abbreviateNumber(pool.apy7d.volume) : '-'}
                         </span>
                       </div>
 
                       {/* Liquidity/TVL */}
                       <div className="text-right">
-                        <span className={cn('text-[13px] font-semibold', isDark ? 'text-white' : 'text-[#1a1a1a]')}>
+                        <span className={cn('text-[13px] font-semibold', 'text-[#1a1a1a] dark:text-white')}>
                           {pool.apy7d?.liquidity > 0
                             ? `${abbreviateNumber(pool.apy7d.liquidity)} XRP`
                             : '-'}
@@ -5034,7 +5010,7 @@ const TradingHistory = ({
 
                       {/* Last Trade */}
                       <div className="text-right">
-                        <span suppressHydrationWarning className={cn('text-[11px] font-medium', isDark ? 'text-white/60' : 'text-black/50')}>
+                        <span suppressHydrationWarning className={cn('text-[11px] font-medium', 'text-black/50 dark:text-white/60')}>
                           {pool.lastTraded ? formatRelativeTime(pool.lastTraded) : '-'}
                         </span>
                       </div>
@@ -5055,14 +5031,14 @@ const TradingHistory = ({
                             e.stopPropagation();
                             handleWithdrawLiquidity(pool);
                           }}
-                          className={cn('py-[6px] px-3 text-[11px] font-bold rounded-lg border cursor-pointer transition-[opacity,transform,background-color,border-color] duration-200', isDark ? 'border-white/10 bg-white/5 text-white' : 'border-black/10 bg-white text-[#1a1a1a]')}
+                          className={cn('py-[6px] px-3 text-[11px] font-bold rounded-lg border cursor-pointer transition-[opacity,transform,background-color,border-color] duration-200', 'border-black/10 bg-white text-[#1a1a1a] dark:border-white/10 dark:bg-white/5 dark:text-white')}
                         >
                           Withdraw
                         </button>
                       </div>
 
                       {/* Expand indicator */}
-                      <div className={cn('flex justify-center', isDark ? 'text-white/20' : 'text-black/20')}>
+                      <div className={cn('flex justify-center', 'text-black/20 dark:text-white/20')}>
                         {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                       </div>
                     </div>
@@ -5071,7 +5047,7 @@ const TradingHistory = ({
                     {isExpanded && (
                       <div className={cn(
                         'py-5 px-6 rounded-b-[12px] mb-2 border-t',
-                        isDark ? 'bg-white/[0.03] border-white/5' : 'bg-black/[0.015] border-black/5',
+                        'bg-black/[0.015] border-black/5 dark:bg-white/[0.03] dark:border-white/5',
                         isMainPool && 'shadow-[inset_4px_0_0_#3b82f6]'
                       )}>
                         <div className="grid grid-cols-[1.5fr_1fr] gap-8 items-start">
@@ -5085,12 +5061,12 @@ const TradingHistory = ({
                               ].map((stat, i) => (
                                 <div
                                   key={i}
-                                  className={cn('p-3 rounded-[10px] border', isDark ? 'bg-black/20 border-white/5' : 'bg-white border-black/5')}
+                                  className={cn('p-3 rounded-[10px] border', 'bg-white border-black/5 dark:bg-black/20 dark:border-white/5')}
                                 >
-                                  <div className={cn('text-[9px] font-bold uppercase mb-1', isDark ? 'text-white/55' : 'text-black/60')}>
+                                  <div className={cn('text-[9px] font-bold uppercase mb-1', 'text-black/60 dark:text-white/55')}>
                                     {stat.label}
                                   </div>
-                                  <div className={cn('text-[15px] font-semibold', isDark ? 'text-white' : 'text-[#1a1a1a]')}>
+                                  <div className={cn('text-[15px] font-semibold', 'text-[#1a1a1a] dark:text-white')}>
                                     {stat.value}
                                   </div>
                                 </div>
@@ -5098,8 +5074,8 @@ const TradingHistory = ({
                             </div>
 
                             {/* Pool Composition */}
-                            <div className={cn('p-4 rounded-[12px] border', isDark ? 'bg-black/20 border-white/5' : 'bg-white border-black/5')}>
-                              <div className={cn('text-[10px] font-bold uppercase mb-3', isDark ? 'text-white/55' : 'text-black/60')}>
+                            <div className={cn('p-4 rounded-[12px] border', 'bg-white border-black/5 dark:bg-black/20 dark:border-white/5')}>
+                              <div className={cn('text-[10px] font-bold uppercase mb-3', 'text-black/60 dark:text-white/55')}>
                                 Pool Composition
                               </div>
                               <div className="flex gap-8">
@@ -5107,14 +5083,14 @@ const TradingHistory = ({
                                   <img src={getTokenImageUrl(pool.asset1.issuer, pool.asset1.currency)} alt="" className="w-6 h-6 rounded-full" />
                                   <div className="flex flex-col">
                                     <span className="text-[14px] font-semibold">{pool.currentLiquidity ? abbreviateNumber(pool.currentLiquidity.asset1Amount) : '-'}</span>
-                                    <span className={cn('text-[10px] font-semibold', isDark ? 'text-white/60' : 'text-black/50')}>{asset1}</span>
+                                    <span className={cn('text-[10px] font-semibold', 'text-black/50 dark:text-white/60')}>{asset1}</span>
                                   </div>
                                 </div>
                                 <div className="flex items-center gap-[10px]">
                                   <img src={getTokenImageUrl(pool.asset2.issuer, pool.asset2.currency)} alt="" className="w-6 h-6 rounded-full" />
                                   <div className="flex flex-col">
                                     <span className="text-[14px] font-semibold">{pool.currentLiquidity ? abbreviateNumber(pool.currentLiquidity.asset2Amount) : '-'}</span>
-                                    <span className={cn('text-[10px] font-semibold', isDark ? 'text-white/60' : 'text-black/50')}>{asset2}</span>
+                                    <span className={cn('text-[10px] font-semibold', 'text-black/50 dark:text-white/60')}>{asset2}</span>
                                   </div>
                                 </div>
                               </div>
@@ -5147,21 +5123,21 @@ const TradingHistory = ({
                                 {hasIl && (() => {
                                   const diff = ilData.poolValueXrp - ilData.holdValueXrp;
                                   return (
-                                  <div className={cn('flex gap-6 items-end mt-3 py-[10px] px-3 rounded-lg', isDark ? 'bg-black/20' : 'bg-black/[0.03]')}>
+                                  <div className={cn('flex gap-6 items-end mt-3 py-[10px] px-3 rounded-lg', 'bg-black/[0.03] dark:bg-black/20')}>
                                     <div className="flex flex-col gap-[2px]">
-                                      <span className={cn('text-[9px] font-bold uppercase', isDark ? 'text-white/55' : 'text-black/60')}>Worth if held (no pool)</span>
-                                      <span className={cn('text-[13px] font-semibold', isDark ? 'text-white/90' : 'text-black/90')}>
+                                      <span className={cn('text-[9px] font-bold uppercase', 'text-black/60 dark:text-white/55')}>Worth if held (no pool)</span>
+                                      <span className={cn('text-[13px] font-semibold', 'text-black/90 dark:text-white/90')}>
                                         {abbreviateNumber(ilData.holdValueXrp)} XRP
                                       </span>
                                     </div>
                                     <div className="flex flex-col gap-[2px]">
-                                      <span className={cn('text-[9px] font-bold uppercase', isDark ? 'text-white/55' : 'text-black/60')}>Worth in pool now</span>
-                                      <span className={cn('text-[13px] font-semibold', isDark ? 'text-white/90' : 'text-black/90')}>
+                                      <span className={cn('text-[9px] font-bold uppercase', 'text-black/60 dark:text-white/55')}>Worth in pool now</span>
+                                      <span className={cn('text-[13px] font-semibold', 'text-black/90 dark:text-white/90')}>
                                         {abbreviateNumber(ilData.poolValueXrp)} XRP
                                       </span>
                                     </div>
                                     <div className="flex flex-col gap-[2px]">
-                                      <span className={cn('text-[9px] font-bold uppercase', isDark ? 'text-white/55' : 'text-black/60')}>Impermanent {ilData.ilPercent >= 0 ? 'gain' : 'loss'}</span>
+                                      <span className={cn('text-[9px] font-bold uppercase', 'text-black/60 dark:text-white/55')}>Impermanent {ilData.ilPercent >= 0 ? 'gain' : 'loss'}</span>
                                       <span className="text-[14px] font-bold" style={{ color: ilColor }}>
                                         {diff >= 0 ? '+' : ''}{abbreviateNumber(diff)} XRP ({ilData.ilPercent >= 0 ? '+' : ''}{ilData.ilPercent.toFixed(2)}%)
                                       </span>
@@ -5175,16 +5151,16 @@ const TradingHistory = ({
                           </div>
 
                           {/* Chart Section */}
-                          <div className={cn('p-5 rounded-xl h-full border', isDark ? 'bg-black/20 border-white/[0.05]' : 'bg-white border-black/[0.05]')}>
-                            <div className={cn('text-[10px] font-bold uppercase mb-4', isDark ? 'text-white/55' : 'text-black/60')}>
+                          <div className={cn('p-5 rounded-xl h-full border', 'bg-white border-black/[0.05] dark:bg-black/20 dark:border-white/[0.05]')}>
+                            <div className={cn('text-[10px] font-bold uppercase mb-4', 'text-black/60 dark:text-white/55')}>
                               TVL History (30d)
                             </div>
                             {chartData && chartData.length > 0 ? (
                               <div className="flex justify-center">
-                                <MiniSparkline data={chartData} width={280} height={120} isDark={isDark} />
+                                <MiniSparkline data={chartData} width={280} height={120} />
                               </div>
                             ) : (
-                              <div className={cn('h-[120px] flex items-center justify-center text-[11px] font-semibold', isDark ? 'text-white/20' : 'text-black/20')}>
+                              <div className={cn('h-[120px] flex items-center justify-center text-[11px] font-semibold', 'text-black/20 dark:text-white/20')}>
                                 {isChartLoading ? <Spinner size={24} /> : 'CHART DATA UNAVAILABLE'}
                               </div>
                             )}
@@ -5215,7 +5191,6 @@ const TradingHistory = ({
       <div style={{ display: tabValue === 4 ? undefined : 'none' }}>
         <MyActivityTab
           token={stableToken}
-          isDark={isDark}
           isMobile={isMobile}
           onTransactionClick={onTransactionClick}
           ammPools={ammPools}
@@ -5233,30 +5208,29 @@ const TradingHistory = ({
         createPortal(
           <Dialog
             open={liquidityDialog.open}
-            isDark={isDark}
             onClick={(e) => e.target === e.currentTarget && handleCloseDialog()}
           >
-            <DialogPaper isDark={isDark}>
-              <DialogTitle isDark={isDark}>
+            <DialogPaper>
+              <DialogTitle>
                 Manage Liquidity
-                <IconButton aria-label="Close dialog" onClick={handleCloseDialog} isDark={isDark} className="p-[6px]">
+                <IconButton aria-label="Close dialog" onClick={handleCloseDialog} className="p-[6px]">
                   <X size={18} />
                 </IconButton>
               </DialogTitle>
-              <DialogContent isDark={isDark}>
+              <DialogContent>
                 {liquidityDialog.pool && (
                   <div className="flex flex-col gap-[14px]">
                     {/* Pool Info */}
-                    <div className={cn('flex items-center gap-[10px] py-3 px-[14px] rounded-[10px] border-[1.5px]', isDark ? 'bg-white/[0.03] border-white/[0.08]' : 'bg-[#f9fafb] border-black/[0.08]')}>
+                    <div className={cn('flex items-center gap-[10px] py-3 px-[14px] rounded-[10px] border-[1.5px]', 'bg-gray-50 border-black/[0.08] dark:bg-white/[0.03] dark:border-white/[0.08]')}>
                       <div className="flex">
                         <img src={getTokenImageUrl(liquidityDialog.pool.asset1.issuer, liquidityDialog.pool.asset1.currency)} alt="" className="w-7 h-7 rounded-full" />
                         <img src={getTokenImageUrl(liquidityDialog.pool.asset2.issuer, liquidityDialog.pool.asset2.currency)} alt="" className="w-7 h-7 rounded-full -ml-[10px]" />
                       </div>
-                      <span className={cn('text-[15px] font-semibold', isDark ? 'text-white' : 'text-[#1a1a1a]')}>
+                      <span className={cn('text-[15px] font-semibold', 'text-[#1a1a1a] dark:text-white')}>
                         {decodeCurrency(liquidityDialog.pool.asset1.currency)}/{decodeCurrency(liquidityDialog.pool.asset2.currency)}
                       </span>
                       {liquidityDialog.pool.tradingFee != null && (
-                        <span className={cn('ml-auto text-[11px]', isDark ? 'text-white/60' : 'text-black/60')}>
+                        <span className={cn('ml-auto text-[11px]', 'text-black/60 dark:text-white/60')}>
                           Fee {(liquidityDialog.pool.tradingFee / 1000).toFixed(2)}%
                         </span>
                       )}
@@ -5273,7 +5247,7 @@ const TradingHistory = ({
                         ? ilData.ilPercent >= 0 ? '#08AA09' : '#ef4444'
                         : null;
                       return (
-                        <div className={cn('py-3 px-[14px] rounded-[10px] border-[1.5px]', isDark ? 'bg-[rgba(59,130,246,0.06)] border-[rgba(59,130,246,0.15)]' : 'bg-[rgba(59,130,246,0.04)] border-[rgba(59,130,246,0.12)]')}>
+                        <div className={cn('py-3 px-[14px] rounded-[10px] border-[1.5px]', 'bg-[rgba(59,130,246,0.04)] border-[rgba(59,130,246,0.12)] dark:bg-[rgba(59,130,246,0.06)] dark:border-[rgba(59,130,246,0.15)]')}>
                           <div className="flex justify-between items-center mb-[10px]">
                             <span className="text-[11px] uppercase tracking-[0.5px] text-[#3b82f6] font-semibold">Your Position</span>
                             <span className="text-[11px] font-semibold text-[#3b82f6]">{formatShare(lp.share)}</span>
@@ -5281,29 +5255,29 @@ const TradingHistory = ({
                           <div className="flex gap-4">
                             <div className="flex items-center gap-[6px]">
                               <img src={getTokenImageUrl(liquidityDialog.pool.asset1.issuer, liquidityDialog.pool.asset1.currency)} alt="" className="w-4 h-4 rounded-full" />
-                              <span className={cn('text-[13px] font-medium', isDark ? 'text-white/85' : 'text-black/85')}>{abbreviateNumber(lp.asset1Amount)}</span>
-                              <span className={cn('text-[11px]', isDark ? 'text-white/60' : 'text-black/60')}>{decodeCurrency(liquidityDialog.pool.asset1.currency)}</span>
+                              <span className={cn('text-[13px] font-medium', 'text-black/85 dark:text-white/85')}>{abbreviateNumber(lp.asset1Amount)}</span>
+                              <span className={cn('text-[11px]', 'text-black/60 dark:text-white/60')}>{decodeCurrency(liquidityDialog.pool.asset1.currency)}</span>
                             </div>
                             <div className="flex items-center gap-[6px]">
                               <img src={getTokenImageUrl(liquidityDialog.pool.asset2.issuer, liquidityDialog.pool.asset2.currency)} alt="" className="w-4 h-4 rounded-full" />
-                              <span className={cn('text-[13px] font-medium', isDark ? 'text-white/85' : 'text-black/85')}>{abbreviateNumber(lp.asset2Amount)}</span>
-                              <span className={cn('text-[11px]', isDark ? 'text-white/60' : 'text-black/60')}>{decodeCurrency(liquidityDialog.pool.asset2.currency)}</span>
+                              <span className={cn('text-[13px] font-medium', 'text-black/85 dark:text-white/85')}>{abbreviateNumber(lp.asset2Amount)}</span>
+                              <span className={cn('text-[11px]', 'text-black/60 dark:text-white/60')}>{decodeCurrency(liquidityDialog.pool.asset2.currency)}</span>
                             </div>
                           </div>
                           {hasIl && (() => {
                             const diff = ilData.poolValueXrp - ilData.holdValueXrp;
                             return (
-                            <div className={cn('mt-[10px] py-2 px-[10px] rounded-lg flex flex-col gap-[5px]', isDark ? 'bg-black/15' : 'bg-black/[0.03]')}>
+                            <div className={cn('mt-[10px] py-2 px-[10px] rounded-lg flex flex-col gap-[5px]', 'bg-black/[0.03] dark:bg-black/15')}>
                               <div className="flex justify-between items-center">
-                                <span className={cn('text-[10px] font-semibold', isDark ? 'text-white/60' : 'text-black/50')}>Worth if held (no pool)</span>
-                                <span className={cn('text-[12px] font-semibold', isDark ? 'text-white/85' : 'text-black/85')}>{abbreviateNumber(ilData.holdValueXrp)} XRP</span>
+                                <span className={cn('text-[10px] font-semibold', 'text-black/50 dark:text-white/60')}>Worth if held (no pool)</span>
+                                <span className={cn('text-[12px] font-semibold', 'text-black/85 dark:text-white/85')}>{abbreviateNumber(ilData.holdValueXrp)} XRP</span>
                               </div>
                               <div className="flex justify-between items-center">
-                                <span className={cn('text-[10px] font-semibold', isDark ? 'text-white/60' : 'text-black/50')}>Worth in pool now</span>
-                                <span className={cn('text-[12px] font-semibold', isDark ? 'text-white/85' : 'text-black/85')}>{abbreviateNumber(ilData.poolValueXrp)} XRP</span>
+                                <span className={cn('text-[10px] font-semibold', 'text-black/50 dark:text-white/60')}>Worth in pool now</span>
+                                <span className={cn('text-[12px] font-semibold', 'text-black/85 dark:text-white/85')}>{abbreviateNumber(ilData.poolValueXrp)} XRP</span>
                               </div>
-                              <div className={cn('pt-1 flex justify-between items-center border-t', isDark ? 'border-white/[0.06]' : 'border-black/[0.06]')}>
-                                <span className={cn('text-[10px] font-semibold', isDark ? 'text-white/60' : 'text-black/50')}>Impermanent {ilData.ilPercent >= 0 ? 'gain' : 'loss'}</span>
+                              <div className={cn('pt-1 flex justify-between items-center border-t', 'border-black/[0.06] dark:border-white/[0.06]')}>
+                                <span className={cn('text-[10px] font-semibold', 'text-black/50 dark:text-white/60')}>Impermanent {ilData.ilPercent >= 0 ? 'gain' : 'loss'}</span>
                                 <span className="text-[12px] font-bold" style={{ color: ilColor }}>{diff >= 0 ? '+' : ''}{abbreviateNumber(diff)} XRP ({ilData.ilPercent >= 0 ? '+' : ''}{ilData.ilPercent.toFixed(2)}%)</span>
                               </div>
                             </div>
@@ -5314,7 +5288,7 @@ const TradingHistory = ({
                     })()}
 
                     {/* Add / Remove Tab Toggle */}
-                    <div className={cn('flex rounded-[10px] overflow-hidden p-[3px]', isDark ? 'bg-white/[0.04]' : 'bg-black/[0.04]')}>
+                    <div className={cn('flex rounded-[10px] overflow-hidden p-[3px]', 'bg-black/[0.04] dark:bg-white/[0.04]')}>
                       {['add', 'remove'].map((t) => (
                         <button
                           key={t}
@@ -5322,8 +5296,8 @@ const TradingHistory = ({
                           className={cn(
                             'flex-1 py-[9px] px-0 text-[13px] font-medium border-none rounded-lg cursor-pointer transition-[opacity,transform,background-color,border-color] duration-150',
                             liquidityDialog.tab === t
-                              ? cn('text-white', t === 'add' ? 'bg-[#3b82f6]' : isDark ? 'bg-white/[0.12]' : 'bg-[#1a1a1a]')
-                              : cn('bg-transparent', isDark ? 'text-white/60' : 'text-black/60')
+                              ? cn('text-white', t === 'add' ? 'bg-[#3b82f6]' : 'bg-[#1a1a1a] dark:bg-white/[0.12]')
+                              : cn('bg-transparent', 'text-black/60 dark:text-white/60')
                           )}
                         >
                           {t === 'add' ? 'Add' : 'Remove'}
@@ -5341,11 +5315,11 @@ const TradingHistory = ({
                             { value: 'single1', label: `${decodeCurrency(liquidityDialog.pool.asset1.currency)} only`, desc: 'Trading fee applies' },
                             { value: 'single2', label: `${decodeCurrency(liquidityDialog.pool.asset2.currency)} only`, desc: 'Trading fee applies' }
                           ].map((opt) => (
-                            <label key={opt.value} className={cn('flex items-center gap-[10px] py-[10px] px-[14px] rounded-[10px] cursor-pointer border-[1.5px] transition-[opacity,transform,background-color,border-color] duration-150', depositMode === opt.value ? cn('border-[#3b82f6]', isDark ? 'bg-[rgba(59,130,246,0.08)]' : 'bg-[rgba(59,130,246,0.04)]') : cn('bg-transparent', isDark ? 'border-white/[0.08]' : 'border-black/[0.08]'))}>
+                            <label key={opt.value} className={cn('flex items-center gap-[10px] py-[10px] px-[14px] rounded-[10px] cursor-pointer border-[1.5px] transition-[opacity,transform,background-color,border-color] duration-150', depositMode === opt.value ? cn('border-[#3b82f6]', 'bg-[rgba(59,130,246,0.04)] dark:bg-[rgba(59,130,246,0.08)]') : cn('bg-transparent', 'border-black/[0.08] dark:border-white/[0.08]'))}>
                               <input type="radio" value={opt.value} checked={depositMode === opt.value} onChange={(e) => setDepositMode(e.target.value)} className="accent-[#3b82f6]" />
                               <div className="flex flex-col gap-[2px]">
-                                <span className={cn('text-[13px] font-medium', isDark ? 'text-white' : 'text-[#1a1a1a]')}>{opt.label}</span>
-                                <span className={cn('text-[11px]', isDark ? 'text-white/55' : 'text-black/35')}>{opt.desc}</span>
+                                <span className={cn('text-[13px] font-medium', 'text-[#1a1a1a] dark:text-white')}>{opt.label}</span>
+                                <span className={cn('text-[11px]', 'text-black/35 dark:text-white/55')}>{opt.desc}</span>
                               </div>
                             </label>
                           ))}
@@ -5355,16 +5329,16 @@ const TradingHistory = ({
                         {(depositMode === 'double' || depositMode === 'single1') && (
                           <div>
                             <div className="flex justify-between items-center mb-[6px]">
-                              <span className={cn('text-[11px]', isDark ? 'text-white/60' : 'text-black/60')}>
+                              <span className={cn('text-[11px]', 'text-black/60 dark:text-white/60')}>
                                 {decodeCurrency(liquidityDialog.pool.asset1.currency)}
                               </span>
                               {userPoolBalances.asset1 != null && (
                                 <div className="flex items-center gap-[6px]">
-                                  <span className={cn('text-[10px]', isDark ? 'text-white/60' : 'text-black/60')}>
+                                  <span className={cn('text-[10px]', 'text-black/60 dark:text-white/60')}>
                                     {Number(userPoolBalances.asset1).toFixed(4).replace(/\.?0+$/, '')} {decodeCurrency(liquidityDialog.pool.asset1.currency)}
                                   </span>
                                   {[0.5, 1].map((p) => (
-                                    <button key={p} onClick={() => { const v = (Number(userPoolBalances.asset1) * p).toFixed(6); handleAmount1Change(v); }} disabled={!userPoolBalances.asset1} className={cn('py-[2px] px-[6px] text-[9px] font-semibold rounded border-none text-[#3b82f6]', userPoolBalances.asset1 ? 'cursor-pointer opacity-100' : 'cursor-not-allowed opacity-30', isDark ? 'bg-[rgba(59,130,246,0.15)]' : 'bg-[rgba(59,130,246,0.1)]')}>
+                                    <button key={p} onClick={() => { const v = (Number(userPoolBalances.asset1) * p).toFixed(6); handleAmount1Change(v); }} disabled={!userPoolBalances.asset1} className={cn('py-[2px] px-[6px] text-[9px] font-semibold rounded border-none text-[#3b82f6]', userPoolBalances.asset1 ? 'cursor-pointer opacity-100' : 'cursor-not-allowed opacity-30', 'bg-[rgba(59,130,246,0.1)] dark:bg-[rgba(59,130,246,0.15)]')}>
                                       {p === 1 ? 'MAX' : '50%'}
                                     </button>
                                   ))}
@@ -5372,7 +5346,7 @@ const TradingHistory = ({
                               )}
                             </div>
                             <div className="relative">
-                              <TextField value={depositAmount1} onChange={(e) => handleAmount1Change(e.target.value)} type="number" inputMode="decimal" placeholder="0.00" isDark={isDark} />
+                              <TextField value={depositAmount1} onChange={(e) => handleAmount1Change(e.target.value)} type="number" inputMode="decimal" placeholder="0.00" />
                             </div>
                           </div>
                         )}
@@ -5381,16 +5355,16 @@ const TradingHistory = ({
                         {(depositMode === 'double' || depositMode === 'single2') && (
                           <div>
                             <div className="flex justify-between items-center mb-[6px]">
-                              <span className={cn('text-[11px]', isDark ? 'text-white/60' : 'text-black/60')}>
+                              <span className={cn('text-[11px]', 'text-black/60 dark:text-white/60')}>
                                 {decodeCurrency(liquidityDialog.pool.asset2.currency)}
                               </span>
                               {userPoolBalances.asset2 != null && (
                                 <div className="flex items-center gap-[6px]">
-                                  <span className={cn('text-[10px]', isDark ? 'text-white/60' : 'text-black/60')}>
+                                  <span className={cn('text-[10px]', 'text-black/60 dark:text-white/60')}>
                                     {Number(userPoolBalances.asset2).toFixed(4).replace(/\.?0+$/, '')} {decodeCurrency(liquidityDialog.pool.asset2.currency)}
                                   </span>
                                   {[0.5, 1].map((p) => (
-                                    <button key={p} onClick={() => { const v = (Number(userPoolBalances.asset2) * p).toFixed(6); handleAmount2Change(v); }} disabled={!userPoolBalances.asset2} className={cn('py-[2px] px-[6px] text-[9px] font-semibold rounded border-none text-[#3b82f6]', userPoolBalances.asset2 ? 'cursor-pointer opacity-100' : 'cursor-not-allowed opacity-30', isDark ? 'bg-[rgba(59,130,246,0.15)]' : 'bg-[rgba(59,130,246,0.1)]')}>
+                                    <button key={p} onClick={() => { const v = (Number(userPoolBalances.asset2) * p).toFixed(6); handleAmount2Change(v); }} disabled={!userPoolBalances.asset2} className={cn('py-[2px] px-[6px] text-[9px] font-semibold rounded border-none text-[#3b82f6]', userPoolBalances.asset2 ? 'cursor-pointer opacity-100' : 'cursor-not-allowed opacity-30', 'bg-[rgba(59,130,246,0.1)] dark:bg-[rgba(59,130,246,0.15)]')}>
                                       {p === 1 ? 'MAX' : '50%'}
                                     </button>
                                   ))}
@@ -5398,38 +5372,38 @@ const TradingHistory = ({
                               )}
                             </div>
                             <div className="relative">
-                              <TextField value={depositAmount2} onChange={(e) => handleAmount2Change(e.target.value)} type="number" inputMode="decimal" placeholder="0.00" isDark={isDark} />
+                              <TextField value={depositAmount2} onChange={(e) => handleAmount2Change(e.target.value)} type="number" inputMode="decimal" placeholder="0.00" />
                             </div>
                           </div>
                         )}
 
                         {/* Simulation result */}
                         {pendingDeposit && pendingDeposit.error && (
-                          <div className={cn('py-[10px] px-[14px] rounded-[10px] border-[1.5px] border-[rgba(239,68,68,0.2)] flex flex-col gap-[6px] text-[12px]', isDark ? 'bg-[rgba(239,68,68,0.08)]' : 'bg-[rgba(239,68,68,0.05)]')}>
+                          <div className={cn('py-[10px] px-[14px] rounded-[10px] border-[1.5px] border-[rgba(239,68,68,0.2)] flex flex-col gap-[6px] text-[12px]', 'bg-[rgba(239,68,68,0.05)] dark:bg-[rgba(239,68,68,0.08)]')}>
                             <div className="flex items-center gap-[6px] text-[#ef4444] font-semibold text-[11px] uppercase tracking-[0.05em]">
                               <AlertTriangle size={13} />
                               Simulation Failed
                             </div>
-                            <span className={cn('leading-normal', isDark ? 'text-white/70' : 'text-black/60')}>{pendingDeposit.error}</span>
+                            <span className={cn('leading-normal', 'text-black/60 dark:text-white/70')}>{pendingDeposit.error}</span>
                           </div>
                         )}
                         {pendingDeposit && pendingDeposit.preview && (
-                          <div className={cn('py-[10px] px-[14px] rounded-[10px] border-[1.5px] flex flex-col gap-2 text-[12px]', isDark ? 'bg-white/[0.03] border-white/[0.08]' : 'bg-black/[0.02] border-black/[0.08]')}>
+                          <div className={cn('py-[10px] px-[14px] rounded-[10px] border-[1.5px] flex flex-col gap-2 text-[12px]', 'bg-black/[0.02] border-black/[0.08] dark:bg-white/[0.03] dark:border-white/[0.08]')}>
                             <div className="flex items-center gap-[6px] text-[#08AA09] font-semibold text-[11px] uppercase tracking-[0.05em]">
                               <CheckCircle size={13} />
                               Transaction Preview
                             </div>
-                            <div className={cn('flex flex-col gap-1', isDark ? 'text-white/70' : 'text-black/60')}>
+                            <div className={cn('flex flex-col gap-1', 'text-black/60 dark:text-white/70')}>
                               {pendingDeposit.preview.asset1.amount > 0 && (
                                 <div className="flex justify-between">
                                   <span>Deposit {pendingDeposit.preview.asset1.name}</span>
-                                  <span className={cn('font-semibold', isDark ? 'text-white' : 'text-black')}>{pendingDeposit.preview.asset1.amount < 0.001 ? pendingDeposit.preview.asset1.amount.toFixed(6) : pendingDeposit.preview.asset1.amount.toFixed(4)}</span>
+                                  <span className={cn('font-semibold', 'text-black dark:text-white')}>{pendingDeposit.preview.asset1.amount < 0.001 ? pendingDeposit.preview.asset1.amount.toFixed(6) : pendingDeposit.preview.asset1.amount.toFixed(4)}</span>
                                 </div>
                               )}
                               {pendingDeposit.preview.asset2.amount > 0 && (
                                 <div className="flex justify-between">
                                   <span>Deposit {pendingDeposit.preview.asset2.name}</span>
-                                  <span className={cn('font-semibold', isDark ? 'text-white' : 'text-black')}>{pendingDeposit.preview.asset2.amount < 0.001 ? pendingDeposit.preview.asset2.amount.toFixed(6) : pendingDeposit.preview.asset2.amount.toFixed(4)}</span>
+                                  <span className={cn('font-semibold', 'text-black dark:text-white')}>{pendingDeposit.preview.asset2.amount < 0.001 ? pendingDeposit.preview.asset2.amount.toFixed(6) : pendingDeposit.preview.asset2.amount.toFixed(4)}</span>
                                 </div>
                               )}
                               {pendingDeposit.preview.lpTokens > 0 && (
@@ -5440,7 +5414,7 @@ const TradingHistory = ({
                               )}
                               <div className="flex justify-between">
                                 <span>Network fee</span>
-                                <span className={cn('font-semibold', isDark ? 'text-white' : 'text-black')}>{pendingDeposit.preview.fee} XRP</span>
+                                <span className={cn('font-semibold', 'text-black dark:text-white')}>{pendingDeposit.preview.fee} XRP</span>
                               </div>
                             </div>
                           </div>
@@ -5450,7 +5424,7 @@ const TradingHistory = ({
                         {pendingDeposit && pendingDeposit.error ? (
                           <button
                             onClick={() => setPendingDeposit(null)}
-                            className={cn('p-[13px] text-[14px] font-semibold w-full border-none rounded-[10px] cursor-pointer', isDark ? 'bg-white/[0.06] text-white/70' : 'bg-black/[0.06] text-black/60')}
+                            className={cn('p-[13px] text-[14px] font-semibold w-full border-none rounded-[10px] cursor-pointer', 'bg-black/[0.06] text-black/60 dark:bg-white/[0.06] dark:text-white/70')}
                           >
                             Dismiss
                           </button>
@@ -5458,14 +5432,14 @@ const TradingHistory = ({
                           <div className="flex gap-2">
                             <button
                               onClick={() => setPendingDeposit(null)}
-                              className={cn('flex-1 p-[13px] text-[14px] font-semibold border-none rounded-[10px] cursor-pointer', isDark ? 'bg-white/[0.06] text-white/70' : 'bg-black/[0.06] text-black/60')}
+                              className={cn('flex-1 p-[13px] text-[14px] font-semibold border-none rounded-[10px] cursor-pointer', 'bg-black/[0.06] text-black/60 dark:bg-white/[0.06] dark:text-white/70')}
                             >
                               Cancel
                             </button>
                             <button
                               onClick={handleConfirmDeposit}
                               disabled={depositLoading}
-                              className={cn('flex-[2] p-[13px] text-[14px] font-semibold text-white border-none rounded-[10px] flex items-center justify-center gap-2', depositLoading ? cn('cursor-not-allowed', isDark ? 'bg-[#222]' : 'bg-[#ccc]') : 'cursor-pointer bg-[#08AA09]')}
+                              className={cn('flex-[2] p-[13px] text-[14px] font-semibold text-white border-none rounded-[10px] flex items-center justify-center gap-2', depositLoading ? cn('cursor-not-allowed', 'bg-gray-300 dark:bg-white/[0.08]') : 'cursor-pointer bg-[#08AA09]')}
                             >
                               {depositLoading && <Spinner size={16} />}
                               {depositLoading ? 'Depositing...' : 'Confirm Deposit'}
@@ -5475,7 +5449,7 @@ const TradingHistory = ({
                           <button
                             onClick={handleSubmitDeposit}
                             disabled={depositLoading}
-                            className={cn('p-[13px] text-[14px] font-semibold w-full text-white border-none rounded-[10px] flex items-center justify-center gap-2 transition-[opacity,transform,background-color,border-color] duration-150', depositLoading ? cn('cursor-not-allowed', isDark ? 'bg-[#222]' : 'bg-[#ccc]') : 'cursor-pointer bg-[#3b82f6]')}
+                            className={cn('p-[13px] text-[14px] font-semibold w-full text-white border-none rounded-[10px] flex items-center justify-center gap-2 transition-[opacity,transform,background-color,border-color] duration-150', depositLoading ? cn('cursor-not-allowed', 'bg-gray-300 dark:bg-white/[0.08]') : 'cursor-pointer bg-[#3b82f6]')}
                           >
                             {depositLoading && <Spinner size={16} />}
                             {depositLoading ? 'Simulating...' : 'Add Liquidity'}
@@ -5495,11 +5469,11 @@ const TradingHistory = ({
                             { value: 'single1', label: `${decodeCurrency(liquidityDialog.pool.asset1.currency)} only`, desc: 'Trading fee applies' },
                             { value: 'single2', label: `${decodeCurrency(liquidityDialog.pool.asset2.currency)} only`, desc: 'Trading fee applies' }
                           ].map((opt) => (
-                            <label key={opt.value} className={cn('flex items-center gap-[10px] py-[10px] px-[14px] rounded-[10px] cursor-pointer border-[1.5px] transition-[opacity,transform,background-color,border-color] duration-150', withdrawMode === opt.value ? cn('border-[#3b82f6]', isDark ? 'bg-[rgba(59,130,246,0.08)]' : 'bg-[rgba(59,130,246,0.04)]') : cn('bg-transparent', isDark ? 'border-white/[0.08]' : 'border-black/[0.08]'))}>
+                            <label key={opt.value} className={cn('flex items-center gap-[10px] py-[10px] px-[14px] rounded-[10px] cursor-pointer border-[1.5px] transition-[opacity,transform,background-color,border-color] duration-150', withdrawMode === opt.value ? cn('border-[#3b82f6]', 'bg-[rgba(59,130,246,0.04)] dark:bg-[rgba(59,130,246,0.08)]') : cn('bg-transparent', 'border-black/[0.08] dark:border-white/[0.08]'))}>
                               <input type="radio" value={opt.value} checked={withdrawMode === opt.value} onChange={(e) => { setWithdrawMode(e.target.value); setWithdrawAmount1(''); setWithdrawAmount2(''); setPendingWithdraw(null); }} className="accent-[#3b82f6]" />
                               <div className="flex flex-col gap-[2px]">
-                                <span className={cn('text-[13px] font-medium', isDark ? 'text-white' : 'text-[#1a1a1a]')}>{opt.label}</span>
-                                <span className={cn('text-[11px]', isDark ? 'text-white/55' : 'text-black/35')}>{opt.desc}</span>
+                                <span className={cn('text-[13px] font-medium', 'text-[#1a1a1a] dark:text-white')}>{opt.label}</span>
+                                <span className={cn('text-[11px]', 'text-black/35 dark:text-white/55')}>{opt.desc}</span>
                               </div>
                             </label>
                           ))}
@@ -5509,7 +5483,7 @@ const TradingHistory = ({
                         {(withdrawMode === 'double' || withdrawMode === 'single1') && (
                           <div>
                             <div className="flex justify-between items-center mb-[6px]">
-                              <span className={cn('text-[11px]', isDark ? 'text-white/60' : 'text-black/60')}>
+                              <span className={cn('text-[11px]', 'text-black/60 dark:text-white/60')}>
                                 {decodeCurrency(liquidityDialog.pool.asset1.currency)}
                               </span>
                               {(() => {
@@ -5528,7 +5502,7 @@ const TradingHistory = ({
                               })()}
                             </div>
                             <div className="relative">
-                              <TextField value={withdrawAmount1} onChange={(e) => handleWithdrawAmount1Change(e.target.value)} type="number" inputMode="decimal" placeholder="0.00" isDark={isDark} />
+                              <TextField value={withdrawAmount1} onChange={(e) => handleWithdrawAmount1Change(e.target.value)} type="number" inputMode="decimal" placeholder="0.00" />
                             </div>
                             {/* Percentage buttons */}
                             {(() => {
@@ -5539,7 +5513,7 @@ const TradingHistory = ({
                               return (
                                 <div className="flex gap-1 mt-[6px]">
                                   {[0.25, 0.5, 0.75, 1].map((p) => (
-                                    <button key={p} onClick={() => handleWithdrawAmount1Change((maxVal * p).toFixed(6))} className={cn('py-[2px] px-[6px] text-[9px] font-semibold rounded border-none cursor-pointer text-[#3b82f6]', isDark ? 'bg-[rgba(59,130,246,0.15)]' : 'bg-[rgba(59,130,246,0.1)]')}>
+                                    <button key={p} onClick={() => handleWithdrawAmount1Change((maxVal * p).toFixed(6))} className={cn('py-[2px] px-[6px] text-[9px] font-semibold rounded border-none cursor-pointer text-[#3b82f6]', 'bg-[rgba(59,130,246,0.1)] dark:bg-[rgba(59,130,246,0.15)]')}>
                                       {p * 100}%
                                     </button>
                                   ))}
@@ -5553,7 +5527,7 @@ const TradingHistory = ({
                         {(withdrawMode === 'double' || withdrawMode === 'single2') && (
                           <div>
                             <div className="flex justify-between items-center mb-[6px]">
-                              <span className={cn('text-[11px]', isDark ? 'text-white/60' : 'text-black/60')}>
+                              <span className={cn('text-[11px]', 'text-black/60 dark:text-white/60')}>
                                 {decodeCurrency(liquidityDialog.pool.asset2.currency)}
                               </span>
                               {(() => {
@@ -5572,7 +5546,7 @@ const TradingHistory = ({
                               })()}
                             </div>
                             <div className="relative">
-                              <TextField value={withdrawAmount2} onChange={(e) => handleWithdrawAmount2Change(e.target.value)} type="number" inputMode="decimal" placeholder="0.00" isDark={isDark} />
+                              <TextField value={withdrawAmount2} onChange={(e) => handleWithdrawAmount2Change(e.target.value)} type="number" inputMode="decimal" placeholder="0.00" />
                             </div>
                             {/* Percentage buttons */}
                             {(() => {
@@ -5583,7 +5557,7 @@ const TradingHistory = ({
                               return (
                                 <div className="flex gap-1 mt-[6px]">
                                   {[0.25, 0.5, 0.75, 1].map((p) => (
-                                    <button key={p} onClick={() => handleWithdrawAmount2Change((maxVal * p).toFixed(6))} className={cn('py-[2px] px-[6px] text-[9px] font-semibold rounded border-none cursor-pointer text-[#3b82f6]', isDark ? 'bg-[rgba(59,130,246,0.15)]' : 'bg-[rgba(59,130,246,0.1)]')}>
+                                    <button key={p} onClick={() => handleWithdrawAmount2Change((maxVal * p).toFixed(6))} className={cn('py-[2px] px-[6px] text-[9px] font-semibold rounded border-none cursor-pointer text-[#3b82f6]', 'bg-[rgba(59,130,246,0.1)] dark:bg-[rgba(59,130,246,0.15)]')}>
                                       {p * 100}%
                                     </button>
                                   ))}
@@ -5595,38 +5569,38 @@ const TradingHistory = ({
 
                         {/* Withdraw All info */}
                         {withdrawMode === 'all' && (
-                          <div className={cn('py-3 px-[14px] rounded-[10px] border-[1.5px] text-[12px] leading-relaxed', isDark ? 'bg-white/[0.03] border-white/[0.06] text-white/50' : 'bg-black/[0.02] border-black/[0.06] text-black/50')}>
+                          <div className={cn('py-3 px-[14px] rounded-[10px] border-[1.5px] text-[12px] leading-relaxed', 'bg-black/[0.02] border-black/[0.06] text-black/50 dark:bg-white/[0.03] dark:border-white/[0.06] dark:text-white/50')}>
                             Redeems all LP tokens for proportional amounts of both assets. No trading fee applies.
                           </div>
                         )}
 
                         {/* Simulation result */}
                         {pendingWithdraw && pendingWithdraw.error && (
-                          <div className={cn('py-[10px] px-[14px] rounded-[10px] border-[1.5px] border-[rgba(239,68,68,0.2)] flex flex-col gap-[6px] text-[12px]', isDark ? 'bg-[rgba(239,68,68,0.08)]' : 'bg-[rgba(239,68,68,0.05)]')}>
+                          <div className={cn('py-[10px] px-[14px] rounded-[10px] border-[1.5px] border-[rgba(239,68,68,0.2)] flex flex-col gap-[6px] text-[12px]', 'bg-[rgba(239,68,68,0.05)] dark:bg-[rgba(239,68,68,0.08)]')}>
                             <div className="flex items-center gap-[6px] text-[#ef4444] font-semibold text-[11px] uppercase tracking-[0.05em]">
                               <AlertTriangle size={13} />
                               Simulation Failed
                             </div>
-                            <span className={cn('leading-normal', isDark ? 'text-white/70' : 'text-black/60')}>{pendingWithdraw.error}</span>
+                            <span className={cn('leading-normal', 'text-black/60 dark:text-white/70')}>{pendingWithdraw.error}</span>
                           </div>
                         )}
                         {pendingWithdraw && pendingWithdraw.preview && (
-                          <div className={cn('py-[10px] px-[14px] rounded-[10px] border-[1.5px] flex flex-col gap-2 text-[12px]', isDark ? 'bg-white/[0.03] border-white/[0.08]' : 'bg-black/[0.02] border-black/[0.08]')}>
+                          <div className={cn('py-[10px] px-[14px] rounded-[10px] border-[1.5px] flex flex-col gap-2 text-[12px]', 'bg-black/[0.02] border-black/[0.08] dark:bg-white/[0.03] dark:border-white/[0.08]')}>
                             <div className="flex items-center gap-[6px] text-[#08AA09] font-semibold text-[11px] uppercase tracking-[0.05em]">
                               <CheckCircle size={13} />
                               Transaction Preview
                             </div>
-                            <div className={cn('flex flex-col gap-1', isDark ? 'text-white/70' : 'text-black/60')}>
+                            <div className={cn('flex flex-col gap-1', 'text-black/60 dark:text-white/70')}>
                               {pendingWithdraw.preview.asset1.amount > 0 && (
                                 <div className="flex justify-between">
                                   <span>Receive {pendingWithdraw.preview.asset1.name}</span>
-                                  <span className={cn('font-semibold', isDark ? 'text-white' : 'text-black')}>{pendingWithdraw.preview.asset1.amount < 0.001 ? pendingWithdraw.preview.asset1.amount.toFixed(6) : pendingWithdraw.preview.asset1.amount.toFixed(4)}</span>
+                                  <span className={cn('font-semibold', 'text-black dark:text-white')}>{pendingWithdraw.preview.asset1.amount < 0.001 ? pendingWithdraw.preview.asset1.amount.toFixed(6) : pendingWithdraw.preview.asset1.amount.toFixed(4)}</span>
                                 </div>
                               )}
                               {pendingWithdraw.preview.asset2.amount > 0 && (
                                 <div className="flex justify-between">
                                   <span>Receive {pendingWithdraw.preview.asset2.name}</span>
-                                  <span className={cn('font-semibold', isDark ? 'text-white' : 'text-black')}>{pendingWithdraw.preview.asset2.amount < 0.001 ? pendingWithdraw.preview.asset2.amount.toFixed(6) : pendingWithdraw.preview.asset2.amount.toFixed(4)}</span>
+                                  <span className={cn('font-semibold', 'text-black dark:text-white')}>{pendingWithdraw.preview.asset2.amount < 0.001 ? pendingWithdraw.preview.asset2.amount.toFixed(6) : pendingWithdraw.preview.asset2.amount.toFixed(4)}</span>
                                 </div>
                               )}
                               {pendingWithdraw.preview.lpTokens > 0 && (
@@ -5637,7 +5611,7 @@ const TradingHistory = ({
                               )}
                               <div className="flex justify-between">
                                 <span>Network fee</span>
-                                <span className={cn('font-semibold', isDark ? 'text-white' : 'text-black')}>{pendingWithdraw.preview.fee} XRP</span>
+                                <span className={cn('font-semibold', 'text-black dark:text-white')}>{pendingWithdraw.preview.fee} XRP</span>
                               </div>
                             </div>
                           </div>
@@ -5647,7 +5621,7 @@ const TradingHistory = ({
                         {pendingWithdraw && pendingWithdraw.error ? (
                           <button
                             onClick={() => setPendingWithdraw(null)}
-                            className={cn('p-[13px] text-[14px] font-semibold w-full border-none rounded-[10px] cursor-pointer', isDark ? 'bg-white/[0.06] text-white/70' : 'bg-black/[0.06] text-black/60')}
+                            className={cn('p-[13px] text-[14px] font-semibold w-full border-none rounded-[10px] cursor-pointer', 'bg-black/[0.06] text-black/60 dark:bg-white/[0.06] dark:text-white/70')}
                           >
                             Dismiss
                           </button>
@@ -5655,14 +5629,14 @@ const TradingHistory = ({
                           <div className="flex gap-2">
                             <button
                               onClick={() => setPendingWithdraw(null)}
-                              className={cn('flex-1 p-[13px] text-[14px] font-semibold border-none rounded-[10px] cursor-pointer', isDark ? 'bg-white/[0.06] text-white/70' : 'bg-black/[0.06] text-black/60')}
+                              className={cn('flex-1 p-[13px] text-[14px] font-semibold border-none rounded-[10px] cursor-pointer', 'bg-black/[0.06] text-black/60 dark:bg-white/[0.06] dark:text-white/70')}
                             >
                               Cancel
                             </button>
                             <button
                               onClick={handleConfirmWithdraw}
                               disabled={withdrawLoading}
-                              className={cn('flex-[2] p-[13px] text-[14px] font-semibold text-white border-none rounded-[10px] flex items-center justify-center gap-2', withdrawLoading ? cn('cursor-not-allowed', isDark ? 'bg-[#222]' : 'bg-[#ccc]') : 'cursor-pointer bg-[#08AA09]')}
+                              className={cn('flex-[2] p-[13px] text-[14px] font-semibold text-white border-none rounded-[10px] flex items-center justify-center gap-2', withdrawLoading ? cn('cursor-not-allowed', 'bg-gray-300 dark:bg-white/[0.08]') : 'cursor-pointer bg-[#08AA09]')}
                             >
                               {withdrawLoading && <Spinner size={16} />}
                               {withdrawLoading ? 'Withdrawing...' : 'Confirm Withdrawal'}
@@ -5672,7 +5646,7 @@ const TradingHistory = ({
                           <button
                             onClick={handleSubmitWithdraw}
                             disabled={withdrawLoading}
-                            className={cn('p-[13px] text-[14px] font-semibold w-full text-white border-none rounded-[10px] flex items-center justify-center gap-2 transition-[opacity,transform,background-color,border-color] duration-150', withdrawLoading ? cn('cursor-not-allowed', isDark ? 'bg-[#222]' : 'bg-[#ccc]') : cn('cursor-pointer', isDark ? 'bg-white/10' : 'bg-[#1a1a1a]'))}
+                            className={cn('p-[13px] text-[14px] font-semibold w-full text-white border-none rounded-[10px] flex items-center justify-center gap-2 transition-[opacity,transform,background-color,border-color] duration-150', withdrawLoading ? cn('cursor-not-allowed', 'bg-gray-300 dark:bg-white/[0.08]') : cn('cursor-pointer', 'bg-[#1a1a1a] dark:bg-white/10'))}
                           >
                             {withdrawLoading && <Spinner size={16} />}
                             {withdrawLoading ? 'Simulating...' : withdrawMode === 'all' ? 'Withdraw All' : 'Remove Liquidity'}
@@ -5694,41 +5668,40 @@ const TradingHistory = ({
         createPortal(
           <Dialog
             open={createPoolOpen}
-            isDark={isDark}
             onClick={(e) => e.target === e.currentTarget && handleCloseCreatePool()}
           >
-            <DialogPaper isDark={isDark}>
-              <DialogTitle isDark={isDark}>
+            <DialogPaper>
+              <DialogTitle>
                 Create Pool
-                <IconButton aria-label="Close dialog" onClick={handleCloseCreatePool} isDark={isDark} className="p-[6px]">
+                <IconButton aria-label="Close dialog" onClick={handleCloseCreatePool} className="p-[6px]">
                   <X size={18} />
                 </IconButton>
               </DialogTitle>
-              <DialogContent isDark={isDark}>
+              <DialogContent>
                 <div className="flex flex-col gap-[14px]">
                   {/* Asset 1 - Current token (fixed) */}
-                  <div className={cn('py-3 px-[14px] rounded-[10px] border-[1.5px]', isDark ? 'bg-white/[0.03] border-white/[0.08]' : 'bg-[#f9fafb] border-black/[0.08]')}>
-                    <div className={cn('text-[10px] font-semibold uppercase tracking-[0.5px] mb-2', isDark ? 'text-white/55' : 'text-black/60')}>Asset 1</div>
+                  <div className={cn('py-3 px-[14px] rounded-[10px] border-[1.5px]', 'bg-gray-50 border-black/[0.08] dark:bg-white/[0.03] dark:border-white/[0.08]')}>
+                    <div className={cn('text-[10px] font-semibold uppercase tracking-[0.5px] mb-2', 'text-black/60 dark:text-white/55')}>Asset 1</div>
                     <div className="flex items-center gap-[10px]">
                       <img src={getTokenImageUrl(token?.issuer, token?.currency)} alt="" className="w-7 h-7 rounded-full" />
-                      <span className={cn('text-[15px] font-semibold', isDark ? 'text-white' : 'text-[#1a1a1a]')}>
+                      <span className={cn('text-[15px] font-semibold', 'text-[#1a1a1a] dark:text-white')}>
                         {token?.currency === 'XRP' ? 'XRP' : decodeCurrency(token?.currency)}
                       </span>
                     </div>
                   </div>
 
                   {/* Asset 2 - Token search/select */}
-                  <div className={cn('py-3 px-[14px] rounded-[10px] border-[1.5px]', isDark ? 'bg-white/[0.03] border-white/[0.08]' : 'bg-[#f9fafb] border-black/[0.08]')}>
-                    <div className={cn('text-[10px] font-semibold uppercase tracking-[0.5px] mb-2', isDark ? 'text-white/55' : 'text-black/60')}>Asset 2</div>
+                  <div className={cn('py-3 px-[14px] rounded-[10px] border-[1.5px]', 'bg-gray-50 border-black/[0.08] dark:bg-white/[0.03] dark:border-white/[0.08]')}>
+                    <div className={cn('text-[10px] font-semibold uppercase tracking-[0.5px] mb-2', 'text-black/60 dark:text-white/55')}>Asset 2</div>
                     {createPoolAsset2 ? (
                       <div className="flex items-center gap-[10px]">
                         <img src={createPoolAsset2.image} alt="" className="w-7 h-7 rounded-full" />
-                        <span className={cn('text-[15px] font-semibold', isDark ? 'text-white' : 'text-[#1a1a1a]')}>
+                        <span className={cn('text-[15px] font-semibold', 'text-[#1a1a1a] dark:text-white')}>
                           {createPoolAsset2.name}
                         </span>
                         <button
                           onClick={() => { setCreatePoolAsset2(null); setPendingCreatePool(null); setCreatePoolAmount1(''); setCreatePoolAmount2(''); }}
-                          className={cn('ml-auto py-1 px-2 text-[10px] font-semibold rounded-md border-none cursor-pointer', isDark ? 'bg-white/[0.08] text-white/60' : 'bg-black/[0.06] text-black/50')}
+                          className={cn('ml-auto py-1 px-2 text-[10px] font-semibold rounded-md border-none cursor-pointer', 'bg-black/[0.06] text-black/50 dark:bg-white/[0.08] dark:text-white/60')}
                         >
                           Change
                         </button>
@@ -5736,17 +5709,16 @@ const TradingHistory = ({
                     ) : (
                       <div className="relative">
                         <div className="relative">
-                          <Search size={14} className={cn('absolute left-[10px] top-1/2 -translate-y-1/2', isDark ? 'text-white/60' : 'text-black/60')} />
+                          <Search size={14} className={cn('absolute left-[10px] top-1/2 -translate-y-1/2', 'text-black/60 dark:text-white/60')} />
                           <TextField
                             value={createPoolSearch}
                             onChange={(e) => handleCreatePoolSearch(e.target.value)}
                             placeholder="Search token to pair with..."
-                            isDark={isDark}
                             className="!pl-8"
                           />
                         </div>
                         {(createPoolSearchResults.length > 0 || createPoolSearchLoading) && (
-                          <div className={cn('mt-[6px] max-h-[180px] overflow-y-auto rounded-lg border-[1.5px]', isDark ? 'border-white/[0.08] bg-[#111]' : 'border-black/[0.08] bg-white')}>
+                          <div className={cn('mt-[6px] max-h-[180px] overflow-y-auto rounded-lg border-[1.5px]', 'border-black/[0.08] bg-white dark:border-white/[0.08] dark:bg-white/[0.04]')}>
                             {createPoolSearchLoading && (
                               <div className="flex justify-center p-3">
                                 <Spinner size={16} />
@@ -5759,13 +5731,13 @@ const TradingHistory = ({
                                 <button
                                   key={`${t.issuer || ''}_${t.currency}_${i}`}
                                   onClick={() => handleSelectAsset2(t)}
-                                  className={cn('w-full flex items-center gap-[10px] py-[10px] px-3 border-none bg-transparent cursor-pointer text-left transition-[background] duration-100 border-b', isDark ? 'border-b-white/[0.04] text-white hover:bg-white/[0.04]' : 'border-b-black/[0.04] text-[#1a1a1a] hover:bg-black/[0.03]')}
+                                  className={cn('w-full flex items-center gap-[10px] py-[10px] px-3 border-none bg-transparent cursor-pointer text-left transition-[background] duration-100 border-b', 'border-b-black/[0.04] text-[#1a1a1a] hover:bg-black/[0.03] dark:border-b-white/[0.04] dark:text-white dark:hover:bg-white/[0.04]')}
                                 >
                                   <img src={getTokenImageUrl(t.issuer, t.currency)} alt="" className="w-[22px] h-[22px] rounded-full" />
                                   <div className="flex flex-col gap-px">
                                     <span className="text-[13px] font-semibold">{name}</span>
                                     {!isXrp && t.issuer && (
-                                      <span className={cn('text-[10px]', isDark ? 'text-white/60' : 'text-black/35')}>
+                                      <span className={cn('text-[10px]', 'text-black/35 dark:text-white/60')}>
                                         {t.issuer.slice(0, 8)}...{t.issuer.slice(-6)}
                                       </span>
                                     )}
@@ -5785,52 +5757,52 @@ const TradingHistory = ({
                       {/* Amount 1 */}
                       <div>
                         <div className="flex justify-between items-center mb-[6px]">
-                          <span className={cn('text-[11px]', isDark ? 'text-white/60' : 'text-black/60')}>
+                          <span className={cn('text-[11px]', 'text-black/60 dark:text-white/60')}>
                             {token?.currency === 'XRP' ? 'XRP' : decodeCurrency(token?.currency)} amount
                           </span>
                           {createPoolBalances.asset1 != null && (
                             <div className="flex items-center gap-[6px]">
-                              <span className={cn('text-[10px]', isDark ? 'text-white/60' : 'text-black/60')}>
+                              <span className={cn('text-[10px]', 'text-black/60 dark:text-white/60')}>
                                 {Number(createPoolBalances.asset1).toFixed(4).replace(/\.?0+$/, '')}
                               </span>
                               {[0.5, 1].map((p) => (
-                                <button key={p} onClick={() => setCreatePoolAmount1((Number(createPoolBalances.asset1) * p).toFixed(6))} className={cn('py-[2px] px-[6px] text-[9px] font-semibold rounded border-none cursor-pointer text-[#3b82f6]', isDark ? 'bg-[rgba(59,130,246,0.15)]' : 'bg-[rgba(59,130,246,0.1)]')}>
+                                <button key={p} onClick={() => setCreatePoolAmount1((Number(createPoolBalances.asset1) * p).toFixed(6))} className={cn('py-[2px] px-[6px] text-[9px] font-semibold rounded border-none cursor-pointer text-[#3b82f6]', 'bg-[rgba(59,130,246,0.1)] dark:bg-[rgba(59,130,246,0.15)]')}>
                                   {p === 1 ? 'MAX' : '50%'}
                                 </button>
                               ))}
                             </div>
                           )}
                         </div>
-                        <TextField value={createPoolAmount1} onChange={(e) => { setCreatePoolAmount1(e.target.value); setPendingCreatePool(null); }} type="number" inputMode="decimal" placeholder="0.00" isDark={isDark} />
+                        <TextField value={createPoolAmount1} onChange={(e) => { setCreatePoolAmount1(e.target.value); setPendingCreatePool(null); }} type="number" inputMode="decimal" placeholder="0.00" />
                       </div>
 
                       {/* Amount 2 */}
                       <div>
                         <div className="flex justify-between items-center mb-[6px]">
-                          <span className={cn('text-[11px]', isDark ? 'text-white/60' : 'text-black/60')}>
+                          <span className={cn('text-[11px]', 'text-black/60 dark:text-white/60')}>
                             {createPoolAsset2.name} amount
                           </span>
                           {createPoolBalances.asset2 != null && (
                             <div className="flex items-center gap-[6px]">
-                              <span className={cn('text-[10px]', isDark ? 'text-white/60' : 'text-black/60')}>
+                              <span className={cn('text-[10px]', 'text-black/60 dark:text-white/60')}>
                                 {Number(createPoolBalances.asset2).toFixed(4).replace(/\.?0+$/, '')}
                               </span>
                               {[0.5, 1].map((p) => (
-                                <button key={p} onClick={() => setCreatePoolAmount2((Number(createPoolBalances.asset2) * p).toFixed(6))} className={cn('py-[2px] px-[6px] text-[9px] font-semibold rounded border-none cursor-pointer text-[#3b82f6]', isDark ? 'bg-[rgba(59,130,246,0.15)]' : 'bg-[rgba(59,130,246,0.1)]')}>
+                                <button key={p} onClick={() => setCreatePoolAmount2((Number(createPoolBalances.asset2) * p).toFixed(6))} className={cn('py-[2px] px-[6px] text-[9px] font-semibold rounded border-none cursor-pointer text-[#3b82f6]', 'bg-[rgba(59,130,246,0.1)] dark:bg-[rgba(59,130,246,0.15)]')}>
                                   {p === 1 ? 'MAX' : '50%'}
                                 </button>
                               ))}
                             </div>
                           )}
                         </div>
-                        <TextField value={createPoolAmount2} onChange={(e) => { setCreatePoolAmount2(e.target.value); setPendingCreatePool(null); }} type="number" inputMode="decimal" placeholder="0.00" isDark={isDark} />
+                        <TextField value={createPoolAmount2} onChange={(e) => { setCreatePoolAmount2(e.target.value); setPendingCreatePool(null); }} type="number" inputMode="decimal" placeholder="0.00" />
                       </div>
 
                       {/* Trading Fee Slider */}
                       <div>
                         <div className="flex justify-between items-center mb-2">
-                          <span className={cn('text-[11px]', isDark ? 'text-white/60' : 'text-black/60')}>Trading Fee</span>
-                          <span className={cn('text-[13px] font-semibold', isDark ? 'text-white' : 'text-[#1a1a1a]')}>{(createPoolFee / 1000).toFixed(2)}%</span>
+                          <span className={cn('text-[11px]', 'text-black/60 dark:text-white/60')}>Trading Fee</span>
+                          <span className={cn('text-[13px] font-semibold', 'text-[#1a1a1a] dark:text-white')}>{(createPoolFee / 1000).toFixed(2)}%</span>
                         </div>
                         <input
                           type="range"
@@ -5841,7 +5813,7 @@ const TradingHistory = ({
                           onChange={(e) => { setCreatePoolFee(Number(e.target.value)); setPendingCreatePool(null); }}
                           className="w-full accent-[#137DFE]"
                         />
-                        <div className={cn('flex justify-between text-[9px] mt-[2px]', isDark ? 'text-white/25' : 'text-black/60')}>
+                        <div className={cn('flex justify-between text-[9px] mt-[2px]', 'text-black/60 dark:text-white/25')}>
                           <span>0%</span>
                           <span>0.5%</span>
                           <span>1%</span>
@@ -5849,43 +5821,43 @@ const TradingHistory = ({
                       </div>
 
                       {/* Warning about equal value */}
-                      <div className={cn('py-[10px] px-[14px] rounded-[10px] border-[1.5px] border-[rgba(246,175,1,0.15)] flex items-start gap-2 text-[11px] leading-normal', isDark ? 'bg-[rgba(246,175,1,0.06)] text-white/60' : 'bg-[rgba(246,175,1,0.05)] text-black/55')}>
+                      <div className={cn('py-[10px] px-[14px] rounded-[10px] border-[1.5px] border-[rgba(246,175,1,0.15)] flex items-start gap-2 text-[11px] leading-normal', 'bg-[rgba(246,175,1,0.05)] text-black/55 dark:bg-[rgba(246,175,1,0.06)] dark:text-white/60')}>
                         <AlertTriangle size={14} className="text-[#F6AF01] shrink-0 mt-px" />
                         <span>Deposit roughly equal-value amounts of each asset. Imbalanced pools can be immediately arbitraged. Creation costs ~0.2 XRP (owner reserve).</span>
                       </div>
 
                       {/* Simulation result */}
                       {pendingCreatePool && pendingCreatePool.error && (
-                        <div className={cn('py-[10px] px-[14px] rounded-[10px] border-[1.5px] border-[rgba(239,68,68,0.2)] flex flex-col gap-[6px] text-[12px]', isDark ? 'bg-[rgba(239,68,68,0.08)]' : 'bg-[rgba(239,68,68,0.05)]')}>
+                        <div className={cn('py-[10px] px-[14px] rounded-[10px] border-[1.5px] border-[rgba(239,68,68,0.2)] flex flex-col gap-[6px] text-[12px]', 'bg-[rgba(239,68,68,0.05)] dark:bg-[rgba(239,68,68,0.08)]')}>
                           <div className="flex items-center gap-[6px] text-[#ef4444] font-semibold text-[11px] uppercase tracking-[0.05em]">
                             <AlertTriangle size={13} />
                             Simulation Failed
                           </div>
-                          <span className={cn('leading-normal', isDark ? 'text-white/70' : 'text-black/60')}>{pendingCreatePool.error}</span>
+                          <span className={cn('leading-normal', 'text-black/60 dark:text-white/70')}>{pendingCreatePool.error}</span>
                         </div>
                       )}
                       {pendingCreatePool && pendingCreatePool.tx && (
-                        <div className={cn('py-[10px] px-[14px] rounded-[10px] border-[1.5px] flex flex-col gap-2 text-[12px]', isDark ? 'bg-white/[0.03] border-white/[0.08]' : 'bg-black/[0.02] border-black/[0.08]')}>
+                        <div className={cn('py-[10px] px-[14px] rounded-[10px] border-[1.5px] flex flex-col gap-2 text-[12px]', 'bg-black/[0.02] border-black/[0.08] dark:bg-white/[0.03] dark:border-white/[0.08]')}>
                           <div className="flex items-center gap-[6px] text-[#08AA09] font-semibold text-[11px] uppercase tracking-[0.05em]">
                             <CheckCircle size={13} />
                             Ready to Create
                           </div>
-                          <div className={cn('flex flex-col gap-1', isDark ? 'text-white/70' : 'text-black/60')}>
+                          <div className={cn('flex flex-col gap-1', 'text-black/60 dark:text-white/70')}>
                             <div className="flex justify-between">
                               <span>Deposit {token?.currency === 'XRP' ? 'XRP' : decodeCurrency(token?.currency)}</span>
-                              <span className={cn('font-semibold', isDark ? 'text-white' : 'text-black')}>{Number(createPoolAmount1).toFixed(4)}</span>
+                              <span className={cn('font-semibold', 'text-black dark:text-white')}>{Number(createPoolAmount1).toFixed(4)}</span>
                             </div>
                             <div className="flex justify-between">
                               <span>Deposit {createPoolAsset2.name}</span>
-                              <span className={cn('font-semibold', isDark ? 'text-white' : 'text-black')}>{Number(createPoolAmount2).toFixed(4)}</span>
+                              <span className={cn('font-semibold', 'text-black dark:text-white')}>{Number(createPoolAmount2).toFixed(4)}</span>
                             </div>
                             <div className="flex justify-between">
                               <span>Trading fee</span>
-                              <span className={cn('font-semibold', isDark ? 'text-white' : 'text-black')}>{(createPoolFee / 1000).toFixed(2)}%</span>
+                              <span className={cn('font-semibold', 'text-black dark:text-white')}>{(createPoolFee / 1000).toFixed(2)}%</span>
                             </div>
                             <div className="flex justify-between">
                               <span>Network fee</span>
-                              <span className={cn('font-semibold', isDark ? 'text-white' : 'text-black')}>{pendingCreatePool.fee} XRP</span>
+                              <span className={cn('font-semibold', 'text-black dark:text-white')}>{pendingCreatePool.fee} XRP</span>
                             </div>
                           </div>
                         </div>
@@ -5895,7 +5867,7 @@ const TradingHistory = ({
                       {pendingCreatePool && pendingCreatePool.error ? (
                         <button
                           onClick={() => setPendingCreatePool(null)}
-                          className={cn('p-[13px] text-[14px] font-semibold w-full border-none rounded-[10px] cursor-pointer', isDark ? 'bg-white/[0.06] text-white/70' : 'bg-black/[0.06] text-black/60')}
+                          className={cn('p-[13px] text-[14px] font-semibold w-full border-none rounded-[10px] cursor-pointer', 'bg-black/[0.06] text-black/60 dark:bg-white/[0.06] dark:text-white/70')}
                         >
                           Dismiss
                         </button>
@@ -5903,14 +5875,14 @@ const TradingHistory = ({
                         <div className="flex gap-2">
                           <button
                             onClick={() => setPendingCreatePool(null)}
-                            className={cn('flex-1 p-[13px] text-[14px] font-semibold border-none rounded-[10px] cursor-pointer', isDark ? 'bg-white/[0.06] text-white/70' : 'bg-black/[0.06] text-black/60')}
+                            className={cn('flex-1 p-[13px] text-[14px] font-semibold border-none rounded-[10px] cursor-pointer', 'bg-black/[0.06] text-black/60 dark:bg-white/[0.06] dark:text-white/70')}
                           >
                             Cancel
                           </button>
                           <button
                             onClick={handleConfirmCreatePool}
                             disabled={createPoolLoading}
-                            className={cn('flex-[2] p-[13px] text-[14px] font-semibold text-white border-none rounded-[10px] flex items-center justify-center gap-2', createPoolLoading ? cn('cursor-not-allowed', isDark ? 'bg-[#222]' : 'bg-[#ccc]') : 'cursor-pointer bg-[#08AA09]')}
+                            className={cn('flex-[2] p-[13px] text-[14px] font-semibold text-white border-none rounded-[10px] flex items-center justify-center gap-2', createPoolLoading ? cn('cursor-not-allowed', 'bg-gray-300 dark:bg-white/[0.08]') : 'cursor-pointer bg-[#08AA09]')}
                           >
                             {createPoolLoading && <Spinner size={16} />}
                             {createPoolLoading ? 'Creating...' : 'Confirm & Create Pool'}
@@ -5920,7 +5892,7 @@ const TradingHistory = ({
                         <button
                           onClick={handleSubmitCreatePool}
                           disabled={createPoolLoading || !createPoolAmount1 || !createPoolAmount2}
-                          className={cn('p-[13px] text-[14px] font-semibold w-full text-white border-none rounded-[10px] flex items-center justify-center gap-2 transition-[opacity,transform,background-color,border-color] duration-150', (createPoolLoading || !createPoolAmount1 || !createPoolAmount2) ? cn('cursor-not-allowed', isDark ? 'bg-[#222]' : 'bg-[#ccc]') : 'cursor-pointer bg-[#137DFE]')}
+                          className={cn('p-[13px] text-[14px] font-semibold w-full text-white border-none rounded-[10px] flex items-center justify-center gap-2 transition-[opacity,transform,background-color,border-color] duration-150', (createPoolLoading || !createPoolAmount1 || !createPoolAmount2) ? cn('cursor-not-allowed', 'bg-gray-300 dark:bg-white/[0.08]') : 'cursor-pointer bg-[#137DFE]')}
                         >
                           {createPoolLoading && <Spinner size={16} />}
                           {createPoolLoading ? 'Simulating...' : 'Create Pool'}

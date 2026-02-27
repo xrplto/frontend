@@ -24,7 +24,8 @@ const ALLOWED_PATH_PREFIXES = [
   'api/account/', 'api/traders/', 'api/history', 'api/lp-positions/',
   'api/amm', 'api/dex/', 'api/nft/', 'api/user/', 'api/trustlines/',
   'api/watchlist/', 'api/promotion/', 'api/chat/', 'api/tweet/',
-  'api/referral/', 'api/tx-explain/'
+  'api/referral/', 'api/tx-explain/',
+  'api/platform-report'
 ];
 
 const ALLOWED_METHODS = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD'];

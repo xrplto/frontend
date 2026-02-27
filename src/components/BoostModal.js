@@ -254,8 +254,8 @@ export default function BoostModal({ token, collection, onClose, onSuccess }) {
     if (quoteLoading) {
       return (
         <div className="text-center py-8">
-          <Loader2 size={20} className={cn('mx-auto animate-spin mb-2', isDark ? 'text-white/40' : 'text-gray-400')} />
-          <div className={cn('text-[11px]', isDark ? 'text-white/30' : 'text-gray-400')}>Loading boost packs...</div>
+          <Loader2 size={20} className={cn('mx-auto animate-spin mb-2', 'text-gray-400 dark:text-white/40')} />
+          <div className={cn('text-[11px]', 'text-gray-400 dark:text-white/30')}>Loading boost packs...</div>
         </div>
       );
     }
@@ -267,11 +267,11 @@ export default function BoostModal({ token, collection, onClose, onSuccess }) {
           <div className={cn(
             'flex items-center gap-2 py-2 px-3 rounded-[10px] border',
             activeBoosts >= goldenThreshold
-              ? isDark ? 'bg-[#FFD700]/5 border-[#FFD700]/20' : 'bg-amber-50 border-amber-200'
-              : isDark ? 'bg-amber-500/5 border-amber-500/15' : 'bg-amber-50 border-amber-200'
+              ? 'bg-amber-50 border-amber-200 dark:bg-[#FFD700]/5 dark:border-[#FFD700]/20'
+              : 'bg-amber-50 border-amber-200 dark:bg-amber-500/5 dark:border-amber-500/15'
           )}>
             <Flame size={13} className={activeBoosts >= goldenThreshold ? 'text-[#FFD700]' : 'text-amber-500'} fill={activeBoosts >= goldenThreshold ? '#FFD700' : 'none'} />
-            <span className={cn('text-[11px]', activeBoosts >= goldenThreshold ? 'text-[#FFD700] font-bold' : isDark ? 'text-amber-400' : 'text-amber-600')}>
+            <span className={cn('text-[11px]', activeBoosts >= goldenThreshold ? 'text-[#FFD700] font-bold' : 'text-amber-600 dark:text-amber-400')}>
               {activeBoosts >= goldenThreshold
                 ? `Golden Ticker active! (${activeBoosts} boosts)`
                 : `Active boosts: ${activeBoosts} — new packs stack on top`}
@@ -282,7 +282,7 @@ export default function BoostModal({ token, collection, onClose, onSuccess }) {
         {/* Token/Collection preview */}
         <div className={cn(
           'flex items-center gap-3 py-[10px] px-3 rounded-[10px] border',
-          isDark ? 'bg-white/[0.025] border-white/[0.06]' : 'bg-black/[0.02] border-black/[0.06]'
+          'bg-black/[0.02] border-black/[0.06] dark:bg-white/[0.025] dark:border-white/[0.06]'
         )}>
           <img
             src={imageUrl}
@@ -290,14 +290,14 @@ export default function BoostModal({ token, collection, onClose, onSuccess }) {
             className="w-9 h-9 rounded-lg object-cover"
           />
           <div className="flex-1 min-w-0">
-            <div className={cn('font-bold text-[13px] truncate', isDark ? 'text-white' : 'text-gray-900')}>{displayName}</div>
-            <div className={cn('text-[10px]', isDark ? 'text-white/35' : 'text-gray-400')}>Boost trending position</div>
+            <div className={cn('font-bold text-[13px] truncate', 'text-gray-900 dark:text-white')}>{displayName}</div>
+            <div className={cn('text-[10px]', 'text-gray-400 dark:text-white/35')}>Boost trending position</div>
           </div>
         </div>
 
         {/* Pack selection */}
         <div>
-          <div className={cn('text-[10px] font-bold uppercase tracking-wider mb-2', isDark ? 'text-white/35' : 'text-gray-400')}>
+          <div className={cn('text-[10px] font-bold uppercase tracking-wider mb-2', 'text-gray-400 dark:text-white/35')}>
             Select Boost Pack
           </div>
           <div className="space-y-1.5">
@@ -316,9 +316,7 @@ export default function BoostModal({ token, collection, onClose, onSuccess }) {
                   }}
                   className={cn(
                     'w-full py-[10px] px-3 rounded-[10px] border flex items-center gap-3 transition-all duration-200 text-left',
-                    !isSelected && (isDark
-                      ? 'border-white/[0.06] hover:border-white/[0.1] hover:bg-white/[0.02]'
-                      : 'border-black/[0.06] hover:border-black/[0.1] hover:bg-black/[0.02]'),
+                    !isSelected && 'border-black/[0.06] hover:border-black/[0.1] hover:bg-black/[0.02] dark:border-white/[0.06] dark:hover:border-white/[0.1] dark:hover:bg-white/[0.02]',
                     isLegendary && isSelected && 'ring-1 ring-[#FFD700]/10'
                   )}
                 >
@@ -326,19 +324,19 @@ export default function BoostModal({ token, collection, onClose, onSuccess }) {
                   <div
                     className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
                     style={{
-                      backgroundColor: isSelected ? `${tier.color}15` : isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)',
+                      backgroundColor: isSelected ? `${tier.color}15` : (isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'),
                     }}
                   >
                     <Flame
                       size={tier.size}
-                      style={{ color: isSelected ? tier.color : isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.25)' }}
+                      style={{ color: isSelected ? tier.color : (isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.25)') }}
                       fill={isSelected ? tier.color : 'none'}
                       strokeWidth={isSelected ? 0 : 1.5}
                     />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className={cn('text-[13px] font-bold', isDark ? 'text-white' : 'text-gray-900')}>
+                      <span className={cn('text-[13px] font-bold', 'text-gray-900 dark:text-white')}>
                         {pack.multiplier}x {pack.name}
                       </span>
                       {isLegendary && (
@@ -348,14 +346,14 @@ export default function BoostModal({ token, collection, onClose, onSuccess }) {
                       )}
                     </div>
                     <div className="flex items-center gap-2 mt-0.5">
-                      <span className={cn('text-[10px] flex items-center gap-0.5', isDark ? 'text-white/30' : 'text-gray-400')}>
+                      <span className={cn('text-[10px] flex items-center gap-0.5', 'text-gray-400 dark:text-white/30')}>
                         <Clock size={9} /> {pack.durationHours}h
                       </span>
-                      <span className={cn('text-[3px]', isDark ? 'text-white/15' : 'text-gray-300')}>&#x25CF;</span>
-                      <span style={{ color: isSelected ? tier.color : undefined }} className={cn('text-[13px] font-bold', !isSelected && (isDark ? 'text-white/70' : 'text-gray-600'))}>
+                      <span className={cn('text-[3px]', 'text-gray-300 dark:text-white/15')}>&#x25CF;</span>
+                      <span style={{ color: isSelected ? tier.color : undefined }} className={cn('text-[13px] font-bold', !isSelected && 'text-gray-600 dark:text-white/70')}>
                         ${pack.priceUsd}
                       </span>
-                      <span className={cn('text-[10px]', isDark ? 'text-white/25' : 'text-gray-400')}>
+                      <span className={cn('text-[10px]', 'text-gray-400 dark:text-white/25')}>
                         ~{pack.priceXrp} XRP
                       </span>
                     </div>
@@ -379,7 +377,7 @@ export default function BoostModal({ token, collection, onClose, onSuccess }) {
             return (
               <div className={cn(
                 'flex items-center gap-2 py-2 px-3 rounded-lg text-[10px] font-bold',
-                isDark ? 'bg-[#FFD700]/10 text-[#FFD700]' : 'bg-amber-50 text-amber-600'
+                'bg-amber-50 text-amber-600 dark:bg-[#FFD700]/10 dark:text-[#FFD700]'
               )}>
                 <Flame size={11} fill="currentColor" />
                 <span>This pack activates Golden Ticker!</span>
@@ -390,7 +388,7 @@ export default function BoostModal({ token, collection, onClose, onSuccess }) {
             return (
               <div className={cn(
                 'flex items-center gap-2 py-2 px-3 rounded-lg text-[10px]',
-                isDark ? 'bg-[#FFD700]/5 text-[#FFD700]/50' : 'bg-amber-50 text-amber-400'
+                'bg-amber-50 text-amber-400 dark:bg-[#FFD700]/5 dark:text-[#FFD700]/50'
               )}>
                 <Flame size={11} />
                 <span>{remaining} more boosts after this pack until Golden Ticker</span>
@@ -402,7 +400,7 @@ export default function BoostModal({ token, collection, onClose, onSuccess }) {
 
         {/* Payment method selector */}
         <div>
-          <div className={cn('text-[10px] font-bold uppercase tracking-wider mb-2', isDark ? 'text-white/35' : 'text-gray-400')}>
+          <div className={cn('text-[10px] font-bold uppercase tracking-wider mb-2', 'text-gray-400 dark:text-white/35')}>
             Payment Method
           </div>
           <div className="flex gap-1.5">
@@ -411,8 +409,8 @@ export default function BoostModal({ token, collection, onClose, onSuccess }) {
               className={cn(
                 'flex-1 py-2 rounded-[10px] border flex items-center justify-center gap-1.5 text-[11px] font-bold transition-[background-color,border-color] duration-150',
                 paymentMethod === 'xrp'
-                  ? isDark ? 'border-blue-500/40 bg-blue-500/[0.08] text-blue-400' : 'border-blue-500/50 bg-blue-500/[0.06] text-blue-600'
-                  : isDark ? 'border-white/[0.06] text-white/35 hover:bg-white/[0.03]' : 'border-black/[0.06] text-gray-400 hover:bg-black/[0.02]'
+                  ? 'border-blue-500/50 bg-blue-500/[0.06] text-blue-600 dark:border-blue-500/40 dark:bg-blue-500/[0.08] dark:text-blue-400'
+                  : 'border-black/[0.06] text-gray-400 hover:bg-black/[0.02] dark:border-white/[0.06] dark:text-white/35 dark:hover:bg-white/[0.03]'
               )}
             >
               <Wallet size={12} />
@@ -423,8 +421,8 @@ export default function BoostModal({ token, collection, onClose, onSuccess }) {
               className={cn(
                 'flex-1 py-2 rounded-[10px] border flex items-center justify-center gap-1.5 text-[11px] font-bold transition-[background-color,border-color] duration-150',
                 paymentMethod === 'stripe'
-                  ? isDark ? 'border-blue-500/40 bg-blue-500/[0.08] text-blue-400' : 'border-blue-500/50 bg-blue-500/[0.06] text-blue-600'
-                  : isDark ? 'border-white/[0.06] text-white/35 hover:bg-white/[0.03]' : 'border-black/[0.06] text-gray-400 hover:bg-black/[0.02]'
+                  ? 'border-blue-500/50 bg-blue-500/[0.06] text-blue-600 dark:border-blue-500/40 dark:bg-blue-500/[0.08] dark:text-blue-400'
+                  : 'border-black/[0.06] text-gray-400 hover:bg-black/[0.02] dark:border-white/[0.06] dark:text-white/35 dark:hover:bg-white/[0.03]'
               )}
             >
               <CreditCard size={12} />
@@ -434,7 +432,7 @@ export default function BoostModal({ token, collection, onClose, onSuccess }) {
         </div>
 
         {error && (
-          <div className={cn('flex items-center gap-2 py-2 px-3 rounded-lg text-[11px]', isDark ? 'bg-red-500/10 border border-red-500/20 text-red-400' : 'bg-red-50 border border-red-200 text-red-500')}>
+          <div className={cn('flex items-center gap-2 py-2 px-3 rounded-lg text-[11px]', 'bg-red-50 border border-red-200 text-red-500 dark:bg-red-500/10 dark:border-red-500/20 dark:text-red-400')}>
             <AlertCircle size={13} />
             <span className="truncate">{error}</span>
           </div>
@@ -468,7 +466,7 @@ export default function BoostModal({ token, collection, onClose, onSuccess }) {
           );
         })()}
 
-        <p className={cn('text-[9px] text-center', isDark ? 'text-white/25' : 'text-gray-400')}>
+        <p className={cn('text-[9px] text-center', 'text-gray-400 dark:text-white/25')}>
           {paymentMethod === 'xrp' ? 'Payment on XRPL' : 'Card, Cash App, Link, Crypto - powered by Stripe'}
           {' · '}
           <a href="/docs#trending-guide" target="_blank" rel="noopener noreferrer" className="underline hover:text-blue-400">How Trending Works</a>
@@ -483,27 +481,27 @@ export default function BoostModal({ token, collection, onClose, onSuccess }) {
     <div className="space-y-3">
       <div className={cn(
         'py-[10px] px-3 rounded-[10px] border flex items-center gap-3',
-        isDark ? 'bg-white/[0.025] border-white/[0.06]' : 'bg-black/[0.02] border-black/[0.06]'
+        'bg-black/[0.02] border-black/[0.06] dark:bg-white/[0.025] dark:border-white/[0.06]'
       )}>
         <div className="w-11 h-11 rounded-lg flex items-center justify-center bg-blue-500 shrink-0">
           <Zap size={20} className="text-white" />
         </div>
         <div className="flex-1 min-w-0">
-          <div className={cn('font-bold text-[13px]', isDark ? 'text-white' : 'text-gray-900')}>
+          <div className={cn('font-bold text-[13px]', 'text-gray-900 dark:text-white')}>
             Boost {displayName}
           </div>
-          <div className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-gray-500')}>
+          <div className={cn('text-[11px]', 'text-gray-500 dark:text-white/40')}>
             {currentPack?.name} — {currentPack?.multiplier}x for {currentPack?.durationHours}h
           </div>
         </div>
         <div className="text-right shrink-0">
           <div className="font-bold text-[13px] text-blue-500">{purchaseData?.payment?.amount} XRP</div>
-          <div className={cn('text-[10px]', isDark ? 'text-white/30' : 'text-gray-400')}>${currentPack?.priceUsd}</div>
+          <div className={cn('text-[10px]', 'text-gray-400 dark:text-white/30')}>${currentPack?.priceUsd}</div>
         </div>
       </div>
 
       {error && (
-        <div className={cn('flex items-center gap-2 py-2 px-3 rounded-lg text-[11px]', isDark ? 'bg-red-500/10 border border-red-500/20 text-red-400' : 'bg-red-50 border border-red-200 text-red-500')}>
+        <div className={cn('flex items-center gap-2 py-2 px-3 rounded-lg text-[11px]', 'bg-red-50 border border-red-200 text-red-500 dark:bg-red-500/10 dark:border-red-500/20 dark:text-red-400')}>
           <AlertCircle size={13} />
           <span className="truncate">{error}</span>
         </div>
@@ -514,7 +512,7 @@ export default function BoostModal({ token, collection, onClose, onSuccess }) {
           onClick={() => { setStep(0); setError(null); setPurchaseData(null); }}
           className={cn(
             'flex-1 py-2.5 rounded-xl border text-[13px] font-medium transition-[background-color,border-color] duration-150',
-            isDark ? 'border-white/[0.08] text-white/60 hover:bg-white/[0.04]' : 'border-black/[0.08] text-gray-500 hover:bg-black/[0.02]'
+            'border-black/[0.08] text-gray-500 hover:bg-black/[0.02] dark:border-white/[0.08] dark:text-white/60 dark:hover:bg-white/[0.04]'
           )}
         >
           Back
@@ -539,13 +537,13 @@ export default function BoostModal({ token, collection, onClose, onSuccess }) {
       <div className="w-12 h-12 mx-auto rounded-xl flex items-center justify-center mb-3 bg-blue-500 animate-pulse">
         <Loader2 size={24} className="text-white animate-spin" />
       </div>
-      <div className={cn('font-bold text-[13px] mb-1', isDark ? 'text-white' : 'text-gray-900')}>
+      <div className={cn('font-bold text-[13px] mb-1', 'text-gray-900 dark:text-white')}>
         Processing Payment
       </div>
-      <div className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-gray-500')}>
+      <div className={cn('text-[11px]', 'text-gray-500 dark:text-white/40')}>
         Submitting to XRPL...
       </div>
-      <div className={cn('text-[10px] mt-2', isDark ? 'text-white/25' : 'text-gray-400')}>
+      <div className={cn('text-[10px] mt-2', 'text-gray-400 dark:text-white/25')}>
         This may take a few seconds
       </div>
     </div>
@@ -557,16 +555,16 @@ export default function BoostModal({ token, collection, onClose, onSuccess }) {
         <Zap size={24} className="text-white" />
         <div className={cn(
           'absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center ring-2',
-          isDark ? 'ring-black' : 'ring-white'
+          'ring-white dark:ring-black'
         )}>
           <Check size={12} className="text-white" strokeWidth={3} />
         </div>
       </div>
 
-      <div className={cn('font-bold text-[13px] mb-1', isDark ? 'text-white' : 'text-gray-900')}>
+      <div className={cn('font-bold text-[13px] mb-1', 'text-gray-900 dark:text-white')}>
         Boost Applied!
       </div>
-      <div className={cn('text-[11px] mb-3', isDark ? 'text-white/40' : 'text-gray-500')}>
+      <div className={cn('text-[11px] mb-3', 'text-gray-500 dark:text-white/40')}>
         {displayName} boosted with {currentPack?.name} ({currentPack?.multiplier}x) for {currentPack?.durationHours}h
       </div>
 
@@ -577,7 +575,7 @@ export default function BoostModal({ token, collection, onClose, onSuccess }) {
           rel="noopener noreferrer"
           className={cn(
             'inline-flex items-center gap-1.5 text-[10px] font-mono px-2 py-1.5 rounded-lg mb-3',
-            isDark ? 'bg-white/[0.04] text-white/50 hover:text-white/70' : 'bg-gray-100 text-gray-500 hover:text-gray-700'
+            'bg-gray-100 text-gray-500 hover:text-gray-700 dark:bg-white/[0.04] dark:text-white/50 dark:hover:text-white/70'
           )}
         >
           <span className="truncate max-w-[180px]">{txHash}</span>
@@ -607,29 +605,27 @@ export default function BoostModal({ token, collection, onClose, onSuccess }) {
       aria-label={isNFT ? 'Boost collection' : 'Boost token'}
       className={cn(
         'fixed inset-0 z-[9999] flex items-center justify-center p-4 backdrop-blur-md max-sm:h-dvh',
-        isDark ? 'bg-black/70' : 'bg-white/60'
+        'bg-white/60 dark:bg-black/70'
       )}
       onClick={onClose}
     >
       <div
         className={cn(
           'w-full max-w-xl rounded-2xl border overflow-hidden',
-          isDark
-            ? 'bg-[#0d0d0f] border-white/[0.08] shadow-2xl shadow-black/50'
-            : 'bg-white border-black/[0.08] shadow-2xl shadow-gray-300/30'
+          'bg-white border-black/[0.08] shadow-2xl shadow-gray-300/30 dark:bg-[#0d0d0f] dark:border-white/[0.08] dark:shadow-2xl dark:shadow-black/50'
         )}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className={cn(
           'flex items-center justify-between px-4 py-3 border-b',
-          isDark ? 'border-white/[0.06]' : 'border-black/[0.06]'
+          'border-black/[0.06] dark:border-white/[0.06]'
         )}>
           <div className="flex items-center gap-2.5">
             <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-blue-500">
               <Zap size={14} className="text-white" />
             </div>
-            <span className={cn('font-bold text-[13px]', isDark ? 'text-white' : 'text-gray-900')}>
+            <span className={cn('font-bold text-[13px]', 'text-gray-900 dark:text-white')}>
               {isNFT ? 'Boost Collection' : 'Boost Token'}
             </span>
           </div>
@@ -638,7 +634,7 @@ export default function BoostModal({ token, collection, onClose, onSuccess }) {
             aria-label="Close"
             className={cn(
               'p-1.5 rounded-lg transition-colors outline-none focus-visible:ring-2 focus-visible:ring-blue-500',
-              isDark ? 'hover:bg-white/[0.06] text-white/40' : 'hover:bg-gray-100 text-gray-400'
+              'hover:bg-gray-100 text-gray-400 dark:hover:bg-white/[0.06] dark:text-white/40'
             )}
           >
             <X size={16} />
@@ -646,7 +642,7 @@ export default function BoostModal({ token, collection, onClose, onSuccess }) {
         </div>
 
         {/* Step indicator */}
-        <div className={cn('px-4 py-2 border-b', isDark ? 'border-white/[0.04]' : 'border-black/[0.04]')}>
+        <div className={cn('px-4 py-2 border-b', 'border-black/[0.04] dark:border-white/[0.04]')}>
           <div className="flex items-center justify-between">
             {STEPS.map((s, i) => (
               <div key={s} className="flex items-center">
@@ -654,14 +650,14 @@ export default function BoostModal({ token, collection, onClose, onSuccess }) {
                   'w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold transition-all',
                   i < step ? 'bg-green-500 text-white' :
                   i === step ? 'bg-blue-500 text-white' :
-                  isDark ? 'bg-white/[0.06] text-white/25' : 'bg-black/[0.06] text-black/25'
+                  'bg-black/[0.06] text-black/25 dark:bg-white/[0.06] dark:text-white/25'
                 )}>
                   {i < step ? <Check size={10} /> : i + 1}
                 </div>
                 {i < STEPS.length - 1 && (
                   <div className={cn(
                     'w-6 h-0.5 mx-0.5',
-                    i < step ? 'bg-green-500' : isDark ? 'bg-white/[0.06]' : 'bg-black/[0.06]'
+                    i < step ? 'bg-green-500' : 'bg-black/[0.06] dark:bg-white/[0.06]'
                   )} />
                 )}
               </div>

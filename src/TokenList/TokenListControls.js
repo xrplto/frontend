@@ -13,23 +13,23 @@ import { selectFilteredCount } from 'src/redux/statusSlice';
 import { cn } from 'src/utils/cn';
 
 // ============== TokenListHead Styles ==============
-const StyledTableHead = ({ darkMode, className, children, ...p }) => (
+const StyledTableHead = ({ className, children, ...p }) => (
   <thead
-    className={cn('relative z-[100] backdrop-blur-[12px]', darkMode ? 'bg-black/90' : 'bg-white', className)}
+    className={cn('relative z-[100] backdrop-blur-[12px]', 'bg-white dark:bg-black/90', className)}
     {...p}
   >{children}</thead>
 );
 
-const StyledTableCell = ({ darkMode, isMobile, align, sortable, sticky, left, width, className, children, stickyThird, scrollLeft, isTokenColumn, style: extraStyle, ...p }) => (
+const StyledTableCell = ({ isMobile, align, sortable, sticky, left, width, className, children, stickyThird, scrollLeft, isTokenColumn, style: extraStyle, ...p }) => (
   <th
     className={cn(
       'font-medium text-[11px] tracking-[0.04em] uppercase whitespace-nowrap box-border font-[inherit]',
       'first-of-type:pl-3 last-of-type:pr-3',
-      darkMode ? 'text-white/60 border-b border-white/[0.08]' : 'text-black/60 border-b border-black/[0.06]',
+      'text-black/60 border-b border-black/[0.06] dark:text-white/60 dark:border-white/[0.08]',
       sortable ? 'cursor-pointer' : 'cursor-default',
-      sortable && (darkMode ? 'hover:text-white/80' : 'hover:text-black/80'),
+      sortable && 'hover:text-black/80 dark:hover:text-white/80',
       sticky ? 'sticky z-[101]' : 'relative',
-      sticky && (darkMode ? 'bg-transparent' : 'bg-white/95'),
+      sticky && 'bg-white/95 dark:bg-transparent',
       !sticky && 'bg-transparent',
       className
     )}
@@ -45,13 +45,15 @@ const StyledTableCell = ({ darkMode, isMobile, align, sortable, sticky, left, wi
   >{children}</th>
 );
 
-const SortIndicator = ({ active, darkMode, direction, className, children, ...p }) => (
+const SortIndicator = ({ active, direction, className, children, ...p }) => (
   <span
-    className={cn('inline-block ml-[6px] text-[8px] transition-[transform,opacity] duration-150', className)}
+    className={cn(
+      'inline-block ml-[6px] text-[8px] transition-[transform,opacity] duration-150',
+      active ? 'text-[#4285f4] opacity-100' : 'text-black/25 dark:text-white/25 opacity-50',
+      className
+    )}
     style={{
-      color: active ? '#4285f4' : (darkMode ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.25)'),
-      transform: direction === 'asc' ? 'rotate(180deg)' : 'rotate(0deg)',
-      opacity: active ? 1 : 0.5
+      transform: direction === 'asc' ? 'rotate(180deg)' : 'rotate(0deg)'
     }}
     {...p}
   >{children}</span>
@@ -69,62 +71,62 @@ const StyledToolbar = ({ className, children, ...p }) => (
   >{children}</div>
 );
 
-const PaginationContainer = ({ isDark, className, children, ...p }) => (
+const PaginationContainer = ({ className, children, ...p }) => (
   <div
     className={cn(
       'flex items-center gap-1 py-[6px] px-[10px] min-h-[36px] rounded-lg border',
       'max-[900px]:w-full max-[900px]:justify-center max-[900px]:py-1 max-[900px]:px-2 max-[900px]:gap-[2px]',
-      isDark ? 'bg-transparent border-white/[0.08]' : 'bg-white border-black/[0.08]',
+      'bg-white border-black/[0.08] dark:bg-transparent dark:border-white/[0.08]',
       className
     )}
     {...p}
   >{children}</div>
 );
 
-const RowsSelector = ({ isDark, className, children, ...p }) => (
+const RowsSelector = ({ className, children, ...p }) => (
   <div
     className={cn(
       'flex items-center gap-1 py-[6px] px-[10px] min-h-[36px] rounded-lg border',
       'max-[900px]:flex-1 max-[900px]:min-w-[calc(50%-8px)] max-[900px]:justify-center max-[900px]:py-1 max-[900px]:px-2 max-[900px]:gap-[3px]',
-      isDark ? 'bg-transparent border-white/[0.08]' : 'bg-white border-black/[0.08]',
+      'bg-white border-black/[0.08] dark:bg-transparent dark:border-white/[0.08]',
       className
     )}
     {...p}
   >{children}</div>
 );
 
-const InfoBox = ({ isDark, className, children, ...p }) => (
+const InfoBox = ({ className, children, ...p }) => (
   <div
     className={cn(
       'flex items-center gap-1 flex-wrap py-[6px] px-[10px] min-h-[36px] border rounded-lg',
       'max-[900px]:flex-1 max-[900px]:min-w-[calc(50%-8px)] max-[900px]:justify-start max-[900px]:gap-[3px] max-[900px]:py-1 max-[900px]:px-2',
-      isDark ? 'bg-transparent border-white/[0.08]' : 'bg-white border-black/[0.08]',
+      'bg-white border-black/[0.08] dark:bg-transparent dark:border-white/[0.08]',
       className
     )}
     {...p}
   >{children}</div>
 );
 
-const Chip = ({ isDark, className, children, ...p }) => (
+const Chip = ({ className, children, ...p }) => (
   <span
-    className={cn('text-[11px] font-medium tabular-nums py-[2px] px-[6px] border rounded', isDark ? 'border-white/[0.08] text-white' : 'border-black/[0.08] text-black', className)}
+    className={cn('text-[11px] font-medium tabular-nums py-[2px] px-[6px] border rounded', 'border-black/[0.08] text-black dark:border-white/[0.08] dark:text-white', className)}
     {...p}
   >{children}</span>
 );
 
-const Text = ({ isDark, fontWeight, className, children, ...p }) => (
+const Text = ({ fontWeight, className, children, ...p }) => (
   <span
-    className={cn('text-[11px] tabular-nums font-normal', isDark ? 'text-white/60' : 'text-black/65', className)}
+    className={cn('text-[11px] tabular-nums font-normal', 'text-black/65 dark:text-white/60', className)}
     style={fontWeight ? { fontWeight } : undefined}
     {...p}
   >{children}</span>
 );
 
-const NavButton = ({ isDark, className, children, ...p }) => (
+const NavButton = ({ className, children, ...p }) => (
   <button
     className={cn(
       'w-[26px] h-[26px] rounded-lg border-none bg-transparent cursor-pointer inline-flex items-center justify-center p-0',
-      isDark ? 'text-white/70 hover:enabled:bg-blue-500/10 disabled:text-white/20' : 'text-black/70 hover:enabled:bg-blue-500/[0.08] disabled:text-black/20',
+      'text-black/70 hover:enabled:bg-blue-500/[0.08] disabled:text-black/20 dark:text-white/70 dark:hover:enabled:bg-blue-500/10 dark:disabled:text-white/20',
       'disabled:cursor-not-allowed',
       className
     )}
@@ -132,14 +134,14 @@ const NavButton = ({ isDark, className, children, ...p }) => (
   >{children}</button>
 );
 
-const PageButton = ({ selected, isDark, className, children, ...p }) => (
+const PageButton = ({ selected, className, children, ...p }) => (
   <button
     className={cn(
       'min-w-[22px] h-[22px] rounded-lg border-none cursor-pointer inline-flex items-center justify-center px-[5px] m-0 text-[11px] tabular-nums',
       'disabled:cursor-not-allowed disabled:opacity-30',
       selected
         ? 'bg-[#4285f4] text-white font-medium hover:enabled:bg-[#3b7de8]'
-        : cn(isDark ? 'text-white/80' : 'text-black/80', 'bg-transparent font-normal', isDark ? 'hover:enabled:bg-blue-500/10' : 'hover:enabled:bg-blue-500/[0.08]'),
+        : 'text-black/80 dark:text-white/80 bg-transparent font-normal hover:enabled:bg-blue-500/[0.08] dark:hover:enabled:bg-blue-500/10',
       className
     )}
     {...p}
@@ -157,16 +159,16 @@ const SelectButton = ({ className, children, ...p }) => (
   >{children}</button>
 );
 
-const SelectMenu = ({ isDark, className, children, ...p }) => (
+const SelectMenu = ({ className, children, ...p }) => (
   <div
-    className={cn('absolute top-full right-0 mt-1 rounded-lg shadow-[0_2px_8px_rgba(0,0,0,0.1)] z-[1000] min-w-[50px] border', isDark ? 'bg-[#1a1a1a] border-white/10' : 'bg-white border-black/10', className)}
+    className={cn('absolute top-full right-0 mt-1 rounded-lg shadow-[0_2px_8px_rgba(0,0,0,0.1)] z-[1000] min-w-[50px] border', 'bg-white border-black/10 dark:bg-[#1a1a1a] dark:border-white/10', className)}
     {...p}
   >{children}</div>
 );
 
-const SelectOption = ({ isDark, className, children, ...p }) => (
+const SelectOption = ({ className, children, ...p }) => (
   <button
-    className={cn('block w-full py-[5px] px-[10px] border-none bg-transparent text-left cursor-pointer text-[11px]', isDark ? 'text-white hover:bg-blue-500/10' : 'text-black hover:bg-blue-500/[0.06]', className)}
+    className={cn('block w-full py-[5px] px-[10px] border-none bg-transparent text-left cursor-pointer text-[11px]', 'text-black hover:bg-blue-500/[0.06] dark:text-white dark:hover:bg-blue-500/10', className)}
     {...p}
   >{children}</button>
 );
@@ -776,7 +778,7 @@ export const TokenListHead = memo(function TokenListHead({
 
   return (
     <>
-      <StyledTableHead darkMode={darkMode}>
+      <StyledTableHead>
         <tr>
           {filteredTableHead.map((headCell) => {
             const isSticky = headCell.sticky && (!isMobile || !headCell.mobileHide);
@@ -786,7 +788,6 @@ export const TokenListHead = memo(function TokenListHead({
                 key={headCell.id}
                 align={headCell.align}
                 width={headCell.width}
-                darkMode={darkMode}
                 isMobile={isMobile}
                 sortable={headCell.order}
                 sticky={isSticky}
@@ -807,8 +808,8 @@ export const TokenListHead = memo(function TokenListHead({
                       headCell.label
                     )}
                     {orderBy === headCell.id && (
-                      <SortIndicator active={true} direction={order} darkMode={darkMode}>
-                        ▼
+                      <SortIndicator active={true} direction={order}>
+                        &#x25BC;
                       </SortIndicator>
                     )}
                   </span>
@@ -836,8 +837,6 @@ export const TokenListToolbar = memo(function TokenListToolbar({
   setPage,
   tokens
 }) {
-  const { themeName } = useContext(ThemeContext);
-  const isDark = themeName === 'XrplToDarkTheme';
   const filteredCount = useSelector(selectFilteredCount);
   const [selectOpen, setSelectOpen] = useState(false);
   const selectRef = useRef(null);
@@ -927,9 +926,9 @@ export const TokenListToolbar = memo(function TokenListToolbar({
 
   return (
     <StyledToolbar>
-      <InfoBox isDark={isDark} role="status" aria-label={`Showing ${start} to ${end} of ${currentFilteredCount.toLocaleString()} tokens`}>
-        <Chip isDark={isDark}>{`${start}-${end} of ${currentFilteredCount.toLocaleString()}`}</Chip>
-        <Text isDark={isDark}>tokens</Text>
+      <InfoBox role="status" aria-label={`Showing ${start} to ${end} of ${currentFilteredCount.toLocaleString()} tokens`}>
+        <Chip>{`${start}-${end} of ${currentFilteredCount.toLocaleString()}`}</Chip>
+        <Text>tokens</Text>
       </InfoBox>
 
       <nav aria-label="Pagination" className="flex items-center justify-center gap-1 pt-3">
@@ -941,7 +940,7 @@ export const TokenListToolbar = memo(function TokenListToolbar({
           className={cn(
             'p-1.5 rounded-md transition-[background-color]',
             page === 0 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-white/10',
-            isDark ? 'text-white/50' : 'text-gray-500'
+            'text-gray-500 dark:text-white/50'
           )}
         >
           <ChevronLeft size={14} />
@@ -949,7 +948,7 @@ export const TokenListToolbar = memo(function TokenListToolbar({
         <span
           className={cn(
             'text-[11px] px-2 tabular-nums',
-            isDark ? 'text-white/60' : 'text-gray-600'
+            'text-gray-600 dark:text-white/60'
           )}
         >
           {page + 1} / {page_count}
@@ -962,30 +961,30 @@ export const TokenListToolbar = memo(function TokenListToolbar({
           className={cn(
             'p-1.5 rounded-md transition-[background-color]',
             page === page_count - 1 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-white/10',
-            isDark ? 'text-white/50' : 'text-gray-500'
+            'text-gray-500 dark:text-white/50'
           )}
         >
           <ChevronRight size={14} />
         </button>
       </nav>
 
-      <RowsSelector isDark={isDark}>
+      <RowsSelector>
         <List size={12} />
-        <Text isDark={isDark}>Rows</Text>
+        <Text>Rows</Text>
         <Select ref={selectRef}>
           <SelectButton onClick={() => setSelectOpen(!selectOpen)} aria-label={`Rows per page: ${rows}`} aria-expanded={selectOpen}>
             {rows}
             <ChevronDown size={12} />
           </SelectButton>
           {selectOpen && (
-            <SelectMenu isDark={isDark}>
-              <SelectOption isDark={isDark} onClick={() => handleChangeRows(100)}>
+            <SelectMenu>
+              <SelectOption onClick={() => handleChangeRows(100)}>
                 100
               </SelectOption>
-              <SelectOption isDark={isDark} onClick={() => handleChangeRows(50)}>
+              <SelectOption onClick={() => handleChangeRows(50)}>
                 50
               </SelectOption>
-              <SelectOption isDark={isDark} onClick={() => handleChangeRows(20)}>
+              <SelectOption onClick={() => handleChangeRows(20)}>
                 20
               </SelectOption>
             </SelectMenu>

@@ -73,13 +73,13 @@ const LedgerDetails = ({ ledgerData, transactions, error }) => {
     <div
       className={cn(
         'rounded-xl border-[1.5px] p-4 sm:p-6 md:p-8',
-        isDark ? 'border-white/10' : 'border-gray-200'
+        'border-gray-200 dark:border-white/10'
       )}
     >
-      <h2 className={cn('mb-2 text-xl font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+      <h2 className={cn('mb-2 text-xl font-medium', 'text-gray-900 dark:text-white')}>
         Ledger transactions #{ledger_index}
       </h2>
-      <p className={cn('mb-4 text-[13px]', isDark ? 'text-white/60' : 'text-gray-500')}>
+      <p className={cn('mb-4 text-[13px]', 'text-gray-500 dark:text-white/60')}>
         {closeTimeLocale}
       </p>
 
@@ -88,23 +88,19 @@ const LedgerDetails = ({ ledgerData, transactions, error }) => {
           onClick={() => (window.location.href = `/ledger/${ledgerIndex - 1}`)}
           className={cn(
             'flex h-10 w-10 items-center justify-center rounded-lg border-[1.5px] transition-colors',
-            isDark
-              ? 'border-white/10 hover:border-primary hover:bg-primary/5'
-              : 'border-gray-200 hover:border-primary hover:bg-primary/5'
+            'border-gray-200 hover:border-primary hover:bg-primary/5 dark:border-white/10 dark:hover:border-primary dark:hover:bg-primary/5'
           )}
         >
           <ChevronLeft size={20} />
         </button>
-        <span className={cn('text-lg font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+        <span className={cn('text-lg font-medium', 'text-gray-900 dark:text-white')}>
           #{ledgerIndex}
         </span>
         <button
           onClick={() => (window.location.href = `/ledger/${ledgerIndex + 1}`)}
           className={cn(
             'flex h-10 w-10 items-center justify-center rounded-lg border-[1.5px] transition-colors',
-            isDark
-              ? 'border-white/10 hover:border-primary hover:bg-primary/5'
-              : 'border-gray-200 hover:border-primary hover:bg-primary/5'
+            'border-gray-200 hover:border-primary hover:bg-primary/5 dark:border-white/10 dark:hover:border-primary dark:hover:bg-primary/5'
           )}
         >
           <ChevronRight size={20} />
@@ -114,11 +110,11 @@ const LedgerDetails = ({ ledgerData, transactions, error }) => {
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
-            <tr className={cn('border-b', isDark ? 'border-white/10' : 'border-gray-200')}>
+            <tr className={cn('border-b', 'border-gray-200 dark:border-white/10')}>
               <th
                 className={cn(
                   'px-4 py-3 text-left text-[13px] font-medium',
-                  isDark ? 'text-white/60' : 'text-gray-500'
+                  'text-gray-500 dark:text-white/60'
                 )}
               >
                 Index
@@ -126,7 +122,7 @@ const LedgerDetails = ({ ledgerData, transactions, error }) => {
               <th
                 className={cn(
                   'px-4 py-3 text-left text-[13px] font-medium',
-                  isDark ? 'text-white/60' : 'text-gray-500'
+                  'text-gray-500 dark:text-white/60'
                 )}
               >
                 Type
@@ -134,7 +130,7 @@ const LedgerDetails = ({ ledgerData, transactions, error }) => {
               <th
                 className={cn(
                   'px-4 py-3 text-left text-[13px] font-medium',
-                  isDark ? 'text-white/60' : 'text-gray-500'
+                  'text-gray-500 dark:text-white/60'
                 )}
               >
                 Address
@@ -142,7 +138,7 @@ const LedgerDetails = ({ ledgerData, transactions, error }) => {
               <th
                 className={cn(
                   'px-4 py-3 text-left text-[13px] font-medium',
-                  isDark ? 'text-white/60' : 'text-gray-500'
+                  'text-gray-500 dark:text-white/60'
                 )}
               >
                 Status
@@ -150,7 +146,7 @@ const LedgerDetails = ({ ledgerData, transactions, error }) => {
               <th
                 className={cn(
                   'px-4 py-3 text-left text-[13px] font-medium',
-                  isDark ? 'text-white/60' : 'text-gray-500'
+                  'text-gray-500 dark:text-white/60'
                 )}
               >
                 Hash
@@ -163,16 +159,16 @@ const LedgerDetails = ({ ledgerData, transactions, error }) => {
                 key={tx.hash}
                 className={cn(
                   'border-b transition-colors',
-                  isDark ? 'border-white/5 hover:bg-primary/5' : 'border-gray-100 hover:bg-gray-50'
+                  'border-gray-100 hover:bg-gray-50 dark:border-white/5 dark:hover:bg-primary/5'
                 )}
               >
                 <td
-                  className={cn('px-4 py-3 text-[13px]', isDark ? 'text-white' : 'text-gray-900')}
+                  className={cn('px-4 py-3 text-[13px]', 'text-gray-900 dark:text-white')}
                 >
                   {tx.meta.TransactionIndex}
                 </td>
                 <td
-                  className={cn('px-4 py-3 text-[13px]', isDark ? 'text-white' : 'text-gray-900')}
+                  className={cn('px-4 py-3 text-[13px]', 'text-gray-900 dark:text-white')}
                 >
                   {tx.tx_json?.TransactionType}
                 </td>
@@ -214,42 +210,42 @@ const LedgerDetails = ({ ledgerData, transactions, error }) => {
       <div
         className={cn(
           'mt-6 border-t pt-6 space-y-3',
-          isDark ? 'border-white/10' : 'border-gray-200'
+          'border-gray-200 dark:border-white/10'
         )}
       >
         <div className="flex flex-wrap gap-x-6 gap-y-2">
-          <p className={cn('text-[13px]', isDark ? 'text-white/60' : 'text-gray-500')}>
-            <span className={isDark ? 'text-white/40' : 'text-gray-400'}>Closed:</span>{' '}
+          <p className={cn('text-[13px]', 'text-gray-500 dark:text-white/60')}>
+            <span className={'text-gray-400 dark:text-white/40'}>Closed:</span>{' '}
             {closeTimeLocale}
           </p>
           {closeTime && (
-            <p className={cn('text-[13px]', isDark ? 'text-white/60' : 'text-gray-500')}>
-              <span className={isDark ? 'text-white/40' : 'text-gray-400'}>Interval:</span>{' '}
+            <p className={cn('text-[13px]', 'text-gray-500 dark:text-white/60')}>
+              <span className={'text-gray-400 dark:text-white/40'}>Interval:</span>{' '}
               {closeTime}s
             </p>
           )}
-          <p className={cn('text-[13px]', isDark ? 'text-white/60' : 'text-gray-500')}>
-            <span className={isDark ? 'text-white/40' : 'text-gray-400'}>Transactions:</span>{' '}
+          <p className={cn('text-[13px]', 'text-gray-500 dark:text-white/60')}>
+            <span className={'text-gray-400 dark:text-white/40'}>Transactions:</span>{' '}
             {txn_count}
           </p>
         </div>
         <div className="flex flex-wrap gap-x-6 gap-y-2">
-          <p className={cn('text-[13px]', isDark ? 'text-white/60' : 'text-gray-500')}>
-            <span className={isDark ? 'text-white/40' : 'text-gray-400'}>Total XRP:</span>{' '}
+          <p className={cn('text-[13px]', 'text-gray-500 dark:text-white/60')}>
+            <span className={'text-gray-400 dark:text-white/40'}>Total XRP:</span>{' '}
             {totalXrp}
           </p>
-          <p className={cn('text-[13px]', isDark ? 'text-orange-400/80' : 'text-orange-600')}>
-            <span className={isDark ? 'text-white/40' : 'text-gray-400'}>XRP Burned:</span>{' '}
+          <p className={cn('text-[13px]', 'text-orange-600 dark:text-orange-400/80')}>
+            <span className={'text-gray-400 dark:text-white/40'}>XRP Burned:</span>{' '}
             {xrpBurned}
           </p>
         </div>
         <p
           className={cn(
             'text-[13px] font-mono break-all',
-            isDark ? 'text-white/60' : 'text-gray-500'
+            'text-gray-500 dark:text-white/60'
           )}
         >
-          <span className={cn('font-sans', isDark ? 'text-white/40' : 'text-gray-400')}>
+          <span className={cn('font-sans', 'text-gray-400 dark:text-white/40')}>
             Ledger hash:
           </span>{' '}
           {ledger_hash}
@@ -257,10 +253,10 @@ const LedgerDetails = ({ ledgerData, transactions, error }) => {
         <p
           className={cn(
             'text-[13px] font-mono break-all',
-            isDark ? 'text-white/60' : 'text-gray-500'
+            'text-gray-500 dark:text-white/60'
           )}
         >
-          <span className={cn('font-sans', isDark ? 'text-white/40' : 'text-gray-400')}>
+          <span className={cn('font-sans', 'text-gray-400 dark:text-white/40')}>
             Parent hash:
           </span>{' '}
           {parent_hash}
@@ -284,7 +280,7 @@ const LedgerPage = ({ ledgerData, transactions, error }) => {
       <Header />
       <div className="mx-auto w-full max-w-[1920px] flex-1 px-4 py-8">
         <div className="mb-6">
-          <h1 className={cn('text-2xl font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+          <h1 className={cn('text-2xl font-medium', 'text-gray-900 dark:text-white')}>
             Ledger Details
           </h1>
         </div>

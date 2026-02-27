@@ -1,11 +1,10 @@
-import React, { useState, useContext, useMemo, useEffect, useRef, forwardRef } from 'react';
+import React, { useState, useMemo, useEffect, useRef, forwardRef } from 'react';
 import { createPortal } from 'react-dom';
 import { format } from 'date-fns';
 import { useRouter } from 'next/router';
 import CollectionList from './CollectionList';
 import { cn } from 'src/utils/cn';
 import { fVolume, fIntNumber, normalizeTag } from 'src/utils/formatters';
-import { ThemeContext } from 'src/context/AppContext';
 import { X, Search, Flame, TrendingUp, Sparkles, Clock } from 'lucide-react';
 import { TIER_CONFIG } from 'src/components/VerificationBadge';
 import { ApiButton } from 'src/components/ApiEndpointsModal';
@@ -22,8 +21,16 @@ const CollectionListType = {
 };
 
 // Styled Components - matching Summary.js
-const Container = ({ isDark, className, children, ...p }) => (
-  <div className={cn('relative z-[2] mb-3 w-full max-w-full bg-transparent overflow-visible max-sm:my-2 max-sm:p-0', className)} {...p}>{children}</div>
+const Container = ({ className, children, ...p }) => (
+  <div
+    className={cn('relative z-[2] mb-3 w-full max-w-full bg-transparent overflow-visible max-sm:my-2 max-sm:p-0', className)}
+    style={typeof document !== "undefined" && document.documentElement.classList.contains('dark') ? {
+      backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(255,255,255,0.02) 39px, rgba(255,255,255,0.02) 40px)',
+      backgroundSize: '100% 40px',
+      boxShadow: '0 0 30px rgba(255,255,255,0.03), 0 0 60px rgba(255,255,255,0.01)'
+    } : undefined}
+    {...p}
+  >{children}</div>
 );
 
 const Grid = ({ className, children, ...p }) => (
@@ -40,32 +47,34 @@ const Grid = ({ className, children, ...p }) => (
   >{children}</div>
 );
 
-const MetricBox = ({ isDark, className, children, ...p }) => (
+const MetricBox = ({ className, children, ...p }) => (
   <div
     className={cn(
-      'py-[6px] px-[10px] flex flex-col justify-between items-start rounded-xl border-[1.5px] backdrop-blur-[4px] transition-[background-color,border-color,opacity,transform] duration-200 gap-0',
+      'py-[6px] px-[10px] flex flex-col justify-between items-start rounded-xl border-[1.5px] backdrop-blur-md transition-[background-color,border-color,opacity,transform,box-shadow] duration-200 gap-0',
       'max-sm:py-[8px] max-sm:px-[7px] max-sm:flex-none max-sm:min-w-[100px] max-sm:gap-0 max-sm:rounded-[10px]',
-      isDark ? 'bg-white/[0.02] border-white/[0.08]' : 'bg-black/[0.01] border-black/[0.06]',
+      'bg-white border-black/[0.06] dark:bg-white/[0.02] dark:border-white/[0.08]',
       className
     )}
     onMouseEnter={(e) => {
-      e.currentTarget.style.borderColor = isDark ? 'rgba(19, 125, 254, 0.25)' : 'rgba(19, 125, 254, 0.15)';
-      e.currentTarget.style.background = isDark ? 'rgba(19, 125, 254, 0.05)' : 'rgba(19, 125, 254, 0.03)';
+      e.currentTarget.style.borderColor = document.documentElement.classList.contains('dark') ? 'rgba(19, 125, 254, 0.25)' : 'rgba(19, 125, 254, 0.15)';
+      e.currentTarget.style.background = document.documentElement.classList.contains('dark') ? 'rgba(19, 125, 254, 0.05)' : 'rgba(19, 125, 254, 0.03)';
+      e.currentTarget.style.boxShadow = document.documentElement.classList.contains('dark') ? '0 0 12px rgba(19,125,254,0.15)' : '0 0 8px rgba(19,125,254,0.08)';
     }}
     onMouseLeave={(e) => {
-      e.currentTarget.style.borderColor = isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)';
-      e.currentTarget.style.background = isDark ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.01)';
+      e.currentTarget.style.borderColor = document.documentElement.classList.contains('dark') ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)';
+      e.currentTarget.style.background = document.documentElement.classList.contains('dark') ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.01)';
+      e.currentTarget.style.boxShadow = 'none';
     }}
     {...p}
   >{children}</div>
 );
 
-const MetricTitle = ({ isDark, className, children, ...p }) => (
-  <span className={cn('text-[0.85rem] font-normal tracking-[0.02em] max-sm:text-[0.65rem]', isDark ? 'text-white/50' : 'text-[#212B36]/50', className)} {...p}>{children}</span>
+const MetricTitle = ({ className, children, ...p }) => (
+  <span className={cn('text-[0.85rem] font-normal font-mono uppercase tracking-widest max-sm:text-[0.65rem]', 'text-[#212B36]/50 dark:text-white/50', className)} {...p}>{children}</span>
 );
 
-const MetricValue = ({ isDark, className, children, ...p }) => (
-  <span className={cn('text-[1.75rem] font-semibold leading-none tracking-[-0.02em] whitespace-nowrap max-sm:text-[1.1rem]', isDark ? 'text-white' : 'text-[#212B36]', className)} {...p}>{children}</span>
+const MetricValue = ({ className, children, ...p }) => (
+  <span className={cn('text-[1.75rem] font-semibold leading-none tracking-[-0.02em] whitespace-nowrap tabular-nums max-sm:text-[1.1rem]', 'text-[#212B36] dark:text-white', className)} {...p}>{children}</span>
 );
 
 const PercentageChange = ({ isPositive, className, children, ...p }) => (
@@ -75,24 +84,25 @@ const PercentageChange = ({ isPositive, className, children, ...p }) => (
       isPositive ? 'text-emerald-500 bg-emerald-500/10' : 'text-red-500 bg-red-500/10',
       className
     )}
+    style={{ boxShadow: isPositive ? '0 0 6px rgba(16,185,129,0.4)' : '0 0 6px rgba(239,68,68,0.4)' }}
     {...p}
   >{children}</span>
 );
 
-const VolumePercentage = ({ isDark, className, children, ...p }) => (
-  <span className={cn('text-[0.75rem] font-normal max-sm:text-[0.58rem]', isDark ? 'text-white/60' : 'text-[#212B36]/60', className)} {...p}>{children}</span>
+const VolumePercentage = ({ className, children, ...p }) => (
+  <span className={cn('text-[0.75rem] font-normal max-sm:text-[0.58rem]', 'text-[#212B36]/60 dark:text-white/60', className)} {...p}>{children}</span>
 );
 
-const ChartMetricBox = ({ isDark, className, children, ...p }) => (
-  <MetricBox isDark={isDark} className={cn('col-span-1 overflow-visible max-[1400px]:col-span-3 max-[900px]:col-span-3 max-sm:!hidden', className)} {...p}>{children}</MetricBox>
+const ChartMetricBox = ({ className, children, ...p }) => (
+  <MetricBox className={cn('col-span-1 overflow-visible max-[1400px]:col-span-3 max-[900px]:col-span-3 max-sm:!hidden', className)} {...p}>{children}</MetricBox>
 );
 
-const MobileChartBox = ({ isDark, className, children, ...p }) => (
-  <MetricBox isDark={isDark} className={cn('hidden max-sm:!flex max-sm:mt-1', className)} {...p}>{children}</MetricBox>
+const MobileChartBox = ({ className, children, ...p }) => (
+  <MetricBox className={cn('hidden max-sm:!flex max-sm:mt-1', className)} {...p}>{children}</MetricBox>
 );
 
 // Volume Chart Component
-const VolumeChart = ({ data, isDark }) => {
+const VolumeChart = ({ data }) => {
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
   const [tooltip, setTooltip] = useState({ show: false, x: 0, y: 0, data: null });
@@ -216,12 +226,12 @@ const VolumeChart = ({ data, isDark }) => {
       <div
         className={cn(
           'fixed rounded-[10px] py-[10px] px-3 min-w-[160px] z-[999999] pointer-events-none text-[11px] backdrop-blur-[16px]',
-          isDark ? 'bg-[rgba(18,18,18,0.98)] text-white border border-white/[0.08] shadow-[0_8px_32px_rgba(0,0,0,0.4)]' : 'bg-[rgba(255,255,255,0.98)] text-black border border-black/[0.08] shadow-[0_8px_32px_rgba(0,0,0,0.12)]'
+          'bg-[rgba(255,255,255,0.98)] text-black border border-black/[0.08] shadow-[0_8px_32px_rgba(0,0,0,0.12)] dark:bg-[rgba(18,18,18,0.98)] dark:text-white dark:border-white/[0.08] dark:shadow-[0_8px_32px_rgba(0,0,0,0.4)]'
         )}
         style={{ left: tooltip.x + 15, top: tooltip.y - 80 }}
       >
         <div
-          className={cn('text-xs font-medium mb-2 pb-1.5', isDark ? 'border-b border-white/[0.08]' : 'border-b border-black/[0.06]')}
+          className={cn('text-xs font-medium mb-2 pb-1.5', 'border-b border-black/[0.06] dark:border-white/[0.08]')}
         >
           {format(new Date(tooltip.data.date), 'MMM dd, yyyy')}
         </div>
@@ -272,7 +282,7 @@ const VolumeChart = ({ data, isDark }) => {
 };
 
 // Collection Creation Chart Component (similar to TokenChart in Summary.js)
-const CollectionCreationChart = ({ data, isDark }) => {
+const CollectionCreationChart = ({ data }) => {
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
   const [tooltip, setTooltip] = useState({ show: false, x: 0, y: 0, data: null });
@@ -415,12 +425,12 @@ const CollectionCreationChart = ({ data, isDark }) => {
       <div
         className={cn(
           'fixed rounded-[10px] py-[10px] px-3 min-w-[180px] z-[999999] pointer-events-none text-[11px] backdrop-blur-[16px]',
-          isDark ? 'bg-[rgba(18,18,18,0.98)] text-white border border-white/[0.08] shadow-[0_8px_32px_rgba(0,0,0,0.4)]' : 'bg-[rgba(255,255,255,0.98)] text-black border border-black/[0.08] shadow-[0_8px_32px_rgba(0,0,0,0.12)]'
+          'bg-[rgba(255,255,255,0.98)] text-black border border-black/[0.08] shadow-[0_8px_32px_rgba(0,0,0,0.12)] dark:bg-[rgba(18,18,18,0.98)] dark:text-white dark:border-white/[0.08] dark:shadow-[0_8px_32px_rgba(0,0,0,0.4)]'
         )}
         style={{ left: tooltip.x + 15, top: tooltip.y - 100 }}
       >
         <div
-          className={cn('text-xs font-medium mb-2 pb-1.5', isDark ? 'border-b border-white/[0.08]' : 'border-b border-black/[0.06]')}
+          className={cn('text-xs font-medium mb-2 pb-1.5', 'border-b border-black/[0.06] dark:border-white/[0.08]')}
         >
           {format(new Date(d.date), 'MMM dd, yyyy')}
         </div>
@@ -447,7 +457,7 @@ const CollectionCreationChart = ({ data, isDark }) => {
         {collections.length > 0 && (
           <>
             <div
-              className={cn('my-[6px_0_4px] pt-1.5', isDark ? 'border-t border-white/[0.08]' : 'border-t border-black/[0.06]')}
+              className={cn('my-[6px_0_4px] pt-1.5', 'border-t border-black/[0.06] dark:border-white/[0.08]')}
             >
               <span className="text-[10px] font-medium opacity-50 uppercase tracking-[0.03em]">
                 {d.collectionsInvolved ? 'New Collections' : 'Top Collections'}
@@ -460,7 +470,7 @@ const CollectionCreationChart = ({ data, isDark }) => {
               >
                 <div className="flex items-center gap-[5px]">
                   <div
-                    className={cn('w-[14px] h-[14px] min-w-[14px] min-h-[14px] rounded-[3px] overflow-hidden', isDark ? 'bg-white/5' : 'bg-black/[0.04]')}
+                    className={cn('w-[14px] h-[14px] min-w-[14px] min-h-[14px] rounded-[3px] overflow-hidden', 'bg-black/[0.04] dark:bg-white/5')}
                   >
                     <img
                       src={`https://s1.xrpl.to/collection/${col.logo || col.logoImage}`}
@@ -509,13 +519,13 @@ const CollectionCreationChart = ({ data, isDark }) => {
 };
 
 // Tags Bar Components
-const TagsContainer = forwardRef(({ isDark, className, children, ...p }, ref) => (
+const TagsContainer = forwardRef(({ className, children, ...p }, ref) => (
   <div
     ref={ref}
     className={cn(
       'flex flex-col gap-2 rounded-xl border-[1.5px] backdrop-blur-[12px] py-[10px] px-[14px] box-border',
       'max-sm:py-[6px] max-sm:px-2 max-sm:gap-[6px]',
-      isDark ? 'border-white/[0.08] bg-[rgba(10,10,10,0.5)]' : 'border-black/[0.06] bg-white/50',
+      'border-black/[0.06] bg-white dark:border-white/[0.08] dark:bg-white/[0.02]',
       className
     )}
     {...p}
@@ -538,29 +548,27 @@ const AllButtonWrapper = ({ className, children, ...p }) => (
   <div className={cn('shrink-0 ml-1', className)} {...p}>{children}</div>
 );
 
-const TagChip = ({ selected, isDark, className, children, ...p }) => (
+const TagChip = ({ selected, className, children, ...p }) => (
   <button
     className={cn(
       'inline-flex items-center gap-[3px] px-2 rounded-[6px] border text-[0.68rem] cursor-pointer whitespace-nowrap h-6 shrink-0 transition-[background-color,border-color] duration-150',
       'outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
       selected
         ? 'border-blue-500/30 bg-blue-500/10 text-blue-500 font-medium hover:bg-blue-500/[0.15]'
-        : cn(
-            isDark ? 'border-white/[0.08] bg-white/[0.04] text-white/70 font-normal hover:bg-white/[0.08] hover:text-white/90' : 'border-black/[0.08] bg-black/[0.02] text-[#212B36]/70 font-normal hover:bg-black/[0.05] hover:text-[#212B36]/90'
-          ),
+        : 'border-black/[0.08] bg-black/[0.02] text-[#212B36]/70 font-normal hover:bg-black/[0.05] hover:text-[#212B36]/90 dark:border-white/[0.08] dark:bg-white/[0.04] dark:text-white/70 dark:hover:bg-white/[0.08] dark:hover:text-white/90',
       className
     )}
     {...p}
   >{children}</button>
 );
 
-const AllTagsButton = ({ isDark, className, children, ...p }) => (
+const AllTagsButton = ({ className, children, ...p }) => (
   <button
     className={cn(
       'inline-flex items-center gap-1 px-2 border-[1.5px] rounded-[6px] text-blue-500 text-[0.68rem] font-medium cursor-pointer whitespace-nowrap h-6 shrink-0 ml-auto transition-[background-color,border-color,opacity] duration-150 hover:bg-blue-500/[0.15]',
       'outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
       'max-sm:text-[0.62rem] max-sm:h-[22px] max-sm:px-[6px] max-sm:gap-[2px]',
-      isDark ? 'bg-blue-500/[0.08] border-blue-500/20' : 'bg-blue-500/[0.05] border-blue-500/15',
+      'bg-blue-500/[0.05] border-blue-500/15 dark:bg-blue-500/[0.08] dark:border-blue-500/20',
       className
     )}
     {...p}
@@ -596,8 +604,8 @@ const Stack = ({ className, children, ...p }) => (
   <div className={cn('flex flex-row gap-[6px] items-center shrink-0 relative z-[1] max-sm:gap-[3px] max-sm:touch-manipulation', className)} {...p}>{children}</div>
 );
 
-const SortSelector = ({ isDark, className, children, ...p }) => {
-  const bgImage = isDark
+const SortSelector = ({ className, children, ...p }) => {
+  const bgImage = typeof document !== "undefined" && document.documentElement.classList.contains('dark')
     ? `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.6)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e")`
     : `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='rgba(0,0,0,0.5)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e")`;
   return (
@@ -606,8 +614,8 @@ const SortSelector = ({ isDark, className, children, ...p }) => {
         'rounded-lg border-[1.5px] text-xs font-medium cursor-pointer h-8 min-w-[70px] appearance-none transition-[background-color,border-color,opacity] duration-150',
         'hover:border-blue-500/50 focus:outline-none focus:border-blue-500 focus-visible:ring-2 focus-visible:ring-[#137DFE]',
         'max-sm:text-[0.62rem] max-sm:h-[26px] max-sm:min-w-[48px] max-sm:pl-[6px] max-sm:pr-5',
-        isDark ? 'border-white/10 bg-black/40 text-white/85 [&_option]:bg-[#0a0a0a] [&_option]:text-[#e5e5e5]' : 'border-black/[0.08] bg-white/90 text-black/70 [&_option]:bg-white [&_option]:text-[#1a1a1a]',
-        isDark ? 'hover:bg-blue-500/10' : 'hover:bg-blue-500/[0.05]',
+        'border-black/[0.08] bg-white/90 text-black/70 [&_option]:bg-white [&_option]:text-[#1a1a1a] dark:border-white/10 dark:bg-black/40 dark:text-white/85 dark:[&_option]:bg-[#0a0a0a] dark:[&_option]:text-[#e5e5e5]',
+        'hover:bg-blue-500/[0.05] dark:hover:bg-blue-500/10',
         className
       )}
       style={{
@@ -622,27 +630,27 @@ const SortSelector = ({ isDark, className, children, ...p }) => {
   );
 };
 
-const MarketplaceGroup = ({ isDark, className, children, ...p }) => (
+const MarketplaceGroup = ({ className, children, ...p }) => (
   <div
-    className={cn('st-lp-group inline-flex items-center gap-[2px] py-[3px] pl-2 pr-[6px] rounded-[6px] border ml-2', isDark ? 'bg-white/[0.06] border-white/[0.12]' : 'bg-black/[0.04] border-black/[0.1]', className)}
+    className={cn('st-lp-group inline-flex items-center gap-[2px] py-[3px] pl-2 pr-[6px] rounded-[6px] border ml-2', 'bg-black/[0.04] border-black/[0.1] dark:bg-white/[0.06] dark:border-white/[0.12]', className)}
     {...p}
   >{children}</div>
 );
 
-const MarketplaceLabel = ({ isDark, className, children, ...p }) => (
+const MarketplaceLabel = ({ className, children, ...p }) => (
   <span
-    className={cn('st-lp-label text-[0.6rem] font-semibold uppercase tracking-[0.05em] mr-1', isDark ? 'text-white/60' : 'text-black/60', className)}
+    className={cn('st-lp-label text-[0.6rem] font-semibold uppercase tracking-[0.05em] mr-1', 'text-black/60 dark:text-white/60', className)}
     {...p}
   >{children}</span>
 );
 
-const MarketplaceChip = ({ selected, isDark, className, children, ...p }) => (
+const MarketplaceChip = ({ selected, className, children, ...p }) => (
   <button
     className={cn(
       'st-lp-chip inline-flex items-center px-[6px] border-none rounded text-[0.65rem] cursor-pointer whitespace-nowrap h-5 shrink-0 transition-[background-color,border-color,opacity] duration-150',
       'hover:bg-blue-500/10 hover:text-blue-500',
       'outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
-      selected ? 'bg-blue-500/[0.15] text-blue-500 font-medium' : cn('bg-transparent', isDark ? 'text-white/60 font-normal' : 'text-[#212B36]/60 font-normal'),
+      selected ? 'bg-blue-500/[0.15] text-blue-500 font-medium' : 'bg-transparent text-[#212B36]/60 font-normal dark:text-white/60',
       className
     )}
     {...p}
@@ -667,11 +675,11 @@ const DrawerBackdrop = ({ className, children, ...p }) => (
   <div className={cn('fixed inset-0 bg-black/60 backdrop-blur-[4px]', className)} {...p}>{children}</div>
 );
 
-const DrawerPaper = ({ isDark, className, children, ...p }) => (
+const DrawerPaper = ({ className, children, ...p }) => (
   <div
     className={cn(
       'fixed bottom-0 left-0 right-0 max-h-[70dvh] pb-[env(safe-area-inset-bottom)] backdrop-blur-[24px] rounded-t-xl border-t overflow-hidden flex flex-col z-[1301]',
-      isDark ? 'bg-black/85 border-blue-500/20 shadow-[0_-25px_50px_-12px_rgba(59,130,246,0.1)]' : 'bg-white/[0.98] border-blue-200 shadow-[0_-25px_50px_-12px_rgba(191,219,254,0.5)]',
+      'bg-white/[0.98] border-blue-200 shadow-[0_-25px_50px_-12px_rgba(191,219,254,0.5)] dark:bg-black/85 dark:border-blue-500/20 dark:shadow-[0_-25px_50px_-12px_rgba(59,130,246,0.1)]',
       className
     )}
     {...p}
@@ -682,17 +690,17 @@ const DrawerHeader = ({ className, children, ...p }) => (
   <div className={cn('flex items-center justify-between p-4', className)} {...p}>{children}</div>
 );
 
-const DrawerTitle = ({ isDark, className, children, ...p }) => (
-  <h2 className={cn('font-medium text-[15px] m-0', isDark ? 'text-white' : 'text-[#212B36]', className)} {...p}>{children}</h2>
+const DrawerTitle = ({ className, children, ...p }) => (
+  <h2 className={cn('font-medium text-[15px] m-0', 'text-[#212B36] dark:text-white', className)} {...p}>{children}</h2>
 );
 
-const DrawerClose = ({ isDark, className, children, ...p }) => (
+const DrawerClose = ({ className, children, ...p }) => (
   <button
     className={cn(
       'w-8 h-8 border-[1.5px] rounded-lg bg-transparent cursor-pointer flex items-center justify-center transition-[background-color,border-color] duration-150',
       'hover:border-blue-400/50 hover:text-[#4285f4]',
       'outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
-      isDark ? 'border-white/10 text-white/40' : 'border-black/10 text-black/40',
+      'border-black/10 text-black/40 dark:border-white/10 dark:text-white/40',
       className
     )}
     {...p}
@@ -703,28 +711,26 @@ const SearchBox = ({ className, children, ...p }) => (
   <div className={cn('py-3 px-4', className)} {...p}>{children}</div>
 );
 
-const SearchInputWrapper = ({ isDark, className, children, ...p }) => (
+const SearchInputWrapper = ({ className, children, ...p }) => (
   <div
     className={cn(
       'flex items-center gap-3 h-10 px-4 rounded-xl border-[1.5px] transition-[border-color] duration-200',
-      isDark
-        ? 'border-blue-500/[0.08] bg-white/[0.02] hover:border-blue-500/20 focus-within:border-blue-500/40'
-        : 'border-black/[0.08] bg-white hover:border-blue-500/30 focus-within:border-blue-500/50',
+      'border-black/[0.08] bg-white hover:border-blue-500/30 focus-within:border-blue-500/50 dark:border-blue-500/[0.08] dark:bg-white/[0.02] dark:hover:border-blue-500/20 dark:focus-within:border-blue-500/40',
       className
     )}
     {...p}
   >{children}</div>
 );
 
-const SearchIconWrapper = ({ isDark, className, children, ...p }) => (
-  <div className={cn('flex items-center justify-center shrink-0', isDark ? 'text-white/40' : 'text-black/40', className)} {...p}>{children}</div>
+const SearchIconWrapper = ({ className, children, ...p }) => (
+  <div className={cn('flex items-center justify-center shrink-0', 'text-black/40 dark:text-white/40', className)} {...p}>{children}</div>
 );
 
-const SearchInput = ({ isDark, className, ...p }) => (
+const SearchInput = ({ className, ...p }) => (
   <input
     className={cn(
       'flex-1 bg-transparent border-none outline-none text-sm font-[inherit] focus:outline-none',
-      isDark ? 'text-white placeholder:text-white/50' : 'text-[#212B36] placeholder:text-[#212B36]/40',
+      'text-[#212B36] placeholder:text-[#212B36]/40 dark:text-white dark:placeholder:text-white/50',
       className
     )}
     {...p}
@@ -739,23 +745,23 @@ const TagsGrid = ({ className, children, ...p }) => (
   >{children}</div>
 );
 
-const TagButton = ({ isDark, className, children, ...p }) => (
+const TagButton = ({ className, children, ...p }) => (
   <button
     className={cn(
       'inline-flex items-center justify-center py-1 px-3 border rounded-lg bg-transparent text-xs font-normal cursor-pointer font-[inherit] whitespace-nowrap h-7 shrink-0 transition-[background-color,border-color] duration-200',
       'hover:bg-blue-500/[0.08] hover:border-blue-500/30 hover:text-blue-500',
       'outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
       'max-sm:h-8 max-sm:py-1 max-sm:px-[14px] max-sm:text-[0.8rem]',
-      isDark ? 'border-white/[0.08] text-white/70' : 'border-black/[0.08] text-[#212B36]/70',
+      'border-black/[0.08] text-[#212B36]/70 dark:border-white/[0.08] dark:text-white/70',
       className
     )}
     {...p}
   >{children}</button>
 );
 
-const EmptyState = ({ isDark, className, children, ...p }) => (
+const EmptyState = ({ className, children, ...p }) => (
   <div
-    className={cn('w-full text-center py-8 text-sm', isDark ? 'text-white/50' : 'text-[#212B36]/50', className)}
+    className={cn('w-full text-center py-8 text-sm', 'text-[#212B36]/50 dark:text-white/50', className)}
     {...p}
   >{children}</div>
 );
@@ -784,7 +790,7 @@ const timeAgo = (ts) => {
   return `${Math.floor(months / 12)}y ago`;
 };
 
-const DiscoverCollectionRow = ({ collection, idx, isDark, onBoost }) => {
+const DiscoverCollectionRow = ({ collection, idx, onBoost }) => {
   const name = normalizeCollectionName(collection.name);
   const logoUrl = collection.logoImage ? `https://s1.xrpl.to/nft-collection/${collection.logoImage}` : null;
   const change = collection.floor1dPercent || 0;
@@ -797,14 +803,14 @@ const DiscoverCollectionRow = ({ collection, idx, isDark, onBoost }) => {
       className={cn(
         'flex items-center gap-[6px] py-[2px] px-[6px] no-underline transition-colors duration-150 rounded-md',
         'max-[600px]:py-[2px] max-[600px]:px-[4px] max-[600px]:gap-[4px]',
-        isDark ? 'hover:bg-white/[0.04]' : 'hover:bg-black/[0.02]'
+        'hover:bg-black/[0.02] dark:hover:bg-white/[0.04]'
       )}
     >
-      <span className={cn('text-[10px] tabular-nums font-medium w-[14px] text-center flex-shrink-0 max-[600px]:hidden', isDark ? 'text-white/25' : 'text-black/25')}>
+      <span className={cn('text-[10px] tabular-nums font-medium w-[14px] text-center flex-shrink-0 max-[600px]:hidden', 'text-black/25 dark:text-white/25')}>
         {idx + 1}
       </span>
       <div className="relative flex-shrink-0">
-        <div className={cn('w-[20px] h-[20px] min-w-[20px] max-[600px]:w-[16px] max-[600px]:h-[16px] max-[600px]:min-w-[16px] rounded-md max-[600px]:rounded overflow-hidden flex items-center justify-center', isDark ? 'bg-white/[0.06]' : 'bg-black/[0.04]')}>
+        <div className={cn('w-[20px] h-[20px] min-w-[20px] max-[600px]:w-[16px] max-[600px]:h-[16px] max-[600px]:min-w-[16px] rounded-md max-[600px]:rounded overflow-hidden flex items-center justify-center', 'bg-black/[0.04] dark:bg-white/[0.06]')}>
           {logoUrl ? (
             <img src={logoUrl} alt="" className="w-full h-full object-cover" loading="lazy" onError={(e) => { e.target.style.display = 'none'; }} />
           ) : (
@@ -812,23 +818,25 @@ const DiscoverCollectionRow = ({ collection, idx, isDark, onBoost }) => {
           )}
         </div>
         {(() => { const tier = TIER_CONFIG[collection.verified]; return tier ? (
-          <div className={cn('absolute -bottom-[2px] -right-[2px] rounded-full p-[1px]', isDark ? 'ring-[1px] ring-[#0a0a0a]' : 'ring-[1px] ring-white', tier.bg)} title={tier.label}>
+          <div className={cn('absolute -bottom-[2px] -right-[2px] rounded-full p-[1px]', 'ring-[1px] ring-white dark:ring-[#0a0a0a]', tier.bg)} title={tier.label}>
             {tier.icon(6)}
           </div>
         ) : null; })()}
       </div>
-      <span className={cn('text-[11px] max-[600px]:text-[10px] font-semibold truncate leading-none flex-1 min-w-0', isDark ? 'text-white' : 'text-[#1a1f2e]')}>{name}</span>
-      <span className={cn('text-[9px] tabular-nums font-medium flex-shrink-0 ml-[4px] max-[600px]:ml-[1px] w-[40px] max-[600px]:w-[32px] text-right', isDark ? 'text-white/30' : 'text-black/30')}>
+      <span className={cn('text-[11px] max-[600px]:text-[10px] font-semibold truncate leading-none flex-1 min-w-0', 'text-[#1a1f2e] dark:text-white')}>{name}</span>
+      <span className={cn('text-[9px] tabular-nums font-medium flex-shrink-0 ml-[4px] max-[600px]:ml-[1px] w-[40px] max-[600px]:w-[32px] text-right', 'text-black/30 dark:text-white/30')}>
         ✕{fmtFloor(collection.floor || 0)}
       </span>
-      <span className={cn('text-[9px] tabular-nums font-medium flex-shrink-0 ml-[6px] max-[600px]:hidden w-[34px] text-right', isDark ? 'text-white/25' : 'text-black/25')}>
+      <span className={cn('text-[9px] tabular-nums font-medium flex-shrink-0 ml-[6px] max-[600px]:hidden w-[34px] text-right', 'text-black/25 dark:text-white/25')}>
         {timeAgo(collection.created)}
       </span>
       <span className="ml-[4px] max-[600px]:ml-[1px] w-[50px] max-[600px]:w-[40px] flex justify-end">
         <div className={cn(
           'text-[10px] max-[600px]:text-[8px] font-bold tabular-nums px-[6px] py-[3px] max-[600px]:px-[3px] max-[600px]:py-[1px] rounded-md max-[600px]:rounded leading-tight flex-shrink-0',
           isUp ? 'text-[#10b981] bg-[rgba(16,185,129,0.1)]' : 'text-[#ef4444] bg-[rgba(239,68,68,0.1)]'
-        )}>
+        )}
+        style={{ boxShadow: isUp ? '0 0 4px rgba(16,185,129,0.3)' : '0 0 4px rgba(239,68,68,0.3)' }}
+        >
           {isUp ? '+' : ''}{change.toFixed(1)}%
         </div>
       </span>
@@ -837,7 +845,7 @@ const DiscoverCollectionRow = ({ collection, idx, isDark, onBoost }) => {
         title="Boost"
         className={cn(
           'flex-shrink-0 ml-[4px] max-[600px]:ml-[1px] w-[20px] h-[20px] max-[600px]:w-[18px] max-[600px]:h-[18px] rounded-md flex items-center justify-center transition-colors duration-150 border-none cursor-pointer',
-          isDark ? 'bg-white/[0.04] hover:bg-orange-500/20 text-white/25 hover:text-orange-400' : 'bg-black/[0.03] hover:bg-orange-500/10 text-black/20 hover:text-orange-500'
+          'bg-black/[0.03] hover:bg-orange-500/10 text-black/20 hover:text-orange-500 hover:shadow-[0_0_6px_rgba(249,115,22,0.3)] dark:bg-white/[0.04] dark:hover:bg-orange-500/20 dark:text-white/25 dark:hover:text-orange-400 dark:hover:shadow-[0_0_6px_rgba(249,115,22,0.4)]'
         )}
       >
         <Flame size={10} />
@@ -846,30 +854,31 @@ const DiscoverCollectionRow = ({ collection, idx, isDark, onBoost }) => {
   );
 };
 
-const DiscoverPanel = ({ title, icon: Icon, href, collections, isDark, onBoost }) => {
+const DiscoverPanel = ({ title, icon: Icon, href, collections, onBoost }) => {
   if (!collections || collections.length === 0) return null;
+  const isTrending = title === 'Trending';
   return (
     <div className={cn(
-      'rounded-xl max-[600px]:rounded-[10px] border-[1.5px] overflow-hidden flex flex-col',
-      isDark ? 'border-white/[0.08] bg-white/[0.02]' : 'border-black/[0.06] bg-black/[0.01]'
+      'rounded-xl max-[600px]:rounded-[10px] border-[1.5px] overflow-hidden flex flex-col backdrop-blur-md',
+      'border-black/[0.06] bg-white dark:border-white/[0.08] dark:bg-white/[0.02]'
     )}>
       <div className={cn(
-        'flex items-center justify-between px-[8px] py-[2px] max-[600px]:px-[6px] max-[600px]:py-[2px]',
-        isDark ? 'border-b border-white/[0.06]' : 'border-b border-black/[0.05]'
+        'flex items-center justify-between px-[8px] py-[2px] max-[600px]:px-[6px] max-[600px]:py-[2px] relative',
       )}>
         <div className="flex items-center gap-[4px]">
-          <Icon size={11} className={cn('max-[600px]:w-[10px] max-[600px]:h-[10px]', isDark ? 'text-white/40' : 'text-black/40')} />
-          <span className={cn('text-[10px] max-[600px]:text-[9px] font-semibold', isDark ? 'text-white/70' : 'text-black/70')}>
+          <Icon size={11} className={cn('max-[600px]:w-[10px] max-[600px]:h-[10px] animate-pulse', isTrending ? 'text-[#10b981]' : 'text-[#8b5cf6]')} />
+          <span className={cn('text-[10px] max-[600px]:text-[9px] font-semibold font-mono uppercase tracking-wider', 'text-black/70 dark:text-white/70')}>
             {title}
           </span>
         </div>
         <Link href={href} prefetch={false} className="text-[9px] max-[600px]:text-[8px] text-[#137DFE] no-underline font-medium hover:underline">
           View All
         </Link>
+        <div className={cn('absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent to-transparent', 'via-black/[0.05] dark:via-white/10')} />
       </div>
       <div className="flex-1 flex flex-col justify-evenly py-0">
         {collections.map((c, i) => (
-          <DiscoverCollectionRow key={c.slug} collection={c} idx={i} isDark={isDark} onBoost={onBoost} />
+          <DiscoverCollectionRow key={c.slug} collection={c} idx={i} onBoost={onBoost} />
         ))}
       </div>
     </div>
@@ -886,8 +895,6 @@ function Collections({
   newCollections: newProp = []
 }) {
   const router = useRouter();
-  const { themeName } = useContext(ThemeContext);
-  const isDark = themeName === 'XrplToDarkTheme';
   const [globalMetrics, setGlobalMetrics] = useState(initialGlobalMetrics);
   const [tagsDrawerOpen, setTagsDrawerOpen] = useState(false);
   const [tagSearch, setTagSearch] = useState('');
@@ -1014,7 +1021,7 @@ function Collections({
       {tagsDrawerOpen && (
         <Drawer open={tagsDrawerOpen}>
           <DrawerBackdrop onClick={() => setTagsDrawerOpen(false)} />
-          <DrawerPaper isDark={isDark} role="dialog" aria-modal="true" aria-label="Categories">
+          <DrawerPaper role="dialog" aria-modal="true" aria-label="Categories">
             <DrawerHeader>
               <div className="flex items-center gap-4 flex-1">
                 <span className="text-[11px] font-semibold uppercase tracking-[0.1em] text-blue-500 whitespace-nowrap">
@@ -1023,7 +1030,7 @@ function Collections({
                 <div
                   className="flex-1 h-[14px]"
                   style={{
-                    backgroundImage: isDark
+                    backgroundImage: typeof document !== "undefined" && document.documentElement.classList.contains('dark')
                       ? 'radial-gradient(circle, rgba(96,165,250,0.4) 1px, transparent 1px)'
                       : 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)',
                     backgroundSize: '8px 5px',
@@ -1033,17 +1040,17 @@ function Collections({
                 />
               </div>
               <div className="flex gap-2">
-                <DrawerClose isDark={isDark} onClick={copyTags} title="Copy all tags" aria-label="Copy all tags">
+                <DrawerClose onClick={copyTags} title="Copy all tags" aria-label="Copy all tags">
                   {copied ? <Check size={18} color="#10b981" /> : <Copy size={18} />}
                 </DrawerClose>
-                <DrawerClose isDark={isDark} onClick={() => setTagsDrawerOpen(false)} aria-label="Close categories drawer">
+                <DrawerClose onClick={() => setTagsDrawerOpen(false)} aria-label="Close categories drawer">
                   <X size={18} />
                 </DrawerClose>
               </div>
             </DrawerHeader>
-            <SearchBox isDark={isDark}>
+            <SearchBox>
               <SearchInputWrapper>
-                <SearchIconWrapper isDark={isDark}>
+                <SearchIconWrapper>
                   <Search size={18} />
                 </SearchIconWrapper>
                 <SearchInput
@@ -1051,7 +1058,6 @@ function Collections({
                   placeholder="Search categories..."
                   value={tagSearch}
                   onChange={(e) => setTagSearch(e.target.value)}
-                  isDark={isDark}
                 />
               </SearchInputWrapper>
             </SearchBox>
@@ -1063,14 +1069,13 @@ function Collections({
                   return (
                     <TagButton
                       key={tagName}
-                      isDark={isDark}
                       onClick={() => handleTagClick(tagName)}
                       style={
                         selectedTag === tagName
                           ? {
-                              borderColor: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)',
-                              color: isDark ? '#fff' : '#000',
-                              background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'
+                              borderColor: typeof document !== "undefined" && document.documentElement.classList.contains('dark') ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)',
+                              color: typeof document !== "undefined" && document.documentElement.classList.contains('dark') ? '#fff' : '#000',
+                              background: typeof document !== "undefined" && document.documentElement.classList.contains('dark') ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'
                             }
                           : {}
                       }
@@ -1081,7 +1086,7 @@ function Collections({
                   );
                 })
               ) : (
-                <EmptyState isDark={isDark}>
+                <EmptyState>
                   {tagSearch ? 'No matching categories' : 'No categories available'}
                 </EmptyState>
               )}
@@ -1091,17 +1096,17 @@ function Collections({
       )}
 
       {/* Global Metrics Section */}
-      <Container isDark={isDark}>
+      <Container>
         {globalMetrics && (
           <Grid>
             {/* 24h Volume & Sales (combined) */}
-            <MetricBox isDark={isDark}>
-              <MetricTitle isDark={isDark}>24h Volume / Sales</MetricTitle>
+            <MetricBox>
+              <MetricTitle>24h Volume / Sales</MetricTitle>
               <div className="flex items-baseline gap-2">
-                <MetricValue isDark={isDark}>
+                <MetricValue>
                   ✕{fVolume(globalMetrics.total24hVolume || 0)}
                 </MetricValue>
-                <MetricValue isDark={isDark} className="!text-[1rem] max-sm:!text-[0.8rem] opacity-50">
+                <MetricValue className="!text-[1rem] max-sm:!text-[0.8rem] opacity-50">
                   {formatNumberWithDecimals(globalMetrics.total24hSales || 0)}
                 </MetricValue>
               </div>
@@ -1117,33 +1122,33 @@ function Collections({
               </div>
             </MetricBox>
 
-            <MetricBox isDark={isDark}>
-              <MetricTitle isDark={isDark}>Collections</MetricTitle>
-              <MetricValue isDark={isDark}>
+            <MetricBox>
+              <MetricTitle>Collections</MetricTitle>
+              <MetricValue>
                 {formatNumberWithDecimals(globalMetrics.totalCollections || 0)}
               </MetricValue>
-              <VolumePercentage isDark={isDark}>
+              <VolumePercentage>
                 {formatNumberWithDecimals(globalMetrics.activeCollections24h || 0)} active |{' '}
                 {formatNumberWithDecimals(globalMetrics.total24hMints || 0)} mints
               </VolumePercentage>
             </MetricBox>
 
-            <MetricBox isDark={isDark}>
-              <MetricTitle isDark={isDark}>24h Fees</MetricTitle>
-              <MetricValue isDark={isDark}>
+            <MetricBox>
+              <MetricTitle>24h Fees</MetricTitle>
+              <MetricValue>
                 ✕
                 {formatNumberWithDecimals(
                   (globalMetrics.total24hBrokerFees || 0) + (globalMetrics.total24hRoyalties || 0)
                 )}
               </MetricValue>
-              <VolumePercentage isDark={isDark}>
+              <VolumePercentage>
                 ✕{formatNumberWithDecimals(globalMetrics.total24hRoyalties || 0)} royalties | ✕
                 {formatNumberWithDecimals(globalMetrics.total24hBrokerFees || 0)} broker
               </VolumePercentage>
             </MetricBox>
 
-            <MetricBox isDark={isDark}>
-              <MetricTitle isDark={isDark}>Market</MetricTitle>
+            <MetricBox>
+              <MetricTitle>Market</MetricTitle>
               {(() => {
                 const sentiment = globalMetrics.sentimentScore || 50;
                 const rsi = globalMetrics.marketRSI || 50;
@@ -1164,7 +1169,7 @@ function Collections({
                         </div>
                         <div className="flex items-baseline gap-[2px]">
                           <span className="text-[0.85rem] font-semibold leading-none" style={{ color: sentColor }}>{sentiment}</span>
-                          <span className={cn('text-[0.4rem]', isDark ? 'text-white/50' : 'text-black/50')}>Sent</span>
+                          <span className={cn('text-[0.4rem]', 'text-black/50 dark:text-white/50')}>Sent</span>
                         </div>
                       </div>
                       <div className="flex flex-col items-center gap-[3px]">
@@ -1176,7 +1181,7 @@ function Collections({
                         </div>
                         <div className="flex items-baseline gap-[2px]">
                           <span className="text-[0.85rem] font-semibold leading-none" style={{ color: rsiColor }}>{rsi}</span>
-                          <span className={cn('text-[0.4rem]', isDark ? 'text-white/50' : 'text-black/50')}>RSI</span>
+                          <span className={cn('text-[0.4rem]', 'text-black/50 dark:text-white/50')}>RSI</span>
                         </div>
                       </div>
                     </div>
@@ -1194,7 +1199,7 @@ function Collections({
                       </div>
                       <div className="flex items-baseline gap-[4px]">
                         <span className="font-semibold leading-[1] text-[1.75rem]" style={{ color: sentColor }}>{sentiment}</span>
-                        <span className={cn('text-[0.8rem]', isDark ? 'text-white/60' : 'text-black/60')}>Sent</span>
+                        <span className={cn('text-[0.8rem]', 'text-black/60 dark:text-white/60')}>Sent</span>
                       </div>
                     </div>
                     <div className="flex flex-col items-center gap-[8px]">
@@ -1206,7 +1211,7 @@ function Collections({
                       </div>
                       <div className="flex items-baseline gap-[4px]">
                         <span className="font-semibold leading-[1] text-[1.75rem]" style={{ color: rsiColor }}>{rsi}</span>
-                        <span className={cn('text-[0.8rem]', isDark ? 'text-white/60' : 'text-black/60')}>RSI</span>
+                        <span className={cn('text-[0.8rem]', 'text-black/60 dark:text-white/60')}>RSI</span>
                       </div>
                     </div>
                   </div>
@@ -1215,16 +1220,16 @@ function Collections({
             </MetricBox>
 
             {/* Trending & New Collections inline */}
-            <DiscoverPanel title="Trending" icon={TrendingUp} href="/nfts?sort=trendingScore" collections={trendingCollections} isDark={isDark} onBoost={setBoostCollection} />
-            <DiscoverPanel title="New Collections" icon={Sparkles} href="/nfts?sort=created" collections={newCollections} isDark={isDark} onBoost={setBoostCollection} />
+            <DiscoverPanel title="Trending" icon={TrendingUp} href="/nfts?sort=trendingScore" collections={trendingCollections} onBoost={setBoostCollection} />
+            <DiscoverPanel title="New Collections" icon={Sparkles} href="/nfts?sort=created" collections={newCollections} onBoost={setBoostCollection} />
           </Grid>
         )}
       </Container>
 
       {/* Tags Bar */}
       {tags && tags.length > 0 && (
-        <Container isDark={isDark}>
-          <TagsContainer isDark={isDark} ref={tagsContainerRef}>
+        <Container>
+          <TagsContainer ref={tagsContainerRef}>
             {/* Row 1: Categories + All button */}
             <TagsRow>
               <TagsScrollArea>
@@ -1236,7 +1241,6 @@ function Collections({
                     return (
                       <TagChip
                         key={tagName}
-                        isDark={isDark}
                         selected={selectedTag === tagName}
                         onClick={() => handleTagClick(tagName)}
                       >
@@ -1246,7 +1250,7 @@ function Collections({
                   })}
               </TagsScrollArea>
               <AllButtonWrapper>
-                <AllTagsButton isDark={isDark} onClick={() => setTagsDrawerOpen(true)}>
+                <AllTagsButton onClick={() => setTagsDrawerOpen(true)}>
                   <span>All {tags.length > visibleTagCount ? `(${tags.length})` : ''}</span>
                 </AllTagsButton>
               </AllButtonWrapper>
@@ -1256,14 +1260,12 @@ function Collections({
             <Row spaceBetween>
               <RowContent>
                 <TagChip
-                  isDark={isDark}
                   selected={activeView === 'all'}
                   onClick={() => { setActiveView('all'); setSelectedTag(null); setOrderBy('totalVol24h'); setOrder('desc'); setSync((prev) => prev + 1); }}
                 >
                   Collections
                 </TagChip>
                 <TagChip
-                  isDark={isDark}
                   selected={activeView === 'new'}
                   onClick={() => handleViewClick('new')}
                 >
@@ -1271,7 +1273,6 @@ function Collections({
                   <span>New</span>
                 </TagChip>
                 <TagChip
-                  isDark={isDark}
                   selected={activeView === 'trending'}
                   onClick={() => handleViewClick('trending')}
                 >
@@ -1279,7 +1280,6 @@ function Collections({
                   <span>Trending</span>
                 </TagChip>
                 <TagChip
-                  isDark={isDark}
                   selected={activeView === 'hot'}
                   onClick={() => handleViewClick('hot')}
                 >
@@ -1287,7 +1287,6 @@ function Collections({
                   <span>Hot</span>
                 </TagChip>
                 <TagChip
-                  isDark={isDark}
                   selected={activeView === 'rising'}
                   onClick={() => handleViewClick('rising')}
                 >
@@ -1296,12 +1295,11 @@ function Collections({
                 </TagChip>
 
                 {/* Marketplaces group */}
-                <MarketplaceGroup isDark={isDark}>
-                  <MarketplaceLabel isDark={isDark}>Marketplaces</MarketplaceLabel>
+                <MarketplaceGroup>
+                  <MarketplaceLabel>Marketplaces</MarketplaceLabel>
                   {NFT_MARKETPLACES.map((mp) => (
                     <MarketplaceChip
                       key={mp.id}
-                      isDark={isDark}
                       selected={selectedOrigin === mp.id}
                       onClick={() => setSelectedOrigin(selectedOrigin === mp.id ? null : mp.id)}
                     >
@@ -1314,7 +1312,6 @@ function Collections({
               {/* Sort + Rows + API on the right */}
               <Stack className="ml-auto gap-[6px]">
                 <SortSelector
-                  isDark={isDark}
                   value={orderBy}
                   onChange={(e) => {
                     setOrderBy(e.target.value);
@@ -1335,7 +1332,6 @@ function Collections({
                   <option value="created">Newest</option>
                 </SortSelector>
                 <SortSelector
-                  isDark={isDark}
                   value={rows}
                   onChange={(e) => setRows(parseInt(e.target.value))}
                   aria-label="Rows per page"
@@ -1352,7 +1348,7 @@ function Collections({
       )}
 
       {/* Table Section - aligned with metric boxes */}
-      <Container isDark={isDark}>
+      <Container>
         <div className="min-h-[50vh] relative z-[1]">
           <CollectionList
             type={CollectionListType.ALL}

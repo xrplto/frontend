@@ -151,11 +151,11 @@ function Overview({ data }) {
           <div>
             <div className="flex items-center gap-2 mb-1">
               <Bookmark size={18} className="text-primary fill-primary/20" />
-              <span className={cn('text-[12px] font-semibold uppercase tracking-[0.15em]', isDark ? 'text-primary' : 'text-primary')}>
+              <span className={cn('text-[12px] font-semibold uppercase tracking-[0.15em]', 'text-primary dark:text-primary')}>
                 Personalized
               </span>
             </div>
-            <h1 className={cn('text-3xl font-bold tracking-tight', isDark ? 'text-white' : 'text-gray-900')}>
+            <h1 className={cn('text-3xl font-bold tracking-tight', 'text-gray-900 dark:text-white')}>
               Your Watchlist
             </h1>
           </div>
@@ -168,12 +168,8 @@ function Overview({ data }) {
                   className={cn(
                     'inline-flex items-center gap-2 px-4 py-2.5 rounded-md border text-[12px] font-medium tracking-[0.05em] uppercase transition-all',
                     activeTab === 'tokens'
-                      ? isDark
-                        ? 'border-white/20 text-white'
-                        : 'border-black/20 text-gray-900'
-                      : isDark
-                        ? 'border-white/10 text-white/40 hover:border-white/15 hover:text-white/70'
-                        : 'border-black/10 text-black/40 hover:border-black/15 hover:text-black/60'
+                      ? 'border-black/20 text-gray-900 dark:border-white/20 dark:text-white'
+                      : 'border-black/10 text-black/40 hover:border-black/15 hover:text-black/60 dark:border-white/10 dark:text-white/40 dark:hover:border-white/15 dark:hover:text-white/70'
                   )}
                 >
                   <Coins size={16} />
@@ -184,12 +180,8 @@ function Overview({ data }) {
                   className={cn(
                     'inline-flex items-center gap-2 px-4 py-2.5 rounded-md border text-[12px] font-medium tracking-[0.05em] uppercase transition-all',
                     activeTab === 'nfts'
-                      ? isDark
-                        ? 'border-white/20 text-white'
-                        : 'border-black/20 text-gray-900'
-                      : isDark
-                        ? 'border-white/10 text-white/40 hover:border-white/15 hover:text-white/70'
-                        : 'border-black/10 text-black/40 hover:border-black/15 hover:text-black/60'
+                      ? 'border-black/20 text-gray-900 dark:border-white/20 dark:text-white'
+                      : 'border-black/10 text-black/40 hover:border-black/15 hover:text-black/60 dark:border-white/10 dark:text-white/40 dark:hover:border-white/15 dark:hover:text-white/70'
                   )}
                 >
                   <Image size={16} />
@@ -201,9 +193,7 @@ function Overview({ data }) {
                   onClick={openSearch}
                   className={cn(
                     'inline-flex items-center gap-2 px-4 py-2.5 rounded-md border text-[12px] font-medium tracking-[0.05em] uppercase transition-all',
-                    isDark
-                      ? 'border-white/10 text-white/40 hover:border-white/15 hover:text-white/70'
-                      : 'border-black/10 text-black/40 hover:border-black/15 hover:text-black/60'
+                    'border-black/10 text-black/40 hover:border-black/15 hover:text-black/60 dark:border-white/10 dark:text-white/40 dark:hover:border-white/15 dark:hover:text-white/70'
                   )}
                 >
                   <Plus size={16} />
@@ -219,7 +209,7 @@ function Overview({ data }) {
           <div
             className={cn(
               'relative overflow-hidden rounded-3xl border-[1.5px] p-16 text-center group',
-              isDark ? 'border-white/10 bg-white/[0.02]' : 'border-black/[0.08] bg-black/[0.02]'
+              'border-black/[0.08] bg-black/[0.02] dark:border-white/10 dark:bg-white/[0.02]'
             )}
           >
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[400px] h-[400px] bg-primary/10 blur-[120px] -z-10" />
@@ -232,10 +222,10 @@ function Overview({ data }) {
                 fillOpacity={0.2}
               />
             </div>
-            <h2 className={cn('text-2xl font-bold mb-3 tracking-tight', isDark ? 'text-white' : 'text-gray-900')}>
+            <h2 className={cn('text-2xl font-bold mb-3 tracking-tight', 'text-gray-900 dark:text-white')}>
               Track Your Assets
             </h2>
-            <p className={cn('text-[16px] mb-8 max-w-sm mx-auto leading-relaxed', isDark ? 'text-white/50' : 'text-gray-600')}>
+            <p className={cn('text-[16px] mb-8 max-w-sm mx-auto leading-relaxed', 'text-gray-600 dark:text-white/50')}>
               Connect your wallet to start building a personalized watchlist of XRPL tokens and NFT collections.
             </p>
             <div className="flex justify-center">
@@ -251,7 +241,7 @@ function Overview({ data }) {
               <div className="space-y-6">
                 <div className={cn(
                   'rounded-3xl border overflow-hidden',
-                  isDark ? 'border-white/10 bg-black/20' : 'border-black/[0.05] bg-white shadow-xl shadow-black/[0.02]'
+                  'border-black/[0.05] bg-white shadow-xl shadow-black/[0.02] dark:border-white/10 dark:bg-black/20'
                 )}>
                   <TokenList
                     showWatchList={true}
@@ -283,14 +273,14 @@ function Overview({ data }) {
               ref={searchRef}
               className={cn(
                 'relative w-full max-w-2xl rounded-3xl border shadow-2xl overflow-hidden transform transition-all duration-300 scale-100',
-                isDark ? 'bg-[#0A0A0A] border-white/10' : 'bg-white border-black/5'
+                'bg-white border-black/5 dark:bg-[#0A0A0A] dark:border-white/10'
               )}
             >
               {/* Search Header */}
               <div
                 className={cn(
                   'flex items-center gap-4 px-6 py-5 border-b',
-                  isDark ? 'border-white/10' : 'border-black/5'
+                  'border-black/5 dark:border-white/10'
                 )}
               >
                 <div className="p-2 rounded-xl bg-primary/10">
@@ -303,14 +293,12 @@ function Overview({ data }) {
                   placeholder="Search for tokens (e.g. XRP, SOLO...)"
                   className={cn(
                     'flex-1 bg-transparent text-[16px] font-medium outline-none',
-                    isDark
-                      ? 'text-white placeholder:text-white/20'
-                      : 'text-gray-900 placeholder:text-gray-400'
+                    'text-gray-900 placeholder:text-gray-400 dark:text-white dark:placeholder:text-white/20'
                   )}
                 />
                 <button
                   onClick={() => setSearchOpen(false)}
-                  className={cn('p-2.5 rounded-xl transition-all', isDark ? 'bg-white/5 hover:bg-white/10 text-white/40' : 'bg-black/5 hover:bg-black/10 text-gray-500')}
+                  className={cn('p-2.5 rounded-xl transition-all', 'bg-black/5 hover:bg-black/10 text-gray-500 dark:bg-white/5 dark:hover:bg-white/10 dark:text-white/40')}
                 >
                   <X size={18} strokeWidth={2.5} />
                 </button>
@@ -321,7 +309,7 @@ function Overview({ data }) {
                 {searchLoading && (
                   <div className="flex flex-col items-center justify-center py-20">
                     <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin mb-4" />
-                    <p className={cn('text-[13px] font-medium', isDark ? 'text-white/40' : 'text-gray-400')}>
+                    <p className={cn('text-[13px] font-medium', 'text-gray-400 dark:text-white/40')}>
                       Scanning XRPL...
                     </p>
                   </div>
@@ -329,13 +317,13 @@ function Overview({ data }) {
 
                 {!searchLoading && searchQuery && searchResults.length === 0 && (
                   <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
-                    <div className={cn('w-12 h-12 rounded-full flex items-center justify-center mb-4', isDark ? 'bg-white/5' : 'bg-black/5')}>
-                      <Search size={24} className={isDark ? 'text-white/20' : 'text-gray-300'} />
+                    <div className={cn('w-12 h-12 rounded-full flex items-center justify-center mb-4', 'bg-black/5 dark:bg-white/5')}>
+                      <Search size={24} className={'text-gray-300 dark:text-white/20'} />
                     </div>
-                    <p className={cn('text-[15px] font-bold mb-1', isDark ? 'text-white' : 'text-gray-900')}>
+                    <p className={cn('text-[15px] font-bold mb-1', 'text-gray-900 dark:text-white')}>
                       No results found
                     </p>
-                    <p className={cn('text-[13px]', isDark ? 'text-white/40' : 'text-gray-500')}>
+                    <p className={cn('text-[13px]', 'text-gray-500 dark:text-white/40')}>
                       Try searching for a different token name or symbol
                     </p>
                   </div>
@@ -343,7 +331,7 @@ function Overview({ data }) {
 
                 {!searchLoading && searchResults.length > 0 && (
                   <div className="p-2">
-                    <p className={cn('px-4 py-2 text-[11px] font-bold uppercase tracking-[0.15em] mb-1', isDark ? 'text-white/20' : 'text-gray-400')}>
+                    <p className={cn('px-4 py-2 text-[11px] font-bold uppercase tracking-[0.15em] mb-1', 'text-gray-400 dark:text-white/20')}>
                       Search Results
                     </p>
                     {searchResults.map((token) => (
@@ -355,9 +343,7 @@ function Overview({ data }) {
                           'w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all mb-1 group',
                           isInWatchlist(token.md5)
                             ? 'opacity-60 cursor-not-allowed'
-                            : isDark
-                              ? 'hover:bg-white/5'
-                              : 'hover:bg-gray-50'
+                            : 'hover:bg-gray-50 dark:hover:bg-white/5'
                         )}
                       >
                         <div className="relative">
@@ -374,19 +360,19 @@ function Overview({ data }) {
                         </div>
                         <div className="flex-1 text-left">
                           <div className="flex items-center gap-2">
-                            <span className={cn('text-[15px] font-bold', isDark ? 'text-white' : 'text-gray-900')}>
+                            <span className={cn('text-[15px] font-bold', 'text-gray-900 dark:text-white')}>
                               {token.user || token.name}
                             </span>
-                            <span className={cn('text-[11px] font-bold px-1.5 py-0.5 rounded-md uppercase tracking-wider', isDark ? 'bg-white/10 text-white/50' : 'bg-black/5 text-gray-500')}>
+                            <span className={cn('text-[11px] font-bold px-1.5 py-0.5 rounded-md uppercase tracking-wider', 'bg-black/5 text-gray-500 dark:bg-white/10 dark:text-white/50')}>
                               {token.name}
                             </span>
                           </div>
-                          <p className={cn('text-[12px] mt-0.5', isDark ? 'text-white/40' : 'text-gray-500')}>
+                          <p className={cn('text-[12px] mt-0.5', 'text-gray-500 dark:text-white/40')}>
                             {token.issuer || 'Verified Issuer'}
                           </p>
                         </div>
                         {!isInWatchlist(token.md5) && (
-                          <div className={cn('p-2 rounded-xl transition-all group-hover:bg-primary/10 group-hover:text-primary', isDark ? 'bg-white/5 text-white/20' : 'bg-black/5 text-gray-400')}>
+                          <div className={cn('p-2 rounded-xl transition-all group-hover:bg-primary/10 group-hover:text-primary', 'bg-black/5 text-gray-400 dark:bg-white/5 dark:text-white/20')}>
                             <Plus size={18} strokeWidth={2.5} />
                           </div>
                         )}
@@ -398,7 +384,7 @@ function Overview({ data }) {
                 {/* Show popular when no query */}
                 {!searchQuery && popularTokens.length > 0 && (
                   <div className="p-2">
-                    <p className={cn('px-4 py-2 text-[11px] font-bold uppercase tracking-[0.15em] mb-1 flex items-center gap-2', isDark ? 'text-white/20' : 'text-gray-400')}>
+                    <p className={cn('px-4 py-2 text-[11px] font-bold uppercase tracking-[0.15em] mb-1 flex items-center gap-2', 'text-gray-400 dark:text-white/20')}>
                       <TrendingUp size={14} className="text-primary" />
                       Trending on XRPL
                     </p>
@@ -411,9 +397,7 @@ function Overview({ data }) {
                           'w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all mb-1 group',
                           isInWatchlist(token.md5)
                             ? 'opacity-60 cursor-not-allowed'
-                            : isDark
-                              ? 'hover:bg-white/5'
-                              : 'hover:bg-gray-50'
+                            : 'hover:bg-gray-50 dark:hover:bg-white/5'
                         )}
                       >
                         <div className="relative">
@@ -430,19 +414,19 @@ function Overview({ data }) {
                         </div>
                         <div className="flex-1 text-left">
                           <div className="flex items-center gap-2">
-                            <span className={cn('text-[15px] font-bold', isDark ? 'text-white' : 'text-gray-900')}>
+                            <span className={cn('text-[15px] font-bold', 'text-gray-900 dark:text-white')}>
                               {token.user || token.name}
                             </span>
-                            <span className={cn('text-[11px] font-bold px-1.5 py-0.5 rounded-md uppercase tracking-wider', isDark ? 'bg-white/10 text-white/50' : 'bg-black/5 text-gray-500')}>
+                            <span className={cn('text-[11px] font-bold px-1.5 py-0.5 rounded-md uppercase tracking-wider', 'bg-black/5 text-gray-500 dark:bg-white/10 dark:text-white/50')}>
                               {token.name}
                             </span>
                           </div>
-                          <p className={cn('text-[12px] mt-0.5', isDark ? 'text-white/40' : 'text-gray-500')}>
+                          <p className={cn('text-[12px] mt-0.5', 'text-gray-500 dark:text-white/40')}>
                             Suggested for you
                           </p>
                         </div>
                         {!isInWatchlist(token.md5) && (
-                          <div className={cn('p-2 rounded-xl transition-all group-hover:bg-primary/10 group-hover:text-primary', isDark ? 'bg-white/5 text-white/20' : 'bg-black/5 text-gray-400')}>
+                          <div className={cn('p-2 rounded-xl transition-all group-hover:bg-primary/10 group-hover:text-primary', 'bg-black/5 text-gray-400 dark:bg-white/5 dark:text-white/20')}>
                             <Plus size={18} strokeWidth={2.5} />
                           </div>
                         )}
@@ -455,15 +439,15 @@ function Overview({ data }) {
               {/* Search Footer */}
               <div className={cn(
                 'px-6 py-4 flex items-center justify-between border-t',
-                isDark ? 'border-white/10 bg-white/[0.02]' : 'border-black/5 bg-black/[0.01]'
+                'border-black/5 bg-black/[0.01] dark:border-white/10 dark:bg-white/[0.02]'
               )}>
                 <div className="flex items-center gap-4">
                   <div className="flex items-center gap-1.5">
-                    <kbd className={cn('px-1.5 py-0.5 rounded text-[10px] font-bold', isDark ? 'bg-white/10 text-white/50' : 'bg-black/5 text-gray-500')}>ESC</kbd>
-                    <span className={cn('text-[11px]', isDark ? 'text-white/30' : 'text-gray-400')}>to close</span>
+                    <kbd className={cn('px-1.5 py-0.5 rounded text-[10px] font-bold', 'bg-black/5 text-gray-500 dark:bg-white/10 dark:text-white/50')}>ESC</kbd>
+                    <span className={cn('text-[11px]', 'text-gray-400 dark:text-white/30')}>to close</span>
                   </div>
                 </div>
-                <div className={cn('text-[11px] italic', isDark ? 'text-white/20' : 'text-gray-400')}>
+                <div className={cn('text-[11px] italic', 'text-gray-400 dark:text-white/20')}>
                   Data provided by XRPL.to API
                 </div>
               </div>

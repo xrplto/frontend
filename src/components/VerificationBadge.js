@@ -1,5 +1,7 @@
+import { useContext } from 'react';
 import { Star, Sparkles, Check } from 'lucide-react';
 import { cn } from 'src/utils/cn';
+import { ThemeContext } from 'src/context/AppContext';
 
 // Single source of truth for verification tier styling
 // Matches API verify.js: Tier 1=Official, 2=Premium($589), 3=Standard($250), 4=Basic($99)
@@ -40,7 +42,7 @@ const sizeConfig = {
 };
 
 // Overlay badge (absolute positioned on images)
-export default function VerificationBadge({ verified, size = 'md', isDark }) {
+export default function VerificationBadge({ verified, size = 'md' }) {
   const tier = TIER_CONFIG[verified];
   if (!tier) return null;
 
@@ -52,7 +54,7 @@ export default function VerificationBadge({ verified, size = 'md', isDark }) {
         'absolute -bottom-1 -right-1 rounded-full transition-opacity duration-300',
         s.padding,
         s.ring,
-        isDark ? 'ring-[#0a0a0a]' : 'ring-white',
+        'ring-white dark:ring-[#0a0a0a]',
         tier.bg
       )}
       title={tier.label}
@@ -63,7 +65,9 @@ export default function VerificationBadge({ verified, size = 'md', isDark }) {
 }
 
 // Inline text label (next to names)
-export function VerificationLabel({ verified, isDark, className }) {
+export function VerificationLabel({ verified, className }) {
+  const { themeName } = useContext(ThemeContext);
+  const isDark = themeName === 'XrplToDarkTheme';
   const tier = TIER_CONFIG[verified];
   if (!tier) return null;
 

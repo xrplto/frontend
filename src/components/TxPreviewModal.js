@@ -33,14 +33,14 @@ export default function TxPreviewModal({
     <div role="dialog" aria-modal="true" aria-label="Transaction preview" className="fixed inset-0 z-[9999] flex items-center justify-center bg-[rgba(0,0,0,0.92)] backdrop-blur-[4px] max-sm:h-dvh">
       <div className={cn(
         'w-full max-w-[340px] mx-4 p-5 rounded-2xl border',
-        isDark ? 'bg-black border-white/[0.08]' : 'bg-white border-black/[0.08]'
+        'bg-white border-black/[0.08] dark:bg-black dark:border-white/[0.08]'
       )}>
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
-          <span className={cn('text-[11px]', isDark ? 'text-white/30' : 'text-black/30')}>
+          <span className={cn('text-[11px]', 'text-black/30 dark:text-white/30')}>
             Preview · No funds sent yet
           </span>
-          <button aria-label="Close" className={cn('p-1.5 rounded-lg border-none bg-transparent cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]', isDark ? 'text-white/40' : 'text-black/40')} onClick={onClose}>
+          <button aria-label="Close" className={cn('p-1.5 rounded-lg border-none bg-transparent cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]', 'text-black/40 dark:text-white/40')} onClick={onClose}>
             <X size={16} />
           </button>
         </div>
@@ -48,7 +48,7 @@ export default function TxPreviewModal({
         {simulating ? (
           <div className="py-8 text-center">
             <PuffLoader size={40} color="#3b82f6" />
-            <p className={cn('mt-3 text-[13px]', isDark ? 'text-white/50' : 'text-black/50')}>
+            <p className={cn('mt-3 text-[13px]', 'text-black/50 dark:text-white/50')}>
               Simulating transaction...
             </p>
           </div>
@@ -72,10 +72,10 @@ export default function TxPreviewModal({
             )}
 
             {/* Title */}
-            <h3 className={cn('text-center text-base font-semibold mb-1.5', isDark ? 'text-white' : 'text-[#111]')}>{preview.title}</h3>
+            <h3 className={cn('text-center text-base font-semibold mb-1.5', 'text-[#111] dark:text-white')}>{preview.title}</h3>
 
             {/* Description */}
-            {preview.description && <p className={cn('text-center text-[13px] mb-4', isDark ? 'text-white/50' : 'text-black/50')}>{preview.description}</p>}
+            {preview.description && <p className={cn('text-center text-[13px] mb-4', 'text-black/50 dark:text-white/50')}>{preview.description}</p>}
 
             {/* Error Box */}
             {preview.status === 'error' && preview.error && (
@@ -107,14 +107,14 @@ export default function TxPreviewModal({
 
             {/* Buttons */}
             <div className="flex gap-[10px]">
-              <button className={cn('flex-1 p-3 rounded-[10px] border bg-transparent text-[13px] font-medium cursor-pointer', isDark ? 'border-white/10 text-white/60' : 'border-black/10 text-black/60')} onClick={onClose}>Cancel</button>
+              <button className={cn('flex-1 p-3 rounded-[10px] border bg-transparent text-[13px] font-medium cursor-pointer', 'border-black/10 text-black/60 dark:border-white/10 dark:text-white/60')} onClick={onClose}>Cancel</button>
               {preview.status !== 'error' && onConfirm && (
                 <button className="flex-1 p-3 rounded-[10px] border-none text-[13px] font-semibold cursor-pointer text-white" style={{ background: confirmColor }} onClick={onConfirm}>
                   {confirmLabel}
                 </button>
               )}
               {preview.status === 'error' && (
-                <button className={cn('flex-1 p-3 rounded-[10px] border-none text-[13px] font-semibold cursor-not-allowed', isDark ? 'bg-white/5 text-white/30' : 'bg-black/5 text-black/30')} disabled>
+                <button className={cn('flex-1 p-3 rounded-[10px] border-none text-[13px] font-semibold cursor-not-allowed', 'bg-black/5 text-black/30 dark:bg-white/5 dark:text-white/30')} disabled>
                   Cannot Execute
                 </button>
               )}

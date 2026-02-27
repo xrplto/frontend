@@ -684,9 +684,7 @@ function NFTQuickBuy() {
     <div
       className={cn(
         'w-full rounded-[1.5rem] sm:rounded-[2rem] p-4 sm:p-6 md:p-8 border-[1.5px] relative overflow-hidden backdrop-blur-3xl',
-        isDark
-          ? 'border-white/[0.06] bg-white/[0.01]'
-          : 'border-[#E2E8F0] bg-white/40'
+        'border-[#E2E8F0] bg-white/40 dark:border-white/[0.06] dark:bg-white/[0.01]'
       )}
     >
       {/* Background glow */}
@@ -706,10 +704,10 @@ function NFTQuickBuy() {
             { label: 'Mints', value: fmtStat(nftGlobalStats.total24hMints) },
           ].map(({ label, value }) => (
             <div key={label} className="flex items-center gap-1.5">
-              <span className={cn('text-[10px] font-mono', isDark ? 'text-white/25' : 'text-black/25')}>
+              <span className={cn('text-[10px] font-mono', 'text-black/25 dark:text-white/25')}>
                 {label}
               </span>
-              <span className={cn('text-[10px] font-mono font-semibold', isDark ? 'text-white/50' : 'text-black/50')}>
+              <span className={cn('text-[10px] font-mono font-semibold', 'text-black/50 dark:text-white/50')}>
                 {value}
               </span>
             </div>
@@ -724,18 +722,14 @@ function NFTQuickBuy() {
           className={cn(
             'w-full flex items-center justify-between px-3 py-2.5 rounded-xl border-[1.5px] transition-all cursor-pointer bg-transparent',
             dropdownOpen
-              ? isDark
-                ? 'border-[#650CD4]/60 bg-[#650CD4]/5'
-                : 'border-[#650CD4]/40 bg-[#650CD4]/5'
-              : isDark
-                ? 'border-white/[0.06] hover:border-white/[0.12]'
-                : 'border-gray-200 hover:border-gray-300'
+              ? 'border-[#650CD4]/40 bg-[#650CD4]/5 dark:border-[#650CD4]/60 dark:bg-[#650CD4]/5'
+              : 'border-gray-200 hover:border-gray-300 dark:border-white/[0.06] dark:hover:border-white/[0.12]'
           )}
         >
           {loadingCollections ? (
             <div className="flex items-center gap-2">
-              <div className={cn('w-7 h-7 rounded-lg animate-pulse', isDark ? 'bg-white/[0.06]' : 'bg-gray-200')} />
-              <div className={cn('w-24 h-4 rounded animate-pulse', isDark ? 'bg-white/[0.06]' : 'bg-gray-200')} />
+              <div className={cn('w-7 h-7 rounded-lg animate-pulse', 'bg-gray-200 dark:bg-white/[0.06]')} />
+              <div className={cn('w-24 h-4 rounded animate-pulse', 'bg-gray-200 dark:bg-white/[0.06]')} />
             </div>
           ) : selectedCollection ? (
             <div className="flex items-center gap-2.5 min-w-0">
@@ -746,17 +740,17 @@ function NFTQuickBuy() {
                 onError={(e) => { e.target.src = '/static/alt.webp'; }}
               />
               <div className="flex flex-col min-w-0">
-                <span className={cn('text-[13px] font-semibold truncate', isDark ? 'text-white' : 'text-gray-900')}>
+                <span className={cn('text-[13px] font-semibold truncate', 'text-gray-900 dark:text-white')}>
                   {selectedCollection.name}
                 </span>
                 <div className="flex items-center gap-3">
                   {selectedCollection.floor > 0 && (
-                    <span className={cn('text-[10px] font-mono', isDark ? 'text-white/40' : 'text-gray-400')}>
+                    <span className={cn('text-[10px] font-mono', 'text-gray-400 dark:text-white/40')}>
                       Floor {fNumber(selectedCollection.floor)} XRP
                     </span>
                   )}
                   {selectedCollection.items > 0 && (
-                    <span className={cn('text-[10px] font-mono', isDark ? 'text-white/30' : 'text-gray-400')}>
+                    <span className={cn('text-[10px] font-mono', 'text-gray-400 dark:text-white/30')}>
                       {fNumber(selectedCollection.items)} items
                     </span>
                   )}
@@ -764,7 +758,7 @@ function NFTQuickBuy() {
               </div>
             </div>
           ) : (
-            <span className={cn('text-[13px]', isDark ? 'text-white/40' : 'text-gray-400')}>
+            <span className={cn('text-[13px]', 'text-gray-400 dark:text-white/40')}>
               Select collection
             </span>
           )}
@@ -775,7 +769,7 @@ function NFTQuickBuy() {
                 onClick={(e) => e.stopPropagation()}
                 className={cn(
                   'p-1 rounded-md transition-colors',
-                  isDark ? 'hover:bg-white/[0.06] text-white/30' : 'hover:bg-gray-100 text-gray-400'
+                  'hover:bg-gray-100 text-gray-400 dark:hover:bg-white/[0.06] dark:text-white/30'
                 )}
               >
                 <ExternalLink size={13} />
@@ -786,7 +780,7 @@ function NFTQuickBuy() {
               className={cn(
                 'transition-transform duration-200',
                 dropdownOpen && 'rotate-180',
-                isDark ? 'text-white/40' : 'text-gray-400'
+                'text-gray-400 dark:text-white/40'
               )}
             />
           </div>
@@ -797,17 +791,15 @@ function NFTQuickBuy() {
           <div
             className={cn(
               'absolute left-0 right-0 top-[calc(100%+4px)] rounded-xl border-[1.5px] overflow-hidden',
-              isDark
-                ? 'border-white/[0.08] bg-[#0a0a0f]/95 backdrop-blur-xl'
-                : 'border-gray-200 bg-white/95 backdrop-blur-xl'
+              'border-gray-200 bg-white/95 backdrop-blur-xl dark:border-white/[0.08] dark:bg-[#0a0a0f]/95 dark:backdrop-blur-xl'
             )}
           >
             {/* Search input */}
             <div className={cn(
               'flex items-center gap-2 px-3 py-2 border-b-[1.5px]',
-              isDark ? 'border-white/[0.06]' : 'border-gray-200'
+              'border-gray-200 dark:border-white/[0.06]'
             )}>
-              <Search size={14} className={isDark ? 'text-white/30' : 'text-gray-400'} />
+              <Search size={14} className={'text-gray-400 dark:text-white/30'} />
               <input
                 ref={searchInputRef}
                 type="text"
@@ -816,7 +808,7 @@ function NFTQuickBuy() {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className={cn(
                   'flex-1 bg-transparent outline-none border-none text-[12px]',
-                  isDark ? 'text-white placeholder:text-white/20' : 'text-gray-900 placeholder:text-gray-400'
+                  'text-gray-900 placeholder:text-gray-400 dark:text-white dark:placeholder:text-white/20'
                 )}
               />
               {searchQuery && (
@@ -824,7 +816,7 @@ function NFTQuickBuy() {
                   onClick={() => setSearchQuery('')}
                   className="p-0.5 border-none bg-transparent cursor-pointer"
                 >
-                  <X size={12} className={isDark ? 'text-white/30' : 'text-gray-400'} />
+                  <X size={12} className={'text-gray-400 dark:text-white/30'} />
                 </button>
               )}
             </div>
@@ -833,14 +825,14 @@ function NFTQuickBuy() {
             <div className="max-h-[240px] overflow-y-auto" style={{ scrollbarWidth: 'thin' }}>
               {/* Recent collections */}
               {!searchQuery.trim() && recentCollections.length > 0 && (
-                <div className={cn('border-b-[1.5px]', isDark ? 'border-white/[0.06]' : 'border-gray-200')}>
+                <div className={cn('border-b-[1.5px]', 'border-gray-200 dark:border-white/[0.06]')}>
                   <div className="flex items-center justify-between px-3 pt-2 pb-1">
-                    <span className={cn('text-[10px] font-semibold uppercase tracking-wider', isDark ? 'text-white/30' : 'text-gray-400')}>
+                    <span className={cn('text-[10px] font-semibold uppercase tracking-wider', 'text-gray-400 dark:text-white/30')}>
                       Recent
                     </span>
                     <button
                       onClick={() => { setRecentCollections([]); localStorage.removeItem('nftRecentCollections'); }}
-                      className={cn('text-[10px] border-none bg-transparent cursor-pointer', isDark ? 'text-white/20 hover:text-white/40' : 'text-gray-400 hover:text-gray-500')}
+                      className={cn('text-[10px] border-none bg-transparent cursor-pointer', 'text-gray-400 hover:text-gray-500 dark:text-white/20 dark:hover:text-white/40')}
                     >
                       Clear
                     </button>
@@ -856,8 +848,8 @@ function NFTQuickBuy() {
                       className={cn(
                         'w-full flex items-center gap-2.5 px-3 py-2 transition-colors cursor-pointer bg-transparent text-left border-none',
                         col.slug === selectedSlug
-                          ? isDark ? 'bg-[#650CD4]/10' : 'bg-[#650CD4]/5'
-                          : isDark ? 'hover:bg-white/[0.04]' : 'hover:bg-gray-50'
+                          ? 'bg-[#650CD4]/5 dark:bg-[#650CD4]/10'
+                          : 'hover:bg-gray-50 dark:hover:bg-white/[0.04]'
                       )}
                     >
                       <img
@@ -866,7 +858,7 @@ function NFTQuickBuy() {
                         className="w-6 h-6 rounded-md object-cover flex-shrink-0"
                         onError={(e) => { e.target.src = '/static/alt.webp'; }}
                       />
-                      <span className={cn('text-[12px] font-semibold truncate', isDark ? 'text-white/70' : 'text-gray-700')}>
+                      <span className={cn('text-[12px] font-semibold truncate', 'text-gray-700 dark:text-white/70')}>
                         {col.name}
                       </span>
                     </button>
@@ -884,7 +876,7 @@ function NFTQuickBuy() {
                 }
                 if (searchQuery.trim() && !displayList.length) {
                   return (
-                    <div className={cn('text-center py-6 text-[12px]', isDark ? 'text-white/30' : 'text-gray-400')}>
+                    <div className={cn('text-center py-6 text-[12px]', 'text-gray-400 dark:text-white/30')}>
                       No collections found
                     </div>
                   );
@@ -903,12 +895,8 @@ function NFTQuickBuy() {
                       className={cn(
                         'w-full flex items-center gap-2.5 px-3 py-2.5 transition-colors cursor-pointer bg-transparent text-left border-none',
                         isSelected
-                          ? isDark
-                            ? 'bg-[#650CD4]/10'
-                            : 'bg-[#650CD4]/5'
-                          : isDark
-                            ? 'hover:bg-white/[0.04]'
-                            : 'hover:bg-gray-50'
+                          ? 'bg-[#650CD4]/5 dark:bg-[#650CD4]/10'
+                          : 'hover:bg-gray-50 dark:hover:bg-white/[0.04]'
                       )}
                     >
                       <img
@@ -924,19 +912,19 @@ function NFTQuickBuy() {
                             'text-[12px] font-semibold truncate',
                             isSelected
                               ? 'text-[#650CD4]'
-                              : isDark ? 'text-white/80' : 'text-gray-800'
+                              : 'text-gray-800 dark:text-white/80'
                           )}
                         >
                           {col.name}
                         </span>
                         <div className="flex items-center gap-3">
                           {col.floor > 0 && (
-                            <span className={cn('text-[10px] font-mono', isDark ? 'text-white/30' : 'text-gray-400')}>
+                            <span className={cn('text-[10px] font-mono', 'text-gray-400 dark:text-white/30')}>
                               Floor {fNumber(col.floor)} XRP
                             </span>
                           )}
                           {col.items > 0 && (
-                            <span className={cn('text-[10px] font-mono', isDark ? 'text-white/25' : 'text-gray-400')}>
+                            <span className={cn('text-[10px] font-mono', 'text-gray-400 dark:text-white/25')}>
                               {fNumber(col.items)} items
                             </span>
                           )}
@@ -963,9 +951,7 @@ function NFTQuickBuy() {
                 key={i}
                 className={cn(
                   'rounded-xl aspect-square animate-pulse border-[1.5px]',
-                  isDark
-                    ? 'bg-white/[0.02] border-white/[0.04]'
-                    : 'bg-gray-100 border-gray-200'
+                  'bg-gray-100 border-gray-200 dark:bg-white/[0.02] dark:border-white/[0.04]'
                 )}
               />
             ))}
@@ -998,12 +984,8 @@ function NFTQuickBuy() {
                     isSelected
                       ? 'border-[#650CD4] ring-1 ring-[#650CD4]/30'
                       : isFloor
-                        ? isDark
-                          ? 'border-[#650CD4]/40 hover:border-[#650CD4]/60'
-                          : 'border-[#650CD4]/30 hover:border-[#650CD4]/50'
-                        : isDark
-                          ? 'border-white/[0.06] hover:border-white/[0.12]'
-                          : 'border-gray-200 hover:border-gray-300',
+                        ? 'border-[#650CD4]/30 hover:border-[#650CD4]/50 dark:border-[#650CD4]/40 dark:hover:border-[#650CD4]/60'
+                        : 'border-gray-200 hover:border-gray-300 dark:border-white/[0.06] dark:hover:border-white/[0.12]',
                     'hover:scale-[1.02] active:scale-[0.98]'
                   )}
                 >
@@ -1018,7 +1000,7 @@ function NFTQuickBuy() {
                   <div
                     className={cn(
                       'aspect-square overflow-hidden',
-                      isDark ? 'bg-white/[0.03]' : 'bg-gray-100'
+                      'bg-gray-100 dark:bg-white/[0.03]'
                     )}
                   >
                     <img
@@ -1037,7 +1019,7 @@ function NFTQuickBuy() {
                     <span
                       className={cn(
                         'text-[10px] sm:text-[11px] font-semibold truncate',
-                        isDark ? 'text-white/80' : 'text-gray-800'
+                        'text-gray-800 dark:text-white/80'
                       )}
                     >
                       {name}
@@ -1046,7 +1028,7 @@ function NFTQuickBuy() {
                       <span
                         className={cn(
                           'text-[11px] sm:text-[12px] font-mono font-bold',
-                          isDark ? 'text-white' : 'text-gray-900'
+                          'text-gray-900 dark:text-white'
                         )}
                       >
                         {fNumber(price)} XRP
@@ -1061,7 +1043,7 @@ function NFTQuickBuy() {
           <div
             className={cn(
               'flex flex-col items-center justify-center py-10 gap-2',
-              isDark ? 'text-white/30' : 'text-gray-400'
+              'text-gray-400 dark:text-white/30'
             )}
           >
             <ImageIcon size={24} />
@@ -1076,9 +1058,7 @@ function NFTQuickBuy() {
           ref={detailPanelRef}
           className={cn(
             'mt-4 rounded-xl border-[1.5px] overflow-hidden relative z-10 animate-in fade-in duration-200',
-            isDark
-              ? 'border-white/[0.08] bg-white/[0.02]'
-              : 'border-gray-200 bg-gray-50/50'
+            'border-gray-200 bg-gray-50/50 dark:border-white/[0.08] dark:bg-white/[0.02]'
           )}
         >
           {/* NFT Info Row */}
@@ -1097,7 +1077,7 @@ function NFTQuickBuy() {
                 <h3
                   className={cn(
                     'text-[14px] sm:text-[15px] font-bold truncate',
-                    isDark ? 'text-white' : 'text-gray-900'
+                    'text-gray-900 dark:text-white'
                   )}
                 >
                   {previewNft.name || previewNft.meta?.name || `NFT #${previewNft.sequence || ''}`}
@@ -1106,9 +1086,7 @@ function NFTQuickBuy() {
                   onClick={() => setPreviewNft(null)}
                   className={cn(
                     'p-1 rounded-lg transition-colors flex-shrink-0 border-none cursor-pointer',
-                    isDark
-                      ? 'text-white/40 hover:text-white/70 hover:bg-white/[0.06]'
-                      : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
+                    'text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:text-white/40 dark:hover:text-white/70 dark:hover:bg-white/[0.06]'
                   )}
                 >
                   <X size={14} />
@@ -1125,13 +1103,13 @@ function NFTQuickBuy() {
               )}
 
               {xrpPrice(previewNft.cost) !== null && (
-                <span className={cn('text-[14px] font-mono font-bold', isDark ? 'text-white' : 'text-gray-900')}>
+                <span className={cn('text-[14px] font-mono font-bold', 'text-gray-900 dark:text-white')}>
                   {fNumber(xrpPrice(previewNft.cost))} XRP
                 </span>
               )}
 
               {previewNft.rarity_rank > 0 && (
-                <span className={cn('text-[11px] font-mono', isDark ? 'text-white/40' : 'text-gray-500')}>
+                <span className={cn('text-[11px] font-mono', 'text-gray-500 dark:text-white/40')}>
                   Rarity #{previewNft.rarity_rank}
                 </span>
               )}
@@ -1141,11 +1119,11 @@ function NFTQuickBuy() {
           {/* Action Tabs */}
           <div className={cn(
             'border-t-[1.5px] px-4 pt-3 pb-4',
-            isDark ? 'border-white/[0.06]' : 'border-gray-200'
+            'border-gray-200 dark:border-white/[0.06]'
           )}>
             <div role="tablist" aria-label="Action type" className={cn(
               'flex p-0.5 rounded-lg mb-3 border-[1.5px]',
-              isDark ? 'bg-white/5 border-white/[0.06]' : 'bg-gray-100 border-gray-200'
+              'bg-gray-100 border-gray-200 dark:bg-white/5 dark:border-white/[0.06]'
             )}>
               <button
                 role="tab"
@@ -1155,9 +1133,7 @@ function NFTQuickBuy() {
                   'flex-1 px-3 py-1.5 rounded-md text-[12px] font-bold transition-all duration-200 outline-none',
                   actionMode === 'buy'
                     ? 'bg-[#650CD4] text-white'
-                    : isDark
-                      ? 'text-white/40 hover:text-white/60'
-                      : 'text-gray-500 hover:text-gray-700'
+                    : 'text-gray-500 hover:text-gray-700 dark:text-white/40 dark:hover:text-white/60'
                 )}
               >
                 Buy Now
@@ -1170,9 +1146,7 @@ function NFTQuickBuy() {
                   'flex-1 px-3 py-1.5 rounded-md text-[12px] font-bold transition-all duration-200 outline-none',
                   actionMode === 'offer'
                     ? 'bg-[#650CD4] text-white'
-                    : isDark
-                      ? 'text-white/40 hover:text-white/60'
-                      : 'text-gray-500 hover:text-gray-700'
+                    : 'text-gray-500 hover:text-gray-700 dark:text-white/40 dark:hover:text-white/60'
                 )}
               >
                 Make Offer
@@ -1188,9 +1162,7 @@ function NFTQuickBuy() {
                   className={cn(
                     'w-full py-3 rounded-xl text-[13px] font-bold transition-all duration-300 flex items-center justify-center gap-2 border-none cursor-pointer',
                     buyingNft
-                      ? isDark
-                        ? 'bg-white/5 text-white/20 cursor-not-allowed'
-                        : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-white/5 dark:text-white/20 dark:cursor-not-allowed'
                       : 'bg-[#650CD4] text-white hover:bg-[#650CD4]/90 active:scale-[0.98]'
                   )}
                 >
@@ -1221,7 +1193,7 @@ function NFTQuickBuy() {
                 <div className="flex flex-col gap-3">
                   <div className={cn(
                     'flex items-center rounded-xl border-[1.5px] overflow-hidden',
-                    isDark ? 'border-white/[0.08] bg-transparent' : 'border-gray-200 bg-white'
+                    'border-gray-200 bg-white dark:border-white/[0.08] dark:bg-transparent'
                   )}>
                     <input
                       type="number"
@@ -1231,12 +1203,12 @@ function NFTQuickBuy() {
                       onChange={(e) => setOfferAmount(e.target.value)}
                       className={cn(
                         'flex-1 px-3 py-2.5 text-[15px] font-mono bg-transparent outline-none border-none',
-                        isDark ? 'text-white placeholder:text-white/20' : 'text-gray-900 placeholder:text-gray-300'
+                        'text-gray-900 placeholder:text-gray-300 dark:text-white dark:placeholder:text-white/20'
                       )}
                     />
                     <span className={cn(
                       'px-3 text-[12px] font-bold',
-                      isDark ? 'text-white/40' : 'text-gray-400'
+                      'text-gray-400 dark:text-white/40'
                     )}>
                       XRP
                     </span>
@@ -1247,9 +1219,7 @@ function NFTQuickBuy() {
                     className={cn(
                       'w-full py-3 rounded-xl text-[13px] font-bold transition-all duration-300 flex items-center justify-center gap-2 border-none cursor-pointer',
                       makingOffer || !offerAmount || parseFloat(offerAmount) <= 0
-                        ? isDark
-                          ? 'bg-white/5 text-white/20 cursor-not-allowed'
-                          : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-white/5 dark:text-white/20 dark:cursor-not-allowed'
                         : 'bg-[#650CD4] text-white hover:bg-[#650CD4]/90 active:scale-[0.98]'
                     )}
                   >
@@ -1281,9 +1251,9 @@ function NFTQuickBuy() {
             {userOffers.length > 0 && (
               <div className={cn(
                 'mt-3 pt-3 border-t-[1.5px]',
-                isDark ? 'border-white/[0.06]' : 'border-gray-200'
+                'border-gray-200 dark:border-white/[0.06]'
               )}>
-                <span className={cn('text-[11px] font-semibold uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>
+                <span className={cn('text-[11px] font-semibold uppercase tracking-wider', 'text-gray-400 dark:text-white/40')}>
                   Your Offers
                 </span>
                 <div className="mt-2 flex flex-col gap-1.5">
@@ -1292,10 +1262,10 @@ function NFTQuickBuy() {
                       key={offer.id}
                       className={cn(
                         'flex items-center justify-between px-2.5 py-2 rounded-lg border-[1.5px]',
-                        isDark ? 'border-white/[0.06] bg-white/[0.02]' : 'border-gray-200 bg-gray-50'
+                        'border-gray-200 bg-gray-50 dark:border-white/[0.06] dark:bg-white/[0.02]'
                       )}
                     >
-                      <span className={cn('text-[12px] font-mono font-bold', isDark ? 'text-white' : 'text-gray-900')}>
+                      <span className={cn('text-[12px] font-mono font-bold', 'text-gray-900 dark:text-white')}>
                         {fNumber(offer.amount)} XRP
                       </span>
                       <button
@@ -1304,12 +1274,8 @@ function NFTQuickBuy() {
                         className={cn(
                           'px-2.5 py-1 rounded-lg text-[11px] font-semibold border-[1.5px] transition-colors cursor-pointer',
                           cancellingOffer === offer.id
-                            ? isDark
-                              ? 'border-white/[0.06] text-white/20 cursor-not-allowed bg-transparent'
-                              : 'border-gray-200 text-gray-400 cursor-not-allowed bg-transparent'
-                            : isDark
-                              ? 'border-red-500/30 text-red-400 hover:bg-red-500/10 bg-transparent'
-                              : 'border-red-300 text-red-500 hover:bg-red-50 bg-transparent'
+                            ? 'border-gray-200 text-gray-400 cursor-not-allowed bg-transparent dark:border-white/[0.06] dark:text-white/20 dark:cursor-not-allowed dark:bg-transparent'
+                            : 'border-red-300 text-red-500 hover:bg-red-50 bg-transparent dark:border-red-500/30 dark:text-red-400 dark:hover:bg-red-500/10 dark:bg-transparent'
                         )}
                       >
                         {cancellingOffer === offer.id ? 'Cancelling...' : 'Cancel'}
@@ -1325,7 +1291,7 @@ function NFTQuickBuy() {
               href={`/nft/${previewNft.NFTokenID || previewNft.nftokenID || previewNft._id}`}
               className={cn(
                 'block text-center text-[11px] font-medium mt-2.5 no-underline transition-colors',
-                isDark ? 'text-white/30 hover:text-white/50' : 'text-gray-400 hover:text-gray-600'
+                'text-gray-400 hover:text-gray-600 dark:text-white/30 dark:hover:text-white/50'
               )}
             >
               View full details
@@ -1336,21 +1302,19 @@ function NFTQuickBuy() {
       {/* ── Trending Collections ──────────────────────────────── */}
       <div className={cn(
         'mt-4 rounded-xl border-[1.5px] p-4 sm:p-5 relative overflow-hidden',
-        isDark
-          ? 'border-white/[0.06] bg-white/[0.01]'
-          : 'border-[#E2E8F0] bg-white/40'
+        'border-[#E2E8F0] bg-white/40 dark:border-white/[0.06] dark:bg-white/[0.01]'
       )}>
         <div className="flex items-center justify-between mb-3 sm:mb-4">
           <div className="flex items-center gap-2">
             <div className={cn(
               'w-6 h-6 rounded-lg flex items-center justify-center',
-              isDark ? 'bg-white/[0.06]' : 'bg-[#137DFE]/10'
+              'bg-[#137DFE]/10 dark:bg-white/[0.06]'
             )}>
-              <TrendingUp size={12} className={isDark ? 'text-white/60' : 'text-[#137DFE]'} />
+              <TrendingUp size={12} className={'text-[#137DFE] dark:text-white/60'} />
             </div>
             <span className={cn(
               'text-[12px] sm:text-[13px] font-bold uppercase tracking-[1.5px] font-mono',
-              isDark ? 'text-[#F5F5F5]' : 'text-[#0F172A]'
+              'text-[#0F172A] dark:text-[#F5F5F5]'
             )}>
               Trending Collections
             </span>
@@ -1372,7 +1336,7 @@ function NFTQuickBuy() {
             [...Array(5)].map((_, i) => (
               <div key={i} className={cn(
                 'h-12 rounded-lg animate-pulse',
-                isDark ? 'bg-white/[0.03]' : 'bg-gray-100'
+                'bg-gray-100 dark:bg-white/[0.03]'
               )} />
             ))
           ) : trendingCollections.length > 0 ? (
@@ -1395,14 +1359,14 @@ function NFTQuickBuy() {
                   }}
                   className={cn(
                     'grid items-center gap-2 w-full px-2 py-1.5 rounded-lg transition-all duration-200 border-none cursor-pointer text-left',
-                    isDark ? 'bg-transparent hover:bg-white/[0.04]' : 'bg-transparent hover:bg-gray-50'
+                    'bg-transparent hover:bg-gray-50 dark:bg-transparent dark:hover:bg-white/[0.04]'
                   )}
                   style={{ gridTemplateColumns: '20px 28px 1fr 72px 56px 56px 48px 80px 52px' }}
                 >
                   {/* Rank */}
                   <span className={cn(
                     'text-[11px] font-mono font-bold text-center',
-                    i < 3 ? rankColors[i] : isDark ? 'text-white/20' : 'text-gray-300'
+                    i < 3 ? rankColors[i] : 'text-gray-300 dark:text-white/20'
                   )}>
                     {i + 1}
                   </span>
@@ -1410,7 +1374,7 @@ function NFTQuickBuy() {
                   {/* Logo */}
                   <div className={cn(
                     'w-7 h-7 rounded-lg overflow-hidden border-[1.5px]',
-                    isDark ? 'border-white/[0.06] bg-white/[0.03]' : 'border-[#E2E8F0] bg-white'
+                    'border-[#E2E8F0] bg-white dark:border-white/[0.06] dark:bg-white/[0.03]'
                   )}>
                     <img src={collectionImg(col.logoImage)} alt="" className="w-full h-full object-cover" loading="lazy" onError={(e) => { e.target.src = '/static/alt.webp'; }} />
                   </div>
@@ -1419,7 +1383,7 @@ function NFTQuickBuy() {
                   <div className="flex items-center gap-1.5 min-w-0 overflow-hidden">
                     <span className={cn(
                       'text-[12px] font-semibold truncate',
-                      isBoosted && col.trendingBoost >= 500 ? 'text-[#FFD700]' : isDark ? 'text-[#F5F5F5]' : 'text-[#0F172A]'
+                      isBoosted && col.trendingBoost >= 500 ? 'text-[#FFD700]' : 'text-[#0F172A] dark:text-[#F5F5F5]'
                     )}>
                       {col.name}
                     </span>
@@ -1432,25 +1396,25 @@ function NFTQuickBuy() {
                   </div>
 
                   {/* Owners */}
-                  <span className={cn('text-[11px] font-mono text-right tabular-nums', isDark ? 'text-white/50' : 'text-black/50')}>
-                    {fmtStat(col.owners || 0)} <span className={cn('text-[9px]', isDark ? 'text-white/30' : 'text-black/30')}>owners</span>
+                  <span className={cn('text-[11px] font-mono text-right tabular-nums', 'text-black/50 dark:text-white/50')}>
+                    {fmtStat(col.owners || 0)} <span className={cn('text-[9px]', 'text-black/30 dark:text-white/30')}>owners</span>
                   </span>
 
                   {/* 24h Sales */}
-                  <span className={cn('text-[11px] font-mono text-right tabular-nums', isDark ? 'text-white/50' : 'text-black/50')}>
-                    {fmtStat(col.sales24h || 0)} <span className={cn('text-[9px]', isDark ? 'text-white/30' : 'text-black/30')}>sales</span>
+                  <span className={cn('text-[11px] font-mono text-right tabular-nums', 'text-black/50 dark:text-white/50')}>
+                    {fmtStat(col.sales24h || 0)} <span className={cn('text-[9px]', 'text-black/30 dark:text-white/30')}>sales</span>
                   </span>
 
                   {/* Listed */}
-                  <span className={cn('text-[11px] font-mono text-right tabular-nums', isDark ? 'text-white/50' : 'text-black/50')}>
-                    {fmtStat(listed)} <span className={cn('text-[9px]', isDark ? 'text-white/30' : 'text-black/30')}>listed</span>
+                  <span className={cn('text-[11px] font-mono text-right tabular-nums', 'text-black/50 dark:text-white/50')}>
+                    {fmtStat(listed)} <span className={cn('text-[9px]', 'text-black/30 dark:text-white/30')}>listed</span>
                   </span>
 
                   {/* Sparkline */}
                   <MiniSparkline data={nftSparklines[col.slug]} color={isUp ? '#08AA09' : '#ef4444'} width={48} height={16} />
 
                   {/* Floor */}
-                  <span className={cn('text-[11px] font-mono font-medium text-right tabular-nums', isDark ? 'text-white/70' : 'text-[#0F172A]/70')}>
+                  <span className={cn('text-[11px] font-mono font-medium text-right tabular-nums', 'text-[#0F172A]/70 dark:text-white/70')}>
                     {col.floor > 0 ? `${fNumber(col.floor)} XRP` : '-'}
                   </span>
                   {/* Floor change */}
@@ -1461,7 +1425,7 @@ function NFTQuickBuy() {
               );
             })
           ) : (
-            <div className={cn('text-center py-4 text-[12px]', isDark ? 'text-white/30' : 'text-gray-400')}>
+            <div className={cn('text-center py-4 text-[12px]', 'text-gray-400 dark:text-white/30')}>
               No trending collections
             </div>
           )}
@@ -1471,11 +1435,11 @@ function NFTQuickBuy() {
         {!trendingLoading && trendingCollections.length > 0 && (
           <div className={cn(
             'flex items-center justify-between mt-2 pt-3 border-t',
-            isDark ? 'border-white/[0.06]' : 'border-black/[0.06]'
+            'border-black/[0.06] dark:border-white/[0.06]'
           )}>
             <div className="flex items-center gap-2">
               <Flame size={12} className="text-[#F6AF01]" fill="#F6AF01" />
-              <span className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-black/40')}>
+              <span className={cn('text-[11px]', 'text-black/40 dark:text-white/40')}>
                 Want your collection here?
               </span>
             </div>
@@ -1497,20 +1461,18 @@ function NFTQuickBuy() {
       {recentNftSales.length > 0 && (
       <div className={cn(
         'mt-4 rounded-xl border-[1.5px] p-4 sm:p-5 relative overflow-hidden',
-        isDark
-          ? 'border-white/[0.06] bg-white/[0.01]'
-          : 'border-[#E2E8F0] bg-white/40'
+        'border-[#E2E8F0] bg-white/40 dark:border-white/[0.06] dark:bg-white/[0.01]'
       )}>
         <div className="flex items-center gap-2 mb-3 sm:mb-4">
           <div className={cn(
             'w-6 h-6 rounded-lg flex items-center justify-center',
-            isDark ? 'bg-white/[0.06]' : 'bg-[#137DFE]/10'
+            'bg-[#137DFE]/10 dark:bg-white/[0.06]'
           )}>
-            <Zap size={12} className={isDark ? 'text-white/60' : 'text-[#137DFE]'} />
+            <Zap size={12} className={'text-[#137DFE] dark:text-white/60'} />
           </div>
           <span className={cn(
             'text-[12px] sm:text-[13px] font-bold uppercase tracking-[1.5px] font-mono',
-            isDark ? 'text-[#F5F5F5]' : 'text-[#0F172A]'
+            'text-[#0F172A] dark:text-[#F5F5F5]'
           )}>
             Recent Sales
           </span>
@@ -1546,12 +1508,12 @@ function NFTQuickBuy() {
                 }}
                 className={cn(
                   'grid items-center gap-2 w-full px-2 py-1.5 rounded-lg transition-all duration-200 text-left cursor-pointer',
-                  isDark ? 'hover:bg-white/[0.04]' : 'hover:bg-gray-50'
+                  'hover:bg-gray-50 dark:hover:bg-white/[0.04]'
                 )}
                 style={{ gridTemplateColumns: '52px 36px 1fr 1fr 72px' }}
               >
                 {/* Time */}
-                <span suppressHydrationWarning className={cn('text-[11px] font-semibold tabular-nums', isDark ? 'text-white/60' : 'text-black/60')}>
+                <span suppressHydrationWarning className={cn('text-[11px] font-semibold tabular-nums', 'text-black/60 dark:text-white/60')}>
                   {elapsed}
                 </span>
                 {/* Sale label */}
@@ -1561,7 +1523,7 @@ function NFTQuickBuy() {
                 {/* Collection name with bar */}
                 <div className="relative flex items-center h-7 px-[10px] rounded-[6px] overflow-hidden">
                   <div className="absolute left-0 top-1/2 -translate-y-1/2 h-[80%] rounded-sm" style={{ width: `${barPct}%`, background: barBg, borderLeft: `3px solid ${barBorder}`, transition: 'width 0.4s cubic-bezier(0.4,0,0.2,1)' }} />
-                  <span className={cn('relative z-[1] text-[11px] font-mono font-medium truncate', isDark ? 'text-white' : 'text-[#1a1a1a]')}>
+                  <span className={cn('relative z-[1] text-[11px] font-mono font-medium truncate', 'text-[#1a1a1a] dark:text-white')}>
                     {col?.name || sale.name || 'NFT'}
                     {origin && <span className="opacity-50 text-[9px] font-normal ml-1">{origin}</span>}
                   </span>
@@ -1569,7 +1531,7 @@ function NFTQuickBuy() {
                 {/* XRP price with bar */}
                 <div className="relative flex items-center h-7 px-[10px] rounded-[6px] overflow-hidden">
                   <div className="absolute left-0 top-1/2 -translate-y-1/2 h-[80%] rounded-sm" style={{ width: `${barPct}%`, background: barBg, borderLeft: `3px solid ${barBorder}`, transition: 'width 0.4s cubic-bezier(0.4,0,0.2,1)' }} />
-                  <span className={cn('relative z-[1] text-[11px] font-mono font-medium', isDark ? 'text-white' : 'text-[#1a1a1a]')}>
+                  <span className={cn('relative z-[1] text-[11px] font-mono font-medium', 'text-[#1a1a1a] dark:text-white')}>
                     {fmtStat(price)}{' '}
                     <span className="opacity-60 text-[9px] font-normal">XRP</span>
                   </span>
@@ -1580,9 +1542,7 @@ function NFTQuickBuy() {
                   onClick={(e) => e.stopPropagation()}
                   className={cn(
                     'inline-flex items-center px-1.5 py-0.5 rounded-md border text-[10px] font-mono no-underline truncate',
-                    isDark
-                      ? 'bg-white/[0.03] border-white/[0.06] text-white/50 hover:text-white/80'
-                      : 'bg-black/[0.02] border-black/[0.04] text-gray-500 hover:text-gray-900'
+                    'bg-black/[0.02] border-black/[0.04] text-gray-500 hover:text-gray-900 dark:bg-white/[0.03] dark:border-white/[0.06] dark:text-white/50 dark:hover:text-white/80'
                   )}
                   title={buyer}
                 >

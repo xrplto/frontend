@@ -1,5 +1,4 @@
-import React, { useContext, useState } from 'react';
-import { ThemeContext } from 'src/context/AppContext';
+import React, { useState } from 'react';
 import { cn } from 'src/utils/cn';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
@@ -22,11 +21,11 @@ const Container = ({ className, children, ...p }) => (
   </div>
 );
 
-const Title = ({ className, children, isDark, ...p }) => (
+const Title = ({ className, children, ...p }) => (
   <h1
     className={cn(
       'text-[2rem] font-semibold text-center mb-2 flex items-center justify-center gap-3',
-      isDark ? 'text-white' : 'text-black',
+      'text-black dark:text-white',
       className
     )}
     {...p}
@@ -35,20 +34,20 @@ const Title = ({ className, children, isDark, ...p }) => (
   </h1>
 );
 
-const Subtitle = ({ className, children, isDark, ...p }) => (
+const Subtitle = ({ className, children, ...p }) => (
   <p
-    className={cn('text-center mb-8 text-sm', isDark ? 'text-white/50' : 'text-black/50', className)}
+    className={cn('text-center mb-8 text-sm', 'text-black/50 dark:text-white/50', className)}
     {...p}
   >
     {children}
   </p>
 );
 
-const Card = ({ className, children, isDark, ...p }) => (
+const Card = ({ className, children, ...p }) => (
   <div
     className={cn(
       'rounded-xl p-6 border',
-      isDark ? 'bg-white/[0.03] border-white/10' : 'bg-black/[0.02] border-black/10',
+      'bg-black/[0.02] border-black/10 dark:bg-white/[0.03] dark:border-white/10',
       className
     )}
     {...p}
@@ -57,20 +56,20 @@ const Card = ({ className, children, isDark, ...p }) => (
   </div>
 );
 
-const Label = ({ className, children, isDark, ...p }) => (
+const Label = ({ className, children, ...p }) => (
   <label
-    className={cn('block text-xs font-medium mb-2 uppercase tracking-[0.5px]', isDark ? 'text-white/70' : 'text-black/70', className)}
+    className={cn('block text-xs font-medium mb-2 uppercase tracking-[0.5px]', 'text-black/70 dark:text-white/70', className)}
     {...p}
   >
     {children}
   </label>
 );
 
-const Input = ({ className, isDark, ...p }) => (
+const Input = ({ className, ...p }) => (
   <input
     className={cn(
       'w-full px-4 py-3 text-sm rounded-lg outline-none font-mono border focus:border-[#3b82f6]',
-      isDark ? 'border-white/[0.15] bg-[rgba(0,0,0,0.3)] text-white' : 'border-black/[0.15] bg-white text-black',
+      'border-black/[0.15] bg-white text-black dark:border-white/[0.15] dark:bg-[rgba(0,0,0,0.3)] dark:text-white',
       className
     )}
     {...p}
@@ -105,11 +104,11 @@ const Message = ({ className, children, success, error, ...p }) => (
   </div>
 );
 
-const Info = ({ className, children, isDark, ...p }) => (
+const Info = ({ className, children, ...p }) => (
   <div
     className={cn(
       'mt-6 p-4 rounded-lg text-[13px] leading-relaxed',
-      isDark ? 'bg-blue-500/10 text-white/60' : 'bg-blue-500/5 text-black/60',
+      'bg-blue-500/5 text-black/60 dark:bg-blue-500/10 dark:text-white/60',
       className
     )}
     {...p}
@@ -131,7 +130,6 @@ const TxLink = ({ className, children, ...p }) => (
 );
 
 export default function FaucetPage() {
-  const { darkMode } = useContext(ThemeContext);
   const [address, setAddress] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
@@ -174,20 +172,19 @@ export default function FaucetPage() {
     <PageWrapper>
       <Header />
       <Container>
-        <Title isDark={darkMode}>
+        <Title>
           <Droplets size={32} color="#3b82f6" />
           Testnet Faucet
         </Title>
-        <Subtitle isDark={darkMode}>
+        <Subtitle>
           Get free XRP for development and testing on XRPL Testnet<br />
           <code className="text-[11px] opacity-70">wss://s.altnet.rippletest.net:51233</code>
         </Subtitle>
 
-        <Card isDark={darkMode}>
+        <Card>
           <form onSubmit={handleSubmit}>
-            <Label isDark={darkMode}>Your Testnet Wallet Address</Label>
+            <Label>Your Testnet Wallet Address</Label>
             <Input
-              isDark={darkMode}
               type="text"
               placeholder="rXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
               value={address}
@@ -244,7 +241,7 @@ export default function FaucetPage() {
           )}
         </Card>
 
-        <Info isDark={darkMode}>
+        <Info>
           <strong>Testnet Only:</strong> This faucet provides XRP on the XRPL Testnet network only (no real value).<br /><br />
           <strong>Server:</strong> <code>wss://s.altnet.rippletest.net:51233</code><br />
           <strong>Limit:</strong> 200 XRP per address every 24 hours

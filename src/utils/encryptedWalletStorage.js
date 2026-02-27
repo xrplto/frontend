@@ -9,6 +9,17 @@ const isDev = process.env.NODE_ENV === 'development';
 const devLog = isDev ? (...args) => console.log('[WalletStorage]', ...args) : () => {};
 const devError = isDev ? (...args) => console.error('[WalletStorage]', ...args) : () => {};
 
+// Adaptive PBKDF2 calibration constants
+const PBKDF2_MIN_ITERATIONS = 600_000;
+const PBKDF2_MAX_ITERATIONS = 4_000_000;
+const PBKDF2_TARGET_MS = 250;
+const PBKDF2_PROBE_ITERATIONS = 50_000;
+const PBKDF2_CALIBRATION_LS_KEY = 'xrplto_pbkdf2_iter';
+const PBKDF2_CALIBRATION_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
+
+let _calibratedIterations = null;
+let _calibrationPromise = null;
+
 // Anti-phishing emoji set (64 emojis = 16.7M combinations for 4-emoji sequence)
 const ANTI_PHISHING_EMOJI_SET = [
   '🐶','🐱','🐻','🦊','🐸','🐵','🦁','🐼','🐷','🐨','🐙','🦋',
@@ -401,12 +412,106 @@ const _credCache = (() => {
   };
 })();
 
+/**
+ * Benchmarks PBKDF2 on this device and returns an iteration count that fits
+ * within PBKDF2_TARGET_MS (250ms). Result is cached in memory and localStorage
+ * with a 7-day TTL. Always returns at least PBKDF2_MIN_ITERATIONS (600k).
+ */
+async function calibratePBKDF2() {
+  // Return memory cache immediately
+  if (_calibratedIterations) return _calibratedIterations;
+
+  // SSR guard
+  if (typeof performance === 'undefined' || typeof crypto === 'undefined') {
+    return PBKDF2_MIN_ITERATIONS;
+  }
+
+  // Deduplicate concurrent calls
+  if (_calibrationPromise) return _calibrationPromise;
+
+  _calibrationPromise = (async () => {
+    try {
+      // Check localStorage cache
+      const cached = localStorage.getItem(PBKDF2_CALIBRATION_LS_KEY);
+      if (cached) {
+        const { iterations, ts } = JSON.parse(cached);
+        if (
+          typeof iterations === 'number' &&
+          typeof ts === 'number' &&
+          Date.now() - ts < PBKDF2_CALIBRATION_MAX_AGE_MS &&
+          iterations >= PBKDF2_MIN_ITERATIONS &&
+          iterations <= PBKDF2_MAX_ITERATIONS
+        ) {
+          _calibratedIterations = iterations;
+          devLog(`[PBKDF2] cached iterations: ${iterations}`);
+          return iterations;
+        }
+      }
+    } catch { /* localStorage unavailable or corrupt — continue to probe */ }
+
+    try {
+      // Run a small PBKDF2 probe to measure device speed
+      const probeSalt = crypto.getRandomValues(new Uint8Array(16));
+      const keyMaterial = await crypto.subtle.importKey(
+        'raw',
+        new TextEncoder().encode('calibration-probe'),
+        'PBKDF2',
+        false,
+        ['deriveBits']
+      );
+
+      const t0 = performance.now();
+      await crypto.subtle.deriveBits(
+        { name: 'PBKDF2', salt: probeSalt, iterations: PBKDF2_PROBE_ITERATIONS, hash: 'SHA-256' },
+        keyMaterial,
+        256
+      );
+      const elapsed = performance.now() - t0;
+
+      // Guard for bad timing (timer resolution issues, zero elapsed)
+      if (elapsed < 1) {
+        _calibratedIterations = PBKDF2_MIN_ITERATIONS;
+        return PBKDF2_MIN_ITERATIONS;
+      }
+
+      // Extrapolate: if PROBE_ITERATIONS took `elapsed` ms, how many fit in TARGET_MS?
+      const raw = Math.round((PBKDF2_TARGET_MS / elapsed) * PBKDF2_PROBE_ITERATIONS);
+      // Round to nearest 50k
+      const rounded = Math.round(raw / 50_000) * 50_000;
+      // Clamp
+      const iterations = Math.max(PBKDF2_MIN_ITERATIONS, Math.min(PBKDF2_MAX_ITERATIONS, rounded));
+
+      _calibratedIterations = iterations;
+      devLog(`[PBKDF2] probe: ${PBKDF2_PROBE_ITERATIONS} iters in ${elapsed.toFixed(1)}ms → calibrated: ${iterations}`);
+
+      // Persist to localStorage
+      try {
+        localStorage.setItem(PBKDF2_CALIBRATION_LS_KEY, JSON.stringify({ iterations, ts: Date.now() }));
+      } catch { /* quota exceeded — memory cache still works */ }
+
+      return iterations;
+    } catch (e) {
+      devError('[PBKDF2] calibration failed:', e);
+      _calibratedIterations = PBKDF2_MIN_ITERATIONS;
+      return PBKDF2_MIN_ITERATIONS;
+    }
+  })();
+
+  try {
+    return await _calibrationPromise;
+  } finally {
+    _calibrationPromise = null;
+  }
+}
+
 export class UnifiedWalletStorage {
   // Static shared DB promise - ensures only ONE connection across ALL instances
   static _sharedDbPromise = null;
   // Static master key cache - non-extractable CryptoKey
   static _masterKey = null;
   static _masterKeyPromise = null;
+  // Whether we've already requested persistent storage this session
+  static _persistRequested = false;
 
   constructor() {
     this.dbName = 'XRPLWalletDB';
@@ -650,6 +755,13 @@ export class UnifiedWalletStorage {
     }
 
     devLog('[initDB] Creating new DB connection...');
+    // Request persistent storage to prevent Safari/browser eviction of IndexedDB
+    if (!UnifiedWalletStorage._persistRequested && typeof navigator !== 'undefined' && navigator.storage?.persist) {
+      UnifiedWalletStorage._persistRequested = true;
+      navigator.storage.persist().then((granted) => {
+        devLog('[Storage] Persistent storage', granted ? 'granted' : 'denied');
+      }).catch(() => {});
+    }
     UnifiedWalletStorage._sharedDbPromise = this._initDBInternal().catch((err) => {
       // Clear cached promise on failure so next call retries instead of returning stale rejection
       UnifiedWalletStorage._sharedDbPromise = null;
@@ -735,7 +847,7 @@ export class UnifiedWalletStorage {
     });
   }
 
-  async deriveKey(password, salt) {
+  async deriveKey(password, salt, iterations = PBKDF2_MIN_ITERATIONS) {
     const encoder = new TextEncoder();
 
     // Domain separator — prevents password reuse across different services from producing same key
@@ -749,12 +861,11 @@ export class UnifiedWalletStorage {
       ['deriveBits', 'deriveKey']
     );
 
-    // OWASP 2025: 600,000 iterations minimum for PBKDF2-SHA256
     return crypto.subtle.deriveKey(
       {
         name: 'PBKDF2',
         salt: typeof salt === 'string' ? encoder.encode(salt) : salt,
-        iterations: 600000, // OWASP 2025 standard
+        iterations,
         hash: 'SHA-256'
       },
       keyMaterial,
@@ -765,9 +876,10 @@ export class UnifiedWalletStorage {
   }
 
   async encryptData(data, password, { deviceBound = true } = {}) {
+    const iterations = await calibratePBKDF2();
     const salt = crypto.getRandomValues(new Uint8Array(16));
     const iv = crypto.getRandomValues(new Uint8Array(12));
-    const key = await this.deriveKey(password, salt);
+    const key = await this.deriveKey(password, salt, iterations);
 
     const encoder = new TextEncoder();
     const plaintext = encoder.encode(JSON.stringify(data));
@@ -776,22 +888,27 @@ export class UnifiedWalletStorage {
     let version;
 
     if (deviceBound) {
-      // v3: device-bind ciphertext via AES-GCM AAD (prevents cross-device decryption)
+      // v1: device-bound with calibrated iterations header
       const deviceId = deviceFingerprint._cachedDeviceId || await deviceFingerprint.getDeviceId();
       params.additionalData = encoder.encode(deviceId || '');
-      version = 3;
-    } else {
-      // v1: portable encryption (for QR sync, cross-device transfers)
       version = 1;
+    } else {
+      // v2: portable encryption with calibrated iterations header (for QR sync)
+      version = 2;
     }
 
     const encrypted = await crypto.subtle.encrypt(params, key, plaintext);
 
-    const combinedBuffer = new Uint8Array(1 + salt.length + iv.length + encrypted.byteLength);
+    // Layout: [version:1][iterations:4 BE][salt:16][iv:12][ciphertext]
+    const iterBuf = new Uint8Array(4);
+    new DataView(iterBuf.buffer).setUint32(0, iterations, false); // big-endian
+
+    const combinedBuffer = new Uint8Array(1 + 4 + salt.length + iv.length + encrypted.byteLength);
     combinedBuffer.set(new Uint8Array([version]), 0);
-    combinedBuffer.set(salt, 1);
-    combinedBuffer.set(iv, 1 + salt.length);
-    combinedBuffer.set(new Uint8Array(encrypted), 1 + salt.length + iv.length);
+    combinedBuffer.set(iterBuf, 1);
+    combinedBuffer.set(salt, 5);
+    combinedBuffer.set(iv, 21);
+    combinedBuffer.set(new Uint8Array(encrypted), 33);
 
     return btoa(String.fromCharCode(...combinedBuffer));
   }
@@ -803,22 +920,31 @@ export class UnifiedWalletStorage {
         .map((char) => char.charCodeAt(0))
     );
 
-    const version = combinedBuffer[0];
-    if (version !== 1 && version !== 3) {
+    // Minimum: 1 (version) + 4 (iterations) + 16 (salt) + 12 (iv) + 16 (AES-GCM tag) = 49
+    if (combinedBuffer.length < 49) {
       throw new Error('Invalid format - clear browser data and create new wallet');
     }
 
-    // Both v1 and v3 share same layout: version(1) + salt(16) + iv(12) + data
-    const salt = combinedBuffer.slice(1, 17);
-    const iv = combinedBuffer.slice(17, 29);
-    const encrypted = combinedBuffer.slice(29);
+    const version = combinedBuffer[0];
+    if (version !== 1 && version !== 2) {
+      throw new Error('Invalid format - clear browser data and create new wallet');
+    }
 
-    const key = await this.deriveKey(password, salt);
+    // v1/v2 layout: [version:1][iterations:4 BE][salt:16][iv:12][ciphertext]
+    const iterations = new DataView(combinedBuffer.buffer, combinedBuffer.byteOffset, combinedBuffer.byteLength).getUint32(1, false);
+    if (iterations < PBKDF2_MIN_ITERATIONS || iterations > PBKDF2_MAX_ITERATIONS) {
+      throw new Error('Invalid iteration count');
+    }
 
-    // v3: include device fingerprint as AAD (device-bound)
-    // v1: no AAD (legacy, backward compatible)
+    const salt = combinedBuffer.slice(5, 21);
+    const iv = combinedBuffer.slice(21, 33);
+    const encrypted = combinedBuffer.slice(33);
+
+    const key = await this.deriveKey(password, salt, iterations);
+
+    // v1: device-bound (AAD), v2: portable (no AAD)
     const params = { name: 'AES-GCM', iv };
-    if (version === 3) {
+    if (version === 1) {
       const deviceId = deviceFingerprint._cachedDeviceId || await deviceFingerprint.getDeviceId();
       params.additionalData = new TextEncoder().encode(deviceId || '');
     }
@@ -1389,3 +1515,6 @@ export { deviceFingerprint };
 
 // Export anti-phishing emoji utilities
 export { ANTI_PHISHING_EMOJI_SET, generateAntiPhishingEmojis };
+
+// Export PBKDF2 calibration for optional pre-warming by consumers
+export { calibratePBKDF2 };

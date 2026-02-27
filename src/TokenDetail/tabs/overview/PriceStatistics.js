@@ -107,11 +107,12 @@ const PriceDisplay = ({ price, symbol = '' }) => {
 
 // ----------------------------------------------------------------------
 
-export default function PriceStatistics({ token, isDark = false, linkedCollections = [] }) {
+export default function PriceStatistics({ token, linkedCollections = [] }) {
   const router = useRouter();
   const metrics = useSelector(selectMetrics);
   const { accountProfile } = useContext(WalletContext);
-  const { activeFiatCurrency, openSnackbar } = useContext(AppContext);
+  const { activeFiatCurrency, openSnackbar, themeName } = useContext(AppContext);
+  const isDark = themeName === 'XrplToDarkTheme';
   const accountLogin = accountProfile?.account;
   const isMobile = useIsMobile();
   const [openScamWarning, setOpenScamWarning] = useState(false);
@@ -480,15 +481,13 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
       <div
         className={cn(
           'rounded-2xl border transition-[opacity,transform,background-color,border-color] duration-200 overflow-hidden w-full mb-[4px]',
-          isDark
-            ? 'border-white/[0.08] bg-[#0a0a0a]/50 backdrop-blur-sm'
-            : 'border-black/[0.06] bg-white/50 backdrop-blur-sm shadow-sm'
+          'border-black/[0.06] bg-white/50 backdrop-blur-sm shadow-sm dark:border-white/[0.08] dark:bg-[#0a0a0a]/50 dark:backdrop-blur-sm'
         )}
       >
         {/* Scam Warning Dialog */}
         {openScamWarning && (
           <div className="fixed inset-0 bg-black/50 backdrop-blur-[4px] flex items-center justify-center z-[1000] max-sm:h-dvh">
-            <div className={cn('rounded-[14px] border p-0 max-w-[400px] w-[90%] mx-auto', isDark ? 'bg-[#0a0a0a] border-white/10' : 'bg-white border-black/10')} onClick={(e) => e.stopPropagation()}>
+            <div className={cn('rounded-[14px] border p-0 max-w-[400px] w-[90%] mx-auto', 'bg-white border-black/10 dark:bg-[#0a0a0a] dark:border-white/10')} onClick={(e) => e.stopPropagation()}>
               <div className="text-center p-[24px]">
                 <AlertTriangle
                   size={28}
@@ -502,7 +501,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                   Scam Warning
                 </span>
                 <span
-                  className={cn('mb-[20px] text-[13px] leading-[1.5]', isDark ? 'text-white/60' : 'text-black/60')}
+                  className={cn('mb-[20px] text-[13px] leading-[1.5]', 'text-black/60 dark:text-white/60')}
                 >
                   This token has been flagged as a potential scam. Please exercise extreme caution.
                 </span>
@@ -518,7 +517,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
         <div
           className={cn(
             'px-[14px] py-[12px] border-b transition-[background-color,border-color]',
-            isDark ? 'bg-white/[0.02] border-white/[0.06]' : 'bg-black/[0.01] border-black/[0.04]'
+            'bg-white border-black/[0.04] dark:bg-white/[0.02] dark:border-white/[0.06]'
           )}
         >
           <div className="flex flex-row items-center gap-[8px]">
@@ -528,7 +527,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
             <span
               className={cn(
                 'text-[11px] font-bold uppercase tracking-[0.1em]',
-                isDark ? 'text-white/60' : 'text-black/60'
+                'text-black/60 dark:text-white/60'
               )}
             >
               Token Statistics
@@ -541,9 +540,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
           <div
             className={cn(
               'm-2 px-3 py-2.5 rounded-xl border transition-[opacity,transform,background-color,border-color] duration-300 relative overflow-hidden',
-              isDark 
-                ? 'bg-white/[0.03] border-white/[0.08] hover:bg-white/[0.05] shadow-[0_4px_20px_rgba(0,0,0,0.3)]' 
-                : 'bg-black/[0.015] border-black/[0.05] hover:bg-black/[0.025] shadow-[0_4px_15px_rgba(0,0,0,0.05)]'
+              'bg-black/[0.015] border-black/[0.05] hover:bg-black/[0.025] shadow-[0_4px_15px_rgba(0,0,0,0.05)] dark:bg-white/[0.03] dark:border-white/[0.08] dark:hover:bg-white/[0.05] dark:shadow-[0_4px_20px_rgba(0,0,0,0.3)]'
             )}
           >
             {aiLoading ? (
@@ -612,10 +609,10 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
         <table className="w-full" size="small">
           <tbody>
             {/* ========== MARKET METRICS GROUP ========== */}
-            <tr className={cn('transition-[background] duration-150', isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-black/[0.015]')}>
+            <tr className={cn('transition-[background] duration-150', 'hover:bg-black/[0.015] dark:hover:bg-white/[0.02]')}>
               <td className="border-b-0 align-middle first-of-type:w-[45%] last-of-type:w-[55%] last-of-type:text-right p-[6px_10px]">
                 <span
-                  className={cn('font-normal text-[13px] whitespace-nowrap', isDark ? 'text-white/60' : 'text-black/60')}
+                  className={cn('font-normal text-[13px] whitespace-nowrap', 'text-black/60 dark:text-white/60')}
                 >
                   FDV Market Cap
                 </span>
@@ -623,7 +620,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
               <td className="border-b-0 align-middle first-of-type:w-[45%] last-of-type:w-[55%] last-of-type:text-right p-[6px_10px]">
                 <div className="flex flex-row items-center justify-end gap-[6px]">
                   <span
-                    className={cn('font-medium text-[13px]', isDark ? 'text-white/90' : 'text-black/[0.85]')}
+                    className={cn('font-medium text-[13px]', 'text-black/[0.85] dark:text-white/90')}
                     style={{ fontVariantNumeric: 'tabular-nums' }}
                   >
                     {currencySymbols[activeFiatCurrency]}
@@ -639,17 +636,17 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
               </td>
             </tr>
 
-            <tr className={cn('transition-[background] duration-150', isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-black/[0.015]')}>
+            <tr className={cn('transition-[background] duration-150', 'hover:bg-black/[0.015] dark:hover:bg-white/[0.02]')}>
               <td className="border-b-0 align-middle first-of-type:w-[45%] last-of-type:w-[55%] last-of-type:text-right p-[6px_10px]">
                 <span
-                  className={cn('font-normal text-[13px] whitespace-nowrap', isDark ? 'text-white/60' : 'text-black/60')}
+                  className={cn('font-normal text-[13px] whitespace-nowrap', 'text-black/60 dark:text-white/60')}
                 >
                   Volume Dominance
                 </span>
               </td>
               <td className="border-b-0 align-middle first-of-type:w-[45%] last-of-type:w-[55%] last-of-type:text-right p-[6px_10px]">
                 <span
-                  className={cn('font-medium text-[13px]', isDark ? 'text-white/90' : 'text-black/[0.85]')}
+                  className={cn('font-medium text-[13px]', 'text-black/[0.85] dark:text-white/90')}
                   style={{ fontVariantNumeric: 'tabular-nums' }}
                 >
                   {(dom || 0).toFixed(4)}%
@@ -658,17 +655,17 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
             </tr>
 
             {amount > 0 && (
-              <tr className={cn('transition-[background] duration-150', isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-black/[0.015]')}>
+              <tr className={cn('transition-[background] duration-150', 'hover:bg-black/[0.015] dark:hover:bg-white/[0.02]')}>
                 <td className="border-b-0 align-middle first-of-type:w-[45%] last-of-type:w-[55%] last-of-type:text-right p-[6px_10px]">
                   <span
-                    className={cn('font-normal text-[13px] whitespace-nowrap', isDark ? 'text-white/60' : 'text-black/60')}
+                    className={cn('font-normal text-[13px] whitespace-nowrap', 'text-black/60 dark:text-white/60')}
                   >
                     Supply
                   </span>
                 </td>
                 <td className="border-b-0 align-middle first-of-type:w-[45%] last-of-type:w-[55%] last-of-type:text-right p-[6px_10px]">
                   <span
-                    className={cn('font-medium text-[13px]', isDark ? 'text-white/90' : 'text-black/[0.85]')}
+                    className={cn('font-medium text-[13px]', 'text-black/[0.85] dark:text-white/90')}
                     style={{ fontVariantNumeric: 'tabular-nums' }}
                   >
                     {fNumber(amount)}
@@ -678,17 +675,17 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
             )}
 
             {(txns24h > 0 || vol24htx > 0) && (
-              <tr className={cn('transition-[background] duration-150', isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-black/[0.015]')}>
+              <tr className={cn('transition-[background] duration-150', 'hover:bg-black/[0.015] dark:hover:bg-white/[0.02]')}>
                 <td className="border-b-0 align-middle first-of-type:w-[45%] last-of-type:w-[55%] last-of-type:text-right p-[6px_10px]">
                   <span
-                    className={cn('font-normal text-[13px] whitespace-nowrap', isDark ? 'text-white/60' : 'text-black/60')}
+                    className={cn('font-normal text-[13px] whitespace-nowrap', 'text-black/60 dark:text-white/60')}
                   >
                     Trades (24h)
                   </span>
                 </td>
                 <td className="border-b-0 align-middle first-of-type:w-[45%] last-of-type:w-[55%] last-of-type:text-right p-[6px_10px]">
                   <span
-                    className={cn('font-medium text-[13px]', isDark ? 'text-white/90' : 'text-black/[0.85]')}
+                    className={cn('font-medium text-[13px]', 'text-black/[0.85] dark:text-white/90')}
                     style={{ fontVariantNumeric: 'tabular-nums' }}
                   >
                     {fNumber(txns24h || vol24htx)}
@@ -698,17 +695,17 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
             )}
 
             {uniqueTraders24h > 0 && (
-              <tr className={cn('transition-[background] duration-150', isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-black/[0.015]')}>
+              <tr className={cn('transition-[background] duration-150', 'hover:bg-black/[0.015] dark:hover:bg-white/[0.02]')}>
                 <td className="border-b-0 align-middle first-of-type:w-[45%] last-of-type:w-[55%] last-of-type:text-right p-[6px_10px]">
                   <span
-                    className={cn('font-normal text-[13px] whitespace-nowrap', isDark ? 'text-white/60' : 'text-black/60')}
+                    className={cn('font-normal text-[13px] whitespace-nowrap', 'text-black/60 dark:text-white/60')}
                   >
                     Unique Traders (24h)
                   </span>
                 </td>
                 <td className="border-b-0 align-middle first-of-type:w-[45%] last-of-type:w-[55%] last-of-type:text-right p-[6px_10px]">
                   <span
-                    className={cn('font-medium text-[13px]', isDark ? 'text-white/90' : 'text-black/[0.85]')}
+                    className={cn('font-medium text-[13px]', 'text-black/[0.85] dark:text-white/90')}
                     style={{ fontVariantNumeric: 'tabular-nums' }}
                   >
                     {fNumber(uniqueTraders24h)}
@@ -722,7 +719,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
               <tr>
                 <td colSpan={2} className="p-[16px_12px_8px]">
                   <span
-                    className={cn('text-[10px] font-[800] uppercase tracking-[0.1em]', isDark ? 'text-white/60' : 'text-black/60')}
+                    className={cn('text-[10px] font-[800] uppercase tracking-[0.1em]', 'text-black/60 dark:text-white/60')}
                   >
                     24h Trading
                   </span>
@@ -740,7 +737,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                 const sellPct = sell24hxrp > 0 ? Math.max(sellRaw, 2) : 0;
                 const formatPct = (val) => (val > 0 && val < 1 ? '<1' : val.toFixed(0));
                 return (
-                  <tr className={cn('transition-[background] duration-150', isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-black/[0.015]')}>
+                  <tr className={cn('transition-[background] duration-150', 'hover:bg-black/[0.015] dark:hover:bg-white/[0.02]')}>
                     <td colSpan={2} className="border-b-0 align-middle p-[8px_12px_10px]">
                       <div className="flex flex-row items-center gap-[10px]">
                         <div className="flex flex-col min-w-[40px]">
@@ -748,7 +745,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                           <span className="text-[8px] font-bold opacity-40 uppercase tracking-tighter">Buy</span>
                         </div>
                         <div className="flex-1 relative">
-                          <div className={cn('h-[6px] rounded-[4px] overflow-hidden flex', isDark ? 'bg-white/[0.06]' : 'bg-black/[0.04]')}>
+                          <div className={cn('h-[6px] rounded-[4px] overflow-hidden flex', 'bg-black/[0.04] dark:bg-white/[0.06]')}>
                             <div className="transition-[width] duration-1000 ease-out" style={{ width: `${buyPct}%`, background: 'linear-gradient(90deg, #059669, #10b981)' }} />
                             <div className="transition-[width] duration-1000 ease-out" style={{ width: `${sellPct}%`, background: 'linear-gradient(90deg, #f43f5e, #e11d48)' }} />
                           </div>
@@ -765,10 +762,10 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
               })()}
 
             {/* Buys (24h) Row */}
-            <tr className={cn('transition-[background] duration-150', isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-black/[0.015]')}>
+            <tr className={cn('transition-[background] duration-150', 'hover:bg-black/[0.015] dark:hover:bg-white/[0.02]')}>
               <td className="border-b-0 align-middle first-of-type:w-[45%] last-of-type:w-[55%] last-of-type:text-right p-[6px_10px]">
                 <span
-                  className={cn('font-normal text-[13px] whitespace-nowrap', isDark ? 'text-white/60' : 'text-black/60')}
+                  className={cn('font-normal text-[13px] whitespace-nowrap', 'text-black/60 dark:text-white/60')}
                 >
                   Buys (24h)
                 </span>
@@ -779,10 +776,10 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                     {fNumber(buy24hxrp || 0)} <span className="text-[10px] opacity-60">XRP</span>
                   </span>
                   <div className="flex items-center gap-[12px]">
-                    <span className={cn('text-[11px] font-semibold', isDark ? 'text-white/60' : 'text-black/60')}>
+                    <span className={cn('text-[11px] font-semibold', 'text-black/60 dark:text-white/60')}>
                       {fNumber(uniqueBuyers24h || 0)} <span className="text-[9px] font-bold opacity-40 uppercase">users</span>
                     </span>
-                    <span className={cn('text-[10px] font-medium', isDark ? 'text-white/55' : 'text-black/30')}>
+                    <span className={cn('text-[10px] font-medium', 'text-black/30 dark:text-white/55')}>
                       {fNumber(buyTxns24h || buy24htx || 0)} <span className="text-[8px] opacity-60 uppercase">txns</span>
                     </span>
                   </div>
@@ -791,10 +788,10 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
             </tr>
 
             {/* Sells (24h) Row */}
-            <tr className={cn('transition-[background] duration-150', isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-black/[0.015]')}>
+            <tr className={cn('transition-[background] duration-150', 'hover:bg-black/[0.015] dark:hover:bg-white/[0.02]')}>
               <td className="border-b-0 align-middle first-of-type:w-[45%] last-of-type:w-[55%] last-of-type:text-right p-[6px_10px]">
                 <span
-                  className={cn('font-normal text-[13px] whitespace-nowrap', isDark ? 'text-white/60' : 'text-black/60')}
+                  className={cn('font-normal text-[13px] whitespace-nowrap', 'text-black/60 dark:text-white/60')}
                 >
                   Sells (24h)
                 </span>
@@ -805,10 +802,10 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                     {fNumber(sell24hxrp || 0)} <span className="text-[10px] opacity-60">XRP</span>
                   </span>
                   <div className="flex items-center gap-[12px]">
-                    <span className={cn('text-[11px] font-semibold', isDark ? 'text-white/60' : 'text-black/60')}>
+                    <span className={cn('text-[11px] font-semibold', 'text-black/60 dark:text-white/60')}>
                       {fNumber(uniqueSellers24h || 0)} <span className="text-[9px] font-bold opacity-40 uppercase">users</span>
                     </span>
-                    <span className={cn('text-[10px] font-medium', isDark ? 'text-white/55' : 'text-black/30')}>
+                    <span className={cn('text-[10px] font-medium', 'text-black/30 dark:text-white/55')}>
                       {fNumber(sellTxns24h || sell24htx || 0)} <span className="text-[8px] opacity-60 uppercase">txns</span>
                     </span>
                   </div>
@@ -821,7 +818,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
               <tr>
                 <td colSpan={2} className="p-[16px_12px_8px]">
                   <span
-                    className={cn('text-[10px] font-[800] uppercase tracking-[0.1em]', isDark ? 'text-white/60' : 'text-black/60')}
+                    className={cn('text-[10px] font-[800] uppercase tracking-[0.1em]', 'text-black/60 dark:text-white/60')}
                   >
                     AMM Liquidity Flow
                   </span>
@@ -841,14 +838,14 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                 const outPct = withdrawAbs > 0 ? Math.max(outRaw, 2) : 0;
                 const formatPct = (val) => (val > 0 && val < 1 ? '<1' : val.toFixed(0));
                 return (
-                  <tr className={cn('transition-[background] duration-150', isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-black/[0.015]')}>
+                  <tr className={cn('transition-[background] duration-150', 'hover:bg-black/[0.015] dark:hover:bg-white/[0.02]')}>
                     <td colSpan={2} className="border-b-0 align-middle p-[8px_12px_10px]">
                       <div className="flex flex-row items-center gap-[10px]">
                         <div className="flex flex-col min-w-[40px]">
                           <span className="text-[10px] font-black text-emerald-500 leading-none">{formatPct(inRaw)}%</span>
                           <span className="text-[8px] font-bold opacity-40 uppercase tracking-tighter">In</span>
                         </div>
-                        <div className={cn('flex-1 h-[6px] rounded-[4px] overflow-hidden flex', isDark ? 'bg-white/[0.06]' : 'bg-black/[0.04]')}>
+                        <div className={cn('flex-1 h-[6px] rounded-[4px] overflow-hidden flex', 'bg-black/[0.04] dark:bg-white/[0.06]')}>
                           <div className="transition-[width] duration-1000 ease-out" style={{ width: `${inPct}%`, background: 'linear-gradient(90deg, #10b981, #34d399)' }} />
                           <div className="transition-[width] duration-1000 ease-out" style={{ width: `${outPct}%`, background: 'linear-gradient(90deg, #f59e0b, #fbbf24)' }} />
                         </div>
@@ -864,10 +861,10 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
 
             {/* AMM Deposits (24h) Row */}
             {deposit24hxrp ? (
-              <tr className={cn('transition-[background] duration-150', isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-black/[0.015]')}>
+              <tr className={cn('transition-[background] duration-150', 'hover:bg-black/[0.015] dark:hover:bg-white/[0.02]')}>
                 <td className="border-b-0 align-middle first-of-type:w-[45%] last-of-type:w-[55%] last-of-type:text-right p-[6px_10px]">
                   <span
-                    className={cn('font-normal text-[13px] whitespace-nowrap', isDark ? 'text-white/60' : 'text-black/60')}
+                    className={cn('font-normal text-[13px] whitespace-nowrap', 'text-black/60 dark:text-white/60')}
                   >
                     AMM Deposits
                   </span>
@@ -878,7 +875,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                       {fNumber(deposit24hxrp)} <span className="text-[10px] opacity-60">XRP</span>
                     </span>
                     {deposit24htx ? (
-                      <span className={cn('text-[10px] font-medium', isDark ? 'text-white/55' : 'text-black/30')}>
+                      <span className={cn('text-[10px] font-medium', 'text-black/30 dark:text-white/55')}>
                         {fNumber(deposit24htx)} <span className="text-[8px] opacity-60 uppercase">txns</span>
                       </span>
                     ) : null}
@@ -889,10 +886,10 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
 
             {/* AMM Withdrawals (24h) Row */}
             {withdraw24hxrp ? (
-              <tr className={cn('transition-[background] duration-150', isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-black/[0.015]')}>
+              <tr className={cn('transition-[background] duration-150', 'hover:bg-black/[0.015] dark:hover:bg-white/[0.02]')}>
                 <td className="border-b-0 align-middle first-of-type:w-[45%] last-of-type:w-[55%] last-of-type:text-right p-[6px_10px]">
                   <span
-                    className={cn('font-normal text-[13px] whitespace-nowrap', isDark ? 'text-white/60' : 'text-black/60')}
+                    className={cn('font-normal text-[13px] whitespace-nowrap', 'text-black/60 dark:text-white/60')}
                   >
                     AMM Withdrawals
                   </span>
@@ -903,7 +900,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                       {fNumber(Math.abs(withdraw24hxrp))} <span className="text-[10px] opacity-60">XRP</span>
                     </span>
                     {withdraw24htx ? (
-                      <span className={cn('text-[10px] font-medium', isDark ? 'text-white/55' : 'text-black/30')}>
+                      <span className={cn('text-[10px] font-medium', 'text-black/30 dark:text-white/55')}>
                         {fNumber(withdraw24htx)} <span className="text-[8px] opacity-60 uppercase">txns</span>
                       </span>
                     ) : null}
@@ -914,10 +911,10 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
 
             {/* LP Burned Row - Compact */}
             {(lpBurnedPercent != null || lpHolderCount > 0) && (
-              <tr className={cn('transition-[background] duration-150', isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-black/[0.015]')}>
+              <tr className={cn('transition-[background] duration-150', 'hover:bg-black/[0.015] dark:hover:bg-white/[0.02]')}>
                 <td className="border-b-0 align-middle first-of-type:w-[45%] last-of-type:w-[55%] last-of-type:text-right p-[6px_10px]">
                   <span
-                    className={cn('font-normal text-[13px] whitespace-nowrap', isDark ? 'text-white/60' : 'text-black/60')}
+                    className={cn('font-normal text-[13px] whitespace-nowrap', 'text-black/60 dark:text-white/60')}
                   >
                     LP Status
                   </span>
@@ -938,13 +935,13 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                       >
                         {(lpBurnedPercent || 0).toFixed(2)}%
                       </span>
-                      <span className={cn('text-[10px] font-bold uppercase', isDark ? 'text-white/55' : 'text-black/30')}>
+                      <span className={cn('text-[10px] font-bold uppercase', 'text-black/30 dark:text-white/55')}>
                         Burned
                       </span>
                     </div>
                     <div className="w-full flex items-center gap-[10px]">
                       <div
-                        className={cn('flex-1 h-[5px] rounded-full overflow-hidden', isDark ? 'bg-white/[0.08]' : 'bg-black/[0.06]')}
+                        className={cn('flex-1 h-[5px] rounded-full overflow-hidden', 'bg-black/[0.06] dark:bg-white/[0.08]')}
                       >
                         <div
                           className="h-full rounded-full"
@@ -959,8 +956,8 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                           }}
                         />
                       </div>
-                      <span className={cn('text-[10px] font-semibold whitespace-nowrap font-mono', isDark ? 'text-white/60' : 'text-black/60')}>
-                        {lpBurnedHolders || 0} <span className={cn('text-[9px] font-normal', isDark ? 'text-white/55' : 'text-black/25')}>of {lpHolderCount || 0} holders</span>
+                      <span className={cn('text-[10px] font-semibold whitespace-nowrap font-mono', 'text-black/60 dark:text-white/60')}>
+                        {lpBurnedHolders || 0} <span className={cn('text-[9px] font-normal', 'text-black/25 dark:text-white/55')}>of {lpHolderCount || 0} holders</span>
                       </span>
                     </div>
                   </div>
@@ -970,10 +967,10 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
 
             {/* Creator Holding Row */}
             {creatorHoldingPercent != null && creator && (
-              <tr className={cn('transition-[background] duration-150', isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-black/[0.015]')}>
+              <tr className={cn('transition-[background] duration-150', 'hover:bg-black/[0.015] dark:hover:bg-white/[0.02]')}>
                 <td className="border-b-0 align-middle first-of-type:w-[45%] last-of-type:w-[55%] last-of-type:text-right p-[6px_10px]">
                   <span
-                    className={cn('font-normal text-[13px] whitespace-nowrap', isDark ? 'text-white/60' : 'text-black/60')}
+                    className={cn('font-normal text-[13px] whitespace-nowrap', 'text-black/60 dark:text-white/60')}
                   >
                     Creator Holding
                   </span>
@@ -994,18 +991,18 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                       >
                         {creatorHoldingPercent.toFixed(2)}%
                       </span>
-                      <span className={cn('text-[10px] font-bold uppercase', isDark ? 'text-white/55' : 'text-black/30')}>
+                      <span className={cn('text-[10px] font-bold uppercase', 'text-black/30 dark:text-white/55')}>
                         of supply
                       </span>
                       {exch > 0 && amount > 0 && (
-                        <span className={cn('text-[11px] font-mono', isDark ? 'text-white/40' : 'text-black/35')}>
+                        <span className={cn('text-[11px] font-mono', 'text-black/35 dark:text-white/40')}>
                           ≈ ✕{fNumber((creatorHoldingPercent / 100) * amount * exch)}
                         </span>
                       )}
                     </div>
                     <div className="w-full flex items-center">
                       <div
-                        className={cn('flex-1 h-[5px] rounded-full overflow-hidden', isDark ? 'bg-white/[0.08]' : 'bg-black/[0.06]')}
+                        className={cn('flex-1 h-[5px] rounded-full overflow-hidden', 'bg-black/[0.06] dark:bg-white/[0.08]')}
                       >
                         <div
                           className="h-full rounded-full"
@@ -1031,7 +1028,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
               <tr>
                 <td colSpan={2} className="p-[16px_12px_8px]">
                   <span
-                    className={cn('text-[10px] font-[800] uppercase tracking-[0.1em]', isDark ? 'text-white/60' : 'text-black/60')}
+                    className={cn('text-[10px] font-[800] uppercase tracking-[0.1em]', 'text-black/60 dark:text-white/60')}
                   >
                     Transparency & Origin
                   </span>
@@ -1041,17 +1038,17 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
 
             {/* Created Date Row */}
             {date || dateon ? (
-              <tr className={cn('transition-[background] duration-150', isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-black/[0.015]')}>
+              <tr className={cn('transition-[background] duration-150', 'hover:bg-black/[0.015] dark:hover:bg-white/[0.02]')}>
                 <td className="border-b-0 align-middle first-of-type:w-[45%] last-of-type:w-[55%] last-of-type:text-right p-[6px_10px]">
                   <span
-                    className={cn('font-normal text-[13px] whitespace-nowrap', isDark ? 'text-white/60' : 'text-black/60')}
+                    className={cn('font-normal text-[13px] whitespace-nowrap', 'text-black/60 dark:text-white/60')}
                   >
                     Created
                   </span>
                 </td>
                 <td className="border-b-0 align-middle first-of-type:w-[45%] last-of-type:w-[55%] last-of-type:text-right p-[6px_10px]">
                   <span
-                    className={cn('font-medium text-[13px]', isDark ? 'text-white/90' : 'text-black/[0.85]')}
+                    className={cn('font-medium text-[13px]', 'text-black/[0.85] dark:text-white/90')}
                   >
                     {fDate(date || dateon)}
                   </span>
@@ -1061,10 +1058,10 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
 
             {/* Issuer Row */}
             {issuer && (
-              <tr className={cn('transition-[background] duration-150', isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-black/[0.015]')}>
+              <tr className={cn('transition-[background] duration-150', 'hover:bg-black/[0.015] dark:hover:bg-white/[0.02]')}>
                 <td className="border-b-0 align-middle first-of-type:w-[45%] last-of-type:w-[55%] last-of-type:text-right p-[6px_10px]">
                   <span
-                    className={cn('font-normal text-[13px] whitespace-nowrap', isDark ? 'text-white/60' : 'text-black/60')}
+                    className={cn('font-normal text-[13px] whitespace-nowrap', 'text-black/60 dark:text-white/60')}
                   >
                     Issuer
                   </span>
@@ -1085,7 +1082,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                       }}
                     >
                       <span
-                        className={cn('font-medium text-[11px] overflow-hidden text-ellipsis whitespace-nowrap font-mono', isDark ? 'text-white/70' : 'text-black/[0.65]')}
+                        className={cn('font-medium text-[11px] overflow-hidden text-ellipsis whitespace-nowrap font-mono', 'text-black/[0.65] dark:text-white/70')}
                       >
                         {issuer.slice(0, 12)}...
                       </span>
@@ -1096,12 +1093,11 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                       onClick={handleCopyIssuer}
                       className={cn(
                         'flex items-center justify-center w-[26px] h-[26px] rounded-lg border transition-[opacity,transform,background-color,border-color] duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
-                        isDark
-                          ? 'bg-white/[0.04] border-white/[0.08] hover:bg-white/[0.08]'
-                          : 'bg-black/[0.03] border-black/[0.05] hover:bg-black/[0.06]'
+                        'bg-black/[0.03] border-black/[0.05] hover:bg-black/[0.06] dark:bg-white/[0.04] dark:border-white/[0.08] dark:hover:bg-white/[0.08]',
+                        'text-gray-400 hover:text-gray-900 dark:text-white/60 dark:hover:text-white'
                       )}
                     >
-                      <Copy size={13} color={isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'} />
+                      <Copy size={13} />
                     </button>
                   </div>
                 </td>
@@ -1110,10 +1106,10 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
 
             {/* Creator Row */}
             {creator && (
-              <tr className={cn('transition-[background] duration-150', isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-black/[0.015]')}>
+              <tr className={cn('transition-[background] duration-150', 'hover:bg-black/[0.015] dark:hover:bg-white/[0.02]')}>
                 <td className="border-b-0 align-middle first-of-type:w-[45%] last-of-type:w-[55%] last-of-type:text-right p-[6px_10px]">
                   <span
-                    className={cn('font-normal text-[13px] whitespace-nowrap', isDark ? 'text-white/60' : 'text-black/60')}
+                    className={cn('font-normal text-[13px] whitespace-nowrap', 'text-black/60 dark:text-white/60')}
                   >
                     Creator
                   </span>
@@ -1128,7 +1124,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                           padding: '2px 10px',
                           fontSize: '11px',
                           background: activityOpen ? (isDark ? 'rgba(99,102,241,0.15)' : 'rgba(99,102,241,0.1)') : (isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)'),
-                          border: `1px solid ${activityOpen ? (isDark ? 'rgba(99,102,241,0.4)' : 'rgba(99,102,241,0.3)') : isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'}`,
+                          border: `1px solid ${activityOpen ? (isDark ? 'rgba(99,102,241,0.4)' : 'rgba(99,102,241,0.3)') : (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)')}`,
                           maxWidth: isMobile ? '110px' : '180px'
                         }}
                       >
@@ -1140,7 +1136,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                           </span>
                         ) : (
                           <span
-                            className={cn('font-medium text-[11px] overflow-hidden text-ellipsis whitespace-nowrap font-mono', isDark ? 'text-white/70' : 'text-black/[0.65]')}
+                            className={cn('font-medium text-[11px] overflow-hidden text-ellipsis whitespace-nowrap font-mono', 'text-black/[0.65] dark:text-white/70')}
                           >
                             {creator.slice(0, 12)}...
                           </span>
@@ -1152,22 +1148,22 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                           title="Copy address"
                           aria-label="Copy creator address"
                           onClick={handleCopyCreator}
-                          className="inline-flex items-center justify-center border-none bg-transparent cursor-pointer p-[4px] w-[26px] h-[26px] rounded-[6px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]"
+                          className={cn(
+                            'inline-flex items-center justify-center border-none bg-transparent cursor-pointer p-[4px] w-[26px] h-[26px] rounded-[6px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
+                            'text-gray-400 hover:text-gray-900 dark:text-white/60 dark:hover:text-white'
+                          )}
                         >
-                          <Copy
-                            size={13}
-                            color={isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'}
-                          />
+                          <Copy size={13} />
                         </button>
                       <button
                           title="Message creator"
                           onClick={() => window.dispatchEvent(new CustomEvent('openDm', { detail: { user: creator, tokenMd5: token.md5 } }))}
-                          className="inline-flex items-center justify-center border-none bg-transparent cursor-pointer p-[4px] w-[26px] h-[26px] rounded-[6px]"
+                          className={cn(
+                            'inline-flex items-center justify-center border-none bg-transparent cursor-pointer p-[4px] w-[26px] h-[26px] rounded-[6px]',
+                            'text-gray-400 hover:text-[#650CD4] dark:text-white/60 dark:hover:text-[#650CD4]'
+                          )}
                         >
-                          <MessageCircle
-                            size={13}
-                            color={isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'}
-                          />
+                          <MessageCircle size={13} />
                         </button>
                       {accountLogin && !editingLabel && (
                           <button
@@ -1176,10 +1172,13 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                               setEditingLabel(true);
                               setLabelInput(creatorLabel || '');
                             }}
-                            className="inline-flex items-center justify-center border-none bg-transparent cursor-pointer p-[4px] w-[26px] h-[26px] rounded-[6px]"
+                            className={cn(
+                              'inline-flex items-center justify-center border-none bg-transparent cursor-pointer p-[4px] w-[26px] h-[26px] rounded-[6px]',
+                              creatorLabel ? 'text-[#6366f1]' : 'text-gray-400 dark:text-white/60'
+                            )}
                             style={{ background: creatorLabel ? 'rgba(99,102,241,0.1)' : 'transparent' }}
                           >
-                            <Tag size={13} color={creatorLabel ? '#6366f1' : isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'} />
+                            <Tag size={13} />
                           </button>
                       )}
                     </div>
@@ -1226,10 +1225,10 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
 
             {/* Creator Label Row */}
             {creator && creatorLabel && !editingLabel && (
-              <tr className={cn('transition-[background] duration-150', isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-black/[0.015]')}>
+              <tr className={cn('transition-[background] duration-150', 'hover:bg-black/[0.015] dark:hover:bg-white/[0.02]')}>
                 <td className="border-b-0 align-middle first-of-type:w-[45%] last-of-type:w-[55%] last-of-type:text-right p-[6px_10px]">
                   <span
-                    className={cn('font-normal text-[13px] whitespace-nowrap', isDark ? 'text-white/60' : 'text-black/60')}
+                    className={cn('font-normal text-[13px] whitespace-nowrap', 'text-black/60 dark:text-white/60')}
                   >
                     Your Label
                   </span>
@@ -1252,10 +1251,10 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
             {/* Creator Last Action */}
             {creator && creatorLastAction && (
               <>
-                <tr className={cn('transition-[background] duration-150', isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-black/[0.015]')}>
+                <tr className={cn('transition-[background] duration-150', 'hover:bg-black/[0.015] dark:hover:bg-white/[0.02]')}>
                   <td className="border-b-0 align-middle first-of-type:w-[45%] last-of-type:w-[55%] last-of-type:text-right p-[6px_10px]">
                     <span
-                      className={cn('font-normal whitespace-nowrap', isDark ? 'text-white/60' : 'text-black/60')}
+                      className={cn('font-normal whitespace-nowrap', 'text-black/60 dark:text-white/60')}
                       style={{ fontSize: isMobile ? '11px' : '13px' }}
                     >
                       {isMobile ? 'Last Act' : 'Creator Last Act'}
@@ -1304,7 +1303,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                             })()}
                           </span>
                           <span
-                            className={cn('font-semibold font-mono', isDark ? 'text-white/80' : 'text-black/80')}
+                            className={cn('font-semibold font-mono', 'text-black/80 dark:text-white/80')}
                             style={{
                               fontSize: isMobile ? '10px' : '12px'
                             }}
@@ -1324,7 +1323,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                 </tr>
                 {/* Creator Sell Warning */}
                 {creatorLastAction.side === 'sell' && (
-                  <tr className={cn('transition-[background] duration-150', isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-black/[0.015]')}>
+                  <tr className={cn('transition-[background] duration-150', 'hover:bg-black/[0.015] dark:hover:bg-white/[0.02]')}>
                     <td colSpan={2} className="border-b-0 align-middle" style={{ padding: isMobile ? '2px 8px 6px' : '4px 12px 8px' }}>
                       <div
                         className="flex flex-row items-center bg-red-500/[0.08] rounded-[8px] border border-red-500/[0.15]"
@@ -1352,11 +1351,11 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
 
             {/* Creator Token Count - Compact Row */}
             {creator && creatorTokens > 0 && (
-              <tr className={cn('transition-[background] duration-150', isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-black/[0.015]')}>
+              <tr className={cn('transition-[background] duration-150', 'hover:bg-black/[0.015] dark:hover:bg-white/[0.02]')}>
                 <td className="border-b-0 align-middle first-of-type:w-[45%] last-of-type:w-[55%] last-of-type:text-right p-[6px_10px]">
                   <div>
                     <span
-                      className={cn('font-normal text-[13px] whitespace-nowrap', isDark ? 'text-white/60' : 'text-black/60')}
+                      className={cn('font-normal text-[13px] whitespace-nowrap', 'text-black/60 dark:text-white/60')}
                     >
                       {creatorTokens >= 10
                         ? 'Serial launcher'
@@ -1427,14 +1426,12 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
 
             {/* Creator Activity - Inline */}
             {creator && activityOpen && (
-              <tr className={cn('transition-[background] duration-150', isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-black/[0.015]')}>
+              <tr className={cn('transition-[background] duration-150', 'hover:bg-black/[0.015] dark:hover:bg-white/[0.02]')}>
                 <td colSpan={2} className="border-b-0 align-middle" style={{ padding: '4px 10px 8px' }}>
                   <div
                     className={cn(
                       'rounded-[8px] p-[6px] sm:p-[10px]',
-                      isDark
-                        ? 'bg-white/[0.02] border border-white/[0.06]'
-                        : 'bg-black/[0.02] border border-black/[0.05]'
+                      'bg-black/[0.02] border border-black/[0.05] dark:bg-white/[0.02] dark:border dark:border-white/[0.06]'
                     )}
                   >
                     {/* Filter Tabs */}
@@ -1456,17 +1453,13 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                               activityFilter === f.key
                                 ? f.color
                                   ? `${f.color}15`
-                                  : isDark
-                                    ? 'rgba(255,255,255,0.08)'
-                                    : 'rgba(0,0,0,0.06)'
+                                  : (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)')
                                 : 'transparent',
                             color:
                               activityFilter === f.key
                                 ? f.color || (isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.85)')
-                                : isDark
-                                  ? 'rgba(255,255,255,0.45)'
-                                  : 'rgba(0,0,0,0.45)',
-                            border: `1px solid ${activityFilter === f.key ? (f.color ? `${f.color}25` : isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.1)') : 'transparent'}`
+                                : (isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.45)'),
+                            border: `1px solid ${activityFilter === f.key ? (f.color ? `${f.color}25` : (isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.1)')) : 'transparent'}`
                           }}
                         >
                           {f.label}
@@ -1500,7 +1493,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                         )}
                         {creatorStats.sellBuyRatio !== undefined && creatorStats.sellBuyRatio > 0 && (
                           <span
-                            className={cn('text-[10px]', isDark ? 'text-white/60' : 'text-black/60')}
+                            className={cn('text-[10px]', 'text-black/60 dark:text-white/60')}
                           >
                             Sell ratio: {(creatorStats.sellBuyRatio * 100).toFixed(0)}%
                           </span>
@@ -1526,7 +1519,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                     {noTokenActivity && transactions.length > 0 && (
                       <div
                         style={{ gap: '6px' }}
-                        className={cn('flex flex-row items-center mb-[6px] px-[8px] py-[5px] rounded-[6px] border border-blue-500/[0.12]', isDark ? 'bg-blue-500/[0.08]' : 'bg-blue-500/[0.04]')}
+                        className={cn('flex flex-row items-center mb-[6px] px-[8px] py-[5px] rounded-[6px] border border-blue-500/[0.12]', 'bg-blue-500/[0.04] dark:bg-blue-500/[0.08]')}
                       >
                         <span className="text-[#3b82f6] text-[10px]">
                           No token trades found — showing general account activity
@@ -1537,13 +1530,13 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                     {/* Loading / Empty / List */}
                     {loadingTx || filterLoading ? (
                       <span
-                        className={cn('text-[11px] py-[8px]', isDark ? 'text-white/60' : 'text-black/40')}
+                        className={cn('text-[11px] py-[8px]', 'text-black/40 dark:text-white/60')}
                       >
                         Loading...
                       </span>
                     ) : transactions.length === 0 ? (
                       <span
-                        className={cn('text-[11px] py-[8px]', isDark ? 'text-white/60' : 'text-black/40')}
+                        className={cn('text-[11px] py-[8px]', 'text-black/40 dark:text-white/60')}
                       >
                         No activity found
                       </span>
@@ -1647,8 +1640,8 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                                   className="flex-1 text-[10px] sm:text-[11px] font-medium overflow-hidden text-ellipsis whitespace-nowrap font-mono min-w-0"
                                   style={{
                                     color: hasToken
-                                      ? isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.85)'
-                                      : isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'
+                                      ? (isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.85)')
+                                      : (isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)')
                                   }}
                                 >
                                   {hasToken ? (
@@ -1684,20 +1677,20 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                                   style={{
                                     color: hasXrp
                                       ? '#22c55e'
-                                      : isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.12)',
+                                      : (isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.12)'),
                                     fontWeight: hasXrp ? 500 : 400
                                   }}
                                 >
                                   {hasXrp ? `${fNumber(xrpAmount)} XRP` : '—'}
                                 </span>
                                 <span
-                                  className={cn('hidden sm:inline w-[70px] text-right text-[9px] shrink-0 font-mono', isDark ? 'text-white/55' : 'text-black/30')}
+                                  className={cn('hidden sm:inline w-[70px] text-right text-[9px] shrink-0 font-mono', 'text-black/30 dark:text-white/55')}
                                   suppressHydrationWarning
                                 >
                                   {hash?.slice(0, 6)} · {timeAgo}
                                 </span>
                                 <span
-                                  className={cn('sm:hidden text-right text-[8px] shrink-0 font-mono', isDark ? 'text-white/55' : 'text-black/30')}
+                                  className={cn('sm:hidden text-right text-[8px] shrink-0 font-mono', 'text-black/30 dark:text-white/55')}
                                   suppressHydrationWarning
                                 >
                                   {timeAgo}
@@ -1717,7 +1710,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
             {creator && tokenFlow && (tokenFlow.totalTransferred || tokenFlow.totalSoldXrp > 0 || tokenFlow.creatorBoughtXrp > 0 || tokenFlow.creatorDepositXrp > 0) && (
               <tr
                 onClick={() => setFlowModalOpen(true)}
-                className={cn('transition-[background] duration-150 cursor-pointer border-l-[3px] border-l-[#8b5cf6]', isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-black/[0.015]')}
+                className={cn('transition-[background] duration-150 cursor-pointer border-l-[3px] border-l-[#8b5cf6]', 'hover:bg-black/[0.015] dark:hover:bg-white/[0.02]')}
                 style={{
                   background: isDark ? 'linear-gradient(90deg, rgba(139,92,246,0.06), transparent)' : 'linear-gradient(90deg, rgba(139,92,246,0.04), transparent)'
                 }}
@@ -1763,19 +1756,19 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
             {/* Token Flow Modal */}
             {flowModalOpen && tokenFlow && createPortal(
               <div className="fixed inset-0 bg-black/50 backdrop-blur-[4px] flex items-center justify-center z-[1000] max-sm:h-dvh" onClick={() => setFlowModalOpen(false)}>
-                <div className={cn('rounded-[14px] border p-0 mx-auto max-w-[720px] w-[95%] max-h-[85dvh] flex flex-col rounded-[16px] overflow-hidden', isDark ? 'bg-[#0a0a0a] border-white/10' : 'bg-white border-black/10')} onClick={(e) => e.stopPropagation()}>
+                <div className={cn('rounded-[14px] border p-0 mx-auto max-w-[720px] w-[95%] max-h-[85dvh] flex flex-col rounded-[16px] overflow-hidden', 'bg-white border-black/10 dark:bg-[#0a0a0a] dark:border-white/10')} onClick={(e) => e.stopPropagation()}>
                   {/* Modal Header */}
                   <div className={cn(
                     'px-[20px] py-[14px] flex items-center justify-between shrink-0',
-                    isDark ? 'border-b border-white/[0.06]' : 'border-b border-black/[0.06]'
+                    'border-b border-black/[0.06] dark:border-b dark:border-white/[0.06]'
                   )}>
                     <div className="flex flex-row items-center gap-[10px]">
                       <ArrowLeftRight size={18} color="#8b5cf6" strokeWidth={2} />
-                      <span className={cn('text-[15px] font-semibold tracking-[-0.01em]', isDark ? 'text-white' : 'text-[#1a1a1a]')}>
+                      <span className={cn('text-[15px] font-semibold tracking-[-0.01em]', 'text-[#1a1a1a] dark:text-white')}>
                         Token Flow
                       </span>
                     </div>
-                    <button onClick={() => setFlowModalOpen(false)} className={cn('inline-flex items-center justify-center border-none bg-transparent cursor-pointer p-[6px] rounded-[8px] border', isDark ? 'border-white/[0.08]' : 'border-black/[0.06]')}>
+                    <button onClick={() => setFlowModalOpen(false)} className={cn('inline-flex items-center justify-center border-none bg-transparent cursor-pointer p-[6px] rounded-[8px] border', 'border-black/[0.06] dark:border-white/[0.08]')}>
                       <X size={16} color={isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.4)'} />
                     </button>
                   </div>
@@ -1799,16 +1792,14 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                     ].map((s, i) => (
                       <div key={i} className={cn(
                         'p-[12px] rounded-[12px] flex flex-col gap-[2px]',
-                        isDark
-                          ? 'bg-white/[0.03] border border-white/[0.06]'
-                          : 'bg-black/[0.02] border border-black/[0.04]'
+                        'bg-black/[0.02] border border-black/[0.04] dark:bg-white/[0.03] dark:border dark:border-white/[0.06]'
                       )}>
                         <div className="flex items-center gap-[6px] mb-[4px]">
                           <span className="flex" style={{ color: s.color }}>{s.icon}</span>
-                          <span className={cn('text-[9px] font-semibold uppercase tracking-[0.05em]', isDark ? 'text-white/60' : 'text-black/40')}>{s.label}</span>
+                          <span className={cn('text-[9px] font-semibold uppercase tracking-[0.05em]', 'text-black/40 dark:text-white/60')}>{s.label}</span>
                         </div>
-                        <span className={cn('text-[15px] font-bold font-mono', isDark ? 'text-white' : 'text-[#1a1a1a]')}>{s.value}</span>
-                        <span className={cn('text-[9px]', isDark ? 'text-white/55' : 'text-black/[0.35]')}>{s.sub}</span>
+                        <span className={cn('text-[15px] font-bold font-mono', 'text-[#1a1a1a] dark:text-white')}>{s.value}</span>
+                        <span className={cn('text-[9px]', 'text-black/[0.35] dark:text-white/55')}>{s.sub}</span>
                       </div>
                     ))}
                   </div>
@@ -1832,7 +1823,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                         <div className="flex items-center justify-between mb-[8px]">
                           <div className="flex items-center gap-[6px]">
                             <ArrowUpRight size={14} color="#f59e0b" strokeWidth={2} />
-                            <span className={cn('text-[11px] font-semibold uppercase tracking-[0.02em]', isDark ? 'text-white/60' : 'text-black/60')}>CEX Deposits Breakdown</span>
+                            <span className={cn('text-[11px] font-semibold uppercase tracking-[0.02em]', 'text-black/60 dark:text-white/60')}>CEX Deposits Breakdown</span>
                           </div>
                           {exchanges.length > 5 && (
                             <button
@@ -1843,7 +1834,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                             </button>
                           )}
                         </div>
-                        <div className={cn('rounded-[12px] overflow-hidden', isDark ? 'border border-white/[0.06] bg-white/[0.01]' : 'border border-black/[0.04] bg-black/[0.01]')}>
+                        <div className={cn('rounded-[12px] overflow-hidden', 'border border-black/[0.04] bg-white dark:border dark:border-white/[0.06] dark:bg-white/[0.01]')}>
                           {displayedExchanges.map((ex, i) => {
                             const pct = tokenFlow.totalToExchanges > 0 ? (ex.xrp / tokenFlow.totalToExchanges) * 100 : 0;
                             return (
@@ -1851,18 +1842,18 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                                 borderTop: i > 0 ? `1px solid ${isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)'}` : 'none'
                               }}>
                                 <a href={`/address/${ex.address}`} target="_blank"
-                                  className={cn('text-[11px] no-underline overflow-hidden text-ellipsis whitespace-nowrap w-[100px] font-mono', isDark ? 'text-white/80' : 'text-black/70')}
+                                  className={cn('text-[11px] no-underline overflow-hidden text-ellipsis whitespace-nowrap w-[100px] font-mono', 'text-black/70 dark:text-white/80')}
                                 >
                                   {ex.name || ex.address.slice(0, 10)}
                                 </a>
-                                <div className={cn('flex-1 h-[6px] rounded-[3px] overflow-hidden', isDark ? 'bg-white/[0.05]' : 'bg-black/[0.04]')}>
+                                <div className={cn('flex-1 h-[6px] rounded-[3px] overflow-hidden', 'bg-black/[0.04] dark:bg-white/[0.05]')}>
                                   <div className="h-full bg-[#f59e0b] rounded-[3px]" style={{ width: `${Math.max(pct, 2)}%` }} />
                                 </div>
                                 <div className="text-right min-w-[80px]">
                                   <span className="text-[11px] font-bold text-[#f59e0b] font-mono">
                                     {fNumber(ex.xrp)} XRP
                                   </span>
-                                  <div className={cn('text-[9px]', isDark ? 'text-white/55' : 'text-black/[0.35]')}>
+                                  <div className={cn('text-[9px]', 'text-black/[0.35] dark:text-white/55')}>
                                     {ex.depositors.size} wallets
                                   </div>
                                 </div>
@@ -1881,7 +1872,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                       <div className="mx-[16px] mb-[20px]">
                         <div className="flex items-center gap-[6px] mb-[8px]">
                           <Link2 size={14} color="#ef4444" strokeWidth={2} />
-                          <span className={cn('text-[11px] font-semibold uppercase tracking-[0.02em]', isDark ? 'text-white/60' : 'text-black/60')}>Linked Wallets (Same CEX Tag)</span>
+                          <span className={cn('text-[11px] font-semibold uppercase tracking-[0.02em]', 'text-black/60 dark:text-white/60')}>Linked Wallets (Same CEX Tag)</span>
                         </div>
                         <div className="flex flex-col gap-[8px]">
                           {tokenFlow.linkedAddresses.map((group, i) => {
@@ -1899,14 +1890,14 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                                   <div className="flex flex-wrap gap-[4px] mb-[6px]">
                                     {(group.addresses || []).map(addr => (
                                       <a key={addr} href={`/address/${addr}`} target="_blank"
-                                        className={cn('text-[10px] no-underline px-[8px] py-[2px] rounded-[4px] font-mono', isDark ? 'bg-white/[0.05]' : 'bg-black/[0.03]')}
+                                        className={cn('text-[10px] no-underline px-[8px] py-[2px] rounded-[4px] font-mono', 'bg-black/[0.03] dark:bg-white/[0.05]')}
                                         style={{ color, border: `1px solid ${color}20` }}
                                       >
                                         {addr.slice(0, 10)}
                                       </a>
                                     ))}
                                   </div>
-                                  <div className={cn('text-[9px] font-medium font-mono', isDark ? 'text-white/60' : 'text-black/[0.45]')}>
+                                  <div className={cn('text-[9px] font-medium font-mono', 'text-black/[0.45] dark:text-white/60')}>
                                     Tag: {exTag} · CEX: {exAddr.slice(0, 8)}
                                   </div>
                                 </div>
@@ -1923,11 +1914,11 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                       <>
                         {/* Enhanced Table Header */}
                         <div
-                          className={cn('grid px-[16px] py-[10px] sticky top-0 z-[1]', isDark ? 'bg-white/[0.03] border-y border-white/[0.08]' : 'bg-black/[0.02] border-y border-black/[0.06]')}
+                          className={cn('grid px-[16px] py-[10px] sticky top-0 z-[1]', 'bg-black/[0.02] border-y border-black/[0.06] dark:bg-white/[0.03] dark:border-y dark:border-white/[0.08]')}
                           style={{ gridTemplateColumns: isMobile ? 'minmax(0,1fr) 60px 80px' : 'minmax(0,1fr) 70px 100px 100px 100px 100px' }}
                         >
-                          <span className={cn('text-[9px] font-bold uppercase tracking-[0.05em]', isDark ? 'text-white/60' : 'text-black/40')}>Recipient Wallet</span>
-                          <span className={cn('text-[9px] font-bold uppercase tracking-[0.05em] text-center', isDark ? 'text-white/60' : 'text-black/40')}>Source</span>
+                          <span className={cn('text-[9px] font-bold uppercase tracking-[0.05em]', 'text-black/40 dark:text-white/60')}>Recipient Wallet</span>
+                          <span className={cn('text-[9px] font-bold uppercase tracking-[0.05em] text-center', 'text-black/40 dark:text-white/60')}>Source</span>
                           {!isMobile && (
                             <>
                               <span className="text-[9px] font-bold text-[#8b5cf6] uppercase tracking-[0.05em] text-right">Allocated</span>
@@ -1935,7 +1926,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                               <span className="text-[9px] font-bold text-[#ef4444] uppercase tracking-[0.05em] text-right">Sold</span>
                             </>
                           )}
-                          <span className={cn('text-[9px] font-bold uppercase tracking-[0.05em] text-right', isDark ? 'text-white/60' : 'text-black/40')}>Realized Profit / Loss</span>
+                          <span className={cn('text-[9px] font-bold uppercase tracking-[0.05em] text-right', 'text-black/40 dark:text-white/60')}>Realized Profit / Loss</span>
                         </div>
                         {/* Enhanced Table Rows */}
                         {(() => {
@@ -1986,7 +1977,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                                       <a
                                         href={`/address/${r.address}`}
                                         target="_blank"
-                                        className={cn('text-[11px] font-semibold no-underline font-mono', isDark ? 'text-white/90' : 'text-black/[0.85]')}
+                                        className={cn('text-[11px] font-semibold no-underline font-mono', 'text-black/[0.85] dark:text-white/90')}
                                       >
                                         {isMobile ? r.address.slice(0, 8) : r.address.slice(0, 12)}
                                       </a>
@@ -2004,7 +1995,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                                         </span>
                                       )}
                                       {isMobile && (
-                                        <span className={cn('text-[8px] font-mono', isDark ? 'text-white/55' : 'text-black/40')}>
+                                        <span className={cn('text-[8px] font-mono', 'text-black/40 dark:text-white/55')}>
                                           Rec: {fNumber(r.received)}
                                         </span>
                                       )}
@@ -2053,7 +2044,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                                   >
                                     {netPnl !== 0 ? `${netPnl > 0 ? '+' : '-'}${fNumber(Math.abs(netPnl))}` : '0'}
                                   </span>
-                                  <div className={cn('text-[8px] uppercase font-semibold', isDark ? 'text-white/20' : 'text-black/25')}>XRP</div>
+                                  <div className={cn('text-[8px] uppercase font-semibold', 'text-black/25 dark:text-white/20')}>XRP</div>
                                 </div>
                               </div>
                             );
@@ -2063,7 +2054,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                     )}
                     {/* Empty state */}
                     {(!tokenFlow.recipients || tokenFlow.recipients.length === 0) && (
-                      <div className={cn('px-[20px] py-[32px] text-center text-[12px]', isDark ? 'text-white/55' : 'text-black/25')}>
+                      <div className={cn('px-[20px] py-[32px] text-center text-[12px]', 'text-black/25 dark:text-white/55')}>
                         No recipient data available
                       </div>
                     )}
@@ -2081,19 +2072,19 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
         <div
           className={cn(
             'rounded-[12px] bg-transparent w-full mb-[4px] overflow-hidden border-[1.5px]',
-            isDark ? 'border-white/10' : 'border-black/[0.06]'
+            'border-black/[0.06] dark:border-white/10'
           )}
         >
           <div
             className={cn(
               'p-[8px_10px_6px]',
-              isDark ? 'bg-white/[0.015]' : 'bg-black/[0.01]'
+              'bg-white dark:bg-white/[0.015]'
             )}
           >
             <div className="flex flex-row items-center gap-[8px]">
               <Layers size={12} color={isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.4)'} />
               <span
-                className={cn('text-[12px] font-semibold tracking-[-0.01em]', isDark ? 'text-white/[0.85]' : 'text-[rgba(33,43,54,0.85)]')}
+                className={cn('text-[12px] font-semibold tracking-[-0.01em]', 'text-[rgba(33,43,54,0.85)] dark:text-white/[0.85]')}
               >
                 NFT Collections
               </span>
@@ -2110,8 +2101,8 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                   onClick={() => router.push(`/nfts/${col.slug}`)}
                   className={cn(
                     'flex items-center gap-[10px] px-[10px] py-[8px] cursor-pointer transition-[background-color,border-color] duration-150 group',
-                    isDark ? 'hover:bg-white/[0.04]' : 'hover:bg-black/[0.02]',
-                    idx < linkedCollections.length - 1 && (isDark ? 'border-b border-white/[0.05]' : 'border-b border-black/[0.04]')
+                    'hover:bg-black/[0.02] dark:hover:bg-white/[0.04]',
+                    idx < linkedCollections.length - 1 && ('border-b border-black/[0.04] dark:border-b dark:border-white/[0.05]')
                   )}
                 >
                   {/* Collection Image */}
@@ -2121,11 +2112,11 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                       alt={colName}
                       className={cn(
                         'w-[36px] h-[36px] rounded-[6px] object-cover border',
-                        isDark ? 'border-white/10' : 'border-black/[0.08]'
+                        'border-black/[0.08] dark:border-white/10'
                       )}
                       onError={(e) => (e.target.src = '/static/alt.webp')}
                     />
-                    <VerificationBadge verified={v} size="sm" isDark={isDark} />
+                    <VerificationBadge verified={v} size="sm" />
                   </div>
 
                   {/* Name + Badge + Item Count */}
@@ -2134,14 +2125,14 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                       <span
                         className={cn(
                           'text-[12px] font-semibold truncate',
-                          isDark ? 'text-white' : 'text-[#1a1a1a]'
+                          'text-[#1a1a1a] dark:text-white'
                         )}
                       >
                         {colName}
                       </span>
-                      <VerificationLabel verified={v} isDark={isDark} />
+                      <VerificationLabel verified={v} />
                     </div>
-                    <span className={cn('text-[10px]', isDark ? 'text-white/[0.35]' : 'text-black/[0.35]')}>
+                    <span className={cn('text-[10px]', 'text-black/[0.35] dark:text-white/[0.35]')}>
                       {fNumber(col.items || 0)} items
                     </span>
                   </div>
@@ -2149,7 +2140,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                   {/* Stats */}
                   <div className="flex items-center gap-[12px] shrink-0">
                     <div className="text-right">
-                      <div className={cn('text-[9px] uppercase leading-none mb-[2px]', isDark ? 'text-white/60' : 'text-black/60')}>
+                      <div className={cn('text-[9px] uppercase leading-none mb-[2px]', 'text-black/60 dark:text-white/60')}>
                         Floor
                       </div>
                       <div className="text-[11px] font-semibold text-[#22c55e] whitespace-nowrap leading-tight">
@@ -2157,10 +2148,10 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className={cn('text-[9px] uppercase leading-none mb-[2px]', isDark ? 'text-white/60' : 'text-black/60')}>
+                      <div className={cn('text-[9px] uppercase leading-none mb-[2px]', 'text-black/60 dark:text-white/60')}>
                         Vol
                       </div>
-                      <div className={cn('text-[11px] font-semibold whitespace-nowrap leading-tight', isDark ? 'text-white/90' : 'text-black/[0.85]')}>
+                      <div className={cn('text-[11px] font-semibold whitespace-nowrap leading-tight', 'text-black/[0.85] dark:text-white/90')}>
                         ✕{fNumber(col.volume || col.totalVol24h || 0)}
                       </div>
                     </div>
@@ -2168,9 +2159,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                       size={14}
                       className={cn(
                         'transition-[opacity,transform,background-color,border-color] duration-150 shrink-0',
-                        isDark
-                          ? 'text-white/20 group-hover:text-white/60 group-hover:translate-x-[1px] group-hover:-translate-y-[1px]'
-                          : 'text-black/15 group-hover:text-black/60 group-hover:translate-x-[1px] group-hover:-translate-y-[1px]'
+                        'text-black/15 group-hover:text-black/60 group-hover:translate-x-[1px] group-hover:-translate-y-[1px] dark:text-white/20 dark:group-hover:text-white/60 dark:group-hover:translate-x-[1px] dark:group-hover:-translate-y-[1px]'
                       )}
                     />
                   </div>
@@ -2235,7 +2224,7 @@ const getFullUrl = (platform, handle) => {
 
 // Compact social links component for header integration
 export const CompactSocialLinks = memo(
-  ({ social, toggleLinksDrawer, size = 'small', isDark = false, fullWidth = false }) => {
+  ({ social, toggleLinksDrawer, size = 'small', fullWidth = false }) => {
     const isMobile = useIsMobile();
 
     const socialEntries = useMemo(
@@ -2336,9 +2325,7 @@ export const CompactSocialLinks = memo(
               rel="noopener noreferrer"
               className={cn(
                 'w-[28px] h-[28px] rounded-[6px] flex items-center justify-center no-underline border',
-                isDark
-                  ? 'bg-white/[0.03] border-white/[0.06]'
-                  : 'bg-black/[0.025] border-black/[0.05]'
+                'bg-black/[0.025] border-black/[0.05] dark:bg-white/[0.03] dark:border-white/[0.06]'
               )}
             >
               {getIcon(platform)}
@@ -2351,7 +2338,7 @@ export const CompactSocialLinks = memo(
 
 // Compact tags component for inline integration
 export const CompactTags = memo(
-  ({ enhancedTags, toggleTagsDrawer, maxTags = 3, isDark = false }) => {
+  ({ enhancedTags, toggleTagsDrawer, maxTags = 3 }) => {
     if (!enhancedTags || enhancedTags.length === 0) return null;
 
     return (
@@ -2364,9 +2351,7 @@ export const CompactTags = memo(
             rel="noopener noreferrer nofollow"
             className={cn(
               'inline-flex items-center gap-[3px] sm:gap-[4px] px-[5px] sm:px-[6px] py-[2px] sm:py-[3px] rounded-[4px] no-underline text-[9px] sm:text-[10px] font-medium uppercase tracking-[0.2px] border',
-              isDark
-                ? 'bg-white/[0.03] border-white/[0.06] text-white/[0.55]'
-                : 'bg-black/[0.025] border-black/[0.05] text-black/60'
+              'bg-black/[0.025] border-black/[0.05] text-black/60 dark:bg-white/[0.03] dark:border-white/[0.06] dark:text-white/[0.55]'
             )}
           >
             {tag === 'aigent.run' && (
@@ -2379,9 +2364,7 @@ export const CompactTags = memo(
           <span
             className={cn(
               'px-[5px] sm:px-[6px] py-[2px] sm:py-[3px] rounded-[4px] text-[9px] sm:text-[10px] font-medium border',
-              isDark
-                ? 'bg-white/[0.03] border-white/[0.06] text-white/60'
-                : 'bg-black/[0.025] border-black/[0.05] text-black/[0.35]',
+              'bg-black/[0.025] border-black/[0.05] text-black/[0.35] dark:bg-white/[0.03] dark:border-white/[0.06] dark:text-white/60',
               toggleTagsDrawer ? 'cursor-pointer' : 'cursor-default'
             )}
             onClick={() => toggleTagsDrawer && toggleTagsDrawer(true)}
@@ -2402,21 +2385,18 @@ export const CompactSocialAndTags = memo(
     toggleLinksDrawer,
     toggleTagsDrawer,
     maxTags = 3,
-    socialSize = 'small',
-    isDark = false
+    socialSize = 'small'
   }) => (
     <div className="flex flex-row items-center gap-[8px] flex-wrap">
       <CompactTags
         enhancedTags={enhancedTags}
         toggleTagsDrawer={toggleTagsDrawer}
         maxTags={maxTags}
-        isDark={isDark}
       />
       <CompactSocialLinks
         social={social}
         toggleLinksDrawer={toggleLinksDrawer}
         size={socialSize}
-        isDark={isDark}
       />
     </div>
   )

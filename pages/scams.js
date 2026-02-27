@@ -19,11 +19,11 @@ export default function Scams() {
     fetch(`${API}/scams/memo-spam`).then(r => r.json()).then(setMemoSpam).catch(() => {});
   }, []);
 
-  const t = isDark ? 'text-white' : 'text-black';
-  const m = isDark ? 'text-white/40' : 'text-black/40';
-  const b = isDark ? 'border-white/[0.06]' : 'border-black/[0.08]';
-  const card = isDark ? 'bg-white/[0.02]' : 'bg-black/[0.015]';
-  const rh = isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-black/[0.015]';
+  const t = 'text-black dark:text-white';
+  const m = 'text-black/40 dark:text-white/40';
+  const b = 'border-black/[0.08] dark:border-white/[0.06]';
+  const card = 'bg-black/[0.015] dark:bg-white/[0.02]';
+  const rh = 'hover:bg-black/[0.015] dark:hover:bg-white/[0.02]';
 
   const o = data?.overview;
   const nft = o?.nft_scams;

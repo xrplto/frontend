@@ -98,9 +98,7 @@ export function TxShareModal({ hash, type }) {
     <>
       <button
         onClick={() => setOpen(true)}
-        className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-[11px] font-medium transition-[background-color,border-color] duration-200 ${isDark
-          ? 'border-white/10 hover:border-white/20 bg-white/[0.03] hover:bg-white/[0.06] text-white/60 hover:text-white/80'
-          : 'border-gray-200 hover:border-gray-300 bg-gray-50 hover:bg-gray-100 text-gray-500 hover:text-gray-700'
+        className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-[11px] font-medium transition-[background-color,border-color] duration-200 ${'border-gray-200 hover:border-gray-300 bg-gray-50 hover:bg-gray-100 text-gray-500 hover:text-gray-700 dark:border-white/10 dark:hover:border-white/20 dark:bg-white/[0.03] dark:hover:bg-white/[0.06] dark:text-white/60 dark:hover:text-white/80'
           }`}
       >
         <ShareIcon size={12} />
@@ -114,33 +112,31 @@ export function TxShareModal({ hash, type }) {
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className={`w-[90%] max-w-xl rounded-2xl border overflow-hidden ${isDark
-              ? 'bg-black/90 backdrop-blur-2xl border-gray-700/50 shadow-[0_8px_40px_rgba(0,0,0,0.6)]'
-              : 'bg-white/98 backdrop-blur-2xl border-gray-200 shadow-[0_8px_32px_rgba(0,0,0,0.08)]'
+            className={`w-[90%] max-w-xl rounded-2xl border overflow-hidden ${'bg-white/98 backdrop-blur-2xl border-gray-200 shadow-[0_8px_32px_rgba(0,0,0,0.08)] dark:bg-black/90 dark:backdrop-blur-2xl dark:border-gray-700/50 dark:shadow-[0_8px_40px_rgba(0,0,0,0.6)]'
               }`}
           >
             <div className="flex items-center justify-between px-4 py-3">
-              <span className={`text-[15px] font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
+              <span className={`text-[15px] font-medium ${'text-gray-900 dark:text-white'}`}>
                 Share Transaction
               </span>
               <button onClick={() => setOpen(false)} aria-label="Close" className="p-1.5 rounded-lg hover:bg-white/10 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]">
-                <X size={16} className={isDark ? 'text-white/40' : 'text-gray-400'} />
+                <X size={16} className={'text-gray-400 dark:text-white/40'} />
               </button>
             </div>
 
             <div className="px-4 pb-4 flex flex-col items-center gap-4">
-              <div className={`w-full p-3 rounded-lg border-[1.5px] text-center ${isDark ? 'border-gray-600/40 bg-white/[0.04]' : 'border-gray-200 bg-gray-50'
+              <div className={`w-full p-3 rounded-lg border-[1.5px] text-center ${'border-gray-200 bg-gray-50 dark:border-gray-600/40 dark:bg-white/[0.04]'
                 }`}>
-                <p className={`text-[11px] mb-1 ${isDark ? 'text-white/40' : 'text-gray-500'}`}>
+                <p className={`text-[11px] mb-1 ${'text-gray-500 dark:text-white/40'}`}>
                   Transaction Hash
                 </p>
-                <p className={`font-mono text-[12px] truncate ${isDark ? 'text-white/70' : 'text-gray-700'}`}>
+                <p className={`font-mono text-[12px] truncate ${'text-gray-700 dark:text-white/70'}`}>
                   {hash}
                 </p>
               </div>
 
               <div className="w-full">
-                <p className={`text-[10px] font-semibold uppercase tracking-wider mb-3 ${isDark ? 'text-white/40' : 'text-gray-400'}`}>
+                <p className={`text-[10px] font-semibold uppercase tracking-wider mb-3 ${'text-gray-400 dark:text-white/40'}`}>
                   Share on
                 </p>
                 <div className="grid grid-cols-7 gap-2">
@@ -173,20 +169,18 @@ export function TxShareModal({ hash, type }) {
               </div>
 
               <div className="w-full">
-                <p className={`text-[10px] font-semibold uppercase tracking-wider mb-3 ${isDark ? 'text-white/40' : 'text-gray-400'}`}>
+                <p className={`text-[10px] font-semibold uppercase tracking-wider mb-3 ${'text-gray-400 dark:text-white/40'}`}>
                   Copy Link
                 </p>
-                <div className={`flex items-center gap-2 p-3 rounded-lg border-[1.5px] ${isDark ? 'border-gray-600/40 bg-white/[0.04]' : 'border-gray-200 bg-gray-50'
+                <div className={`flex items-center gap-2 p-3 rounded-lg border-[1.5px] ${'border-gray-200 bg-gray-50 dark:border-gray-600/40 dark:bg-white/[0.04]'
                   }`}>
-                  <span className={`flex-1 text-[12px] truncate ${isDark ? 'text-white/60' : 'text-gray-600'}`}>
+                  <span className={`flex-1 text-[12px] truncate ${'text-gray-600 dark:text-white/60'}`}>
                     {url}
                   </span>
                   <button
                     onClick={handleCopy}
                     aria-label="Copy link"
-                    className={`p-2 rounded-lg transition-[background-color] ${isDark
-                      ? 'bg-white/10 hover:bg-white/15 text-white/60'
-                      : 'bg-gray-100 hover:bg-gray-200 text-gray-500'
+                    className={`p-2 rounded-lg transition-[background-color] ${'bg-gray-100 hover:bg-gray-200 text-gray-500 dark:bg-white/10 dark:hover:bg-white/15 dark:text-white/60'
                       }`}
                   >
                     <Copy size={14} />

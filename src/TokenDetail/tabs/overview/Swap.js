@@ -10,8 +10,8 @@ import { selectMetrics } from 'src/redux/statusSlice';
 import { selectProcess, updateProcess, updateTxHash } from 'src/redux/transactionSlice';
 
 // Constants
-const PLATFORM_FEE_ADDRESS = 'rxrpLTomVR5DpqHbro9J36jUAw8Pzsku8';
-const PLATFORM_FEE_RATE = 0.0008; // 0.08%
+const PLATFORM_FEE_ADDRESS = 'rXrPLtnMMUbzGVdvatRBrmuwgFfEHLYyp';
+const PLATFORM_FEE_RATE = 0.004; // 0.4% (launch special)
 
 const currencySymbols = {
   USD: '$',
@@ -57,34 +57,33 @@ import { PuffLoader } from '../../../components/Spinners';
 
 
 
-const CurrencyContent = ({ isDark, className, children, ...p }) => (
+const CurrencyContent = ({ className, children, ...p }) => (
   <div
     className={cn(
       'box-border my-[3px] flex flex-row py-[10px] px-3 rounded-[10px] items-center w-full justify-between border transition-[opacity,transform,background-color,border-color] duration-150',
       'max-sm:py-2 max-sm:px-[10px] max-sm:my-[2px]',
       'focus-within:border-blue-500/40 focus-within:bg-blue-500/[0.03]',
-      isDark
-        ? 'bg-white/[0.025] border-white/[0.06] focus-within:border-blue-500/40 focus-within:bg-blue-500/[0.05]'
-        : 'bg-black/[0.02] border-black/[0.06] focus-within:border-blue-500/50 focus-within:bg-blue-500/[0.03]',
+      'bg-black/[0.02] border-black/[0.06] focus-within:border-blue-500/50',
+      'dark:bg-white/[0.025] dark:border-white/[0.06] dark:focus-within:border-blue-500/40 dark:focus-within:bg-blue-500/[0.05]',
       className
     )}
     {...p}
   >{children}</div>
 );
 
-const InputContent = ({ isDark, className, children, ...p }) => (
+const InputContent = ({ className, children, ...p }) => (
   <div
-    className={cn('box-border m-0 flex flex-col items-end justify-end', isDark ? 'text-white' : 'text-[#212B36]', className)}
+    className={cn('box-border m-0 flex flex-col items-end justify-end', 'text-[#212B36] dark:text-white', className)}
     {...p}
   >{children}</div>
 );
 
-const OverviewWrapper = ({ isDark, className, children, ...p }) => (
+const OverviewWrapper = ({ className, children, ...p }) => (
   <div
     className={cn(
-      'flex flex-col overflow-hidden box-border relative rounded-2xl p-3 w-full min-w-0 border transition-[opacity,transform,background-color,border-color] duration-200',
+      'flex flex-col overflow-hidden box-border relative rounded-xl p-3 w-full min-w-0 border-[1.5px] transition-[opacity,transform,background-color,border-color] duration-200',
       'max-sm:rounded-xl max-sm:p-2',
-      isDark ? 'bg-transparent border-white/[0.08]' : 'bg-transparent border-black/[0.06]',
+      'bg-white border-black/[0.06] dark:bg-white/[0.02] dark:border-white/[0.08]',
       className
     )}
     {...p}
@@ -99,29 +98,28 @@ const AmountRows = ({ className, children, ...p }) => (
   <div className={cn('relative flex flex-col gap-1', className)} {...p}>{children}</div>
 );
 
-const ToggleContent = ({ isDark, className, children, ...p }) => (
+const ToggleContent = ({ className, children, ...p }) => (
   <div
     className={cn(
       'cursor-pointer absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-[10px] p-0 z-[2] border-[1.5px] overflow-hidden',
       'transition-[opacity,transform,background-color,border-color] duration-[250ms] ease-[cubic-bezier(0.4,0,0.2,1)]',
       'hover:scale-105 hover:border-blue-500/50 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
       '[&:hover_svg]:text-blue-500 [&:hover_svg]:rotate-180',
-      isDark
-        ? 'bg-[rgba(20,20,25,0.95)] border-white/10 hover:bg-blue-500/[0.12]'
-        : 'bg-white border-black/[0.08] hover:bg-blue-500/[0.06]',
+      'bg-white border-black/[0.08] hover:bg-blue-500/[0.06]',
+      'dark:bg-[rgba(20,20,25,0.95)] dark:border-white/10 dark:hover:bg-blue-500/[0.12]',
       className
     )}
     {...p}
   >{children}</div>
 );
 
-const ExchangeButton = ({ isDark, disabled, className, children, ...p }) => (
+const ExchangeButton = ({ disabled, className, children, ...p }) => (
   <button
     className={cn(
       'w-full relative overflow-hidden rounded-xl bg-blue-500 text-white font-bold border-none py-[14px] px-4 text-sm uppercase tracking-[0.05em] mt-2 transition-[opacity,transform,background-color,border-color] duration-200 shadow-[0_4px_12px_rgba(59,130,246,0.25)] max-sm:py-[10px] max-sm:text-xs max-sm:mt-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] focus-visible:ring-offset-2',
       'hover:bg-blue-600 hover:-translate-y-px hover:shadow-[0_6px_16px_rgba(59,130,246,0.35)]',
       'active:translate-y-0',
-      disabled && (isDark ? 'bg-white/[0.04] text-white/20 shadow-none hover:bg-white/[0.04] hover:translate-y-0 hover:shadow-none' : 'bg-black/[0.04] text-black/20 shadow-none hover:bg-black/[0.04] hover:translate-y-0 hover:shadow-none'),
+      disabled && 'bg-black/[0.04] text-black/20 shadow-none hover:bg-black/[0.04] hover:translate-y-0 hover:shadow-none dark:bg-white/[0.04] dark:text-white/20 dark:hover:bg-white/[0.04]',
       disabled && 'cursor-not-allowed',
       className
     )}
@@ -137,12 +135,12 @@ const TokenImage = ({ className, ...p }) => (
   />
 );
 
-const SummaryBox = ({ isDark, className, children, ...p }) => (
+const SummaryBox = ({ className, children, ...p }) => (
   <div
     className={cn(
       'py-2 px-[10px] rounded-lg border mt-[6px] mb-[2px]',
       'max-sm:py-[6px] max-sm:px-2 max-sm:rounded-lg max-sm:mt-1',
-      isDark ? 'bg-white/[0.025] border-white/[0.06]' : 'bg-black/[0.015] border-black/[0.06]',
+      'bg-black/[0.015] border-black/[0.06] dark:bg-white/[0.025] dark:border-white/[0.06]',
       className
     )}
     {...p}
@@ -1878,7 +1876,7 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
             onClick={(e) => e.stopPropagation()}
             className={cn(
               'rounded-[20px] p-5 max-w-[360px] w-[92%] border shadow-[0_24px_80px_rgba(0,0,0,0.6)]',
-              isDark ? 'bg-[#0d0d0f] border-white/[0.08]' : 'bg-white border-black/[0.08]'
+              'bg-white border-black/[0.08] dark:bg-[#0d0d0f] dark:border-white/[0.08]'
             )}
           >
             {/* Header */}
@@ -1899,7 +1897,7 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
                     <CheckCircle size={20} className="text-[#22c55e]" />
                   </div>
                 )}
-                <span className={cn('text-base font-semibold', isDark ? 'text-white' : 'text-black')}>
+                <span className={cn('text-base font-semibold', 'text-black dark:text-white')}>
                   {txPreview.status === 'error' ? 'Swap Will Fail' : txPreview.status === 'warning' ? 'Review Swap' : 'Confirm Swap'}
                 </span>
               </div>
@@ -1908,7 +1906,7 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
                 aria-label="Close preview"
                 className={cn(
                   'border-none rounded-lg cursor-pointer p-[6px] flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
-                  isDark ? 'bg-white/[0.05] text-white/55' : 'bg-black/[0.05] text-black/40'
+                  'bg-black/[0.05] text-black/40 dark:bg-white/[0.05] dark:text-white/55'
                 )}
               >
                 <X size={16} />
@@ -1926,12 +1924,12 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
 
             {/* Available Liquidity - Compact */}
             {(txPreview.maxAvailable || txPreview.workingAmount) && (
-              <div className={cn('p-3 rounded-[10px] mb-3 border', isDark ? 'bg-white/[0.03] border-white/[0.06]' : 'bg-black/[0.02] border-black/[0.06]')}>
+              <div className={cn('p-3 rounded-[10px] mb-3 border', 'bg-black/[0.02] border-black/[0.06] dark:bg-white/[0.03] dark:border-white/[0.06]')}>
                 {/* Option 1: Increase slippage to get max */}
                 {txPreview.maxAvailable && txPreview.actualSlippage && (
-                  <div className={cn(txPreview.workingAmount ? 'mb-3 pb-3' : '')} style={{ borderBottom: txPreview.workingAmount ? `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}` : 'none' }}>
+                  <div className={cn(txPreview.workingAmount ? 'mb-3 pb-3 border-b border-black/[0.06] dark:border-white/[0.06]' : '')}>
                     <div className="flex items-center justify-between mb-[6px]">
-                      <span className={cn('text-[10px] uppercase tracking-[0.5px]', isDark ? 'text-white/55' : 'text-black/40')}>
+                      <span className={cn('text-[10px] uppercase tracking-[0.5px]', 'text-black/40 dark:text-white/55')}>
                         Option 1: Higher slippage
                       </span>
                       <span className="text-[10px] py-[2px] px-[5px] rounded bg-[rgba(245,158,11,0.12)] text-[#f59e0b]">
@@ -1939,7 +1937,7 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className={cn('text-sm font-semibold', isDark ? 'text-white' : 'text-black')}>
+                      <span className={cn('text-sm font-semibold', 'text-black dark:text-white')}>
                         ~{fNumber(txPreview.maxAvailable)} {txPreview.receiving?.name}
                       </span>
                       {parseFloat(txPreview.actualSlippage) <= 50 && (
@@ -1951,7 +1949,7 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
                             setPendingTx(null);
                             toast.success(`Slippage set to ${newSlippage}%`, { duration: 5000 });
                           }}
-                          className={cn('py-[6px] px-[10px] rounded-md border bg-transparent font-medium cursor-pointer text-[10px]', isDark ? 'border-white/10 text-white' : 'border-black/10 text-black')}
+                          className={cn('py-[6px] px-[10px] rounded-md border bg-transparent font-medium cursor-pointer text-[10px]', 'border-black/10 text-black dark:border-white/10 dark:text-white')}
                         >
                           Set {Math.ceil(parseFloat(txPreview.actualSlippage) + 1)}%
                         </button>
@@ -1964,7 +1962,7 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
                 {txPreview.workingAmount && (
                   <div>
                     <div className="flex items-center justify-between mb-[6px]">
-                      <span className={cn('text-[10px] uppercase tracking-[0.5px]', isDark ? 'text-white/55' : 'text-black/40')}>
+                      <span className={cn('text-[10px] uppercase tracking-[0.5px]', 'text-black/40 dark:text-white/55')}>
                         Option 2: Keep {slippage}% slippage
                       </span>
                       <span className="text-[10px] py-[2px] px-[5px] rounded bg-[rgba(34,197,94,0.12)] text-[#22c55e]">
@@ -1976,7 +1974,7 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
                         <div className="text-sm font-semibold text-[#22c55e]">
                           ~{fNumber(txPreview.workingOutput || 0)} {txPreview.receiving?.name}
                         </div>
-                        <div className={cn('text-[10px]', isDark ? 'text-white/55' : 'text-black/40')}>
+                        <div className={cn('text-[10px]', 'text-black/40 dark:text-white/55')}>
                           for {fNumber(txPreview.workingAmount)} {txPreview.sending?.name}
                         </div>
                       </div>
@@ -2008,18 +2006,18 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
             )}
 
             {/* Transaction Details */}
-            <div className={cn('rounded-[10px] p-3 mb-3', isDark ? 'bg-white/[0.03]' : 'bg-black/[0.02]')}>
+            <div className={cn('rounded-[10px] p-3 mb-3', 'bg-black/[0.02] dark:bg-white/[0.03]')}>
               {/* Sending */}
               <div className="flex justify-between items-center mb-2">
-                <span className={cn('text-[11px] uppercase tracking-[0.5px]', isDark ? 'text-white/55' : 'text-black/40')}>Send</span>
-                <span className={cn('font-medium text-[13px]', isDark ? 'text-white' : 'text-black')}>
+                <span className={cn('text-[11px] uppercase tracking-[0.5px]', 'text-black/40 dark:text-white/55')}>Send</span>
+                <span className={cn('font-medium text-[13px]', 'text-black dark:text-white')}>
                   {fNumber(txPreview.sending?.amount)} {txPreview.sending?.name}
                 </span>
               </div>
 
               {/* Receiving */}
               <div className="flex justify-between items-center">
-                <span className={cn('text-[11px] uppercase tracking-[0.5px]', isDark ? 'text-white/55' : 'text-black/40')}>Receive</span>
+                <span className={cn('text-[11px] uppercase tracking-[0.5px]', 'text-black/40 dark:text-white/55')}>Receive</span>
                 <div className="text-right">
                   {txPreview.receiving?.actual > 0 ? (
                     <span className="text-[#22c55e] font-semibold text-[13px]">
@@ -2030,7 +2028,7 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
                       <span className="text-[#ef4444] font-medium text-xs italic">
                         Failed
                       </span>
-                      <div className={cn('text-[9px] mt-[2px]', isDark ? 'text-white/55' : 'text-black/30')}>
+                      <div className={cn('text-[9px] mt-[2px]', 'text-black/30 dark:text-white/55')}>
                         Would lose tx fee
                       </div>
                     </div>
@@ -2040,11 +2038,11 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
 
               {/* Divider + Details */}
               {(txPreview.priceImpact !== null && txPreview.priceImpact > 0.01) || txPreview.receiving?.actual > 0 ? (
-                <div className={cn('mt-[10px] pt-[10px] border-t', isDark ? 'border-white/[0.06]' : 'border-black/[0.06]')}>
+                <div className={cn('mt-[10px] pt-[10px] border-t', 'border-black/[0.06] dark:border-white/[0.06]')}>
                   {/* Price Impact */}
                   {txPreview.priceImpact !== null && txPreview.priceImpact > 0.01 && (
                     <div className="flex justify-between mb-1">
-                      <span className={cn('text-[11px]', isDark ? 'text-white/55' : 'text-black/40')}>Impact</span>
+                      <span className={cn('text-[11px]', 'text-black/40 dark:text-white/55')}>Impact</span>
                       <span className={cn(
                         'font-medium text-[11px]',
                         txPreview.priceImpact > 5 ? 'text-[#ef4444]' : txPreview.priceImpact > 2 ? 'text-[#f59e0b]' : 'text-[#22c55e]'
@@ -2056,8 +2054,8 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
                   {/* Rate */}
                   {txPreview.receiving?.actual > 0 && txPreview.sending?.amount > 0 && (
                     <div className="flex justify-between">
-                      <span className={cn('text-[11px]', isDark ? 'text-white/55' : 'text-black/40')}>Rate</span>
-                      <span className={cn('text-[11px]', isDark ? 'text-white/60' : 'text-black/60')}>
+                      <span className={cn('text-[11px]', 'text-black/40 dark:text-white/55')}>Rate</span>
+                      <span className={cn('text-[11px]', 'text-black/60 dark:text-white/60')}>
                         1 {txPreview.receiving?.name} = {fNumber(txPreview.sending.amount / txPreview.receiving.actual)} {txPreview.sending?.name}
                       </span>
                     </div>
@@ -2067,8 +2065,8 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
             </div>
 
             {/* Preview Badge */}
-            <div className={cn('text-center mb-3 p-1.5 rounded-md', isDark ? 'bg-white/[0.03]' : 'bg-black/[0.02]')}>
-              <span className={cn('text-[10px]', isDark ? 'text-white/55' : 'text-black/40')}>
+            <div className={cn('text-center mb-3 p-1.5 rounded-md', 'bg-black/[0.02] dark:bg-white/[0.03]')}>
+              <span className={cn('text-[10px]', 'text-black/40 dark:text-white/55')}>
                 Preview · No funds sent yet
               </span>
             </div>
@@ -2079,7 +2077,7 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
                 onClick={handleCancelPreview}
                 className={cn(
                   'flex-1 p-3 rounded-[10px] bg-transparent font-medium cursor-pointer text-[13px] border',
-                  isDark ? 'border-white/10 text-white' : 'border-black/10 text-black'
+                  'border-black/10 text-black dark:border-white/10 dark:text-white'
                 )}
               >
                 Cancel
@@ -2100,17 +2098,17 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
         </div>
       )}
 
-      <OverviewWrapper isDark={isDark}>
+      <OverviewWrapper>
         {/* XRP page notice - show that we're displaying RLUSD/XRP orderbook */}
         {isXRPTokenPage && (
           <div
             className="mb-3 p-2 rounded-lg"
             style={{
-              background: isDark ? 'rgba(66,133,244,0.1)' : 'rgba(66,133,244,0.05)',
-              border: `1px solid ${isDark ? 'rgba(66,133,244,0.2)' : 'rgba(66,133,244,0.15)'}`
+              background: 'rgba(66,133,244,0.05) dark:rgba(66,133,244,0.1)',
+              border: `1px solid ${'rgba(66,133,244,0.15) dark:rgba(66,133,244,0.2)'}`
             }}
           >
-            <span style={{ fontSize: '11px', opacity: 0.8, color: isDark ? 'rgba(255,255,255,0.9)' : '#212B36' }}>
+            <span style={{ fontSize: '11px', opacity: 0.8, color: '#212B36 dark:rgba(255,255,255,0.9)' }}>
               Showing <span className="font-medium text-[#4285f4]">RLUSD/XRP</span>{' '}
               orderbook. XRP is the native asset and cannot have an orderbook against itself.
             </span>
@@ -2121,11 +2119,11 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
           <div
             className="mb-3 p-3 rounded-lg"
             style={{
-              background: isDark ? 'rgba(245,158,11,0.1)' : 'rgba(245,158,11,0.05)',
-              border: `1px solid ${isDark ? 'rgba(245,158,11,0.2)' : 'rgba(245,158,11,0.15)'}`
+              background: 'rgba(245,158,11,0.05) dark:rgba(245,158,11,0.1)',
+              border: `1px solid ${'rgba(245,158,11,0.15) dark:rgba(245,158,11,0.2)'}`
             }}
           >
-            <span style={{ fontSize: '11px', opacity: 0.9, color: isDark ? 'rgba(255,255,255,0.9)' : '#212B36' }}>
+            <span style={{ fontSize: '11px', opacity: 0.9, color: '#212B36 dark:rgba(255,255,255,0.9)' }}>
               <span className="font-medium text-[#f59e0b]">Multi-Purpose Token (MPT)</span> - DEX trading is not yet available for MPT tokens. MPT is a new token standard on the XRP Ledger.
             </span>
           </div>
@@ -2136,9 +2134,9 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
               className={cn(
                 'py-[6px] px-3 text-[11px] font-medium tracking-[0.05em] uppercase bg-transparent rounded-md border cursor-pointer transition-[opacity,transform,background-color,border-color] duration-150 sm:py-[10px] sm:px-4 sm:text-xs max-sm:py-[4px] max-sm:px-2',
                 orderType === 'market'
-                  ? isDark ? 'border-white/20 text-white/90' : 'border-black/20 text-black/80'
-                  : isDark ? 'border-white/10 text-white/55' : 'border-black/10 text-black/40',
-                isDark ? 'hover:border-white/[0.15] hover:text-white/70' : 'hover:border-black/[0.15] hover:text-black/60'
+                  ? 'border-black/20 text-black/80 dark:border-white/20 dark:text-white/90'
+                  : 'border-black/10 text-black/40 dark:border-white/10 dark:text-white/55',
+                'hover:border-black/[0.15] hover:text-black/60 dark:hover:border-white/[0.15] dark:hover:text-white/70'
               )}
               onClick={() => setOrderType('market')}
             >
@@ -2148,9 +2146,9 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
               className={cn(
                 'py-[6px] px-3 text-[11px] font-medium tracking-[0.05em] uppercase bg-transparent rounded-md border cursor-pointer transition-[opacity,transform,background-color,border-color] duration-150 sm:py-[10px] sm:px-4 sm:text-xs max-sm:py-[4px] max-sm:px-2',
                 orderType === 'limit'
-                  ? isDark ? 'border-white/20 text-white/90' : 'border-black/20 text-black/80'
-                  : isDark ? 'border-white/10 text-white/55' : 'border-black/10 text-black/40',
-                isDark ? 'hover:border-white/[0.15] hover:text-white/70' : 'hover:border-black/[0.15] hover:text-black/60'
+                  ? 'border-black/20 text-black/80 dark:border-white/20 dark:text-white/90'
+                  : 'border-black/10 text-black/40 dark:border-white/10 dark:text-white/55',
+                'hover:border-black/[0.15] hover:text-black/60 dark:hover:border-white/[0.15] dark:hover:text-white/70'
               )}
               onClick={() => setOrderType('limit')}
             >
@@ -2162,18 +2160,18 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
         <ConverterFrame>
           <AmountRows>
             {/* You Pay Section */}
-            <CurrencyContent isDark={isDark}>
+            <CurrencyContent>
               <div className="flex flex-col flex-1 gap-1">
                 <div className="flex items-center justify-between">
                   <span className={cn(
                     'text-[10px] font-semibold uppercase tracking-[0.5px]',
-                    isDark ? 'text-white/55' : 'text-black/40'
+                    'text-black/40 dark:text-white/55'
                   )}>
                     You pay
                   </span>
                   {isLoggedIn && (
                     <div className="flex items-center gap-1.5">
-                      <span className={cn('text-[10px]', isDark ? 'text-white/50' : 'text-black/50')}>
+                      <span className={cn('text-[10px]', 'text-black/50 dark:text-white/50')}>
                         {accountPairBalance?.curr1.value
                           ? new Decimal(accountPairBalance.curr1.value).toFixed(4).replace(/\.?0+$/, '')
                           : '0'} {curr1.name}
@@ -2186,7 +2184,7 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
                             onClick={() => (p === 1 ? onFillMax() : onFillPercent(p))}
                             className={cn(
                               'py-0.5 px-1.5 text-[9px] font-semibold rounded border-none text-[#3b82f6] transition-[opacity,transform,background-color,border-color] duration-150',
-                              isDark ? 'bg-[rgba(59,130,246,0.15)]' : 'bg-[rgba(59,130,246,0.1)]',
+                              'bg-[rgba(59,130,246,0.1)] dark:bg-[rgba(59,130,246,0.15)]',
                               accountPairBalance?.curr1?.value ? 'cursor-pointer opacity-100' : 'cursor-not-allowed opacity-30'
                             )}
                           >
@@ -2200,7 +2198,7 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
                 <div className="flex items-center gap-2.5 max-sm:gap-2 mt-1 max-sm:mt-0.5">
                   <div className={cn(
                     'flex items-center gap-2 py-1.5 px-2.5 rounded-lg cursor-pointer max-sm:py-1 max-sm:px-2',
-                    isDark ? 'bg-white/[0.04]' : 'bg-black/[0.03]'
+                    'bg-black/[0.03] dark:bg-white/[0.04]'
                   )}>
                     <TokenImage
                       src={`https://s1.xrpl.to/thumb/${curr1.md5}_32`}
@@ -2210,7 +2208,7 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
                       unoptimized={true}
                       onError={(event) => (event.target.src = '/static/alt.webp')}
                     />
-                    <span className={cn('text-sm font-semibold', isDark ? 'text-white' : 'text-black')}>
+                    <span className={cn('text-sm font-semibold', 'text-black dark:text-white')}>
                       {curr1.name}
                     </span>
                   </div>
@@ -2219,13 +2217,13 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
                       inputMode="decimal"
                       placeholder="0.00"
                       autoComplete="new-password"
-                      className={cn('outline-none', isDark ? 'text-white placeholder:text-white/55' : 'text-[#212B36] placeholder:text-black/40')}
+                      className={cn('outline-none', 'text-[#212B36] placeholder:text-black/40 dark:text-white dark:placeholder:text-white/55')}
                       style={{ width: '100%', padding: '0px', border: 'none', fontSize: '20px', textAlign: 'end', appearance: 'none', fontWeight: 500, background: 'transparent' }}
                       value={amount1}
                       onChange={handleChangeAmount1}
                       onFocus={(e) => { if (window.innerWidth < 640) setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300); }}
                     />
-                    <span className={cn('text-[11px] max-sm:text-[10px]', isDark ? 'text-white/55' : 'text-black/40')}>
+                    <span className={cn('text-[11px] max-sm:text-[10px]', 'text-black/40 dark:text-white/55')}>
                       {curr1IsXRP ? `≈ ${fNumber(tokenPrice1)} XRP` : `≈ ${currencySymbols[activeFiatCurrency]}${fNumber(tokenPrice1)}`}
                     </span>
                   </div>
@@ -2234,17 +2232,17 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
             </CurrencyContent>
 
             {/* You Receive Section */}
-            <CurrencyContent isDark={isDark}>
+            <CurrencyContent>
               <div className="flex flex-col flex-1 gap-1">
                 <div className="flex items-center justify-between">
                   <span className={cn(
                     'text-[10px] font-semibold uppercase tracking-[0.5px]',
-                    isDark ? 'text-white/55' : 'text-black/40'
+                    'text-black/40 dark:text-white/55'
                   )}>
                     You receive
                   </span>
                   {isLoggedIn && (
-                    <span className={cn('text-[10px]', isDark ? 'text-white/50' : 'text-black/50')}>
+                    <span className={cn('text-[10px]', 'text-black/50 dark:text-white/50')}>
                       {accountPairBalance?.curr2.value
                         ? new Decimal(accountPairBalance.curr2.value).toFixed(4).replace(/\.?0+$/, '')
                         : '0'} {curr2.name}
@@ -2254,7 +2252,7 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
                 <div className="flex items-center gap-2.5 max-sm:gap-2 mt-1 max-sm:mt-0.5">
                   <div className={cn(
                     'flex items-center gap-2 py-1.5 px-2.5 rounded-lg cursor-pointer max-sm:py-1 max-sm:px-2',
-                    isDark ? 'bg-white/[0.04]' : 'bg-black/[0.03]'
+                    'bg-black/[0.03] dark:bg-white/[0.04]'
                   )}>
                     <TokenImage
                       src={`https://s1.xrpl.to/thumb/${curr2.md5}_32`}
@@ -2264,7 +2262,7 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
                       unoptimized={true}
                       onError={(event) => (event.target.src = '/static/alt.webp')}
                     />
-                    <span className={cn('text-sm font-semibold', isDark ? 'text-white' : 'text-black')}>
+                    <span className={cn('text-sm font-semibold', 'text-black dark:text-white')}>
                       {curr2.name}
                     </span>
                   </div>
@@ -2273,13 +2271,13 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
                       inputMode="decimal"
                       placeholder="0.00"
                       autoComplete="new-password"
-                      className={cn('outline-none', isDark ? 'text-white placeholder:text-white/55' : 'text-[#212B36] placeholder:text-black/40')}
+                      className={cn('outline-none', 'text-[#212B36] placeholder:text-black/40 dark:text-white dark:placeholder:text-white/55')}
                       style={{ width: '100%', padding: '0px', border: 'none', fontSize: '20px', textAlign: 'end', appearance: 'none', fontWeight: 500, background: 'transparent' }}
                       value={amount2}
                       onChange={handleChangeAmount2}
                       onFocus={(e) => { if (window.innerWidth < 640) setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300); }}
                     />
-                    <span className={cn('text-[11px] max-sm:text-[10px]', isDark ? 'text-white/55' : 'text-black/40')}>
+                    <span className={cn('text-[11px] max-sm:text-[10px]', 'text-black/40 dark:text-white/55')}>
                       {curr2IsXRP ? `≈ ${fNumber(tokenPrice2)} XRP` : `≈ ${currencySymbols[activeFiatCurrency]}${fNumber(tokenPrice2)}`}
                     </span>
                   </div>
@@ -2287,14 +2285,14 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
               </div>
             </CurrencyContent>
 
-            <ToggleContent isDark={isDark} onClick={onRevertExchange} role="button" aria-label="Swap currency direction">
+            <ToggleContent onClick={onRevertExchange} role="button" aria-label="Swap currency direction">
               <div className="flex items-center justify-center w-9 h-9 max-sm:w-7 max-sm:h-7">
                 <ArrowUpDown
                   size={16}
                   strokeWidth={2.5}
                   className={cn(
                     'transition-[opacity,transform,background-color,border-color] duration-250 ease-[cubic-bezier(0.4,0,0.2,1)]',
-                    isDark ? 'text-white/70' : 'text-black/50'
+                    'text-black/50 dark:text-white/70'
                   )}
                 />
               </div>
@@ -2306,7 +2304,7 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
             <div
               className={cn(
                 'fixed inset-0 z-[1000] flex items-center justify-center backdrop-blur-md max-sm:h-dvh',
-                isDark ? 'bg-black/70' : 'bg-white/60'
+                'bg-white/60 dark:bg-black/70'
               )}
               onClick={() => setShowSettingsModal(false)}
             >
@@ -2314,16 +2312,15 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
                 onClick={(e) => e.stopPropagation()}
                 className={cn(
                   'w-[320px] rounded-2xl border-[1.5px] p-5',
-                  isDark
-                    ? 'bg-black/80 backdrop-blur-2xl border-white/[0.08] shadow-2xl shadow-black/50'
-                    : 'bg-white/80 backdrop-blur-2xl border-gray-200/60 shadow-2xl shadow-gray-300/30'
+                  'bg-white/80 backdrop-blur-2xl border-gray-200/60 shadow-2xl shadow-gray-300/30',
+                  'dark:bg-black/80 dark:border-white/[0.08] dark:shadow-black/50'
                 )}
               >
                 <div className="flex items-center justify-between mb-5">
                   <span
                     className={cn(
                       'text-[14px] font-medium',
-                      isDark ? 'text-white/90' : 'text-gray-900'
+                      'text-gray-900 dark:text-white/90'
                     )}
                   >
                     Settings
@@ -2333,10 +2330,10 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
                     aria-label="Close settings"
                     className={cn(
                       'p-1.5 rounded-lg transition-[background-color,border-color] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
-                      isDark ? 'hover:bg-white/5' : 'hover:bg-gray-100'
+                      'hover:bg-gray-100 dark:hover:bg-white/5'
                     )}
                   >
-                    <X size={14} className={isDark ? 'text-white/55' : 'text-gray-400'} />
+                    <X size={14} className={'text-gray-400 dark:text-white/55'} />
                   </button>
                 </div>
 
@@ -2344,7 +2341,7 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
                 <div className="mb-4">
                   <div className="mb-2.5">
                     <span
-                      className={`text-[11px] font-medium uppercase tracking-wide ${isDark ? 'text-white/55' : 'text-gray-500'}`}
+                      className={`text-[11px] font-medium uppercase tracking-wide ${'text-gray-500 dark:text-white/55'}`}
                     >
                       Max Slippage
                     </span>
@@ -2358,9 +2355,7 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
                           'flex-1 h-8 text-[12px] font-medium rounded-md transition-[background-color,border-color]',
                           slippage === preset
                             ? 'bg-primary/15 text-primary'
-                            : isDark
-                              ? 'bg-white/[0.03] text-white/50 hover:text-white/70'
-                              : 'bg-gray-100 text-gray-500 hover:text-gray-700'
+                            : 'bg-gray-100 text-gray-500 hover:text-gray-700 dark:bg-white/[0.03] dark:text-white/50 dark:hover:text-white/70'
                         )}
                       >
                         {preset}%
@@ -2369,7 +2364,7 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
                     <div
                       className={cn(
                         'flex items-center justify-center h-8 px-2 min-w-[50px] rounded-md',
-                        isDark ? 'bg-white/[0.03]' : 'bg-gray-100'
+                        'bg-gray-100 dark:bg-white/[0.03]'
                       )}
                     >
                       <input
@@ -2389,11 +2384,11 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
                         }}
                         className={cn(
                           'w-5 bg-transparent border-none outline-none text-[12px] max-sm:text-base font-medium text-center',
-                          isDark ? 'text-white/80' : 'text-gray-700'
+                          'text-gray-700 dark:text-white/80'
                         )}
                       />
                       <span
-                        className={cn('text-[11px]', isDark ? 'text-white/55' : 'text-gray-400')}
+                        className={cn('text-[11px]', 'text-gray-400 dark:text-white/55')}
                       >
                         %
                       </span>
@@ -2412,11 +2407,11 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
                 <div className="mb-4">
                   <div className="flex items-center gap-1.5 mb-2.5">
                     <span
-                      className={`text-[11px] font-medium uppercase tracking-wide ${isDark ? 'text-white/55' : 'text-gray-500'}`}
+                      className={`text-[11px] font-medium uppercase tracking-wide ${'text-gray-500 dark:text-white/55'}`}
                     >
                       Network Fee
                     </span>
-                    <span className={`text-[10px] ${isDark ? 'text-white/55' : 'text-gray-400'}`}>
+                    <span className={`text-[10px] ${'text-gray-400 dark:text-white/55'}`}>
                       (drops)
                     </span>
                   </div>
@@ -2429,9 +2424,7 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
                           'flex-1 h-8 text-[12px] font-medium rounded-md transition-[background-color,border-color]',
                           txFee === String(val)
                             ? 'bg-primary/15 text-primary'
-                            : isDark
-                              ? 'bg-white/[0.03] text-white/50 hover:text-white/70'
-                              : 'bg-gray-100 text-gray-500 hover:text-gray-700'
+                            : 'bg-gray-100 text-gray-500 hover:text-gray-700 dark:bg-white/[0.03] dark:text-white/50 dark:hover:text-white/70'
                         )}
                       >
                         {val}
@@ -2440,7 +2433,7 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
                     <div
                       className={cn(
                         'flex items-center h-8 px-2 min-w-[52px] rounded-md',
-                        isDark ? 'bg-white/[0.03]' : 'bg-gray-100'
+                        'bg-gray-100 dark:bg-white/[0.03]'
                       )}
                     >
                       <input
@@ -2453,13 +2446,13 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
                         }}
                         className={cn(
                           'w-8 bg-transparent border-none outline-none text-[12px] max-sm:text-base font-medium text-center',
-                          isDark ? 'text-white/80' : 'text-gray-700'
+                          'text-gray-700 dark:text-white/80'
                         )}
                       />
                     </div>
                   </div>
                   <p
-                    className={cn('text-[10px] mt-1.5', isDark ? 'text-white/55' : 'text-gray-400')}
+                    className={cn('text-[10px] mt-1.5', 'text-gray-400 dark:text-white/55')}
                   >
                     Higher fees = priority during congestion
                   </p>
@@ -2490,15 +2483,13 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
                   onClick={() => setShowSettingsModal(true)}
                   className={cn(
                     'flex items-center gap-1.5 bg-transparent border-none cursor-pointer p-0 transition-[background-color,border-color]',
-                    isDark
-                      ? 'text-white/50 hover:text-white/70'
-                      : 'text-gray-500 hover:text-gray-700'
+                    'text-gray-500 hover:text-gray-700 dark:text-white/50 dark:hover:text-white/70'
                   )}
                 >
                   <Settings size={13} />
                   <span className="text-[11px]">Slippage {slippage}%</span>
                 </button>
-                <span className={cn('text-[11px]', isDark ? 'text-white/55' : 'text-gray-400')}>
+                <span className={cn('text-[11px]', 'text-gray-400 dark:text-white/55')}>
                   Impact{' '}
                   {swapQuoteCalc?.price_impact?.percent
                     ? parseFloat(swapQuoteCalc.price_impact.percent.replace('%', '')).toFixed(2)
@@ -2512,21 +2503,21 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
                 <div
                   className="mt-2 p-2 rounded-md"
                   style={{
-                    background: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)',
-                    border: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`
+                    background: 'rgba(0,0,0,0.02) dark:rgba(255,255,255,0.02)',
+                    border: `1px solid ${'rgba(0,0,0,0.06) dark:rgba(255,255,255,0.06)'}`
                   }}
                 >
                   <div className="flex flex-col gap-0.5">
                     {/* Rate */}
                     <div className="flex flex-row items-center justify-between">
-                      <span style={{ fontSize: '10px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
+                      <span style={{ fontSize: '10px', color: 'rgba(0,0,0,0.5) dark:rgba(255,255,255,0.5)' }}>
                         Rate
                         {swapQuoteCalc.ammFallback && (
                           <span className="text-[#f59e0b]"> ~est</span>
                         )}
                         {quoteLoading && <span className="opacity-50"> •••</span>}
                       </span>
-                      <span className="font-mono" style={{ fontSize: '10px', color: isDark ? 'rgba(255,255,255,0.9)' : '#212B36' }}>
+                      <span className="font-mono" style={{ fontSize: '10px', color: '#212B36 dark:rgba(255,255,255,0.9)' }}>
                         1 {token2?.name || token2?.currency} ={' '}
                         {(() => {
                           const srcVal = parseFloat(swapQuoteCalc.source_amount?.value || amount1);
@@ -2542,10 +2533,10 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
                     </div>
                     {/* Min Received */}
                     <div className="flex flex-row items-center justify-between">
-                      <span style={{ fontSize: '10px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
+                      <span style={{ fontSize: '10px', color: 'rgba(0,0,0,0.5) dark:rgba(255,255,255,0.5)' }}>
                         Min received
                       </span>
-                      <span className="font-mono" style={{ fontSize: '10px', color: isDark ? 'rgba(255,255,255,0.9)' : '#212B36' }}>
+                      <span className="font-mono" style={{ fontSize: '10px', color: '#212B36 dark:rgba(255,255,255,0.9)' }}>
                         {fNumber(swapQuoteCalc.minimum_received)} {token2?.name || token2?.currency}
                       </span>
                     </div>
@@ -2561,10 +2552,10 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
 
                       return (
                         <div className="flex flex-row items-center justify-between">
-                          <span style={{ fontSize: '10px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
+                          <span style={{ fontSize: '10px', color: 'rgba(0,0,0,0.5) dark:rgba(255,255,255,0.5)' }}>
                             Route
                           </span>
-                          <span className="font-mono" style={{ fontSize: '10px', color: isDark ? 'rgba(255,255,255,0.9)' : '#212B36' }}
+                          <span className="font-mono" style={{ fontSize: '10px', color: '#212B36 dark:rgba(255,255,255,0.9)' }}
                           >
                             {obVal > 0 && ammVal > 0 ? (
                               <span className="text-[#22c55e]">DEX+AMM</span>
@@ -2585,10 +2576,10 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
                       const xrp = drops / 1000000;
                       return (
                         <div className="flex flex-row items-center justify-between">
-                          <span style={{ fontSize: '10px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
+                          <span style={{ fontSize: '10px', color: 'rgba(0,0,0,0.5) dark:rgba(255,255,255,0.5)' }}>
                             Platform fee (0.08%)
                           </span>
-                          <span className="font-mono" style={{ fontSize: '10px', color: isDark ? 'rgba(255,255,255,0.9)' : '#212B36' }}>
+                          <span className="font-mono" style={{ fontSize: '10px', color: '#212B36 dark:rgba(255,255,255,0.9)' }}>
                             {xrp < 0.01 ? xrp.toFixed(6) : fNumber(xrp)} XRP
                           </span>
                         </div>
@@ -2605,19 +2596,19 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
             <div className="px-1 py-1">
               <div className="flex flex-col gap-2">
                 <div className="flex flex-row items-center justify-between">
-                  <span style={{ fontSize: '11px', fontWeight: 600, color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', textTransform: 'uppercase', letterSpacing: '0.3px' }}>
+                  <span style={{ fontSize: '11px', fontWeight: 600, color: 'rgba(0,0,0,0.5) dark:rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.3px' }}>
                     Limit Price
                   </span>
                   <div
                     className="flex flex-row items-center rounded-md p-[2px]"
                     style={{
-                      background: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)',
-                      border: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`
+                      background: 'rgba(0,0,0,0.03) dark:rgba(255,255,255,0.04)',
+                      border: `1px solid ${'rgba(0,0,0,0.06) dark:rgba(255,255,255,0.06)'}`
                     }}
                   >
                     <button
-                      className={cn('rounded font-semibold inline-flex items-center justify-center cursor-pointer transition-[opacity,transform,background-color,border-color] duration-150', !limitPrice && !(bestBid != null && bestAsk != null) && 'cursor-not-allowed opacity-40', isDark ? 'hover:bg-white/[0.05] hover:text-white' : 'hover:bg-black/[0.05] hover:text-black')}
-                      style={{ padding: '0 8px', fontSize: '9px', minHeight: '18px', border: 'none', background: 'transparent', color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)' }}
+                      className={cn('rounded font-semibold inline-flex items-center justify-center cursor-pointer transition-[opacity,transform,background-color,border-color] duration-150', !limitPrice && !(bestBid != null && bestAsk != null) && 'cursor-not-allowed opacity-40', 'hover:bg-black/[0.05] hover:text-black dark:hover:bg-white/[0.05] dark:hover:text-white')}
+                      style={{ padding: '0 8px', fontSize: '9px', minHeight: '18px', border: 'none', background: 'transparent', color: 'rgba(0,0,0,0.6) dark:rgba(255,255,255,0.6)' }}
                       disabled={!limitPrice && !(bestBid != null && bestAsk != null)}
                       onClick={() => {
                         const mid =
@@ -2632,8 +2623,8 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
                       -1%
                     </button>
                     <button
-                      className={cn('rounded font-semibold inline-flex items-center justify-center cursor-pointer transition-[opacity,transform,background-color,border-color] duration-150 mx-0.5', !(bestBid != null && bestAsk != null) && 'cursor-not-allowed opacity-40', isDark ? 'hover:bg-white/[0.05] hover:text-white' : 'hover:bg-black/[0.05] hover:text-black')}
-                      style={{ padding: '0 8px', fontSize: '9px', minHeight: '18px', border: 'none', background: 'transparent', color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)' }}
+                      className={cn('rounded font-semibold inline-flex items-center justify-center cursor-pointer transition-[opacity,transform,background-color,border-color] duration-150 mx-0.5', !(bestBid != null && bestAsk != null) && 'cursor-not-allowed opacity-40', 'hover:bg-black/[0.05] hover:text-black dark:hover:bg-white/[0.05] dark:hover:text-white')}
+                      style={{ padding: '0 8px', fontSize: '9px', minHeight: '18px', border: 'none', background: 'transparent', color: 'rgba(0,0,0,0.6) dark:rgba(255,255,255,0.6)' }}
                       disabled={!(bestBid != null && bestAsk != null)}
                       onClick={() => {
                         const mid =
@@ -2647,8 +2638,8 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
                       Mid
                     </button>
                     <button
-                      className={cn('rounded font-semibold inline-flex items-center justify-center cursor-pointer transition-[opacity,transform,background-color,border-color] duration-150', !limitPrice && !(bestBid != null && bestAsk != null) && 'cursor-not-allowed opacity-40', isDark ? 'hover:bg-white/[0.05] hover:text-white' : 'hover:bg-black/[0.05] hover:text-black')}
-                      style={{ padding: '0 8px', fontSize: '9px', minHeight: '18px', border: 'none', background: 'transparent', color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)' }}
+                      className={cn('rounded font-semibold inline-flex items-center justify-center cursor-pointer transition-[opacity,transform,background-color,border-color] duration-150', !limitPrice && !(bestBid != null && bestAsk != null) && 'cursor-not-allowed opacity-40', 'hover:bg-black/[0.05] hover:text-black dark:hover:bg-white/[0.05] dark:hover:text-white')}
+                      style={{ padding: '0 8px', fontSize: '9px', minHeight: '18px', border: 'none', background: 'transparent', color: 'rgba(0,0,0,0.6) dark:rgba(255,255,255,0.6)' }}
                       disabled={!limitPrice && !(bestBid != null && bestAsk != null)}
                       onClick={() => {
                         const mid =
@@ -2668,8 +2659,8 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
                 <div className="relative">
                   <input
                     placeholder="0.00"
-                    className={cn('outline-none w-full max-sm:p-2 font-mono', isDark ? 'text-white placeholder:text-white/55' : 'text-[#212B36] placeholder:text-black/40')}
-                    style={{ padding: '10px 12px', border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`, fontSize: '16px', fontWeight: 600, background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)', borderRadius: '10px' }}
+                    className={cn('outline-none w-full max-sm:p-2 font-mono', 'text-[#212B36] placeholder:text-black/40 dark:text-white dark:placeholder:text-white/55')}
+                    style={{ padding: '10px 12px', border: `1px solid ${'rgba(0,0,0,0.08) dark:rgba(255,255,255,0.08)'}`, fontSize: '16px', fontWeight: 600, background: 'rgba(0,0,0,0.03) dark:rgba(255,255,255,0.03)', borderRadius: '10px' }}
                     value={limitPrice}
                     onChange={(e) => {
                       const val = e.target.value;
@@ -2691,7 +2682,7 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
                       fontSize: '10px',
                       fontWeight: 500,
                       opacity: 0.5,
-                      color: isDark ? 'rgba(255,255,255,0.9)' : '#212B36'
+                      color: '#212B36 dark:rgba(255,255,255,0.9)'
                     }}
                   >
                     {curr2.name}/{curr1.name}
@@ -2703,8 +2694,8 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
                   <div
                     className="p-2 rounded-[10px]"
                     style={{
-                      background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
-                      border: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`
+                      background: 'rgba(0,0,0,0.02) dark:rgba(255,255,255,0.03)',
+                      border: `1px solid ${'rgba(0,0,0,0.06) dark:rgba(255,255,255,0.06)'}`
                     }}
                   >
                     <div className="flex flex-row items-center justify-between">
@@ -2713,7 +2704,7 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
                         className="flex flex-col gap-0.5 cursor-pointer flex-1"
                         onClick={() => bids && bids[0] && setLimitPrice(String(bids[0].price))}
                       >
-                        <span style={{ fontSize: '9px', opacity: 0.5, fontWeight: 700, textTransform: 'uppercase', color: isDark ? 'rgba(255,255,255,0.9)' : '#212B36' }}>
+                        <span style={{ fontSize: '9px', opacity: 0.5, fontWeight: 700, textTransform: 'uppercase', color: '#212B36 dark:rgba(255,255,255,0.9)' }}>
                           Bid
                         </span>
                         <span className="font-mono" style={{ fontSize: '12px', fontWeight: 700, color: '#22c55e' }}>
@@ -2726,7 +2717,7 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
                         className="flex flex-col gap-0.5 items-center flex-1"
                         style={{ borderLeft: '1px solid rgba(128,128,128,0.1)', borderRight: '1px solid rgba(128,128,128,0.1)' }}
                       >
-                        <span style={{ fontSize: '9px', opacity: 0.5, fontWeight: 700, textTransform: 'uppercase', color: isDark ? 'rgba(255,255,255,0.9)' : '#212B36' }}>
+                        <span style={{ fontSize: '9px', opacity: 0.5, fontWeight: 700, textTransform: 'uppercase', color: '#212B36 dark:rgba(255,255,255,0.9)' }}>
                           Spread
                         </span>
                         <span style={{
@@ -2735,9 +2726,7 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
                             color:
                               spreadPct != null && spreadPct > 2
                                 ? '#f59e0b'
-                                : isDark
-                                  ? 'rgba(255,255,255,0.8)'
-                                  : 'rgba(0,0,0,0.8)'
+                                : 'rgba(0,0,0,0.8) dark:rgba(255,255,255,0.8)'
                           }}>
                           {spreadPct != null ? `${spreadPct.toFixed(2)}%` : '—'}
                         </span>
@@ -2748,7 +2737,7 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
                         className="flex flex-col gap-0.5 items-end cursor-pointer flex-1"
                         onClick={() => asks && asks[0] && setLimitPrice(String(asks[0].price))}
                       >
-                        <span style={{ fontSize: '9px', opacity: 0.5, fontWeight: 700, textTransform: 'uppercase', color: isDark ? 'rgba(255,255,255,0.9)' : '#212B36' }}>
+                        <span style={{ fontSize: '9px', opacity: 0.5, fontWeight: 700, textTransform: 'uppercase', color: '#212B36 dark:rgba(255,255,255,0.9)' }}>
                           Ask
                         </span>
                         <span className="font-mono" style={{ fontSize: '12px', fontWeight: 700, color: '#ef4444' }}>
@@ -2813,7 +2802,7 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
                 {/* Order Expiration - Segmented Control */}
                 <div className={cn(
                   'mt-3 flex rounded-lg overflow-hidden border',
-                  isDark ? 'bg-white/[0.03] border-white/[0.08]' : 'bg-gray-100 border-black/[0.08]'
+                  'bg-gray-100 border-black/[0.08] dark:bg-white/[0.03] dark:border-white/[0.08]'
                 )}>
                   {[
                     { value: 'never', label: 'GTC', title: 'Good Til Cancelled' },
@@ -2834,9 +2823,7 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
                         'flex-1 py-2 border-none bg-transparent cursor-pointer text-[11px] font-medium relative transition-[background-color,border-color] duration-150',
                         orderExpiry === exp.value
                           ? 'text-[#4285f4]'
-                          : isDark
-                            ? 'text-white/55'
-                            : 'text-black/40'
+                          : 'text-black/40 dark:text-white/55'
                       )}
                     >
                       {exp.label}
@@ -2853,8 +2840,8 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
 
           {/* Order Summary */}
           {orderType === 'limit' && amount1 && amount2 && limitPrice && (
-            <SummaryBox isDark={isDark}>
-              <span style={{ fontSize: '10px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
+            <SummaryBox>
+              <span style={{ fontSize: '10px', color: 'rgba(0,0,0,0.5) dark:rgba(255,255,255,0.5)' }}>
                 <span className="font-medium">Sell</span> {amount1}{' '}
                 {curr1.name} @ {limitPrice} ={' '}
                 {revert
@@ -2870,15 +2857,15 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
           {antiSnipeInfo?.antiSnipeMode && (
             <div className={cn(
               'rounded-lg px-3 py-2 mt-2 border',
-              isDark ? 'bg-amber-500/5 border-amber-500/20' : 'bg-amber-50 border-amber-200'
+              'bg-amber-50 border-amber-200 dark:bg-amber-500/5 dark:border-amber-500/20'
             )}>
               <div className="flex items-center gap-1.5">
                 <AlertTriangle size={12} className="text-amber-500 shrink-0" />
-                <span className={cn('text-[11px] font-medium', isDark ? 'text-amber-400' : 'text-amber-700')}>
+                <span className={cn('text-[11px] font-medium', 'text-amber-700 dark:text-amber-400')}>
                   Anti-snipe active
                 </span>
               </div>
-              <p className={cn('text-[10px] mt-0.5', isDark ? 'text-white/50' : 'text-black/50')}>
+              <p className={cn('text-[10px] mt-0.5', 'text-black/50 dark:text-white/50')}>
                 {antiSnipeAuthorized
                   ? 'Your wallet is authorized — you can swap.'
                   : 'Authorization required before buying. It will be requested automatically when you swap.'}
@@ -2906,7 +2893,6 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
               <ExchangeButton
                 variant="outlined"
                 onClick={handlePlaceOrder}
-                isDark={isDark}
                 disabled={
                   isProcessing === 1 ||
                   !isLoggedIn
@@ -2916,7 +2902,7 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
               </ExchangeButton>
               {isLoggedIn && errMsg && !errMsg.toLowerCase().includes('trustline') && (
                 <div className="rounded-lg" style={{ padding: '6px 10px', border: '1px solid rgba(239,68,68,0.15)', background: 'rgba(239,68,68,0.04)', marginTop: '4px' }}>
-                  <span style={{ fontSize: '10px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
+                  <span style={{ fontSize: '10px', color: 'rgba(0,0,0,0.5) dark:rgba(255,255,255,0.5)' }}>
                     {errMsg}
                   </span>
                 </div>
@@ -2927,8 +2913,8 @@ const Swap = ({ token, onLimitPriceChange, onOrderTypeChange }) => {
       </OverviewWrapper>
 
       <div className="flex items-center gap-1.5 mt-1 mb-0.5 px-1 max-sm:mt-0.5">
-        <PuffLoader color={isDark ? '#22c55e' : '#3b82f6'} size={10} />
-        <span className={cn('text-[10px] font-mono', isDark ? 'text-white/55' : 'text-gray-400')}>
+        <PuffLoader color={'#3b82f6 dark:#22c55e'} size={10} />
+        <span className={cn('text-[10px] font-mono', 'text-gray-400 dark:text-white/55')}>
           1 {curr1.name} ={' '}
           {(() => {
             if (amount1 && amount2 && parseFloat(amount1) > 0 && parseFloat(amount2) > 0) {

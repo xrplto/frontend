@@ -7,7 +7,7 @@ import dynamic from 'next/dynamic';
 const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
 // Context
-import { ThemeContext, WalletContext, AppContext } from 'src/context/AppContext';
+import { WalletContext, AppContext } from 'src/context/AppContext';
 import { cn } from 'src/utils/cn';
 
 // Dynamic imports for heavy components (code splitting)
@@ -76,11 +76,8 @@ const Overview = memo(
       setIsTablet(window.innerWidth < 960);
     }, []);
     const BASE_URL = 'https://api.xrpl.to/v1';
-    const { themeName } = useContext(ThemeContext);
     const { accountProfile } = useContext(WalletContext);
     const { setLoading, openSnackbar } = useContext(AppContext);
-    const isDark = themeName === 'XrplToDarkTheme';
-
     const [showEditor, setShowEditor] = useState(false);
     const [description, setDescription] = useState(token.description || '');
     const [sidePanel, setSidePanel] = useState(() => {
@@ -204,7 +201,6 @@ const Overview = memo(
             setShowEditor={setShowEditor}
             description={description}
             onApplyDescription={onApplyDescription}
-            isDark={isDark}
             mdEditor={
               showEditor ? (
                 <textarea
@@ -212,9 +208,8 @@ const Overview = memo(
                   onChange={(e) => setDescription(e.target.value)}
                   className={cn(
                     'w-full h-[300px] p-2 rounded-xl border-[1.5px] font-mono text-xs resize-none focus:outline-none focus:border-primary',
-                    isDark
-                      ? 'border-white/20 bg-white/5 text-white placeholder-white/40'
-                      : 'border-gray-300 bg-white text-gray-900 placeholder-gray-400'
+                    'border-gray-300 bg-white text-gray-900 placeholder-gray-400',
+                    'dark:border-white/20 dark:bg-white/5 dark:text-white dark:placeholder-white/40'
                   )}
                   placeholder="Enter description..."
                 />
@@ -223,7 +218,6 @@ const Overview = memo(
           />
           <PriceStatistics
             token={token}
-            isDark={isDark}
             linkedCollections={token.linkedCollections}
           />
           <TradingHistory
@@ -232,7 +226,6 @@ const Overview = memo(
             token={token}
             pairs={pairs}
             onTransactionClick={onTransactionClick}
-            isDark={isDark}
             isMobile={true}
             candleTimeFilter={candleTimeFilter}
             onClearCandleFilter={() => setCandleTimeFilter(null)}
@@ -255,16 +248,16 @@ const Overview = memo(
                 <PriceChart token={token} onCandleClick={setCandleTimeFilter} trackAddress={chartTrackAddress} />
               </section>
               {sidePanelVisible ? (
-                <section aria-label="Side Panel" className={`w-[300px] flex-shrink-0 hidden lg:flex lg:flex-col h-[800px] rounded-xl border ${isDark ? 'border-white/[0.08]' : 'border-black/[0.08]'} overflow-hidden`}>
-                  <div className={`flex ${isDark ? 'bg-white/[0.02]' : 'bg-black/[0.02]'}`}>
+                <section aria-label="Side Panel" className={`w-[300px] flex-shrink-0 hidden lg:flex lg:flex-col h-[800px] rounded-xl border border-black/[0.08] dark:border-white/[0.08] overflow-hidden`}>
+                  <div className="flex bg-black/[0.02] dark:bg-white/[0.02]">
                     {['orderbook', 'trending'].map((tab) => (
                       <button
                         key={tab}
                         onClick={() => setSidePanel(tab)}
                         className={`flex-1 py-2.5 text-[11px] font-medium transition-[background-color,border-color] ${
                           sidePanel === tab
-                            ? `text-[#137DFE] ${isDark ? 'bg-white/[0.04]' : 'bg-black/[0.04]'}`
-                            : isDark ? 'text-white/60 hover:text-white/80' : 'text-black/60 hover:text-black/80'
+                            ? 'text-[#137DFE] bg-black/[0.04] dark:bg-white/[0.04]'
+                            : 'text-black/60 hover:text-black/80 dark:text-white/60 dark:hover:text-white/80'
                         }`}
                       >
                         {tab === 'orderbook' ? 'Order Book' : 'Discover'}
@@ -272,7 +265,7 @@ const Overview = memo(
                     ))}
                     <button
                       onClick={() => setSidePanelVisible(false)}
-                      className={`px-2 text-[14px] ${isDark ? 'text-white/60 hover:text-white/80' : 'text-black/60 hover:text-black/80'}`}
+                      className="px-2 text-[14px] text-black/60 hover:text-black/80 dark:text-white/60 dark:hover:text-white/80"
                     >
                       ✕
                     </button>
@@ -284,10 +277,10 @@ const Overview = memo(
               ) : (
                 <button
                   onClick={() => setSidePanelVisible(true)}
-                  className={`hidden lg:flex items-center justify-center w-8 h-[800px] rounded-xl border ${isDark ? 'border-white/[0.08] hover:bg-white/[0.04]' : 'border-black/[0.08] hover:bg-black/[0.02]'}`}
+                  className="hidden lg:flex items-center justify-center w-8 h-[800px] rounded-xl border border-black/[0.08] hover:bg-black/[0.02] dark:border-white/[0.08] dark:hover:bg-white/[0.04]"
                   title="Show panel"
                 >
-                  <span className={`text-[10px] ${isDark ? 'text-white/60' : 'text-black/60'}`} style={{ writingMode: 'vertical-rl' }}>Show Panel</span>
+                  <span className="text-[10px] text-black/60 dark:text-white/60" style={{ writingMode: 'vertical-rl' }}>Show Panel</span>
                 </button>
               )}
             </div>
@@ -299,7 +292,6 @@ const Overview = memo(
                 token={token}
                 pairs={pairs}
                 onTransactionClick={onTransactionClick}
-                isDark={isDark}
                 isMobile={isTablet}
                 candleTimeFilter={candleTimeFilter}
                 onClearCandleFilter={() => setCandleTimeFilter(null)}
@@ -326,7 +318,6 @@ const Overview = memo(
               setShowEditor={setShowEditor}
               description={description}
               onApplyDescription={onApplyDescription}
-              isDark={isDark}
               mdEditor={
                 showEditor ? (
                   <textarea
@@ -334,9 +325,7 @@ const Overview = memo(
                     onChange={(e) => setDescription(e.target.value)}
                     className={cn(
                       'w-full h-[300px] p-2 rounded-xl border-[1.5px] font-mono text-xs resize-none focus:outline-none focus:border-primary',
-                      isDark
-                        ? 'border-white/20 bg-white/5 text-white placeholder-white/40'
-                        : 'border-gray-300 bg-white text-gray-900 placeholder-gray-400'
+                      'border-gray-300 bg-white text-gray-900 placeholder-gray-400 dark:border-white/20 dark:bg-white/5 dark:text-white dark:placeholder-white/40'
                     )}
                     placeholder="Enter description..."
                   />
@@ -346,7 +335,6 @@ const Overview = memo(
             <h2 className="sr-only">Price Statistics</h2>
             <PriceStatistics
               token={token}
-              isDark={isDark}
               linkedCollections={token.linkedCollections}
             />
           </aside>

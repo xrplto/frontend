@@ -196,7 +196,7 @@ const ShapeIcon = ({ shape, size = 10, color = 'currentColor' }) => {
 };
 
 // Copy button
-const CopyButton = ({ text, isDark }) => {
+const CopyButton = ({ text }) => {
   const [copied, setCopied] = useState(false);
   const copy = () => {
     navigator.clipboard.writeText(text);
@@ -208,13 +208,13 @@ const CopyButton = ({ text, isDark }) => {
       onClick={copy}
       className={cn(
         'p-1 rounded transition-colors',
-        isDark ? 'hover:bg-white/10' : 'hover:bg-gray-100'
+        'hover:bg-gray-100 dark:hover:bg-white/10'
       )}
     >
       {copied ? (
         <Check size={12} className="text-green-500" />
       ) : (
-        <Copy size={12} className={isDark ? 'text-white/40' : 'text-gray-400'} />
+        <Copy size={12} className={'text-gray-400 dark:text-white/40'} />
       )}
     </button>
   );
@@ -241,7 +241,7 @@ const ColorLegend = ({ isDark }) => (
     {Object.entries(TX_CATEGORIES).map(([key, { color, label }]) => (
       <div key={key} className="flex items-center gap-1.5">
         <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: color }} />
-        <span className={cn('text-[11px]', isDark ? 'text-white/50' : 'text-gray-500')}>
+        <span className={cn('text-[11px]', 'text-gray-500 dark:text-white/50')}>
           {label}
         </span>
       </div>
@@ -254,10 +254,10 @@ const ShapesLegend = ({ isDark }) => (
   <div className="flex flex-wrap gap-3 sm:gap-4">
     {Object.entries(TX_ACTIONS).map(([key, { shape, label }]) => (
       <div key={key} className="flex items-center gap-1.5">
-        <svg width={10} height={10} className={isDark ? 'text-white/70' : 'text-gray-600'}>
+        <svg width={10} height={10} className={'text-gray-600 dark:text-white/70'}>
           <ShapeIcon shape={shape} size={10} color="currentColor" />
         </svg>
-        <span className={cn('text-[11px]', isDark ? 'text-white/50' : 'text-gray-500')}>
+        <span className={cn('text-[11px]', 'text-gray-500 dark:text-white/50')}>
           {label}
         </span>
       </div>
@@ -348,7 +348,7 @@ const TransactionBar = ({
 
   if (loading) {
     return (
-      <div className={cn('h-5 rounded-lg animate-pulse', isDark ? 'bg-white/10' : 'bg-gray-200')} />
+      <div className={cn('h-5 rounded-lg animate-pulse', 'bg-gray-200 dark:bg-white/10')} />
     );
   }
 
@@ -413,7 +413,7 @@ const TransactionBar = ({
 };
 
 // Transaction type filter
-const TxTypeFilter = ({ selected, onChange, isDark }) => {
+const TxTypeFilter = ({ selected, onChange }) => {
   const [open, setOpen] = useState(false);
 
   return (
@@ -424,9 +424,7 @@ const TxTypeFilter = ({ selected, onChange, isDark }) => {
           'flex items-center gap-2 px-3 py-2 text-[13px] rounded-lg border-[1.5px] transition-colors',
           selected
             ? 'border-primary bg-primary/10 text-primary'
-            : isDark
-              ? 'border-white/10 text-white/70 hover:border-white/20'
-              : 'border-gray-200 text-gray-600 hover:border-gray-300'
+            : 'border-gray-200 text-gray-600 hover:border-gray-300 dark:border-white/10 dark:text-white/70 dark:hover:border-white/20'
         )}
       >
         <Layers size={14} />
@@ -447,7 +445,7 @@ const TxTypeFilter = ({ selected, onChange, isDark }) => {
         <div
           className={cn(
             'absolute top-full left-0 mt-1 w-56 max-h-64 overflow-y-auto rounded-lg border-[1.5px] shadow-lg z-50',
-            isDark ? 'bg-black border-white/10' : 'bg-white border-gray-200'
+            'bg-white border-gray-200 dark:bg-black dark:border-white/10'
           )}
         >
           {ALL_TX_TYPES.map((type) => (
@@ -461,9 +459,7 @@ const TxTypeFilter = ({ selected, onChange, isDark }) => {
                 'w-full text-left px-3 py-2 text-[12px] transition-colors',
                 selected === type
                   ? 'bg-primary/20 text-primary'
-                  : isDark
-                    ? 'text-white/70 hover:bg-white/5'
-                    : 'text-gray-700 hover:bg-gray-50'
+                  : 'text-gray-700 hover:bg-gray-50 dark:text-white/70 dark:hover:bg-white/5'
               )}
             >
               {type}
@@ -476,7 +472,7 @@ const TxTypeFilter = ({ selected, onChange, isDark }) => {
 };
 
 // Address filter
-const AddressFilter = ({ value, onChange, isDark }) => {
+const AddressFilter = ({ value, onChange }) => {
   const [input, setInput] = useState(value);
 
   const handleSubmit = (e) => {
@@ -491,7 +487,7 @@ const AddressFilter = ({ value, onChange, isDark }) => {
           size={14}
           className={cn(
             'absolute left-3 top-1/2 -translate-y-1/2',
-            isDark ? 'text-white/40' : 'text-gray-400'
+            'text-gray-400 dark:text-white/40'
           )}
         />
         <input
@@ -501,9 +497,7 @@ const AddressFilter = ({ value, onChange, isDark }) => {
           placeholder="Watch addresses (comma-separated)"
           className={cn(
             'w-full pl-9 pr-8 py-2 text-[13px] rounded-lg border-[1.5px] outline-none transition-colors',
-            isDark
-              ? 'bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:border-primary'
-              : 'bg-white border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-primary'
+            'bg-white border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-primary dark:bg-white/5 dark:border-white/10 dark:text-white dark:placeholder:text-white/30 dark:focus:border-primary'
           )}
         />
         {input && (
@@ -515,7 +509,7 @@ const AddressFilter = ({ value, onChange, isDark }) => {
             }}
             className={cn(
               'absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded',
-              isDark ? 'text-white/40 hover:text-white' : 'text-gray-400 hover:text-gray-600'
+              'text-gray-400 hover:text-gray-600 dark:text-white/40 dark:hover:text-white'
             )}
           >
             <X size={14} />
@@ -526,9 +520,7 @@ const AddressFilter = ({ value, onChange, isDark }) => {
         type="submit"
         className={cn(
           'px-4 py-2 text-[13px] rounded-lg border-[1.5px] transition-colors',
-          isDark
-            ? 'border-primary/50 text-primary hover:bg-primary/10'
-            : 'border-primary/50 text-primary hover:bg-primary/5'
+          'border-primary/50 text-primary hover:bg-primary/5 dark:border-primary/50 dark:text-primary dark:hover:bg-primary/10'
         )}
       >
         Watch
@@ -538,7 +530,7 @@ const AddressFilter = ({ value, onChange, isDark }) => {
 };
 
 // Ledger card
-const LedgerCard = ({ ledger, isDark, isLatest, watchAddresses = [], watchTxType }) => {
+const LedgerCard = ({ ledger, isLatest, watchAddresses = [], watchTxType }) => {
   const totalTx = ledger.txn_count || 0;
   const [hasTypeMatch, setHasTypeMatch] = useState(false);
 
@@ -548,7 +540,7 @@ const LedgerCard = ({ ledger, isDark, isLatest, watchAddresses = [], watchTxType
         'relative p-4 rounded-xl border-[1.5px] transition-all duration-300',
         isLatest && 'ring-1 ring-primary/30',
         hasTypeMatch && watchTxType && 'ring-2 ring-yellow-400/50 border-yellow-400/30',
-        isDark ? 'border-white/10 bg-white/[0.02]' : 'border-gray-200 bg-gray-50/50'
+        'border-gray-200 bg-gray-50/50 dark:border-white/10 dark:bg-white/[0.02]'
       )}
     >
       {isLatest && (
@@ -574,7 +566,7 @@ const LedgerCard = ({ ledger, isDark, isLatest, watchAddresses = [], watchTxType
               href={`/ledger/${ledger.ledger_index}`}
               className={cn(
                 'text-[15px] font-medium hover:text-primary transition-colors',
-                isDark ? 'text-white' : 'text-gray-900'
+                'text-gray-900 dark:text-white'
               )}
             >
               #{ledger.ledger_index?.toLocaleString()}
@@ -583,14 +575,14 @@ const LedgerCard = ({ ledger, isDark, isLatest, watchAddresses = [], watchTxType
 
           <div className="flex items-center gap-3 mb-3">
             <div className="flex items-center gap-1">
-              <Clock size={12} className={isDark ? 'text-white/40' : 'text-gray-400'} />
-              <span className={cn('text-[11px]', isDark ? 'text-white/50' : 'text-gray-500')}>
+              <Clock size={12} className={'text-gray-400 dark:text-white/40'} />
+              <span className={cn('text-[11px]', 'text-gray-500 dark:text-white/50')}>
                 {new Date(ledger.close_time).toLocaleTimeString()}
               </span>
             </div>
             <div className="flex items-center gap-1">
-              <Zap size={12} className={isDark ? 'text-white/40' : 'text-gray-400'} />
-              <span className={cn('text-[11px]', isDark ? 'text-white/50' : 'text-gray-500')}>
+              <Zap size={12} className={'text-gray-400 dark:text-white/40'} />
+              <span className={cn('text-[11px]', 'text-gray-500 dark:text-white/50')}>
                 {totalTx} txns
               </span>
             </div>
@@ -599,7 +591,6 @@ const LedgerCard = ({ ledger, isDark, isLatest, watchAddresses = [], watchTxType
           <TransactionBar
             ledgerIndex={ledger.ledger_index}
             txnCount={totalTx}
-            isDark={isDark}
             watchAddresses={watchAddresses}
             watchTxType={watchTxType}
             onTypeMatch={(count) => setHasTypeMatch(count > 0)}
@@ -610,26 +601,24 @@ const LedgerCard = ({ ledger, isDark, isLatest, watchAddresses = [], watchTxType
           href={`/ledger/${ledger.ledger_index}`}
           className={cn(
             'p-2 rounded-lg border-[1.5px] transition-colors',
-            isDark
-              ? 'border-white/10 hover:border-primary hover:bg-primary/5'
-              : 'border-gray-200 hover:border-primary hover:bg-primary/5'
+            'border-gray-200 hover:border-primary hover:bg-primary/5 dark:border-white/10 dark:hover:border-primary dark:hover:bg-primary/5'
           )}
         >
-          <ChevronRight size={14} className={isDark ? 'text-white/60' : 'text-gray-400'} />
+          <ChevronRight size={14} className={'text-gray-400 dark:text-white/60'} />
         </a>
       </div>
 
       <div
         className={cn(
           'mt-3 pt-3 border-t flex items-center gap-1.5',
-          isDark ? 'border-white/5' : 'border-gray-100'
+          'border-gray-100 dark:border-white/5'
         )}
       >
-        <Hash size={10} className={isDark ? 'text-white/30' : 'text-gray-300'} />
+        <Hash size={10} className={'text-gray-300 dark:text-white/30'} />
         <span
           className={cn(
             'text-[10px] font-mono truncate',
-            isDark ? 'text-white/30' : 'text-gray-400'
+            'text-gray-400 dark:text-white/30'
           )}
         >
           {ledger.ledger_hash}
@@ -640,7 +629,7 @@ const LedgerCard = ({ ledger, isDark, isLatest, watchAddresses = [], watchTxType
 };
 
 // Stats bar
-const StatsBar = ({ latestLedger, networkStats, isDark }) => {
+const StatsBar = ({ latestLedger, networkStats }) => {
   if (!latestLedger) return null;
 
   const reserveBase = latestLedger.reserve_base / 1000000;
@@ -667,7 +656,7 @@ const StatsBar = ({ latestLedger, networkStats, isDark }) => {
     <div
       className={cn(
         'flex flex-wrap gap-4 sm:gap-6 p-4 rounded-xl border-[1.5px] mb-4',
-        isDark ? 'border-white/10 bg-white/[0.02]' : 'border-gray-200 bg-gray-50/50'
+        'border-gray-200 bg-gray-50/50 dark:border-white/10 dark:bg-white/[0.02]'
       )}
     >
       {stats.map(({ label, value, highlight, color }) => (
@@ -675,7 +664,7 @@ const StatsBar = ({ latestLedger, networkStats, isDark }) => {
           <p
             className={cn(
               'text-[10px] uppercase tracking-wider mb-0.5',
-              isDark ? 'text-white/40' : 'text-gray-400'
+              'text-gray-400 dark:text-white/40'
             )}
           >
             {label}
@@ -683,7 +672,7 @@ const StatsBar = ({ latestLedger, networkStats, isDark }) => {
           <p
             className={cn(
               'text-[13px] font-medium',
-              color || (isDark ? 'text-white' : 'text-gray-900'),
+              color || ('text-gray-900 dark:text-white'),
               highlight && 'text-primary'
             )}
           >
@@ -696,7 +685,7 @@ const StatsBar = ({ latestLedger, networkStats, isDark }) => {
 };
 
 // Connection status
-const ConnectionStatus = ({ status, isDark }) => {
+const ConnectionStatus = ({ status }) => {
   const config = {
     connecting: { color: 'bg-yellow-500', text: 'Connecting...' },
     connected: { color: 'bg-green-500', text: 'Live' },
@@ -712,7 +701,7 @@ const ConnectionStatus = ({ status, isDark }) => {
           status === 'connected' && 'animate-pulse'
         )}
       />
-      <span className={cn('text-[11px]', isDark ? 'text-white/50' : 'text-gray-500')}>
+      <span className={cn('text-[11px]', 'text-gray-500 dark:text-white/50')}>
         {config.text}
       </span>
     </div>
@@ -1066,37 +1055,35 @@ export default function LedgerStreamPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div>
-            <h1 className={cn('text-xl font-medium mb-1', isDark ? 'text-white' : 'text-gray-900')}>
+            <h1 className={cn('text-xl font-medium mb-1', 'text-gray-900 dark:text-white')}>
               Ledger Stream
             </h1>
-            <p className={cn('text-[13px]', isDark ? 'text-white/50' : 'text-gray-500')}>
+            <p className={cn('text-[13px]', 'text-gray-500 dark:text-white/50')}>
               Real-time XRP Ledger updates
             </p>
           </div>
-          <ConnectionStatus status={connectionStatus} isDark={isDark} />
+          <ConnectionStatus status={connectionStatus} />
         </div>
 
         {/* Legend + Filters */}
         <div
           className={cn(
             'p-3 rounded-xl border-[1.5px] mb-4 space-y-3',
-            isDark ? 'border-white/10' : 'border-gray-200'
+            'border-gray-200 dark:border-white/10'
           )}
         >
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
             <div className="flex items-center gap-3 flex-wrap">
-              <ColorLegend isDark={isDark} />
+              <ColorLegend />
               <div className="w-px h-4 bg-white/10 hidden lg:block" />
-              <TxTypeFilter selected={watchTxType} onChange={handleTxTypeChange} isDark={isDark} />
+              <TxTypeFilter selected={watchTxType} onChange={handleTxTypeChange} />
               <button
                 onClick={handleSoundToggle}
                 className={cn(
                   'p-2 rounded-lg border-[1.5px] transition-colors',
                   soundEnabled
                     ? 'border-primary bg-primary/10 text-primary'
-                    : isDark
-                      ? 'border-white/10 text-white/50'
-                      : 'border-gray-200 text-gray-400'
+                    : 'border-gray-200 text-gray-400 dark:border-white/10 dark:text-white/50'
                 )}
                 title={soundEnabled ? 'Sound alerts on' : 'Sound alerts off'}
               >
@@ -1107,9 +1094,7 @@ export default function LedgerStreamPage() {
                   onClick={copyShareURL}
                   className={cn(
                     'flex items-center gap-1.5 px-2 py-1.5 rounded-lg border-[1.5px] text-[11px] transition-colors',
-                    isDark
-                      ? 'border-white/10 text-white/50 hover:text-primary'
-                      : 'border-gray-200 text-gray-500 hover:text-primary'
+                    'border-gray-200 text-gray-500 hover:text-primary dark:border-white/10 dark:text-white/50 dark:hover:text-primary'
                   )}
                   title="Copy shareable URL"
                 >
@@ -1121,13 +1106,12 @@ export default function LedgerStreamPage() {
               <AddressFilter
                 value={watchAddresses.join(', ')}
                 onChange={handleAddressChange}
-                isDark={isDark}
               />
             </div>
           </div>
           {watchAddresses.length > 0 && (
             <div className="flex items-center gap-2 flex-wrap">
-              <span className={cn('text-[11px]', isDark ? 'text-white/50' : 'text-gray-500')}>
+              <span className={cn('text-[11px]', 'text-gray-500 dark:text-white/50')}>
                 Watching:
               </span>
               {watchAddresses.map((a) => (
@@ -1135,7 +1119,7 @@ export default function LedgerStreamPage() {
                   key={a}
                   className={cn(
                     'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-mono',
-                    isDark ? 'bg-primary/10 text-primary' : 'bg-primary/10 text-primary'
+                    'bg-primary/10 text-primary dark:bg-primary/10 dark:text-primary'
                   )}
                 >
                   {a.slice(0, 8)}...
@@ -1154,7 +1138,7 @@ export default function LedgerStreamPage() {
                   onClick={() => handleAddressChange('')}
                   className={cn(
                     'text-[10px] hover:text-red-400',
-                    isDark ? 'text-white/40' : 'text-gray-400'
+                    'text-gray-400 dark:text-white/40'
                   )}
                 >
                   Clear all
@@ -1166,7 +1150,7 @@ export default function LedgerStreamPage() {
 
         {/* Stats */}
         {ledgers.length > 0 && (
-          <StatsBar latestLedger={ledgers[0]} networkStats={networkStats} isDark={isDark} />
+          <StatsBar latestLedger={ledgers[0]} networkStats={networkStats} />
         )}
 
         {/* Ledger stream */}
@@ -1175,15 +1159,15 @@ export default function LedgerStreamPage() {
             <div
               className={cn(
                 'col-span-full p-8 rounded-xl border-[1.5px] text-center',
-                isDark ? 'border-white/10' : 'border-gray-200'
+                'border-gray-200 dark:border-white/10'
               )}
             >
               <div className="animate-pulse">
                 <Layers
                   size={24}
-                  className={cn('mx-auto mb-2', isDark ? 'text-white/30' : 'text-gray-300')}
+                  className={cn('mx-auto mb-2', 'text-gray-300 dark:text-white/30')}
                 />
-                <p className={cn('text-[13px]', isDark ? 'text-white/50' : 'text-gray-500')}>
+                <p className={cn('text-[13px]', 'text-gray-500 dark:text-white/50')}>
                   Waiting for ledgers...
                 </p>
               </div>
@@ -1193,7 +1177,6 @@ export default function LedgerStreamPage() {
               <LedgerCard
                 key={ledger.ledger_index}
                 ledger={ledger}
-                isDark={isDark}
                 isLatest={index === 0}
                 watchAddresses={watchAddresses}
                 watchTxType={watchTxType}
@@ -1208,7 +1191,7 @@ export default function LedgerStreamPage() {
             <h2
               className={cn(
                 'text-[15px] font-medium mb-3',
-                isDark ? 'text-white' : 'text-gray-900'
+                'text-gray-900 dark:text-white'
               )}
             >
               Transactions for watched addresses
@@ -1217,10 +1200,10 @@ export default function LedgerStreamPage() {
               <div
                 className={cn(
                   'p-4 rounded-xl border-[1.5px] text-center',
-                  isDark ? 'border-white/10' : 'border-gray-200'
+                  'border-gray-200 dark:border-white/10'
                 )}
               >
-                <p className={cn('text-[13px]', isDark ? 'text-white/50' : 'text-gray-500')}>
+                <p className={cn('text-[13px]', 'text-gray-500 dark:text-white/50')}>
                   Waiting for transactions...
                 </p>
               </div>
@@ -1228,16 +1211,16 @@ export default function LedgerStreamPage() {
               <div
                 className={cn(
                   'rounded-xl border-[1.5px] overflow-hidden',
-                  isDark ? 'border-white/10' : 'border-gray-200'
+                  'border-gray-200 dark:border-white/10'
                 )}
               >
-                <div className={cn('divide-y', isDark ? 'divide-white/5' : 'divide-gray-100')}>
+                <div className={cn('divide-y', 'divide-gray-100 dark:divide-white/5')}>
                   {watchedTxs.map((tx, i) => (
                     <div key={`${tx.hash}-${i}`}>
                       <div
                         className={cn(
                           'flex items-center gap-3 px-4 py-3 cursor-pointer',
-                          isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-gray-50'
+                          'hover:bg-gray-50 dark:hover:bg-white/[0.02]'
                         )}
                         onClick={() => setExpandedTx(expandedTx === tx.hash ? null : tx.hash)}
                       >
@@ -1257,7 +1240,7 @@ export default function LedgerStreamPage() {
                             <span
                               className={cn(
                                 'text-[13px] font-medium',
-                                isDark ? 'text-white' : 'text-gray-900'
+                                'text-gray-900 dark:text-white'
                               )}
                             >
                               {tx.label}
@@ -1271,7 +1254,7 @@ export default function LedgerStreamPage() {
                               <span
                                 className={cn(
                                   'text-[12px]',
-                                  isDark ? 'text-white/60' : 'text-gray-600'
+                                  'text-gray-600 dark:text-white/60'
                                 )}
                               >
                                 {tx.detail}
@@ -1280,7 +1263,7 @@ export default function LedgerStreamPage() {
                             <span
                               className={cn(
                                 'text-[11px]',
-                                isDark ? 'text-white/40' : 'text-gray-400'
+                                'text-gray-400 dark:text-white/40'
                               )}
                             >
                               #{tx.ledger?.toLocaleString()}
@@ -1302,19 +1285,19 @@ export default function LedgerStreamPage() {
                             <span
                               className={cn(
                                 'text-[11px] font-mono truncate',
-                                isDark ? 'text-white/30' : 'text-gray-400'
+                                'text-gray-400 dark:text-white/30'
                               )}
                             >
                               {tx.hash.slice(0, 16)}...
                             </span>
-                            <CopyButton text={tx.hash} isDark={isDark} />
+                            <CopyButton text={tx.hash} />
                           </div>
                         </div>
                         <div className="flex items-center gap-2 flex-shrink-0">
                           <span
                             className={cn(
                               'text-[11px]',
-                              isDark ? 'text-white/40' : 'text-gray-400'
+                              'text-gray-400 dark:text-white/40'
                             )}
                           >
                             {new Date(tx.time).toLocaleTimeString()}
@@ -1324,28 +1307,28 @@ export default function LedgerStreamPage() {
                             className={cn(
                               'transition-transform',
                               expandedTx === tx.hash && 'rotate-180',
-                              isDark ? 'text-white/30' : 'text-gray-400'
+                              'text-gray-400 dark:text-white/30'
                             )}
                           />
                         </div>
                       </div>
                       {expandedTx === tx.hash && tx.raw && (
-                        <div className={cn('px-4 pb-3', isDark ? 'bg-white/[0.01]' : 'bg-gray-50')}>
+                        <div className={cn('px-4 pb-3', 'bg-gray-50 dark:bg-white/[0.01]')}>
                           <div className="flex items-center justify-between mb-2">
                             <span
                               className={cn(
                                 'text-[10px] uppercase tracking-wider',
-                                isDark ? 'text-white/40' : 'text-gray-400'
+                                'text-gray-400 dark:text-white/40'
                               )}
                             >
                               Raw JSON
                             </span>
-                            <CopyButton text={JSON.stringify(tx.raw, null, 2)} isDark={isDark} />
+                            <CopyButton text={JSON.stringify(tx.raw, null, 2)} />
                           </div>
                           <pre
                             className={cn(
                               'text-[11px] font-mono p-3 rounded-lg overflow-x-auto max-h-64',
-                              isDark ? 'bg-black/50 text-white/70' : 'bg-white text-gray-700'
+                              'bg-white text-gray-700 dark:bg-black/50 dark:text-white/70'
                             )}
                           >
                             {JSON.stringify(tx.raw, null, 2)}

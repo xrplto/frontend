@@ -58,10 +58,10 @@ import { ApiButton } from 'src/components/ApiEndpointsModal';
 import GiftTierModal from 'src/components/GiftTierModal';
 import AccountHistory from 'src/components/AccountHistory';
 // NFT image with error fallback
-const NftImg = ({ src, alt, isDark }) => {
+const NftImg = ({ src, alt }) => {
   const [err, setErr] = useState(false);
   if (err) return (
-    <div className={cn('w-full aspect-square flex flex-col items-center justify-center gap-1', isDark ? 'bg-[#111] text-[#4B5563]' : 'bg-[#F1F5F9] text-[#94A3B8]')}>
+    <div className={cn('w-full aspect-square flex flex-col items-center justify-center gap-1', 'bg-[#F1F5F9] text-[#94A3B8] dark:bg-[#111] dark:text-[#4B5563]')}>
       <ImageOff size={16} strokeWidth={1.2} />
       <span className="text-[9px]">Unavailable</span>
     </div>
@@ -74,7 +74,7 @@ const PageWrapper = ({ className, ...props }) => (
   <div className={cn('overflow-x-hidden min-h-screen m-0 p-0 flex flex-col bg-[var(--bg-main)]', className)} {...props} />
 );
 
-const AccountInfoDetails = ({ accountInfo, isDark, data }) => {
+const AccountInfoDetails = ({ accountInfo, data }) => {
   if (!accountInfo) return null;
   const details = [
     accountInfo.inception && { label: 'Created', value: new Date(accountInfo.inception).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) },
@@ -91,51 +91,49 @@ const AccountInfoDetails = ({ accountInfo, isDark, data }) => {
   return (
     <div className={cn(
       'flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 pt-2 border-t text-[10px]',
-      isDark ? 'border-white/[0.06]' : 'border-gray-200'
+      'border-gray-200 dark:border-white/[0.06]'
     )}>
       {details.map((d, i) => (
         <div key={i} className="flex items-center gap-1">
-          <span className={cn(isDark ? 'text-white/50' : 'text-gray-400')}>{d.label}</span>
-          <span className={cn('font-semibold', isDark ? 'text-white/50' : 'text-gray-500')}>{d.value}</span>
+          <span className={cn('text-gray-400 dark:text-white/50')}>{d.label}</span>
+          <span className={cn('font-semibold', 'text-gray-500 dark:text-white/50')}>{d.value}</span>
         </div>
       ))}
     </div>
   );
 };
 
-const StatCard = ({ title, value, subValue, valueClass, isDark, icon: Icon }) => (
+const StatCard = ({ title, value, subValue, valueClass, icon: Icon }) => (
   <div className={cn(
     'relative overflow-hidden p-5 rounded-2xl border transition-all duration-300 group hover:translate-y-[-2px]',
-    isDark
-      ? 'bg-[#0a0a0a]/40 border-white/[0.06] hover:bg-white/[0.04] hover:border-white/[0.08] shadow-2xl shadow-black/20 backdrop-blur-xl'
-      : 'bg-white/60 border-gray-200 hover:border-gray-300 hover:shadow-xl shadow-sm backdrop-blur-xl'
+    'bg-white/60 border-gray-200 hover:border-gray-300 hover:shadow-xl shadow-sm backdrop-blur-xl dark:bg-[#0a0a0a]/40 dark:border-white/[0.06] dark:hover:bg-white/[0.04] dark:hover:border-white/[0.08] dark:shadow-2xl dark:shadow-black/20 dark:backdrop-blur-xl'
   )}>
     {/* Optional background glow for premium feel */}
     <div className={cn(
       'absolute top-0 right-0 w-24 h-24 rounded-full blur-[40px] transition-opacity duration-500 opacity-0 group-hover:opacity-100 pointer-events-none',
-      isDark ? 'bg-primary/5' : 'bg-primary/5'
+      'bg-primary/5 dark:bg-primary/5'
     )} />
 
     <div className="relative z-10 flex flex-col h-full">
       <div className="flex items-center justify-between mb-3">
-        <p className={cn('text-[10px] uppercase font-bold tracking-widest opacity-60', isDark ? 'text-white' : 'text-gray-500')}>
+        <p className={cn('text-[10px] uppercase font-bold tracking-widest opacity-60', 'text-gray-500 dark:text-white')}>
           {title}
         </p>
         {Icon && (
           <div className={cn(
             'p-2 rounded-xl transition-colors',
-            isDark ? 'bg-white/5 text-white/40 group-hover:text-white/80' : 'bg-gray-100 text-gray-400 group-hover:text-gray-600'
+            'bg-gray-100 text-gray-400 group-hover:text-gray-600 dark:bg-white/5 dark:text-white/40 dark:group-hover:text-white/80'
           )}>
             <Icon size={16} strokeWidth={2} />
           </div>
         )}
       </div>
       <div className="mt-auto">
-        <p className={cn('text-[24px] font-black tabular-nums tracking-tighter leading-none mb-1.5', valueClass, isDark ? 'text-white' : 'text-gray-900')}>
+        <p className={cn('text-[24px] font-black tabular-nums tracking-tighter leading-none mb-1.5', valueClass, 'text-gray-900 dark:text-white')}>
           {value}
         </p>
         {subValue && (
-          <p className={cn('text-[10px] font-medium tracking-wide flex items-center gap-1', isDark ? 'text-white/40' : 'text-gray-400')}>
+          <p className={cn('text-[10px] font-medium tracking-wide flex items-center gap-1', 'text-gray-400 dark:text-white/40')}>
             {subValue}
           </p>
         )}
@@ -144,12 +142,12 @@ const StatCard = ({ title, value, subValue, valueClass, isDark, icon: Icon }) =>
   </div>
 );
 
-const TradingStat = ({ label, value, color, isDark }) => (
+const TradingStat = ({ label, value, color }) => (
   <div className={cn(
     'flex flex-col items-center justify-center flex-1 px-2 border-r last:border-0 border-dashed',
-    isDark ? 'border-white/10' : 'border-gray-200'
+    'border-gray-200 dark:border-white/10'
   )}>
-    <p className={cn('text-[9px] uppercase font-bold tracking-widest mb-0.5 opacity-60', isDark ? 'text-white' : 'text-black')}>
+    <p className={cn('text-[9px] uppercase font-bold tracking-widest mb-0.5 opacity-60', 'text-black dark:text-white')}>
       {label}
     </p>
     <p className={cn('text-[14px] font-black tabular-nums tracking-tight', color)}>
@@ -206,22 +204,22 @@ const AvatarWithTooltip = ({ avatarUrl, nftId, className }) => {
           }}
           className={cn(
             'rounded-2xl overflow-hidden shadow-2xl border backdrop-blur-2xl',
-            isDark ? 'bg-black/95 border-white/10 shadow-black' : 'bg-white/95 border-gray-200 shadow-xl'
+            'bg-white/95 border-gray-200 shadow-xl dark:bg-black/95 dark:border-white/10 dark:shadow-black'
           )}
         >
           {loading ? (
             <div className="flex items-center justify-center p-6">
-              <div className={cn('w-5 h-5 border-2 rounded-full animate-spin', isDark ? 'border-white/20 border-t-white/60' : 'border-gray-200 border-t-gray-600')} />
+              <div className={cn('w-5 h-5 border-2 rounded-full animate-spin', 'border-gray-200 border-t-gray-600 dark:border-white/20 dark:border-t-white/60')} />
             </div>
           ) : nftData ? (
             <div className="flex flex-col">
               <img src={largeImageUrl} alt="" className="w-[180px] h-[180px] object-cover" />
               <div className="p-3">
-                <p className={cn('text-[13px] font-bold truncate', isDark ? 'text-white' : 'text-gray-900')}>
+                <p className={cn('text-[13px] font-bold truncate', 'text-gray-900 dark:text-white')}>
                   {nftData.name || nftData.meta?.name || 'Unnamed'}
                 </p>
                 {nftData.collection && (
-                  <p className={cn('text-[11px] truncate mt-0.5', isDark ? 'text-white/50' : 'text-gray-500')}>
+                  <p className={cn('text-[11px] truncate mt-0.5', 'text-gray-500 dark:text-white/50')}>
                     {nftData.collection}
                   </p>
                 )}
@@ -233,7 +231,7 @@ const AvatarWithTooltip = ({ avatarUrl, nftId, className }) => {
               </div>
             </div>
           ) : (
-            <p className={cn('text-[11px] p-4', isDark ? 'text-white/40' : 'text-gray-400')}>NFT Avatar</p>
+            <p className={cn('text-[11px] p-4', 'text-gray-400 dark:text-white/40')}>NFT Avatar</p>
           )}
         </div>,
         document.body
@@ -349,7 +347,7 @@ const OverView = ({ account }) => {
         setData(profile.error ? { ...profile } : profile);
         setHoldings(holdingsRes.data);
         setNftStats(nftRes.data);
-        setAccountInfo(balanceRes.data);
+        setAccountInfo({ ...balanceRes.data, name: liveRes.data?.name || null, domain: liveRes.data?.domain || null });
 
         // Fetch rank separately (non-blocking) — only if traders endpoint didn't provide it
         if (!profile.rank) {
@@ -611,22 +609,20 @@ const OverView = ({ account }) => {
           <div className="flex flex-col">
             <div className="w-full">
               {/* Account Header - real content for LCP */}
-              <div className={cn('mb-6 p-6 rounded-2xl border-[1.5px]', isDark ? 'border-white/[0.06] bg-white/[0.02]' : 'border-gray-200 bg-gray-50/50')}>
+              <div className={cn('mb-6 p-6 rounded-2xl border-[1.5px]', 'border-gray-200 bg-gray-50/50 dark:border-white/[0.06] dark:bg-white/[0.02]')}>
                 <div className="flex flex-col gap-5">
                   <div className="flex items-start gap-5">
                     <div className="relative shrink-0">
                       <div
                         className={cn(
                           'w-24 h-24 rounded-2xl border flex items-center justify-center',
-                          isDark ? 'border-white/10' : 'border-gray-200'
+                          'border-gray-200 dark:border-white/10'
                         )}
                         style={{
-                          background: isDark
-                            ? `#${account.slice(2, 8)}22`
-                            : `#${account.slice(2, 8)}15`
+                          background: `#${account.slice(2, 8)}${isDark ? '22' : '15'}`
                         }}
                       >
-                        <User size={36} className={isDark ? 'text-white/30' : 'text-gray-300'} strokeWidth={1.5} />
+                        <User size={36} className={'text-gray-300 dark:text-white/30'} strokeWidth={1.5} />
                       </div>
                     </div>
                     <div className="flex-1 min-w-0">
@@ -634,7 +630,7 @@ const OverView = ({ account }) => {
                         <h2
                           className={cn(
                             'text-xl md:text-2xl font-bold tracking-tight font-mono',
-                            isDark ? 'text-white' : 'text-gray-900'
+                            'text-gray-900 dark:text-white'
                           )}
                         >
                           <span className="md:hidden">
@@ -648,9 +644,9 @@ const OverView = ({ account }) => {
                   {/* Skeleton stat cards */}
                   <div className="grid grid-cols-4 gap-2 lg:gap-3">
                     {[1, 2, 3, 4].map((i) => (
-                      <div key={i} className={cn('p-2.5 lg:p-4 rounded-lg lg:rounded-xl border text-center', isDark ? 'bg-white/[0.02] border-white/[0.06]' : 'bg-gray-50/50 border-gray-100')}>
-                        <div className={cn('h-2 w-12 mx-auto rounded animate-pulse mb-2', isDark ? 'bg-white/5' : 'bg-gray-100')} />
-                        <div className={cn('h-5 lg:h-7 w-16 mx-auto rounded animate-pulse', isDark ? 'bg-white/10' : 'bg-gray-200')} />
+                      <div key={i} className={cn('p-2.5 lg:p-4 rounded-lg lg:rounded-xl border text-center', 'bg-gray-50/50 border-gray-100 dark:bg-white/[0.02] dark:border-white/[0.06]')}>
+                        <div className={cn('h-2 w-12 mx-auto rounded animate-pulse mb-2', 'bg-gray-100 dark:bg-white/5')} />
+                        <div className={cn('h-5 lg:h-7 w-16 mx-auto rounded animate-pulse', 'bg-gray-200 dark:bg-white/10')} />
                       </div>
                     ))}
                   </div>
@@ -659,19 +655,19 @@ const OverView = ({ account }) => {
               {/* Two-column skeleton matching final layout */}
               <div className="grid md:grid-cols-2 gap-4 mb-6">
                 {[1, 2].map((i) => (
-                  <div key={i} className={cn('p-4 rounded-2xl border h-[200px]', isDark ? 'bg-white/[0.03] border-white/10' : 'bg-white border-gray-200')}>
-                    <div className={cn('h-4 w-32 rounded animate-pulse mb-4', isDark ? 'bg-white/10' : 'bg-gray-200')} />
-                    <div className={cn('h-3 w-full rounded animate-pulse mb-3', isDark ? 'bg-white/5' : 'bg-gray-100')} />
-                    <div className={cn('h-3 w-3/4 rounded animate-pulse mb-3', isDark ? 'bg-white/5' : 'bg-gray-100')} />
-                    <div className={cn('h-3 w-1/2 rounded animate-pulse', isDark ? 'bg-white/5' : 'bg-gray-100')} />
+                  <div key={i} className={cn('p-4 rounded-2xl border h-[200px]', 'bg-white border-gray-200 dark:bg-white/[0.03] dark:border-white/10')}>
+                    <div className={cn('h-4 w-32 rounded animate-pulse mb-4', 'bg-gray-200 dark:bg-white/10')} />
+                    <div className={cn('h-3 w-full rounded animate-pulse mb-3', 'bg-gray-100 dark:bg-white/5')} />
+                    <div className={cn('h-3 w-3/4 rounded animate-pulse mb-3', 'bg-gray-100 dark:bg-white/5')} />
+                    <div className={cn('h-3 w-1/2 rounded animate-pulse', 'bg-gray-100 dark:bg-white/5')} />
                   </div>
                 ))}
               </div>
               {/* Holdings skeleton */}
-              <div className={cn('rounded-xl border p-4', isDark ? 'border-white/10' : 'border-gray-200')}>
-                <div className={cn('h-4 w-32 rounded animate-pulse mb-3', isDark ? 'bg-white/10' : 'bg-gray-200')} />
+              <div className={cn('rounded-xl border p-4', 'border-gray-200 dark:border-white/10')}>
+                <div className={cn('h-4 w-32 rounded animate-pulse mb-3', 'bg-gray-200 dark:bg-white/10')} />
                 {[1, 2, 3].map((i) => (
-                  <div key={i} className={cn('h-10 rounded animate-pulse mb-2', isDark ? 'bg-white/5' : 'bg-gray-100')} />
+                  <div key={i} className={cn('h-10 rounded animate-pulse mb-2', 'bg-gray-100 dark:bg-white/5')} />
                 ))}
               </div>
             </div>
@@ -708,7 +704,7 @@ const OverView = ({ account }) => {
         <div className="flex flex-col">
           <div className="w-full">
             {/* Account Header */}
-            <div className={cn('mb-6 p-6 rounded-2xl border-[1.5px]', isDark ? 'border-white/[0.06] bg-white/[0.02]' : 'border-gray-200 bg-gray-50/50')}>
+            <div className={cn('mb-6 p-6 rounded-2xl border-[1.5px]', 'border-gray-200 bg-gray-50/50 dark:border-white/[0.06] dark:bg-white/[0.02]')}>
               <div className="flex flex-col gap-5">
                 <div className="flex items-start gap-5">
                   <div className="relative shrink-0">
@@ -722,27 +718,28 @@ const OverView = ({ account }) => {
                       <div
                         className={cn(
                           'w-24 h-24 rounded-2xl border flex items-center justify-center',
-                          isDark ? 'border-white/10' : 'border-gray-200'
+                          'border-gray-200 dark:border-white/10'
                         )}
                         style={{
-                          background: isDark
-                            ? `#${account.slice(2, 8)}22`
-                            : `#${account.slice(2, 8)}15`
+                          background: `#${account.slice(2, 8)}${isDark ? '22' : '15'}`
                         }}
                       >
-                        <User size={36} className={isDark ? 'text-white/30' : 'text-gray-300'} strokeWidth={1.5} />
+                        <User size={36} className={'text-gray-300 dark:text-white/30'} strokeWidth={1.5} />
                       </div>
                     )}
                     {userProfile?.tier && (
-                      <div className={cn('absolute -bottom-1 -right-1 w-6 h-6 rounded-full border-4', isDark ? 'border-[#0a0a0a]' : 'border-white', userProfile.tier === 'verified' ? 'bg-gradient-to-r from-[#FFD700] via-[#FF6B9D] to-[#00FFFF]' : userProfile.tier === 'diamond' ? 'bg-violet-500' : userProfile.tier === 'nova' ? 'bg-amber-500' : userProfile.tier === 'vip' ? 'bg-emerald-500' : 'bg-gray-400')} />
+                      <div className={cn('absolute -bottom-1 -right-1 w-6 h-6 rounded-full border-4', 'border-white dark:border-[#0a0a0a]', userProfile.tier === 'verified' ? 'bg-gradient-to-r from-[#FFD700] via-[#FF6B9D] to-[#00FFFF]' : userProfile.tier === 'diamond' ? 'bg-violet-500' : userProfile.tier === 'nova' ? 'bg-amber-500' : userProfile.tier === 'vip' ? 'bg-emerald-500' : 'bg-gray-400')} />
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
+                    {accountInfo?.name && (
+                      <p className={cn('text-[13px] font-bold mb-0.5', 'text-gray-500 dark:text-white/50')}>{accountInfo.name}</p>
+                    )}
                     <div className="flex items-center gap-3 flex-wrap">
                       <h2
                         className={cn(
                           'text-xl md:text-2xl font-bold tracking-tight font-mono',
-                          isBlackholed ? 'text-red-400' : isDark ? 'text-white' : 'text-gray-900'
+                          isBlackholed ? 'text-red-400' : 'text-gray-900 dark:text-white'
                         )}
                       >
                         <span className="md:hidden">
@@ -759,19 +756,19 @@ const OverView = ({ account }) => {
                               onChange={(e) => setLabelInput(e.target.value.slice(0, 30))}
                               placeholder="Label"
                               autoFocus
-                              className={cn('w-28 px-2 py-1 rounded-md text-[12px] max-sm:text-base outline-none', isDark ? 'bg-white/10 text-white border border-white/20' : 'bg-white text-gray-900 border border-gray-300')}
+                              className={cn('w-28 px-2 py-1 rounded-md text-[12px] max-sm:text-base outline-none', 'bg-white text-gray-900 border border-gray-300 dark:bg-white/10 dark:text-white dark:border dark:border-white/20')}
                             />
                             <button onClick={handleSaveLabel} disabled={labelSaving || !labelInput.trim()} className="px-3 py-1 rounded-md text-[11px] bg-primary text-white disabled:opacity-50 font-bold hover:bg-primary/90 transition-colors">Save</button>
-                            {walletLabel && <button onClick={handleDeleteLabel} disabled={labelSaving} aria-label="Delete label" className={cn('p-1.5 rounded-md transition-colors outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]', isDark ? 'text-red-400 hover:bg-red-500/10' : 'text-red-500 hover:bg-red-50')}><Trash2 size={14} /></button>}
-                            <button onClick={() => setEditingLabel(false)} className={cn('px-2 py-1 text-[11px] font-medium', isDark ? 'text-white/50 hover:text-white/70' : 'text-gray-500 hover:text-gray-700')}>Cancel</button>
+                            {walletLabel && <button onClick={handleDeleteLabel} disabled={labelSaving} aria-label="Delete label" className={cn('p-1.5 rounded-md transition-colors outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]', 'text-red-500 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-500/10')}><Trash2 size={14} /></button>}
+                            <button onClick={() => setEditingLabel(false)} className={cn('px-2 py-1 text-[11px] font-medium', 'text-gray-500 hover:text-gray-700 dark:text-white/50 dark:hover:text-white/70')}>Cancel</button>
                           </div>
                         ) : walletLabel ? (
-                          <button onClick={() => { setLabelInput(walletLabel); setEditingLabel(true); }} className={cn('text-[12px] px-3 py-1 rounded-full font-bold flex items-center gap-1.5 hover:shadow-md transition-all', isDark ? 'bg-primary/20 text-primary border border-primary/20' : 'bg-primary/10 text-primary border border-primary/20')}>
+                          <button onClick={() => { setLabelInput(walletLabel); setEditingLabel(true); }} className={cn('text-[12px] px-3 py-1 rounded-full font-bold flex items-center gap-1.5 hover:shadow-md transition-all', 'bg-primary/10 text-primary border border-primary/20 dark:bg-primary/20 dark:text-primary dark:border dark:border-primary/20')}>
                             <Tag size={12} />
                             {walletLabel}
                           </button>
                         ) : (
-                          <button onClick={() => { setLabelInput(''); setEditingLabel(true); }} aria-label="Add label" className={cn('p-2 rounded-xl transition-all hover:scale-105 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]', isDark ? 'bg-white/5 text-white/30 hover:text-white/60' : 'bg-gray-100 text-gray-400 hover:text-gray-600')} title="Add label">
+                          <button onClick={() => { setLabelInput(''); setEditingLabel(true); }} aria-label="Add label" className={cn('p-2 rounded-xl transition-all hover:scale-105 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]', 'bg-gray-100 text-gray-400 hover:text-gray-600 dark:bg-white/5 dark:text-white/30 dark:hover:text-white/60')} title="Add label">
                             <Tag size={14} />
                           </button>
                         )
@@ -784,9 +781,7 @@ const OverView = ({ account }) => {
                           }}
                           className={cn(
                             'p-2 rounded-xl transition-all hover:scale-105',
-                            isDark
-                              ? 'bg-white/5 text-white/30 hover:text-white/60'
-                              : 'bg-gray-100 text-gray-400 hover:text-gray-600'
+                            'bg-gray-100 text-gray-400 hover:text-gray-600 dark:bg-white/5 dark:text-white/30 dark:hover:text-white/60'
                           )}
                           title="Copy address"
                         >
@@ -797,9 +792,7 @@ const OverView = ({ account }) => {
                             onClick={() => window.dispatchEvent(new CustomEvent('openDm', { detail: { user: account } }))}
                             className={cn(
                               'p-2 rounded-xl transition-all hover:scale-105',
-                              isDark
-                                ? 'bg-white/5 text-white/30 hover:text-white/60'
-                                : 'bg-gray-100 text-gray-400 hover:text-gray-600'
+                              'bg-gray-100 text-gray-400 hover:text-gray-600 dark:bg-white/5 dark:text-white/30 dark:hover:text-white/60'
                             )}
                             title="Message"
                           >
@@ -811,9 +804,7 @@ const OverView = ({ account }) => {
                             onClick={() => setShowGiftTier(true)}
                             className={cn(
                               'p-2 rounded-xl transition-all hover:scale-105',
-                              isDark
-                                ? 'bg-white/5 text-white/30 hover:text-white/60'
-                                : 'bg-gray-100 text-gray-400 hover:text-gray-600'
+                              'bg-gray-100 text-gray-400 hover:text-gray-600 dark:bg-white/5 dark:text-white/30 dark:hover:text-white/60'
                             )}
                             title="Gift Tier"
                           >
@@ -826,9 +817,7 @@ const OverView = ({ account }) => {
                             onClick={handleAccountAI}
                             className={cn(
                               'p-2 rounded-xl transition-all hover:scale-105',
-                              isDark
-                                ? 'bg-purple-500/10 text-purple-400 hover:text-purple-300 hover:bg-purple-500/20'
-                                : 'bg-purple-50 text-purple-500 hover:text-purple-600 hover:bg-purple-100'
+                              'bg-purple-50 text-purple-500 hover:text-purple-600 hover:bg-purple-100 dark:bg-purple-500/10 dark:text-purple-400 dark:hover:text-purple-300 dark:hover:bg-purple-500/20'
                             )}
                             title="AI Analysis"
                           >
@@ -836,7 +825,7 @@ const OverView = ({ account }) => {
                           </button>
                         )}
                         {accountAILoading && (
-                          <div className={cn('p-2 rounded-xl', isDark ? 'bg-purple-500/10' : 'bg-purple-50')}>
+                          <div className={cn('p-2 rounded-xl', 'bg-purple-50 dark:bg-purple-500/10')}>
                             <div className="w-[15px] h-[15px] border-2 border-purple-400 border-t-transparent rounded-full animate-spin" />
                           </div>
                         )}
@@ -851,7 +840,7 @@ const OverView = ({ account }) => {
                         </button>
                       )}
                     </div>
-                    <AccountInfoDetails accountInfo={accountInfo} isDark={isDark} data={data} />
+                    <AccountInfoDetails accountInfo={accountInfo} data={data} />
                     {/* Role / Tier / Rank / Badges — consistent with wallet.js profile */}
                     <div className="flex items-center gap-2.5 flex-wrap mt-2">
                       {(() => {
@@ -860,8 +849,8 @@ const OverView = ({ account }) => {
                         const tiers = allItems.filter(r => knownTiers.includes(r));
                         const rankItem = allItems.find(r => r.startsWith('rank:'));
                         const rankName = rankItem ? rankItem.split(':')[1] : (userProfile?.armyRank?.toLowerCase() || null);
-                        const defaultPill = { icon: Trophy, bg: isDark ? 'bg-white/5' : 'bg-gray-100', text: isDark ? 'text-white/50' : 'text-gray-500', border: isDark ? 'border-white/10' : 'border-gray-200' };
-                        const defaultRankStyle = { bg: isDark ? 'bg-white/5' : 'bg-gray-100', text: isDark ? 'text-white/50' : 'text-gray-500', border: isDark ? 'border-white/10' : 'border-gray-200' };
+                        const defaultPill = { icon: Trophy, bg: 'bg-gray-100 dark:bg-white/5', text: 'text-gray-500 dark:text-white/50', border: 'border-gray-200 dark:border-white/10' };
+                        const defaultRankStyle = { bg: 'bg-gray-100 dark:bg-white/5', text: 'text-gray-500 dark:text-white/50', border: 'border-gray-200 dark:border-white/10' };
 
                         const renderPill = (name, config) => {
                           const Icon = config.icon;
@@ -877,19 +866,19 @@ const OverView = ({ account }) => {
                           <>
                             {roles.length > 0 && (
                               <>
-                                <span className={cn('text-[9px] font-bold uppercase tracking-widest', isDark ? 'text-white/20' : 'text-gray-300')}>Role</span>
+                                <span className={cn('text-[9px] font-bold uppercase tracking-widest', 'text-gray-300 dark:text-white/20')}>Role</span>
                                 {roles.map(r => renderPill(r, tierConfig[r] || defaultPill))}
                               </>
                             )}
                             {tiers.length > 0 && (
                               <>
-                                <span className={cn('text-[9px] font-bold uppercase tracking-widest', isDark ? 'text-white/20' : 'text-gray-300')}>Tier</span>
+                                <span className={cn('text-[9px] font-bold uppercase tracking-widest', 'text-gray-300 dark:text-white/20')}>Tier</span>
                                 {tiers.map(t => renderPill(t, tierConfig[t] || defaultPill))}
                               </>
                             )}
                             {rankName && (
                               <>
-                                <span className={cn('text-[9px] font-bold uppercase tracking-widest', isDark ? 'text-white/20' : 'text-gray-300')}>Rank</span>
+                                <span className={cn('text-[9px] font-bold uppercase tracking-widest', 'text-gray-300 dark:text-white/20')}>Rank</span>
                                 {(() => {
                                   const rs = rankStyles[rankName] || defaultRankStyle;
                                   return (
@@ -910,9 +899,7 @@ const OverView = ({ account }) => {
                             'flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-bold border',
                             data.washTradingScore > 50
                               ? 'bg-amber-500/10 text-amber-500 border-amber-500/20'
-                              : isDark
-                                ? 'bg-white/[0.03] text-white/50 border-white/10'
-                                : 'bg-gray-50 text-gray-500 border-gray-200'
+                              : 'bg-gray-50 text-gray-500 border-gray-200 dark:bg-white/[0.03] dark:text-white/50 dark:border-white/10'
                           )}
                           title="Wash Trading Score"
                         >
@@ -932,25 +919,25 @@ const OverView = ({ account }) => {
                           </span>
                           <div className={cn(
                             'pointer-events-none absolute right-0 top-full mt-2 p-3.5 rounded-2xl text-[11px] w-64 opacity-0 invisible group-hover/blackhole:opacity-100 group-hover/blackhole:visible transition-all duration-200 z-50 shadow-2xl backdrop-blur-xl',
-                            isDark ? 'bg-black/95 border border-white/10' : 'bg-white border border-gray-200 shadow-xl'
+                            'bg-white border border-gray-200 shadow-xl dark:bg-black/95 dark:border dark:border-white/10'
                           )}>
                             <div className="font-bold text-red-500 text-[13px] mb-1.5 flex items-center gap-2">
                               <AlertTriangle size={14} />
                               Blackholed Account
                             </div>
-                            <div className={cn('leading-relaxed', isDark ? 'text-white/50' : 'text-gray-500')}>
+                            <div className={cn('leading-relaxed', 'text-gray-500 dark:text-white/50')}>
                               This account is permanently locked. Master key is disabled and no valid regular key exists.
                             </div>
                             {accountInfo && (
-                              <div className={cn('mt-3 pt-3 border-t space-y-2', isDark ? 'border-white/10' : 'border-gray-100')}>
+                              <div className={cn('mt-3 pt-3 border-t space-y-2', 'border-gray-100 dark:border-white/10')}>
                                 <div className="flex justify-between items-center">
-                                  <span className={cn('text-[10px] uppercase font-bold', isDark ? 'text-white/50' : 'text-gray-400')}>Current Balance</span>
-                                  <span className={cn('font-bold tabular-nums', isDark ? 'text-white' : 'text-gray-900')}>{accountInfo.total?.toLocaleString()} XRP</span>
+                                  <span className={cn('text-[10px] uppercase font-bold', 'text-gray-400 dark:text-white/50')}>Current Balance</span>
+                                  <span className={cn('font-bold tabular-nums', 'text-gray-900 dark:text-white')}>{accountInfo.total?.toLocaleString()} XRP</span>
                                 </div>
                                 {accountInfo.rank && (
                                   <div className="flex justify-between items-center">
-                                    <span className={cn('text-[10px] uppercase font-bold', isDark ? 'text-white/50' : 'text-gray-400')}>Global Rank</span>
-                                    <span className={cn('font-bold tabular-nums', isDark ? 'text-white' : 'text-gray-900')}>#{accountInfo.rank.toLocaleString()}</span>
+                                    <span className={cn('text-[10px] uppercase font-bold', 'text-gray-400 dark:text-white/50')}>Global Rank</span>
+                                    <span className={cn('font-bold tabular-nums', 'text-gray-900 dark:text-white')}>#{accountInfo.rank.toLocaleString()}</span>
                                   </div>
                                 )}
                               </div>
@@ -961,8 +948,8 @@ const OverView = ({ account }) => {
                       {/* Achievement Badges */}
                       {displayBadges.available.filter(b => b.startsWith('badge:')).length > 0 && (
                         <>
-                          <span className={cn('text-[14px] font-thin select-none', isDark ? 'text-white/10' : 'text-gray-200')}>|</span>
-                          <span className={cn('text-[9px] font-bold uppercase tracking-widest', isDark ? 'text-white/20' : 'text-gray-300')}>Badges</span>
+                          <span className={cn('text-[14px] font-thin select-none', 'text-gray-200 dark:text-white/10')}>|</span>
+                          <span className={cn('text-[9px] font-bold uppercase tracking-widest', 'text-gray-300 dark:text-white/20')}>Badges</span>
                           {displayBadges.available.filter(b => b.startsWith('badge:')).map(badgeId => (
                             <BadgeShield key={badgeId} badgeKey={badgeId.split(':')[1]} earned={true} size="sm" />
                           ))}
@@ -973,25 +960,25 @@ const OverView = ({ account }) => {
                   {/* Key Stats - fill remaining space on desktop */}
                   {(data || nftStats || holdings) && (
                     <div className="hidden lg:grid grid-cols-4 gap-3 flex-1">
-                      <div className={cn('p-4 rounded-xl border text-center', isDark ? 'bg-white/[0.02] border-white/[0.06]' : 'bg-gray-50/50 border-gray-100')}>
-                        <p className={cn('text-[9px] uppercase font-bold tracking-widest mb-1.5', isDark ? 'text-white/50' : 'text-gray-400')}>Balance</p>
-                        <p className={cn('text-[20px] font-black tabular-nums tracking-tight leading-none', isDark ? 'text-white' : 'text-gray-900')}>{fCurrency5(holdings?.accountData?.total || holdings?.xrp?.value || 0)}</p>
-                        <p className={cn('text-[10px] mt-1.5 font-medium', isDark ? 'text-white/50' : 'text-gray-400')}>{accountInfo?.rank ? `#${accountInfo.rank.toLocaleString()} Rank` : 'XRP'}</p>
+                      <div className={cn('p-4 rounded-xl border text-center', 'bg-gray-50/50 border-gray-100 dark:bg-white/[0.02] dark:border-white/[0.06]')}>
+                        <p className={cn('text-[9px] uppercase font-bold tracking-widest mb-1.5', 'text-gray-400 dark:text-white/50')}>Balance</p>
+                        <p className={cn('text-[20px] font-black tabular-nums tracking-tight leading-none', 'text-gray-900 dark:text-white')}>{fCurrency5(holdings?.accountData?.total || holdings?.xrp?.value || 0)}</p>
+                        <p className={cn('text-[10px] mt-1.5 font-medium', 'text-gray-400 dark:text-white/50')}>{accountInfo?.rank ? `#${accountInfo.rank.toLocaleString()} Rank` : 'XRP'}</p>
                       </div>
-                      <div className={cn('p-4 rounded-xl border text-center', isDark ? 'bg-white/[0.02] border-white/[0.06]' : 'bg-gray-50/50 border-gray-100')}>
-                        <p className={cn('text-[9px] uppercase font-bold tracking-widest mb-1.5', isDark ? 'text-white/50' : 'text-gray-400')}>Total Profit / Loss</p>
+                      <div className={cn('p-4 rounded-xl border text-center', 'bg-gray-50/50 border-gray-100 dark:bg-white/[0.02] dark:border-white/[0.06]')}>
+                        <p className={cn('text-[9px] uppercase font-bold tracking-widest mb-1.5', 'text-gray-400 dark:text-white/50')}>Total Profit / Loss</p>
                         <p className={cn('text-[20px] font-black tabular-nums tracking-tight leading-none', totalPnL + (nftStats?.combinedProfit || 0) >= 0 ? 'text-emerald-500' : 'text-red-500')}>{totalPnL + (nftStats?.combinedProfit || 0) >= 0 ? '+' : ''}{fCurrency5(totalPnL + (nftStats?.combinedProfit || 0))}</p>
-                        <p className={cn('text-[10px] mt-1.5 font-medium', isDark ? 'text-white/50' : 'text-gray-400')}>{data?.totalRoi != null ? `${data.totalRoi >= 0 ? '+' : ''}${data.totalRoi.toFixed(1)}% Return` : 'XRP'}</p>
+                        <p className={cn('text-[10px] mt-1.5 font-medium', 'text-gray-400 dark:text-white/50')}>{data?.totalRoi != null ? `${data.totalRoi >= 0 ? '+' : ''}${data.totalRoi.toFixed(1)}% Return` : 'XRP'}</p>
                       </div>
-                      <div className={cn('p-4 rounded-xl border text-center', isDark ? 'bg-white/[0.02] border-white/[0.06]' : 'bg-gray-50/50 border-gray-100')}>
-                        <p className={cn('text-[9px] uppercase font-bold tracking-widest mb-1.5', isDark ? 'text-white/50' : 'text-gray-400')}>Trades</p>
-                        <p className={cn('text-[20px] font-black tabular-nums tracking-tight leading-none', isDark ? 'text-white' : 'text-gray-900')}>{fCurrency5((data?.totalTrades || 0) + (nftStats?.totalTrades || 0))}</p>
-                        <p className={cn('text-[10px] mt-1.5 font-medium', isDark ? 'text-white/50' : 'text-gray-400')}>{totalTokensTraded > 0 ? `${winningTokens}W / ${losingTokens}L` : 'Total'}</p>
+                      <div className={cn('p-4 rounded-xl border text-center', 'bg-gray-50/50 border-gray-100 dark:bg-white/[0.02] dark:border-white/[0.06]')}>
+                        <p className={cn('text-[9px] uppercase font-bold tracking-widest mb-1.5', 'text-gray-400 dark:text-white/50')}>Trades</p>
+                        <p className={cn('text-[20px] font-black tabular-nums tracking-tight leading-none', 'text-gray-900 dark:text-white')}>{fCurrency5((data?.totalTrades || 0) + (nftStats?.totalTrades || 0))}</p>
+                        <p className={cn('text-[10px] mt-1.5 font-medium', 'text-gray-400 dark:text-white/50')}>{totalTokensTraded > 0 ? `${winningTokens}W / ${losingTokens}L` : 'Total'}</p>
                       </div>
-                      <div className={cn('p-4 rounded-xl border text-center', isDark ? 'bg-white/[0.02] border-white/[0.06]' : 'bg-gray-50/50 border-gray-100')}>
-                        <p className={cn('text-[9px] uppercase font-bold tracking-widest mb-1.5', isDark ? 'text-white/50' : 'text-gray-400')}>Volume</p>
-                        <p className={cn('text-[20px] font-black tabular-nums tracking-tight leading-none', isDark ? 'text-white' : 'text-gray-900')}>{fCurrency5((data?.dexVolume || 0) + (data?.ammVolume || 0) + (nftStats?.totalVolume || 0))}</p>
-                        <p className={cn('text-[10px] mt-1.5 font-medium', isDark ? 'text-white/50' : 'text-gray-400')}>XRP</p>
+                      <div className={cn('p-4 rounded-xl border text-center', 'bg-gray-50/50 border-gray-100 dark:bg-white/[0.02] dark:border-white/[0.06]')}>
+                        <p className={cn('text-[9px] uppercase font-bold tracking-widest mb-1.5', 'text-gray-400 dark:text-white/50')}>Volume</p>
+                        <p className={cn('text-[20px] font-black tabular-nums tracking-tight leading-none', 'text-gray-900 dark:text-white')}>{fCurrency5((data?.dexVolume || 0) + (data?.ammVolume || 0) + (nftStats?.totalVolume || 0))}</p>
+                        <p className={cn('text-[10px] mt-1.5 font-medium', 'text-gray-400 dark:text-white/50')}>XRP</p>
                       </div>
                     </div>
                   )}
@@ -999,21 +986,21 @@ const OverView = ({ account }) => {
                 {/* Mobile Stats */}
                 {(data || nftStats || holdings) && (
                   <div className={cn('grid grid-cols-4 gap-2 lg:hidden')}>
-                    <div className={cn('p-2.5 rounded-lg border text-center', isDark ? 'bg-white/[0.02] border-white/[0.06]' : 'bg-gray-50/50 border-gray-100')}>
-                      <p className={cn('text-[8px] uppercase font-bold tracking-widest mb-0.5', isDark ? 'text-white/50' : 'text-gray-400')}>Balance</p>
-                      <p className={cn('text-[14px] font-black tabular-nums tracking-tight leading-none', isDark ? 'text-white' : 'text-gray-900')}>{fCurrency5(holdings?.accountData?.total || holdings?.xrp?.value || 0)}</p>
+                    <div className={cn('p-2.5 rounded-lg border text-center', 'bg-gray-50/50 border-gray-100 dark:bg-white/[0.02] dark:border-white/[0.06]')}>
+                      <p className={cn('text-[8px] uppercase font-bold tracking-widest mb-0.5', 'text-gray-400 dark:text-white/50')}>Balance</p>
+                      <p className={cn('text-[14px] font-black tabular-nums tracking-tight leading-none', 'text-gray-900 dark:text-white')}>{fCurrency5(holdings?.accountData?.total || holdings?.xrp?.value || 0)}</p>
                     </div>
-                    <div className={cn('p-2.5 rounded-lg border text-center', isDark ? 'bg-white/[0.02] border-white/[0.06]' : 'bg-gray-50/50 border-gray-100')}>
-                      <p className={cn('text-[8px] uppercase font-bold tracking-widest mb-0.5', isDark ? 'text-white/50' : 'text-gray-400')}>Profit / Loss</p>
+                    <div className={cn('p-2.5 rounded-lg border text-center', 'bg-gray-50/50 border-gray-100 dark:bg-white/[0.02] dark:border-white/[0.06]')}>
+                      <p className={cn('text-[8px] uppercase font-bold tracking-widest mb-0.5', 'text-gray-400 dark:text-white/50')}>Profit / Loss</p>
                       <p className={cn('text-[14px] font-black tabular-nums tracking-tight leading-none', totalPnL + (nftStats?.combinedProfit || 0) >= 0 ? 'text-emerald-500' : 'text-red-500')}>{totalPnL + (nftStats?.combinedProfit || 0) >= 0 ? '+' : ''}{fCurrency5(totalPnL + (nftStats?.combinedProfit || 0))}</p>
                     </div>
-                    <div className={cn('p-2.5 rounded-lg border text-center', isDark ? 'bg-white/[0.02] border-white/[0.06]' : 'bg-gray-50/50 border-gray-100')}>
-                      <p className={cn('text-[8px] uppercase font-bold tracking-widest mb-0.5', isDark ? 'text-white/50' : 'text-gray-400')}>Trades</p>
-                      <p className={cn('text-[14px] font-black tabular-nums tracking-tight leading-none', isDark ? 'text-white' : 'text-gray-900')}>{fCurrency5((data?.totalTrades || 0) + (nftStats?.totalTrades || 0))}</p>
+                    <div className={cn('p-2.5 rounded-lg border text-center', 'bg-gray-50/50 border-gray-100 dark:bg-white/[0.02] dark:border-white/[0.06]')}>
+                      <p className={cn('text-[8px] uppercase font-bold tracking-widest mb-0.5', 'text-gray-400 dark:text-white/50')}>Trades</p>
+                      <p className={cn('text-[14px] font-black tabular-nums tracking-tight leading-none', 'text-gray-900 dark:text-white')}>{fCurrency5((data?.totalTrades || 0) + (nftStats?.totalTrades || 0))}</p>
                     </div>
-                    <div className={cn('p-2.5 rounded-lg border text-center', isDark ? 'bg-white/[0.02] border-white/[0.06]' : 'bg-gray-50/50 border-gray-100')}>
-                      <p className={cn('text-[8px] uppercase font-bold tracking-widest mb-0.5', isDark ? 'text-white/50' : 'text-gray-400')}>Volume</p>
-                      <p className={cn('text-[14px] font-black tabular-nums tracking-tight leading-none', isDark ? 'text-white' : 'text-gray-900')}>{fCurrency5((data?.dexVolume || 0) + (data?.ammVolume || 0) + (nftStats?.totalVolume || 0))}</p>
+                    <div className={cn('p-2.5 rounded-lg border text-center', 'bg-gray-50/50 border-gray-100 dark:bg-white/[0.02] dark:border-white/[0.06]')}>
+                      <p className={cn('text-[8px] uppercase font-bold tracking-widest mb-0.5', 'text-gray-400 dark:text-white/50')}>Volume</p>
+                      <p className={cn('text-[14px] font-black tabular-nums tracking-tight leading-none', 'text-gray-900 dark:text-white')}>{fCurrency5((data?.dexVolume || 0) + (data?.ammVolume || 0) + (nftStats?.totalVolume || 0))}</p>
                     </div>
                   </div>
                 )}
@@ -1025,7 +1012,7 @@ const OverView = ({ account }) => {
               <div
                 className={cn(
                   'mb-4 p-4 rounded-xl border-[1.5px]',
-                  isDark ? 'border-white/10' : 'border-gray-200'
+                  'border-gray-200 dark:border-white/10'
                 )}
               >
                 {accountAILoading ? (
@@ -1042,15 +1029,13 @@ const OverView = ({ account }) => {
                             background:
                               i === 5
                                 ? 'rgba(139,92,246,0.4)'
-                                : isDark
-                                  ? 'rgba(255,255,255,0.06)'
-                                  : 'rgba(0,0,0,0.06)'
+                                : (isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)')
                           }}
                         />
                       </div>
                     ))}
                     <p
-                      className={cn('mt-3 text-[12px]', isDark ? 'text-white/50' : 'text-gray-500')}
+                      className={cn('mt-3 text-[12px]', 'text-gray-500 dark:text-white/50')}
                     >
                       Analyzing account activity...
                     </p>
@@ -1088,7 +1073,7 @@ const OverView = ({ account }) => {
                           {accountAI.analysis?.riskLevel || 'unknown'} risk
                         </span>
                         <span
-                          className={cn('text-[11px]', isDark ? 'text-white/30' : 'text-gray-400')}
+                          className={cn('text-[11px]', 'text-gray-400 dark:text-white/30')}
                         >
                           {accountAI.period}
                         </span>
@@ -1097,9 +1082,7 @@ const OverView = ({ account }) => {
                         onClick={() => setAccountAI(null)}
                         className={cn(
                           'p-1.5 rounded-lg transition-colors',
-                          isDark
-                            ? 'hover:bg-white/5 text-white/30'
-                            : 'hover:bg-gray-100 text-gray-400'
+                          'hover:bg-gray-100 text-gray-400 dark:hover:bg-white/5 dark:text-white/30'
                         )}
                       >
                         <svg
@@ -1117,59 +1100,59 @@ const OverView = ({ account }) => {
                     <p
                       className={cn(
                         'text-[14px] leading-relaxed',
-                        isDark ? 'text-white/80' : 'text-gray-700'
+                        'text-gray-700 dark:text-white/80'
                       )}
                     >
                       {accountAI.analysis?.headline}
                     </p>
                     {accountAI.analysis?.riskReason && (
-                      <p className={cn('text-[12px]', isDark ? 'text-white/50' : 'text-gray-500')}>
+                      <p className={cn('text-[12px]', 'text-gray-500 dark:text-white/50')}>
                         {accountAI.analysis.riskReason}
                       </p>
                     )}
                     {accountAI.stats && (
                       <div className="flex flex-wrap gap-x-4 gap-y-1 text-[12px]">
                         <div>
-                          <span className={isDark ? 'text-white/40' : 'text-gray-400'}>Txns:</span>{' '}
-                          <span className={isDark ? 'text-white/70' : 'text-gray-600'}>
+                          <span className={'text-gray-400 dark:text-white/40'}>Txns:</span>{' '}
+                          <span className={'text-gray-600 dark:text-white/70'}>
                             {accountAI.txCount}
                           </span>
                         </div>
                         <div>
-                          <span className={isDark ? 'text-white/40' : 'text-gray-400'}>
+                          <span className={'text-gray-400 dark:text-white/40'}>
                             Success:
                           </span>{' '}
                           <span className="text-[#22c55e]">{accountAI.stats.successRate}%</span>
                         </div>
                         {accountAI.stats.tradeCount > 0 && (
                           <div>
-                            <span className={isDark ? 'text-white/40' : 'text-gray-400'}>
+                            <span className={'text-gray-400 dark:text-white/40'}>
                               Trades:
                             </span>{' '}
-                            <span className={isDark ? 'text-white/70' : 'text-gray-600'}>
+                            <span className={'text-gray-600 dark:text-white/70'}>
                               {accountAI.stats.tradeCount}
                             </span>
                           </div>
                         )}
                         {accountAI.stats.swapCount > 0 && (
                           <div>
-                            <span className={isDark ? 'text-white/40' : 'text-gray-400'}>
+                            <span className={'text-gray-400 dark:text-white/40'}>
                               Swaps:
                             </span>{' '}
-                            <span className={isDark ? 'text-white/70' : 'text-gray-600'}>
+                            <span className={'text-gray-600 dark:text-white/70'}>
                               {accountAI.stats.swapCount}
                             </span>
                           </div>
                         )}
                         <div>
-                          <span className={isDark ? 'text-white/40' : 'text-gray-400'}>Fees:</span>{' '}
-                          <span className={isDark ? 'text-white/70' : 'text-gray-600'}>
+                          <span className={'text-gray-400 dark:text-white/40'}>Fees:</span>{' '}
+                          <span className={'text-gray-600 dark:text-white/70'}>
                             {accountAI.stats.totalFees} XRP
                           </span>
                         </div>
                         {accountAI.stats.xrpNet !== 0 && (
                           <div>
-                            <span className={isDark ? 'text-white/40' : 'text-gray-400'}>
+                            <span className={'text-gray-400 dark:text-white/40'}>
                               XRP Net:
                             </span>{' '}
                             <span
@@ -1184,10 +1167,10 @@ const OverView = ({ account }) => {
                         )}
                         {accountAI.stats.tokens?.length > 0 && (
                           <div>
-                            <span className={isDark ? 'text-white/40' : 'text-gray-400'}>
+                            <span className={'text-gray-400 dark:text-white/40'}>
                               Tokens:
                             </span>{' '}
-                            <span className={isDark ? 'text-white/70' : 'text-gray-600'}>
+                            <span className={'text-gray-600 dark:text-white/70'}>
                               {accountAI.stats.tokens.slice(0, 5).join(', ')}
                               {accountAI.stats.tokens.length > 5
                                 ? ` +${accountAI.stats.tokens.length - 5}`
@@ -1204,7 +1187,7 @@ const OverView = ({ account }) => {
                             key={i}
                             className={cn(
                               'text-[12px] flex items-start gap-2',
-                              isDark ? 'text-white/60' : 'text-gray-500'
+                              'text-gray-500 dark:text-white/60'
                             )}
                           >
                             <span className="text-[#8b5cf6]">•</span>
@@ -1216,7 +1199,7 @@ const OverView = ({ account }) => {
                     {accountAI.topAddresses?.length > 0 && (
                       <div className="flex flex-wrap gap-2">
                         <span
-                          className={cn('text-[11px]', isDark ? 'text-white/30' : 'text-gray-400')}
+                          className={cn('text-[11px]', 'text-gray-400 dark:text-white/30')}
                         >
                           Top:
                         </span>
@@ -1226,9 +1209,7 @@ const OverView = ({ account }) => {
                             href={`/address/${a.address}`}
                             className={cn(
                               'text-[11px] px-2 py-0.5 rounded',
-                              isDark
-                                ? 'bg-white/5 text-white/50 hover:text-white/70'
-                                : 'bg-gray-100 text-gray-500 hover:text-gray-700'
+                              'bg-gray-100 text-gray-500 hover:text-gray-700 dark:bg-white/5 dark:text-white/50 dark:hover:text-white/70'
                             )}
                           >
                             {a.label || `${a.address.slice(0, 6)}...`} ({a.interactions})
@@ -1239,7 +1220,7 @@ const OverView = ({ account }) => {
                     <p
                       className={cn(
                         'text-[10px] pt-2 border-t',
-                        isDark ? 'border-white/5 text-white/30' : 'border-gray-100 text-gray-400'
+                        'border-gray-100 text-gray-400 dark:border-white/5 dark:text-white/30'
                       )}
                     >
                       {accountAI.disclaimer}
@@ -1254,13 +1235,13 @@ const OverView = ({ account }) => {
               <div
                 className={cn(
                   'text-center py-10 mb-4 rounded-xl border',
-                  isDark ? 'border-[#ef4444]/20 bg-[#ef4444]/5' : 'border-red-200 bg-red-50'
+                  'border-red-200 bg-red-50 dark:border-[#ef4444]/20 dark:bg-[#ef4444]/5'
                 )}
               >
                 <div
                   className={cn(
                     'w-12 h-12 mx-auto mb-3 rounded-full flex items-center justify-center',
-                    isDark ? 'bg-[#ef4444]/10' : 'bg-red-100'
+                    'bg-red-100 dark:bg-[#ef4444]/10'
                   )}
                 >
                   <Wallet size={20} className="text-[#ef4444]" />
@@ -1268,7 +1249,7 @@ const OverView = ({ account }) => {
                 <p className={cn('text-[15px] font-medium', 'text-[#ef4444]')}>
                   Account not activated
                 </p>
-                <p className={cn('text-[13px] mt-1', isDark ? 'text-white/40' : 'text-gray-500')}>
+                <p className={cn('text-[13px] mt-1', 'text-gray-500 dark:text-white/40')}>
                   This account has been deleted or was never funded
                 </p>
               </div>
@@ -1279,13 +1260,13 @@ const OverView = ({ account }) => {
               <div
                 className={cn(
                   'text-center py-8 mb-4 rounded-xl border-[1.5px]',
-                  isDark ? 'border-white/10' : 'border-gray-200'
+                  'border-gray-200 dark:border-white/10'
                 )}
               >
                 <div
                   className={cn(
                     'w-10 h-10 mx-auto mb-2 rounded-full flex items-center justify-center',
-                    isDark ? 'bg-white/5' : 'bg-gray-100'
+                    'bg-gray-100 dark:bg-white/5'
                   )}
                 >
                   <svg
@@ -1295,12 +1276,12 @@ const OverView = ({ account }) => {
                     fill="none"
                     stroke="currentColor"
                     strokeWidth="2"
-                    className={isDark ? 'text-white/30' : 'text-gray-400'}
+                    className={'text-gray-400 dark:text-white/30'}
                   >
                     <path d="M3 3v18h18M7 16l4-4 4 4 6-6" />
                   </svg>
                 </div>
-                <p className={cn('text-[14px]', isDark ? 'text-white/50' : 'text-gray-500')}>
+                <p className={cn('text-[14px]', 'text-gray-500 dark:text-white/50')}>
                   No trading history
                 </p>
               </div>
@@ -1313,7 +1294,7 @@ const OverView = ({ account }) => {
                 <div
                   className={cn(
                     'p-4 rounded-2xl border transition-all duration-300 h-full flex flex-col',
-                    isDark ? 'bg-white/[0.03] border-white/10 shadow-lg' : 'bg-white border-gray-200 shadow-sm'
+                    'bg-white border-gray-200 shadow-sm dark:bg-white/[0.03] dark:border-white/10 dark:shadow-lg'
                   )}
                 >
                   {data && !data.error ? (
@@ -1323,7 +1304,7 @@ const OverView = ({ account }) => {
                           <div
                             className={cn(
                               'w-7 h-7 rounded-lg flex items-center justify-center',
-                              isDark ? 'bg-emerald-500/10' : 'bg-emerald-50'
+                              'bg-emerald-50 dark:bg-emerald-500/10'
                             )}
                           >
                             <Coins size={14} className="text-emerald-500" />
@@ -1332,18 +1313,18 @@ const OverView = ({ account }) => {
                             <span
                               className={cn(
                                 'text-[11px] font-bold tracking-tight',
-                                isDark ? 'text-white' : 'text-gray-900'
+                                'text-gray-900 dark:text-white'
                               )}
                             >
                               Token Performance
                             </span>
-                            <p className={cn('text-[9px] font-medium opacity-50 block', isDark ? 'text-white' : 'text-gray-500')}>DEX & AMM Activity</p>
+                            <p className={cn('text-[9px] font-medium opacity-50 block', 'text-gray-500 dark:text-white')}>DEX & AMM Activity</p>
                           </div>
                         </div>
                         <div
                           className={cn(
                             'flex items-center gap-2 px-2.5 py-1 rounded-lg text-[10px] font-bold tabular-nums border',
-                            isDark ? 'bg-white/[0.04] border-white/10' : 'bg-gray-50 border-gray-200'
+                            'bg-gray-50 border-gray-200 dark:bg-white/[0.04] dark:border-white/10'
                           )}
                         >
                           <span className="text-emerald-500">
@@ -1356,22 +1337,22 @@ const OverView = ({ account }) => {
                         </div>
                       </div>
                       <div className="flex items-center justify-around mb-2.5 py-1.5">
-                        <TradingStat label="Realized" value={`${realizedPnL >= 0 ? '+' : ''}${fCurrency5(realizedPnL)}`} color={realizedPnL >= 0 ? 'text-emerald-500' : 'text-red-500'} isDark={isDark} />
-                        <div className={cn('w-px h-7', isDark ? 'bg-white/10' : 'bg-gray-100')} />
-                        <TradingStat label="Unrealized" value={`${unrealizedPnL >= 0 ? '+' : ''}${fCurrency5(unrealizedPnL)}`} color={unrealizedPnL >= 0 ? 'text-emerald-500' : 'text-red-500'} isDark={isDark} />
-                        <div className={cn('w-px h-7', isDark ? 'bg-white/10' : 'bg-gray-100')} />
-                        <TradingStat label="Return" value={`${((data.totalRoi ?? data.roi) || 0).toFixed(1)}%`} color={((data.totalRoi ?? data.roi) || 0) >= 0 ? 'text-emerald-500' : 'text-red-500'} isDark={isDark} />
+                        <TradingStat label="Realized" value={`${realizedPnL >= 0 ? '+' : ''}${fCurrency5(realizedPnL)}`} color={realizedPnL >= 0 ? 'text-emerald-500' : 'text-red-500'} />
+                        <div className={cn('w-px h-7', 'bg-gray-100 dark:bg-white/10')} />
+                        <TradingStat label="Unrealized" value={`${unrealizedPnL >= 0 ? '+' : ''}${fCurrency5(unrealizedPnL)}`} color={unrealizedPnL >= 0 ? 'text-emerald-500' : 'text-red-500'} />
+                        <div className={cn('w-px h-7', 'bg-gray-100 dark:bg-white/10')} />
+                        <TradingStat label="Return" value={`${((data.totalRoi ?? data.roi) || 0).toFixed(1)}%`} color={((data.totalRoi ?? data.roi) || 0) >= 0 ? 'text-emerald-500' : 'text-red-500'} />
                       </div>
                       {/* Token Win Rate bar */}
                       {totalTokensTraded > 0 && (
                         <div className={cn('mb-3 px-1')}>
                           <div className="flex items-center justify-between mb-1.5">
-                            <span className={cn('text-[9px] font-bold uppercase tracking-widest opacity-60', isDark ? 'text-white' : 'text-black')}>Token Win Rate</span>
-                            <span className={cn('text-[10px] font-bold tabular-nums', isDark ? 'text-white/70' : 'text-gray-600')}>
+                            <span className={cn('text-[9px] font-bold uppercase tracking-widest opacity-60', 'text-black dark:text-white')}>Token Win Rate</span>
+                            <span className={cn('text-[10px] font-bold tabular-nums', 'text-gray-600 dark:text-white/70')}>
                               {winningTokens} Won / {losingTokens} Lost{totalTokensTraded - winningTokens - losingTokens > 0 ? ` / ${totalTokensTraded - winningTokens - losingTokens} Even` : ''}
                             </span>
                           </div>
-                          <div className={cn('h-1.5 rounded-full overflow-hidden flex', isDark ? 'bg-white/[0.06]' : 'bg-gray-100')}>
+                          <div className={cn('h-1.5 rounded-full overflow-hidden flex', 'bg-gray-100 dark:bg-white/[0.06]')}>
                             {winningTokens > 0 && (
                               <div className="bg-emerald-500 h-full rounded-l-full" style={{ width: `${(winningTokens / totalTokensTraded) * 100}%` }} />
                             )}
@@ -1385,10 +1366,10 @@ const OverView = ({ account }) => {
                       {holdingValue > 0 && (
                         <div className={cn(
                           'flex items-center justify-between py-2 px-1 text-[10px] font-bold',
-                          isDark ? 'border-t border-white/[0.06]' : 'border-t border-gray-100'
+                          'border-t border-gray-100 dark:border-t dark:border-white/[0.06]'
                         )}>
                           <span className="opacity-60">Holding Value</span>
-                          <span className={cn('tabular-nums', isDark ? 'text-[#137DFE]' : 'text-blue-600')}>
+                          <span className={cn('tabular-nums', 'text-blue-600 dark:text-[#137DFE]')}>
                             {fCurrency5(holdingValue)} XRP
                           </span>
                         </div>
@@ -1396,7 +1377,7 @@ const OverView = ({ account }) => {
                       <div
                         className={cn(
                           'flex items-center justify-between pt-2.5 text-[10px] mt-auto font-bold',
-                          isDark ? 'border-t border-white/[0.06]' : 'border-t border-gray-100'
+                          'border-t border-gray-100 dark:border-t dark:border-white/[0.06]'
                         )}
                       >
                         <div className="flex items-center gap-4">
@@ -1434,13 +1415,13 @@ const OverView = ({ account }) => {
                       <div
                         className={cn(
                           'w-10 h-10 mb-2 rounded-xl flex items-center justify-center',
-                          isDark ? 'bg-emerald-500/10' : 'bg-emerald-50'
+                          'bg-emerald-50 dark:bg-emerald-500/10'
                         )}
                       >
-                        <Coins size={18} className={isDark ? 'text-emerald-500/40' : 'text-emerald-400'} />
+                        <Coins size={18} className={'text-emerald-400 dark:text-emerald-500/40'} />
                       </div>
-                      <p className={cn('text-[11px] font-bold tracking-tight mb-0.5', isDark ? 'text-white/70' : 'text-gray-700')}>No Token activity</p>
-                      <p className={cn('text-[9px] font-medium opacity-40', isDark ? 'text-white' : 'text-gray-500')}>Trading data will appear here</p>
+                      <p className={cn('text-[11px] font-bold tracking-tight mb-0.5', 'text-gray-700 dark:text-white/70')}>No Token activity</p>
+                      <p className={cn('text-[9px] font-medium opacity-40', 'text-gray-500 dark:text-white')}>Trading data will appear here</p>
                     </div>
                   )}
                 </div>
@@ -1449,7 +1430,7 @@ const OverView = ({ account }) => {
                 <div
                   className={cn(
                     'p-4 rounded-2xl border transition-all duration-300 h-full flex flex-col',
-                    isDark ? 'bg-white/[0.03] border-white/10 shadow-lg' : 'bg-white border-gray-200 shadow-sm'
+                    'bg-white border-gray-200 shadow-sm dark:bg-white/[0.03] dark:border-white/10 dark:shadow-lg'
                   )}
                 >
                   {nftStats && (nftStats.totalVolume > 0 || nftStats.holdingsCount > 0) ? (
@@ -1459,7 +1440,7 @@ const OverView = ({ account }) => {
                           <div
                             className={cn(
                               'w-7 h-7 rounded-lg flex items-center justify-center',
-                              isDark ? 'bg-indigo-500/10' : 'bg-indigo-50'
+                              'bg-indigo-50 dark:bg-indigo-500/10'
                             )}
                           >
                             <Image size={14} className="text-indigo-500" />
@@ -1468,17 +1449,17 @@ const OverView = ({ account }) => {
                             <span
                               className={cn(
                                 'text-[11px] font-bold tracking-tight',
-                                isDark ? 'text-white' : 'text-gray-900'
+                                'text-gray-900 dark:text-white'
                               )}
                             >
                               NFT Performance
                             </span>
                             <div className="flex items-center gap-1.5">
-                              <p className={cn('text-[9px] font-medium opacity-50 block', isDark ? 'text-white' : 'text-gray-500')}>
+                              <p className={cn('text-[9px] font-medium opacity-50 block', 'text-gray-500 dark:text-white')}>
                                 {fCurrency5(nftStats.totalVolume || 0)} XRP volume
                               </p>
                               {nftStats.holdingsCount > 0 && (
-                                <span className={cn('px-1 py-px rounded text-[8px] font-bold uppercase tracking-wider', isDark ? 'bg-indigo-500/20 text-indigo-400' : 'bg-indigo-100 text-indigo-700')}>
+                                <span className={cn('px-1 py-px rounded text-[8px] font-bold uppercase tracking-wider', 'bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-400')}>
                                   {nftStats.holdingsCount} Held
                                 </span>
                               )}
@@ -1488,7 +1469,7 @@ const OverView = ({ account }) => {
                         <div
                           className={cn(
                             'flex items-center gap-2 px-2.5 py-1 rounded-lg text-[10px] font-bold tabular-nums border',
-                            isDark ? 'bg-white/[0.04] border-white/10' : 'bg-gray-50 border-gray-200'
+                            'bg-gray-50 border-gray-200 dark:bg-white/[0.04] dark:border-white/10'
                           )}
                         >
                           <span className="text-emerald-500">
@@ -1501,28 +1482,28 @@ const OverView = ({ account }) => {
                         </div>
                       </div>
                       <div className="flex items-center justify-around mb-2.5 py-1.5">
-                        <TradingStat label="Realized" value={`${(nftStats.profit || 0) >= 0 ? '+' : ''}${fCurrency5(nftStats.profit || 0)}`} color={(nftStats.profit || 0) >= 0 ? 'text-emerald-500' : 'text-red-500'} isDark={isDark} />
-                        <div className={cn('w-px h-7', isDark ? 'bg-white/10' : 'bg-gray-100')} />
-                        <TradingStat label="Unrealized" value={`${(nftStats.unrealizedProfit || 0) >= 0 ? '+' : ''}${fCurrency5(nftStats.unrealizedProfit || 0)}`} color={(nftStats.unrealizedProfit || 0) >= 0 ? 'text-emerald-500' : 'text-amber-500'} isDark={isDark} />
-                        <div className={cn('w-px h-7', isDark ? 'bg-white/10' : 'bg-gray-100')} />
-                        <TradingStat label="Return" value={`${(nftStats.roi || 0) >= 0 ? '+' : ''}${(nftStats.roi || 0).toFixed(1)}%`} color={(nftStats.roi || 0) >= 0 ? 'text-emerald-500' : 'text-red-500'} isDark={isDark} />
+                        <TradingStat label="Realized" value={`${(nftStats.profit || 0) >= 0 ? '+' : ''}${fCurrency5(nftStats.profit || 0)}`} color={(nftStats.profit || 0) >= 0 ? 'text-emerald-500' : 'text-red-500'} />
+                        <div className={cn('w-px h-7', 'bg-gray-100 dark:bg-white/10')} />
+                        <TradingStat label="Unrealized" value={`${(nftStats.unrealizedProfit || 0) >= 0 ? '+' : ''}${fCurrency5(nftStats.unrealizedProfit || 0)}`} color={(nftStats.unrealizedProfit || 0) >= 0 ? 'text-emerald-500' : 'text-amber-500'} />
+                        <div className={cn('w-px h-7', 'bg-gray-100 dark:bg-white/10')} />
+                        <TradingStat label="Return" value={`${(nftStats.roi || 0) >= 0 ? '+' : ''}${(nftStats.roi || 0).toFixed(1)}%`} color={(nftStats.roi || 0) >= 0 ? 'text-emerald-500' : 'text-red-500'} />
                       </div>
                       <div
                         className={cn(
                           'flex items-center justify-between pt-2.5 text-[10px] mt-auto font-bold',
-                          isDark ? 'border-t border-white/[0.06]' : 'border-t border-gray-100'
+                          'border-t border-gray-100 dark:border-t dark:border-white/[0.06]'
                         )}
                       >
                         <div className="flex items-center gap-4">
                           <span className="flex items-baseline gap-1.5">
                             <span className="opacity-60">Flips:</span>
-                            <span className={cn('tabular-nums', isDark ? 'text-white/80' : 'text-gray-900')}>
+                            <span className={cn('tabular-nums', 'text-gray-900 dark:text-white/80')}>
                               {nftStats.flips || 0}
                             </span>
                           </span>
                           <span className="flex items-baseline gap-1.5">
                             <span className="opacity-60">Avg Hold:</span>
-                            <span className={cn('tabular-nums', isDark ? 'text-white/80' : 'text-gray-900')}>
+                            <span className={cn('tabular-nums', 'text-gray-900 dark:text-white/80')}>
                               {(() => {
                                 if (nftStats.avgHoldingDays > 0) return `${nftStats.avgHoldingDays.toFixed(0)} days`;
                                 if (nftStats.holdingsCount > 0 && nftStats.firstTrade) {
@@ -1554,13 +1535,13 @@ const OverView = ({ account }) => {
                       <div
                         className={cn(
                           'w-10 h-10 mb-2 rounded-xl flex items-center justify-center',
-                          isDark ? 'bg-indigo-500/10' : 'bg-indigo-50'
+                          'bg-indigo-50 dark:bg-indigo-500/10'
                         )}
                       >
-                        <Image size={18} className={isDark ? 'text-indigo-500/40' : 'text-indigo-400'} />
+                        <Image size={18} className={'text-indigo-400 dark:text-indigo-500/40'} />
                       </div>
-                      <p className={cn('text-[11px] font-bold tracking-tight mb-0.5', isDark ? 'text-white/70' : 'text-gray-700')}>No NFT activity</p>
-                      <p className={cn('text-[9px] font-medium opacity-40', isDark ? 'text-white' : 'text-gray-500')}>Marketplace data will appear here</p>
+                      <p className={cn('text-[11px] font-bold tracking-tight mb-0.5', 'text-gray-700 dark:text-white/70')}>No NFT activity</p>
+                      <p className={cn('text-[9px] font-medium opacity-40', 'text-gray-500 dark:text-white')}>Marketplace data will appear here</p>
                     </div>
                   )}
                 </div>
@@ -1572,9 +1553,7 @@ const OverView = ({ account }) => {
           <div className="flex justify-start mb-6">
             <div className={cn(
               'flex items-center gap-0.5 p-1 rounded-xl border backdrop-blur-md',
-              isDark
-                ? 'bg-white/[0.03] border-white/[0.06]'
-                : 'bg-gray-100/80 border-gray-200'
+              'bg-gray-100/80 border-gray-200 dark:bg-white/[0.03] dark:border-white/[0.06]'
             )}>
               {[
                 { id: 'tokens', label: 'Holdings', icon: Coins, count: (holdings?.total || holdings?.lines?.length || 0) + ((holdings?.accountData?.total > 0 || holdings?.xrp?.value > 0) ? 1 : 0) },
@@ -1588,8 +1567,8 @@ const OverView = ({ account }) => {
                   className={cn(
                     'flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold rounded-lg transition-all duration-200',
                     activeTab === tab.id
-                      ? cn(isDark ? 'bg-white/10 text-white' : 'bg-white text-gray-900 shadow-sm')
-                      : cn(isDark ? 'text-white/50 hover:text-white/70' : 'text-gray-500 hover:text-gray-700')
+                      ? cn('bg-white text-gray-900 shadow-sm dark:bg-white/10 dark:text-white')
+                      : cn('text-gray-500 hover:text-gray-700 dark:text-white/50 dark:hover:text-white/70')
                   )}
                 >
                   <tab.icon size={13} />
@@ -1598,8 +1577,8 @@ const OverView = ({ account }) => {
                     <span className={cn(
                       'text-[9px] px-1 py-0.5 rounded font-bold min-w-[16px] text-center',
                       activeTab === tab.id
-                        ? isDark ? 'bg-white/10 text-white/70' : 'bg-gray-200 text-gray-600'
-                        : isDark ? 'bg-white/5 text-white/40' : 'bg-gray-200/50 text-gray-400'
+                        ? 'bg-gray-200 text-gray-600 dark:bg-white/10 dark:text-white/70'
+                        : 'bg-gray-200/50 text-gray-400 dark:bg-white/5 dark:text-white/40'
                     )}>
                       {tab.count}
                     </span>
@@ -1625,19 +1604,19 @@ const OverView = ({ account }) => {
                     <div
                       className={cn(
                         'rounded-xl overflow-hidden transition-all duration-300',
-                        isDark ? 'bg-black/50 backdrop-blur-sm border border-white/[0.15]' : 'bg-white border border-gray-200'
+                        'bg-white border border-gray-200 dark:bg-black/50 dark:backdrop-blur-sm dark:border dark:border-white/[0.15]'
                       )}
                     >
                       <div
                         className={cn(
                           'px-4 py-2.5 flex items-center justify-between border-b',
-                          isDark ? 'border-b-white/[0.08]' : 'border-b-gray-100'
+                          'border-b-gray-100 dark:border-b-white/[0.08]'
                         )}
                       >
                         <div className="flex items-center gap-2">
-                          <Wallet size={13} className={isDark ? 'text-white/50' : 'text-gray-500'} />
+                          <Wallet size={13} className={'text-gray-500 dark:text-white/50'} />
                           <div className="flex items-center gap-1.5">
-                            <p className={cn('text-[10px] font-semibold uppercase tracking-[0.15em]', isDark ? 'text-white/50' : 'text-gray-500')}>Token Portfolio</p>
+                            <p className={cn('text-[10px] font-semibold uppercase tracking-[0.15em]', 'text-gray-500 dark:text-white/50')}>Token Portfolio</p>
                               {zeroCount > 0 && (
                                 <button
                                   onClick={() => setHideZeroHoldings(!hideZeroHoldings)}
@@ -1645,15 +1624,13 @@ const OverView = ({ account }) => {
                                     'text-[9px] px-1.5 py-px rounded-full transition-all duration-200 font-bold uppercase tracking-wider',
                                     hideZeroHoldings
                                       ? 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20'
-                                      : isDark
-                                        ? 'bg-white/[0.04] text-white/40 hover:bg-white/[0.08]'
-                                        : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                                      : 'bg-gray-100 text-gray-500 hover:bg-gray-200 dark:bg-white/[0.04] dark:text-white/40 dark:hover:bg-white/[0.08]'
                                   )}
                                 >
                                   {hideZeroHoldings ? `+${zeroCount} hidden` : 'Hide empty'}
                                 </button>
                               )}
-                            <span className={cn('text-[9px] px-1.5 py-px rounded font-semibold uppercase tracking-wide', isDark ? 'bg-white/5 text-white/50 border border-white/[0.15]' : 'bg-gray-100 text-gray-500')}>
+                            <span className={cn('text-[9px] px-1.5 py-px rounded font-semibold uppercase tracking-wide', 'bg-gray-100 text-gray-500 dark:bg-white/5 dark:text-white/50 dark:border dark:border-white/[0.15]')}>
                               {(holdings.total || holdings.lines?.length || 0) + ((holdings.accountData?.total > 0 || holdings.xrp?.value > 0) ? 1 : 0)}
                             </span>
                           </div>
@@ -1661,10 +1638,10 @@ const OverView = ({ account }) => {
                         {(totalValue > 0 || (holdings.accountData?.total > 0 || holdings.xrp?.value > 0)) && (
                           <div className="text-right">
                             <div className="flex items-baseline justify-end gap-1">
-                              <span className={cn('text-[14px] font-black tabular-nums tracking-tighter', isDark ? 'text-white' : 'text-gray-900')}>
+                              <span className={cn('text-[14px] font-black tabular-nums tracking-tighter', 'text-gray-900 dark:text-white')}>
                                 {fCurrency5(totalValue + (holdings.accountData?.total || holdings.xrp?.value || 0))}
                               </span>
-                              <span className={cn('text-[9px] font-bold opacity-60', isDark ? 'text-white' : 'text-gray-500')}>XRP</span>
+                              <span className={cn('text-[9px] font-bold opacity-60', 'text-gray-500 dark:text-white')}>XRP</span>
                             </div>
                           </div>
                         )}
@@ -1673,7 +1650,7 @@ const OverView = ({ account }) => {
                         {(filteredLines.length > 0 || holdings.accountData?.total > 0 || holdings.xrp?.value > 0) ? (
                           <table className="w-full">
                             <thead>
-                              <tr className={cn('text-[9px] font-black uppercase tracking-widest opacity-60', isDark ? 'text-white' : 'text-gray-500')}>
+                              <tr className={cn('text-[9px] font-black uppercase tracking-widest opacity-60', 'text-gray-500 dark:text-white')}>
                                 <th className="px-4 py-2 text-left">Asset</th>
                                 <th className="px-4 py-2 text-right">Balance</th>
                                 <th className="px-4 py-2 text-right">Value (XRP)</th>
@@ -1681,20 +1658,20 @@ const OverView = ({ account }) => {
                                 <th className="px-4 py-2 text-right">24H</th>
                               </tr>
                             </thead>
-                            <tbody className={cn('divide-y', isDark ? 'divide-white/[0.04]' : 'divide-gray-50')}>
+                            <tbody className={cn('divide-y', 'divide-gray-50 dark:divide-white/[0.04]')}>
                               {/* XRP Row */}
                               {(holdings.accountData?.total > 0 || holdings.xrp?.value > 0) && (
                                 <tr
                                   className={cn(
                                     'group transition-all duration-300 relative overflow-hidden',
-                                    isDark ? 'hover:bg-white/[0.04]' : 'hover:bg-gray-50'
+                                    'hover:bg-gray-50 dark:hover:bg-white/[0.04]'
                                   )}
                                 >
                                   <td className="px-4 py-2.5">
                                     <Link href="/token/xrpl-xrp" className="flex items-center gap-2.5">
                                       <div className={cn(
                                         'w-7 h-7 rounded-xl p-0.5 border transition-transform group-hover:scale-105 flex-shrink-0',
-                                        isDark ? 'bg-black border-white/10' : 'bg-white border-gray-100'
+                                        'bg-white border-gray-100 dark:bg-black dark:border-white/10'
                                       )}>
                                         <img
                                           src="https://s1.xrpl.to/thumb/84e5efeb89c4eae8f68188982dc290d8_32"
@@ -1703,13 +1680,13 @@ const OverView = ({ account }) => {
                                         />
                                       </div>
                                       <div className="flex flex-col">
-                                        <span className={cn('text-[12px] font-bold group-hover:text-primary transition-colors', isDark ? 'text-white' : 'text-gray-900')}>XRP</span>
-                                        <span className={cn('text-[8px] font-medium opacity-40', isDark ? 'text-white' : 'text-gray-500')}>Native Asset</span>
+                                        <span className={cn('text-[12px] font-bold group-hover:text-primary transition-colors', 'text-gray-900 dark:text-white')}>XRP</span>
+                                        <span className={cn('text-[8px] font-medium opacity-40', 'text-gray-500 dark:text-white')}>Native Asset</span>
                                       </div>
                                     </Link>
                                   </td>
                                   <td className="px-4 py-2.5 text-right">
-                                    <div className={cn('text-[12px] font-bold tabular-nums', isDark ? 'text-white/90' : 'text-gray-900')}>
+                                    <div className={cn('text-[12px] font-bold tabular-nums', 'text-gray-900 dark:text-white/90')}>
                                       {fCurrency5(holdings.accountData?.total || holdings.xrp.value)}
                                     </div>
                                     {holdings.accountData?.reserve > 0 && (
@@ -1719,7 +1696,7 @@ const OverView = ({ account }) => {
                                     )}
                                   </td>
                                   <td className="px-4 py-2.5 text-right">
-                                    <div className={cn('text-[12px] font-black tabular-nums tracking-tight', isDark ? 'text-white' : 'text-gray-900')}>
+                                    <div className={cn('text-[12px] font-black tabular-nums tracking-tight', 'text-gray-900 dark:text-white')}>
                                       {xrpPrice
                                         ? `$${fCurrency5((holdings.accountData?.total || holdings.xrp.value) * xrpPrice)}`
                                         : `${fCurrency5(holdings.accountData?.total || holdings.xrp.value)} XRP`}
@@ -1749,14 +1726,14 @@ const OverView = ({ account }) => {
                                     key={idx}
                                     className={cn(
                                       'group transition-all duration-300 relative overflow-hidden',
-                                      isDark ? 'hover:bg-white/[0.04]' : 'hover:bg-gray-50'
+                                      'hover:bg-gray-50 dark:hover:bg-white/[0.04]'
                                     )}
                                   >
                                     <td className="px-4 py-2.5">
                                       <Link href={`/token/${line.token?.md5}`} className="flex items-center gap-2.5">
                                         <div className={cn(
                                           'relative w-7 h-7 rounded-xl p-0.5 border transition-transform group-hover:scale-105 flex-shrink-0',
-                                          isDark ? 'bg-black border-white/10' : 'bg-white border-gray-100'
+                                          'bg-white border-gray-100 dark:bg-black dark:border-white/10'
                                         )}>
                                           <img
                                             src={`https://s1.xrpl.to/thumb/${line.token?.md5}_32`}
@@ -1764,16 +1741,16 @@ const OverView = ({ account }) => {
                                             onError={(e) => { e.target.src = 'https://s1.xrpl.to/thumb/84e5efeb89c4eae8f68188982dc290d8_32'; }}
                                             alt=""
                                           />
-                                          <VerificationBadge verified={line.token?.verified} size="sm" isDark={isDark} />
+                                          <VerificationBadge verified={line.token?.verified} size="sm" />
                                         </div>
                                         <div className="flex flex-col min-w-0">
                                           <div className="flex items-center gap-1">
-                                            <span className={cn('text-[12px] font-bold group-hover:text-primary transition-colors truncate', isDark ? 'text-white' : 'text-gray-900')}>
+                                            <span className={cn('text-[12px] font-bold group-hover:text-primary transition-colors truncate', 'text-gray-900 dark:text-white')}>
                                               {line.token?.name || line.currency}
                                             </span>
                                           </div>
                                           {pctOwned > 0.01 && (
-                                            <span className={cn('text-[8px] font-medium opacity-40', isDark ? 'text-white' : 'text-gray-500')}>
+                                            <span className={cn('text-[8px] font-medium opacity-40', 'text-gray-500 dark:text-white')}>
                                               {pctOwned.toFixed(2)}% Supply
                                             </span>
                                           )}
@@ -1781,12 +1758,12 @@ const OverView = ({ account }) => {
                                       </Link>
                                     </td>
                                     <td className="px-4 py-2.5 text-right">
-                                      <div className={cn('text-[12px] font-bold tabular-nums', isDark ? 'text-white/90' : 'text-gray-900')}>
+                                      <div className={cn('text-[12px] font-bold tabular-nums', 'text-gray-900 dark:text-white/90')}>
                                         {fCurrency5(Math.abs(parseFloat(line.balance)))}
                                       </div>
                                     </td>
                                     <td className="px-4 py-2.5 text-right">
-                                      <div className={cn('text-[12px] font-black tabular-nums tracking-tight', isDark ? 'text-white' : 'text-gray-900')}>
+                                      <div className={cn('text-[12px] font-black tabular-nums tracking-tight', 'text-gray-900 dark:text-white')}>
                                         {fCurrency5(line.value)} XRP
                                       </div>
                                     </td>
@@ -1812,12 +1789,12 @@ const OverView = ({ account }) => {
                             <div className={
                               cn(
                                 'w-14 h-14 rounded-2xl flex items-center justify-center mb-3',
-                                isDark ? 'bg-white/5 border border-white/10' : 'bg-gray-50 border border-gray-100'
+                                'bg-gray-50 border border-gray-100 dark:bg-white/5 dark:border dark:border-white/10'
                               )}>
-                              <Search size={24} className={cn('opacity-30', isDark ? 'text-white' : 'text-gray-400')} />
+                              <Search size={24} className={cn('opacity-30', 'text-gray-400 dark:text-white')} />
                             </div>
-                            <h4 className={cn('text-[14px] font-black tracking-tight mb-1', isDark ? 'text-white' : 'text-gray-900')}>No Tokens Found</h4>
-                            <p className={cn('text-[11px] font-medium opacity-50 max-w-[280px] leading-relaxed mx-auto', isDark ? 'text-white' : 'text-gray-600')}>
+                            <h4 className={cn('text-[14px] font-black tracking-tight mb-1', 'text-gray-900 dark:text-white')}>No Tokens Found</h4>
+                            <p className={cn('text-[11px] font-medium opacity-50 max-w-[280px] leading-relaxed mx-auto', 'text-gray-600 dark:text-white')}>
                               Try adjusting your search or "Hide empty" settings.
                             </p>
                           </div>
@@ -1830,10 +1807,10 @@ const OverView = ({ account }) => {
                           <div
                             className={cn(
                               'flex items-center justify-between px-4 py-2 border-t',
-                              isDark ? 'border-white/[0.06]' : 'border-gray-50'
+                              'border-gray-50 dark:border-white/[0.06]'
                             )}
                           >
-                            <p className={cn('text-[9px] font-bold opacity-50 uppercase tracking-widest', isDark ? 'text-white' : 'text-gray-500')}>
+                            <p className={cn('text-[9px] font-bold opacity-50 uppercase tracking-widest', 'text-gray-500 dark:text-white')}>
                               Page {holdingsPage + 1} of {Math.ceil(((holdings.total || holdings.lines?.length || 0) + ((holdings.accountData?.total > 0 || holdings.xrp?.value > 0) ? 1 : 0)) / 10)}
                             </p>
                             <div className="flex items-center gap-1.5">
@@ -1845,9 +1822,7 @@ const OverView = ({ account }) => {
                                   'w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-200',
                                   holdingsPage === 0
                                     ? 'opacity-20 cursor-not-allowed'
-                                    : isDark
-                                      ? 'bg-white/5 text-white hover:bg-white/10'
-                                      : 'bg-gray-50 text-gray-900 hover:bg-gray-100'
+                                    : 'bg-gray-50 text-gray-900 hover:bg-gray-100 dark:bg-white/5 dark:text-white dark:hover:bg-white/10'
                                 )}
                               >
                                 <ChevronLeft size={14} />
@@ -1860,9 +1835,7 @@ const OverView = ({ account }) => {
                                   'w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-200',
                                   holdingsPage >= Math.ceil(((holdings.total || holdings.lines?.length || 0) + ((holdings.accountData?.total > 0 || holdings.xrp?.value > 0) ? 1 : 0)) / 10) - 1
                                     ? 'opacity-20 cursor-not-allowed'
-                                    : isDark
-                                      ? 'bg-white/5 text-white hover:bg-white/10'
-                                      : 'bg-gray-50 text-gray-900 hover:bg-gray-100'
+                                    : 'bg-gray-50 text-gray-900 hover:bg-gray-100 dark:bg-white/5 dark:text-white dark:hover:bg-white/10'
                                 )}
                               >
                                 <ChevronRight size={14} />
@@ -1882,45 +1855,45 @@ const OverView = ({ account }) => {
                 <div
                   className={cn(
                     'rounded-xl overflow-hidden transition-all duration-300 mb-6',
-                    isDark ? 'bg-black/50 backdrop-blur-sm border border-white/[0.15]' : 'bg-white border border-gray-200'
+                    'bg-white border border-gray-200 dark:bg-black/50 dark:backdrop-blur-sm dark:border dark:border-white/[0.15]'
                   )}
                 >
                   <div
                     className={cn(
                       'px-4 py-2.5 flex items-center justify-between border-b',
-                      isDark ? 'border-b-white/[0.08]' : 'border-b-gray-100'
+                      'border-b-gray-100 dark:border-b-white/[0.08]'
                     )}
                   >
                     <div className="flex items-center gap-2">
-                      <Zap size={13} className={isDark ? 'text-white/50' : 'text-gray-500'} />
-                      <p className={cn('text-[10px] font-semibold uppercase tracking-[0.15em]', isDark ? 'text-white/50' : 'text-gray-500')}>Issued Tokens</p>
-                      <span className={cn('text-[9px] px-1.5 py-px rounded font-semibold uppercase tracking-wide', isDark ? 'bg-white/5 text-white/50 border border-white/[0.15]' : 'bg-gray-100 text-gray-500')}>{holdings.issued.length}</span>
+                      <Zap size={13} className={'text-gray-500 dark:text-white/50'} />
+                      <p className={cn('text-[10px] font-semibold uppercase tracking-[0.15em]', 'text-gray-500 dark:text-white/50')}>Issued Tokens</p>
+                      <span className={cn('text-[9px] px-1.5 py-px rounded font-semibold uppercase tracking-wide', 'bg-gray-100 text-gray-500 dark:bg-white/5 dark:text-white/50 dark:border dark:border-white/[0.15]')}>{holdings.issued.length}</span>
                     </div>
                   </div>
                   <div className="overflow-x-auto">
                     <table className="w-full">
                       <thead>
-                        <tr className={cn('text-[9px] font-black uppercase tracking-widest opacity-60', isDark ? 'text-white' : 'text-gray-500')}>
+                        <tr className={cn('text-[9px] font-black uppercase tracking-widest opacity-60', 'text-gray-500 dark:text-white')}>
                           <th className="px-4 py-2 text-left">Token</th>
                           <th className="px-4 py-2 text-right">Supply</th>
                           <th className="px-4 py-2 text-right">Holders</th>
                           <th className="px-4 py-2 text-right">Market Cap</th>
                         </tr>
                       </thead>
-                      <tbody className={cn('divide-y', isDark ? 'divide-white/[0.04]' : 'divide-gray-50')}>
+                      <tbody className={cn('divide-y', 'divide-gray-50 dark:divide-white/[0.04]')}>
                         {holdings.issued.map((token, idx) => (
                           <tr
                             key={idx}
                             className={cn(
                               'group transition-all duration-200 relative overflow-hidden',
-                              isDark ? 'hover:bg-white/[0.04]' : 'hover:bg-gray-50'
+                              'hover:bg-gray-50 dark:hover:bg-white/[0.04]'
                             )}
                           >
                             <td className="px-4 py-2.5">
                               <Link href={`/token/${token.md5}`} className="flex items-center gap-2.5">
                                 <div className={cn(
                                   'w-7 h-7 rounded-xl p-0.5 border transition-transform group-hover:scale-105 flex-shrink-0',
-                                  isDark ? 'bg-black border-white/10' : 'bg-white border-gray-100'
+                                  'bg-white border-gray-100 dark:bg-black dark:border-white/10'
                                 )}>
                                   <img
                                     src={`https://s1.xrpl.to/thumb/${token.md5}_32`}
@@ -1930,27 +1903,27 @@ const OverView = ({ account }) => {
                                   />
                                 </div>
                                 <div className="flex flex-col min-w-0">
-                                  <span className={cn('text-[12px] font-bold group-hover:text-primary transition-colors truncate', isDark ? 'text-white' : 'text-gray-900')}>
+                                  <span className={cn('text-[12px] font-bold group-hover:text-primary transition-colors truncate', 'text-gray-900 dark:text-white')}>
                                     {token.name || token.currency}
                                   </span>
-                                  <span className={cn('text-[8px] font-medium opacity-40', isDark ? 'text-white' : 'text-gray-500')}>
+                                  <span className={cn('text-[8px] font-medium opacity-40', 'text-gray-500 dark:text-white')}>
                                     {token.user || 'Unknown User'}
                                   </span>
                                 </div>
                               </Link>
                             </td>
                             <td className="px-4 py-2.5 text-right">
-                              <div className={cn('text-[12px] font-bold tabular-nums', isDark ? 'text-white/90' : 'text-gray-900')}>
+                              <div className={cn('text-[12px] font-bold tabular-nums', 'text-gray-900 dark:text-white/90')}>
                                 {fCurrency5(parseFloat(token.supply))}
                               </div>
                             </td>
                             <td className="px-4 py-2.5 text-right">
-                              <div className={cn('text-[12px] font-bold tabular-nums', isDark ? 'text-white/90' : 'text-gray-900')}>
+                              <div className={cn('text-[12px] font-bold tabular-nums', 'text-gray-900 dark:text-white/90')}>
                                 {token.holders?.toLocaleString() || 0}
                               </div>
                             </td>
                             <td className="px-4 py-2.5 text-right">
-                              <div className={cn('text-[12px] font-black tabular-nums tracking-tight', isDark ? 'text-white' : 'text-gray-900')}>
+                              <div className={cn('text-[12px] font-black tabular-nums tracking-tight', 'text-gray-900 dark:text-white')}>
                                 ${fCurrency5(parseFloat(token.supply) * parseFloat(token.usd || 0))}
                               </div>
                             </td>
@@ -1980,19 +1953,19 @@ const OverView = ({ account }) => {
                     <div
                       className={cn(
                         'rounded-xl overflow-hidden transition-all duration-300 mb-6',
-                        isDark ? 'bg-black/50 backdrop-blur-sm border border-white/[0.15]' : 'bg-white border border-gray-200'
+                        'bg-white border border-gray-200 dark:bg-black/50 dark:backdrop-blur-sm dark:border dark:border-white/[0.15]'
                       )}
                     >
                       <div
                         className={cn(
                           'px-4 py-2 flex items-center justify-between border-b gap-2 flex-wrap',
-                          isDark ? 'border-b-white/[0.08]' : 'border-b-gray-100'
+                          'border-b-gray-100 dark:border-b-white/[0.08]'
                         )}
                       >
                         <div className="flex items-center gap-2">
-                          <TrendingUp size={13} className={isDark ? 'text-white/50' : 'text-gray-500'} />
-                          <p className={cn('text-[10px] font-semibold uppercase tracking-[0.15em]', isDark ? 'text-white/50' : 'text-gray-500')}>Trading Performance</p>
-                          <span className={cn('text-[9px] px-1.5 py-px rounded font-semibold uppercase tracking-wide', isDark ? 'bg-white/5 text-white/50 border border-white/[0.15]' : 'bg-gray-100 text-gray-500')}>{totalCount}</span>
+                          <TrendingUp size={13} className={'text-gray-500 dark:text-white/50'} />
+                          <p className={cn('text-[10px] font-semibold uppercase tracking-[0.15em]', 'text-gray-500 dark:text-white/50')}>Trading Performance</p>
+                          <span className={cn('text-[9px] px-1.5 py-px rounded font-semibold uppercase tracking-wide', 'bg-gray-100 text-gray-500 dark:bg-white/5 dark:text-white/50 dark:border dark:border-white/[0.15]')}>{totalCount}</span>
                         </div>
 
                         <div className="flex items-center gap-1.5">
@@ -2005,9 +1978,7 @@ const OverView = ({ account }) => {
                             aria-label="Sort trading performance by"
                             className={cn(
                               'text-[10px] px-2 py-1.5 rounded-lg border-none outline-none cursor-pointer font-bold',
-                              isDark
-                                ? 'bg-white/[0.04] text-white/70 hover:bg-white/[0.08]'
-                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                              'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-white/[0.04] dark:text-white/70 dark:hover:bg-white/[0.08]'
                             )}
                           >
                             <option value="volume">Volume</option>
@@ -2019,7 +1990,7 @@ const OverView = ({ account }) => {
                           <div
                             className={cn(
                               'flex items-center rounded-lg overflow-hidden px-2',
-                              isDark ? 'bg-white/[0.04]' : 'bg-gray-100'
+                              'bg-gray-100 dark:bg-white/[0.04]'
                             )}
                           >
                             <Search size={12} className="opacity-30" />
@@ -2030,9 +2001,7 @@ const OverView = ({ account }) => {
                               onChange={(e) => setTokenSearch(e.target.value)}
                               className={cn(
                                 'text-[10px] max-sm:text-base px-1.5 py-1.5 bg-transparent border-none outline-none w-24 font-medium',
-                                isDark
-                                  ? 'text-white/70 placeholder:text-white/30'
-                                  : 'text-gray-600 placeholder:text-gray-400'
+                                'text-gray-600 placeholder:text-gray-400 dark:text-white/70 dark:placeholder:text-white/30'
                               )}
                             />
                           </div>
@@ -2042,7 +2011,7 @@ const OverView = ({ account }) => {
                       <div className="overflow-x-auto">
                         <table className="w-full">
                           <thead>
-                            <tr className={cn('text-[9px] font-black uppercase tracking-widest opacity-60', isDark ? 'text-white' : 'text-gray-500')}>
+                            <tr className={cn('text-[9px] font-black uppercase tracking-widest opacity-60', 'text-gray-500 dark:text-white')}>
                               <th className="px-4 py-2 text-left">Token</th>
                               <th className="px-2 py-2 text-right">Volume</th>
                               <th className="px-2 py-2 text-right">Trades</th>
@@ -2054,7 +2023,7 @@ const OverView = ({ account }) => {
                               <th className="px-2 py-2 text-right pr-4">Period</th>
                             </tr>
                           </thead>
-                          <tbody className={cn('divide-y', isDark ? 'divide-white/[0.04]' : 'divide-gray-50')}>
+                          <tbody className={cn('divide-y', 'divide-gray-50 dark:divide-white/[0.04]')}>
                             {displayTokens.map((token, idx) => {
                               const roi = token.totalRoi ?? token.roi ?? 0;
                               const profit = token.totalPnl ?? token.profit ?? 0;
@@ -2067,7 +2036,7 @@ const OverView = ({ account }) => {
                                   key={idx}
                                   className={cn(
                                     'group transition-all duration-300 relative overflow-hidden',
-                                    isDark ? 'hover:bg-white/[0.04]' : 'hover:bg-gray-50'
+                                    'hover:bg-gray-50 dark:hover:bg-white/[0.04]'
                                   )}
                                 >
                                   <td className="px-4 py-2">
@@ -2078,9 +2047,7 @@ const OverView = ({ account }) => {
                                       <div
                                         className={cn(
                                           'w-7 h-7 rounded-xl p-0.5 border transition-transform group-hover:scale-105 flex-shrink-0',
-                                          isDark
-                                            ? 'bg-black border-white/10'
-                                            : 'bg-white border-gray-100'
+                                          'bg-white border-gray-100 dark:bg-black dark:border-white/10'
                                         )}
                                       >
                                         <img
@@ -2095,7 +2062,7 @@ const OverView = ({ account }) => {
                                       <span
                                         className={cn(
                                           'text-[12px] font-bold group-hover:text-primary transition-colors',
-                                          isDark ? 'text-white' : 'text-gray-900'
+                                          'text-gray-900 dark:text-white'
                                         )}
                                       >
                                         {token.name}
@@ -2105,7 +2072,7 @@ const OverView = ({ account }) => {
                                   <td
                                     className={cn(
                                       'px-2 py-2 text-right text-[11px] font-medium tabular-nums',
-                                      isDark ? 'text-white/60' : 'text-gray-600'
+                                      'text-gray-600 dark:text-white/60'
                                     )}
                                   >
                                     {fCurrency5(token.volume || 0)}
@@ -2113,7 +2080,7 @@ const OverView = ({ account }) => {
                                   <td
                                     className={cn(
                                       'px-2 py-2 text-right text-[11px] font-medium tabular-nums',
-                                      isDark ? 'text-white/60' : 'text-gray-600'
+                                      'text-gray-600 dark:text-white/60'
                                     )}
                                   >
                                     {fCurrency5(token.trades || 0)}
@@ -2126,7 +2093,7 @@ const OverView = ({ account }) => {
                                       <div
                                         className={cn(
                                           'text-[8px]',
-                                          isDark ? 'text-white/50' : 'text-gray-400'
+                                          'text-gray-400 dark:text-white/50'
                                         )}
                                       >
                                         @{token.avgBuyPrice < 0.001
@@ -2143,7 +2110,7 @@ const OverView = ({ account }) => {
                                       <div
                                         className={cn(
                                           'text-[8px]',
-                                          isDark ? 'text-white/50' : 'text-gray-400'
+                                          'text-gray-400 dark:text-white/50'
                                         )}
                                       >
                                         @{token.avgSellPrice < 0.001
@@ -2170,7 +2137,7 @@ const OverView = ({ account }) => {
                                         )}
                                       </div>
                                     ) : (
-                                      <span className={cn('text-[11px] opacity-20', isDark ? 'text-white' : 'text-black')}>—</span>
+                                      <span className={cn('text-[11px] opacity-20', 'text-black dark:text-white')}>—</span>
                                     )}
                                   </td>
                                   <td className="px-2 py-2 text-right">
@@ -2202,7 +2169,7 @@ const OverView = ({ account }) => {
                                       <span
                                         className={cn(
                                           'text-[9px] tabular-nums font-medium opacity-60',
-                                          isDark ? 'text-white' : 'text-gray-900'
+                                          'text-gray-900 dark:text-white'
                                         )}
                                       >
                                         {token.firstTradeDate
@@ -2214,7 +2181,7 @@ const OverView = ({ account }) => {
                                       </span>
                                       {token.lastTradeDate &&
                                         token.firstTradeDate !== token.lastTradeDate && (
-                                          <span className={cn('text-[8px] opacity-30', isDark ? 'text-white' : 'text-black')}>
+                                          <span className={cn('text-[8px] opacity-30', 'text-black dark:text-white')}>
                                             to {new Date(token.lastTradeDate).toLocaleDateString(
                                               'en-GB',
                                               { day: '2-digit', month: 'short', year: '2-digit' }
@@ -2234,10 +2201,10 @@ const OverView = ({ account }) => {
                         <div
                           className={cn(
                             'flex items-center justify-between px-3 py-2 border-t',
-                            isDark ? 'border-white/[0.08]' : 'border-gray-100'
+                            'border-gray-100 dark:border-white/[0.08]'
                           )}
                         >
-                          <span className={cn('text-[10px] tabular-nums', isDark ? 'text-white/50' : 'text-gray-400')}>
+                          <span className={cn('text-[10px] tabular-nums', 'text-gray-400 dark:text-white/50')}>
                             {tradingPerfOffset + 1}-{Math.min(tradingPerfOffset + TRADING_PERF_LIMIT, totalCount)} of {totalCount}
                           </span>
                           <div className="flex items-center gap-1">
@@ -2248,13 +2215,13 @@ const OverView = ({ account }) => {
                               className={cn(
                                 'p-1 rounded transition-colors',
                                 tradingPerfOffset === 0 || tradingPerfLoading
-                                  ? isDark ? 'text-white/10 cursor-not-allowed' : 'text-gray-200 cursor-not-allowed'
-                                  : isDark ? 'text-white/40 hover:text-white/70 hover:bg-white/[0.04]' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
+                                  ? 'text-gray-200 cursor-not-allowed dark:text-white/10 dark:cursor-not-allowed'
+                                  : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:text-white/40 dark:hover:text-white/70 dark:hover:bg-white/[0.04]'
                               )}
                             >
                               <ChevronLeft className="w-4 h-4" />
                             </button>
-                            <span className={cn('text-[10px] tabular-nums min-w-[60px] text-center', isDark ? 'text-white/50' : 'text-gray-500')}>
+                            <span className={cn('text-[10px] tabular-nums min-w-[60px] text-center', 'text-gray-500 dark:text-white/50')}>
                               {currentPage + 1} / {totalPages}
                             </span>
                             <button
@@ -2264,8 +2231,8 @@ const OverView = ({ account }) => {
                               className={cn(
                                 'p-1 rounded transition-colors',
                                 !hasMore || tradingPerfLoading
-                                  ? isDark ? 'text-white/10 cursor-not-allowed' : 'text-gray-200 cursor-not-allowed'
-                                  : isDark ? 'text-white/40 hover:text-white/70 hover:bg-white/[0.04]' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
+                                  ? 'text-gray-200 cursor-not-allowed dark:text-white/10 dark:cursor-not-allowed'
+                                  : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:text-white/40 dark:hover:text-white/70 dark:hover:bg-white/[0.04]'
                               )}
                             >
                               <ChevronRight className="w-4 h-4" />
@@ -2277,7 +2244,7 @@ const OverView = ({ account }) => {
                       {tradingPerfLoading && (
                         <div className={cn(
                           'absolute inset-0 flex items-center justify-center',
-                          isDark ? 'bg-black/40' : 'bg-white/60'
+                          'bg-white/60 dark:bg-black/40'
                         )}>
                           <div className="w-5 h-5 border-2 border-[#137DFE] border-t-transparent rounded-full animate-spin" />
                         </div>
@@ -2294,9 +2261,7 @@ const OverView = ({ account }) => {
             <div
               className={cn(
                 'rounded-xl overflow-hidden transition-all duration-300',
-                isDark
-                  ? 'bg-black/50 backdrop-blur-sm border border-white/[0.15]'
-                  : 'bg-white border border-gray-200'
+                'bg-white border border-gray-200 dark:bg-black/50 dark:backdrop-blur-sm dark:border dark:border-white/[0.15]'
               )}
             >
               {selectedNftCollection ? (
@@ -2310,19 +2275,17 @@ const OverView = ({ account }) => {
                       }}
                       className={cn(
                         'text-[11px] transition-colors',
-                        isDark
-                          ? 'text-white/35 hover:text-white/70'
-                          : 'text-gray-400 hover:text-gray-600'
+                        'text-gray-400 hover:text-gray-600 dark:text-white/35 dark:hover:text-white/70'
                       )}
                     >
                       All Collections
                     </button>
-                    <span className={isDark ? 'text-white/20' : 'text-gray-300'}>/</span>
+                    <span className={'text-gray-300 dark:text-white/20'}>/</span>
                     <Link
                       href={`/nfts/${selectedNftCollection.slug}`}
                       className={cn(
                         'text-[13px] font-medium hover:underline',
-                        isDark ? 'text-white/90' : 'text-gray-900'
+                        'text-gray-900 dark:text-white/90'
                       )}
                     >
                       {selectedNftCollection.name}
@@ -2334,9 +2297,7 @@ const OverView = ({ account }) => {
                       }}
                       className={cn(
                         'ml-auto text-[11px] px-2 py-1 rounded-lg transition-colors',
-                        isDark
-                          ? 'bg-white/[0.04] text-white/50 hover:bg-white/10'
-                          : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                        'bg-gray-100 text-gray-500 hover:bg-gray-200 dark:bg-white/[0.04] dark:text-white/50 dark:hover:bg-white/10'
                       )}
                     >
                       Clear
@@ -2347,7 +2308,7 @@ const OverView = ({ account }) => {
                     <div
                       className={cn(
                         'p-12 text-center text-[13px]',
-                        isDark ? 'text-white/40' : 'text-gray-400'
+                        'text-gray-400 dark:text-white/40'
                       )}
                     >
                       Loading NFTs...
@@ -2356,15 +2317,15 @@ const OverView = ({ account }) => {
                     <div
                       className={cn(
                         'rounded-xl p-12 text-center border',
-                        isDark ? 'bg-white/[0.02] border-white/10' : 'bg-gray-50 border-gray-200'
+                        'bg-gray-50 border-gray-200 dark:bg-white/[0.02] dark:border-white/10'
                       )}
                     >
                       <Image
                         size={32}
-                        className={cn('mx-auto mb-3', isDark ? 'text-white/20' : 'text-gray-300')}
+                        className={cn('mx-auto mb-3', 'text-gray-300 dark:text-white/20')}
                       />
                       <p
-                        className={cn('text-[13px]', isDark ? 'text-white/50' : 'text-gray-500')}
+                        className={cn('text-[13px]', 'text-gray-500 dark:text-white/50')}
                       >
                         No NFTs found in this collection
                       </p>
@@ -2377,16 +2338,14 @@ const OverView = ({ account }) => {
                           href={`/nft/${nft.nftId}`}
                           className={cn(
                             'rounded-xl border overflow-hidden group transition-colors',
-                            isDark
-                              ? 'border-white/[0.06] bg-white/[0.015] hover:border-white/15'
-                              : 'border-gray-200 bg-white hover:border-gray-300'
+                            'border-gray-200 bg-white hover:border-gray-300 dark:border-white/[0.06] dark:bg-white/[0.015] dark:hover:border-white/15'
                           )}
                         >
                           <div className="relative">
                             {nft.image ? (
-                              <NftImg src={nft.image} alt={nft.name} isDark={isDark} />
+                              <NftImg src={nft.image} alt={nft.name} />
                             ) : (
-                              <div className={cn('w-full aspect-square flex flex-col items-center justify-center gap-1', isDark ? 'bg-[#111] text-[#4B5563]' : 'bg-[#F1F5F9] text-[#94A3B8]')}>
+                              <div className={cn('w-full aspect-square flex flex-col items-center justify-center gap-1', 'bg-[#F1F5F9] text-[#94A3B8] dark:bg-[#111] dark:text-[#4B5563]')}>
                                 <ImageOff size={16} strokeWidth={1.2} />
                                 <span className="text-[9px]">Unavailable</span>
                               </div>
@@ -2396,7 +2355,7 @@ const OverView = ({ account }) => {
                             <p
                               className={cn(
                                 'text-[12px] font-medium truncate',
-                                isDark ? 'text-white/90' : 'text-gray-900'
+                                'text-gray-900 dark:text-white/90'
                               )}
                             >
                               {nft.name}
@@ -2405,7 +2364,7 @@ const OverView = ({ account }) => {
                               <p
                                 className={cn(
                                   'text-[10px]',
-                                  isDark ? 'text-white/40' : 'text-gray-500'
+                                  'text-gray-500 dark:text-white/40'
                                 )}
                               >
                                 Rank #{nft.rarity}
@@ -2421,7 +2380,7 @@ const OverView = ({ account }) => {
                 <div
                   className={cn(
                     'p-12 text-center text-[13px]',
-                    isDark ? 'text-white/40' : 'text-gray-400'
+                    'text-gray-400 dark:text-white/40'
                   )}
                 >
                   Loading collections...
@@ -2429,35 +2388,35 @@ const OverView = ({ account }) => {
               ) : nftCollections.length === 0 ? (
                 <div className="py-12 px-8 text-center">
                   <div className="relative w-14 h-14 mx-auto mb-4">
-                    <div className={cn('absolute -top-1 left-0 w-5 h-5 rounded-full', isDark ? 'bg-white/15' : 'bg-gray-200')}>
-                      <div className={cn('absolute top-1 left-1 w-3 h-3 rounded-full', isDark ? 'bg-white/10' : 'bg-gray-100')} />
+                    <div className={cn('absolute -top-1 left-0 w-5 h-5 rounded-full', 'bg-gray-200 dark:bg-white/15')}>
+                      <div className={cn('absolute top-1 left-1 w-3 h-3 rounded-full', 'bg-gray-100 dark:bg-white/10')} />
                     </div>
-                    <div className={cn('absolute -top-1 right-0 w-5 h-5 rounded-full', isDark ? 'bg-white/15' : 'bg-gray-200')}>
-                      <div className={cn('absolute top-1 right-1 w-3 h-3 rounded-full', isDark ? 'bg-white/10' : 'bg-gray-100')} />
+                    <div className={cn('absolute -top-1 right-0 w-5 h-5 rounded-full', 'bg-gray-200 dark:bg-white/15')}>
+                      <div className={cn('absolute top-1 right-1 w-3 h-3 rounded-full', 'bg-gray-100 dark:bg-white/10')} />
                     </div>
-                    <div className={cn('absolute top-2 left-1/2 -translate-x-1/2 w-12 h-11 rounded-full', isDark ? 'bg-white/15' : 'bg-gray-200')}>
+                    <div className={cn('absolute top-2 left-1/2 -translate-x-1/2 w-12 h-11 rounded-full', 'bg-gray-200 dark:bg-white/15')}>
                       <div className="absolute inset-0 rounded-full overflow-hidden">
                         {[...Array(5)].map((_, i) => (
-                          <div key={i} className={cn('h-[2px] w-full', isDark ? 'bg-white/15' : 'bg-gray-300/50')} style={{ marginTop: i * 3 + 2, transform: `translateX(${i % 2 === 0 ? '1px' : '-1px'})` }} />
+                          <div key={i} className={cn('h-[2px] w-full', 'bg-gray-300/50 dark:bg-white/15')} style={{ marginTop: i * 3 + 2, transform: `translateX(${i % 2 === 0 ? '1px' : '-1px'})` }} />
                         ))}
                       </div>
                       <div className="absolute top-3 left-2 w-3 h-3 flex items-center justify-center">
-                        <div className={cn('absolute w-2.5 h-[2px] rotate-45', isDark ? 'bg-white/40' : 'bg-gray-400')} />
-                        <div className={cn('absolute w-2.5 h-[2px] -rotate-45', isDark ? 'bg-white/40' : 'bg-gray-400')} />
+                        <div className={cn('absolute w-2.5 h-[2px] rotate-45', 'bg-gray-400 dark:bg-white/40')} />
+                        <div className={cn('absolute w-2.5 h-[2px] -rotate-45', 'bg-gray-400 dark:bg-white/40')} />
                       </div>
                       <div className="absolute top-3 right-2 w-3 h-3 flex items-center justify-center">
-                        <div className={cn('absolute w-2.5 h-[2px] rotate-45', isDark ? 'bg-white/40' : 'bg-gray-400')} />
-                        <div className={cn('absolute w-2.5 h-[2px] -rotate-45', isDark ? 'bg-white/40' : 'bg-gray-400')} />
+                        <div className={cn('absolute w-2.5 h-[2px] rotate-45', 'bg-gray-400 dark:bg-white/40')} />
+                        <div className={cn('absolute w-2.5 h-[2px] -rotate-45', 'bg-gray-400 dark:bg-white/40')} />
                       </div>
-                      <div className={cn('absolute bottom-1.5 left-1/2 -translate-x-1/2 w-6 h-4 rounded-full', isDark ? 'bg-white/10' : 'bg-gray-100')}>
-                        <div className={cn('absolute top-0.5 left-1/2 -translate-x-1/2 w-2.5 h-2 rounded-full', isDark ? 'bg-white/25' : 'bg-gray-300')} />
+                      <div className={cn('absolute bottom-1.5 left-1/2 -translate-x-1/2 w-6 h-4 rounded-full', 'bg-gray-100 dark:bg-white/10')}>
+                        <div className={cn('absolute top-0.5 left-1/2 -translate-x-1/2 w-2.5 h-2 rounded-full', 'bg-gray-300 dark:bg-white/25')} />
                       </div>
                     </div>
                   </div>
-                  <p className={cn('text-[10px] font-medium tracking-wider mb-1', isDark ? 'text-white/60' : 'text-gray-500')}>
+                  <p className={cn('text-[10px] font-medium tracking-wider mb-1', 'text-gray-500 dark:text-white/60')}>
                     NO NFTS FOUND
                   </p>
-                  <p className={cn('text-[9px]', isDark ? 'text-white/30' : 'text-gray-400')}>
+                  <p className={cn('text-[9px]', 'text-gray-400 dark:text-white/30')}>
                     NFTs will appear here once acquired
                   </p>
                 </div>
@@ -2467,20 +2426,20 @@ const OverView = ({ account }) => {
                   <div
                     className={cn(
                       'flex items-center justify-between px-4 py-3',
-                      isDark ? 'border-b border-white/10' : 'border-b border-gray-100'
+                      'border-b border-gray-100 dark:border-b dark:border-white/10'
                     )}
                   >
                     <span
                       className={cn(
                         'text-[12px] font-medium',
-                        isDark ? 'text-white' : 'text-gray-900'
+                        'text-gray-900 dark:text-white'
                       )}
                     >
                       Collections{' '}
                       <span
                         className={cn(
                           'font-normal ml-1',
-                          isDark ? 'text-white/30' : 'text-gray-400'
+                          'text-gray-400 dark:text-white/30'
                         )}
                       >
                         {nftCollections.length}
@@ -2494,16 +2453,14 @@ const OverView = ({ account }) => {
                         onClick={() => setSelectedNftCollection(col)}
                         className={cn(
                           'rounded-xl border overflow-hidden text-left group transition-colors',
-                          isDark
-                            ? 'border-white/[0.06] bg-white/[0.015] hover:border-white/15'
-                            : 'border-gray-200 bg-white hover:border-gray-300'
+                          'border-gray-200 bg-white hover:border-gray-300 dark:border-white/[0.06] dark:bg-white/[0.015] dark:hover:border-white/15'
                         )}
                       >
                         <div className="relative">
                           {col.logo ? (
-                            <NftImg src={col.logo} alt={col.name} isDark={isDark} />
+                            <NftImg src={col.logo} alt={col.name} />
                           ) : (
-                            <div className={cn('w-full aspect-square flex flex-col items-center justify-center gap-1', isDark ? 'bg-[#111] text-[#4B5563]' : 'bg-[#F1F5F9] text-[#94A3B8]')}>
+                            <div className={cn('w-full aspect-square flex flex-col items-center justify-center gap-1', 'bg-[#F1F5F9] text-[#94A3B8] dark:bg-[#111] dark:text-[#4B5563]')}>
                               <ImageOff size={16} strokeWidth={1.2} />
                               <span className="text-[9px]">Unavailable</span>
                             </div>
@@ -2515,7 +2472,7 @@ const OverView = ({ account }) => {
                             onClick={(e) => e.stopPropagation()}
                             className={cn(
                               'text-[12px] font-medium truncate block hover:underline',
-                              isDark ? 'text-white/90' : 'text-gray-900'
+                              'text-gray-900 dark:text-white/90'
                             )}
                           >
                             {col.name}
@@ -2523,7 +2480,7 @@ const OverView = ({ account }) => {
                           <p
                             className={cn(
                               'text-[10px]',
-                              isDark ? 'text-white/40' : 'text-gray-500'
+                              'text-gray-500 dark:text-white/40'
                             )}
                           >
                             {col.count} item{col.count !== 1 ? 's' : ''}
@@ -2540,7 +2497,7 @@ const OverView = ({ account }) => {
                 <div
                   className={cn(
                     'rounded-xl border mt-4 overflow-hidden',
-                    isDark ? 'bg-white/[0.02] border-white/10' : 'bg-white border-gray-200'
+                    'bg-white border-gray-200 dark:bg-white/[0.02] dark:border-white/10'
                   )}
                 >
                   {(() => {
@@ -2553,14 +2510,14 @@ const OverView = ({ account }) => {
                     return (
                       <>
                         {/* Header */}
-                        <div className={cn('px-4 py-3 border-b', isDark ? 'border-white/[0.06]' : 'border-gray-100')}>
+                        <div className={cn('px-4 py-3 border-b', 'border-gray-100 dark:border-white/[0.06]')}>
                           <div className="flex items-center justify-between mb-3">
                             <div className="flex items-center gap-2">
-                              <BarChart2 size={14} className={isDark ? 'text-white/40' : 'text-gray-400'} />
-                              <p className={cn('text-[11px] font-semibold uppercase tracking-[0.15em]', isDark ? 'text-white/50' : 'text-gray-500')}>
+                              <BarChart2 size={14} className={'text-gray-400 dark:text-white/40'} />
+                              <p className={cn('text-[11px] font-semibold uppercase tracking-[0.15em]', 'text-gray-500 dark:text-white/50')}>
                                 Trading Activity
                               </p>
-                              <span className={cn('text-[9px] px-1.5 py-0.5 rounded font-semibold', isDark ? 'bg-white/5 text-white/30 border border-white/[0.08]' : 'bg-gray-100 text-gray-400')}>
+                              <span className={cn('text-[9px] px-1.5 py-0.5 rounded font-semibold', 'bg-gray-100 text-gray-400 dark:bg-white/5 dark:text-white/30 dark:border dark:border-white/[0.08]')}>
                                 30d
                               </span>
                             </div>
@@ -2568,23 +2525,23 @@ const OverView = ({ account }) => {
                           {/* Summary stats */}
                           <div className="flex items-center gap-4">
                             <div className="flex-1 flex items-center gap-3">
-                              <div className={cn('flex flex-col items-center px-3 py-2 rounded-lg flex-1', isDark ? 'bg-emerald-500/[0.06]' : 'bg-emerald-50')}>
-                                <span className={cn('text-[9px] font-medium uppercase tracking-wider mb-1', isDark ? 'text-emerald-500/50' : 'text-emerald-600/50')}>Bought</span>
+                              <div className={cn('flex flex-col items-center px-3 py-2 rounded-lg flex-1', 'bg-emerald-50 dark:bg-emerald-500/[0.06]')}>
+                                <span className={cn('text-[9px] font-medium uppercase tracking-wider mb-1', 'text-emerald-600/50 dark:text-emerald-500/50')}>Bought</span>
                                 <span className="text-[14px] font-black tabular-nums text-emerald-500">{fCurrency5(totalBuyVol)}</span>
-                                <span className={cn('text-[9px] tabular-nums', isDark ? 'text-emerald-500/40' : 'text-emerald-600/40')}>XRP</span>
+                                <span className={cn('text-[9px] tabular-nums', 'text-emerald-600/40 dark:text-emerald-500/40')}>XRP</span>
                               </div>
-                              <div className={cn('flex flex-col items-center px-3 py-2 rounded-lg flex-1', isDark ? 'bg-red-500/[0.06]' : 'bg-red-50')}>
-                                <span className={cn('text-[9px] font-medium uppercase tracking-wider mb-1', isDark ? 'text-red-500/50' : 'text-red-600/50')}>Sold</span>
+                              <div className={cn('flex flex-col items-center px-3 py-2 rounded-lg flex-1', 'bg-red-50 dark:bg-red-500/[0.06]')}>
+                                <span className={cn('text-[9px] font-medium uppercase tracking-wider mb-1', 'text-red-600/50 dark:text-red-500/50')}>Sold</span>
                                 <span className="text-[14px] font-black tabular-nums text-red-500">{fCurrency5(totalSellVol)}</span>
-                                <span className={cn('text-[9px] tabular-nums', isDark ? 'text-red-500/40' : 'text-red-600/40')}>XRP</span>
+                                <span className={cn('text-[9px] tabular-nums', 'text-red-600/40 dark:text-red-500/40')}>XRP</span>
                               </div>
-                              <div className={cn('flex flex-col items-center px-3 py-2 rounded-lg flex-1', isDark ? 'bg-white/[0.03]' : 'bg-gray-50')}>
-                                <span className={cn('text-[9px] font-medium uppercase tracking-wider mb-1 opacity-40', isDark ? 'text-white' : 'text-gray-500')}>Trades</span>
-                                <span className={cn('text-[14px] font-black tabular-nums', isDark ? 'text-white/80' : 'text-gray-900')}>{totalTrades}</span>
-                                <span className={cn('text-[9px] tabular-nums opacity-30', isDark ? 'text-white' : 'text-gray-500')}>{sorted.length} day{sorted.length !== 1 ? 's' : ''}</span>
+                              <div className={cn('flex flex-col items-center px-3 py-2 rounded-lg flex-1', 'bg-gray-50 dark:bg-white/[0.03]')}>
+                                <span className={cn('text-[9px] font-medium uppercase tracking-wider mb-1 opacity-40', 'text-gray-500 dark:text-white')}>Trades</span>
+                                <span className={cn('text-[14px] font-black tabular-nums', 'text-gray-900 dark:text-white/80')}>{totalTrades}</span>
+                                <span className={cn('text-[9px] tabular-nums opacity-30', 'text-gray-500 dark:text-white')}>{sorted.length} day{sorted.length !== 1 ? 's' : ''}</span>
                               </div>
                               {totalProfit !== 0 && (
-                                <div className={cn('flex flex-col items-center px-3 py-2 rounded-lg flex-1', totalProfit >= 0 ? (isDark ? 'bg-emerald-500/[0.06]' : 'bg-emerald-50') : (isDark ? 'bg-red-500/[0.06]' : 'bg-red-50'))}>
+                                <div className={cn('flex flex-col items-center px-3 py-2 rounded-lg flex-1', totalProfit >= 0 ? ('bg-emerald-50 dark:bg-emerald-500/[0.06]') : ('bg-red-50 dark:bg-red-500/[0.06]'))}>
                                   <span className={cn('text-[9px] font-medium uppercase tracking-wider mb-1 opacity-50', totalProfit >= 0 ? 'text-emerald-500' : 'text-red-500')}>P&L</span>
                                   <span className={cn('text-[14px] font-black tabular-nums', totalProfit >= 0 ? 'text-emerald-500' : 'text-red-500')}>{totalProfit >= 0 ? '+' : ''}{fCurrency5(totalProfit)}</span>
                                   <span className={cn('text-[9px] tabular-nums opacity-40', totalProfit >= 0 ? 'text-emerald-500' : 'text-red-500')}>XRP</span>
@@ -2594,26 +2551,26 @@ const OverView = ({ account }) => {
                           </div>
                         </div>
                         {/* Activity feed */}
-                        <div className={cn('divide-y', isDark ? 'divide-white/[0.04]' : 'divide-gray-50')}>
+                        <div className={cn('divide-y', 'divide-gray-50 dark:divide-white/[0.04]')}>
                           {sorted.map((d) => {
                             const pct = (d.volume / maxVol) * 100;
                             const buyPct = d.volume > 0 ? (d.buyVolume / d.volume) * 100 : 0;
                             const daysAgo = Math.floor((Date.now() - new Date(d.date).getTime()) / 86400000);
                             const dayLabel = daysAgo === 0 ? 'Today' : daysAgo === 1 ? 'Yesterday' : `${daysAgo}d ago`;
                             return (
-                              <div key={d.date} className={cn('px-4 py-3 flex items-center gap-4', isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-gray-50/50')}>
+                              <div key={d.date} className={cn('px-4 py-3 flex items-center gap-4', 'hover:bg-gray-50/50 dark:hover:bg-white/[0.02]')}>
                                 {/* Date */}
                                 <div className="w-[72px] flex-shrink-0">
-                                  <p className={cn('text-[12px] font-bold tabular-nums', isDark ? 'text-white/80' : 'text-gray-800')}>
+                                  <p className={cn('text-[12px] font-bold tabular-nums', 'text-gray-800 dark:text-white/80')}>
                                     {d.date.slice(5)}
                                   </p>
-                                  <p className={cn('text-[9px] font-medium', isDark ? 'text-white/25' : 'text-gray-300')}>
+                                  <p className={cn('text-[9px] font-medium', 'text-gray-300 dark:text-white/25')}>
                                     {dayLabel}
                                   </p>
                                 </div>
                                 {/* Volume bar */}
                                 <div className="flex-1 min-w-0">
-                                  <div className={cn('w-full h-[20px] rounded-md overflow-hidden flex', isDark ? 'bg-white/[0.03]' : 'bg-gray-100/50')}>
+                                  <div className={cn('w-full h-[20px] rounded-md overflow-hidden flex', 'bg-gray-100/50 dark:bg-white/[0.03]')}>
                                     <div className="h-full flex rounded-md overflow-hidden" style={{ width: `${Math.max(pct, 8)}%` }}>
                                       {d.buyVolume > 0 && (
                                         <div className="h-full bg-emerald-500/70" style={{ width: `${buyPct}%` }} />
@@ -2636,7 +2593,7 @@ const OverView = ({ account }) => {
                                       -{fCurrency5(d.sellVolume)}
                                     </span>
                                   )}
-                                  <span className={cn('text-[10px] tabular-nums font-medium', isDark ? 'text-white/30' : 'text-gray-400')}>
+                                  <span className={cn('text-[10px] tabular-nums font-medium', 'text-gray-400 dark:text-white/30')}>
                                     {d.trades} trade{d.trades !== 1 ? 's' : ''}
                                   </span>
                                 </div>
@@ -2655,25 +2612,25 @@ const OverView = ({ account }) => {
                 <div
                   className={cn(
                     'rounded-xl overflow-hidden transition-all duration-300 mt-6',
-                    isDark ? 'bg-black/50 backdrop-blur-sm border border-white/[0.15]' : 'bg-white border border-gray-200'
+                    'bg-white border border-gray-200 dark:bg-black/50 dark:backdrop-blur-sm dark:border dark:border-white/[0.15]'
                   )}
                 >
                   <div
                     className={cn(
                       'px-4 py-3 flex items-center justify-between border-b',
-                      isDark ? 'border-b-white/[0.08]' : 'border-b-gray-100'
+                      'border-b-gray-100 dark:border-b-white/[0.08]'
                     )}
                   >
                     <div className="flex items-center gap-2">
-                      <BarChart2 size={14} className={isDark ? 'text-white/50' : 'text-gray-500'} />
-                      <p className={cn('text-[11px] font-semibold uppercase tracking-[0.15em]', isDark ? 'text-white/50' : 'text-gray-500')}>Trading Stats by Collection</p>
-                      <span className={cn('text-[9px] px-2 py-0.5 rounded font-semibold uppercase tracking-wide', isDark ? 'bg-white/5 text-white/50 border border-white/[0.15]' : 'bg-gray-100 text-gray-500')}>{nftCollectionStats.length}</span>
+                      <BarChart2 size={14} className={'text-gray-500 dark:text-white/50'} />
+                      <p className={cn('text-[11px] font-semibold uppercase tracking-[0.15em]', 'text-gray-500 dark:text-white/50')}>Trading Stats by Collection</p>
+                      <span className={cn('text-[9px] px-2 py-0.5 rounded font-semibold uppercase tracking-wide', 'bg-gray-100 text-gray-500 dark:bg-white/5 dark:text-white/50 dark:border dark:border-white/[0.15]')}>{nftCollectionStats.length}</span>
                     </div>
                   </div>
                   <div className="overflow-x-auto">
                     <table className="w-full">
                       <thead>
-                        <tr className={cn('text-[10px] font-black uppercase tracking-widest opacity-60', isDark ? 'text-white' : 'text-gray-500')}>
+                        <tr className={cn('text-[10px] font-black uppercase tracking-widest opacity-60', 'text-gray-500 dark:text-white')}>
                           <th className="px-5 py-4 text-left">Collection</th>
                           <th className="px-5 py-4 text-right">Volume</th>
                           <th className="px-5 py-4 text-right">Profit / Loss</th>
@@ -2681,13 +2638,13 @@ const OverView = ({ account }) => {
                           <th className="px-5 py-4 text-right">Trades</th>
                         </tr>
                       </thead>
-                      <tbody className={cn('divide-y', isDark ? 'divide-white/[0.04]' : 'divide-gray-50')}>
+                      <tbody className={cn('divide-y', 'divide-gray-50 dark:divide-white/[0.04]')}>
                         {nftCollectionStats.slice(0, 15).map((c) => (
                           <tr
                             key={c.cid}
                             className={cn(
                               'group transition-all duration-300 relative overflow-hidden',
-                              isDark ? 'hover:bg-white/[0.04]' : 'hover:bg-gray-50'
+                              'hover:bg-gray-50 dark:hover:bg-white/[0.04]'
                             )}
                           >
                             <td className="px-5 py-4">
@@ -2698,7 +2655,7 @@ const OverView = ({ account }) => {
                                 {c.logo && (
                                   <div className={cn(
                                     'w-8 h-8 rounded-lg p-0.5 border shadow-sm transition-transform group-hover/link:scale-105 flex-shrink-0',
-                                    isDark ? 'bg-black border-white/10' : 'bg-white border-gray-100'
+                                    'bg-white border-gray-100 dark:bg-black dark:border-white/10'
                                   )}>
                                     <img
                                       src={`https://s1.xrpl.to/nft-collection/${c.logo}`}
@@ -2711,7 +2668,7 @@ const OverView = ({ account }) => {
                                 <span
                                   className={cn(
                                     'text-[13px] font-bold group-hover/link:text-primary transition-colors truncate max-w-[150px]',
-                                    isDark ? 'text-white' : 'text-gray-900'
+                                    'text-gray-900 dark:text-white'
                                   )}
                                 >
                                   {c.name}
@@ -2719,7 +2676,7 @@ const OverView = ({ account }) => {
                               </Link>
                             </td>
                             <td className="px-5 py-4 text-right">
-                              <div className={cn('text-[12px] font-medium tabular-nums', isDark ? 'text-white/80' : 'text-gray-700')}>
+                              <div className={cn('text-[12px] font-medium tabular-nums', 'text-gray-700 dark:text-white/80')}>
                                 {c.volume?.toFixed(1) || 0} XRP
                               </div>
                             </td>
@@ -2732,14 +2689,14 @@ const OverView = ({ account }) => {
                               <span className={cn(
                                 'text-[11px] font-bold px-2 py-0.5 rounded-md',
                                 c.roi >= 0
-                                  ? isDark ? 'bg-emerald-500/10 text-emerald-500' : 'bg-emerald-50 text-emerald-600'
-                                  : isDark ? 'bg-red-500/10 text-red-500' : 'bg-red-50 text-red-600'
+                                  ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-500'
+                                  : 'bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-500'
                               )}>
                                 {c.roi?.toFixed(1) || 0}%
                               </span>
                             </td>
                             <td className="px-5 py-4 text-right">
-                              <div className={cn('text-[12px] font-medium tabular-nums', isDark ? 'text-white/60' : 'text-gray-600')}>
+                              <div className={cn('text-[12px] font-medium tabular-nums', 'text-gray-600 dark:text-white/60')}>
                                 {c.trades || 0}
                               </div>
                             </td>
@@ -2762,41 +2719,41 @@ const OverView = ({ account }) => {
           {activeTab === 'ancestry' && (
             <div className={cn(
               'rounded-xl overflow-hidden transition-all duration-300',
-              isDark ? 'bg-black/50 backdrop-blur-sm border border-white/[0.15]' : 'bg-white border border-gray-200'
+              'bg-white border border-gray-200 dark:bg-black/50 dark:backdrop-blur-sm dark:border dark:border-white/[0.15]'
             )}>
               {ancestryLoading ? (
                 <div className="flex items-center justify-center py-20">
-                  <div className={cn('text-[13px] font-medium animate-pulse', isDark ? 'text-white/40' : 'text-gray-400')}>Loading ancestry tree...</div>
+                  <div className={cn('text-[13px] font-medium animate-pulse', 'text-gray-400 dark:text-white/40')}>Loading ancestry tree...</div>
                 </div>
               ) : !ancestry ? (
                 <div className="flex flex-col items-center justify-center py-20 gap-4">
-                  <div className={cn('p-4 rounded-full', isDark ? 'bg-white/5' : 'bg-gray-100')}>
-                    <GitBranch size={32} className={isDark ? 'text-white/20' : 'text-gray-300'} />
+                  <div className={cn('p-4 rounded-full', 'bg-gray-100 dark:bg-white/5')}>
+                    <GitBranch size={32} className={'text-gray-300 dark:text-white/20'} />
                   </div>
-                  <p className={cn('text-[13px] font-medium', isDark ? 'text-white/40' : 'text-gray-400')}>No ancestry data available</p>
+                  <p className={cn('text-[13px] font-medium', 'text-gray-400 dark:text-white/40')}>No ancestry data available</p>
                 </div>
               ) : (
                 <>
                   {/* Stats Header */}
-                  <div className={cn('px-4 py-3', isDark ? 'border-b border-white/[0.08]' : 'border-b border-gray-100')}>
+                  <div className={cn('px-4 py-3', 'border-b border-gray-100 dark:border-b dark:border-white/[0.08]')}>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <GitBranch size={14} className={isDark ? 'text-white/50' : 'text-gray-500'} />
-                        <p className={cn('text-[11px] font-semibold uppercase tracking-[0.15em]', isDark ? 'text-white/50' : 'text-gray-500')}>Account Ancestry</p>
+                        <GitBranch size={14} className={'text-gray-500 dark:text-white/50'} />
+                        <p className={cn('text-[11px] font-semibold uppercase tracking-[0.15em]', 'text-gray-500 dark:text-white/50')}>Account Ancestry</p>
                       </div>
                       <div className="flex items-center gap-4">
                         {ancestry.stats?.ancestorDepth > 0 && (
-                          <span className={cn('text-[11px] font-medium', isDark ? 'text-white/40' : 'text-gray-500')}>
-                            <span className={cn('font-bold', isDark ? 'text-white' : 'text-gray-900')}>{ancestry.stats.ancestorDepth}</span> generations
+                          <span className={cn('text-[11px] font-medium', 'text-gray-500 dark:text-white/40')}>
+                            <span className={cn('font-bold', 'text-gray-900 dark:text-white')}>{ancestry.stats.ancestorDepth}</span> generations
                           </span>
                         )}
                         {ancestry.stats?.childrenCount > 0 && (
-                          <span className={cn('text-[11px] font-medium', isDark ? 'text-white/40' : 'text-gray-500')}>
-                            <span className={cn('font-bold', isDark ? 'text-white' : 'text-gray-900')}>{ancestry.stats.childrenCount}</span> children
+                          <span className={cn('text-[11px] font-medium', 'text-gray-500 dark:text-white/40')}>
+                            <span className={cn('font-bold', 'text-gray-900 dark:text-white')}>{ancestry.stats.childrenCount}</span> children
                           </span>
                         )}
                         {ancestry.stats?.tokensCreated > 0 && (
-                          <span className={cn('text-[11px] font-medium', isDark ? 'text-emerald-400/70' : 'text-emerald-600')}>
+                          <span className={cn('text-[11px] font-medium', 'text-emerald-600 dark:text-emerald-400/70')}>
                             <span className="font-bold">{ancestry.stats.tokensCreated}</span> tokens created
                           </span>
                         )}
@@ -2810,12 +2767,12 @@ const OverView = ({ account }) => {
                             href={`/token/${token.md5}`}
                             className={cn(
                               'inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] transition-colors',
-                              isDark ? 'bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400' : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-600'
+                              'bg-emerald-50 hover:bg-emerald-100 text-emerald-600 dark:bg-emerald-500/10 dark:hover:bg-emerald-500/20 dark:text-emerald-400'
                             )}
                           >
                             <span className="font-medium">{token.name || token.currency}</span>
                             {token.marketcap > 0 && (
-                              <span className={cn(isDark ? 'text-emerald-400/50' : 'text-emerald-500')}>
+                              <span className={cn('text-emerald-500 dark:text-emerald-400/50')}>
                                 ${token.marketcap >= 1000000 ? `${(token.marketcap / 1000000).toFixed(1)}M` : token.marketcap >= 1000 ? `${(token.marketcap / 1000).toFixed(0)}k` : token.marketcap.toFixed(0)}
                               </span>
                             )}
@@ -2828,61 +2785,61 @@ const OverView = ({ account }) => {
                   {/* Ancestors Section */}
                   {ancestry.ancestors?.length > 0 && (
                     <>
-                      <div className={cn('h-px', isDark ? 'bg-white/10' : 'bg-gray-200')} />
+                      <div className={cn('h-px', 'bg-gray-200 dark:bg-white/10')} />
                       <div className="px-4 py-3">
                         <div className="flex items-center gap-2 mb-3">
-                          <ArrowUpRight size={12} className={isDark ? 'text-white/30' : 'text-gray-400'} />
-                          <span className={cn('text-[11px] uppercase tracking-wider font-medium', isDark ? 'text-white/40' : 'text-gray-500')}>
+                          <ArrowUpRight size={12} className={'text-gray-400 dark:text-white/30'} />
+                          <span className={cn('text-[11px] uppercase tracking-wider font-medium', 'text-gray-500 dark:text-white/40')}>
                             Activation Chain
                           </span>
                         </div>
                         <div className="relative">
                           {/* Vertical connecting line */}
-                          <div className={cn('absolute left-[18px] top-4 bottom-4 w-px', isDark ? 'bg-white/10' : 'bg-gray-200')} />
+                          <div className={cn('absolute left-[18px] top-4 bottom-4 w-px', 'bg-gray-200 dark:bg-white/10')} />
                           <div className="space-y-1">
                             {ancestry.ancestors.map((ancestor, idx) => (
                               <div key={ancestor.address || idx} className="relative pl-10">
                                 {/* Node dot */}
-                                <div className={cn('absolute left-[15px] top-3 w-[7px] h-[7px] rounded-full border-2', isDark ? 'bg-black border-white/30' : 'bg-white border-gray-300')} />
-                                <div className={cn('rounded-lg', isDark ? 'bg-white/[0.02]' : 'bg-gray-50')}>
+                                <div className={cn('absolute left-[15px] top-3 w-[7px] h-[7px] rounded-full border-2', 'bg-white border-gray-300 dark:bg-black dark:border-white/30')} />
+                                <div className={cn('rounded-lg', 'bg-gray-50 dark:bg-white/[0.02]')}>
                                   <div className="flex items-center justify-between py-2 px-3">
                                     <div className="flex items-center gap-2">
-                                      <Link href={`/address/${ancestor.address}`} className={cn('text-[13px] font-medium hover:underline', isDark ? 'text-white' : 'text-gray-900')}>
+                                      <Link href={`/address/${ancestor.address}`} className={cn('text-[13px] font-medium hover:underline', 'text-gray-900 dark:text-white')}>
                                         {ancestor.name || `${ancestor.address?.slice(0, 8)}...${ancestor.address?.slice(-6)}`}
                                       </Link>
                                       {ancestor.name && (
-                                        <span className={cn('text-[10px] font-mono', isDark ? 'text-white/30' : 'text-gray-400')}>
+                                        <span className={cn('text-[10px] font-mono', 'text-gray-400 dark:text-white/30')}>
                                           {ancestor.address?.slice(0, 6)}...
                                         </span>
                                       )}
                                     </div>
                                     <div className="flex items-center gap-3">
                                       {ancestor.tokensCreated > 0 && (
-                                        <span className={cn('text-[10px] px-1.5 py-0.5 rounded', isDark ? 'bg-emerald-500/10 text-emerald-400' : 'bg-emerald-50 text-emerald-600')}>
+                                        <span className={cn('text-[10px] px-1.5 py-0.5 rounded', 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400')}>
                                           {ancestor.tokensCreated} tokens
                                         </span>
                                       )}
                                       {ancestor.inception && (
-                                        <span className={cn('text-[10px]', isDark ? 'text-white/30' : 'text-gray-400')}>
+                                        <span className={cn('text-[10px]', 'text-gray-400 dark:text-white/30')}>
                                           {new Date(ancestor.inception).toLocaleDateString()}
                                         </span>
                                       )}
                                     </div>
                                   </div>
                                   {ancestor.tokens?.length > 0 && (
-                                    <div className={cn('px-3 pb-2 flex flex-wrap gap-1', isDark ? 'border-t border-white/5' : 'border-t border-gray-100')}>
+                                    <div className={cn('px-3 pb-2 flex flex-wrap gap-1', 'border-t border-gray-100 dark:border-t dark:border-white/5')}>
                                       {ancestor.tokens.map((token) => (
                                         <Link
                                           key={token.md5}
                                           href={`/token/${token.md5}`}
                                           className={cn(
                                             'inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] transition-colors',
-                                            isDark ? 'bg-white/5 hover:bg-white/10 text-white/60' : 'bg-gray-100 hover:bg-gray-200 text-gray-500'
+                                            'bg-gray-100 hover:bg-gray-200 text-gray-500 dark:bg-white/5 dark:hover:bg-white/10 dark:text-white/60'
                                           )}
                                         >
                                           <span className="font-medium">{token.name || token.currency}</span>
                                           {token.marketcap > 0 && (
-                                            <span className={cn(isDark ? 'text-white/30' : 'text-gray-400')}>
+                                            <span className={cn('text-gray-400 dark:text-white/30')}>
                                               ${token.marketcap >= 1000000 ? `${(token.marketcap / 1000000).toFixed(1)}M` : token.marketcap >= 1000 ? `${(token.marketcap / 1000).toFixed(0)}k` : token.marketcap.toFixed(0)}
                                             </span>
                                           )}
@@ -2902,64 +2859,64 @@ const OverView = ({ account }) => {
                   {/* Children Section */}
                   {ancestry.children?.length > 0 && (
                     <>
-                      <div className={cn('h-px', isDark ? 'bg-white/10' : 'bg-gray-200')} />
+                      <div className={cn('h-px', 'bg-gray-200 dark:bg-white/10')} />
                       <div className="px-4 py-3">
                         <div className="flex items-center gap-2 mb-3">
-                          <ArrowDownLeft size={12} className={isDark ? 'text-white/30' : 'text-gray-400'} />
-                          <span className={cn('text-[11px] uppercase tracking-wider font-medium', isDark ? 'text-white/40' : 'text-gray-500')}>
+                          <ArrowDownLeft size={12} className={'text-gray-400 dark:text-white/30'} />
+                          <span className={cn('text-[11px] uppercase tracking-wider font-medium', 'text-gray-500 dark:text-white/40')}>
                             Activated Accounts
                           </span>
                           {ancestry.stats?.childrenCount > 0 && (
-                            <span className={cn('text-[10px]', isDark ? 'text-white/20' : 'text-gray-400')}>
+                            <span className={cn('text-[10px]', 'text-gray-400 dark:text-white/20')}>
                               ({ancestry.stats.childrenCount})
                             </span>
                           )}
                         </div>
                         <div className="relative">
-                          <div className={cn('absolute left-[18px] top-4 bottom-4 w-px', isDark ? 'bg-white/10' : 'bg-gray-200')} />
+                          <div className={cn('absolute left-[18px] top-4 bottom-4 w-px', 'bg-gray-200 dark:bg-white/10')} />
                           <div className="space-y-1">
                             {ancestry.children.map((child, idx) => (
                               <div key={child.address || idx} className="relative pl-10">
-                                <div className={cn('absolute left-[15px] top-3 w-[7px] h-[7px] rounded-full border-2', isDark ? 'bg-black border-white/30' : 'bg-white border-gray-300')} />
-                                <div className={cn('rounded-lg', isDark ? 'bg-white/[0.02]' : 'bg-gray-50')}>
+                                <div className={cn('absolute left-[15px] top-3 w-[7px] h-[7px] rounded-full border-2', 'bg-white border-gray-300 dark:bg-black dark:border-white/30')} />
+                                <div className={cn('rounded-lg', 'bg-gray-50 dark:bg-white/[0.02]')}>
                                   <div className="flex items-center justify-between py-2 px-3">
                                     <div className="flex items-center gap-2">
-                                      <Link href={`/address/${child.address}`} className={cn('text-[13px] font-medium hover:underline', isDark ? 'text-white' : 'text-gray-900')}>
+                                      <Link href={`/address/${child.address}`} className={cn('text-[13px] font-medium hover:underline', 'text-gray-900 dark:text-white')}>
                                         {child.name || `${child.address?.slice(0, 8)}...${child.address?.slice(-6)}`}
                                       </Link>
                                       {child.name && (
-                                        <span className={cn('text-[10px] font-mono', isDark ? 'text-white/30' : 'text-gray-400')}>
+                                        <span className={cn('text-[10px] font-mono', 'text-gray-400 dark:text-white/30')}>
                                           {child.address?.slice(0, 6)}...
                                         </span>
                                       )}
                                     </div>
                                     <div className="flex items-center gap-3">
                                       {child.tokensCreated > 0 && (
-                                        <span className={cn('text-[10px] px-1.5 py-0.5 rounded', isDark ? 'bg-emerald-500/10 text-emerald-400' : 'bg-emerald-50 text-emerald-600')}>
+                                        <span className={cn('text-[10px] px-1.5 py-0.5 rounded', 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400')}>
                                           {child.tokensCreated} tokens
                                         </span>
                                       )}
                                       {child.inception && (
-                                        <span className={cn('text-[10px]', isDark ? 'text-white/30' : 'text-gray-400')}>
+                                        <span className={cn('text-[10px]', 'text-gray-400 dark:text-white/30')}>
                                           {new Date(child.inception).toLocaleDateString()}
                                         </span>
                                       )}
                                     </div>
                                   </div>
                                   {child.tokens?.length > 0 && (
-                                    <div className={cn('px-3 pb-2 flex flex-wrap gap-1', isDark ? 'border-t border-white/5' : 'border-t border-gray-100')}>
+                                    <div className={cn('px-3 pb-2 flex flex-wrap gap-1', 'border-t border-gray-100 dark:border-t dark:border-white/5')}>
                                       {child.tokens.map((token) => (
                                         <Link
                                           key={token.md5}
                                           href={`/token/${token.md5}`}
                                           className={cn(
                                             'inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] transition-colors',
-                                            isDark ? 'bg-white/5 hover:bg-white/10 text-white/60' : 'bg-gray-100 hover:bg-gray-200 text-gray-500'
+                                            'bg-gray-100 hover:bg-gray-200 text-gray-500 dark:bg-white/5 dark:hover:bg-white/10 dark:text-white/60'
                                           )}
                                         >
                                           <span className="font-medium">{token.name || token.currency}</span>
                                           {token.marketcap > 0 && (
-                                            <span className={cn(isDark ? 'text-white/30' : 'text-gray-400')}>
+                                            <span className={cn('text-gray-400 dark:text-white/30')}>
                                               ${token.marketcap >= 1000000 ? `${(token.marketcap / 1000000).toFixed(1)}M` : token.marketcap >= 1000 ? `${(token.marketcap / 1000).toFixed(0)}k` : token.marketcap.toFixed(0)}
                                             </span>
                                           )}
@@ -2979,8 +2936,8 @@ const OverView = ({ account }) => {
                   {/* Empty state */}
                   {(!ancestry.ancestors || ancestry.ancestors.length === 0) && (!ancestry.children || ancestry.children.length === 0) && (
                     <div className="flex flex-col items-center justify-center py-12 gap-2">
-                      <GitBranch size={24} className={isDark ? 'text-white/20' : 'text-gray-300'} />
-                      <p className={cn('text-[13px]', isDark ? 'text-white/40' : 'text-gray-400')}>No ancestry relationships found</p>
+                      <GitBranch size={24} className={'text-gray-300 dark:text-white/20'} />
+                      <p className={cn('text-[13px]', 'text-gray-400 dark:text-white/40')}>No ancestry relationships found</p>
                     </div>
                   )}
                 </>

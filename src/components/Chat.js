@@ -1,8 +1,16 @@
 import { apiFetch } from 'src/utils/api';
-import React, { useState, useEffect, useRef, useCallback, useContext, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Inbox, Ban, VolumeX, Shield, HelpCircle, Send, ChevronLeft, ChevronDown, Plus, Clock, CheckCircle, AlertCircle, Loader2, Check, CheckCheck, MessageCircle, Smile, Search, Trash2, Wifi, WifiOff } from 'lucide-react';
-import { ThemeContext } from 'src/context/AppContext';
+import { TIER_CONFIG } from 'src/components/VerificationBadge';
+
+const TIER_COLORS = { 1: 'text-blue-500', 2: 'text-purple-500', 3: 'text-amber-500', 4: 'text-green-500' };
+const TierBadge = ({ verified, size = 10 }) => {
+  const tier = TIER_CONFIG[verified];
+  if (!tier) return null;
+  return <span className={`inline-flex items-center shrink-0 ${TIER_COLORS[verified]}`} title={tier.label}>{tier.icon(size)}</span>;
+};
+
 
 // Local emotes from /emotes/
 const EMOTES = [
@@ -55,8 +63,6 @@ const fetchAvatar = (wallet) => {
 };
 
 const EmotePicker = ({ onSelect, inputRef, input, setInput }) => {
-  const { themeName } = useContext(ThemeContext);
-  const isDark = themeName === 'XrplToDarkTheme';
   const [emotes, setEmotes] = useState([]);
   const [query, setQuery] = useState('');
   const [show, setShow] = useState(false);
@@ -136,13 +142,13 @@ const EmotePicker = ({ onSelect, inputRef, input, setInput }) => {
     <>
       {/* Autocomplete dropdown */}
       {show && filtered.length > 0 && (
-        <div ref={pickerRef} className={`absolute bottom-full left-0 max-sm:left-0 max-sm:right-0 mb-2 w-72 max-sm:w-full max-h-52 overflow-y-auto overscroll-contain scrollbar-hide rounded-sm border-[1px] z-50 p-1 ${isDark ? 'bg-black border-white/[0.06]' : 'bg-white border-black/[0.06]'}`}>
-          <div className={`px-2 py-1.5 text-[9px] uppercase tracking-widest font-mono font-medium ${isDark ? 'text-[#137DFE]/40' : 'text-black/40'}`}>EMOTES</div>
+        <div ref={pickerRef} className="absolute bottom-full left-0 max-sm:left-0 max-sm:right-0 mb-2 w-72 max-sm:w-full max-h-52 overflow-y-auto overscroll-contain scrollbar-hide rounded-sm border-[1px] z-50 p-1 bg-white border-black/[0.06] dark:bg-black dark:border-white/[0.06]">
+          <div className="px-2 py-1.5 text-[9px] uppercase tracking-widest font-mono font-medium text-black/40 dark:text-[#137DFE]/40">EMOTES</div>
           {filtered.map((e, i) => (
             <button
               key={e.name}
               onClick={() => insertEmote(e)}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 text-left text-sm rounded-sm transition-colors ${i === selectedIdx ? 'bg-[#137DFE]/15 text-[#137DFE]' : isDark ? 'hover:bg-white/5 active:bg-white/10 text-white/80' : 'hover:bg-black/5 active:bg-black/10 text-black/80'}`}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 text-left text-sm rounded-sm transition-colors ${i === selectedIdx ? 'bg-[#137DFE]/15 text-[#137DFE]' : 'hover:bg-black/5 active:bg-black/10 text-black/80 dark:hover:bg-white/5 dark:active:bg-white/10 dark:text-white/80'}`}
             >
               <img src={e.url} alt={e.name} className="w-7 h-7 object-contain" loading="lazy" />
               <span className="font-medium">{e.name}</span>
@@ -154,13 +160,13 @@ const EmotePicker = ({ onSelect, inputRef, input, setInput }) => {
       <button
         aria-label="Emoji picker"
         onClick={() => setGridOpen(o => !o)}
-        className={`p-2.5 max-sm:p-3 rounded-sm shrink-0 transition-all outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] ${gridOpen ? 'bg-[#137DFE]/15 text-[#137DFE]' : isDark ? 'text-white/40 hover:text-white/70 hover:bg-white/5 active:bg-white/10' : 'text-black/40 hover:text-black/70 hover:bg-black/5 active:bg-black/10'}`}
+        className={`p-2.5 max-sm:p-3 rounded-sm shrink-0 transition-all outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] ${gridOpen ? 'bg-[#137DFE]/15 text-[#137DFE]' : 'text-black/40 hover:text-black/70 hover:bg-black/5 active:bg-black/10 dark:text-white/40 dark:hover:text-white/70 dark:hover:bg-white/5 dark:active:bg-white/10'}`}
       >
         <Smile size={18} className="max-sm:w-5 max-sm:h-5" />
       </button>
       {/* Grid picker */}
       {gridOpen && (
-        <div ref={gridRef} className={`absolute bottom-full left-0 max-sm:left-0 max-sm:right-0 mb-2 w-80 max-sm:w-full rounded-sm border-[1px] z-50 ${isDark ? 'bg-black border-white/[0.06]' : 'bg-white border-black/[0.06]'}`}>
+        <div ref={gridRef} className="absolute bottom-full left-0 max-sm:left-0 max-sm:right-0 mb-2 w-80 max-sm:w-full rounded-sm border-[1px] z-50 bg-white border-black/[0.06] dark:bg-black dark:border-white/[0.06]">
           <div className="p-2">
             <input
               ref={gridSearchRef}
@@ -168,7 +174,7 @@ const EmotePicker = ({ onSelect, inputRef, input, setInput }) => {
               onChange={(e) => setGridSearch(e.target.value)}
               placeholder="SEARCH EMOTES..."
               aria-label="Search emotes"
-              className={`w-full px-3 py-2 rounded-sm text-sm max-sm:text-base font-mono outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] ${isDark ? 'bg-white/5 text-white placeholder-white/25 border border-white/[0.06]' : 'bg-black/5 text-black placeholder-black/25 border border-black/10'}`}
+              className="w-full px-3 py-2 rounded-sm text-sm max-sm:text-base font-mono outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] bg-black/5 text-black placeholder-black/25 border border-black/10 dark:bg-white/5 dark:text-white dark:placeholder-white/25 dark:border-white/[0.06]"
             />
           </div>
           <div className="grid grid-cols-7 max-sm:grid-cols-8 gap-0.5 p-2 pt-0 max-h-60 overflow-y-auto overscroll-contain scrollbar-hide">
@@ -177,13 +183,13 @@ const EmotePicker = ({ onSelect, inputRef, input, setInput }) => {
                 key={e.name}
                 onClick={() => pickEmote(e)}
                 title={e.name}
-                className={`p-1.5 rounded-sm flex items-center justify-center transition-colors ${isDark ? 'hover:bg-white/10 active:bg-white/15' : 'hover:bg-black/10 active:bg-black/15'}`}
+                className="p-1.5 rounded-sm flex items-center justify-center transition-colors hover:bg-black/10 active:bg-black/15 dark:hover:bg-white/10 dark:active:bg-white/15"
               >
                 <img src={e.url} alt={e.name} className="w-7 h-7 object-contain" loading="lazy" />
               </button>
             ))}
             {gridFiltered.length === 0 && (
-              <div className={`col-span-full py-6 text-center text-sm ${isDark ? 'text-white/30' : 'text-black/30'}`}>No emotes found</div>
+              <div className="col-span-full py-6 text-center text-sm text-black/30 dark:text-white/30">No emotes found</div>
             )}
           </div>
         </div>
@@ -205,8 +211,6 @@ const timeAgo = (ts) => {
 
 // Chat avatar component with tooltip
 const ChatAvatar = ({ wallet }) => {
-  const { themeName } = useContext(ThemeContext);
-  const isDark = themeName === 'XrplToDarkTheme';
   const cached = userAvatarCache[wallet];
   const [avatar, setAvatar] = useState(cached?.avatar);
   const [nftId, setNftId] = useState(cached?.nftId);
@@ -245,10 +249,10 @@ const ChatAvatar = ({ wallet }) => {
         <img src={avatar} alt="" loading="lazy" decoding="async" className={`w-3.5 h-3.5 rounded object-cover shrink-0 cursor-pointer transition-opacity duration-200 ${imgLoaded ? 'opacity-100' : 'opacity-0'}`} onLoad={() => { loadedImgUrls.add(avatar); setImgLoaded(true); }} onMouseEnter={handleHover} onMouseLeave={() => setShowTip(false)} />
       </a>
       {showTip && (
-        <div className={`absolute bottom-full left-0 mb-1.5 px-2.5 py-1.5 rounded-sm border-[1px] text-[10px] font-mono whitespace-nowrap z-50 ${isDark ? 'bg-black border-white/[0.06]' : 'bg-white border-black/[0.06]'}`}>
+        <div className="absolute bottom-full left-0 mb-1.5 px-2.5 py-1.5 rounded-sm border-[1px] text-[10px] font-mono whitespace-nowrap z-50 bg-white border-black/[0.06] dark:bg-black dark:border-white/[0.06]">
           {nftData ? (
-            <><span className={`font-medium ${isDark ? 'text-white' : 'text-black'}`}>{nftData.name || 'NFT'}</span>{nftData.collection && <span className={`ml-1 ${isDark ? 'text-white/50' : 'text-black/50'}`}>• {nftData.collection}</span>}</>
-          ) : <span className={isDark ? 'text-white/50' : 'text-black/50'}>Loading...</span>}
+            <><span className="font-medium text-black dark:text-white">{nftData.name || 'NFT'}</span>{nftData.collection && <span className="ml-1 text-black/50 dark:text-white/50">• {nftData.collection}</span>}</>
+          ) : <span className="text-black/50 dark:text-white/50">Loading...</span>}
         </div>
       )}
     </span>
@@ -292,9 +296,8 @@ const DmAvatar = ({ wallet, size = 'sm' }) => {
 };
 
 const TokenPreview = ({ match }) => {
-  const { themeName } = useContext(ThemeContext);
-  const isDark = themeName === 'XrplToDarkTheme';
   const [token, setToken] = useState(null);
+  const [exchRate, setExchRate] = useState(0);
   const [loading, setLoading] = useState(true);
   const [imgError, setImgError] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
@@ -305,7 +308,7 @@ const TokenPreview = ({ match }) => {
     setLoading(true);
     apiFetch(`https://api.xrpl.to/v1/token/${match}`)
       .then(r => r.json())
-      .then(d => { if (d.token) setToken(d.token); })
+      .then(d => { if (d.token) { setToken(d.token); setExchRate(d.exch || 0); } })
       .catch(err => { console.warn('[Chat] Token mention fetch failed:', err.message); })
       .finally(() => setLoading(false));
   }, [match]);
@@ -316,6 +319,8 @@ const TokenPreview = ({ match }) => {
   const imgSrc = token.md5 ? `https://s1.xrpl.to/token/${token.md5}` : null;
   const change = token.pro24h || 0;
   const isUp = change >= 0;
+  const isListed = token.isOMCF === 'yes';
+  const usdPrice = exchRate > 0 ? token.exch * exchRate : token.usd || 0;
   const formatPrice = (n) => {
     if (!n) return '-';
     const num = Number(n);
@@ -352,24 +357,28 @@ const TokenPreview = ({ match }) => {
         )}
         <span className="font-medium text-[#137DFE]">{token.name || token.currency?.slice(0, 6)}</span>
         <span className={`font-mono ${isUp ? 'text-[#08AA09]' : 'text-red-500'}`}>{isUp ? '+' : ''}{change.toFixed(1)}%</span>
+        {!isListed && <span className="text-[9px] text-red-400/80 ml-0.5">Not Listed</span>}
       </a>
       {showTooltip && tooltipPos && createPortal(
         <div className="fixed z-[9999] pointer-events-none" style={{ top: tooltipPos.top - 8, left: tooltipPos.left, transform: 'translate(-50%, -100%)' }}>
-          <div className={`px-3 py-2.5 rounded-sm border-[1px] text-[11px] min-w-[200px] ${isDark ? 'bg-black border-white/[0.06]' : 'bg-white border-black/[0.06]'}`}>
+          <div className="px-3 py-2.5 rounded-sm border-[1px] text-[11px] min-w-[200px] bg-white border-black/[0.06] dark:bg-black dark:border-white/[0.06]">
             <div className="flex items-center gap-2 mb-2">
               {imgSrc && !imgError ? (
                 <img src={imgSrc} alt="" className="w-5 h-5 rounded-full object-cover" />
               ) : (
                 <span className="w-5 h-5 rounded-full bg-[#137DFE]/20 flex items-center justify-center text-[8px] text-[#137DFE]">T</span>
               )}
-              <span className={`font-semibold text-xs ${isDark ? 'text-white' : 'text-black'}`}>{token.name || token.currency?.slice(0, 6)}</span>
-              <span className={`ml-auto font-mono font-semibold text-xs ${isDark ? 'text-white' : 'text-black'}`}>{formatPrice(token.exch)}</span>
+              <span className="font-semibold text-xs text-black dark:text-white">{token.name || token.currency?.slice(0, 6)}</span>
+              <TierBadge verified={token.verified} />
+              <span className="ml-auto font-mono font-semibold text-xs text-black dark:text-white">{formatPrice(usdPrice)}</span>
             </div>
             <div className="grid grid-cols-3 gap-x-4 gap-y-1.5">
-              <div><span className={`font-mono text-[9px] uppercase tracking-wider ${isDark ? 'text-white/40' : 'text-black/40'}`}>24h</span><div className={`font-mono font-medium ${isUp ? 'text-[#08AA09]' : 'text-red-500'}`}>{isUp ? '+' : ''}{change.toFixed(1)}%</div></div>
-              <div><span className={`font-mono text-[9px] uppercase tracking-wider ${isDark ? 'text-white/40' : 'text-black/40'}`}>MCap</span><div className={`font-mono ${isDark ? 'text-white/70' : 'text-black/70'}`}>{formatMcap(token.marketcap)}</div></div>
-              <div><span className={`font-mono text-[9px] uppercase tracking-wider ${isDark ? 'text-white/40' : 'text-black/40'}`}>Holders</span><div className={`font-mono ${isDark ? 'text-white/70' : 'text-black/70'}`}>{token.holders?.toLocaleString() || '-'}</div></div>
+              <div><span className="font-mono text-[9px] uppercase tracking-wider text-black/40 dark:text-white/40">24h</span><div className={`font-mono font-medium ${isUp ? 'text-[#08AA09]' : 'text-red-500'}`}>{isUp ? '+' : ''}{change.toFixed(1)}%</div></div>
+              <div><span className="font-mono text-[9px] uppercase tracking-wider text-black/40 dark:text-white/40">MCap</span><div className="font-mono text-black/70 dark:text-white/70">{formatMcap(token.marketcap)}</div></div>
+              <div><span className="font-mono text-[9px] uppercase tracking-wider text-black/40 dark:text-white/40">Holders</span><div className="font-mono text-black/70 dark:text-white/70">{token.holders?.toLocaleString() || '-'}</div></div>
             </div>
+            {token.dateon && <div className="mt-1.5 pt-1.5 border-t border-black/[0.06] dark:border-white/[0.06] text-[9px] text-black/40 dark:text-white/40"><span className="font-mono uppercase tracking-wider">Listed</span> <span className="text-black/70 dark:text-white/70">{new Date(token.dateon).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</span></div>}
+            {!isListed && <div className={`${token.dateon ? 'mt-1' : 'mt-1.5 pt-1.5 border-t border-black/[0.06] dark:border-white/[0.06]'} text-[9px] text-red-400/80`}>Not Listed at xrpl.to</div>}
           </div>
         </div>,
         document.body
@@ -379,9 +388,8 @@ const TokenPreview = ({ match }) => {
 };
 
 const AttachedTokenPreview = ({ md5 }) => {
-  const { themeName } = useContext(ThemeContext);
-  const isDark = themeName === 'XrplToDarkTheme';
   const [token, setToken] = useState(null);
+  const [exchRate, setExchRate] = useState(0);
   const [imgError, setImgError] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
   const triggerRef = useRef(null);
@@ -390,7 +398,7 @@ const AttachedTokenPreview = ({ md5 }) => {
   useEffect(() => {
     apiFetch(`https://api.xrpl.to/v1/token/${md5}`)
       .then(r => r.json())
-      .then(d => { if (d.token) setToken(d.token); })
+      .then(d => { if (d.token) { setToken(d.token); setExchRate(d.exch || 0); } })
       .catch(err => { console.warn('[Chat] Token hover fetch failed:', err.message); });
   }, [md5]);
 
@@ -398,6 +406,8 @@ const AttachedTokenPreview = ({ md5 }) => {
 
   const change = token.pro24h || 0;
   const isUp = change >= 0;
+  const isListed = token.isOMCF === 'yes';
+  const usdPrice = exchRate > 0 ? token.exch * exchRate : token.usd || 0;
   const formatPrice = (n) => {
     if (!n) return '-';
     const num = Number(n);
@@ -434,24 +444,28 @@ const AttachedTokenPreview = ({ md5 }) => {
         )}
         <span className="font-medium text-[#137DFE]">{token.name || token.currency?.slice(0, 6)}</span>
         <span className={`font-mono ${isUp ? 'text-[#08AA09]' : 'text-red-500'}`}>{isUp ? '+' : ''}{change.toFixed(1)}%</span>
+        {!isListed && <span className="text-[9px] text-red-400/80 ml-0.5">Not Listed</span>}
       </a>
       {showTooltip && tooltipPos && createPortal(
         <div className="fixed z-[9999] pointer-events-none" style={{ top: tooltipPos.top - 8, left: tooltipPos.left, transform: 'translate(-50%, -100%)' }}>
-          <div className={`px-3 py-2.5 rounded-sm border-[1px] text-[11px] min-w-[200px] ${isDark ? 'bg-black border-white/[0.06]' : 'bg-white border-black/[0.06]'}`}>
+          <div className="px-3 py-2.5 rounded-sm border-[1px] text-[11px] min-w-[200px] bg-white border-black/[0.06] dark:bg-black dark:border-white/[0.06]">
             <div className="flex items-center gap-2 mb-2">
               {!imgError ? (
                 <img src={`https://s1.xrpl.to/token/${md5}`} alt="" className="w-5 h-5 rounded-full object-cover" />
               ) : (
                 <span className="w-5 h-5 rounded-full bg-[#137DFE]/20 flex items-center justify-center text-[8px] text-[#137DFE]">T</span>
               )}
-              <span className={`font-semibold text-xs ${isDark ? 'text-white' : 'text-black'}`}>{token.name || token.currency?.slice(0, 6)}</span>
-              <span className={`ml-auto font-mono font-semibold text-xs ${isDark ? 'text-white' : 'text-black'}`}>{formatPrice(token.exch)}</span>
+              <span className="font-semibold text-xs text-black dark:text-white">{token.name || token.currency?.slice(0, 6)}</span>
+              <TierBadge verified={token.verified} />
+              <span className="ml-auto font-mono font-semibold text-xs text-black dark:text-white">{formatPrice(usdPrice)}</span>
             </div>
             <div className="grid grid-cols-3 gap-x-4 gap-y-1.5">
-              <div><span className={`font-mono text-[9px] uppercase tracking-wider ${isDark ? 'text-white/40' : 'text-black/40'}`}>24h</span><div className={`font-mono font-medium ${isUp ? 'text-[#08AA09]' : 'text-red-500'}`}>{isUp ? '+' : ''}{change.toFixed(1)}%</div></div>
-              <div><span className={`font-mono text-[9px] uppercase tracking-wider ${isDark ? 'text-white/40' : 'text-black/40'}`}>MCap</span><div className={`font-mono ${isDark ? 'text-white/70' : 'text-black/70'}`}>{formatMcap(token.marketcap)}</div></div>
-              <div><span className={`font-mono text-[9px] uppercase tracking-wider ${isDark ? 'text-white/40' : 'text-black/40'}`}>Holders</span><div className={`font-mono ${isDark ? 'text-white/70' : 'text-black/70'}`}>{token.holders?.toLocaleString() || '-'}</div></div>
+              <div><span className="font-mono text-[9px] uppercase tracking-wider text-black/40 dark:text-white/40">24h</span><div className={`font-mono font-medium ${isUp ? 'text-[#08AA09]' : 'text-red-500'}`}>{isUp ? '+' : ''}{change.toFixed(1)}%</div></div>
+              <div><span className="font-mono text-[9px] uppercase tracking-wider text-black/40 dark:text-white/40">MCap</span><div className="font-mono text-black/70 dark:text-white/70">{formatMcap(token.marketcap)}</div></div>
+              <div><span className="font-mono text-[9px] uppercase tracking-wider text-black/40 dark:text-white/40">Holders</span><div className="font-mono text-black/70 dark:text-white/70">{token.holders?.toLocaleString() || '-'}</div></div>
             </div>
+            {token.dateon && <div className="mt-1.5 pt-1.5 border-t border-black/[0.06] dark:border-white/[0.06] text-[9px] text-black/40 dark:text-white/40"><span className="font-mono uppercase tracking-wider">Listed</span> <span className="text-black/70 dark:text-white/70">{new Date(token.dateon).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</span></div>}
+            {!isListed && <div className={`${token.dateon ? 'mt-1' : 'mt-1.5 pt-1.5 border-t border-black/[0.06] dark:border-white/[0.06]'} text-[9px] text-red-400/80`}>Not Listed at xrpl.to</div>}
           </div>
         </div>,
         document.body
@@ -461,8 +475,6 @@ const AttachedTokenPreview = ({ md5 }) => {
 };
 
 const NFTPreview = ({ nftId }) => {
-  const { themeName } = useContext(ThemeContext);
-  const isDark = themeName === 'XrplToDarkTheme';
   const [nft, setNft] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -489,7 +501,7 @@ const NFTPreview = ({ nftId }) => {
 
   if (loading) return <span className="text-[#650CD4] text-xs">loading...</span>;
 
-  if (error || !nft) return <span className={`text-xs ${isDark ? 'text-white/50' : 'text-black/50'}`}>{nftId.slice(0, 8)}...{nftId.slice(-4)}</span>;
+  if (error || !nft) return <span className="text-xs text-black/50 dark:text-white/50">{nftId.slice(0, 8)}...{nftId.slice(-4)}</span>;
 
   const cdn = 'https://s1.xrpl.to/nft/';
   const file = nft?.files?.[0] || nft;
@@ -522,7 +534,7 @@ const NFTPreview = ({ nftId }) => {
       </a>
       {showTooltip && tooltipPos && createPortal(
         <div className="fixed z-[9999] pointer-events-none" style={{ top: tooltipPos.top - 8, left: tooltipPos.left, transform: 'translate(-50%, -100%)' }}>
-          <div className={`px-3 py-2.5 rounded-sm border-[1px] text-[11px] min-w-[200px] ${isDark ? 'bg-black border-white/[0.06]' : 'bg-white border-black/[0.06]'}`}>
+          <div className="px-3 py-2.5 rounded-sm border-[1px] text-[11px] min-w-[200px] bg-white border-black/[0.06] dark:bg-black dark:border-white/[0.06]">
             <div className="flex items-center gap-2 mb-2">
               {imgSrc ? (
                 <img src={imgSrc} alt="" className="w-5 h-5 rounded object-cover" />
@@ -530,18 +542,18 @@ const NFTPreview = ({ nftId }) => {
                 <span className="w-5 h-5 rounded bg-[#650CD4]/20 flex items-center justify-center text-[8px] text-[#650CD4]">N</span>
               )}
               <div className="min-w-0">
-                <div className={`font-semibold text-xs truncate ${isDark ? 'text-white' : 'text-black'}`}>{name || `${nftId.slice(0, 6)}...`}</div>
-                {collection && <div className={`text-[10px] truncate ${isDark ? 'text-white/40' : 'text-black/40'}`}>{collection}</div>}
+                <div className="font-semibold text-xs truncate text-black dark:text-white">{name || `${nftId.slice(0, 6)}...`}</div>
+                {collection && <div className="text-[10px] truncate text-black/40 dark:text-white/40">{collection}</div>}
               </div>
-              {buyNow && <span className={`ml-auto font-mono font-semibold text-xs shrink-0 ${isDark ? 'text-white' : 'text-black'}`}>{formatXrp(buyNow)} XRP</span>}
+              {buyNow && <span className="ml-auto font-mono font-semibold text-xs shrink-0 text-black dark:text-white">{formatXrp(buyNow)} XRP</span>}
             </div>
             <div className="grid grid-cols-3 gap-x-4 gap-y-1.5">
-              <div><span className={isDark ? 'text-white/40' : 'text-black/40'}>Best Offer</span><div className={`font-mono font-medium ${isDark ? 'text-white/70' : 'text-black/70'}`}>{bestOffer ? formatXrp(bestOffer) + ' XRP' : '-'}</div></div>
-              <div><span className={isDark ? 'text-white/40' : 'text-black/40'}>Rank</span><div className="font-mono font-medium text-[#650CD4]">{rank ? `#${rank.toLocaleString()}` : '-'}</div></div>
-              <div><span className={isDark ? 'text-white/40' : 'text-black/40'}>Supply</span><div className={`font-mono ${isDark ? 'text-white/70' : 'text-black/70'}`}>{total ? total.toLocaleString() : '-'}</div></div>
+              <div><span className="text-black/40 dark:text-white/40">Best Offer</span><div className="font-mono font-medium text-black/70 dark:text-white/70">{bestOffer ? formatXrp(bestOffer) + ' XRP' : '-'}</div></div>
+              <div><span className="text-black/40 dark:text-white/40">Rank</span><div className="font-mono font-medium text-[#650CD4]">{rank ? `#${rank.toLocaleString()}` : '-'}</div></div>
+              <div><span className="text-black/40 dark:text-white/40">Supply</span><div className="font-mono text-black/70 dark:text-white/70">{total ? total.toLocaleString() : '-'}</div></div>
             </div>
             {created && (
-              <div className={`text-[10px] mt-2 pt-1.5 ${isDark ? 'text-white/30 border-t border-white/[0.06]' : 'text-black/30 border-t border-black/[0.06]'}`}>
+              <div className="text-[10px] mt-2 pt-1.5 text-black/30 border-t border-black/[0.06] dark:text-white/30 dark:border-t dark:border-white/[0.06]">
                 {timeAgo(created)}
               </div>
             )}
@@ -554,8 +566,6 @@ const NFTPreview = ({ nftId }) => {
 };
 
 const CollectionPreview = ({ slug }) => {
-  const { themeName } = useContext(ThemeContext);
-  const isDark = themeName === 'XrplToDarkTheme';
   const [col, setCol] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -603,22 +613,22 @@ const CollectionPreview = ({ slug }) => {
       </a>
       {showTooltip && tooltipPos && createPortal(
         <div className="fixed z-[9999] pointer-events-none" style={{ top: tooltipPos.top - 8, left: tooltipPos.left, transform: 'translate(-50%, -100%)' }}>
-          <div className={`px-3 py-2.5 rounded-sm border-[1px] text-[11px] min-w-[220px] ${isDark ? 'bg-black border-white/[0.06]' : 'bg-white border-black/[0.06]'}`}>
+          <div className="px-3 py-2.5 rounded-sm border-[1px] text-[11px] min-w-[220px] bg-white border-black/[0.06] dark:bg-black dark:border-white/[0.06]">
             <div className="flex items-center gap-2 mb-2">
               {col.logoImage ? <img src={`https://s1.xrpl.to/nft-collection/${col.logoImage}`} className="w-5 h-5 rounded object-cover" alt="" /> : <span className="w-5 h-5 rounded bg-[#650CD4]/20 flex items-center justify-center text-[8px] text-[#650CD4]">C</span>}
               <div className="min-w-0">
-                <div className={`font-semibold text-xs truncate ${isDark ? 'text-white' : 'text-black'}`}>{col.name}</div>
-                {col.origin && <div className={`text-[10px] truncate ${isDark ? 'text-white/40' : 'text-black/40'}`}>{col.origin}</div>}
+                <div className="font-semibold text-xs truncate text-black dark:text-white flex items-center gap-1">{col.name}<TierBadge verified={typeof col.verified === 'number' ? col.verified : (col.verified === true || col.verified === 'yes' ? 4 : 0)} /></div>
+                {col.origin && <div className="text-[10px] truncate text-black/40 dark:text-white/40">{col.origin}</div>}
               </div>
-              {col.floor && <span className={`ml-auto font-mono font-semibold text-xs shrink-0 ${isDark ? 'text-white' : 'text-black'}`}>{formatXrp(col.floor)} XRP</span>}
+              {col.floor && <span className="ml-auto font-mono font-semibold text-xs shrink-0 text-black dark:text-white">{formatXrp(col.floor)} XRP</span>}
             </div>
             <div className="grid grid-cols-3 gap-x-4 gap-y-1.5">
-              <div><span className={isDark ? 'text-white/40' : 'text-black/40'}>Items</span><div className={`font-mono ${isDark ? 'text-white/70' : 'text-black/70'}`}>{col.items?.toLocaleString() || '-'}</div></div>
-              <div><span className={isDark ? 'text-white/40' : 'text-black/40'}>Owners</span><div className={`font-mono ${isDark ? 'text-white/70' : 'text-black/70'}`}>{col.owners?.toLocaleString() || '-'}</div></div>
-              <div><span className={isDark ? 'text-white/40' : 'text-black/40'}>Listed</span><div className={`font-mono ${isDark ? 'text-white/70' : 'text-black/70'}`}>{col.listedCount?.toLocaleString() || '-'}</div></div>
-              <div><span className={isDark ? 'text-white/40' : 'text-black/40'}>Volume</span><div className={`font-mono ${isDark ? 'text-white/70' : 'text-black/70'}`}>{formatXrp(col.totalVolume)} XRP</div></div>
-              <div><span className={isDark ? 'text-white/40' : 'text-black/40'}>7d Floor</span><div className={`font-mono font-medium ${isUp ? 'text-[#08AA09]' : 'text-red-500'}`}>{isUp ? '+' : ''}{floorChange.toFixed(1)}%</div></div>
-              <div><span className={isDark ? 'text-white/40' : 'text-black/40'}>Sales 24h</span><div className={`font-mono ${isDark ? 'text-white/70' : 'text-black/70'}`}>{col.sales24h?.toLocaleString() || '-'}</div></div>
+              <div><span className="text-black/40 dark:text-white/40">Items</span><div className="font-mono text-black/70 dark:text-white/70">{col.items?.toLocaleString() || '-'}</div></div>
+              <div><span className="text-black/40 dark:text-white/40">Owners</span><div className="font-mono text-black/70 dark:text-white/70">{col.owners?.toLocaleString() || '-'}</div></div>
+              <div><span className="text-black/40 dark:text-white/40">Listed</span><div className="font-mono text-black/70 dark:text-white/70">{col.listedCount?.toLocaleString() || '-'}</div></div>
+              <div><span className="text-black/40 dark:text-white/40">Volume</span><div className="font-mono text-black/70 dark:text-white/70">{formatXrp(col.totalVolume)} XRP</div></div>
+              <div><span className="text-black/40 dark:text-white/40">7d Floor</span><div className={`font-mono font-medium ${isUp ? 'text-[#08AA09]' : 'text-red-500'}`}>{isUp ? '+' : ''}{floorChange.toFixed(1)}%</div></div>
+              <div><span className="text-black/40 dark:text-white/40">Sales 24h</span><div className="font-mono text-black/70 dark:text-white/70">{col.sales24h?.toLocaleString() || '-'}</div></div>
             </div>
           </div>
         </div>,
@@ -642,9 +652,9 @@ const EmoteInMessage = ({ name }) => {
 
 const renderMessage = (text, mentionTargets = null) => {
   if (!text || typeof text !== 'string') return text;
-  const tokenRegex = /(?:https?:\/\/xrpl\.to)?\/token\/([a-fA-F0-9]{32}|[a-zA-Z0-9]+-[A-Fa-f0-9]+)|https?:\/\/firstledger\.net\/token(?:-v2)?\/([a-zA-Z0-9]+)\/([A-Fa-f0-9]+)|https?:\/\/xpmarket\.com\/token\/([a-zA-Z0-9]+)-([a-zA-Z0-9]+)|\b([a-fA-F0-9]{32})\b/g;
-  const nftRegex = /(?:https?:\/\/xrpl\.to\/nft\/)?([A-Fa-f0-9]{64})/g;
-  const collectionRegex = /(?:https?:\/\/xrpl\.to)?\/nfts\/([a-zA-Z0-9_-]+)/g;
+  const tokenRegex = /(?:https?:\/\/(?:dev\.)?xrpl\.to)?\/token\/([a-fA-F0-9]{32}|[a-zA-Z0-9]+-[a-zA-Z0-9]+|[a-zA-Z][a-zA-Z0-9_-]*)|https?:\/\/firstledger\.net\/token(?:-v2)?\/([a-zA-Z0-9]+)\/([A-Fa-f0-9]+)|https?:\/\/xpmarket\.com\/token\/([a-zA-Z0-9]+)-([a-zA-Z0-9]+)|\b([a-fA-F0-9]{32})\b/g;
+  const nftRegex = /(?:https?:\/\/(?:dev\.)?xrpl\.to\/nft\/)?([A-Fa-f0-9]{64})/g;
+  const collectionRegex = /(?:https?:\/\/(?:dev\.)?xrpl\.to)?\/nfts\/([a-zA-Z0-9_-]+)/g;
 
   const highlightMentions = (str) => {
     if (!mentionTargets?.length || typeof str !== 'string') return str;
@@ -699,7 +709,7 @@ const BASE_URL = 'https://api.xrpl.to';
 
 // Mod actions are proxied through /api/chat/mod (server injects API key)
 
-const SupportTickets = ({ wallet, isStaff, tier, isDark, onBack }) => {
+const SupportTickets = ({ wallet, isStaff, tier, onBack }) => {
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedTicket, setSelectedTicket] = useState(null);
@@ -734,11 +744,11 @@ const SupportTickets = ({ wallet, isStaff, tier, isDark, onBack }) => {
   }
 
   if (selectedTicket) {
-    return <TicketDetail ticketId={selectedTicket} wallet={wallet} isStaff={isStaff} isDark={isDark} onBack={() => { setSelectedTicket(null); fetchTickets(); }} />;
+    return <TicketDetail ticketId={selectedTicket} wallet={wallet} isStaff={isStaff} onBack={() => { setSelectedTicket(null); fetchTickets(); }} />;
   }
 
   if (showCreate) {
-    return <CreateTicket wallet={wallet} isDark={isDark} onBack={() => setShowCreate(false)} onCreated={() => { setShowCreate(false); fetchTickets(); }} />;
+    return <CreateTicket wallet={wallet} onBack={() => setShowCreate(false)} onCreated={() => { setShowCreate(false); fetchTickets(); }} />;
   }
 
   return (
@@ -801,7 +811,7 @@ const TicketStatus = ({ status }) => {
   );
 };
 
-const CreateTicket = ({ wallet, isDark, onBack, onCreated }) => {
+const CreateTicket = ({ wallet, onBack, onCreated }) => {
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -843,7 +853,7 @@ const CreateTicket = ({ wallet, isDark, onBack, onCreated }) => {
             value={subject}
             onChange={e => setSubject(e.target.value.slice(0, 100))}
             placeholder="Brief description..."
-            className={`w-full px-3 py-2.5 max-sm:py-3 rounded-sm border text-sm max-sm:text-base font-mono ${isDark ? 'bg-white/5 border-white/[0.06] focus:border-[#137DFE]/30' : 'bg-black/5 border-black/10 focus:border-[#137DFE]/30'}`}
+            className="w-full px-3 py-2.5 max-sm:py-3 rounded-sm border text-sm max-sm:text-base font-mono bg-black/5 border-black/10 focus:border-[#137DFE]/30 dark:bg-white/5 dark:border-white/[0.06] dark:focus:border-[#137DFE]/30"
           />
           <span className="text-[11px] opacity-40 mt-1 block text-right">{subject.length}/100</span>
         </div>
@@ -854,7 +864,7 @@ const CreateTicket = ({ wallet, isDark, onBack, onCreated }) => {
             onChange={e => setMessage(e.target.value.slice(0, 2000))}
             placeholder="Describe your issue in detail..."
             rows={6}
-            className={`w-full px-3 py-2.5 max-sm:py-3 rounded-sm border text-sm max-sm:text-base resize-none font-mono ${isDark ? 'bg-white/5 border-white/[0.06] focus:border-[#137DFE]/30' : 'bg-black/5 border-black/10 focus:border-[#137DFE]/30'}`}
+            className="w-full px-3 py-2.5 max-sm:py-3 rounded-sm border text-sm max-sm:text-base resize-none font-mono bg-black/5 border-black/10 focus:border-[#137DFE]/30 dark:bg-white/5 dark:border-white/[0.06] dark:focus:border-[#137DFE]/30"
           />
           <span className="text-[11px] opacity-40 mt-1 block text-right">{message.length}/2000</span>
         </div>
@@ -873,7 +883,7 @@ const CreateTicket = ({ wallet, isDark, onBack, onCreated }) => {
   );
 };
 
-const TicketDetail = ({ ticketId, wallet, isStaff, isDark, onBack }) => {
+const TicketDetail = ({ ticketId, wallet, isStaff, onBack }) => {
   const [ticket, setTicket] = useState(null);
   const [loading, setLoading] = useState(true);
   const [reply, setReply] = useState('');
@@ -960,7 +970,7 @@ const TicketDetail = ({ ticketId, wallet, isStaff, isDark, onBack }) => {
         )}
       </div>
       <div className="flex-1 overflow-y-auto scrollbar-hide px-3 py-2 space-y-3">
-        <div className={`p-3 rounded-sm ${isDark ? 'bg-white/5 border border-white/[0.06]' : 'bg-black/5'}`}>
+        <div className="p-3 rounded-sm bg-black/5 dark:bg-white/5 dark:border dark:border-white/[0.06]">
           <div className="flex items-center justify-between text-[10px] opacity-50 mb-1">
             <span>{ticket.username || ticket.wallet?.slice(0, 8)}</span>
             <span>{timeAgo(ticket.createdAt)}</span>
@@ -968,7 +978,7 @@ const TicketDetail = ({ ticketId, wallet, isStaff, isDark, onBack }) => {
           <p className="text-sm whitespace-pre-wrap">{ticket.message}</p>
         </div>
         {ticket.replies?.map((r, i) => (
-          <div key={i} className={`p-3 rounded-sm ${r.isStaff ? 'bg-[#650CD4]/10 border border-[#650CD4]/20' : isDark ? 'bg-white/5 border border-white/[0.06]' : 'bg-black/5'}`}>
+          <div key={i} className={`p-3 rounded-sm ${r.isStaff ? 'bg-[#650CD4]/10 border border-[#650CD4]/20' : 'bg-black/5 dark:bg-white/5 dark:border dark:border-white/[0.06]'}`}>
             <div className="flex items-center justify-between text-[10px] mb-1">
               <span className={r.isStaff ? 'text-[#650CD4]' : 'opacity-50'}>
                 {r.username || r.wallet?.slice(0, 8)} {r.isStaff && <span className="opacity-60">(Staff)</span>}
@@ -988,9 +998,9 @@ const TicketDetail = ({ ticketId, wallet, isStaff, isDark, onBack }) => {
             placeholder="Type your reply..."
             aria-label="Type your reply"
             onKeyDown={e => e.key === 'Enter' && sendReply()}
-            className={`flex-1 px-3 py-2.5 max-sm:py-3 rounded-sm border text-sm max-sm:text-base font-mono outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] ${isDark ? 'bg-white/5 border-white/[0.06] focus:border-[#137DFE]/30' : 'bg-black/5 border-black/10 focus:border-[#137DFE]/30'}`}
+            className="flex-1 px-3 py-2.5 max-sm:py-3 rounded-sm border text-sm max-sm:text-base font-mono outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] bg-black/5 border-black/10 focus:border-[#137DFE]/30 dark:bg-white/5 dark:border-white/[0.06] dark:focus:border-[#137DFE]/30"
           />
-          <button aria-label="Send reply" onClick={sendReply} disabled={!reply.trim() || submitting} className={`px-3 py-2.5 max-sm:px-4 max-sm:py-3 rounded-sm transition-all duration-200 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] ${reply.trim() && !submitting ? 'bg-[#137DFE] text-white hover:bg-[#137DFE]/80 active:scale-90' : isDark ? 'bg-white/5 text-white/20' : 'bg-black/5 text-black/20'}`}>
+          <button aria-label="Send reply" onClick={sendReply} disabled={!reply.trim() || submitting} className={`px-3 py-2.5 max-sm:px-4 max-sm:py-3 rounded-sm transition-all duration-200 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] ${reply.trim() && !submitting ? 'bg-[#137DFE] text-white hover:bg-[#137DFE]/80 active:scale-90' : 'bg-black/5 text-black/20 dark:bg-white/5 dark:text-white/20'}`}>
             {submitting ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} className={`transition-transform duration-200 ${reply.trim() ? '-rotate-45 translate-x-[1px] -translate-y-[1px]' : ''}`} />}
           </button>
         </div>
@@ -1033,8 +1043,6 @@ const Chat = () => {
       return cache.url || null;
     }
   };
-  const { themeName } = useContext(ThemeContext);
-  const isDark = themeName === 'XrplToDarkTheme';
   const [isOpen, setIsOpen] = useState(() => {
     if (typeof window === 'undefined') return false;
     try {
@@ -1148,7 +1156,7 @@ const Chat = () => {
     if (t === 'professional') return 'text-[#137DFE]';
     if (t === 'vip') return 'text-[#08AA09]';
     if (t === 'diamond') return 'text-[#a855f7]';
-    if (t === 'member' || !t) return isDark ? 'text-white/50' : 'text-black/50';
+    if (t === 'member' || !t) return 'text-black/50 dark:text-white/50';
     return 'text-[#650CD4]';
   };
 
@@ -1743,7 +1751,7 @@ const Chat = () => {
     setTimeout(() => inputRef.current?.focus(), 0);
   };
 
-  const baseClasses = isDark ? 'bg-black text-white border-white/[0.06]' : 'bg-white text-black border-black/[0.06]';
+  const baseClasses = 'bg-white text-black border-black/[0.06] dark:bg-black dark:text-white dark:border-white/[0.06]';
 
   return (
     <div className={`fixed ${isOpen ? 'z-50 bottom-4 right-4 max-sm:top-0 max-sm:left-0 max-sm:right-0 max-sm:bottom-0 max-sm:touch-manipulation' : 'z-50 bottom-5 max-sm:bottom-3 right-5 max-sm:right-3'}`}>
@@ -1751,22 +1759,22 @@ const Chat = () => {
         <button
           aria-label="Open chat"
           onClick={() => setIsOpen(true)}
-          className={`group relative flex items-center gap-3 h-10 px-7 rounded-sm border-[1.5px] transition-all duration-200 active:scale-[0.97] backdrop-blur-md outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] ${isDark ? 'bg-white/[0.04] border-white/[0.10] hover:border-white/20 hover:bg-white/[0.08]' : 'bg-black/[0.03] border-black/[0.10] hover:border-black/20 hover:bg-black/[0.06]'}`}
+          className="group relative flex items-center gap-3 h-10 px-7 rounded-sm border-[1.5px] transition-all duration-200 active:scale-[0.97] backdrop-blur-md outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] bg-black/[0.03] border-black/[0.10] hover:border-black/20 hover:bg-black/[0.06] dark:bg-white/[0.04] dark:border-white/[0.10] dark:hover:border-white/20 dark:hover:bg-white/[0.08]"
         >
           {/* left: online dot + count */}
           <span className="flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-[#08AA09]" style={{ boxShadow: '0 0 6px rgba(8,170,9,0.6)' }} />
-            <span className={`tabular-nums text-[11px] font-mono font-medium ${isDark ? 'text-white/40' : 'text-black/40'}`}>{onlineCount >= 1000 ? `${(onlineCount / 1000).toFixed(1)}K` : onlineCount}</span>
+            <span className="tabular-nums text-[11px] font-mono font-medium text-black/40 dark:text-white/40">{onlineCount >= 1000 ? `${(onlineCount / 1000).toFixed(1)}K` : onlineCount}</span>
           </span>
 
           {/* center divider */}
-          <span className={`w-px h-4 ${isDark ? 'bg-white/15' : 'bg-black/15'}`} />
+          <span className="w-px h-4 bg-black/15 dark:bg-white/15" />
 
           {/* center: label */}
-          <span className={`font-mono font-semibold text-[10px] uppercase tracking-widest ${isDark ? 'text-white/50' : 'text-black/50'}`}>Shoutbox</span>
+          <span className="font-mono font-semibold text-[10px] uppercase tracking-widest text-black/50 dark:text-white/50">Shoutbox</span>
 
           {/* right divider */}
-          <span className={`w-px h-4 ${isDark ? 'bg-white/15' : 'bg-black/15'}`} />
+          <span className="w-px h-4 bg-black/15 dark:bg-white/15" />
 
           {/* right: unread or placeholder for symmetry */}
           <span className="flex items-center justify-center min-w-[28px]">
@@ -1775,7 +1783,7 @@ const Chat = () => {
                 {unreadCount > 99 ? '99+' : unreadCount}
               </span>
             ) : (
-              <span className={`text-[10px] font-mono tracking-widest font-medium ${isDark ? 'text-white/15' : 'text-black/15'}`}>///</span>
+              <span className="text-[10px] font-mono tracking-widest font-medium text-black/15 dark:text-white/15">///</span>
             )}
           </span>
         </button>
@@ -1785,8 +1793,7 @@ const Chat = () => {
           role="complementary"
           aria-label="Chat"
           onClick={() => { if (!isFocused) inputRef.current?.focus(); }}
-          className={`w-[700px] max-sm:w-full max-sm:h-full max-sm:rounded-none rounded-sm border-[1px] max-sm:border-0 ${baseClasses} overflow-hidden flex flex-col`}
-          style={isDark ? { boxShadow: '0 0 30px rgba(255,255,255,0.03), 0 0 60px rgba(255,255,255,0.01)' } : {}}
+          className={`w-[700px] max-sm:w-full max-sm:h-full max-sm:rounded-none rounded-sm border-[1px] max-sm:border-0 ${baseClasses} overflow-hidden flex flex-col dark:shadow-[0_0_30px_rgba(255,255,255,0.03),0_0_60px_rgba(255,255,255,0.01)]`}
         >
           <div className="relative flex items-center justify-between px-3 py-2.5 max-sm:py-3 max-sm:pt-[calc(12px+env(safe-area-inset-top))] border-b border-inherit shrink-0">
             <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
@@ -1806,7 +1813,7 @@ const Chat = () => {
               )}
             </div>
             <div className="flex items-center gap-0.5 max-sm:gap-1">
-              <button aria-label="Support Tickets" onClick={() => { setShowSupport(s => !s); setShowInbox(false); setSupportNotif(0); }} className={`relative p-2 max-sm:p-2.5 rounded-sm transition-colors active:scale-95 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] ${showSupport ? 'bg-white/20 text-white' : isDark ? 'hover:bg-white/10 active:bg-white/20' : 'hover:bg-black/10 active:bg-black/20'}`} title="Support Tickets">
+              <button aria-label="Support Tickets" onClick={() => { setShowSupport(s => !s); setShowInbox(false); setSupportNotif(0); }} className={`relative p-2 max-sm:p-2.5 rounded-sm transition-colors active:scale-95 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] ${showSupport ? 'bg-white/20 text-white' : 'hover:bg-black/10 active:bg-black/20 dark:hover:bg-white/10 dark:active:bg-white/20'}`} title="Support Tickets">
                 <HelpCircle size={16} className="max-sm:w-5 max-sm:h-5" />
                 {supportNotif > 0 && (
                   <span className="absolute -top-1 -right-1 w-4 h-4 rounded-sm bg-red-500 text-white text-[10px] font-mono flex items-center justify-center">{supportNotif}</span>
@@ -1821,13 +1828,13 @@ const Chat = () => {
                 if (opening && wsRef.current?.readyState === WebSocket.OPEN) {
                   conversations.forEach(([user]) => wsRef.current.send(JSON.stringify({ type: 'status', wallet: user })));
                 }
-              }} className={`relative p-2 max-sm:p-2.5 rounded-sm transition-colors active:scale-95 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] ${showInbox ? 'bg-white/20 text-white' : isDark ? 'hover:bg-white/10 active:bg-white/20' : 'hover:bg-black/10 active:bg-black/20'}`}>
+              }} className={`relative p-2 max-sm:p-2.5 rounded-sm transition-colors active:scale-95 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] ${showInbox ? 'bg-white/20 text-white' : 'hover:bg-black/10 active:bg-black/20 dark:hover:bg-white/10 dark:active:bg-white/20'}`}>
                 <Inbox size={16} className="max-sm:w-5 max-sm:h-5" />
                 {conversations.filter(([, m]) => m.unread).length > 0 && (
                   <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-sm bg-[#650CD4] text-white text-[9px] font-mono font-medium flex items-center justify-center">{conversations.filter(([, m]) => m.unread).length}</span>
                 )}
               </button>
-              <button aria-label="Close chat" onClick={() => setIsOpen(false)} className={`p-2 max-sm:p-2.5 rounded-sm active:scale-95 transition-all outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] ${isDark ? 'hover:bg-white/10 active:bg-white/20' : 'hover:bg-black/10 active:bg-black/20'}`}>
+              <button aria-label="Close chat" onClick={() => setIsOpen(false)} className="p-2 max-sm:p-2.5 rounded-sm active:scale-95 transition-all outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] hover:bg-black/10 active:bg-black/20 dark:hover:bg-white/10 dark:active:bg-white/20">
                 <X size={16} className="max-sm:w-5 max-sm:h-5" />
               </button>
             </div>
@@ -1857,25 +1864,24 @@ const Chat = () => {
               wallet={authUser?.wallet}
               isStaff={modLevel === 'admin'}
               tier={authUser?.tier}
-              isDark={isDark}
               onBack={() => setShowSupport(false)}
             />
           ) : showInbox ? (
             <div className="h-[400px] max-sm:h-full max-sm:flex-1 flex flex-col">
               <div className="px-3 py-2 border-b border-inherit shrink-0 flex flex-col gap-2">
                 <div className="flex items-center gap-2">
-                  <button aria-label="Go back" onClick={() => setShowInbox(false)} className={`p-1.5 rounded-sm shrink-0 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] ${isDark ? 'hover:bg-white/10' : 'hover:bg-black/10'}`}>
+                  <button aria-label="Go back" onClick={() => setShowInbox(false)} className="p-1.5 rounded-sm shrink-0 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] hover:bg-black/10 dark:hover:bg-white/10">
                     <ChevronLeft size={16} />
                   </button>
                   <span className="flex-1 text-sm font-semibold font-mono tracking-wide">INBOX</span>
                   {conversations.length > 0 && (
-                    <button aria-label="Search conversations" onClick={() => { setInboxSearchOpen(s => !s); if (inboxSearchOpen) setInboxSearch(''); }} className={`p-1.5 rounded-sm shrink-0 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] ${inboxSearchOpen ? (isDark ? 'bg-white/20' : 'bg-black/15') : isDark ? 'hover:bg-white/10' : 'hover:bg-black/10'}`}>
+                    <button aria-label="Search conversations" onClick={() => { setInboxSearchOpen(s => !s); if (inboxSearchOpen) setInboxSearch(''); }} className={`p-1.5 rounded-sm shrink-0 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] ${inboxSearchOpen ? 'bg-black/15 dark:bg-white/20' : 'hover:bg-black/10 dark:hover:bg-white/10'}`}>
                       <Search size={14} />
                     </button>
                   )}
                 </div>
                 {inboxSearchOpen && (
-                  <div className={`flex items-center gap-2 px-2.5 rounded-sm ${isDark ? 'bg-white/5 border border-white/[0.06]' : 'bg-black/5 border border-black/10'}`}>
+                  <div className="flex items-center gap-2 px-2.5 rounded-sm bg-black/5 border border-black/10 dark:bg-white/5 dark:border-white/[0.06]">
                     <Search size={14} className="opacity-30 shrink-0" />
                     <input
                       autoFocus
@@ -1883,7 +1889,7 @@ const Chat = () => {
                       onChange={(e) => setInboxSearch(e.target.value)}
                       placeholder="Search..."
                       aria-label="Search conversations"
-                      className={`w-full py-2 text-base font-mono bg-transparent outline-none ${isDark ? 'text-white placeholder-white/25' : 'text-black placeholder-black/25'}`}
+                      className="w-full py-2 text-base font-mono bg-transparent outline-none text-black placeholder-black/25 dark:text-white dark:placeholder-white/25"
                     />
                     {inboxSearch && (
                       <button aria-label="Clear search" onClick={() => { setInboxSearch(''); setInboxSearchOpen(false); }} className="opacity-40 hover:opacity-80 outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]">
@@ -1926,7 +1932,7 @@ const Chat = () => {
                     <button
                       key={user}
                       onClick={() => { openDmTab(user); setShowInbox(false); }}
-                      className={`w-full text-left px-3 py-2.5 border-b border-inherit last:border-b-0 transition-colors ${isDark ? 'hover:bg-white/5 active:bg-white/10' : 'hover:bg-black/5 active:bg-black/10'}`}
+                      className="w-full text-left px-3 py-2.5 border-b border-inherit last:border-b-0 transition-colors hover:bg-black/5 active:bg-black/10 dark:hover:bg-white/5 dark:active:bg-white/10"
                     >
                       <div className="flex items-center gap-2.5">
                         <span className="relative shrink-0">
@@ -1936,9 +1942,9 @@ const Chat = () => {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between gap-2">
                             <span className={`font-medium text-xs ${getTierTextColor(getUserTier(user))}`}>{displayWallet(user)}</span>
-                            <span className={`text-[10px] shrink-0 ${msg.unread ? (isDark ? 'text-white/60' : 'text-black/60') : 'opacity-40'}`}>{timeAgo(msg.timestamp)}</span>
+                            <span className={`text-[10px] shrink-0 ${msg.unread ? 'text-black/60 dark:text-white/60' : 'opacity-40'}`}>{timeAgo(msg.timestamp)}</span>
                           </div>
-                          <div className={`text-[11px] truncate mt-0.5 ${msg.unread ? (isDark ? 'text-white/70 font-medium' : 'text-black/70 font-medium') : 'opacity-40'}`}>{msg.message}</div>
+                          <div className={`text-[11px] truncate mt-0.5 ${msg.unread ? 'text-black/70 font-medium dark:text-white/70' : 'opacity-40'}`}>{msg.message}</div>
                         </div>
                         {msg.unread && <span className="w-2 h-2 rounded-full bg-[#650CD4] shrink-0" />}
                       </div>
@@ -1949,7 +1955,7 @@ const Chat = () => {
                     <>
                       {unread.length > 0 && (
                         <>
-                          <div className={`sticky top-0 z-10 px-3 py-1.5 text-[9px] uppercase tracking-widest font-mono font-medium ${isDark ? 'text-[#650CD4] bg-black border-b border-[#650CD4]/10' : 'text-[#650CD4] bg-white border-b border-black/[0.04]'}`}>
+                          <div className="sticky top-0 z-10 px-3 py-1.5 text-[9px] uppercase tracking-widest font-mono font-medium text-[#650CD4] bg-white border-b border-black/[0.04] dark:bg-black dark:border-b dark:border-[#650CD4]/10">
                             Unread ({unread.length})
                           </div>
                           {unread.map(renderConvo)}
@@ -1958,7 +1964,7 @@ const Chat = () => {
                       {read.length > 0 && (
                         <>
                           {unread.length > 0 && (
-                            <div className={`sticky top-0 z-10 px-3 py-1.5 text-[9px] uppercase tracking-widest font-mono font-medium ${isDark ? 'text-white/30 bg-black border-b border-white/[0.04]' : 'text-black/30 bg-white border-b border-black/[0.04]'}`}>
+                            <div className="sticky top-0 z-10 px-3 py-1.5 text-[9px] uppercase tracking-widest font-mono font-medium text-black/30 bg-white border-b border-black/[0.04] dark:text-white/30 dark:bg-black dark:border-white/[0.04]">
                               Earlier
                             </div>
                           )}
@@ -1983,7 +1989,7 @@ const Chat = () => {
                     <div className="relative flex gap-0.5 px-1 py-1 border-b border-inherit overflow-x-auto scrollbar-hide overscroll-x-contain touch-pan-x shrink-0" ref={tabBarRef}>
                       <button
                         onClick={() => { setActiveTab('general'); setPrivateTo(''); setShowInbox(false); setShowSupport(false); }}
-                        className={`px-2 py-0.5 text-[9px] font-mono uppercase tracking-wider rounded-sm shrink-0 font-medium transition-all active:scale-95 ${activeTab === 'general' ? (isDark ? 'bg-white/15 text-white' : 'bg-black/15 text-black') : isDark ? 'bg-white/5 hover:bg-white/10 active:bg-white/15' : 'bg-black/5 hover:bg-black/10 active:bg-black/15'}`}
+                        className={`px-2 py-0.5 text-[9px] font-mono uppercase tracking-wider rounded-sm shrink-0 font-medium transition-all active:scale-95 ${activeTab === 'general' ? 'bg-black/15 text-black dark:bg-white/15 dark:text-white' : 'bg-black/5 hover:bg-black/10 active:bg-black/15 dark:bg-white/5 dark:hover:bg-white/10 dark:active:bg-white/15'}`}
                       >
                         General
                       </button>
@@ -2000,7 +2006,7 @@ const Chat = () => {
                           data-tab={user}
                           onClick={() => openDmTab(user)}
                           title={user}
-                          className={`group/tab px-1.5 py-0.5 text-[9px] font-mono tracking-wider rounded-sm shrink-0 flex items-center gap-1 font-medium transition-all active:scale-95 ${activeTab === user ? (isDark ? 'bg-white/15 text-white' : 'bg-black/15 text-black') : hasUnread ? 'bg-[#F6AF01]/10 hover:bg-[#F6AF01]/20 active:bg-[#F6AF01]/30' : isDark ? 'bg-white/5 hover:bg-white/10 active:bg-white/15' : 'bg-black/5 hover:bg-black/10 active:bg-black/15'}`}
+                          className={`group/tab px-1.5 py-0.5 text-[9px] font-mono tracking-wider rounded-sm shrink-0 flex items-center gap-1 font-medium transition-all active:scale-95 ${activeTab === user ? 'bg-black/15 text-black dark:bg-white/15 dark:text-white' : hasUnread ? 'bg-[#F6AF01]/10 hover:bg-[#F6AF01]/20 active:bg-[#F6AF01]/30' : 'bg-black/5 hover:bg-black/10 active:bg-black/15 dark:bg-white/5 dark:hover:bg-white/10 dark:active:bg-white/15'}`}
                         >
                           <span className="relative">
                             <DmAvatar wallet={user} size="sm" />
@@ -2012,7 +2018,7 @@ const Chat = () => {
                         );
                       })}
                     </div>
-                    <div className="relative h-[400px] max-sm:!h-0 max-sm:flex-1 max-sm:min-h-0" style={isDark ? { backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(255,255,255,0.02) 39px, rgba(255,255,255,0.02) 40px)', backgroundSize: '100% 40px' } : {}}>
+                    <div className="relative h-[400px] max-sm:!h-0 max-sm:flex-1 max-sm:min-h-0 dark:[background-image:repeating-linear-gradient(0deg,transparent,transparent_39px,rgba(255,255,255,0.02)_39px,rgba(255,255,255,0.02)_40px)] dark:[background-size:100%_40px]">
                     <div role="log" aria-live="polite" className="h-full overflow-y-auto overflow-x-hidden scrollbar-hide px-2 py-1 max-sm:px-1.5 scroll-smooth overscroll-contain" onScroll={handleMessagesScroll}>
                       {filtered.length === 0 && (
                         <div className="h-full flex flex-col items-center justify-center opacity-25 text-sm gap-2">
@@ -2030,29 +2036,29 @@ const Chat = () => {
                           : displayName;
 
                         return (
-                          <div key={msg._id || i} className={`group/msg flex items-baseline gap-1 py-0.5 px-1 -mx-1 rounded-sm text-[12px] max-sm:text-[11px] leading-relaxed transition-all overflow-hidden ${msg._deleting ? 'opacity-0 max-h-0 py-0 -my-0.5 scale-95' : 'opacity-100 max-h-40'} duration-300 ${isDark ? 'hover:bg-white/[0.03]' : 'hover:bg-black/[0.03]'}`}>
-                            <span className={`text-[10px] font-mono shrink-0 tabular-nums w-[44px] text-right whitespace-nowrap ${isDark ? 'text-white/20' : 'text-black/20'}`}>
+                          <div key={msg._id || i} className={`group/msg flex items-baseline gap-1 py-0.5 px-1 -mx-1 rounded-sm text-[12px] max-sm:text-[11px] leading-relaxed transition-all overflow-hidden ${msg._deleting ? 'opacity-0 max-h-0 py-0 -my-0.5 scale-95' : 'opacity-100 max-h-40'} duration-300 hover:bg-black/[0.03] dark:hover:bg-white/[0.03]`}>
+                            <span className="text-[10px] font-mono shrink-0 tabular-nums w-[44px] text-right whitespace-nowrap text-black/20 dark:text-white/20">
                               {timeAgo(msg.timestamp)}
                             </span>
                             <ChatAvatar wallet={msgWallet} />
                             <span className="relative group shrink-0">
                               <button
                                 onClick={() => { if (!isOwn) openDmTab(msgWallet); }}
-                                className={`font-semibold hover:underline ${isOwn ? (isDark ? 'text-white/60' : 'text-black/60') : msg.tier && msg.tier.toLowerCase() !== 'member' ? getTierTextColor(msg.tier) : activeTab !== 'general' ? 'text-[#650CD4]' : 'text-[#08AA09]'}`}
+                                className={`font-semibold hover:underline ${isOwn ? 'text-black/60 dark:text-white/60' : msg.tier && msg.tier.toLowerCase() !== 'member' ? getTierTextColor(msg.tier) : activeTab !== 'general' ? 'text-[#650CD4]' : 'text-[#08AA09]'}`}
                               >
                                 {isOwn ? <span className="font-mono">You</span> : shortName}:
                               </button>
                               {!isOwn && (
                                 <div className="absolute bottom-full left-0 mb-2 hidden group-hover:block z-50">
-                                  <div className={`px-3 py-2.5 rounded-sm border-[1px] text-[11px] whitespace-nowrap ${isDark ? 'bg-black border-white/[0.06]' : 'bg-white border-black/[0.06]'}`}>
-                                    <div className={`font-mono text-xs mb-1.5 ${isDark ? 'text-white' : 'text-black'}`}>{msgWallet}</div>
-                                    <div className={`flex gap-3 font-mono text-[10px] uppercase tracking-wider ${isDark ? 'text-white/40' : 'text-black/40'}`}>
-                                      {msg.tier && <span>Tier <span className={isDark ? 'text-white/70' : 'text-black/70'}>{msg.tier}</span></span>}
-                                      {msg.platform && <span>Platform <span className={isDark ? 'text-white/70' : 'text-black/70'}>{msg.platform}</span></span>}
+                                  <div className="px-3 py-2.5 rounded-sm border-[1px] text-[11px] whitespace-nowrap bg-white border-black/[0.06] dark:bg-black dark:border-white/[0.06]">
+                                    <div className="font-mono text-xs mb-1.5 text-black dark:text-white">{msgWallet}</div>
+                                    <div className="flex gap-3 font-mono text-[10px] uppercase tracking-wider text-black/40 dark:text-white/40">
+                                      {msg.tier && <span>Tier <span className="text-black/70 dark:text-white/70">{msg.tier}</span></span>}
+                                      {msg.platform && <span>Platform <span className="text-black/70 dark:text-white/70">{msg.platform}</span></span>}
                                     </div>
-                                    <div className={`mt-2 text-[10px] font-mono font-medium tracking-wider ${isDark ? 'text-white/40' : 'text-black/40'}`}>CLICK TO DM</div>
+                                    <div className="mt-2 text-[10px] font-mono font-medium tracking-wider text-black/40 dark:text-white/40">CLICK TO DM</div>
                                     {(canMute(msg.tier) || canBan()) && (
-                                      <div className={`flex gap-2 mt-2 pt-2 border-t ${isDark ? 'border-white/[0.06]' : 'border-black/[0.08]'}`}>
+                                      <div className="flex gap-2 mt-2 pt-2 border-t border-black/[0.08] dark:border-white/[0.06]">
                                         {canMute(msg.tier) && (
                                           <button
                                             onClick={(e) => { e.stopPropagation(); muteUser(msgWallet, 30); }}
@@ -2079,8 +2085,8 @@ const Chat = () => {
                             {isOwn && (msg.isPrivate || msg.type === 'private') && (
                               msg.readAt ? (
                                 <div className="relative group/read shrink-0 ml-1">
-                                  <CheckCheck size={12} className={isDark ? 'text-white/50' : 'text-black/50'} />
-                                  <div className={`absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden group-hover/read:block z-50 px-2 py-1 rounded-sm text-[10px] font-mono whitespace-nowrap ${isDark ? 'bg-black border border-white/[0.06] text-white/80' : 'bg-white border border-black/10 text-black/80'}`}>
+                                  <CheckCheck size={12} className="text-black/50 dark:text-white/50" />
+                                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden group-hover/read:block z-50 px-2 py-1 rounded-sm text-[10px] font-mono whitespace-nowrap bg-white border border-black/10 text-black/80 dark:bg-black dark:border-white/[0.06] dark:text-white/80">
                                     Read {timeAgo(msg.readAt)}
                                   </div>
                                 </div>
@@ -2089,7 +2095,7 @@ const Chat = () => {
                             {isOwn && msg._id && (
                               pendingDeleteId === msg._id ? (
                                 <span className="flex items-center gap-1.5 shrink-0 ml-1 text-[10px] animate-in fade-in">
-                                  <button onClick={(e) => { e.stopPropagation(); setPendingDeleteId(null); }} className={`hover:underline font-medium ${isDark ? 'text-white/50' : 'text-black/50'}`}>Cancel</button>
+                                  <button onClick={(e) => { e.stopPropagation(); setPendingDeleteId(null); }} className="hover:underline font-medium text-black/50 dark:text-white/50">Cancel</button>
                                   <button onClick={(e) => { e.stopPropagation(); setPendingDeleteId(null); if (wsRef.current?.readyState === WebSocket.OPEN) { wsRef.current.send(JSON.stringify({ type: 'delete', messageId: msg._id })); } else { setToast({ text: 'Cannot delete — connection lost', at: Date.now() }); } }} className="text-red-400 hover:underline font-medium flex items-center gap-0.5"><Trash2 size={9} />Delete</button>
                                 </span>
                               ) : (
@@ -2108,7 +2114,7 @@ const Chat = () => {
                       <div ref={messagesEndRef} />
                     </div>
                     {showScrollBtn && (
-                      <button onClick={scrollToBottom} className={`absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1 px-3 py-1.5 rounded-sm text-[10px] font-mono font-semibold uppercase tracking-wider active:scale-95 transition-all z-10 backdrop-blur-sm outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] ${isDark ? 'bg-white/15 text-white hover:bg-white/20' : 'bg-black/10 text-black hover:bg-black/15'}`}>
+                      <button onClick={scrollToBottom} className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1 px-3 py-1.5 rounded-sm text-[10px] font-mono font-semibold uppercase tracking-wider active:scale-95 transition-all z-10 backdrop-blur-sm outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] bg-black/10 text-black hover:bg-black/15 dark:bg-white/15 dark:text-white dark:hover:bg-white/20">
                         <ChevronDown size={12} />
                         {newMsgCount > 0 ? `${newMsgCount} NEW` : 'LATEST'}
                       </button>
@@ -2132,9 +2138,9 @@ const Chat = () => {
                 const names = typers.map(([w]) => getUserName(w) || `${w.slice(0, 6)}...`);
                 const label = names.length === 1 ? `${names[0]} is typing` : names.length <= 3 ? `${names.join(', ')} are typing` : `${names.length} people typing`;
                 return (
-                  <div className={`px-3 py-1 text-[10px] font-mono tracking-wider border-t border-inherit ${isDark ? 'text-white/30' : 'text-black/30'}`}>
+                  <div className="px-3 py-1 text-[10px] font-mono tracking-wider border-t border-inherit text-black/30 dark:text-white/30">
                     <span className="inline-flex items-center gap-1.5">
-                      <span className={`animate-pulse ${isDark ? 'text-white/40' : 'text-black/40'}`}>_</span>
+                      <span className="animate-pulse text-black/40 dark:text-white/40">_</span>
                       {label}
                     </span>
                   </div>
@@ -2142,7 +2148,7 @@ const Chat = () => {
               })()}
               <div className="px-2 py-2 max-sm:px-3 max-sm:py-3 max-sm:pb-[calc(24px+env(safe-area-inset-bottom))] border-t border-inherit shrink-0">
                 {!authUser?.wallet ? (
-                  <div className={`flex items-center justify-center gap-2 py-3 text-xs font-mono uppercase tracking-wider rounded-sm ${isDark ? 'text-white/40 bg-white/[0.02] border border-white/[0.06]' : 'text-black/40 bg-black/[0.02] border border-black/10'}`}>
+                  <div className="flex items-center justify-center gap-2 py-3 text-xs font-mono uppercase tracking-wider rounded-sm text-black/40 bg-black/[0.02] border border-black/10 dark:text-white/40 dark:bg-white/[0.02] dark:border-white/[0.06]">
                     <Send size={14} />
                     <span>Connect wallet to chat</span>
                   </div>
@@ -2151,7 +2157,7 @@ const Chat = () => {
                     {(attachedNft || attachedToken) && (
                       <div className="flex items-center gap-2 mb-2 flex-wrap">
                         {attachedToken && (
-                          <div className={`flex items-center gap-1.5 px-2 py-1.5 rounded-sm ${isDark ? 'bg-white/5 border border-white/[0.06]' : 'bg-black/5 border border-black/[0.06]'}`}>
+                          <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-sm bg-black/5 border border-black/[0.06] dark:bg-white/5 dark:border-white/[0.06]">
                             <AttachedTokenPreview md5={attachedToken} />
                             <button aria-label="Remove attachment" onClick={() => setAttachedToken(null)} className="p-1 hover:bg-white/10 active:bg-white/20 rounded text-white/40 hover:text-white outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]">
                               <X size={14} />
@@ -2222,13 +2228,13 @@ const Chat = () => {
                             sendMessage();
                           }
                         }}
-                        className={`flex-1 px-3 py-2.5 max-sm:py-3.5 rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] text-sm max-sm:text-base transition-all ${isDark ? 'bg-white/5 text-white placeholder-white/25 font-mono placeholder:font-mono focus:bg-white/[0.07] focus:ring-1 focus:ring-white/10 border border-transparent focus:border-white/[0.06]' : 'bg-black/5 text-black placeholder-black/25 font-mono placeholder:font-mono focus:bg-black/[0.07] focus:ring-1 focus:ring-black/10 border border-transparent focus:border-black/[0.06]'}`}
+                        className="flex-1 px-3 py-2.5 max-sm:py-3.5 rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] text-sm max-sm:text-base transition-all bg-black/5 text-black placeholder-black/25 font-mono placeholder:font-mono focus:bg-black/[0.07] focus:ring-1 focus:ring-black/10 border border-transparent focus:border-black/[0.06] dark:bg-white/5 dark:text-white dark:placeholder-white/25 dark:focus:bg-white/[0.07] dark:focus:ring-white/10 dark:focus:border-white/[0.06]"
                       />
                       <button
                         aria-label="Send message"
                         onClick={sendMessage}
                         disabled={!input && !attachedNft && !attachedToken}
-                        className={`px-3 py-2.5 max-sm:px-3.5 max-sm:py-3.5 rounded-sm transition-all duration-200 shrink-0 flex items-center justify-center outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] ${(input || attachedNft || attachedToken) ? (isDark ? 'bg-white/15 text-white hover:bg-white/20 active:scale-90' : 'bg-black/10 text-black hover:bg-black/15 active:scale-90') : isDark ? 'bg-white/5 text-white/20 cursor-not-allowed' : 'bg-black/5 text-black/20 cursor-not-allowed'}`}
+                        className={`px-3 py-2.5 max-sm:px-3.5 max-sm:py-3.5 rounded-sm transition-all duration-200 shrink-0 flex items-center justify-center outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] ${(input || attachedNft || attachedToken) ? 'bg-black/10 text-black hover:bg-black/15 active:scale-90 dark:bg-white/15 dark:text-white dark:hover:bg-white/20' : 'bg-black/5 text-black/20 cursor-not-allowed dark:bg-white/5 dark:text-white/20'}`}
                       >
                         <Send size={16} className={`max-sm:w-5 max-sm:h-5 transition-transform duration-200 ${(input || attachedNft || attachedToken) ? '-rotate-45 translate-x-[1px] -translate-y-[1px]' : ''}`} />
                       </button>

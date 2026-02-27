@@ -82,11 +82,11 @@ const BridgeStatusPage = () => {
       <div
         className={cn(
           'min-h-screen flex items-center justify-center',
-          isDark ? 'bg-black' : 'bg-gray-50'
+          'bg-gray-50 dark:bg-black'
         )}
       >
         <div
-          className={cn('text-[13px]', isDark ? 'text-[rgba(255,255,255,0.5)]' : 'text-gray-500')}
+          className={cn('text-[13px]', 'text-gray-500 dark:text-[rgba(255,255,255,0.5)]')}
         >
           Loading...
         </div>
@@ -102,14 +102,14 @@ const BridgeStatusPage = () => {
   return (
     <>
       <Header />
-      <div className={cn('min-h-screen py-12 px-4', isDark ? 'bg-black' : 'bg-gray-50')}>
+      <div className={cn('min-h-screen py-12 px-4', 'bg-gray-50 dark:bg-black')}>
         <div className="max-w-md mx-auto">
           {/* Header */}
           <div className="text-center mb-6">
             <h1
               className={cn(
                 'text-[20px] font-normal mb-1',
-                isDark ? 'text-white' : 'text-gray-900'
+                'text-gray-900 dark:text-white'
               )}
             >
               Bridge Status
@@ -117,7 +117,7 @@ const BridgeStatusPage = () => {
             <p
               className={cn(
                 'text-[12px]',
-                isDark ? 'text-[rgba(255,255,255,0.4)]' : 'text-gray-400'
+                'text-gray-400 dark:text-[rgba(255,255,255,0.4)]'
               )}
             >
               ID: {id}
@@ -128,16 +128,14 @@ const BridgeStatusPage = () => {
             <div
               className={cn(
                 'rounded-[12px] border p-6 text-center',
-                isDark
-                  ? 'border-[rgba(255,255,255,0.1)] bg-[rgba(255,255,255,0.02)]'
-                  : 'border-gray-200 bg-white'
+                'border-gray-200 bg-white dark:border-[rgba(255,255,255,0.1)] dark:bg-[rgba(255,255,255,0.02)]'
               )}
             >
               <p className="text-[#f44336] text-[13px] mb-4">{error}</p>
               <p
                 className={cn(
                   'text-[11px]',
-                  isDark ? 'text-[rgba(255,255,255,0.4)]' : 'text-gray-400'
+                  'text-gray-400 dark:text-[rgba(255,255,255,0.4)]'
                 )}
               >
                 This exchange ID may be invalid or expired.
@@ -149,16 +147,14 @@ const BridgeStatusPage = () => {
               <div
                 className={cn(
                   'rounded-[12px] border p-5 mb-4',
-                  isDark
-                    ? 'border-[rgba(255,255,255,0.1)] bg-[rgba(255,255,255,0.02)]'
-                    : 'border-gray-200 bg-white'
+                  'border-gray-200 bg-white dark:border-[rgba(255,255,255,0.1)] dark:bg-[rgba(255,255,255,0.02)]'
                 )}
               >
                 <div className="flex items-center justify-between mb-4">
                   <span
                     className={cn(
                       'text-[10px] uppercase tracking-wide',
-                      isDark ? 'text-[rgba(255,255,255,0.4)]' : 'text-gray-400'
+                      'text-gray-400 dark:text-[rgba(255,255,255,0.4)]'
                     )}
                   >
                     Progress
@@ -167,12 +163,12 @@ const BridgeStatusPage = () => {
                     onClick={fetchStatus}
                     className={cn(
                       'p-1.5 rounded transition-colors',
-                      isDark ? 'hover:bg-[rgba(255,255,255,0.05)]' : 'hover:bg-gray-100'
+                      'hover:bg-gray-100 dark:hover:bg-[rgba(255,255,255,0.05)]'
                     )}
                   >
                     <RefreshCw
                       size={14}
-                      className={isDark ? 'text-[rgba(255,255,255,0.4)]' : 'text-gray-400'}
+                      className={'text-gray-400 dark:text-[rgba(255,255,255,0.4)]'}
                     />
                   </button>
                 </div>
@@ -199,9 +195,7 @@ const BridgeStatusPage = () => {
                               ? 'bg-[rgba(244,67,54,0.15)] text-[#f44336]'
                               : isActive
                                 ? 'bg-[rgba(34,197,94,0.15)] text-[#22c55e]'
-                                : isDark
-                                  ? 'bg-[rgba(255,255,255,0.05)] text-[rgba(255,255,255,0.3)]'
-                                  : 'bg-gray-100 text-gray-400'
+                                : 'bg-gray-100 text-gray-400 dark:bg-[rgba(255,255,255,0.05)] dark:text-[rgba(255,255,255,0.3)]'
                           )}
                         >
                           {isActive && !isFailed ? <Check size={14} /> : idx + 1}
@@ -210,14 +204,10 @@ const BridgeStatusPage = () => {
                           className={cn(
                             'text-[9px]',
                             isCurrent
-                              ? isDark
-                                ? 'text-white'
-                                : 'text-gray-900'
+                              ? 'text-gray-900 dark:text-white'
                               : isActive
                                 ? 'text-[#22c55e]'
-                                : isDark
-                                  ? 'text-[rgba(255,255,255,0.3)]'
-                                  : 'text-gray-400'
+                                : 'text-gray-400 dark:text-[rgba(255,255,255,0.3)]'
                           )}
                         >
                           {step.label}
@@ -233,7 +223,7 @@ const BridgeStatusPage = () => {
                     <p
                       className={cn(
                         'text-[12px]',
-                        isDark ? 'text-[rgba(255,255,255,0.6)]' : 'text-gray-600'
+                        'text-gray-600 dark:text-[rgba(255,255,255,0.6)]'
                       )}
                     >
                       Waiting for deposit. Expires {new Date(txStatus.validUntil).toLocaleString()}
@@ -245,7 +235,7 @@ const BridgeStatusPage = () => {
                     <p
                       className={cn(
                         'text-[12px]',
-                        isDark ? 'text-[rgba(255,255,255,0.6)]' : 'text-gray-600'
+                        'text-gray-600 dark:text-[rgba(255,255,255,0.6)]'
                       )}
                     >
                       Send funds to the deposit address to start the exchange
@@ -287,15 +277,13 @@ const BridgeStatusPage = () => {
                 <div
                   className={cn(
                     'rounded-[12px] border p-5',
-                    isDark
-                      ? 'border-[rgba(255,255,255,0.1)] bg-[rgba(255,255,255,0.02)]'
-                      : 'border-gray-200 bg-white'
+                    'border-gray-200 bg-white dark:border-[rgba(255,255,255,0.1)] dark:bg-[rgba(255,255,255,0.02)]'
                   )}
                 >
                   <p
                     className={cn(
                       'text-[10px] uppercase tracking-wide mb-3',
-                      isDark ? 'text-[rgba(255,255,255,0.4)]' : 'text-gray-400'
+                      'text-gray-400 dark:text-[rgba(255,255,255,0.4)]'
                     )}
                   >
                     Details
@@ -307,7 +295,7 @@ const BridgeStatusPage = () => {
                       <span
                         className={cn(
                           'text-[12px]',
-                          isDark ? 'text-[rgba(255,255,255,0.6)]' : 'text-gray-600'
+                          'text-gray-600 dark:text-[rgba(255,255,255,0.6)]'
                         )}
                       >
                         Exchange
@@ -315,7 +303,7 @@ const BridgeStatusPage = () => {
                       <span
                         className={cn(
                           'text-[12px] font-medium',
-                          isDark ? 'text-white' : 'text-gray-900'
+                          'text-gray-900 dark:text-white'
                         )}
                       >
                         {txStatus?.amountFrom || txStatus?.expectedAmountFrom || '?'}{' '}
@@ -331,7 +319,7 @@ const BridgeStatusPage = () => {
                         <p
                           className={cn(
                             'text-[10px] mb-1',
-                            isDark ? 'text-[rgba(255,255,255,0.4)]' : 'text-gray-400'
+                            'text-gray-400 dark:text-[rgba(255,255,255,0.4)]'
                           )}
                         >
                           Deposit Address
@@ -339,15 +327,13 @@ const BridgeStatusPage = () => {
                         <div
                           className={cn(
                             'flex items-center justify-between rounded-[8px] border px-3 py-2',
-                            isDark
-                              ? 'border-[rgba(255,255,255,0.08)] bg-[rgba(0,0,0,0.2)]'
-                              : 'border-gray-100 bg-gray-50'
+                            'border-gray-100 bg-gray-50 dark:border-[rgba(255,255,255,0.08)] dark:bg-[rgba(0,0,0,0.2)]'
                           )}
                         >
                           <span
                             className={cn(
                               'font-mono text-[10px] truncate mr-2',
-                              isDark ? 'text-[rgba(255,255,255,0.7)]' : 'text-gray-700'
+                              'text-gray-700 dark:text-[rgba(255,255,255,0.7)]'
                             )}
                           >
                             {txStatus.payinAddress}
@@ -356,7 +342,7 @@ const BridgeStatusPage = () => {
                             onClick={() => copyToClipboard(txStatus.payinAddress)}
                             className={cn(
                               'flex-shrink-0 p-1 rounded',
-                              isDark ? 'hover:bg-[rgba(255,255,255,0.05)]' : 'hover:bg-gray-100'
+                              'hover:bg-gray-100 dark:hover:bg-[rgba(255,255,255,0.05)]'
                             )}
                           >
                             {copied ? (
@@ -365,7 +351,7 @@ const BridgeStatusPage = () => {
                               <Copy
                                 size={12}
                                 className={
-                                  isDark ? 'text-[rgba(255,255,255,0.4)]' : 'text-gray-400'
+                                  'text-gray-400 dark:text-[rgba(255,255,255,0.4)]'
                                 }
                               />
                             )}
@@ -380,7 +366,7 @@ const BridgeStatusPage = () => {
                         <span
                           className={cn(
                             'text-[10px]',
-                            isDark ? 'text-[rgba(255,255,255,0.4)]' : 'text-gray-400'
+                            'text-gray-400 dark:text-[rgba(255,255,255,0.4)]'
                           )}
                         >
                           XRP Destination
@@ -388,7 +374,7 @@ const BridgeStatusPage = () => {
                         <span
                           className={cn(
                             'font-mono text-[10px]',
-                            isDark ? 'text-[rgba(255,255,255,0.7)]' : 'text-gray-700'
+                            'text-gray-700 dark:text-[rgba(255,255,255,0.7)]'
                           )}
                         >
                           {txStatus.payoutAddress.slice(0, 8)}...{txStatus.payoutAddress.slice(-6)}
@@ -402,7 +388,7 @@ const BridgeStatusPage = () => {
                         <span
                           className={cn(
                             'text-[10px]',
-                            isDark ? 'text-[rgba(255,255,255,0.4)]' : 'text-gray-400'
+                            'text-gray-400 dark:text-[rgba(255,255,255,0.4)]'
                           )}
                         >
                           Deposit TX
@@ -410,7 +396,7 @@ const BridgeStatusPage = () => {
                         <span
                           className={cn(
                             'font-mono text-[10px]',
-                            isDark ? 'text-[rgba(255,255,255,0.7)]' : 'text-gray-700'
+                            'text-gray-700 dark:text-[rgba(255,255,255,0.7)]'
                           )}
                         >
                           {txStatus.payinHash.slice(0, 12)}...
@@ -424,7 +410,7 @@ const BridgeStatusPage = () => {
                         <span
                           className={cn(
                             'text-[10px]',
-                            isDark ? 'text-[rgba(255,255,255,0.4)]' : 'text-gray-400'
+                            'text-gray-400 dark:text-[rgba(255,255,255,0.4)]'
                           )}
                         >
                           XRP TX
@@ -447,7 +433,7 @@ const BridgeStatusPage = () => {
                         <span
                           className={cn(
                             'text-[10px]',
-                            isDark ? 'text-[rgba(255,255,255,0.4)]' : 'text-gray-400'
+                            'text-gray-400 dark:text-[rgba(255,255,255,0.4)]'
                           )}
                         >
                           Created
@@ -455,7 +441,7 @@ const BridgeStatusPage = () => {
                         <span
                           className={cn(
                             'text-[10px]',
-                            isDark ? 'text-[rgba(255,255,255,0.6)]' : 'text-gray-600'
+                            'text-gray-600 dark:text-[rgba(255,255,255,0.6)]'
                           )}
                         >
                           {new Date(txStatus.createdAt).toLocaleString()}
@@ -469,7 +455,7 @@ const BridgeStatusPage = () => {
                         <span
                           className={cn(
                             'text-[10px]',
-                            isDark ? 'text-[rgba(255,255,255,0.4)]' : 'text-gray-400'
+                            'text-gray-400 dark:text-[rgba(255,255,255,0.4)]'
                           )}
                         >
                           Updated
@@ -477,7 +463,7 @@ const BridgeStatusPage = () => {
                         <span
                           className={cn(
                             'text-[10px]',
-                            isDark ? 'text-[rgba(255,255,255,0.6)]' : 'text-gray-600'
+                            'text-gray-600 dark:text-[rgba(255,255,255,0.6)]'
                           )}
                         >
                           {new Date(txStatus.updatedAt).toLocaleString()}
@@ -491,7 +477,7 @@ const BridgeStatusPage = () => {
                         <span
                           className={cn(
                             'text-[10px]',
-                            isDark ? 'text-[rgba(255,255,255,0.4)]' : 'text-gray-400'
+                            'text-gray-400 dark:text-[rgba(255,255,255,0.4)]'
                           )}
                         >
                           Deposit Received
@@ -499,7 +485,7 @@ const BridgeStatusPage = () => {
                         <span
                           className={cn(
                             'text-[10px]',
-                            isDark ? 'text-[rgba(255,255,255,0.6)]' : 'text-gray-600'
+                            'text-gray-600 dark:text-[rgba(255,255,255,0.6)]'
                           )}
                         >
                           {new Date(txStatus.depositReceivedAt).toLocaleString()}
