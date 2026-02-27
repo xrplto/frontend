@@ -2881,8 +2881,6 @@ export default function CollectionView({ collection }) {
   const isAdmin = accountProfile?.admin;
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 960;
 
-  const [openInfo, setOpenInfo] = useState(false);
-  const [openFees, setOpenFees] = useState(false);
   const [value, setValue] = useState('tab-nfts');
   const [showVerifyModal, setShowVerifyModal] = useState(false);
   const [currentVerified, setCurrentVerified] = useState(null);
@@ -2894,8 +2892,6 @@ export default function CollectionView({ collection }) {
     const saved = localStorage.getItem('nft_show_chart');
     if (saved === 'false') setShowChart(false);
   }, []);
-  const infoDropdownRef = useRef(null);
-  const feesDropdownRef = useRef(null);
 
   const BASE_URL = 'https://api.xrpl.to/v1';
 
@@ -2943,12 +2939,6 @@ export default function CollectionView({ collection }) {
 
   useEffect(() => {
     const handleClickOutside = (e) => {
-      if (infoDropdownRef.current && !infoDropdownRef.current.contains(e.target)) {
-        setOpenInfo(false);
-      }
-      if (feesDropdownRef.current && !feesDropdownRef.current.contains(e.target)) {
-        setOpenFees(false);
-      }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
@@ -3292,146 +3282,6 @@ export default function CollectionView({ collection }) {
               </button>
             )}
             <ApiButton />
-            {/* Info */}
-            <div className="relative flex-shrink-0" ref={infoDropdownRef}>
-              <button
-                onClick={() => setOpenInfo(!openInfo)}
-                className={cn(
-                  'px-2 sm:px-3 py-1.5 rounded-lg text-[11px] sm:text-[12px] font-medium transition-[background-color] whitespace-nowrap',
-                  'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-white/5 dark:text-white/70 dark:hover:bg-white/10'
-                )}
-              >
-                Info
-              </button>
-              {openInfo && (
-                <div
-                  className={cn(
-                    'absolute top-full right-0 mt-2 p-3 rounded-2xl border z-50 w-[280px]',
-                    'bg-white/98 backdrop-blur-2xl border-gray-200 shadow-[0_8px_32px_rgba(0,0,0,0.08)] dark:bg-black/90 dark:backdrop-blur-2xl dark:border-[#3f96fe]/10 dark:shadow-[0_8px_40px_rgba(0,0,0,0.6)]'
-                  )}
-                >
-                  {descriptionText && (
-                    <p
-                      className={cn('text-[11px] mb-2', 'text-gray-600 dark:text-white/70')}
-                    >
-                      {descriptionText}
-                    </p>
-                  )}
-                  <div className="space-y-1 text-[10px]">
-                    {category && (
-                      <div className="flex justify-between">
-                        <span className={'text-gray-500 dark:text-white/40'}>Category</span>
-                        <span>{category}</span>
-                      </div>
-                    )}
-                    {taxon !== undefined && (
-                      <div className="flex justify-between">
-                        <span className={'text-gray-500 dark:text-white/40'}>Taxon</span>
-                        <span className="font-mono">{taxon}</span>
-                      </div>
-                    )}
-                    <div className="flex justify-between items-center">
-                      <span className={'text-gray-500 dark:text-white/40'}>Issuer</span>
-                      <div className="flex items-center gap-1.5">
-                        <span className="font-mono truncate max-w-[120px]">{account}</span>
-                        <button
-                          onClick={() => window.dispatchEvent(new CustomEvent('openDm', { detail: { user: account } }))}
-                          className={`p-1 rounded hover:bg-white/10 transition-[background-color] outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE] ${'text-gray-400 hover:text-gray-600 dark:text-white/50 dark:hover:text-white'}`}
-                          title="Message issuer"
-                          aria-label="Message issuer"
-                        >
-                          <MessageCircle size={14} />
-                        </button>
-                      </div>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className={'text-gray-500 dark:text-white/40'}>Created</span>
-                      <span>{formatMonthYear(created)}</span>
-                    </div>
-                    {linkedToken && (
-                      <div className="flex justify-between items-center">
-                        <span className={'text-gray-500 dark:text-white/40'}>Token</span>
-                        <div className="flex items-center gap-1.5">
-                          <Link
-                            href={`/token/${linkedToken}`}
-                            className="text-primary hover:underline font-medium"
-                            onClick={() => setOpenInfo(false)}
-                          >
-                            View →
-                          </Link>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-            {/* Fees */}
-            <div className="relative flex-shrink-0" ref={feesDropdownRef}>
-              <button
-                onClick={() => setOpenFees(!openFees)}
-                className={cn(
-                  'px-2 sm:px-3 py-1.5 rounded-lg text-[11px] sm:text-[12px] font-medium transition-[background-color] whitespace-nowrap',
-                  'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-white/5 dark:text-white/70 dark:hover:bg-white/10'
-                )}
-              >
-                Fees
-              </button>
-              {openFees && (
-                <div
-                  className={cn(
-                    'absolute top-full right-0 mt-2 p-3 rounded-2xl border z-50 w-[220px]',
-                    'bg-white/98 backdrop-blur-2xl border-gray-200 shadow-[0_8px_32px_rgba(0,0,0,0.08)] dark:bg-black/90 dark:backdrop-blur-2xl dark:border-[#3f96fe]/10 dark:shadow-[0_8px_40px_rgba(0,0,0,0.6)]'
-                  )}
-                >
-                  <div className="space-y-1.5 text-[11px]">
-                    <div className="flex justify-between items-center">
-                      <span className={'text-gray-500 dark:text-white/50'}>
-                        Royalty Rate
-                      </span>
-                      <span className="text-primary font-semibold">
-                        {royaltyPercent !== null ? `${royaltyPercent}%` : 'N/A'}
-                      </span>
-                    </div>
-                    {totalRoyalties > 0 && (
-                      <div className="flex justify-between items-center">
-                        <span className={'text-gray-500 dark:text-white/50'}>
-                          Royalties Paid
-                        </span>
-                        <span className="text-orange-400 font-semibold">
-                          ✕{totalRoyalties.toLocaleString(undefined, { maximumFractionDigits: 0 })}
-                        </span>
-                      </div>
-                    )}
-                    {totalBrokerFees > 0 && (
-                      <div className="flex justify-between items-center">
-                        <span className={'text-gray-500 dark:text-white/50'}>
-                          Broker Fees
-                        </span>
-                        <span className="text-purple-400 font-semibold">
-                          ✕{totalBrokerFees.toLocaleString(undefined, { maximumFractionDigits: 0 })}
-                        </span>
-                      </div>
-                    )}
-                    {totalFees > 0 && (
-                      <div
-                        className={cn(
-                          'flex justify-between items-center pt-1.5 mt-1.5 border-t',
-                          'border-gray-100 dark:border-white/10'
-                        )}
-                      >
-                        <span className={'text-gray-600 dark:text-white/70'}>
-                          Total Fees
-                        </span>
-                        <span className={cn('font-bold', 'text-gray-900 dark:text-white')}>
-                          ✕{totalFees.toLocaleString(undefined, { maximumFractionDigits: 0 })}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
             {/* Promote */}
             <TweetPromoteModal
               token={{ md5: slug, name, slug, issuer: issuer || '' }}
@@ -3735,7 +3585,99 @@ export default function CollectionView({ collection }) {
               )}
             </div>
           </div>
+
+          {/* Divider - desktop only */}
+          <div className={cn('hidden sm:block w-px h-8 flex-shrink-0', 'bg-gray-200 dark:bg-white/10')} />
+
+          {/* Artist Royalty Rate */}
+          <div className="sm:flex-shrink-0">
+            <div className={cn('text-[10px] uppercase tracking-wide mb-0.5', 'text-gray-500 dark:text-white/60')}>
+              Artist Royalty
+            </div>
+            <span className={cn('text-[13px] sm:text-[15px] font-medium', 'text-primary')}>
+              {royaltyPercent !== null ? `${royaltyPercent}%` : 'N/A'}
+            </span>
+          </div>
+
+          {/* Artist Royalties Paid */}
+          {totalRoyalties > 0 && (
+            <div className="sm:flex-shrink-0">
+              <div className={cn('text-[10px] uppercase tracking-wide mb-0.5', 'text-gray-500 dark:text-white/60')}>
+                Royalties Earned
+              </div>
+              <div className="flex items-baseline gap-1">
+                <span className={cn('text-[13px] sm:text-[15px] font-medium', 'text-orange-500 dark:text-orange-400')}>
+                  {fVolume(totalRoyalties)}
+                </span>
+                <span className={cn('text-[10px] sm:text-[11px]', 'text-gray-500 dark:text-white/60')}>XRP</span>
+              </div>
+            </div>
+          )}
+
+          {/* Broker / Marketplace Fees */}
+          {totalBrokerFees > 0 && (
+            <div className="sm:flex-shrink-0">
+              <div className={cn('text-[10px] uppercase tracking-wide mb-0.5', 'text-gray-500 dark:text-white/60')}>
+                Mkt Fees
+              </div>
+              <div className="flex items-baseline gap-1">
+                <span className={cn('text-[13px] sm:text-[15px] font-medium', 'text-purple-500 dark:text-purple-400')}>
+                  {fVolume(totalBrokerFees)}
+                </span>
+                <span className={cn('text-[10px] sm:text-[11px]', 'text-gray-500 dark:text-white/60')}>XRP</span>
+              </div>
+            </div>
+          )}
+
+          {/* Combined Total */}
+          {totalFees > 0 && (
+            <div className="sm:flex-shrink-0">
+              <div className={cn('text-[10px] uppercase tracking-wide mb-0.5', 'text-gray-500 dark:text-white/60')}>
+                All Fees
+              </div>
+              <div className="flex items-baseline gap-1">
+                <span className={cn('text-[13px] sm:text-[15px] font-medium', 'text-gray-900 dark:text-white')}>
+                  {fVolume(totalFees)}
+                </span>
+                <span className={cn('text-[10px] sm:text-[11px]', 'text-gray-500 dark:text-white/60')}>XRP</span>
+              </div>
+            </div>
+          )}
         </div>
+
+        {/* Collection Info */}
+        {(descriptionText || category || taxon !== undefined) && (
+          <div className={cn('flex items-center gap-3 flex-wrap mt-2 pt-2 border-t text-[11px]', 'border-gray-100 dark:border-white/[0.06]')}>
+            {descriptionText && (
+              <span className={cn('text-gray-500 dark:text-white/50')}>{truncate(descriptionText, 120)}</span>
+            )}
+            {category && (
+              <span className={cn('px-1.5 py-0.5 rounded text-[10px]', 'bg-gray-100 text-gray-500 dark:bg-white/5 dark:text-white/50')}>
+                {category}
+              </span>
+            )}
+            {taxon !== undefined && (
+              <span className={cn('font-mono text-[10px]', 'text-gray-400 dark:text-white/30')}>
+                Taxon: {taxon}
+              </span>
+            )}
+            <span className={cn('font-mono text-[10px] truncate max-w-[180px]', 'text-gray-400 dark:text-white/30')}>
+              Issuer: {account}
+            </span>
+            <button
+              onClick={() => window.dispatchEvent(new CustomEvent('openDm', { detail: { user: account } }))}
+              className={cn('p-0.5 rounded transition-[background-color]', 'text-gray-400 hover:text-gray-600 dark:text-white/40 dark:hover:text-white/70')}
+              title="Message issuer"
+            >
+              <MessageCircle size={12} />
+            </button>
+            {created && (
+              <span className={cn('text-[10px]', 'text-gray-400 dark:text-white/30')}>
+                Created: {formatMonthYear(created)}
+              </span>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Price Chart */}

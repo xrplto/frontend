@@ -210,7 +210,7 @@ const NFTPreviewComponent = memo(function NFTPreviewComponent({ nft, showDetails
       )}
 
       {/* Media */}
-      <div className={cn('relative w-full min-h-[400px]', 'bg-gray-100 dark:bg-gray-900')}>
+      <div className={cn('relative w-full min-h-[280px] sm:min-h-[400px]', 'bg-gray-100 dark:bg-gray-900')}>
         {/* Burned Badge */}
         {nft?.is_burned && (
           <div className="absolute top-2 right-2 z-10 px-2.5 py-1 rounded-lg bg-red-500/90 text-white text-[11px] font-semibold uppercase tracking-wide">
@@ -503,7 +503,7 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
   return (
     <div className="flex flex-col w-full">
       {/* NFT Preview */}
-      <div className="mb-3 w-full">
+      <div className="mb-2 sm:mb-3 w-full">
         <NFTPreviewComponent nft={nft} showDetails={false} />
       </div>
 
@@ -511,43 +511,40 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
       {nft.is_burned && (
         <div
           className={cn(
-            'mb-3 px-4 py-3 rounded-xl border-[1.5px] flex items-center gap-3',
+            'mb-2 sm:mb-3 px-3 py-2 sm:px-4 sm:py-3 rounded-xl border-[1.5px] flex items-center gap-2 sm:gap-3',
             'border-red-200 bg-red-50 dark:border-red-500/30 dark:bg-red-500/10'
           )}
         >
-          <Info size={18} className="text-red-400 shrink-0" />
-          <p className={cn('text-sm font-medium', 'text-red-600 dark:text-red-400')}>
+          <Info size={16} className="text-red-400 shrink-0 sm:w-[18px] sm:h-[18px]" />
+          <p className={cn('text-xs sm:text-sm font-medium', 'text-red-600 dark:text-red-400')}>
             This NFT has been burned and no longer exists on the XRPL.
           </p>
         </div>
       )}
 
-      {/* Title and Collection - Futuristic */}
+      {/* Title and Collection */}
       <div
         className={cn(
-          'mb-4 p-4 rounded-xl border-[1.5px]',
+          'mb-2 sm:mb-4 p-3 sm:p-4 rounded-xl border-[1.5px]',
           'border-gray-200 dark:border-white/[0.08]'
         )}
       >
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex-1 min-w-0">
-            {/* NFT Name */}
+        <div className="flex items-start justify-between gap-2 sm:gap-3">
+          <div className="flex-1 min-w-0 flex items-baseline gap-2 sm:gap-2.5">
             <h1
               className={cn(
-                'text-xl font-semibold tracking-tight mb-1',
+                'text-base sm:text-xl font-semibold tracking-tight truncate shrink',
                 'text-gray-900 dark:text-white'
               )}
             >
               {nft.name || meta?.name || 'Untitled'}
             </h1>
-
-            {/* Collection */}
             {cslug && (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 shrink-0">
                 <Link
                   href={`/nfts/${cslug}`}
                   className={cn(
-                    'text-[13px] font-medium uppercase tracking-wider hover:text-primary',
+                    'text-[10px] sm:text-[12px] font-medium uppercase tracking-wider hover:text-primary whitespace-nowrap',
                     'text-primary/80 dark:text-primary'
                   )}
                 >
@@ -564,15 +561,14 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
           </div>
 
           {/* Action Buttons */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2">
             <ApiButton />
-            {/* Save Button */}
             <button
               onClick={handleSave}
               disabled={saveLoading}
               aria-label={isSaved ? 'Remove from watchlist' : 'Add to watchlist'}
               className={cn(
-                'flex-shrink-0 p-2.5 rounded-lg border-[1.5px] transition-[border-color,background-color]',
+                'flex-shrink-0 h-[26px] w-[26px] sm:h-8 sm:w-8 inline-flex items-center justify-center rounded-lg border-[1.5px] transition-[border-color,background-color]',
                 'outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                 isSaved
                   ? 'border-primary bg-primary/15 text-primary shadow-[0_0_12px_rgba(66,133,244,0.25)]'
@@ -582,9 +578,9 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
               title={isSaved ? 'Remove from watchlist' : 'Add to watchlist'}
             >
               {saveLoading ? (
-                <Loader2 size={18} className="animate-spin" />
+                <Loader2 size={16} className="animate-spin sm:w-[18px] sm:h-[18px]" />
               ) : (
-                <Bookmark size={18} fill={isSaved ? 'currentColor' : 'none'} />
+                <Bookmark size={16} className="sm:w-[18px] sm:h-[18px]" fill={isSaved ? 'currentColor' : 'none'} />
               )}
             </button>
           </div>
@@ -595,19 +591,19 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
       {properties && properties.length > 0 && (
         <div
           className={cn(
-            'p-3 mb-3 rounded-xl border',
+            'p-2.5 sm:p-3 mb-2 sm:mb-3 rounded-xl border',
             'border-gray-200 dark:border-white/[0.08]'
           )}
         >
           <p
             className={cn(
-              'text-[11px] font-medium uppercase tracking-wider mb-2',
+              'text-[10px] sm:text-[11px] font-medium uppercase tracking-wider mb-1.5 sm:mb-2',
               'text-gray-400 dark:text-white/60'
             )}
           >
             Properties
           </p>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+          <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
             {properties.map((item) => {
               const type = item.type || item.trait_type;
               const value = item.value;
@@ -621,29 +617,29 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
                     cslug ? `/nfts/${cslug}?traits=${encodeURIComponent(`${type}:${value}`)}` : '#'
                   }
                   className={cn(
-                    'group p-2.5 text-center rounded-lg border cursor-pointer transition-[border-color,background-color] duration-200 active:scale-[0.97]',
-                    'border-gray-200 bg-gray-50 hover:border-primary/50 hover:bg-primary/5 hover:shadow-[0_0_16px_rgba(66,133,244,0.1)]',
-                    'dark:border-white/[0.08] dark:bg-white/[0.02] dark:hover:border-primary/50 dark:hover:bg-primary/10 dark:hover:shadow-[0_0_16px_rgba(66,133,244,0.15)]'
+                    'group p-1.5 sm:p-2.5 text-center rounded-lg border cursor-pointer transition-[border-color,background-color] duration-200 active:scale-[0.97]',
+                    'border-gray-200 bg-gray-50 hover:border-primary/50 hover:bg-primary/5',
+                    'dark:border-white/[0.08] dark:bg-white/[0.02] dark:hover:border-primary/50 dark:hover:bg-primary/10'
                   )}
                 >
                   <p
                     className={cn(
-                      'text-[10px] uppercase tracking-wide mb-1',
-                      'text-gray-500 group-hover:text-primary dark:text-white/60 dark:group-hover:text-primary'
+                      'text-[9px] sm:text-[10px] uppercase tracking-wide mb-0.5',
+                      'text-gray-500 group-hover:text-primary dark:text-white/60 dark:group-hover:text-primary truncate'
                     )}
                   >
                     {type}
                   </p>
                   <p
                     className={cn(
-                      'text-[13px] font-normal',
-                      'text-gray-900 group-hover:text-primary dark:text-white dark:group-hover:text-primary'
+                      'text-[11px] sm:text-[13px] font-normal',
+                      'text-gray-900 group-hover:text-primary dark:text-white dark:group-hover:text-primary truncate'
                     )}
                   >
                     {value}
                   </p>
                   {total > 0 && count > 0 && (
-                    <p className={cn('text-[11px] mt-1 text-primary group-hover:text-primary')}>
+                    <p className={cn('text-[10px] sm:text-[11px] mt-0.5 text-primary')}>
                       {rarity}%
                     </p>
                   )}
@@ -660,13 +656,13 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
         meta.description !== collectionName && (
           <div
             className={cn(
-              'p-3 mb-3 rounded-xl border',
+              'p-2.5 sm:p-3 mb-2 sm:mb-3 rounded-xl border',
               'border-gray-200 dark:border-white/[0.08]'
             )}
           >
             <p
               className={cn(
-                'text-[11px] font-medium uppercase tracking-wider mb-1.5',
+                'text-[10px] sm:text-[11px] font-medium uppercase tracking-wider mb-1',
                 'text-gray-400 dark:text-white/60'
               )}
             >
@@ -674,7 +670,7 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
             </p>
             <p
               className={cn(
-                'text-[13px] leading-relaxed',
+                'text-[12px] sm:text-[13px] leading-relaxed',
                 'text-gray-600 dark:text-gray-300'
               )}
             >
@@ -687,16 +683,16 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
       {(rarity_rank > 0 || MasterSequence > 0 || volume > 0) && (
         <div
           className={cn(
-            'p-3 mb-3 rounded-xl border',
+            'p-2.5 sm:p-3 mb-2 sm:mb-3 rounded-xl border',
             'border-gray-200 dark:border-white/[0.08]'
           )}
         >
-          <div className="grid grid-cols-3 gap-4">
+          <div className="flex justify-between">
             {rarity_rank > 0 && (
-              <div className="text-center">
+              <div className="text-left">
                 <p
                   className={cn(
-                    'text-[10px] font-medium uppercase tracking-wider mb-1',
+                    'text-[9px] sm:text-[10px] font-medium uppercase tracking-wider mb-0.5',
                     'text-gray-400 dark:text-white/60'
                   )}
                 >
@@ -704,7 +700,7 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
                 </p>
                 <p
                   className={cn(
-                    'text-base font-semibold tabular-nums',
+                    'text-sm sm:text-base font-semibold tabular-nums',
                     'text-gray-900 dark:text-white'
                   )}
                 >
@@ -716,7 +712,7 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
               <div className="text-center">
                 <p
                   className={cn(
-                    'text-[10px] font-medium uppercase tracking-wider mb-1',
+                    'text-[9px] sm:text-[10px] font-medium uppercase tracking-wider mb-0.5',
                     'text-gray-400 dark:text-white/60'
                   )}
                 >
@@ -724,7 +720,7 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
                 </p>
                 <p
                   className={cn(
-                    'text-base font-semibold tabular-nums',
+                    'text-sm sm:text-base font-semibold tabular-nums',
                     'text-gray-900 dark:text-white'
                   )}
                 >
@@ -733,10 +729,10 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
               </div>
             )}
             {volume > 0 && (
-              <div className="text-center">
+              <div className="text-right">
                 <p
                   className={cn(
-                    'text-[10px] font-medium uppercase tracking-wider mb-1',
+                    'text-[9px] sm:text-[10px] font-medium uppercase tracking-wider mb-0.5',
                     'text-gray-400 dark:text-white/60'
                   )}
                 >
@@ -744,7 +740,7 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
                 </p>
                 <p
                   className={cn(
-                    'text-base font-semibold tabular-nums',
+                    'text-sm sm:text-base font-semibold tabular-nums',
                     'text-gray-900 dark:text-white'
                   )}
                 >
@@ -759,18 +755,18 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
       {/* Technical Details */}
       <div
         className={cn(
-          'p-3 mb-4 rounded-xl border-[1.5px]',
+          'p-2.5 sm:p-3 mb-3 sm:mb-4 rounded-xl border-[1.5px]',
           'border-gray-200 dark:border-white/[0.08]'
         )}
       >
-        <div className="space-y-3">
+        <div className="space-y-2 sm:space-y-3">
           {/* Owner + Royalties row */}
-          <div className="flex items-start justify-between gap-4">
+          <div className="flex items-start justify-between gap-2 sm:gap-4">
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1">
                 <span
                   className={cn(
-                    'text-[10px] font-medium uppercase tracking-wider',
+                    'text-[9px] sm:text-[10px] font-medium uppercase tracking-wider',
                     'text-gray-400 dark:text-white/60'
                   )}
                 >
@@ -780,39 +776,39 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
                   onClick={() => handleCopy(account, 'Owner')}
                   aria-label="Copy owner address"
                   className={cn(
-                    'min-w-[24px] min-h-[24px] inline-flex items-center justify-center rounded hover:bg-white/10 transition-[background-color] outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
+                    'min-w-[20px] min-h-[20px] sm:min-w-[24px] sm:min-h-[24px] inline-flex items-center justify-center rounded hover:bg-white/10 transition-[background-color] outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                     'text-gray-400 hover:text-gray-900 dark:text-white/60 dark:hover:text-white'
                   )}
                 >
-                  <Copy size={12} />
+                  <Copy size={11} />
                 </button>
                 {account !== accountLogin && (
                   <button
                     onClick={() => window.dispatchEvent(new CustomEvent('openDm', { detail: { user: account, nftId: NFTokenID } }))}
                     aria-label="Message owner"
                     className={cn(
-                      'min-w-[24px] min-h-[24px] inline-flex items-center justify-center rounded hover:bg-white/10 transition-[background-color] outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
+                      'min-w-[20px] min-h-[20px] sm:min-w-[24px] sm:min-h-[24px] inline-flex items-center justify-center rounded hover:bg-white/10 transition-[background-color] outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                       'text-gray-400 hover:text-[#650CD4] dark:text-white/60 dark:hover:text-[#650CD4]'
                     )}
                   >
-                    <MessageCircle size={12} />
+                    <MessageCircle size={11} />
                   </button>
                 )}
               </div>
               <Link
                 href={`/address/${account}`}
                 className={cn(
-                  'text-[12px] font-mono break-all min-h-[24px] inline-flex items-center hover:text-primary transition-[background-color]',
+                  'text-[11px] sm:text-[12px] font-mono break-all min-h-[20px] inline-flex items-center hover:text-primary transition-[background-color]',
                   'text-gray-700 dark:text-gray-300'
                 )}
               >
                 {account}
               </Link>
             </div>
-            <div className="text-right">
+            <div className="text-right shrink-0">
               <p
                 className={cn(
-                  'text-[10px] font-medium uppercase tracking-wider mb-0.5',
+                  'text-[9px] sm:text-[10px] font-medium uppercase tracking-wider mb-0.5',
                   'text-gray-400 dark:text-white/60'
                 )}
               >
@@ -820,7 +816,7 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
               </p>
               <p
                 className={cn(
-                  'text-sm font-semibold',
+                  'text-xs sm:text-sm font-semibold',
                   'text-primary dark:text-primary dark:drop-shadow-[0_0_8px_rgba(66,133,244,0.3)]'
                 )}
               >
@@ -831,10 +827,10 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
 
           {/* Issuer */}
           <div>
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1">
               <span
                 className={cn(
-                  'text-[10px] font-medium uppercase tracking-wider',
+                  'text-[9px] sm:text-[10px] font-medium uppercase tracking-wider',
                   'text-gray-400 dark:text-white/60'
                 )}
               >
@@ -844,30 +840,30 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
                 onClick={() => handleCopy(issuer, 'Issuer')}
                 aria-label="Copy issuer address"
                 className={cn(
-                  'min-w-[24px] min-h-[24px] inline-flex items-center justify-center rounded hover:bg-white/10 transition-[background-color] outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
+                  'min-w-[20px] min-h-[20px] sm:min-w-[24px] sm:min-h-[24px] inline-flex items-center justify-center rounded hover:bg-white/10 transition-[background-color] outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                   'text-gray-400 hover:text-gray-900 dark:text-white/60 dark:hover:text-white'
                 )}
               >
-                <Copy size={12} />
+                <Copy size={11} />
               </button>
               {issuer !== accountLogin && (
                 <button
                   onClick={() => window.dispatchEvent(new CustomEvent('openDm', { detail: { user: issuer } }))}
                   aria-label="Message issuer"
                   className={cn(
-                    'min-w-[24px] min-h-[24px] inline-flex items-center justify-center rounded hover:bg-white/10 transition-[background-color] outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
+                    'min-w-[20px] min-h-[20px] sm:min-w-[24px] sm:min-h-[24px] inline-flex items-center justify-center rounded hover:bg-white/10 transition-[background-color] outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                     'text-gray-400 hover:text-[#650CD4] dark:text-white/60 dark:hover:text-[#650CD4]'
                   )}
                   title="Chat with issuer"
                 >
-                  <MessageCircle size={12} />
+                  <MessageCircle size={11} />
                 </button>
               )}
             </div>
             <Link
               href={`/address/${issuer}`}
               className={cn(
-                'text-[12px] font-mono break-all min-h-[24px] inline-flex items-center hover:text-primary transition-[background-color]',
+                'text-[11px] sm:text-[12px] font-mono break-all min-h-[20px] inline-flex items-center hover:text-primary transition-[background-color]',
                 'text-gray-700 dark:text-gray-300'
               )}
             >
@@ -877,10 +873,10 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
 
           {/* Token ID */}
           <div>
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1">
               <span
                 className={cn(
-                  'text-[10px] font-medium uppercase tracking-wider',
+                  'text-[9px] sm:text-[10px] font-medium uppercase tracking-wider',
                   'text-gray-400 dark:text-white/60'
                 )}
               >
@@ -890,11 +886,11 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
                 onClick={() => handleCopy(NFTokenID, 'Token ID')}
                 aria-label="Copy token ID"
                 className={cn(
-                  'min-w-[24px] min-h-[24px] inline-flex items-center justify-center rounded hover:bg-white/10 transition-[background-color] outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
+                  'min-w-[20px] min-h-[20px] sm:min-w-[24px] sm:min-h-[24px] inline-flex items-center justify-center rounded hover:bg-white/10 transition-[background-color] outline-none focus-visible:ring-2 focus-visible:ring-[#137DFE]',
                   'text-gray-400 hover:text-gray-900 dark:text-white/60 dark:hover:text-white'
                 )}
               >
-                <Copy size={12} />
+                <Copy size={11} />
               </button>
             </div>
             <a
@@ -902,7 +898,7 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
               target="_blank"
               rel="noopener noreferrer"
               className={cn(
-                'text-[11px] font-mono break-all min-h-[24px] inline-flex items-center hover:text-primary transition-[background-color]',
+                'text-[10px] sm:text-[11px] font-mono break-all min-h-[20px] inline-flex items-center hover:text-primary transition-[background-color]',
                 'text-gray-500 dark:text-gray-400'
               )}
             >

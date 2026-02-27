@@ -154,8 +154,8 @@ export default function HistoryList({ nft }) {
           'border-gray-200 bg-white dark:border-white/10 dark:bg-black'
         )}
       >
-        <div className="p-4">
-          <div className="grid grid-cols-2 gap-2 mb-3">
+        <div className="p-2 sm:p-4">
+          <div className="grid grid-cols-4 sm:grid-cols-2 gap-1.5 sm:gap-2 mb-2 sm:mb-3">
             {[1, 2, 3, 4].map((i) => (
               <div
                 key={i}
@@ -219,44 +219,44 @@ export default function HistoryList({ nft }) {
     >
       {/* Stats Grid */}
       {stats.salesCount > 0 && (
-        <div className={cn('p-3 border-b', 'border-gray-200 dark:border-white/10')}>
-          <div className="grid grid-cols-2 gap-2">
+        <div className={cn('p-2 sm:p-3 border-b', 'border-gray-200 dark:border-white/10')}>
+          <div className="grid grid-cols-4 sm:grid-cols-2 gap-1.5 sm:gap-2">
             {[
               { icon: Zap, label: 'Sales', value: stats.salesCount },
               { icon: TrendingUp, label: 'Volume', value: fNumber(stats.totalVolume), suffix: 'XRP' },
-              { icon: Award, label: 'Highest', value: fNumber(stats.highestSale), suffix: 'XRP' },
+              { icon: Award, label: 'Top Sale', value: fNumber(stats.highestSale), suffix: 'XRP' },
               { icon: Users, label: 'Owners', value: stats.uniqueOwners }
             ].map(({ icon: Icon, label, value, suffix }) => (
               <div
                 key={label}
                 className={cn(
-                  'flex items-center gap-2.5 px-3 py-2 rounded-lg',
+                  'flex max-sm:flex-col max-sm:items-center sm:items-center gap-1 sm:gap-2.5 px-1.5 sm:px-3 py-1.5 sm:py-2 rounded-lg',
                   'bg-gray-50 dark:bg-white/[0.03]'
                 )}
               >
                 <div
                   className={cn(
-                    'w-7 h-7 rounded-md flex items-center justify-center shrink-0',
+                    'w-6 h-6 sm:w-7 sm:h-7 rounded-md flex items-center justify-center shrink-0',
                     'bg-gray-200 dark:bg-white/[0.06]'
                   )}
                 >
-                  <Icon size={13} className="text-gray-500 dark:text-white/60" />
+                  <Icon size={12} className="text-gray-500 dark:text-white/60 sm:w-[13px] sm:h-[13px]" />
                 </div>
-                <div className="min-w-0">
+                <div className="min-w-0 max-sm:text-center">
                   <p
                     className={cn(
-                      'text-xs font-semibold tabular-nums leading-tight',
+                      'text-[11px] sm:text-xs font-semibold tabular-nums leading-tight',
                       'text-gray-900 dark:text-white'
                     )}
                   >
                     {value}
                     {suffix && (
-                      <span className={cn('ml-1 font-normal', 'text-gray-400 dark:text-white/60')}>
+                      <span className={cn('ml-0.5 sm:ml-1 font-normal', 'text-gray-400 dark:text-white/60')}>
                         {suffix}
                       </span>
                     )}
                   </p>
-                  <p className={cn('text-[10px] leading-tight', 'text-gray-500 dark:text-white/60')}>
+                  <p className={cn('text-[9px] sm:text-[10px] leading-tight', 'text-gray-500 dark:text-white/60')}>
                     {label}
                   </p>
                 </div>
@@ -270,7 +270,7 @@ export default function HistoryList({ nft }) {
               {stats.salePrice > 0 && (
                 <div
                   className={cn(
-                    'flex items-center justify-between px-3 py-2 rounded-lg',
+                    'flex items-center justify-between px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg',
                     'bg-gray-50 dark:bg-white/[0.03]'
                   )}
                 >
@@ -290,7 +290,7 @@ export default function HistoryList({ nft }) {
               {stats.listPrice > 0 && (
                 <div
                   className={cn(
-                    'flex items-center justify-between px-3 py-2 rounded-lg',
+                    'flex items-center justify-between px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg',
                     'bg-gray-50 dark:bg-white/[0.03]'
                   )}
                 >
@@ -325,7 +325,7 @@ export default function HistoryList({ nft }) {
               {stats.mintDate && (
                 <div
                   className={cn(
-                    'flex items-center justify-between px-3 py-2 rounded-lg',
+                    'flex items-center justify-between px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg',
                     'bg-gray-50 dark:bg-white/[0.03]'
                   )}
                 >
@@ -352,12 +352,12 @@ export default function HistoryList({ nft }) {
       )}
 
       {/* Filter Pills */}
-      <div className={cn('px-3 py-2 border-b', 'border-gray-200 dark:border-white/10')}>
-        <div className="flex items-center gap-1.5 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
+      <div className={cn('px-2 sm:px-3 py-1.5 sm:py-2 border-b', 'border-gray-200 dark:border-white/10')}>
+        <div className="flex items-center gap-1 sm:gap-1.5 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
           <button
             onClick={() => setActiveFilter('all')}
             className={cn(
-              'px-2.5 py-1 rounded-md text-[11px] font-medium transition-[border-color,color,background-color] whitespace-nowrap',
+              'px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-md text-[10px] sm:text-[11px] font-medium transition-[border-color,color,background-color] whitespace-nowrap',
               activeFilter === 'all'
                 ? 'bg-gray-900 text-white dark:bg-white/10 dark:text-white'
                 : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100 dark:text-white/60 dark:hover:text-white/70 dark:hover:bg-white/[0.04]'
@@ -373,7 +373,7 @@ export default function HistoryList({ nft }) {
                 key={type}
                 onClick={() => setActiveFilter(activeFilter === type ? 'all' : type)}
                 className={cn(
-                  'px-2.5 py-1 rounded-md text-[11px] font-medium transition-[border-color,color,background-color] whitespace-nowrap',
+                  'px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-md text-[10px] sm:text-[11px] font-medium transition-[border-color,color,background-color] whitespace-nowrap',
                   activeFilter === type
                     ? 'bg-gray-900 text-white dark:bg-white/10 dark:text-white'
                     : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100 dark:text-white/60 dark:hover:text-white/70 dark:hover:bg-white/[0.04]'
@@ -401,7 +401,7 @@ export default function HistoryList({ nft }) {
             </button>
           </div>
         ) : (
-          <div className="p-2">
+          <div className="p-1 sm:p-2">
             {groupOrder.map((groupName) => {
               const items = grouped[groupName];
               if (!items || items.length === 0) return null;
@@ -429,7 +429,7 @@ export default function HistoryList({ nft }) {
                     </span>
                   </div>
 
-                  {/* Items - Table-like rows */}
+                  {/* Items */}
                   <div className="space-y-px">
                     {items.map((item, idx) => {
                       const config = TYPE_CONFIG[item.type] || {
@@ -450,51 +450,75 @@ export default function HistoryList({ nft }) {
                         <div
                           key={item._id || item.hash || idx}
                           className={cn(
-                            'group grid grid-cols-[28px_1fr_1fr_1fr_auto] items-center gap-2 px-2 py-2 rounded-lg transition-[background-color]',
+                            'group grid items-center px-1.5 sm:px-2 py-1.5 sm:py-2 rounded-lg transition-[background-color]',
+                            'grid-cols-[44px_1fr_auto_auto] sm:grid-cols-[52px_1fr_100px_80px]',
+                            'gap-x-2 sm:gap-x-3',
                             isOwnershipChange
                               ? 'bg-gray-50 hover:bg-gray-100 dark:bg-white/[0.02] dark:hover:bg-white/[0.05]'
                               : 'hover:bg-gray-50 dark:hover:bg-white/[0.03]'
                           )}
                         >
-                          {/* Col 1: Icon */}
-                          <div
+                          {/* Col 1: Label */}
+                          <span
                             className={cn(
-                              'w-7 h-7 rounded-md flex items-center justify-center',
-                              'bg-gray-100 dark:bg-white/[0.06]'
+                              'text-[10px] sm:text-[11px] font-semibold truncate',
+                              'text-gray-700 dark:text-white/70'
                             )}
                           >
-                            <config.Icon
-                              size={13}
-                              className="text-gray-500 dark:text-white/60"
-                            />
-                          </div>
+                            {config.label}
+                          </span>
 
-                          {/* Col 2: Event label */}
-                          <div className="flex items-center gap-1.5 min-w-0">
-                            <span
-                              className={cn(
-                                'text-[11px] font-semibold',
-                                'text-gray-700 dark:text-white/70'
-                              )}
-                            >
-                              {config.label}
-                            </span>
-                            {isOwnershipChange && (
-                              <div
+                          {/* Col 2: Addresses */}
+                          <div className="flex items-center gap-0.5 sm:gap-1 text-[9px] sm:text-[10px] min-w-0">
+                            {from && (
+                              <Link
+                                href={`/address/${from}`}
                                 className={cn(
-                                  'w-1.5 h-1.5 rounded-full shrink-0',
-                                  'bg-gray-400 dark:bg-white/20'
+                                  'font-mono truncate transition-[background-color]',
+                                  from === stats.currentOwner
+                                    ? 'text-gray-900 font-semibold dark:text-white'
+                                    : 'text-gray-400 hover:text-gray-700 dark:text-white/60 dark:hover:text-white/70'
                                 )}
-                              />
+                              >
+                                {formatAddr(from)}
+                              </Link>
+                            )}
+                            {to && (
+                              <>
+                                <span className="text-gray-300 dark:text-white/20 shrink-0">{'>'}</span>
+                                <Link
+                                  href={`/address/${to}`}
+                                  className={cn(
+                                    'font-mono truncate transition-[background-color]',
+                                    to === stats.currentOwner
+                                      ? 'text-gray-900 font-semibold dark:text-white'
+                                      : 'text-gray-400 hover:text-gray-700 dark:text-white/60 dark:hover:text-white/70'
+                                  )}
+                                >
+                                  {formatAddr(to)}
+                                </Link>
+                              </>
+                            )}
+                            {!from && !to && (
+                              <span className={cn('text-gray-300 dark:text-white/10')}>--</span>
+                            )}
+                            {(from || to) && (
+                              <button
+                                onClick={() => window.dispatchEvent(new CustomEvent('openDm', { detail: { user: to || from } }))}
+                                className={cn('p-0.5 rounded hover:bg-white/10 hover:text-[#650CD4] transition-[background-color] shrink-0 opacity-0 group-hover:opacity-100', 'text-gray-500 dark:text-white/60')}
+                                title="Message"
+                              >
+                                <MessageCircle size={10} />
+                              </button>
                             )}
                           </div>
 
                           {/* Col 3: Price */}
-                          <div className="flex items-center justify-center">
+                          <div className="flex items-center justify-end sm:justify-center shrink-0">
                             {price > 0 ? (
                               <span
                                 className={cn(
-                                  'inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold tabular-nums',
+                                  'text-[10px] sm:text-[11px] font-semibold tabular-nums',
                                   isCancelled
                                     ? 'text-gray-400 line-through dark:text-white/60'
                                     : isSpend
@@ -507,66 +531,17 @@ export default function HistoryList({ nft }) {
                                 {fNumber(price)} XRP
                               </span>
                             ) : (
-                              <span className={cn('text-[11px]', 'text-gray-300 dark:text-white/10')}>
+                              <span className={cn('text-[10px] sm:text-[11px]', 'text-gray-300 dark:text-white/10')}>
                                 --
                               </span>
                             )}
                           </div>
 
-                          {/* Col 4: Addresses */}
-                          <div className="flex items-center gap-1 text-[10px] min-w-0 justify-center">
-                            {from && (
-                              <Link
-                                href={`/address/${from}`}
-                                className={cn(
-                                  'font-mono transition-[background-color] truncate',
-                                  from === stats.currentOwner
-                                    ? 'text-gray-900 font-semibold dark:text-white dark:font-semibold'
-                                    : 'text-gray-400 hover:text-gray-700 dark:text-white/60 dark:hover:text-white/70'
-                                )}
-                              >
-                                {formatAddr(from)}
-                              </Link>
-                            )}
-                            {to && (
-                              <>
-                                <span className="text-gray-300 dark:text-white/60">
-                                  {'->'}
-                                </span>
-                                <Link
-                                  href={`/address/${to}`}
-                                  className={cn(
-                                    'font-mono transition-[background-color] truncate',
-                                    to === stats.currentOwner
-                                      ? 'text-gray-900 font-semibold dark:text-white dark:font-semibold'
-                                      : 'text-gray-400 hover:text-gray-700 dark:text-white/60 dark:hover:text-white/70'
-                                  )}
-                                >
-                                  {formatAddr(to)}
-                                </Link>
-                              </>
-                            )}
-                            {!from && !to && (
-                              <span className={cn('text-[10px]', 'text-gray-300 dark:text-white/10')}>
-                                --
-                              </span>
-                            )}
-                            {(from || to) && (
-                              <button
-                                onClick={() => window.dispatchEvent(new CustomEvent('openDm', { detail: { user: to || from } }))}
-                                className={cn('p-0.5 rounded hover:bg-white/10 hover:text-[#650CD4] transition-[background-color] opacity-0 group-hover:opacity-100', 'text-gray-500 dark:text-white/60')}
-                                title="Message"
-                              >
-                                <MessageCircle size={11} />
-                              </button>
-                            )}
-                          </div>
-
-                          {/* Col 5: Time + Link */}
-                          <div className="flex items-center gap-1 shrink-0 justify-end min-w-[70px]">
+                          {/* Col 4: Time + Link */}
+                          <div className="flex items-center gap-0.5 sm:gap-1 shrink-0 justify-end">
                             <span
                               className={cn(
-                                'text-[10px] tabular-nums',
+                                'text-[9px] sm:text-[10px] tabular-nums',
                                 'text-gray-400 dark:text-white/60'
                               )}
                             >
@@ -578,7 +553,7 @@ export default function HistoryList({ nft }) {
                                 target="_blank"
                                 aria-label={`View transaction ${item.hash.slice(0, 8)}`}
                                 className={cn(
-                                  'p-0.5 rounded transition-[border-color,color,background-color] opacity-0 group-hover:opacity-100',
+                                  'p-0.5 rounded transition-[border-color,color,background-color] max-sm:opacity-100 sm:opacity-0 sm:group-hover:opacity-100',
                                   'text-gray-300 hover:text-gray-600 dark:text-white/60 dark:hover:text-white/60'
                                 )}
                               >

@@ -850,15 +850,15 @@ export default function NFTActions({ nft }) {
       {/* Main Glass Panel */}
       <div
         className={cn(
-          'rounded-2xl p-5 border',
+          'rounded-2xl p-3 sm:p-5 border',
           'border-gray-200 bg-white backdrop-blur-xl dark:border-gray-700/50 dark:bg-black dark:backdrop-blur-none'
         )}
       >
-        <div className="space-y-5">
-          {/* Collection Header - Futuristic */}
+        <div className="space-y-3 sm:space-y-5">
+          {/* Collection Header */}
           {self && (
             <div className="flex justify-between items-start">
-              <div className={cn('relative pl-4 space-y-1.5')}>
+              <div className={cn('relative pl-3 sm:pl-4 space-y-1 sm:space-y-1.5')}>
                 {/* Accent line */}
                 <div
                   className={cn(
@@ -872,7 +872,7 @@ export default function NFTActions({ nft }) {
                   <Link href={`/nfts/${cslug}`} className="inline-flex items-center gap-2 group">
                     <span
                       className={cn(
-                        'text-[13px] font-medium uppercase tracking-wider transition-colors',
+                        'text-[11px] sm:text-[13px] font-medium uppercase tracking-wider transition-colors',
                         'text-primary/80 group-hover:text-primary dark:text-primary/70'
                       )}
                     >
@@ -893,7 +893,7 @@ export default function NFTActions({ nft }) {
                   <div className="flex items-center gap-2">
                     <span
                       className={cn(
-                        'text-[13px] font-medium uppercase tracking-wider',
+                        'text-[11px] sm:text-[13px] font-medium uppercase tracking-wider',
                         'text-primary/80 dark:text-primary/70'
                       )}
                     >
@@ -915,7 +915,7 @@ export default function NFTActions({ nft }) {
                 {/* NFT Name */}
                 <h2
                   className={cn(
-                    'text-xl font-semibold tracking-tight',
+                    'text-base sm:text-xl font-semibold tracking-tight truncate',
                     'text-gray-900 dark:text-white'
                   )}
                 >
@@ -925,7 +925,7 @@ export default function NFTActions({ nft }) {
                 {/* Floor Price - Enhanced */}
                 <div
                   className={cn(
-                    'inline-flex items-center gap-3 px-3 py-1.5 rounded-xl border',
+                    'inline-flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-1 sm:py-1.5 rounded-xl border',
                     'border-gray-200 bg-gradient-to-r from-gray-100 to-gray-50 dark:border-white/[0.08] dark:bg-gradient-to-r dark:from-white/[0.04] dark:to-transparent'
                   )}
                 >
@@ -943,7 +943,7 @@ export default function NFTActions({ nft }) {
                   <div className="flex items-center gap-1">
                     <span
                       className={cn(
-                        'text-lg font-medium tabular-nums',
+                        'text-sm sm:text-lg font-medium tabular-nums',
                         'text-gray-900 dark:text-white'
                       )}
                     >
@@ -962,7 +962,7 @@ export default function NFTActions({ nft }) {
                   <button
                     onClick={() => setOpenShare(!openShare)}
                     className={cn(
-                      'px-3 py-2 rounded-lg border text-[13px] font-normal transition-colors',
+                      'px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg border text-[12px] sm:text-[13px] font-normal transition-colors',
                       'border-gray-300 text-gray-600 hover:border-gray-400 hover:text-gray-700 dark:border-gray-700/50 dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-gray-300'
                     )}
                   >
@@ -1029,13 +1029,13 @@ export default function NFTActions({ nft }) {
           )}
 
           {/* Action Buttons */}
-          <div className="space-y-3">
+          <div className="space-y-2 sm:space-y-3">
             {burnt ? (
               <p className="text-lg text-red-400 font-normal">This NFT is burnt.</p>
             ) : isOwner ? (
-              <div className="space-y-3">
+              <div className="space-y-2 sm:space-y-3">
                 {activeAction === 'sell' ? (
-                  <div className={cn('p-4 rounded-xl border', 'border-gray-200 bg-gray-50 dark:border-gray-700/50 dark:bg-white/5')}>
+                  <div className={cn('p-3 sm:p-4 rounded-xl border', 'border-gray-200 bg-gray-50 dark:border-gray-700/50 dark:bg-white/5')}>
                     <p className={cn('text-[13px] font-medium mb-3', 'text-gray-900 dark:text-white')}>Set your price</p>
                     <div className="flex items-center gap-2 mb-3">
                       <input
@@ -1069,7 +1069,7 @@ export default function NFTActions({ nft }) {
                     </div>
                   </div>
                 ) : activeAction === 'transfer' ? (
-                  <div className={cn('p-4 rounded-xl border', 'border-gray-200 bg-gray-50 dark:border-gray-700/50 dark:bg-white/5')}>
+                  <div className={cn('p-3 sm:p-4 rounded-xl border', 'border-gray-200 bg-gray-50 dark:border-gray-700/50 dark:bg-white/5')}>
                     <p className={cn('text-[13px] font-medium mb-3', 'text-gray-900 dark:text-white')}>Transfer to</p>
                     <input
                       type="text"
@@ -1124,12 +1124,12 @@ export default function NFTActions({ nft }) {
                     </div>
                   </div>
                 ) : (
-                  <div className="flex gap-3">
+                  <div className="flex gap-2 sm:gap-3">
                     <button
                       onClick={handleCreateSellOffer}
                       disabled={!accountLogin}
                       className={cn(
-                        'flex-1 py-3 rounded-xl text-[15px] font-medium bg-primary text-white transition-all',
+                        'flex-1 py-2.5 sm:py-3 rounded-xl text-[13px] sm:text-[15px] font-medium bg-primary text-white transition-all',
                         'hover:bg-primary/90 hover:shadow-[0_0_24px_rgba(66,133,244,0.4)]',
                         'active:scale-[0.98]',
                         !accountLogin && 'opacity-50 cursor-not-allowed hover:shadow-none'
@@ -1141,7 +1141,7 @@ export default function NFTActions({ nft }) {
                       onClick={handleTransfer}
                       disabled={!accountLogin}
                       className={cn(
-                        'flex-1 py-3 rounded-xl text-[15px] font-normal border transition-colors',
+                        'flex-1 py-2.5 sm:py-3 rounded-xl text-[13px] sm:text-[15px] font-normal border transition-colors',
                         'border-gray-300 text-gray-700 hover:border-gray-400 dark:border-gray-700/50 dark:text-gray-300 dark:hover:border-gray-600 dark:hover:text-white',
                         !accountLogin && 'opacity-50 cursor-not-allowed'
                       )}
@@ -1152,7 +1152,7 @@ export default function NFTActions({ nft }) {
                       onClick={handleBurnAction}
                       disabled={!accountLogin}
                       className={cn(
-                        'flex-1 py-3 rounded-xl text-[15px] font-normal border transition-colors',
+                        'flex-1 py-2.5 sm:py-3 rounded-xl text-[13px] sm:text-[15px] font-normal border transition-colors',
                         'border-gray-300 text-gray-700 hover:border-gray-400 dark:border-gray-700/50 dark:text-gray-300 dark:hover:border-gray-600 dark:hover:text-white',
                         !accountLogin && 'opacity-50 cursor-not-allowed'
                       )}
@@ -1163,12 +1163,12 @@ export default function NFTActions({ nft }) {
                 )}
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-2 sm:space-y-3">
                 {loading ? (
                   /* Skeleton loader for price */
                   <div
                     className={cn(
-                      'p-4 rounded-xl border animate-pulse',
+                      'p-3 sm:p-4 rounded-xl border animate-pulse',
                       'border-gray-200 bg-gray-50 dark:border-white/[0.08] dark:bg-white/[0.02]'
                     )}
                   >
@@ -1189,7 +1189,7 @@ export default function NFTActions({ nft }) {
                 ) : lowestSellOffer ? (
                   <div
                     className={cn(
-                      'p-4 rounded-xl border relative overflow-hidden',
+                      'p-3 sm:p-4 rounded-xl border relative overflow-hidden',
                       'border-primary/20 bg-gradient-to-br from-primary/[0.05] to-gray-50 dark:from-primary/[0.08] dark:to-transparent'
                     )}
                   >
@@ -1208,7 +1208,7 @@ export default function NFTActions({ nft }) {
                       <div className="flex items-baseline gap-2">
                         <span
                           className={cn(
-                            'text-3xl font-semibold tabular-nums',
+                            'text-2xl sm:text-3xl font-semibold tabular-nums',
                             'text-primary dark:drop-shadow-[0_0_12px_rgba(66,133,244,0.4)]'
                           )}
                         >
@@ -1257,7 +1257,7 @@ export default function NFTActions({ nft }) {
                   /* Not listed state - improved */
                   <div
                     className={cn(
-                      'p-4 rounded-xl border-[1.5px] border-dashed text-center',
+                      'p-3 sm:p-4 rounded-xl border-[1.5px] border-dashed text-center',
                       'border-gray-300 bg-gray-50 dark:border-white/[0.1] dark:bg-white/[0.02]'
                     )}
                   >
@@ -1336,7 +1336,7 @@ export default function NFTActions({ nft }) {
                         <button
                           onClick={() => setAcceptOffer(lowestSellOffer.offer)}
                           className={cn(
-                            'w-full py-3.5 rounded-xl text-[15px] font-medium transition-all',
+                            'w-full py-2.5 sm:py-3.5 rounded-xl text-[13px] sm:text-[15px] font-medium transition-all',
                             'bg-primary text-white hover:bg-primary/90 hover:shadow-[0_0_24px_rgba(66,133,244,0.4)] active:scale-[0.98]'
                           )}
                         >
@@ -1395,7 +1395,7 @@ export default function NFTActions({ nft }) {
                           onClick={handleBuyNow}
                           disabled={lowestSellOffer?.offer?.fraud}
                           className={cn(
-                            'w-full py-3.5 rounded-xl text-[15px] font-medium transition-all',
+                            'w-full py-2.5 sm:py-3.5 rounded-xl text-[13px] sm:text-[15px] font-medium transition-all',
                             lowestSellOffer?.offer?.fraud
                               ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
                               : 'bg-primary text-white hover:bg-primary/90 hover:shadow-[0_0_24px_rgba(66,133,244,0.4)] active:scale-[0.98]'
@@ -1460,7 +1460,7 @@ export default function NFTActions({ nft }) {
                         <button
                           onClick={handleCreateBuyOffer}
                           className={cn(
-                            'w-full py-3 rounded-xl text-[15px] font-normal border transition-colors',
+                            'w-full py-2.5 sm:py-3 rounded-xl text-[13px] sm:text-[15px] font-normal border transition-colors',
                             'border-gray-300 text-gray-700 hover:border-gray-400 dark:border-gray-700/50 dark:text-gray-300 dark:hover:border-gray-600 dark:hover:text-white'
                           )}
                         >
@@ -1476,7 +1476,7 @@ export default function NFTActions({ nft }) {
           </div>
 
           {/* Offers and History */}
-          <div className="space-y-5">
+          <div className="space-y-3 sm:space-y-5">
             {/* Sell Offers (only for owner) */}
             {isOwner && (
               <div>
@@ -1512,7 +1512,7 @@ export default function NFTActions({ nft }) {
                       <div
                         key={i}
                         className={cn(
-                          'px-4 py-3 animate-pulse',
+                          'px-3 sm:px-4 py-2.5 sm:py-3 animate-pulse',
                           i < 2 &&
                             ('border-b border-gray-200 dark:border-gray-700/30')
                         )}
@@ -1548,7 +1548,7 @@ export default function NFTActions({ nft }) {
                         <div
                           key={index}
                           className={cn(
-                            'px-4 py-3',
+                            'px-3 sm:px-4 py-2 sm:py-3',
                             !isLast &&
                               ('border-b border-gray-200 dark:border-gray-700/30')
                           )}
@@ -1646,7 +1646,7 @@ export default function NFTActions({ nft }) {
                     <div
                       key={i}
                       className={cn(
-                        'px-4 py-3 animate-pulse',
+                        'px-3 sm:px-4 py-2.5 sm:py-3 animate-pulse',
                         i < 3 &&
                           ('border-b border-gray-200 dark:border-gray-700/30')
                       )}
@@ -1699,7 +1699,7 @@ export default function NFTActions({ nft }) {
                       <div
                         key={index}
                         className={cn(
-                          'px-4 py-2.5',
+                          'px-3 sm:px-4 py-2 sm:py-2.5',
                           !isLast &&
                             ('border-b border-gray-200 dark:border-gray-700/30')
                         )}
@@ -1739,7 +1739,7 @@ export default function NFTActions({ nft }) {
                             <div className="flex items-center gap-2">
                               <span
                                 className={cn(
-                                  'text-[14px] font-mono tabular-nums',
+                                  'text-[12px] sm:text-[14px] font-mono tabular-nums',
                                   'text-gray-900 dark:text-white'
                                 )}
                               >
